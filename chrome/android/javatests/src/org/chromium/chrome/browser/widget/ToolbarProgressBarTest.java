@@ -13,6 +13,7 @@ import android.view.View;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests related to the ToolbarProgressBar.
  */
+@RetryOnFailure
 public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTabbedActivity> {
 
     static final int TEST_WAIT_TIME_MS = 60000;

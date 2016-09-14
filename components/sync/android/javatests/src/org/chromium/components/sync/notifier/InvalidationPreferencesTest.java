@@ -12,6 +12,7 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -21,6 +22,7 @@ import java.util.Set;
  *
  * @author dsmyers@google.com (Daniel Myers)
  */
+@RetryOnFailure
 public class InvalidationPreferencesTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Sync"})

@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -23,6 +24,7 @@ import java.util.concurrent.Callable;
 
 
 /** Test suite for different Android URL schemes. */
+@RetryOnFailure
 public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public UrlSchemeTest() {

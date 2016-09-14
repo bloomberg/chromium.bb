@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -150,6 +151,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage", "Main"})
+    @RetryOnFailure
     public void testFind() throws InterruptedException {
         loadTestAndVerifyFindInPage("pitts", "1/7");
     }
@@ -159,6 +161,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFind101() throws InterruptedException {
         loadTestAndVerifyFindInPage("it", "1/101");
     }
@@ -168,6 +171,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFindMultiLine() throws InterruptedException {
         String multiLineSearchTerm = "This is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
@@ -180,6 +184,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFindMultiLineFalse() throws InterruptedException {
         String multiLineSearchTerm = "aThis is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
@@ -191,6 +196,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFindNext() throws InterruptedException {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");
@@ -220,6 +226,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testResultsBarInitiallyVisible() throws InterruptedException {
         loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -231,6 +238,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testResultsBarVisibleAfterTypingText() throws InterruptedException {
         loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -289,6 +297,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFipTextNotRestoredIncognitoTab() throws InterruptedException {
         newIncognitoTabFromMenu();
         loadTestAndVerifyFindInPage("pitts", "1/7");
@@ -311,6 +320,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testPastedTextStylingRemoved() throws InterruptedException {
         loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -365,6 +375,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testBackKeyDismissesFind() throws InterruptedException {
         loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();

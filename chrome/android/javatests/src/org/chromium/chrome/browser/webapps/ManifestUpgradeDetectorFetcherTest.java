@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -121,6 +122,7 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
      */
     @MediumTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testLaunchWithDifferentManifestUrl() throws Exception {
         CallbackWaiter waiter = new CallbackWaiter();
         startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),

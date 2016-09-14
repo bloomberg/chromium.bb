@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,6 +47,7 @@ public class AddToHomescreenDialogTest extends ChromeActivityTestCaseBase<Chrome
 
     @SmallTest
     @Feature("{Webapp}")
+    @RetryOnFailure
     public void testSmoke() throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

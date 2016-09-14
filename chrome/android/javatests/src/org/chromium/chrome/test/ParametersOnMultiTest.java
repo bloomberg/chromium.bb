@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.base.test.util.parameter.parameters.MethodParameter;
@@ -44,6 +45,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNoParameterizedTestAnnotation() {
         assertFalse("This is a parameterized test when it should not be.", getParameterReader()
                 .isParameterizedTest());
@@ -55,6 +57,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
 
     @SmallTest
     @ParameterizedTest()
+    @RetryOnFailure
     public void testEmptyParameterizedTestAnnotation() {
         assertTrue("This is not a parameterized test.", getParameterReader()
                 .isParameterizedTest());
@@ -66,6 +69,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
 
     @SmallTest
     @ParameterizedTest(parameters = {})
+    @RetryOnFailure
     public void testParameterizedTestWithEmptyParameters() {
         assertTrue("This is not a parameterized test.", getParameterReader()
                 .isParameterizedTest());
@@ -77,6 +81,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
 
     @SmallTest
     @ParameterizedTest(parameters = {})
+    @RetryOnFailure
     public void testParameterDoesNotExist() {
         Parameter parameter = getParameterReader().getParameter(MethodParameter.PARAMETER_TAG);
         assertNull("method-parameter should not exist.", parameter);
@@ -84,6 +89,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
 
     @SmallTest
     @ParameterizedTest(parameters = {@Parameter(tag = MethodParameter.PARAMETER_TAG)})
+    @RetryOnFailure
     public void testGetParameter() {
         String expected = "method-parameter";
         String actual = getParameterReader().getParameter(MethodParameter.PARAMETER_TAG).tag();
@@ -92,6 +98,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
 
     @SmallTest
     @ParameterizedTest(parameters = {@Parameter(tag = MethodParameter.PARAMETER_TAG)})
+    @RetryOnFailure
     public void testParameterArgumentDoesNotExist() {
         Parameter.Argument actual = getArgument("arg");
         assertNull("arg should not exist.", actual);
@@ -101,6 +108,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     @ParameterizedTest(parameters = {
             @Parameter(tag = MethodParameter.PARAMETER_TAG,
                     arguments = {@Parameter.Argument(name = "string", stringVar = "value")})})
+    @RetryOnFailure
     public void testMethodParametersWithOneStringValue() {
         String expected = "value";
         String actual = getArgument("string").stringVar();
@@ -111,6 +119,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     @ParameterizedTest(parameters = {
             @Parameter(tag = MethodParameter.PARAMETER_TAG,
                     arguments = {@Parameter.Argument(name = "int", intVar = 0)})})
+    @RetryOnFailure
     public void testMethodParametersWithOneIntValue() {
         int expected = 0;
         int actual = getArgument("int").intVar();
@@ -123,6 +132,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                     arguments = {
                             @Parameter.Argument(name = "intArray", intArray = {5, 10, -6, 0, -1})})
             })
+    @RetryOnFailure
     public void testMethodParametersWithOneIntArrayValue() {
         int[] expected = new int[] {5, 10, -6, 0, -1};
         int[] actual = getArgument("intArray").intArray();
@@ -136,6 +146,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
             @Parameter(tag = MethodParameter.PARAMETER_TAG,
                     arguments = {@Parameter.Argument(name = "stringArray", stringArray = {
                             "apple", "banana", "orange", "melon", "lemon"})})})
+    @RetryOnFailure
     public void testMethodParametersWithOneStringArrayValue() {
         String[] expected = new String[] {"apple", "banana", "orange", "melon", "lemon"};
         String[] actual = getArgument("stringArray").stringArray();
@@ -159,6 +170,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                             @Parameter.Argument(name = "intArray1", intArray = {
                                     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}),
                             @Parameter.Argument(name = "intArray2", intArray = {4})})})
+    @RetryOnFailure
     public void testMethodParametersWithMultipleArguments1() {
         String stringVar = getArgument("string1").stringVar();
         assertEquals(mismatchMessage("string1"), "has vowel", stringVar);
@@ -198,6 +210,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                             @Parameter.Argument(name = "string2", stringVar = "blahblah"),
                             @Parameter.Argument(name = "int1", intVar = 4),
                             @Parameter.Argument(name = "int2", intVar = 0)})})
+    @RetryOnFailure
     public void testMethodParametersWithMultipleArguments2() {
         assertEquals("bar variable should equals \"testvalue\"", "testvalue",
                 getArgument("string1").stringVar());
@@ -219,6 +232,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                                     @Parameter.Argument(name = "string2", stringVar = "blahblah"),
                                     @Parameter.Argument(name = "int1", intVar = 4),
                                     @Parameter.Argument(name = "int2", intVar = 0)})})})
+    @RetryOnFailure
     public void testParameterArgumentsWithParameterSetOfOneTest() {
         assertEquals("bar variable should equals \"testvalue\"", "testvalue",
                 getArgument("string1").stringVar());
@@ -300,6 +314,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                             arguments = {
                                     @Parameter.Argument(name = "input", intVar = 10),
                                     @Parameter.Argument(name = "output", intVar = 34)})})})
+    @RetryOnFailure
     public void testParameterArgumentsWithParameterSetOfMoreThanOneTest() {
         int input = getArgument("input").intVar();
         int expected = getArgument("output").intVar();
@@ -326,6 +341,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                                             intArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}),
                                     @Parameter.Argument(name = "expected",
                                             intArray = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34})})})})
+    @RetryOnFailure
     public void testSingleTestParameterArgumentsWithParameterSet() {
         int[] input = getArgument("input").intArray();
         int[] expected = getArgument("expected").intArray();
@@ -352,6 +368,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
                                     intArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}),
                             @Parameter.Argument(name = "expected",
                                     intArray = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34})})})
+    @RetryOnFailure
     public void testSingleTestParameterArgumentsWithoutParameterSet() {
         int[] input = getArgument("input").intArray();
         int[] expected = getArgument("expected").intArray();
@@ -392,6 +409,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
      * TODO (crbug.com/522503): Merge tests together when this is fixed.
      */
     @SmallTest
+    @RetryOnFailure
     public void testActivityIsNotSignedInOnAppOrFakeOSorGoogleOS() {
         assertFalse("Should not be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -404,6 +422,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     @SmallTest
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG)})
+    @RetryOnFailure
     public void testIsSignedInOnApp() {
         assertTrue("Should not be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -416,6 +435,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     @SmallTest
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
+    @RetryOnFailure
     public void testIsSignedInOnFakeOS() {
         assertFalse("Should not be signed in on app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -451,6 +471,7 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
             @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
+    @RetryOnFailure
     public void testIsSignedInOnFakeOSandApp() {
         assertTrue("Should be signed in on app.",
                 mAddFakeAccountToAppParameter.isSignedIn());

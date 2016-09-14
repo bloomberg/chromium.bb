@@ -9,6 +9,7 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
@@ -36,6 +37,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
     @UiThreadTest
     @MediumTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testUrlDisplay() {
         final String scheme = "https://";
         final String host = "lorem.com";

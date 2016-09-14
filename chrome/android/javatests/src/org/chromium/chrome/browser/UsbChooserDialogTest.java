@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -24,6 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the UsbChooserDialog class.
  */
+@RetryOnFailure
 public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Works like the UsbChooserDialog class, but records calls to native methods instead of
