@@ -40,7 +40,7 @@ void BackgroundSyncClientImpl::Sync(
       ServiceWorkerContextClient::ThreadSpecificInstance();
   if (!client) {
     callback.Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 base::Time::Now().ToDoubleT());
+                 base::Time::Now());
     return;
   }
 

@@ -151,11 +151,11 @@ void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          const ServiceWorkerVersion::StatusCallback& callback,
                          blink::mojom::ServiceWorkerEventStatus status,
-                         double dispatch_event_time) {
+                         base::Time dispatch_event_time) {
   if (!active_version->FinishRequest(
           request_id,
           status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-          base::Time::FromDoubleT(dispatch_event_time))) {
+          dispatch_event_time)) {
     return;
   }
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));

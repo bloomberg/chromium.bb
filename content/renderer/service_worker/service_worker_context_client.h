@@ -66,7 +66,7 @@ class ServiceWorkerContextClient
  public:
   using SyncCallback =
       base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
-                          double /* dispatch_event_time */)>;
+                          base::Time /* dispatch_event_time */)>;
 
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.

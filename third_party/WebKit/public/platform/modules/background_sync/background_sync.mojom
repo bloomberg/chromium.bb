@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/common/common_custom_types.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
 
 enum BackgroundSyncNetworkState {
@@ -48,8 +49,7 @@ interface BackgroundSyncService {
 };
 
 interface BackgroundSyncServiceClient {
-  // TODO(horo): Use mojo.common.mojom.Time for |dispatch_event_time|. It is
-  // using double as the UTC time in seconds, counted from January 1, 1970.
   Sync(string tag, BackgroundSyncEventLastChance last_chance)
-      => (ServiceWorkerEventStatus status, double dispatch_event_time);
+      => (ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
 };
