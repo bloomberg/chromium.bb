@@ -10,19 +10,32 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// Since BackgroundGradientView doesn't do any drawing by default, we
+// create a subclass to call its draw method for us.
+@interface BackgroundGradientSubClassTest : BackgroundGradientView
+@end
+
+@implementation BackgroundGradientSubClassTest
+
+- (void)drawRect:(NSRect)dirtyRect {
+  [self drawBackground:dirtyRect];
+}
+
+@end
+
 namespace {
 
 class BackgroundGradientViewTest : public CocoaTest {
  public:
   BackgroundGradientViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    base::scoped_nsobject<BackgroundGradientView> view(
-        [[BackgroundGradientView alloc] initWithFrame:frame]);
+    base::scoped_nsobject<BackgroundGradientSubClassTest> view(
+        [[BackgroundGradientSubClassTest alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }
 
-  BackgroundGradientView* view_;
+  BackgroundGradientSubClassTest* view_;
 };
 
 TEST_VIEW(BackgroundGradientViewTest, view_)

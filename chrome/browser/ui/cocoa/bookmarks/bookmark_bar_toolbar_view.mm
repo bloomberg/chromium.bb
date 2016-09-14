@@ -24,8 +24,8 @@
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  // -drawRect: calls -drawAsDetachedBubble: or -[super drawRect:], both of
-  // which fill the dirty rect with an opaque color.
+  // -drawRect: calls -drawAsDetachedBubble: or -drawBackground:, both of which
+  // fill the dirty rect with an opaque color.
   return YES;
 }
 
@@ -41,7 +41,7 @@
       [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
     [self drawAsDetachedBubble:dirtyRect];
   } else {
-    [super drawRect:dirtyRect];
+    [self drawBackground:dirtyRect];
   }
 }
 
@@ -70,7 +70,7 @@
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextSetAlpha(cgContext, 1 - morph);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    [super drawRect:dirtyRect];
+    [self drawBackground:dirtyRect];
     CGContextEndTransparencyLayer(cgContext);
   }
 

@@ -38,7 +38,7 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  [super drawRect:dirtyRect];
+  [self drawBackground:dirtyRect];
 
   // Draw the top highlight
   NSRect borderRect, contentRect;
