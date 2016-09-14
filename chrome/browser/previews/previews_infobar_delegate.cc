@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"
@@ -19,7 +20,10 @@ PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {}
 // static
 void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
                                      PreviewsInfoBarType infobar_type) {
-  // TODO(megjablon): Check that the infobar was not already shown.
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents);
+  if (infobar_tab_helper->displayed_preview_infobar())
+    return;
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
@@ -35,6 +39,8 @@ void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
             web_contents->GetBrowserContext());
     data_reduction_proxy_settings->IncrementLoFiUIShown();
   }
+
+  infobar_tab_helper->set_displayed_preview_infobar(true);
 }
 
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
