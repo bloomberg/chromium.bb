@@ -2427,4 +2427,99 @@ bool WebGLImageConversion::packPixels(
     return true;
 }
 
+void WebGLImageConversion::unpackPixels(const uint16_t* sourceData,
+    DataFormat sourceDataFormat,
+    unsigned pixelsPerRow,
+    uint8_t* destinationData )
+{
+    switch (sourceDataFormat) {
+    case DataFormatRGBA4444:
+        {
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA4444>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            unpack<WebGLImageConversion::DataFormatRGBA4444>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    case DataFormatRGBA5551:
+        {
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA5551>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            unpack<WebGLImageConversion::DataFormatRGBA5551>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    case DataFormatBGRA8:
+        {
+            const uint8_t* psrc = (const uint8_t*)sourceData;
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatBGRA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(psrc);
+            unpack<WebGLImageConversion::DataFormatBGRA8>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void WebGLImageConversion::packPixels(const uint8_t* sourceData,
+    DataFormat sourceDataFormat,
+    unsigned pixelsPerRow,
+    uint8_t* destinationData )
+{
+    switch (sourceDataFormat) {
+    case DataFormatRA8:
+        {
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            pack<WebGLImageConversion::DataFormatRA8, WebGLImageConversion::AlphaDoUnmultiply>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    case DataFormatR8:
+        {
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::AlphaDoUnmultiply>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    case DataFormatRGBA8:
+        {
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoUnmultiply>(srcRowStart, destinationData, pixelsPerRow);
+        }
+        break;
+    case DataFormatRGBA4444:
+        {
+            uint16_t* pdst = (uint16_t*)destinationData;
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA4444>::Type DstType;
+            DstType* dstRowStart = static_cast<DstType*>(pdst);
+            pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart, pixelsPerRow);
+        }
+        break;
+    case DataFormatRGBA5551:
+        {
+            uint16_t* pdst = (uint16_t*)destinationData;
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA5551>::Type DstType;
+            DstType* dstRowStart = static_cast<DstType*>(pdst);
+            pack<WebGLImageConversion::DataFormatRGBA5551, WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart, pixelsPerRow);
+        }
+        break;
+    case DataFormatRGB565:
+        {
+            uint16_t* pdst = (uint16_t*)destinationData;
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
+            const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+            typedef typename DataTypeForFormat<WebGLImageConversion::DataFormatRGB565>::Type DstType;
+            DstType* dstRowStart = static_cast<DstType*>(pdst);
+            pack<WebGLImageConversion::DataFormatRGB565, WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart, pixelsPerRow);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 } // namespace blink

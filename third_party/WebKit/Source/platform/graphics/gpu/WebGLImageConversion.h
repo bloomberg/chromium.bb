@@ -205,6 +205,7 @@ public:
     // End GraphicsContext3DImagePacking.cpp functions
 
 private:
+    friend class WebGLImageConversionTest;
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
     // data into the specified OpenGL destination format and type.
     // A sourceUnpackAlignment of zero indicates that the source
@@ -212,6 +213,8 @@ private:
     // Destination data will have no gaps between rows.
     // Implemented in GraphicsContext3DImagePacking.cpp
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
+    static void unpackPixels(const uint16_t* sourceData, DataFormat sourceDataFormat, unsigned pixelsPerRow, uint8_t* destinationData);
+    static void packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned pixelsPerRow, uint8_t* destinationData);
 };
 
 } // namespace blink
