@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 
+#include <memory>
+
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +23,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension_urls.h"
@@ -33,6 +39,54 @@
 namespace extensions {
 
 namespace {
+
+class ExtensionWebUiTimer : public content::WebContentsObserver {
+ public:
+  explicit ExtensionWebUiTimer(content::WebContents* web_contents, bool is_md)
+      : content::WebContentsObserver(web_contents), is_md_(is_md) {}
+  ~ExtensionWebUiTimer() override {}
+
+  void DidStartProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) override {
+    timer_.reset(new base::ElapsedTimer());
+  }
+
+  void DocumentLoadedInFrame(
+      content::RenderFrameHost* render_frame_host) override {
+    if (render_frame_host != web_contents()->GetMainFrame())
+      return;
+    if (is_md_) {
+      UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
+                          timer_->Elapsed());
+    } else {
+      UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.Uber",
+                          timer_->Elapsed());
+    }
+  }
+
+  void DocumentOnLoadCompletedInMainFrame() override {
+    if (is_md_) {
+      UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
+                          timer_->Elapsed());
+    } else {
+      UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.Uber",
+                          timer_->Elapsed());
+    }
+  }
+
+  void WebContentsDestroyed() override { delete this; }
+
+ private:
+  // Whether this is the MD version of the chrome://extensions page.
+  bool is_md_;
+
+  std::unique_ptr<base::ElapsedTimer> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUiTimer);
+};
 
 content::WebUIDataSource* CreateMdExtensionsSource() {
   content::WebUIDataSource* source =
@@ -216,7 +270,10 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = nullptr;
 
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
+  bool is_md =
+      base::FeatureList::IsEnabled(features::kMaterialDesignExtensions);
+
+  if (is_md) {
     source = CreateMdExtensionsSource();
     InstallExtensionHandler* install_extension_handler =
         new InstallExtensionHandler();
@@ -256,6 +313,8 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   }
 
   content::WebUIDataSource::Add(profile, source);
+  // Handles its own lifetime.
+  new ExtensionWebUiTimer(web_ui->GetWebContents(), is_md);
 }
 
 ExtensionsUI::~ExtensionsUI() {}

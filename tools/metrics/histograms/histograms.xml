@@ -16938,6 +16938,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.WebUi.DocumentLoadedInMainFrameTime" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of time between starting the provisional load and fully loading
+    the document in the main frame of the chrome://extensions page. This
+    corresponds to the WebContentsObserver::DocumentLoadedInFrame method.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.WebUi.LoadCompletedInMainFrame" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The amount of time between starting the provisional load and having
+    completed the onload handler in the main frame of the chrome://extensions
+    page. This corresponds to the
+    WebContentsObserver::DocumentOnLoadCompletedInMainFrame method.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionService.AddVerified" enum="BooleanSuccess">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -101248,6 +101267,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Settings" label="Settings backing stores"/>
   <suffix name="State" label="State backing stores"/>
   <affected-histogram name="Extensions.Database.Restore"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionWebUiPageType" separator=".">
+  <suffix name="MD" label="The Material Design chrome://extensions page."/>
+  <suffix name="Uber" label="The Uber chrome://extensions page."/>
+  <affected-histogram name="Extensions.WebUi.DocumentLoadedInMainFrameTime"/>
+  <affected-histogram name="Extensions.WebUi.LoadCompletedInMainFrame"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExternalExtensionEvent" separator="">
