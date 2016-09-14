@@ -149,6 +149,19 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
       info->SetString("status", "REDUNDANT");
       break;
   }
+
+  switch (version.fetch_handler_existence) {
+    case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
+      info->SetString("fetch_handler_existence", "UNKNOWN");
+      break;
+    case ServiceWorkerVersion::FetchHandlerExistence::EXISTS:
+      info->SetString("fetch_handler_existence", "EXISTS");
+      break;
+    case ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST:
+      info->SetString("fetch_handler_existence", "DOES_NOT_EXIST");
+      break;
+  }
+
   info->SetString("script_url", version.script_url.spec());
   info->SetString("version_id", base::Int64ToString(version.version_id));
   info->SetInteger("process_id",

@@ -31,19 +31,22 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   };
 
   ServiceWorkerVersionInfo();
-  ServiceWorkerVersionInfo(EmbeddedWorkerStatus running_status,
-                           ServiceWorkerVersion::Status status,
-                           const GURL& script_url,
-                           int64_t registration_id,
-                           int64_t version_id,
-                           int process_id,
-                           int thread_id,
-                           int devtools_agent_route_id);
+  ServiceWorkerVersionInfo(
+      EmbeddedWorkerStatus running_status,
+      ServiceWorkerVersion::Status status,
+      ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence,
+      const GURL& script_url,
+      int64_t registration_id,
+      int64_t version_id,
+      int process_id,
+      int thread_id,
+      int devtools_agent_route_id);
   ServiceWorkerVersionInfo(const ServiceWorkerVersionInfo& other);
   ~ServiceWorkerVersionInfo();
 
   EmbeddedWorkerStatus running_status;
   ServiceWorkerVersion::Status status;
+  ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence;
   GURL script_url;
   int64_t registration_id;
   int64_t version_id;

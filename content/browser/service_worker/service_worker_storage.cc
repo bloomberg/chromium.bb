@@ -1068,11 +1068,19 @@ void ServiceWorkerStorage::DidGetRegistrationsInfos(
       info.active_version.script_url = registration_data.script;
       info.active_version.version_id = registration_data.version_id;
       info.active_version.registration_id = registration_data.registration_id;
+      info.active_version.fetch_handler_existence =
+          registration_data.has_fetch_handler
+              ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+              : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST;
     } else {
       info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
       info.waiting_version.script_url = registration_data.script;
       info.waiting_version.version_id = registration_data.version_id;
       info.waiting_version.registration_id = registration_data.registration_id;
+      info.waiting_version.fetch_handler_existence =
+          registration_data.has_fetch_handler
+              ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+              : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST;
     }
     infos.push_back(info);
   }

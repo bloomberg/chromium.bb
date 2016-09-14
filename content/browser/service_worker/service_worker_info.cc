@@ -28,6 +28,8 @@ ServiceWorkerVersionInfo::ClientInfo::~ClientInfo() {
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
     : running_status(EmbeddedWorkerStatus::STOPPED),
       status(ServiceWorkerVersion::NEW),
+      fetch_handler_existence(
+          ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN),
       registration_id(kInvalidServiceWorkerRegistrationId),
       version_id(kInvalidServiceWorkerVersionId),
       process_id(ChildProcessHost::kInvalidUniqueID),
@@ -37,6 +39,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     EmbeddedWorkerStatus running_status,
     ServiceWorkerVersion::Status status,
+    ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence,
     const GURL& script_url,
     int64_t registration_id,
     int64_t version_id,
@@ -45,6 +48,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     int devtools_agent_route_id)
     : running_status(running_status),
       status(status),
+      fetch_handler_existence(fetch_handler_existence),
       script_url(script_url),
       registration_id(registration_id),
       version_id(version_id),
