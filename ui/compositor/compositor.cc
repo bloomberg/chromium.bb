@@ -267,9 +267,10 @@ void Compositor::SetOutputSurface(
     std::unique_ptr<cc::OutputSurface> output_surface) {
   output_surface_requested_ = false;
   host_->SetOutputSurface(std::move(output_surface));
-  // Visibility is reset when the output surface is lost, so update it to match
-  // the Compositor's.
+  // Display properties are reset when the output surface is lost, so update it
+  // to match the Compositor's.
   context_factory_->SetDisplayVisible(this, host_->IsVisible());
+  context_factory_->SetDisplayColorSpace(this, color_space_);
 }
 
 void Compositor::ScheduleDraw() {
@@ -339,7 +340,10 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
-  context_factory_->SetDisplayColorSpace(this, color_space);
+  color_space_ = color_space;
+  // Color space is reset when the output surface is lost, so this must also be
+  // updated then.
+  context_factory_->SetDisplayColorSpace(this, color_space_);
 }
 
 void Compositor::SetBackgroundColor(SkColor color) {

@@ -169,7 +169,6 @@ struct GpuProcessTransportFactory::PerCompositorData {
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<cc::Display> display;
   bool output_is_secure = false;
-  gfx::ColorSpace color_space;
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
@@ -566,7 +565,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 shared_worker_context_provider_));
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
-  data->display->SetColorSpace(data->color_space);
   compositor->SetOutputSurface(std::move(delegated_output_surface));
 }
 
@@ -690,9 +688,10 @@ void GpuProcessTransportFactory::SetDisplayColorSpace(
     return;
   PerCompositorData* data = it->second.get();
   DCHECK(data);
-  data->color_space = color_space;
+  // The compositor will always SetColorSpace on the Display once it is set up,
+  // so do nothing if |display| is null.
   if (data->display)
-    data->display->SetColorSpace(data->color_space);
+    data->display->SetColorSpace(color_space);
 }
 
 void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(

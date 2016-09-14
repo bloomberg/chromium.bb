@@ -432,6 +432,8 @@ class COMPOSITOR_EXPORT Compositor
   LayerAnimatorCollection layer_animator_collection_;
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
 
+  gfx::ColorSpace color_space_;
+
   base::WeakPtrFactory<Compositor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
