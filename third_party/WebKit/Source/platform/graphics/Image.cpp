@@ -273,6 +273,9 @@ bool Image::applyShader(SkPaint& paint, const SkMatrix& localMatrix)
     paint.setShader(
         image->makeShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
+    // Animation is normally refreshed in draw() impls, which we don't call when painting via shaders.
+    startAnimation();
+
     return true;
 }
 
