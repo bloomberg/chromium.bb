@@ -438,7 +438,7 @@
   },
   "modules_unittests": {
     "label": "//webrtc/modules:modules_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
