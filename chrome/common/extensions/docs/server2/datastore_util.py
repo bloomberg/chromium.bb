@@ -33,14 +33,11 @@ _MAX_REQUEST_SIZE = 5*1024*1024
 
 
 def _CreateEntity(name, value):
-  entity = datastore.Entity()
-  path = entity.key.path_element.add()
+  entity = datastore.Entity(exclude_from_indexes=[_VALUE_PROPERTY_NAME])
+  path = entity.key.path.add()
   path.kind = _PERSISTENT_OBJECT_KIND
   path.name = name
-  pickled_value_property = entity.property.add()
-  pickled_value_property.name = _VALUE_PROPERTY_NAME
-  pickled_value_property.value.indexed = False
-  pickled_value_property.value.blob_value = value
+  entity.update({_VALUE_PROPERTY_NAME: value})
   return entity
 
 
@@ -50,7 +47,7 @@ def _CreateBatches(data):
   This is a generator emitting lists of entities.
   '''
   def get_size(entity):
-    return len(entity.property[0].value.blob_value)
+    return len(entity.properties[_VALUE_PROPERTY_NAME].value.blob_value)
 
   entities = [_CreateEntity(name, value) for name, value in data.iteritems()]
   batch_start = 0
@@ -129,7 +126,7 @@ def PushData(data, original_data={}):
   for batch, n, total in _CreateBatches(data):
     commit_request = datastore.CommitRequest()
     commit_request.mode = datastore.CommitRequest.NON_TRANSACTIONAL
-    commit_request.mutation.upsert.extend(list(batch))
+    commit_request.mutations.upsert.extend(list(batch))
 
     logging.info('Committing %s/%s entities...' % (n, total))
     datastore.commit(commit_request)
