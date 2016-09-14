@@ -740,6 +740,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_APP_WINDOW_CONTROLS_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableAppWindowControls)},
 #endif
+    {"enable-history-entry-requires-user-gesture",
+     IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_NAME,
+     IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kHistoryEntryRequiresUserGesture)},
     {"disable-hyperlink-auditing", IDS_FLAGS_HYPERLINK_AUDITING_NAME,
      IDS_FLAGS_HYPERLINK_AUDITING_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kNoPings)},

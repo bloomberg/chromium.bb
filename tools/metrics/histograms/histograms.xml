@@ -86353,6 +86353,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1515196403" label="fast-user-switching"/>
+  <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1612446645" label="enable-weak-memorycache"/>

@@ -374,6 +374,9 @@ void FrameLoader::clearProvisionalHistoryItem()
 
 void FrameLoader::setHistoryItemStateForCommit(FrameLoadType loadType, HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
+    if (m_frame->settings()->historyEntryRequiresUserGesture() && historyCommitType == StandardCommit)
+        UserGestureIndicator::clearProcessedUserGestureSinceLoad();
+
     HistoryItem* oldItem = m_currentItem;
     if (isBackForwardLoadType(loadType) && m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
@@ -725,6 +728,8 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     HistoryCommitType historyCommitType = loadTypeToCommitType(type);
     if (!m_currentItem)
         historyCommitType = HistoryInertCommit;
+    if (m_frame->settings()->historyEntryRequiresUserGesture() && !UserGestureIndicator::processedUserGestureSinceLoad() && initiatingDocument)
+        historyCommitType = HistoryInertCommit;
 
     setHistoryItemStateForCommit(type, historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi ? HistoryNavigationType::HistoryApi : HistoryNavigationType::Fragment);
     if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
@@ -838,6 +843,10 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
     if (request.substituteData().failingURL() == m_documentLoader->urlForHistory() && m_loadType == FrameLoadTypeReload)
         return FrameLoadTypeReload;
+
+    if (m_frame->settings()->historyEntryRequiresUserGesture() && !UserGestureIndicator::processedUserGestureSinceLoad() && request.originDocument())
+        return FrameLoadTypeReplaceCurrentItem;
+
     return FrameLoadTypeStandard;
 }
 

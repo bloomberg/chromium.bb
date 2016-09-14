@@ -174,6 +174,7 @@ CONTENT_EXPORT extern const char kGpuProcess[];
 CONTENT_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 CONTENT_EXPORT extern const char kGpuSandboxFailuresFatal[];
 CONTENT_EXPORT extern const char kGpuStartupDialog[];
+CONTENT_EXPORT extern const char kHistoryEntryRequiresUserGesture[];
 CONTENT_EXPORT extern const char kHostResolverRules[];
 CONTENT_EXPORT extern const char kIgnoreCertificateErrors[];
 CONTENT_EXPORT extern const char kIgnoreGpuBlacklist[];

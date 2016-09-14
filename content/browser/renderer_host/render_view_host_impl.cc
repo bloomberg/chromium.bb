@@ -475,6 +475,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.pinch_overlay_scrollbar_thickness = 10;
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
+  prefs.history_entry_requires_user_gesture =
+      command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
+
 #if defined(OS_ANDROID)
   // On Android, user gestures are normally required, unless that requirement
   // is disabled with a command-line switch or the equivalent field trial is

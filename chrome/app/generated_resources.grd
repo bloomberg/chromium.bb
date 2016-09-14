@@ -5492,6 +5492,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_DESCRIPTION" desc="Description of the 'User consent for extension scripts' lab">
         Require user consent for an extension running a script on the page, if the extension requested permission to run on all urls.
       </message>
+      <message name="IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_NAME" desc="Name of the flag that requires a user gesture before script can add a histroy entry to the back/forward list.">
+        New history entries require a user gesture.
+      </message>
+      <message name="IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_DESCRIPTION" desc="Description of the flag that requires that a page process a user action (e.g., a mouse click) before script can add an entry to the tab's back/forward list.">
+        Require a user gesture to add a history entry.
+      </message>
       <message name="IDS_FLAGS_HYPERLINK_AUDITING_NAME" desc="Name of the 'Disable hyperlink auditing' lab.">
         Hyperlink auditing
       </message>

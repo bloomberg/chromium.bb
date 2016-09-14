@@ -977,6 +977,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setOfflineWebApplicationCacheEnabled(
       prefs.application_cache_enabled);
   settings->setCaretBrowsingEnabled(prefs.caret_browsing_enabled);
+  settings->setHistoryEntryRequiresUserGesture(
+      prefs.history_entry_requires_user_gesture);
   settings->setHyperlinkAuditingEnabled(prefs.hyperlink_auditing_enabled);
   settings->setCookieEnabled(prefs.cookie_enabled);
   settings->setNavigateOnDragDrop(prefs.navigate_on_drag_drop);

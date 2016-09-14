@@ -562,6 +562,11 @@ void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)
     m_settings->setMinimumAccelerated2dCanvasSize(numPixels);
 }
 
+void WebSettingsImpl::setHistoryEntryRequiresUserGesture(bool enabled)
+{
+    m_settings->setHistoryEntryRequiresUserGesture(enabled);
+}
+
 void WebSettingsImpl::setHyperlinkAuditingEnabled(bool enabled)
 {
     m_settings->setHyperlinkAuditingEnabled(enabled);

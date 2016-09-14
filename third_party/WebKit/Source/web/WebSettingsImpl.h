@@ -99,6 +99,7 @@ public:
     void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setForceZeroLayoutHeight(bool) override;
     void setFullscreenSupported(bool) override;
+    void setHistoryEntryRequiresUserGesture(bool) override;
     void setHyperlinkAuditingEnabled(bool) override;
     void setIgnoreMainFrameOverflowHiddenQuirk(bool) override;
     void setImageAnimationPolicy(ImageAnimationPolicy) override;

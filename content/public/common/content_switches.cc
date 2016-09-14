@@ -578,6 +578,11 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 // Ignores certificate-related errors.
 const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 
+// Don't allow content to arbitrarily append to the back/forward list.
+// The page must prcoess a user gesture before an entry can be added.
+const char kHistoryEntryRequiresUserGesture[] =
+    "history-entry-requires-user-gesture";
+
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
