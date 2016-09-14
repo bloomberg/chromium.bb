@@ -2888,6 +2888,12 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   // Case 2: An animation that's removed before it finishes.
   int animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 2, 2);
+  int animation2_id =
+      AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 2, 1);
+  animations->GetAnimationById(animation2_id)
+      ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
+  animations->GetAnimationById(animation2_id)
+      ->set_fill_mode(Animation::FillMode::NONE);
   EXPECT_TRUE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
@@ -2906,6 +2912,9 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
+  // animation1 is in effect currently and animation2 isn't. As the element has
+  // atleast one animation that's in effect currently, client should be notified
+  // that the transform is currently animating.
   EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 
@@ -2917,6 +2926,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   events->events_.clear();
 
   animations->RemoveAnimation(animation_id);
+  animations->RemoveAnimation(animation2_id);
   EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(

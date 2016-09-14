@@ -635,11 +635,11 @@ void ElementAnimations::UpdateClientAnimationStateInternal(
             animation->affects_active_elements();
         animation_state->potentially_animating_for_pending_elements |=
             animation->affects_pending_elements();
-        animation_state->currently_running_for_active_elements =
-            animation_state->potentially_animating_for_active_elements &&
+        animation_state->currently_running_for_active_elements |=
+            animation->affects_active_elements() &&
             animation->InEffect(last_tick_time_);
-        animation_state->currently_running_for_pending_elements =
-            animation_state->potentially_animating_for_pending_elements &&
+        animation_state->currently_running_for_pending_elements |=
+            animation->affects_pending_elements() &&
             animation->InEffect(last_tick_time_);
       }
     }
