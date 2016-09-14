@@ -672,8 +672,10 @@ void RTCVideoDecoder::ResetInternal() {
     vda_->Reset();
   } else {
     CreateVDA(vda_codec_profile_, nullptr);
-    if (vda_)
+    if (vda_) {
+      base::AutoLock auto_lock(lock_);
       state_ = INITIALIZED;
+    }
   }
 }
 
