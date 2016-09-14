@@ -18,6 +18,18 @@ class ListValue;
 
 class PhysicalWebProvider : public AutocompleteProvider {
  public:
+  // The maximum number of match results to provide. If the number of nearby
+  // URLs exceeds this limit, an overflow item is created. Tapping the overflow
+  // item navigates to a page with the full list of nearby URLs. The overflow
+  // item is counted as a match result for the purposes of the match limit.
+  //
+  // ex: With kPhysicalWebMaxMatches == 1, there should be at most one
+  // suggestion  created by this provider. If there is a single nearby URL, then
+  // the suggestion will be for that URL. If there are multiple nearby URLs, the
+  // suggestion will be the overflow item which navigates to the WebUI when
+  // tapped.
+  static const size_t kPhysicalWebMaxMatches;
+
   static PhysicalWebProvider* Create(AutocompleteProviderClient* client,
                                      HistoryURLProvider* history_url_provider);
 
@@ -38,9 +50,13 @@ class PhysicalWebProvider : public AutocompleteProvider {
 
   // Adds an overflow match item to |matches_| with a relevance score equal to
   // |relevance| and a label indicating there are |additional_url_count| more
-  // nearby URLs. Selecting the overflow item navigates to the Physical Web
-  // WebUI, which displays the full list of nearby URLs.
-  void AppendOverflowItem(int additional_url_count, int relevance);
+  // nearby URLs. The page |title| of one of the additional nearby URLs will be
+  // included in the label, truncating if necessary. Selecting the overflow item
+  // navigates to the Physical Web WebUI, which displays the full list of nearby
+  // URLs.
+  void AppendOverflowItem(int additional_url_count,
+                          int relevance,
+                          const base::string16& title);
 
   AutocompleteProviderClient* client_;
 

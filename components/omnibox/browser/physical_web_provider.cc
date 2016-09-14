@@ -14,21 +14,10 @@
 #include "components/url_formatter/url_formatter.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 namespace {
-
-// The maximum number of match results to provide. If the number of nearby URLs
-// exceeds this limit, an overflow item is created. Tapping the overflow item
-// navigates to a page with the full list of nearby URLs. The overflow item is
-// counted as a match result for the purposes of the match limit.
-//
-// ex: With kPhysicalWebMaxMatches == 1, there should be at most one suggestion
-// created by this provider. If there is a single nearby URL, then the
-// suggestion will be for that URL. If there are multiple nearby URLs, the
-// suggestion will be the overflow item which navigates to the WebUI when
-// tapped.
-static const size_t kPhysicalWebMaxMatches = 1;
 
 // Relevance score of the first Physical Web URL autocomplete match. This score
 // is intended to be between ClipboardURLProvider and ZeroSuggestProvider.
@@ -36,7 +25,15 @@ static const size_t kPhysicalWebMaxMatches = 1;
 // in the metadata list.
 static const int kPhysicalWebUrlBaseRelevance = 700;
 
+// The maximum length of the page title's part of the overflow item's
+// description. Longer titles will be truncated to this length. In a normal
+// Physical Web match item (non-overflow item) we allow the omnibox display to
+// truncate the title instead.
+static const size_t kMaxTitleLengthInOverflow = 15;
 }
+
+// static
+const size_t PhysicalWebProvider::kPhysicalWebMaxMatches = 1;
 
 // static
 PhysicalWebProvider* PhysicalWebProvider::Create(
@@ -112,6 +109,8 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
         !metadata_item->GetString("title", &title_string)) {
       continue;
     }
+    base::string16 title =
+        AutocompleteMatch::SanitizeString(base::UTF8ToUTF16(title_string));
 
     // Add match items with decreasing relevance to preserve the ordering in
     // the metadata list.
@@ -122,12 +121,11 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
     const size_t remaining_slots = kPhysicalWebMaxMatches - used_slots;
     const size_t remaining_metadata = metadata_count - i;
     if ((remaining_slots == 1) && (remaining_metadata > remaining_slots)) {
-      AppendOverflowItem(remaining_metadata, relevance);
+      AppendOverflowItem(remaining_metadata, relevance, title);
       return;
     }
 
     GURL url(url_string);
-    base::string16 title = base::UTF8ToUTF16(title_string);
 
     AutocompleteMatch match(this, relevance, false,
         AutocompleteMatchType::PHYSICAL_WEB);
@@ -145,7 +143,7 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
             url, match.contents, client_->GetSchemeClassifier());
 
-    match.description = AutocompleteMatch::SanitizeString(title);
+    match.description = title;
     match.description_class.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
 
@@ -155,7 +153,8 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
 }
 
 void PhysicalWebProvider::AppendOverflowItem(int additional_url_count,
-                                             int relevance) {
+                                             int relevance,
+                                             const base::string16& title) {
   std::string url_string = "chrome://physical-web";
   GURL url(url_string);
 
@@ -163,19 +162,25 @@ void PhysicalWebProvider::AppendOverflowItem(int additional_url_count,
       AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW);
   match.destination_url = url;
 
-  // Don't omit the chrome:// scheme when displaying the WebUI URL.
-  match.contents = url_formatter::FormatUrl(url,
-      url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::SPACES,
-      nullptr, nullptr, nullptr);
+  base::string16 contents_title = gfx::TruncateString(
+      title, kMaxTitleLengthInOverflow, gfx::CHARACTER_BREAK);
+  if (contents_title.empty()) {
+    match.contents = l10n_util::GetPluralStringFUTF16(
+        IDS_PHYSICAL_WEB_OVERFLOW_EMPTY_TITLE, additional_url_count);
+  } else {
+    base::string16 contents_suffix = l10n_util::GetPluralStringFUTF16(
+        IDS_PHYSICAL_WEB_OVERFLOW, additional_url_count - 1);
+    match.contents = contents_title + base::UTF8ToUTF16(" ") + contents_suffix;
+  }
   match.contents_class.push_back(
-      ACMatchClassification(0, ACMatchClassification::URL));
+      ACMatchClassification(0, ACMatchClassification::DIM));
 
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           url, match.contents, client_->GetSchemeClassifier());
 
-  match.description = l10n_util::GetPluralStringFUTF16(
-      IDS_PHYSICAL_WEB_OVERFLOW, additional_url_count);
+  match.description =
+      l10n_util::GetStringUTF16(IDS_PHYSICAL_WEB_OVERFLOW_DESCRIPTION);
   match.description_class.push_back(
       ACMatchClassification(0, ACMatchClassification::NONE));
 
