@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -203,6 +204,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
+    @DisabledTest(message = "https://crbug.com/646097")
     @SmallTest
     public void testAddOrUpdateItemAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
