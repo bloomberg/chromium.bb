@@ -88,7 +88,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype-android
   # and whatever else without interference from each other.
-  'freetype_android_revision': '4d3f7ca8cedbddad40b9e93a82926618e3fb4265',
+  'freetype_android_revision': 'c38be52bf8de3b1699d74932b849bf150265819e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
