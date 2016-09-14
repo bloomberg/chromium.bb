@@ -88,13 +88,13 @@ function test()
 
         function testViewportMutationsShouldPreserveStickToBottom(next)
         {
-            viewport._contentElement.children[1].innerText = "More than 2 lines: foo\n\nbar";
+            viewport._contentElement.lastChild.innerText = "More than 2 lines: foo\n\nbar";
             dumpAndContinue(onMessagesDumped);
 
             function onMessagesDumped()
             {
                 viewport.setStickToBottom(false);
-                viewport._contentElement.children[1].innerText = "More than 3 lines: foo\n\n\nbar";
+                viewport._contentElement.lastChild.innerText = "More than 3 lines: foo\n\n\nbar";
                 dumpAndContinue(next);
             }
         },
