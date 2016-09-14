@@ -124,15 +124,18 @@ bool ImageFrameGenerator::decodeAndScale(SegmentReader* data, bool allDataReceiv
 
     TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "frame index", static_cast<int>(index));
 
-    RefPtr<ExternalMemoryAllocator> externalAllocator = adoptRef(new ExternalMemoryAllocator(info, pixels, rowBytes));
-
     // This implementation does not support scaling so check the requested size.
     SkISize scaledSize = SkISize::Make(info.width(), info.height());
     ASSERT(m_fullSize == scaledSize);
 
-    // TODO (scroggo): Convert tryToResumeDecode() and decode() to take a
-    // sk_sp<SkBitmap::Allocator> instead of a bare pointer.
-    SkBitmap bitmap = tryToResumeDecode(data, allDataReceived, index, scaledSize, externalAllocator.get());
+    // It is okay to allocate ref-counted ExternalMemoryAllocator on the stack,
+    // because 1) it contains references to memory that will be invalid after
+    // returning (i.e. a pointer to |pixels|) and therefore 2) should not live
+    // longer than the call to the current method.
+    ExternalMemoryAllocator externalAllocator(info, pixels, rowBytes);
+    SkBitmap bitmap = tryToResumeDecode(data, allDataReceived, index, scaledSize, &externalAllocator);
+    DCHECK(externalAllocator.unique()); // Verify we have the only ref-count.
+
     if (bitmap.isNull())
         return false;
 
