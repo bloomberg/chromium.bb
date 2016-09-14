@@ -482,7 +482,7 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
       base::TimeDelta::FromDays(
           ExtensionWelcomeNotification::kRequestedShowTimeDays);
 
-  EXPECT_EQ(task_runner()->GetPendingTasks().size(), 1U);
+  EXPECT_EQ(task_runner()->NumPendingTasks(), 1U);
   EXPECT_EQ(task_runner()->NextPendingTaskDelay(), requested_show_time);
 
   EXPECT_EQ(message_center()->add_notification_calls(), 1);

@@ -112,7 +112,7 @@ TEST_F(CancelableTaskTrackerTest, CancelPostedTask) {
       test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE));
   EXPECT_NE(CancelableTaskTracker::kBadTaskId, task_id);
 
-  EXPECT_EQ(1U, test_task_runner->GetPendingTasks().size());
+  EXPECT_EQ(1U, test_task_runner->NumPendingTasks());
 
   task_tracker_.TryCancel(task_id);
 
