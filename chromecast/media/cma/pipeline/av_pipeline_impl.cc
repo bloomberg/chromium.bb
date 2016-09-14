@@ -277,6 +277,10 @@ void AvPipelineImpl::OnBufferDecrypted(
     LOG(WARNING) << "Can't decrypt with decrypt_context";
     buffer->set_decrypt_context(std::move(decrypt_context));
   }
+
+  if (!enable_feeding_)
+    return;
+
   pending_buffer_ = buffer;
   PushPendingBuffer();
 }
