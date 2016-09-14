@@ -11,13 +11,13 @@
 
 // A custom view that draws a 'standard' background gradient.
 // Base class for other Chromium views.
-@interface BackgroundGradientView : NSView<ThemedWindowDrawing> {
- @private
-  BOOL showsDivider_;
-}
+@interface BackgroundGradientView : NSView<ThemedWindowDrawing>
 
-// Controls whether the bar draws a dividing line at the bottom.
+// Controls whether the bar draws a dividing line.
 @property(nonatomic, assign) BOOL showsDivider;
+
+// Controls where the bar draws a dividing line.
+@property(nonatomic, assign) NSRectEdge dividerEdge;
 
 // The color used for the bottom stroke. Public so subclasses can use.
 - (NSColor*)strokeColor;

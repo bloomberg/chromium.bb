@@ -12,14 +12,10 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 
-@interface BackgroundGradientView (Private)
-- (void)commonInit;
-- (NSColor*)backgroundImageColor;
-@end
-
 @implementation BackgroundGradientView
 
 @synthesize showsDivider = showsDivider_;
+@synthesize dividerEdge = dividerEdge_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -37,12 +33,20 @@
 
 - (void)commonInit {
   showsDivider_ = YES;
+  dividerEdge_ = NSMinYEdge;
 }
 
 - (void)setShowsDivider:(BOOL)show {
   if (showsDivider_ == show)
     return;
   showsDivider_ = show;
+  [self setNeedsDisplay:YES];
+}
+
+- (void)setDividerEdge:(NSRectEdge)dividerEdge {
+  if (dividerEdge_ == dividerEdge)
+    return;
+  dividerEdge_ = dividerEdge;
   [self setNeedsDisplay:YES];
 }
 
@@ -68,10 +72,10 @@
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 
   if (showsDivider_) {
-    // Draw bottom stroke
+    // Draw stroke
     NSRect borderRect, contentRect;
     NSDivideRect([self bounds], &borderRect, &contentRect, [self cr_lineWidth],
-                 NSMinYEdge);
+                 dividerEdge_);
     if (NSIntersectsRect(borderRect, dirtyRect)) {
       [[self strokeColor] set];
       NSRectFillUsingOperation(NSIntersectionRect(borderRect, dirtyRect),
