@@ -953,12 +953,11 @@ bool LayoutGrid::isOrthogonalChild(const LayoutBox& child) const
 LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, GridSizingData& sizingData) const
 {
     GridTrackSizingDirection childBlockDirection = flowAwareDirectionForChild(child, ForRows);
-    SubtreeLayoutScope layoutScope(child);
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the block-axis override size to -1 (no possible resolution).
     if (shouldClearOverrideContainingBlockContentSizeForChild(child, ForRows)) {
         setOverrideContainingBlockContentSizeForChild(child, childBlockDirection, LayoutUnit(-1));
-        layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
+        child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     }
 
     // We need to clear the stretched height to properly compute logical height during layout.
@@ -1029,7 +1028,6 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirec
         return child.logicalHeight() + child.marginLogicalHeight();
     }
 
-    SubtreeLayoutScope layouter(child);
     if (updateOverrideContainingBlockContentSizeForChild(child, childInlineDirection, sizingData))
         child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
@@ -1059,7 +1057,6 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child, GridTrackSizingDirec
         return child.logicalHeight() + child.marginLogicalHeight();
     }
 
-    SubtreeLayoutScope layouter(child);
     if (updateOverrideContainingBlockContentSizeForChild(child, childInlineDirection, sizingData))
         child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
     return logicalHeightForChild(child, sizingData);
@@ -1913,9 +1910,8 @@ void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
         LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChildIncludingAlignmentOffsets(*child, ForColumns, sizingData);
         LayoutUnit overrideContainingBlockContentLogicalHeight = gridAreaBreadthForChildIncludingAlignmentOffsets(*child, ForRows, sizingData);
 
-        SubtreeLayoutScope layoutScope(*child);
         if (oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth || (oldOverrideContainingBlockContentLogicalHeight != overrideContainingBlockContentLogicalHeight && child->hasRelativeLogicalHeight()))
-            layoutScope.setNeedsLayout(child, LayoutInvalidationReason::GridChanged);
+            child->setNeedsLayout(LayoutInvalidationReason::GridChanged);
 
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
