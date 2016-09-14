@@ -1626,7 +1626,8 @@ int TabStrip::OnDragUpdated(const DropTargetEvent& event) {
   // dragging a file to the contents of another tab.
   UpdateDropIndex(event);
 
-  if (!drop_info_->file_supported)
+  if (!drop_info_->file_supported ||
+      drop_info_->url.SchemeIs(url::kJavaScriptScheme))
     return ui::DragDropTypes::DRAG_NONE;
 
   return GetDropEffect(event);
@@ -1647,14 +1648,16 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   // Hide the drop indicator.
   SetDropIndex(-1, false);
 
-  // Do nothing if the file was unsupported or the URL is invalid. The URL may
-  // have been changed after |drop_info_| was created.
+  // Do nothing if the file was unsupported, the URL is invalid, or this is a
+  // javascript: URL (prevent self-xss). The URL may have been changed after
+  // |drop_info_| was created.
   GURL url;
   base::string16 title;
   if (!file_supported ||
       !event.data().GetURLAndTitle(
            ui::OSExchangeData::CONVERT_FILENAMES, &url, &title) ||
-      !url.is_valid())
+      !url.is_valid() ||
+      url.SchemeIs(url::kJavaScriptScheme))
     return ui::DragDropTypes::DRAG_NONE;
 
   controller_->PerformDrop(drop_before, drop_index, url);
