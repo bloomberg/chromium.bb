@@ -10,10 +10,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 
+namespace ui {
+class WindowAndroid;
+}  // namespace ui
+
 namespace blimp {
 namespace client {
 
-class BlimpContentsImpl;
+class BlimpContentsViewImpl;
 
 // The JNI bridge for the Java BlimpView that will provide hooks to the Android
 // framework to interact with the content. The Java object is created by
@@ -22,9 +26,11 @@ class BlimpView {
  public:
   static bool RegisterJni(JNIEnv* env);
 
-  // |blimp_contents_impl| must be the BlimpContentsImpl that this BlimpView is
-  // used for.
-  explicit BlimpView(BlimpContentsImpl* blimp_contents_impl);
+  // |blimp_contents_view| must be the BlimpContentsView that owns this
+  // BlimpView.  |window| should also be the WindowAndroid that the
+  // corresponding BlimpContents was created with.
+  explicit BlimpView(ui::WindowAndroid* window,
+                     BlimpContentsViewImpl* blimp_contents_view);
   ~BlimpView();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
@@ -70,9 +76,9 @@ class BlimpView {
       jfloat device_scale_factor_dp_to_px);
 
  private:
-  // The BlimpContentsImpl that this BlimpView is used for.
+  // The BlimpContentsViewImpl that this BlimpView is used for.
   // TODO(nyquist): Use a delegate instead of the BlimpContentsImpl.
-  BlimpContentsImpl* blimp_contents_impl_;
+  BlimpContentsViewImpl* blimp_contents_view_;
 
   // The Java object for this BlimpView.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

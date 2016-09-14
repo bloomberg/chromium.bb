@@ -27,6 +27,7 @@ class MockBlimpNavigationControllerDelegate
 
   MOCK_METHOD0(OnNavigationStateChanged, void());
   MOCK_METHOD1(OnLoadingStateChanged, void(bool loading));
+  MOCK_METHOD1(OnPageLoadingStateChanged, void(bool loading));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlimpNavigationControllerDelegate);

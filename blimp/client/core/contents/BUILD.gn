@@ -15,7 +15,8 @@ source_set("contents") {
     "blimp_contents_impl.h",
     "blimp_contents_manager.cc",
     "blimp_contents_manager.h",
-    "blimp_contents_view.h",
+    "blimp_contents_view_impl.cc",
+    "blimp_contents_view_impl.h",
     "blimp_navigation_controller_delegate.h",
     "blimp_navigation_controller_impl.cc",
     "blimp_navigation_controller_impl.h",
@@ -60,8 +61,8 @@ source_set("contents") {
       "android/blimp_view.h",
       "android/ime_helper_dialog.cc",
       "android/ime_helper_dialog.h",
-      "blimp_contents_view_android.cc",
-      "blimp_contents_view_android.h",
+      "blimp_contents_view_impl_android.cc",
+      "blimp_contents_view_impl_android.h",
     ]
 
     public_deps += [ "//ui/android" ]
@@ -74,8 +75,8 @@ source_set("contents") {
     ]
   } else {
     sources += [
-      "blimp_contents_view_aura.cc",
-      "blimp_contents_view_aura.h",
+      "blimp_contents_view_impl_aura.cc",
+      "blimp_contents_view_impl_aura.h",
     ]
   }
 }
@@ -123,7 +124,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//blimp/client/public:public_headers",
-    "//blimp/client/support:test_support",
+    "//blimp/client/test",
     "//blimp/common",
     "//blimp/net:test_support",
     "//net",

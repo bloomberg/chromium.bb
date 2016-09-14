@@ -85,6 +85,7 @@ void BlimpNavigationControllerImpl::OnLoadingChanged(int tab_id, bool loading) {
 void BlimpNavigationControllerImpl::OnPageLoadStatusUpdate(int tab_id,
                                                            bool completed) {
   delegate_->OnNavigationStateChanged();
+  delegate_->OnPageLoadingStateChanged(!completed);
 }
 
 }  // namespace client

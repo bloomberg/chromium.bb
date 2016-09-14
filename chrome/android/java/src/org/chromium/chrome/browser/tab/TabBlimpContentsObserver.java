@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.blimp_public.contents.BlimpContentsObserver;
+import org.chromium.blimp_public.contents.EmptyBlimpContentsObserver;
 import org.chromium.ui.base.PageTransition;
 
 /**
  * BlimpContentsObserver used by Tab.
  */
-public class TabBlimpContentsObserver implements BlimpContentsObserver {
+public class TabBlimpContentsObserver extends EmptyBlimpContentsObserver {
     private Tab mTab;
 
     public TabBlimpContentsObserver(Tab tab) {

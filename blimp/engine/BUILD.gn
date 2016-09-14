@@ -672,8 +672,13 @@ source_set("browser_tests") {
   sources = [
     "browser_tests/blimp_browser_test.cc",
     "browser_tests/blimp_browser_test.h",
+    "browser_tests/blimp_contents_view_readback_helper.cc",
+    "browser_tests/blimp_contents_view_readback_helper.h",
     "browser_tests/blimp_test_launcher.cc",
     "browser_tests/engine_browsertest.cc",
+    "browser_tests/integration_test.cc",
+    "browser_tests/waitable_content_pump.cc",
+    "browser_tests/waitable_content_pump.h",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -686,7 +691,7 @@ source_set("browser_tests") {
     "//blimp/client/core/contents:test_support",
     "//blimp/client/core/render_widget:test_support",
     "//blimp/client/core/session",
-    "//blimp/client/support:test_support",
+    "//blimp/client/test",
     "//blimp/common",
     "//blimp/engine:app",
     "//blimp/engine:app_config",

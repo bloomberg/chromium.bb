@@ -64,6 +64,7 @@ class BlimpClientContext : public KeyedService {
 
   // Start authentication flow and connection to engine.
   virtual void Connect() = 0;
+  virtual void ConnectWithAssignment(const Assignment& assignment) = 0;
 
  protected:
   BlimpClientContext() = default;

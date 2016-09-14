@@ -26,6 +26,7 @@ class DummyBlimpClientContext : public BlimpClientContext {
   std::unique_ptr<BlimpContents> CreateBlimpContents(
       gfx::NativeWindow window) override;
   void Connect() override;
+  void ConnectWithAssignment(const Assignment& assignment) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyBlimpClientContext);

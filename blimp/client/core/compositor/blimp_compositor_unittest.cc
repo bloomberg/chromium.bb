@@ -7,7 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 #include "cc/layers/layer.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface_manager.h"

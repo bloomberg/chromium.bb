@@ -8,16 +8,20 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "ui/gfx/native_widget_types.h"
-#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
+namespace cc {
+class Layer;
+}  // namespace cc
+
 namespace blimp {
 namespace client {
 
 class BlimpContentsObserver;
+class BlimpContentsView;
 class BlimpNavigationController;
 
 // BlimpContents is the core class in blimp client which is responsible for
@@ -36,8 +40,8 @@ class BlimpContents : public base::SupportsUserData {
   virtual void AddObserver(BlimpContentsObserver* observer) = 0;
   virtual void RemoveObserver(BlimpContentsObserver* observer) = 0;
 
-  // Returns the native view that holds the contents of this tab.
-  virtual gfx::NativeView GetNativeView() = 0;
+  // Returns the view that holds the contents of this tab.
+  virtual BlimpContentsView* GetView() = 0;
 
   // Will cause this BlimpContents and the remote contents to show and start or
   // stop rendering content respectively.

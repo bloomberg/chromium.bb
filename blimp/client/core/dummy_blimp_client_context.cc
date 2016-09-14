@@ -51,5 +51,10 @@ void DummyBlimpClientContext::Connect() {
   NOTREACHED();
 }
 
+void DummyBlimpClientContext::ConnectWithAssignment(
+    const Assignment& assignment) {
+  NOTREACHED();
+}
+
 }  // namespace client
 }  // namespace blimp

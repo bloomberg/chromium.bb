@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/contents/android/blimp_navigation_controller_impl_android.h"
 #include "blimp/client/core/contents/android/blimp_view.h"
-#include "blimp/client/core/contents/blimp_contents_view_android.h"
+#include "blimp/client/core/contents/blimp_contents_view_impl_android.h"
 #include "jni/BlimpContentsImpl_jni.h"
 
 namespace blimp {
@@ -39,8 +39,8 @@ BlimpContentsImplAndroid::BlimpContentsImplAndroid(
       blimp_navigation_controller_impl_android_(
           static_cast<BlimpNavigationControllerImpl*>(
               &(blimp_contents_impl->GetNavigationController()))) {
-  BlimpView* blimp_view = static_cast<BlimpContentsViewAndroid*>(
-                              blimp_contents_impl_->GetBlimpContentsView())
+  BlimpView* blimp_view = static_cast<BlimpContentsViewImplAndroid*>(
+                              blimp_contents_impl_->GetView())
                               ->GetBlimpView();
 
   JNIEnv* env = base::android::AttachCurrentThread();

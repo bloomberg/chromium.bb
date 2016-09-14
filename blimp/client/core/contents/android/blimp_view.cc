@@ -18,10 +18,9 @@ bool BlimpView::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-BlimpView::BlimpView(BlimpContentsImpl* blimp_contents_impl)
-    : blimp_contents_impl_(blimp_contents_impl) {
-  ui::WindowAndroid* window = blimp_contents_impl_->GetNativeWindow();
-
+BlimpView::BlimpView(ui::WindowAndroid* window,
+                     BlimpContentsViewImpl* blimp_contents_view)
+    : blimp_contents_view_(blimp_contents_view) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env,
                   Java_BlimpView_create(env, reinterpret_cast<intptr_t>(this),
@@ -49,7 +48,7 @@ void BlimpView::OnSizeChanged(JNIEnv* env,
                               jint width,
                               jint height,
                               jfloat device_scale_factor_dp_to_px) {
-  blimp_contents_impl_->SetSizeAndScale(gfx::Size(width, height),
+  blimp_contents_view_->SetSizeAndScale(gfx::Size(width, height),
                                         device_scale_factor_dp_to_px);
 }
 
@@ -94,7 +93,7 @@ jboolean BlimpView::OnTouchEvent(
       android_action, pointer_count, history_size, action_index,
       android_button_state, android_meta_state, raw_pos_x - pos_x_0,
       raw_pos_y - pos_y_0, pointer0, pointer1);
-  return blimp_contents_impl_->compositor_manager()->OnTouchEvent(event);
+  return blimp_contents_view_->OnTouchEvent(event);
 }
 
 }  // namespace client

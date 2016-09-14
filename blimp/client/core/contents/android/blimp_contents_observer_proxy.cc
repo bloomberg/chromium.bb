@@ -58,5 +58,11 @@ void BlimpContentsObserverProxy::OnLoadingStateChanged(bool loading) {
                                                         loading);
 }
 
+void BlimpContentsObserverProxy::OnPageLoadingStateChanged(bool loading) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BlimpContentsObserverProxy_onPageLoadingStateChanged(env, java_obj_,
+                                                            loading);
+}
+
 }  // namespace client
 }  // namespace blimp

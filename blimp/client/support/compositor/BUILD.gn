@@ -11,6 +11,8 @@ source_set("compositor") {
   sources = [
     "blimp_context_provider.cc",
     "blimp_context_provider.h",
+    "blimp_embedder_compositor.cc",
+    "blimp_embedder_compositor.h",
     "blimp_gpu_memory_buffer_manager.cc",
     "blimp_gpu_memory_buffer_manager.h",
     "blimp_layer_tree_settings.cc",
@@ -35,22 +37,5 @@ source_set("compositor") {
     "//gpu/skia_bindings",
     "//skia",
     "//ui/gfx:memory_buffer",
-  ]
-}
-
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "mock_compositor_dependencies.cc",
-    "mock_compositor_dependencies.h",
-  ]
-
-  deps = [
-    "//cc:test_support",
-  ]
-
-  public_deps = [
-    ":compositor",
   ]
 }

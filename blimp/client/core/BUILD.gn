@@ -84,7 +84,6 @@ source_set("unit_tests") {
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",
-    "//blimp/client/support:test_support",
     "//blimp/client/test",
     "//testing/gmock",
     "//testing/gtest",

@@ -34,9 +34,9 @@ const char kClientAuthTokenFilePath[] = "blimp/test/data/test_client_token";
 const char kClientAuthToken[] = "MyVoiceIsMyPassport";
 }  // namespace
 
-
 BlimpBrowserTest::BlimpBrowserTest()
-    : completion_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+    : engine_port_(0),
+      completion_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED) {
   CreateTestServer(base::FilePath(FILE_PATH_LITERAL(kTestDataFilePath)));
 }
@@ -49,6 +49,12 @@ void BlimpBrowserTest::RunUntilCompletion() {
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
   }
   completion_event_.Reset();
+}
+
+void BlimpBrowserTest::AllowUIWaits() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  allow_ui_waits_ =
+      base::MakeUnique<base::ThreadRestrictions::ScopedAllowWait>();
 }
 
 void BlimpBrowserTest::SignalCompletion() {
@@ -102,6 +108,7 @@ void BlimpBrowserTest::SetUpOnMainThread() {
 }
 
 void BlimpBrowserTest::TearDownOnMainThread() {
+  allow_ui_waits_.reset();
   base::MessageLoop::current()->QuitWhenIdle();
 }
 

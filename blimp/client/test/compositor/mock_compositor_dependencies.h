@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_SUPPORT_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_
-#define BLIMP_CLIENT_SUPPORT_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_
+#ifndef BLIMP_CLIENT_TEST_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_
+#define BLIMP_CLIENT_TEST_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_
 
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 
@@ -22,4 +22,4 @@ class MockCompositorDependencies : public CompositorDependenciesImpl {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_SUPPORT_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_
+#endif  // BLIMP_CLIENT_TEST_COMPOSITOR_MOCK_COMPOSITOR_DEPENDENCIES_H_

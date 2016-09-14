@@ -37,6 +37,11 @@ class BlimpCompositorManager
 
   bool OnTouchEvent(const ui::MotionEvent& motion_event);
 
+  // Notifies |callback| when all pending commits on the active BlimpCompositor
+  // have been drawn to the screen.  If the active compositor is destroyed or
+  // becomes hidden |callback| will be notified.
+  void NotifyWhenDonePendingCommits(base::Closure callback);
+
   scoped_refptr<cc::Layer> layer() const { return layer_; }
 
  protected:

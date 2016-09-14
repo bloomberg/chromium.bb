@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_ANDROID_H_
-#define BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_ANDROID_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_IMPL_ANDROID_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_IMPL_ANDROID_H_
 
 #include "base/macros.h"
-#include "blimp/client/core/contents/blimp_contents_view.h"
+#include "blimp/client/core/contents/blimp_contents_view_impl.h"
 #include "ui/android/view_android.h"
 
 namespace blimp {
@@ -15,13 +15,14 @@ class BlimpContentsImpl;
 class BlimpView;
 class ImeHelperDialog;
 
-class BlimpContentsViewAndroid : public BlimpContentsView {
+// The Android specific implementation of a BlimpContentsViewImpl.
+class BlimpContentsViewImplAndroid : public BlimpContentsViewImpl {
  public:
-  BlimpContentsViewAndroid(BlimpContentsImpl* blimp_contents,
-                           scoped_refptr<cc::Layer> contents_layer);
-  ~BlimpContentsViewAndroid() override;
+  BlimpContentsViewImplAndroid(BlimpContentsImpl* blimp_contents,
+                               scoped_refptr<cc::Layer> contents_layer);
+  ~BlimpContentsViewImplAndroid() override;
 
-  // BlimpContentsView implementation.
+  // BlimpContentsViewImpl implementation.
   gfx::NativeView GetNativeView() override;
   ImeFeature::Delegate* GetImeDelegate() override;
 
@@ -36,10 +37,10 @@ class BlimpContentsViewAndroid : public BlimpContentsView {
 
   std::unique_ptr<ImeHelperDialog> ime_dialog_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlimpContentsViewAndroid);
+  DISALLOW_COPY_AND_ASSIGN(BlimpContentsViewImplAndroid);
 };
 
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_ANDROID_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_VIEW_IMPL_ANDROID_H_

@@ -132,7 +132,15 @@ void BlimpClientContextImpl::Connect() {
   GetIdentitySource()->Connect();
 }
 
-void BlimpClientContextImpl::ConnectToAssignmentSource(
+void BlimpClientContextImpl::ConnectWithAssignment(
+    const Assignment& assignment) {
+  io_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
+                 base::Unretained(net_components_.get()), assignment));
+}
+
+void BlimpClientContextImpl::OnAuthTokenReceived(
     const std::string& client_auth_token) {
   if (!assignment_source_) {
     assignment_source_.reset(new AssignmentSource(
@@ -142,7 +150,7 @@ void BlimpClientContextImpl::ConnectToAssignmentSource(
   VLOG(1) << "Trying to get assignment.";
   assignment_source_->GetAssignment(
       client_auth_token,
-      base::Bind(&BlimpClientContextImpl::ConnectWithAssignment,
+      base::Bind(&BlimpClientContextImpl::OnAssignmentReceived,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -165,7 +173,7 @@ IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
   return identity_source_.get();
 }
 
-void BlimpClientContextImpl::ConnectWithAssignment(
+void BlimpClientContextImpl::OnAssignmentReceived(
     AssignmentRequestResult result,
     const Assignment& assignment) {
   VLOG(1) << "Assignment result: " << result;
@@ -179,10 +187,7 @@ void BlimpClientContextImpl::ConnectWithAssignment(
     return;
   }
 
-  io_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
-                 base::Unretained(net_components_.get()), assignment));
+  ConnectWithAssignment(assignment);
 }
 
 void BlimpClientContextImpl::RegisterFeatures() {
@@ -222,7 +227,7 @@ void BlimpClientContextImpl::InitializeSettings() {
 
 void BlimpClientContextImpl::CreateIdentitySource() {
   identity_source_ = base::MakeUnique<IdentitySource>(
-      delegate_, base::Bind(&BlimpClientContextImpl::ConnectToAssignmentSource,
+      delegate_, base::Bind(&BlimpClientContextImpl::OnAuthTokenReceived,
                             base::Unretained(this)));
 }
 

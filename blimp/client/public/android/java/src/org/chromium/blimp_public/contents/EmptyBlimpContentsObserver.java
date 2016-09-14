@@ -15,4 +15,7 @@ public class EmptyBlimpContentsObserver implements BlimpContentsObserver {
 
     @Override
     public void onLoadingStateChanged(boolean loading) {}
+
+    @Override
+    public void onPageLoadingStateChanged(boolean loading) {}
 }

@@ -56,6 +56,14 @@ class BlimpContentsObserverProxy implements BlimpContentsObserver {
         }
     }
 
+    @Override
+    @CalledByNative
+    public void onPageLoadingStateChanged(boolean loading) {
+        for (BlimpContentsObserver observer : mObservers) {
+            observer.onPageLoadingStateChanged(loading);
+        }
+    }
+
     private native long nativeInit(BlimpContentsImpl blimpContentsImpl);
     private native void nativeDestroy(long nativeBlimpContentsObserverProxy);
 }

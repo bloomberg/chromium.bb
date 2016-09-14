@@ -59,6 +59,7 @@ class BlimpClientContextImpl
   std::unique_ptr<BlimpContents> CreateBlimpContents(
       gfx::NativeWindow window) override;
   void Connect() override;
+  void ConnectWithAssignment(const Assignment& assignment) override;
 
   // NetworkEventObserver implementation.
   void OnConnected() override;
@@ -72,13 +73,14 @@ class BlimpClientContextImpl
   IdentitySource* GetIdentitySource();
 
  private:
-  // Connect to assignment source with OAuth2 token to get an assignment.
-  virtual void ConnectToAssignmentSource(const std::string& client_auth_token);
+  // Called when an OAuth2 token is received.  Will then ask the
+  // AssignmentSource for an Assignment with this token.
+  virtual void OnAuthTokenReceived(const std::string& client_auth_token);
 
-  // The AssignmentCallback for when an assignment is ready. This will trigger
-  // a connection to the engine.
-  virtual void ConnectWithAssignment(AssignmentRequestResult result,
-                                     const Assignment& assignment);
+  // Called when the AssignmentSource is finished getting an Assignment.  Will
+  // then call |ConnectWithAssignment| to initiate the actual connection.
+  virtual void OnAssignmentReceived(AssignmentRequestResult result,
+                                    const Assignment& assignment);
 
   void RegisterFeatures();
   void InitializeSettings();

@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
-#include "blimp/client/core/contents/blimp_contents_view.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,7 +40,7 @@ BlimpContentsImpl::BlimpContentsImpl(
       window_(window),
       tab_control_feature_(tab_control_feature) {
   blimp_contents_view_ =
-      BlimpContentsView::Create(this, compositor_manager_.layer());
+      BlimpContentsViewImpl::Create(this, compositor_manager_.layer());
   ime_feature_->set_delegate(blimp_contents_view_->GetImeDelegate());
 }
 
@@ -85,8 +84,8 @@ void BlimpContentsImpl::RemoveObserver(BlimpContentsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-gfx::NativeView BlimpContentsImpl::GetNativeView() {
-  return blimp_contents_view_->GetNativeView();
+BlimpContentsViewImpl* BlimpContentsImpl::GetView() {
+  return blimp_contents_view_.get();
 }
 
 void BlimpContentsImpl::Show() {
@@ -113,13 +112,14 @@ void BlimpContentsImpl::OnLoadingStateChanged(bool loading) {
                     OnLoadingStateChanged(loading));
 }
 
+void BlimpContentsImpl::OnPageLoadingStateChanged(bool loading) {
+  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
+                    OnPageLoadingStateChanged(loading));
+}
+
 void BlimpContentsImpl::SetSizeAndScale(const gfx::Size& size,
                                         float device_pixel_ratio) {
   tab_control_feature_->SetSizeAndScale(size, device_pixel_ratio);
-}
-
-BlimpContentsView* BlimpContentsImpl::GetBlimpContentsView() {
-  return blimp_contents_view_.get();
 }
 
 }  // namespace client

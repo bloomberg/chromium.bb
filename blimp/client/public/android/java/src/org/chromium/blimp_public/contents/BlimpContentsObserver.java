@@ -21,4 +21,10 @@ public interface BlimpContentsObserver {
      * @param loading Whether or not the BlimpContents is currently loading.
      */
     void onLoadingStateChanged(boolean loading);
+
+    /**
+     * Invoked when the BlimpContents starts or stops loading a page.
+     * @param loading Whether or not the BlimpContents is currently loading a page.
+     */
+    void onPageLoadingStateChanged(boolean loading);
 }

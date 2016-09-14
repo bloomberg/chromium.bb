@@ -25,6 +25,9 @@ class BlimpNavigationControllerDelegate {
   // Informs the delegate that navigation loading has started or stopped.
   virtual void OnLoadingStateChanged(bool loading) = 0;
 
+  // Informs the delegate that page loading has started or stopped.
+  virtual void OnPageLoadingStateChanged(bool loading) = 0;
+
  protected:
   BlimpNavigationControllerDelegate() {}
 

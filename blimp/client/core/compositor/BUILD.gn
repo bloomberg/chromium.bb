@@ -68,7 +68,7 @@ source_set("unit_tests") {
     "//blimp/client/core/render_widget",
     "//blimp/client/core/render_widget:test_support",
     "//blimp/client/support",
-    "//blimp/client/support:test_support",
+    "//blimp/client/test",
     "//blimp/test:support",
     "//cc",
     "//cc:test_support",

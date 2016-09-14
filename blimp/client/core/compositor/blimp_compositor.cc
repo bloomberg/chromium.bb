@@ -68,6 +68,7 @@ BlimpCompositor::BlimpCompositor(
       output_surface_request_pending_(false),
       layer_(cc::Layer::Create()),
       remote_proto_channel_receiver_(nullptr),
+      outstanding_commits_(0U),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -84,16 +85,31 @@ BlimpCompositor::~BlimpCompositor() {
   DestroyLayerTreeHost();
   GetEmbedderDeps()->GetSurfaceManager()->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
+
+  CheckPendingCommitCounts(true /* flush */);
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
   host_->SetVisible(visible);
+
+  if (!visible)
+    CheckPendingCommitCounts(true /* flush */);
 }
 
 bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
   if (input_manager_)
     return input_manager_->OnTouchEvent(motion_event);
   return false;
+}
+
+void BlimpCompositor::NotifyWhenDonePendingCommits(base::Closure callback) {
+  if (outstanding_commits_ == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    return;
+  }
+
+  pending_commit_trackers_.push_back(
+      std::make_pair(outstanding_commits_, callback));
 }
 
 void BlimpCompositor::RequestNewOutputSurface() {
@@ -112,6 +128,11 @@ void BlimpCompositor::DidInitializeOutputSurface() {
 
 void BlimpCompositor::DidCommitAndDrawFrame() {
   BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
+
+  DCHECK_GT(outstanding_commits_, 0U);
+  outstanding_commits_--;
+
+  CheckPendingCommitCounts(false /* flush */);
 }
 
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
@@ -129,6 +150,12 @@ void BlimpCompositor::OnCompositorMessageReceived(
   const cc::proto::CompositorMessageToImpl& to_impl_proto = message->to_impl();
 
   DCHECK(to_impl_proto.has_message_type());
+
+  if (to_impl_proto.message_type() ==
+      cc::proto::CompositorMessageToImpl::START_COMMIT) {
+    outstanding_commits_++;
+  }
+
   switch (to_impl_proto.message_type()) {
     case cc::proto::CompositorMessageToImpl::UNKNOWN:
       NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
@@ -312,6 +339,18 @@ void BlimpCompositor::DestroyLayerTreeHost() {
 
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);
+}
+
+void BlimpCompositor::CheckPendingCommitCounts(bool flush) {
+  for (auto it = pending_commit_trackers_.begin();
+       it != pending_commit_trackers_.end();) {
+    if (flush || --it->first == 0) {
+      it->second.Run();
+      it = pending_commit_trackers_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 }  // namespace client

@@ -12,7 +12,7 @@
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
-#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"

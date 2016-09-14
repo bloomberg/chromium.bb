@@ -15,6 +15,7 @@ source_set("test") {
     "//base/test:test_support",
     "//blimp/client/core",
     "//blimp/client/public:public_headers",
+    "//cc:test_support",
     "//google_apis:test_support",
     "//mojo/edk/system",
     "//net",
@@ -22,6 +23,7 @@ source_set("test") {
   ]
 
   public_deps = [
+    "//blimp/client/test/compositor",
     "//testing/gmock",
   ]
 }

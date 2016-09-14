@@ -43,6 +43,16 @@ bool BlimpCompositorManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
   return false;
 }
 
+void BlimpCompositorManager::NotifyWhenDonePendingCommits(
+    base::Closure callback) {
+  if (!active_compositor_ || !visible_) {
+    callback.Run();
+    return;
+  }
+
+  active_compositor_->NotifyWhenDonePendingCommits(callback);
+}
+
 std::unique_ptr<BlimpCompositor> BlimpCompositorManager::CreateBlimpCompositor(
     int render_widget_id,
     BlimpCompositorDependencies* compositor_dependencies,

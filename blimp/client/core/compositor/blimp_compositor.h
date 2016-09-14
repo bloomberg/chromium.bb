@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -96,6 +97,11 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // virtual for testing.
   virtual bool OnTouchEvent(const ui::MotionEvent& motion_event);
 
+  // Notifies |callback| when all pending commits have been drawn to the screen.
+  // If this compositor is destroyed or becomes hidden |callback| will be
+  // notified.
+  void NotifyWhenDonePendingCommits(base::Closure callback);
+
   // Called to forward the compositor message from the remote server
   // LayerTreeHost of the render widget for this compositor.
   // virtual for testing.
@@ -171,6 +177,11 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // associated state.
   void DestroyLayerTreeHost();
 
+  // Updates |pending_commit_trackers_|, decrementing the count and, if 0,
+  // notifying the callback.  If |flush| is true, flushes all entries regardless
+  // of the count.
+  void CheckPendingCommitCounts(bool flush);
+
   // The unique identifier for the render widget for this compositor.
   const int render_widget_id_;
 
@@ -209,6 +220,17 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // the manager to be handled by the client compositor for the current render
   // widget.
   std::unique_ptr<BlimpInputManager> input_manager_;
+
+  // The number of times a START_COMMIT proto has been received but a call to
+  // DidCommitAndDrawFrame hasn't been seen.  This should track the number of
+  // outstanding commits.
+  size_t outstanding_commits_;
+
+  // When NotifyWhenDonePendingCommitsis called |outstanding_commits_| is copied
+  // along with the |callback| into this vector.  Each time
+  // DidCommitAndDrawFrame is called these entries get decremented.  If they hit
+  // 0 the callback is triggered.
+  std::vector<std::pair<size_t, base::Closure>> pending_commit_trackers_;
 
   base::WeakPtrFactory<BlimpCompositor> weak_ptr_factory_;
 

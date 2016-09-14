@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 
 #include "cc/test/test_in_process_context_provider.h"
 

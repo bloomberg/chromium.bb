@@ -7,11 +7,3 @@ group("support") {
     "//blimp/client/support/compositor",
   ]
 }
-
-group("test_support") {
-  testonly = true
-
-  public_deps = [
-    "//blimp/client/support/compositor:test_support",
-  ]
-}

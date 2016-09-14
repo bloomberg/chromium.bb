@@ -13,7 +13,7 @@
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
-#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

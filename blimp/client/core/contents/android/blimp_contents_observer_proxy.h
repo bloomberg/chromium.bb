@@ -30,6 +30,7 @@ class BlimpContentsObserverProxy : public BlimpContentsObserver {
   // BlimpContentsObserver implementation.
   void OnNavigationStateChanged() override;
   void OnLoadingStateChanged(bool loading) override;
+  void OnPageLoadingStateChanged(bool loading) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

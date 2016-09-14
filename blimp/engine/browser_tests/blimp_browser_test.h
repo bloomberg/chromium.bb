@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test_base.h"
 
 namespace base {
@@ -46,6 +47,10 @@ class BlimpBrowserTest : public content::BrowserTestBase {
   // called.
   void RunUntilCompletion();
 
+  // Allow the UI thread to wait.  This bypasses base::ThreadRestrictions and is
+  // used for client/engine integration tests.
+  void AllowUIWaits();
+
   engine::BlimpEngineSession* GetEngineSession();
 
   client::Assignment GetAssignment();
@@ -69,6 +74,11 @@ class BlimpBrowserTest : public content::BrowserTestBase {
   // Used to signal the completion of asynchronous processing to
   // RunUntilCompletion().
   base::WaitableEvent completion_event_;
+
+  // Used to allow UI thread waits.  This is useful for integration tests that
+  // require setting up client components, as testing those sometimes requires
+  // setting up GL contexts that might block.
+  std::unique_ptr<base::ThreadRestrictions::ScopedAllowWait> allow_ui_waits_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpBrowserTest);
 };

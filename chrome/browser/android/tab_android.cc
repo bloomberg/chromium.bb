@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
+#include "blimp/client/public/contents/blimp_contents_view.h"
 #include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/blimp/blimp_client_context_factory.h"
@@ -448,7 +449,8 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
   }
 
   // Attach the layer holding the tab contents to the |content_layer_|.
-  content_layer_->InsertChild(blimp_contents_->GetNativeView()->GetLayer(), 0);
+  content_layer_->InsertChild(
+      blimp_contents_->GetView()->GetNativeView()->GetLayer(), 0);
 
   return blimp_contents_->GetJavaObject();
 }

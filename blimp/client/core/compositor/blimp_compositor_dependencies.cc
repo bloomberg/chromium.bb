@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "blimp/client/support/compositor/blimp_layer_tree_settings.h"
@@ -26,7 +27,12 @@ class BlimpTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
           base::SimpleThread::Options(base::ThreadPriority::BACKGROUND));
   }
 
-  ~BlimpTaskGraphRunner() override { Shutdown(); }
+  ~BlimpTaskGraphRunner() override {
+    // PlatformThread::Join() ends up relying on IO.  Temporarily allow this
+    // during shutdown.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    Shutdown();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlimpTaskGraphRunner);
@@ -40,8 +46,12 @@ BlimpCompositorDependencies::BlimpCompositorDependencies(
 }
 
 BlimpCompositorDependencies::~BlimpCompositorDependencies() {
-  if (compositor_impl_thread_)
+  if (compositor_impl_thread_) {
+    // PlatformThread::Join() ends up relying on IO.  Temporarily allow this
+    // during shutdown.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     compositor_impl_thread_->Stop();
+  }
 }
 
 CompositorDependencies* BlimpCompositorDependencies::GetEmbedderDependencies() {

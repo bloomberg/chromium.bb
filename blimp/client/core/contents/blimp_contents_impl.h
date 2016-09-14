@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "blimp/client/core/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/contents/blimp_contents_view_impl.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 #include "blimp/client/public/contents/blimp_contents.h"
@@ -28,7 +29,6 @@ class BlimpContentsImplAndroid;
 
 class BlimpCompositorDependencies;
 class BlimpContentsObserver;
-class BlimpContentsView;
 class BlimpNavigationController;
 class ImeFeature;
 class NavigationFeature;
@@ -58,7 +58,7 @@ class BlimpContentsImpl : public BlimpContents,
   BlimpNavigationControllerImpl& GetNavigationController() override;
   void AddObserver(BlimpContentsObserver* observer) override;
   void RemoveObserver(BlimpContentsObserver* observer) override;
-  gfx::NativeView GetNativeView() override;
+  BlimpContentsViewImpl* GetView() override;
   void Show() override;
   void Hide() override;
 
@@ -71,15 +71,13 @@ class BlimpContentsImpl : public BlimpContents,
   // BlimpNavigationControllerDelegate implementation.
   void OnNavigationStateChanged() override;
   void OnLoadingStateChanged(bool loading) override;
+  void OnPageLoadingStateChanged(bool loading) override;
 
   // Pushes the size and scale information to the engine, which will affect the
   // web content display area for all tabs.
   void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
 
   int id() { return id_; }
-
-  // Returns the BlimpContentsView for this BlimpContentsImpl.
-  BlimpContentsView* GetBlimpContentsView();
 
   // TODO(nyquist): Remove this once the Android BlimpView uses a delegate.
   BlimpCompositorManager* compositor_manager() { return &compositor_manager_; }
@@ -114,7 +112,7 @@ class BlimpContentsImpl : public BlimpContents,
 
   // The BlimpContentsView abstracts the platform specific view system details
   // from the BlimpContents.
-  std::unique_ptr<BlimpContentsView> blimp_contents_view_;
+  std::unique_ptr<BlimpContentsViewImpl> blimp_contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsImpl);
 };
