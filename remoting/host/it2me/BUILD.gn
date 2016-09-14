@@ -65,6 +65,8 @@ source_set("common") {
     # disabled.
     # See crbug.com/462689 for details.
     all_dependent_configs = [ "//third_party/harfbuzz-ng:pangoft2_link_hack" ]
+
+    deps += [ "//build/config/linux/gtk2" ]
   }
 }
 

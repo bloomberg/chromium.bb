@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <commctrl.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -17,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/win/core_resource.h"
 
@@ -25,7 +27,7 @@ namespace remoting {
 namespace {
 
 // Time to wait before closing the dialog and cancelling the connection.
-const int kDialogTimeoutMs = 60 * 1000;
+constexpr base::TimeDelta kDialogTimeout = base::TimeDelta::FromMinutes(1);
 
 const HRESULT kTimeoutErrorCode = E_ABORT;
 
@@ -179,7 +181,7 @@ It2MeConfirmationDialogWin::TaskDialogCallbackProc(HWND hwnd,
                                                    LPARAM l_param,
                                                    LONG_PTR ref_data) {
   if (notification == TDN_TIMER) {
-    if (w_param >= kDialogTimeoutMs) {
+    if (static_cast<int64_t>(w_param) >= kDialogTimeout.InMilliseconds()) {
       // Close the dialog window if we have reached the timeout.
       return kTimeoutErrorCode;
     }
