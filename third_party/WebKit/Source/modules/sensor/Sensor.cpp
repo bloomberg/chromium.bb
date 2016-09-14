@@ -125,15 +125,7 @@ void Sensor::onSensorInitialized()
     if (m_state != Sensor::SensorState::ACTIVATING)
         return;
 
-    m_configuration = createSensorConfig(m_sensorOptions);
-    if (!m_configuration) {
-        reportError();
-        return;
-    }
-
-    DCHECK(m_sensorProxy);
-    auto startCallback = WTF::bind(&Sensor::onStartRequestCompleted, wrapWeakPersistent(this));
-    m_sensorProxy->addConfiguration(m_configuration->Clone(), std::move(startCallback));
+    startListening();
 }
 
 void Sensor::onSensorReadingChanged()
@@ -195,17 +187,24 @@ void Sensor::startListening()
 {
     DCHECK(m_sensorProxy);
     updateState(Sensor::SensorState::ACTIVATING);
-    if (!m_sensorReading)
+    if (!m_sensorReading) {
         m_sensorReading = createSensorReading(m_sensorProxy);
+        DCHECK(m_sensorReading);
+    }
 
     m_sensorProxy->addObserver(this);
-    if (m_sensorProxy->isInitialized()) {
-        auto callback = WTF::bind(&Sensor::onStartRequestCompleted, wrapWeakPersistent(this));
-        DCHECK(m_configuration);
-        m_sensorProxy->addConfiguration(m_configuration->Clone(), std::move(callback));
-    } else {
+    if (!m_sensorProxy->isInitialized()) {
         m_sensorProxy->initialize();
+        return;
     }
+
+    if (!m_configuration) {
+        m_configuration = createSensorConfig(m_sensorOptions, *m_sensorProxy->defaultConfig());
+        DCHECK(m_configuration);
+    }
+
+    auto startCallback = WTF::bind(&Sensor::onStartRequestCompleted, wrapWeakPersistent(this));
+    m_sensorProxy->addConfiguration(m_configuration->Clone(), std::move(startCallback));
 }
 
 void Sensor::stopListening()

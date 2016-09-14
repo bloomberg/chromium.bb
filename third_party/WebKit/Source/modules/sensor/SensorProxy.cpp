@@ -97,6 +97,12 @@ void SensorProxy::resume()
     m_suspended = false;
 }
 
+const device::mojom::blink::SensorConfiguration* SensorProxy::defaultConfig() const
+{
+    DCHECK(isInitialized());
+    return m_defaultConfig.get();
+}
+
 void SensorProxy::updateInternalReading()
 {
     DCHECK(isInitialized());
@@ -119,28 +125,38 @@ void SensorProxy::handleSensorError()
 {
     m_state = Uninitialized;
     m_sensor.reset();
+    m_sharedBuffer.reset();
+    m_sharedBufferHandle.reset();
+    m_defaultConfig.reset();
+    m_clientBinding.Close();
+
     for (Observer* observer : m_observers)
         observer->onSensorError();
 }
 
-void SensorProxy::onSensorCreated(SensorReadBufferPtr buffer, SensorClientRequest clientRequest)
+void SensorProxy::onSensorCreated(SensorInitParamsPtr params, SensorClientRequest clientRequest)
 {
     DCHECK_EQ(Initializing, m_state);
-    if (!buffer) {
+    if (!params) {
         handleSensorError();
         return;
     }
 
-    DCHECK_EQ(0u, buffer->offset % SensorReadBuffer::kReadBufferSize);
+    DCHECK_EQ(0u, params->buffer_offset % SensorInitParams::kReadBufferSize);
 
-    m_mode = buffer->mode;
+    m_mode = params->mode;
+    m_defaultConfig = std::move(params->default_configuration);
+    if (!m_defaultConfig) {
+        handleSensorError();
+        return;
+    }
 
     DCHECK(m_sensor.is_bound());
     m_clientBinding.Bind(std::move(clientRequest));
 
-    m_sharedBufferHandle = std::move(buffer->memory);
+    m_sharedBufferHandle = std::move(params->memory);
     DCHECK(!m_sharedBuffer);
-    m_sharedBuffer = m_sharedBufferHandle->MapAtOffset(buffer->offset, SensorReadBuffer::kReadBufferSize);
+    m_sharedBuffer = m_sharedBufferHandle->MapAtOffset(SensorInitParams::kReadBufferSize, params->buffer_offset);
 
     if (!m_sharedBuffer) {
         handleSensorError();

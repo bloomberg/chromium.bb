@@ -59,9 +59,11 @@ public:
         double timestamp;
         double reading[3];
     };
-    static_assert(sizeof(Reading) == device::mojom::blink::SensorReadBuffer::kReadBufferSize, "Check reading size");
+    static_assert(sizeof(Reading) == device::mojom::blink::SensorInitParams::kReadBufferSize, "Check reading size");
 
     const Reading& reading() const { return m_reading; }
+
+    const device::mojom::blink::SensorConfiguration* defaultConfig() const;
 
     // Updates internal reading from shared buffer.
     void updateInternalReading();
@@ -79,7 +81,7 @@ private:
     // Generic handler for a fatal error.
     void handleSensorError();
 
-    void onSensorCreated(device::mojom::blink::SensorReadBufferPtr, device::mojom::blink::SensorClientRequest);
+    void onSensorCreated(device::mojom::blink::SensorInitParamsPtr, device::mojom::blink::SensorClientRequest);
 
     device::mojom::blink::SensorType m_type;
     device::mojom::blink::ReportingMode m_mode;
@@ -88,7 +90,9 @@ private:
     ObserversSet m_observers;
 
     device::mojom::blink::SensorPtr m_sensor;
+    device::mojom::blink::SensorConfigurationPtr m_defaultConfig;
     mojo::Binding<device::mojom::blink::SensorClient> m_clientBinding;
+
     enum State {
         Uninitialized,
         Initializing,

@@ -14,7 +14,7 @@ namespace device {
 namespace {
 
 const uint64_t kSharedBufferSizeInBytes =
-    mojom::SensorReadBuffer::kReadBufferSize *
+    mojom::SensorInitParams::kReadBufferSize *
     static_cast<uint64_t>(mojom::SensorType::LAST);
 
 }  // namespace

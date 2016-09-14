@@ -17,7 +17,7 @@ namespace {
 uint64_t GetBufferOffset(mojom::SensorType type) {
   return (static_cast<uint64_t>(mojom::SensorType::LAST) -
           static_cast<uint64_t>(type)) *
-         mojom::SensorReadBuffer::kReadBufferSize;
+         mojom::SensorInitParams::kReadBufferSize;
 }
 
 }  // namespace
@@ -50,7 +50,7 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
   scoped_refptr<PlatformSensor> sensor = provider_->GetSensor(type);
   if (!sensor) {
     sensor = provider_->CreateSensor(
-        type, mojom::SensorReadBuffer::kReadBufferSize, GetBufferOffset(type));
+        type, mojom::SensorInitParams::kReadBufferSize, GetBufferOffset(type));
   }
 
   if (!sensor) {
@@ -60,12 +60,13 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
 
   auto sensor_impl = base::MakeUnique<SensorImpl>(sensor);
 
-  auto sensor_read_buffer = mojom::SensorReadBuffer::New();
-  sensor_read_buffer->memory = std::move(cloned_handle);
-  sensor_read_buffer->offset = GetBufferOffset(type);
-  sensor_read_buffer->mode = sensor->GetReportingMode();
+  auto init_params = mojom::SensorInitParams::New();
+  init_params->memory = std::move(cloned_handle);
+  init_params->buffer_offset = GetBufferOffset(type);
+  init_params->mode = sensor->GetReportingMode();
+  init_params->default_configuration = sensor->GetDefaultConfiguration();
 
-  callback.Run(std::move(sensor_read_buffer), sensor_impl->GetClient());
+  callback.Run(std::move(init_params), sensor_impl->GetClient());
 
   mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
 }

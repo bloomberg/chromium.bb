@@ -68,7 +68,8 @@ protected:
     virtual SensorReading* createSensorReading(SensorProxy*) = 0;
 
     using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
-    virtual SensorConfigurationPtr createSensorConfig(const SensorOptions&) = 0;
+    using SensorConfiguration = device::mojom::blink::SensorConfiguration;
+    virtual SensorConfigurationPtr createSensorConfig(const SensorOptions&, const SensorConfiguration& defaultConfiguration) = 0;
 
 private:
     void initSensorProxyIfNeeded();
