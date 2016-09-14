@@ -19,8 +19,6 @@
 #include "net/base/net_errors.h"
 #include "ui/android/window_android.h"
 
-using base::android::JavaParamRef;
-
 namespace blimp {
 namespace client {
 namespace {
@@ -35,7 +33,7 @@ GURL CreateAssignerGURL(const std::string& assigner_url) {
 }  // namespace
 
 static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& jobj,
+                  const base::android::JavaParamRef<jobject>& jobj,
                   const base::android::JavaParamRef<jstring>& jassigner_url,
                   jlong window_android_ptr) {
   return reinterpret_cast<intptr_t>(new BlimpClientSessionAndroid(
@@ -107,8 +105,9 @@ void BlimpClientSessionAndroid::OnDisconnected(int result) {
                           env, net::ErrorToShortString(result)));
 }
 
-void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
-                                        const JavaParamRef<jobject>& jobj) {
+void BlimpClientSessionAndroid::Destroy(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   delete this;
 }
 

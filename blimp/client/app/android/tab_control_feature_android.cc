@@ -9,14 +9,13 @@
 #include "jni/TabControlFeature_jni.h"
 #include "ui/gfx/geometry/size.h"
 
-using base::android::JavaParamRef;
-
 namespace blimp {
 namespace client {
 
-static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& jobj,
-                  const JavaParamRef<jobject>& blimp_client_session) {
+static jlong Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jobject>& blimp_client_session) {
   BlimpClientSession* client_session =
       BlimpClientSessionAndroid::FromJavaObject(env, blimp_client_session);
 
@@ -41,14 +40,15 @@ TabControlFeatureAndroid::TabControlFeatureAndroid(
 
 TabControlFeatureAndroid::~TabControlFeatureAndroid() {}
 
-void TabControlFeatureAndroid::Destroy(JNIEnv* env,
-                                       const JavaParamRef<jobject>& jobj) {
+void TabControlFeatureAndroid::Destroy(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
 void TabControlFeatureAndroid::OnContentAreaSizeChanged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jobject>& jobj,
     jint width,
     jint height,
     jfloat dp_to_px) {

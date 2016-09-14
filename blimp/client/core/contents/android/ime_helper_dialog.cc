@@ -9,8 +9,6 @@
 #include "jni/ImeHelperDialog_jni.h"
 #include "ui/android/window_android.h"
 
-using base::android::JavaParamRef;
-
 namespace blimp {
 namespace client {
 
@@ -48,9 +46,10 @@ void ImeHelperDialog::OnHideImeRequested() {
   Java_ImeHelperDialog_onHideImeRequested(env, java_obj_);
 }
 
-void ImeHelperDialog::OnImeTextEntered(JNIEnv* env,
-                                       const JavaParamRef<jobject>& jobj,
-                                       const JavaParamRef<jstring>& text) {
+void ImeHelperDialog::OnImeTextEntered(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jstring>& text) {
   std::string text_input = base::android::ConvertJavaStringToUTF8(env, text);
   base::ResetAndReturn(&text_submit_callback_).Run(text_input);
 }

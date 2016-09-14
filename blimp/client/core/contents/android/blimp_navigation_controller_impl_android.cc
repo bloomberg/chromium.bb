@@ -12,8 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "jni/BlimpNavigationControllerImpl_jni.h"
 
-using base::android::JavaParamRef;
-
 namespace blimp {
 namespace client {
 
@@ -72,31 +70,31 @@ BlimpNavigationControllerImplAndroid::GetTitle(JNIEnv* env, jobject jobj) {
 
 jboolean BlimpNavigationControllerImplAndroid::CanGoBack(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj) {
   return blimp_navigation_controller_impl_->CanGoBack();
 }
 
 jboolean BlimpNavigationControllerImplAndroid::CanGoForward(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj) {
   return blimp_navigation_controller_impl_->CanGoForward();
 }
 
 void BlimpNavigationControllerImplAndroid::GoBack(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj) {
   blimp_navigation_controller_impl_->GoBack();
 }
 
 void BlimpNavigationControllerImplAndroid::GoForward(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj) {
   blimp_navigation_controller_impl_->GoForward();
 }
 
 void BlimpNavigationControllerImplAndroid::Reload(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj) {
   blimp_navigation_controller_impl_->Reload();
 }
 

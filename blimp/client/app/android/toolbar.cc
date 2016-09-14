@@ -12,9 +12,6 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 
-using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
-
 namespace blimp {
 namespace client {
 
@@ -24,9 +21,10 @@ const int kDummyTabId = 0;
 
 }  // namespace
 
-static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& jobj,
-                  const JavaParamRef<jobject>& blimp_client_session) {
+static jlong Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jobject>& blimp_client_session) {
   BlimpClientSession* client_session =
       BlimpClientSessionAndroid::FromJavaObject(env, blimp_client_session);
 
@@ -52,13 +50,15 @@ Toolbar::~Toolbar() {
   navigation_feature_->RemoveDelegate(kDummyTabId);
 }
 
-void Toolbar::Destroy(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+void Toolbar::Destroy(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
-void Toolbar::OnUrlTextEntered(JNIEnv* env,
-                               const JavaParamRef<jobject>& jobj,
-                               const JavaParamRef<jstring>& text) {
+void Toolbar::OnUrlTextEntered(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jstring>& text) {
   std::string url = base::android::ConvertJavaStringToUTF8(env, text);
 
   // Build a search query, if |url| doesn't have a '.' anywhere.
@@ -69,16 +69,21 @@ void Toolbar::OnUrlTextEntered(JNIEnv* env,
   navigation_feature_->NavigateToUrlText(kDummyTabId, fixed_url.spec());
 }
 
-void Toolbar::OnReloadPressed(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+void Toolbar::OnReloadPressed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   navigation_feature_->Reload(kDummyTabId);
 }
 
-void Toolbar::OnForwardPressed(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+void Toolbar::OnForwardPressed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   navigation_feature_->GoForward(kDummyTabId);
 }
 
-jboolean Toolbar::OnBackPressed(JNIEnv* env,
-                                const JavaParamRef<jobject>& jobj) {
+jboolean Toolbar::OnBackPressed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   navigation_feature_->GoBack(kDummyTabId);
 
   // TODO(dtrainor): Find a way to determine whether or not we're at the end of
@@ -88,7 +93,7 @@ jboolean Toolbar::OnBackPressed(JNIEnv* env,
 
 void Toolbar::OnUrlChanged(int tab_id, const GURL& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jurl(
+  base::android::ScopedJavaLocalRef<jstring> jurl(
       base::android::ConvertUTF8ToJavaString(env, url.spec()));
 
   Java_Toolbar_onEngineSentUrl(env, java_obj_, jurl);
@@ -96,14 +101,15 @@ void Toolbar::OnUrlChanged(int tab_id, const GURL& url) {
 
 void Toolbar::OnFaviconChanged(int tab_id, const SkBitmap& favicon) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jfavicon(gfx::ConvertToJavaBitmap(&favicon));
+  base::android::ScopedJavaLocalRef<jobject> jfavicon(
+      gfx::ConvertToJavaBitmap(&favicon));
 
   Java_Toolbar_onEngineSentFavicon(env, java_obj_, jfavicon);
 }
 
 void Toolbar::OnTitleChanged(int tab_id, const std::string& title) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jtitle(
+  base::android::ScopedJavaLocalRef<jstring> jtitle(
       base::android::ConvertUTF8ToJavaString(env, title));
 
   Java_Toolbar_onEngineSentTitle(env, java_obj_, jtitle);
