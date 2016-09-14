@@ -856,7 +856,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/SigninManager.java",
   "java/src/org/chromium/chrome/browser/signin/SigninPromoUtil.java",
   "java/src/org/chromium/chrome/browser/snackbar/DataUseSnackbarController.java",
-  "java/src/org/chromium/chrome/browser/snackbar/LofiBarController.java",
   "java/src/org/chromium/chrome/browser/snackbar/Snackbar.java",
   "java/src/org/chromium/chrome/browser/snackbar/SnackbarCollection.java",
   "java/src/org/chromium/chrome/browser/snackbar/SnackbarManager.java",

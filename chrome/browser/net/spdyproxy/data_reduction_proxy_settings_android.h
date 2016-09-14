@@ -60,17 +60,10 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyManaged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void IncrementLoFiSnackbarShown(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void IncrementLoFiUserRequestsForImages(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   void SetDataReductionProxyEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean enabled);
-
   jlong GetDataReductionLastUpdateTime(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

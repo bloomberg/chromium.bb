@@ -853,18 +853,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Data Saver -->
-      <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_MESSAGE" desc="Message shown when a page is opened in low fidelity mode when there is a slow unreliable connection.">
-        Slow connection detected
-      </message>
-      <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_ACTION" desc="Button to load original full-resolution images when a page is opened in low fidelity mode when there is a slow unreliable connection.">
-        Load images
-      </message>
-      <message name="IDS_DATA_REDUCTION_LO_FI_PREVIEW_SNACKBAR_MESSAGE" desc="Message shown when a page is opened in preview mode when there is a slow unreliable connection.">
-        Slow connection
-      </message>
-      <message name="IDS_DATA_REDUCTION_LO_FI_PREVIEW_SNACKBAR_ACTION" desc="Button to load the original full-resolution website when a page is opened in preview mode.">
-        Load original
-      </message>
       <message name="IDS_DATA_REDUCTION_TITLE" desc="Menu item for Data Saver, which allows users to save mobile data by compressing network traffic.">
         Data Saver
       </message>

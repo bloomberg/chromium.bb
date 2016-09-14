@@ -163,13 +163,6 @@ void NavigationControllerAndroid::ReloadBypassingCache(
   navigation_controller_->ReloadBypassingCache(check_for_repost);
 }
 
-void NavigationControllerAndroid::ReloadDisableLoFi(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean check_for_repost) {
-  navigation_controller_->ReloadDisableLoFi(check_for_repost);
-}
-
 void NavigationControllerAndroid::RequestRestoreLoad(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

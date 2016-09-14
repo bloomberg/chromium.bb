@@ -32,7 +32,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -74,7 +73,6 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.snackbar.LofiBarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -381,8 +379,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private ChromeDownloadDelegate mDownloadDelegate;
 
     protected Handler mHandler;
-
-    private LofiBarController mLoFiBarController;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -1028,16 +1024,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void reloadIgnoringCache() {
         if (getWebContents() != null) {
             getWebContents().getNavigationController().reloadBypassingCache(true);
-        }
-    }
-
-    /**
-     * Reloads the current page content with Lo-Fi off.
-     * This version ignores the cache and reloads from the network.
-     */
-    public void reloadDisableLoFi() {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().reloadDisableLoFi(true);
         }
     }
 
@@ -1767,10 +1753,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
-
-        if (getLoFiBarController() != null) {
-            mLoFiBarController.resetLoFiPopupShownForPageLoad();
-        }
 
         updateTitle();
         removeSadTabIfPresent();
@@ -2520,15 +2502,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         return getActivity().getSnackbarManager();
     }
 
-    private LofiBarController getLoFiBarController() {
-        ThreadUtils.assertOnUiThread();
-        if (mLoFiBarController == null && getSnackbarManager() != null) {
-            mLoFiBarController =
-                    new LofiBarController(mThemedApplicationContext, getSnackbarManager());
-        }
-        return mLoFiBarController;
-    }
-
     /**
      * @return The native pointer representing the native side of this {@link Tab} object.
      */
@@ -2971,18 +2944,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public String getOriginalUrl() {
         return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
-    }
-
-    /**
-     * If a Lo-Fi snackbar has not been shown yet for this page load, a Lo-Fi snackbar is shown.
-     *
-     * @param isPreview Whether the Lo-Fi response was a preview response.
-     */
-    @CalledByNative
-    public void onLoFiResponseReceived(boolean isPreview) {
-        if (getLoFiBarController() != null) {
-            mLoFiBarController.maybeCreateLoFiBar(this, isPreview);
-        }
     }
 
     /**

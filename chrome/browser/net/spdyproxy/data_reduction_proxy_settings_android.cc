@@ -85,18 +85,6 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(
   return Settings()->IsDataReductionProxyManaged();
 }
 
-void DataReductionProxySettingsAndroid::IncrementLoFiSnackbarShown(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  Settings()->IncrementLoFiUIShown();
-}
-
-void DataReductionProxySettingsAndroid::IncrementLoFiUserRequestsForImages(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  Settings()->IncrementLoFiUserRequestsForImages();
-}
-
 void DataReductionProxySettingsAndroid::SetDataReductionProxyEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

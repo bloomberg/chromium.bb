@@ -129,13 +129,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
-    public void reloadDisableLoFi(boolean checkForRepost) {
-        if (mNativeNavigationControllerAndroid != 0) {
-            nativeReloadDisableLoFi(mNativeNavigationControllerAndroid, checkForRepost);
-        }
-    }
-
-    @Override
     public void cancelPendingReload() {
         if (mNativeNavigationControllerAndroid != 0) {
             nativeCancelPendingReload(mNativeNavigationControllerAndroid);
@@ -314,8 +307,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     private native void nativeReloadToRefreshContent(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
     private native void nativeReloadBypassingCache(long nativeNavigationControllerAndroid,
-            boolean checkForRepost);
-    private native void nativeReloadDisableLoFi(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
     private native void nativeLoadUrl(long nativeNavigationControllerAndroid, String url,
             int loadUrlType, int transitionType, String referrerUrl, int referrerPolicy,

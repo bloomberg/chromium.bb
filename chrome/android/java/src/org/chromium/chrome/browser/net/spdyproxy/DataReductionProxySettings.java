@@ -182,22 +182,6 @@ public class DataReductionProxySettings {
         nativeSetLoFiLoadImageRequested(mNativeDataReductionProxySettings);
     }
 
-    /**
-     * Counts the number of times the Lo-Fi snackbar has been shown.
-     *  */
-    public void incrementLoFiSnackbarShown() {
-        nativeIncrementLoFiSnackbarShown(mNativeDataReductionProxySettings);
-    }
-
-    /**
-     * Counts the number of requests to reload the page with images from the Lo-Fi snackbar. If the
-     * user requests the page with images a certain number of times, then Lo-Fi is disabled for the
-     * session.
-     *  */
-    public void incrementLoFiUserRequestsForImages() {
-        nativeIncrementLoFiUserRequestsForImages(mNativeDataReductionProxySettings);
-    }
-
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
     public boolean isDataReductionProxyManaged() {
         return nativeIsDataReductionProxyManaged(mNativeDataReductionProxySettings);
@@ -316,10 +300,6 @@ public class DataReductionProxySettings {
     private native boolean nativeWasLoFiLoadImageRequestedBefore(
             long nativeDataReductionProxySettingsAndroid);
     private native void nativeSetLoFiLoadImageRequested(
-            long nativeDataReductionProxySettingsAndroid);
-    private native void nativeIncrementLoFiSnackbarShown(
-            long nativeDataReductionProxySettingsAndroid);
-    private native void nativeIncrementLoFiUserRequestsForImages(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
             long nativeDataReductionProxySettingsAndroid);

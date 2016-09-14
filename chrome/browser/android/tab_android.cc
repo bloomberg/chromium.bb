@@ -812,11 +812,6 @@ void TabAndroid::ShowOfflinePages() {
   Java_Tab_showOfflinePages(env, weak_java_tab_.get(env));
 }
 
-void TabAndroid::OnLoFiResponseReceived(bool is_preview) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onLoFiResponseReceived(env, weak_java_tab_.get(env), is_preview);
-}
-
 jboolean TabAndroid::IsOfflinePage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   return offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
