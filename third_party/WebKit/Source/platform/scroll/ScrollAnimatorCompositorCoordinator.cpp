@@ -82,7 +82,7 @@ bool ScrollAnimatorCompositorCoordinator::addAnimation(
     std::unique_ptr<CompositorAnimation> animation)
 {
     if (m_compositorPlayer->isElementAttached()) {
-        m_compositorPlayer->addAnimation(animation.release());
+        m_compositorPlayer->addAnimation(std::move(animation));
         return true;
     }
     return false;

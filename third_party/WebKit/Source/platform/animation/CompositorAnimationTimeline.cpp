@@ -38,13 +38,13 @@ CompositorAnimationHost CompositorAnimationTimeline::compositorAnimationHost()
 void CompositorAnimationTimeline::playerAttached(const blink::CompositorAnimationPlayerClient& client)
 {
     if (client.compositorPlayer())
-        m_animationTimeline->AttachPlayer(client.compositorPlayer()->animationPlayer());
+        m_animationTimeline->AttachPlayer(client.compositorPlayer()->ccAnimationPlayer());
 }
 
 void CompositorAnimationTimeline::playerDestroyed(const blink::CompositorAnimationPlayerClient& client)
 {
     if (client.compositorPlayer())
-        m_animationTimeline->DetachPlayer(client.compositorPlayer()->animationPlayer());
+        m_animationTimeline->DetachPlayer(client.compositorPlayer()->ccAnimationPlayer());
 }
 
 } // namespace blink

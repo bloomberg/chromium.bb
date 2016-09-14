@@ -59,13 +59,12 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate)
     std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
     std::unique_ptr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
-    cc::AnimationPlayer* ccPlayer = player->animationPlayer();
+    cc::AnimationPlayer* ccPlayer = player->ccAnimationPlayer();
 
     std::unique_ptr<CompositorAnimationCurve> curve = CompositorFloatAnimationCurve::create();
     std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
         *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
-    // TODO(loyso): CompositorPlayer::addAnimation should consume unique_ptr.
-    player->addAnimation(animation.release());
+    player->addAnimation(std::move(animation));
 
     player->setAnimationDelegate(delegate.get());
     EXPECT_FALSE(delegate->m_finished);
@@ -85,13 +84,12 @@ TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
     std::unique_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
     std::unique_ptr<CompositorAnimationPlayer> player = CompositorAnimationPlayer::create();
-    scoped_refptr<cc::AnimationPlayer> ccPlayer = player->animationPlayer();
+    scoped_refptr<cc::AnimationPlayer> ccPlayer = player->ccAnimationPlayer();
 
     std::unique_ptr<CompositorAnimationCurve> curve = CompositorFloatAnimationCurve::create();
     std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
         *curve, CompositorTargetProperty::OPACITY, 1, 0);
-    // TODO(loyso): CompositorPlayer::addAnimation should consume unique_ptr.
-    player->addAnimation(animation.release());
+    player->addAnimation(std::move(animation));
 
     player->setAnimationDelegate(delegate.get());
     EXPECT_FALSE(delegate->m_finished);
@@ -114,7 +112,7 @@ TEST_F(CompositorAnimationPlayerTest, CompositorPlayerDeletionDetachesFromCCTime
     std::unique_ptr<CompositorAnimationPlayerTestClient> client(new CompositorAnimationPlayerTestClient);
 
     scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();
-    scoped_refptr<cc::AnimationPlayer> ccPlayer = client->m_player->animationPlayer();
+    scoped_refptr<cc::AnimationPlayer> ccPlayer = client->m_player->ccAnimationPlayer();
     EXPECT_FALSE(ccPlayer->animation_timeline());
 
     timeline->playerAttached(*client);

@@ -324,7 +324,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
     std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0);
 
     m_contentLayer->layer()->setDrawsContent(true);
-    m_compositorPlayer->addAnimation(animation.release());
+    m_compositorPlayer->addAnimation(std::move(animation));
 
     invalidate();
     m_owningWebViewImpl->mainFrameImpl()->frameWidget()->scheduleAnimation();

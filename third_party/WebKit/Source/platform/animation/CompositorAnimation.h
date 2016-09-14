@@ -65,7 +65,7 @@ public:
     double iterationStart() const;
     void setIterationStart(double);
 
-    std::unique_ptr<cc::Animation> passAnimation();
+    std::unique_ptr<cc::Animation> releaseCcAnimation();
 
     std::unique_ptr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
 

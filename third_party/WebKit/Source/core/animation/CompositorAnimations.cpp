@@ -327,7 +327,7 @@ void CompositorAnimations::startAnimationOnCompositor(const Element& element, in
         int id = compositorAnimation->id();
         CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
         DCHECK(compositorPlayer);
-        compositorPlayer->addAnimation(compositorAnimation.release());
+        compositorPlayer->addAnimation(std::move(compositorAnimation));
         startedAnimationIds.append(id);
     }
     DCHECK(!startedAnimationIds.isEmpty());

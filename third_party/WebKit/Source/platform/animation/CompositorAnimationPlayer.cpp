@@ -8,7 +8,6 @@
 #include "cc/animation/animation_timeline.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
-#include "public/platform/WebLayer.h"
 
 namespace blink {
 
@@ -27,7 +26,7 @@ CompositorAnimationPlayer::~CompositorAnimationPlayer()
         m_animationPlayer->animation_timeline()->DetachPlayer(m_animationPlayer);
 }
 
-cc::AnimationPlayer* CompositorAnimationPlayer::animationPlayer() const
+cc::AnimationPlayer* CompositorAnimationPlayer::ccAnimationPlayer() const
 {
     return m_animationPlayer.get();
 }
@@ -53,23 +52,22 @@ bool CompositorAnimationPlayer::isElementAttached() const
     return !!m_animationPlayer->element_id();
 }
 
-void CompositorAnimationPlayer::addAnimation(CompositorAnimation* animation)
+void CompositorAnimationPlayer::addAnimation(std::unique_ptr<CompositorAnimation> animation)
 {
-    m_animationPlayer->AddAnimation(animation->passAnimation());
-    delete animation;
+    m_animationPlayer->AddAnimation(animation->releaseCcAnimation());
 }
 
-void CompositorAnimationPlayer::removeAnimation(uint64_t animationId)
+void CompositorAnimationPlayer::removeAnimation(int animationId)
 {
     m_animationPlayer->RemoveAnimation(animationId);
 }
 
-void CompositorAnimationPlayer::pauseAnimation(uint64_t animationId, double timeOffset)
+void CompositorAnimationPlayer::pauseAnimation(int animationId, double timeOffset)
 {
     m_animationPlayer->PauseAnimation(animationId, timeOffset);
 }
 
-void CompositorAnimationPlayer::abortAnimation(uint64_t animationId)
+void CompositorAnimationPlayer::abortAnimation(int animationId)
 {
     m_animationPlayer->AbortAnimation(animationId);
 }

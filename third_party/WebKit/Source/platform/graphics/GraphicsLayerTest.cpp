@@ -123,7 +123,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     player.compositorPlayer()->attachElement(m_platformLayer->elementId());
     ASSERT_TRUE(player.compositorPlayer()->isElementAttached());
 
-    player.compositorPlayer()->addAnimation(floatAnimation.release());
+    player.compositorPlayer()->addAnimation(std::move(floatAnimation));
 
     ASSERT_TRUE(m_platformLayer->hasActiveAnimationForTesting());
 

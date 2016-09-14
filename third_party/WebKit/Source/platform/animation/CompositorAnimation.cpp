@@ -121,7 +121,7 @@ void CompositorAnimation::setFillMode(FillMode fillMode)
     m_animation->set_fill_mode(fillMode);
 }
 
-std::unique_ptr<cc::Animation> CompositorAnimation::passAnimation()
+std::unique_ptr<cc::Animation> CompositorAnimation::releaseCcAnimation()
 {
     m_animation->set_needs_synchronized_start_time(true);
     return std::move(m_animation);
