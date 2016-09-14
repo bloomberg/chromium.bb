@@ -91,8 +91,7 @@ public class CronetUrlRequestContext extends CronetEngine {
      * estimator.
      */
     @GuardedBy("mNetworkQualityLock")
-    private int mEffectiveConnectionType =
-            EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    private int mEffectiveConnectionType = EffectiveConnectionType.TYPE_UNKNOWN;
 
     @GuardedBy("mNetworkQualityLock")
     private final ObserverList<NetworkQualityRttListener> mRttListenerList =

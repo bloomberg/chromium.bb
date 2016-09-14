@@ -347,7 +347,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Verify that effective connection type callback is received and
         // effective connection type is correctly set.
         assertTrue(testFramework.mCronetEngine.getEffectiveConnectionType()
-                != EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+                != EffectiveConnectionType.TYPE_UNKNOWN);
 
         testFramework.mCronetEngine.shutdown();
     }

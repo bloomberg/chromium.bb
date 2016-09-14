@@ -109,7 +109,7 @@ final class JavaCronetEngine extends CronetEngine {
 
     @Override
     public int getEffectiveConnectionType() {
-        return EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+        return EffectiveConnectionType.TYPE_UNKNOWN;
     }
 
     @Override
