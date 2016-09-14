@@ -2,6 +2,8 @@
 
 [TOC]
 
+Google employee? See [go/building-chrome-mac](https://goto.google.com/building-chrome-mac) for extra tips.
+
 ## Prerequisites
 
 *   A Mac running 10.9+.
