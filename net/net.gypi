@@ -1777,6 +1777,7 @@
       'quic/test_tools/quic_test_packet_maker.h',
       'quic/test_tools/quic_test_utils.cc',
       'quic/test_tools/quic_test_utils.h',
+      'quic/test_tools/quic_test_utils_test.cc',
       'quic/test_tools/reliable_quic_stream_peer.cc',
       'quic/test_tools/reliable_quic_stream_peer.h',
       'quic/test_tools/rtt_stats_peer.cc',
