@@ -45,7 +45,13 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
                const std::string& local_id,
                const base::Time& capture_time,
                State state);
+    // Constructor for locally stored data.
+    UploadInfo(const std::string& local_id,
+               const base::Time& capture_time,
+               State state,
+               const base::string16& file_size);
     UploadInfo(const std::string& upload_id, const base::Time& upload_time);
+    UploadInfo(const UploadInfo& upload_info);
     ~UploadInfo();
 
     // These fields are only valid when |state| == UploadInfo::State::Uploaded.
@@ -60,6 +66,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
     base::Time capture_time;
 
     State state;
+
+    // Formatted file size for locally stored data.
+    base::string16 file_size;
   };
 
   class Delegate {

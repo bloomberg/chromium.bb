@@ -32,6 +32,7 @@ const CrashesUILocalizedString kCrashesUILocalizedStrings[] = {
     {"noCrashesMessage", IDS_CRASH_NO_CRASHES_MESSAGE},
     {"uploadCrashesLinkText", IDS_CRASH_UPLOAD_MESSAGE},
     {"uploadNowLinkText", IDS_CRASH_UPLOAD_NOW_LINK_TEXT},
+    {"crashSizeMessage", IDS_CRASH_SIZE_MESSAGE},
 };
 
 const size_t kCrashesUILocalizedStringsCount =
@@ -76,6 +77,7 @@ void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
     }
     crash->SetString("local_id", info.local_id);
     crash->SetString("state", UploadInfoStateAsString(info.state));
+    crash->SetString("file_size", info.file_size);
     out_value->Append(std::move(crash));
   }
 }

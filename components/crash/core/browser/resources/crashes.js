@@ -101,23 +101,30 @@ function updateCrashList(
       link.textContent = loadTimeData.getString('bugLinkText');
       linkBlock.appendChild(link);
       crashBlock.appendChild(linkBlock);
-    } else if (crash.state == 'pending_user_requested') {
-      var userRequested = document.createElement('p');
-      userRequested.textContent =
-          loadTimeData.getStringF('crashUserRequested', crash.time);
-      crashBlock.appendChild(userRequested);
-    } else if (crash.state == 'pending' || crash.state == 'not_uploaded') {
-      if (crash.state == 'pending')
+    } else {
+      if (crash.state == 'pending_user_requested')
+        var textContentKey = 'crashUserRequested';
+      else if (crash.state == 'pending')
         var textContentKey = 'crashPending';
-      else
+      else if (crash.state == 'not_uploaded')
         var textContentKey = 'crashNotUploaded';
+      else
+        continue;
 
-      var notUploaded = document.createElement('p');
-      notUploaded.textContent = loadTimeData.getStringF(textContentKey,
-                                                    crash.time);
-      crashBlock.appendChild(notUploaded);
+      var crashText = document.createElement('p');
+      crashText.textContent = loadTimeData.getStringF(textContentKey,
+                                                      crash.time);
+      crashBlock.appendChild(crashText);
 
-      if (manualUploads) {
+      if (crash.file_size != '') {
+        var crashSizeText =  document.createElement('p');
+        crashSizeText.textContent = loadTimeData.getStringF('crashSizeMessage',
+                                                            crash.file_size);
+        crashBlock.appendChild(crashSizeText);
+      }
+
+      // Do not show "Send now" link for already requested crashes.
+      if (crash.state != 'pending_user_requested' && manualUploads) {
         var uploadNowLinkBlock = document.createElement('p');
         var link = document.createElement('a');
         link.href = '';

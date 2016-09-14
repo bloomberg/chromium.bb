@@ -40,4 +40,7 @@
   <message name="IDS_CRASH_UPLOAD_NOW_LINK_TEXT" desc="Link text for manual uploads of a crash report">
     Send now
   </message>
+  <message name="IDS_CRASH_SIZE_MESSAGE" desc="Format for displaying file size information for not uploaded crash reports.">
+    The size on the local storage is <ph name="CRASH_SIZE">$1<ex>10 kB</ex></ph>.
+  </message>
 </grit-part>

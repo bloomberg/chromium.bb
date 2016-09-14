@@ -8,6 +8,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "ui/base/text/bytes_formatting.h"
 
 CrashUploadListAndroid::CrashUploadListAndroid(
     Delegate* delegate,
@@ -41,6 +42,10 @@ void CrashUploadListAndroid::LoadUnsuccessfulUploadList(
     if (!base::GetFileInfo(file, &info))
       continue;
 
+    int64_t file_size = 0;
+    if (!base::GetFileSize(file, &file_size))
+      continue;
+
     // Crash reports can have multiple extensions (e.g. foo.dmp, foo.dmp.try1,
     // foo.skipped.try0).
     file = file.BaseName();
@@ -55,9 +60,9 @@ void CrashUploadListAndroid::LoadUnsuccessfulUploadList(
       continue;
 
     id = id.substr(pos + 1);
-    UploadList::UploadInfo upload(std::string(), base::Time(), id,
-                                  info.creation_time,
-                                  UploadList::UploadInfo::State::NotUploaded);
+    UploadList::UploadInfo upload(id, info.creation_time,
+                                  UploadList::UploadInfo::State::NotUploaded,
+                                  ui::FormatBytes(file_size));
     uploads->push_back(upload);
   }
 }

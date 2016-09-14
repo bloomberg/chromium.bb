@@ -28,9 +28,26 @@ UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
       capture_time(capture_time),
       state(state) {}
 
+UploadList::UploadInfo::UploadInfo(const std::string& local_id,
+                                   const base::Time& capture_time,
+                                   State state,
+                                   const base::string16& file_size)
+    : local_id(local_id),
+      capture_time(capture_time),
+      state(state),
+      file_size(file_size) {}
+
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time)
     : upload_id(upload_id), upload_time(upload_time), state(State::Uploaded) {}
+
+UploadList::UploadInfo::UploadInfo(const UploadInfo& upload_info)
+    : upload_id(upload_info.upload_id),
+      upload_time(upload_info.upload_time),
+      local_id(upload_info.local_id),
+      capture_time(upload_info.capture_time),
+      state(upload_info.state),
+      file_size(upload_info.file_size) {}
 
 UploadList::UploadInfo::~UploadInfo() {}
 
