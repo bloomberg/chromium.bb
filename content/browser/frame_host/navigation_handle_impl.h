@@ -8,6 +8,7 @@
 #include "content/public/browser/navigation_handle.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -117,7 +118,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
   NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
-      RenderFrameHost* render_frame_host) override;
+      RenderFrameHost* render_frame_host,
+      const std::string& raw_response_header) override;
+  void CallDidCommitNavigationForTesting(const GURL& url) override;
 
   NavigationData* GetNavigationData() override;
 

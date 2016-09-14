@@ -204,7 +204,12 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Simulates the reception of the network response.
   virtual NavigationThrottle::ThrottleCheckResult
-  CallWillProcessResponseForTesting(RenderFrameHost* render_frame_host) = 0;
+  CallWillProcessResponseForTesting(
+      RenderFrameHost* render_frame_host,
+      const std::string& raw_response_headers) = 0;
+
+  // Simulates the navigation being committed.
+  virtual void CallDidCommitNavigationForTesting(const GURL& url) = 0;
 
   // The NavigationData that the embedder returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will

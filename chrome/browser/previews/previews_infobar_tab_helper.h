@@ -37,6 +37,7 @@ class PreviewsInfoBarTabHelper
 
  private:
   friend class content::WebContentsUserData<PreviewsInfoBarTabHelper>;
+  friend class PreviewsInfoBarTabHelperUnitTest;
 
   explicit PreviewsInfoBarTabHelper(content::WebContents* web_contents);
 

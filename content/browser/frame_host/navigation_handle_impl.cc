@@ -305,15 +305,40 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
 
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillProcessResponseForTesting(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    const std::string& raw_response_headers) {
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(raw_response_headers);
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
-                      scoped_refptr<net::HttpResponseHeaders>(), SSLStatus(),
+                      headers, SSLStatus(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
   return result;
+}
+
+void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+
+  params.page_id = 1;
+  params.nav_entry_id = 1;
+  params.url = url;
+  params.referrer = content::Referrer();
+  params.transition = ui::PAGE_TRANSITION_TYPED;
+  params.redirects = std::vector<GURL>();
+  params.should_update_history = false;
+  params.searchable_form_url = GURL();
+  params.searchable_form_encoding = std::string();
+  params.did_create_new_entry = false;
+  params.gesture = NavigationGestureUser;
+  params.was_within_same_page = false;
+  params.method = "GET";
+  params.page_state = PageState::CreateFromURL(url);
+  params.contents_mime_type = std::string("text/html");
+
+  DidCommitNavigation(params, false, render_frame_host_);
 }
 
 NavigationData* NavigationHandleImpl::GetNavigationData() {

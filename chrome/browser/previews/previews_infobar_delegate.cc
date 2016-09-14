@@ -29,28 +29,18 @@ const char kUMAPreviewsInfoBarActionOffline[] =
 const char kUMAPreviewsInfoBarActionLitePage[] =
     "Previews.InfoBarAction.LitePage";
 
-// Actions on the previews infobar. This enum must remain synchronized with the
-// enum of the same name in metrics/histograms/histograms.xml.
-enum PreviewsInfoBarAction {
-  INFOBAR_SHOWN = 0,
-  INFOBAR_LOAD_ORIGINAL_CLICKED = 1,
-  INFOBAR_DISMISSED_BY_USER = 2,
-  INFOBAR_DISMISSED_BY_NAVIGATION = 3,
-  INFOBAR_INDEX_BOUNDARY
-};
-
 void RecordPreviewsInfoBarAction(
     PreviewsInfoBarDelegate::PreviewsInfoBarType infobar_type,
-    PreviewsInfoBarAction action) {
+    PreviewsInfoBarDelegate::PreviewsInfoBarAction action) {
   if (infobar_type == PreviewsInfoBarDelegate::LOFI) {
     UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionLoFi, action,
-                              INFOBAR_INDEX_BOUNDARY);
+                              PreviewsInfoBarDelegate::INFOBAR_INDEX_BOUNDARY);
   } else if (infobar_type == PreviewsInfoBarDelegate::LITE_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionLitePage, action,
-                              INFOBAR_INDEX_BOUNDARY);
+                              PreviewsInfoBarDelegate::INFOBAR_INDEX_BOUNDARY);
   } else if (infobar_type == PreviewsInfoBarDelegate::OFFLINE) {
     UMA_HISTOGRAM_ENUMERATION(kUMAPreviewsInfoBarActionOffline, action,
-                              INFOBAR_INDEX_BOUNDARY);
+                              PreviewsInfoBarDelegate::INFOBAR_INDEX_BOUNDARY);
   }
 }
 

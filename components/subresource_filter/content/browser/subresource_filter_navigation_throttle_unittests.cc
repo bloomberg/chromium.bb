@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_navigation_throttle.h"
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -113,7 +114,7 @@ class SubresourceFilterNavigationThrottleTest
   }
 
   void SimulateWillProcessResponse() {
-    handle()->CallWillProcessResponseForTesting(main_rfh());
+    handle()->CallWillProcessResponseForTesting(main_rfh(), std::string());
   }
 
  private:
