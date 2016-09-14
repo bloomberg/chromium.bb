@@ -123,7 +123,7 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!tmp_dir->CreateUniqueTempDir())
     return false;
 
-  *mount_point_dir = tmp_dir->path().AppendASCII(mount_point_name);
+  *mount_point_dir = tmp_dir->GetPath().AppendASCII(mount_point_name);
   // Create the mount point.
   if (!base::CreateDirectory(*mount_point_dir))
     return false;
@@ -546,7 +546,8 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     EXPECT_TRUE(InitializeDriveService(fake_drive_service_, &resource_ids));
 
     return new drive::DriveIntegrationService(
-        profile, NULL, fake_drive_service_, "", test_cache_root_.path(), NULL);
+        profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
+        nullptr);
   }
 
   base::ScopedTempDir test_cache_root_;
@@ -564,8 +565,6 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   MultiProfileDriveFileSystemExtensionApiTest() : second_profile_(NULL) {}
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     user_manager::UserManager::Get()->UserLoggedIn(
@@ -583,6 +582,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   }
 
   void InitTestFileSystem() override {
+    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
+
     // This callback will get called during Profile creation.
     create_drive_integration_service_ = base::Bind(
         &MultiProfileDriveFileSystemExtensionApiTest::
@@ -603,8 +604,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     base::FilePath cache_dir;
-    base::CreateTemporaryDirInDir(tmp_dir_.path(), base::FilePath::StringType(),
-                                  &cache_dir);
+    base::CreateTemporaryDirInDir(tmp_dir_.GetPath(),
+                                  base::FilePath::StringType(), &cache_dir);
 
     drive::FakeDriveService* const fake_drive_service =
         new drive::FakeDriveService;
@@ -707,12 +708,9 @@ class LocalAndDriveFileSystemExtensionApiTest
     std::map<std::string, std::string> resource_ids;
     EXPECT_TRUE(InitializeDriveService(fake_drive_service_, &resource_ids));
 
-    return new drive::DriveIntegrationService(profile,
-                                              NULL,
-                                              fake_drive_service_,
-                                              "drive",
-                                              test_cache_root_.path(),
-                                              NULL);
+    return new drive::DriveIntegrationService(
+        profile, nullptr, fake_drive_service_, "drive",
+        test_cache_root_.GetPath(), nullptr);
   }
 
  private:
