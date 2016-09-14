@@ -96,10 +96,6 @@ void CertErrors::Add(CertErrorNodeType node_type,
   AddNode(base::MakeUnique<CertErrorNode>(node_type, id, std::move(params)));
 }
 
-void CertErrors::Add(CertErrorId id) {
-  AddError(id);
-}
-
 void CertErrors::AddError(CertErrorId id,
                           std::unique_ptr<CertErrorParams> params) {
   Add(CertErrorNodeType::TYPE_ERROR, id, std::move(params));

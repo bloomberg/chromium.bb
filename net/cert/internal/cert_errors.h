@@ -24,7 +24,7 @@
 //
 //   * [optional] Child nodes.
 //
-//     Error nodes are arranged in a tree. The parent/child hiearchy is used to
+//     Error nodes are arranged in a tree. The parent/child hierarchy is used to
 //     group errors that share some common state.
 //     For instance during path processing it is useful to group the
 //     errors/warnings that happened while processing certificate "i" as
@@ -124,10 +124,6 @@ class NET_EXPORT CertErrors {
   void Add(CertErrorNodeType node_type,
            CertErrorId id,
            std::unique_ptr<CertErrorParams> params);
-
-  // TODO(crbug.com/634443): Eliminate this and use AddError() instead (which
-  // is less ambiguous).
-  void Add(CertErrorId id);
 
   void AddError(CertErrorId id, std::unique_ptr<CertErrorParams> params);
   void AddError(CertErrorId id);

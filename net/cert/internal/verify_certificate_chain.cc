@@ -93,12 +93,12 @@ WARN_UNUSED_RESULT bool VerifyTimeValidity(const ParsedCertificate& cert,
                                            const der::GeneralizedTime time,
                                            CertErrors* errors) {
   if (time < cert.tbs().validity_not_before) {
-    errors->Add(kValidityFailedNotBefore);
+    errors->AddError(kValidityFailedNotBefore);
     return false;
   }
 
   if (cert.tbs().validity_not_after < time) {
-    errors->Add(kValidityFailedNotAfter);
+    errors->AddError(kValidityFailedNotAfter);
     return false;
   }
 
@@ -194,7 +194,7 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
   if (!VerifySignedData(cert.signature_algorithm(), cert.tbs_certificate_tlv(),
                         cert.signature_value(), working_spki, signature_policy,
                         errors)) {
-    errors->Add(kVerifySignedDataFailed);
+    errors->AddError(kVerifySignedDataFailed);
     return false;
   }
 
@@ -209,7 +209,7 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
   // Verify the certificate's issuer name matches the issuing certificate's
   // subject name. (RFC 5280 section 6.1.3 step a.4)
   if (cert.normalized_issuer() != working_normalized_issuer_name) {
-    errors->Add(kSubjectDoesNotMatchIssuer);
+    errors->AddError(kSubjectDoesNotMatchIssuer);
     return false;
   }
 
@@ -221,7 +221,7 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
     for (const NameConstraints* nc : name_constraints_list) {
       if (!nc->IsPermittedCert(cert.normalized_subject(),
                                cert.subject_alt_names())) {
-        errors->Add(kNotPermittedByNameConstraints);
+        errors->AddError(kNotPermittedByNameConstraints);
         return false;
       }
     }
@@ -280,12 +280,12 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
   // This code implicitly rejects non version 3 intermediates, since they
   // can't contain a BasicConstraints extension.
   if (!cert.has_basic_constraints()) {
-    errors->Add(kMissingBasicConstraints);
+    errors->AddError(kMissingBasicConstraints);
     return false;
   }
 
   if (!cert.basic_constraints().is_ca) {
-    errors->Add(kBasicConstraintsIndicatesNotCa);
+    errors->AddError(kBasicConstraintsIndicatesNotCa);
     return false;
   }
 
@@ -296,7 +296,7 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
   //    max_path_length by 1.
   if (!IsSelfIssued(cert)) {
     if (*max_path_length_ptr == 0) {
-      errors->Add(kMaxPathLengthViolated);
+      errors->AddError(kMaxPathLengthViolated);
       return false;
     }
     --(*max_path_length_ptr);
@@ -318,7 +318,7 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
   //    keyCertSign bit is set.
   if (cert.has_key_usage() &&
       !cert.key_usage().AssertsBit(KEY_USAGE_BIT_KEY_CERT_SIGN)) {
-    errors->Add(kKeyCertSignBitNotSet);
+    errors->AddError(kKeyCertSignBitNotSet);
     return false;
   }
 
@@ -376,7 +376,7 @@ WARN_UNUSED_RESULT bool VerifyTargetCertHasConsistentCaBits(
                     cert.key_usage().AssertsBit(KEY_USAGE_BIT_KEY_CERT_SIGN));
     if (!success) {
       // TODO(eroman): Add DER for basic constraints and key usage.
-      errors->Add(kTargetCertInconsistentCaBits);
+      errors->AddError(kTargetCertInconsistentCaBits);
     }
 
     return success;
@@ -493,7 +493,7 @@ bool VerifyCertificateChain(const ParsedCertificateList& certs,
 
   // An empty chain is necessarily invalid.
   if (certs.empty()) {
-    errors->Add(kChainIsEmpty);
+    errors->AddError(kChainIsEmpty);
     return false;
   }
 

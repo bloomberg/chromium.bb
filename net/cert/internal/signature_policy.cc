@@ -36,7 +36,7 @@ bool SignaturePolicy::IsAcceptableCurveForEcdsa(int curve_nid,
       return true;
   }
 
-  errors->Add(kUnacceptableCurveForEcdsa);
+  errors->AddError(kUnacceptableCurveForEcdsa);
   return false;
 }
 
@@ -45,7 +45,7 @@ bool SignaturePolicy::IsAcceptableModulusLengthForRsa(
     CertErrors* errors) const {
   if (modulus_length_bits < 2048) {
     // TODO(crbug.com/634443): Add a parameter for actual modulus size.
-    errors->Add(kRsaModulusLessThan2048);
+    errors->AddError(kRsaModulusLessThan2048);
     return false;
   }
 
@@ -61,7 +61,7 @@ bool SimpleSignaturePolicy::IsAcceptableModulusLengthForRsa(
   if (modulus_length_bits < min_rsa_modulus_length_bits_) {
     // TODO(crbug.com/634443): Add parameters for actual and expected modulus
     //                         size.
-    errors->Add(kRsaModulusTooSmall);
+    errors->AddError(kRsaModulusTooSmall);
     return false;
   }
 
