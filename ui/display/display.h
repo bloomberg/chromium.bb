@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/icc_profile.h"
 
 #if !defined(OS_IOS)
 #include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
@@ -164,14 +165,30 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
+  // The full ICC profile of the display.
+  gfx::ICCProfile icc_profile() const { return icc_profile_; }
+  void set_icc_profile(const gfx::ICCProfile& icc_profile) {
+    icc_profile_ = icc_profile;
+  }
+
+  // The number of bits per pixel. Used by media query APIs.
   int color_depth() const { return color_depth_; }
   void set_color_depth(int color_depth) {
     color_depth_ = color_depth;
   }
 
+  // The number of bits per color component (all color components are assumed to
+  // have the same number of bits). Used by media query APIs.
   int depth_per_component() const { return depth_per_component_; }
   void set_depth_per_component(int depth_per_component) {
     depth_per_component_ = depth_per_component;
+  }
+
+  // True if this is a monochrome display (e.g, for accessiblity). Used by media
+  // query APIs.
+  bool is_monochrome() const { return is_monochrome_; }
+  void set_is_monochrome(bool is_monochrome) {
+    is_monochrome_ = is_monochrome;
   }
 
  private:
@@ -182,8 +199,10 @@ class DISPLAY_EXPORT Display final {
   Rotation rotation_;
   TouchSupport touch_support_;
   gfx::Size maximum_cursor_size_;
+  gfx::ICCProfile icc_profile_;
   int color_depth_;
   int depth_per_component_;
+  bool is_monochrome_;
 
 #if !defined(OS_IOS)
   friend struct mojo::StructTraits<display::mojom::DisplayDataView,

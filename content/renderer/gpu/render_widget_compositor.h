@@ -38,6 +38,10 @@ class CompositorMessage;
 }
 }
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace ui {
 class LatencyInfo;
 }
@@ -100,6 +104,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetSurfaceClientId(uint32_t surface_id_namespace);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
   void SetPaintedDeviceScaleFactor(float device_scale);
+  void SetDeviceColorSpace(const gfx::ColorSpace& color_space);
 
   // WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;

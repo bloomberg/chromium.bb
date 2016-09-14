@@ -5,17 +5,26 @@
 #ifndef CONTENT_PUBLIC_COMMON_SCREEN_INFO_H_
 #define CONTENT_PUBLIC_COMMON_SCREEN_INFO_H_
 
+#include "content/common/content_export.h"
 #include "content/public/common/screen_orientation_values.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace content {
 
 // Information about the screen on which a RenderWidget is being displayed. This
 // is the content counterpart to WebScreenInfo in blink.
-struct ScreenInfo {
+struct CONTENT_EXPORT ScreenInfo {
+    ScreenInfo();
+    ScreenInfo(const ScreenInfo& other);
+    ~ScreenInfo();
+
     // Device scale factor. Specifies the ratio between physical and logical
     // pixels.
     float device_scale_factor = 1.f;
+
+    // The ICC profile of the output display.
+    gfx::ICCProfile icc_profile;
 
     // The screen depth in bits per pixel
     uint32_t depth = 0;

@@ -167,6 +167,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(icc_profile)
   IPC_STRUCT_TRAITS_MEMBER(depth)
   IPC_STRUCT_TRAITS_MEMBER(depth_per_component)
   IPC_STRUCT_TRAITS_MEMBER(is_monochrome)

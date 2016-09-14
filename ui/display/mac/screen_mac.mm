@@ -19,6 +19,10 @@
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
+extern "C" {
+Boolean CGDisplayUsesForceToGray(void);
+}
+
 namespace display {
 namespace {
 
@@ -71,6 +75,13 @@ Display GetDisplayForScreen(NSScreen* screen) {
     scale = Display::GetForcedDeviceScaleFactor();
 
   display.set_device_scale_factor(scale);
+
+  display.set_icc_profile(
+      gfx::ICCProfile::FromCGColorSpace([[screen colorSpace] CGColorSpace]));
+  display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
+  display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));
+  display.set_is_monochrome(CGDisplayUsesForceToGray());
+
   // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
   // handle the unexpected situations were the angle is not a multiple of 90.
   display.SetRotationAsDegree(static_cast<int>(CGDisplayRotation(display_id)));

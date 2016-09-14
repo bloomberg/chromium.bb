@@ -82,15 +82,12 @@ content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(view);
 
-  NSScreen* screen = [NSScreen deepestScreen];
-
   content::ScreenInfo results;
-
   results.device_scale_factor = static_cast<int>(display.device_scale_factor());
-  results.depth = NSBitsPerPixelFromDepth([screen depth]);
-  results.depth_per_component = NSBitsPerSampleFromDepth([screen depth]);
-  results.is_monochrome =
-      [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
+  results.icc_profile = display.icc_profile();
+  results.depth = display.color_depth();
+  results.depth_per_component = display.depth_per_component();
+  results.is_monochrome = display.is_monochrome();
   results.rect = display.bounds();
   results.available_rect = display.work_area();
   results.orientation_angle = display.RotationAsDegree();
