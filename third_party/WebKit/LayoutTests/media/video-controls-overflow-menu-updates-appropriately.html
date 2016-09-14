@@ -11,6 +11,8 @@
 <video controls></video>
 <script>
 async_test(function(t) {
+  if (window.internals)
+    window.internals.runtimeFlags.mediaControlsDownloadButtonEnabled = true;
   // Set up video
   var video = document.querySelector("video");
   video.src = findMediaFile("video", "content/test");

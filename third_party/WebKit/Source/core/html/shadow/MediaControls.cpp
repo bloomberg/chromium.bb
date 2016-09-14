@@ -235,7 +235,7 @@ void MediaControls::initializeControls()
     m_fullscreenButton = fullscreenButton;
     panel->appendChild(fullscreenButton);
 
-    MediaControlDownloadButtonElement* downloadButton = MediaControlDownloadButtonElement::create(*this, &document());
+    MediaControlDownloadButtonElement* downloadButton = MediaControlDownloadButtonElement::create(*this);
     m_downloadButton = downloadButton;
     panel->appendChild(downloadButton);
 
@@ -263,7 +263,7 @@ void MediaControls::initializeControls()
     m_overflowList->appendChild(m_toggleClosedCaptionsButton->createOverflowElement(*this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
     m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(*this, MediaControlFullscreenButtonElement::create(*this)));
     m_overflowList->appendChild(m_playButton->createOverflowElement(*this, MediaControlPlayButtonElement::create(*this)));
-    m_overflowList->appendChild(m_downloadButton->createOverflowElement(*this, MediaControlDownloadButtonElement::create(*this, &document())));
+    m_overflowList->appendChild(m_downloadButton->createOverflowElement(*this, MediaControlDownloadButtonElement::create(*this)));
 }
 
 void MediaControls::reset()

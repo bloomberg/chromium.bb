@@ -219,18 +219,25 @@ private:
 // downloadable.
 class MediaControlDownloadButtonElement final : public MediaControlInputElement {
 public:
-    static MediaControlDownloadButtonElement* create(MediaControls&, Document*);
+    static MediaControlDownloadButtonElement* create(MediaControls&);
 
     WebLocalizedString::Name getOverflowStringName() override;
+
+    bool hasOverflowButton() override { return true; }
 
     // Returns true if the download button should be shown. We should
     // show the button for only non-MSE, non-EME, and non-MediaStream content.
     bool shouldDisplayDownloadButton();
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     explicit MediaControlDownloadButtonElement(MediaControls&);
 
     void defaultEventHandler(Event*) override;
+
+    // Points to an anchor element that contains the URL of the media file.
+    Member<HTMLAnchorElement> m_anchor;
 };
 
 class MediaControlTimelineElement final : public MediaControlInputElement {

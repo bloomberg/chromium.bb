@@ -36,6 +36,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSpanElement.h"
@@ -632,7 +633,7 @@ MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(MediaContro
 {
 }
 
-MediaControlDownloadButtonElement* MediaControlDownloadButtonElement::create(MediaControls& mediaControls, Document* document)
+MediaControlDownloadButtonElement* MediaControlDownloadButtonElement::create(MediaControls& mediaControls)
 {
     MediaControlDownloadButtonElement* button = new MediaControlDownloadButtonElement(mediaControls);
     button->ensureUserAgentShadowRoot();
@@ -650,7 +651,8 @@ WebLocalizedString::Name MediaControlDownloadButtonElement::getOverflowStringNam
 bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton()
 {
     const KURL& url = mediaElement().currentSrc();
-    if (!HTMLMediaElement::isMediaStreamURL(url.getString()) && !url.protocolIs("blob") && !HTMLMediaSource::lookup(url)) {
+
+    if (!url.isNull() && !url.isEmpty() && !HTMLMediaElement::isMediaStreamURL(url.getString()) && !url.protocolIs("blob") && !HTMLMediaSource::lookup(url)) {
         return true;
     }
     return false;
@@ -658,8 +660,23 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton()
 
 void MediaControlDownloadButtonElement::defaultEventHandler(Event* event)
 {
-    // TODO(kdsilva): The implementation will be finished as part of
-    // https://crbug.com/601247
+    const KURL& url = mediaElement().currentSrc();
+    if (event->type() == EventTypeNames::click && !(url.isNull() || url.isEmpty())) {
+        if (!m_anchor) {
+            HTMLAnchorElement* anchor = HTMLAnchorElement::create(document());
+            anchor->setAttribute(HTMLNames::downloadAttr, "");
+            m_anchor = anchor;
+        }
+        m_anchor->setURL(url);
+        m_anchor->dispatchSimulatedClick(event);
+    }
+    MediaControlInputElement::defaultEventHandler(event);
+}
+
+DEFINE_TRACE(MediaControlDownloadButtonElement)
+{
+    visitor->trace(m_anchor);
+    MediaControlInputElement::trace(visitor);
 }
 
 // ----------------------------
