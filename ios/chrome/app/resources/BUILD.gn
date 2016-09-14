@@ -39,7 +39,7 @@ ios_chrome_repack_all_scales("repack_scalable_resources") {
   ]
 }
 
-ios_repack("repack_unscaled_resources") {
+repack("repack_unscaled_resources") {
   visibility = [ ":packed_resources" ]
   sources = [
     "$root_gen_dir/components/components_resources.pak",
@@ -56,5 +56,5 @@ ios_repack("repack_unscaled_resources") {
     "//ui/resources",
   ]
   output = "$target_gen_dir/resources.pak"
-  bundle_output = "{{bundle_resources_dir}}/{{source_file_part}}"
+  copy_data_to_bundle = true
 }

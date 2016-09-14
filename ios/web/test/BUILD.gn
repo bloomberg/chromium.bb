@@ -14,7 +14,7 @@ mojom("mojo_bindings") {
   use_new_wrapper_types = false
 }
 
-repack_and_bundle("packed_resources") {
+repack("packed_resources") {
   testonly = true
   sources = [
     "$root_gen_dir/ios/web/ios_web_resources.pak",
@@ -25,7 +25,7 @@ repack_and_bundle("packed_resources") {
     "//ios/web:resources",
   ]
   output = "$target_gen_dir/resources.pak"
-  bundle_output = "{{bundle_resources_dir}}/{{source_file_part}}"
+  copy_data_to_bundle = true
 }
 
 grit("resources") {
