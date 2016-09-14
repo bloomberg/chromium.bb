@@ -21,7 +21,8 @@ group("remoting_all") {
   if (is_win) {
     deps += [
       "//remoting:remoting_breakpad_tester",
-      "//remoting/host/win:all",
+      "//remoting/host:remoting_console",
+      "//remoting/host:remoting_desktop",
     ]
 
     if (is_chrome_branded) {
@@ -54,8 +55,13 @@ group("remoting_all") {
       }
     }
 
-    if (is_win || (!is_chromeos && !is_android && !is_ios)) {
+    # The same target is called differently on Linux.
+    # TODO(sergeyu): Rename it to remoting_native_messaging_host on all
+    # platforms.
+    if (is_win) {
       deps += [ "//remoting/host:remoting_native_messaging_host" ]
+    } else if (!is_chromeos && !is_android) {
+      deps += [ "//remoting/host:native_messaging_host" ]
     }
 
     if (is_linux && !is_chromeos) {
@@ -84,20 +90,11 @@ if (is_win) {
       "//remoting/host",
     ]
 
-    libs = []
-
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
     sources = [
       "tools/breakpad_tester_win.cc",
     ]
-
-    if (is_win) {
-      libs += [
-        "rpcrt4.lib",
-        "wtsapi32.lib",
-      ]
-    }
   }
 }
 
@@ -186,9 +183,6 @@ test("remoting_unittests") {
 
 if (enable_remoting_host) {
   test("remoting_perftests") {
-    defines = []
-    libs = []
-
     sources = [
       "test/codec_perftest.cc",
       "test/protocol_perftest.cc",
@@ -210,15 +204,6 @@ if (enable_remoting_host) {
 
     if (enable_webrtc) {
       deps += [ "//third_party/libjingle:libjingle_webrtc" ]
-    }
-
-    if (is_win) {
-      defines += [ "_ALT_NO_EXCEPTIONS" ]
-
-      libs += [
-        "rpcrt4.lib",
-        "wtsapi32.lib",
-      ]
     }
   }
 }

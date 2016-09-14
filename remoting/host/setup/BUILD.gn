@@ -44,6 +44,6 @@ source_set("setup") {
   ]
 
   if (is_win) {
-    deps += [ "//remoting/host/win:remoting_lib_idl" ]
+    deps += [ "//remoting/host:remoting_lib_idl" ]
   }
 }
