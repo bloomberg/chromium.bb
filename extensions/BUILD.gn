@@ -54,6 +54,7 @@ grit("extensions_renderer_resources") {
     "//device/serial:serial_mojo__generator",
     "//extensions/common:mojo__generator",
     "//extensions/common/api:mojom__generator",
+    "//mojo/common:common_custom_types__generator",
   ]
 }
 
