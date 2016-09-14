@@ -123,10 +123,10 @@ class GPU_EXPORT ShaderTranslator
  private:
   ~ShaderTranslator() override;
 
-  int GetCompileOptions() const;
+  ShCompileOptions GetCompileOptions() const;
 
   ShHandle compiler_;
-  int compile_options_;
+  ShCompileOptions compile_options_;
   base::ObserverList<DestructionObserver> destruction_observers_;
 };
 

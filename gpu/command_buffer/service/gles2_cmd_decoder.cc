@@ -3713,7 +3713,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   else
     resources.HashFunction = NULL;
 
-  int driver_bug_workarounds = 0;
+  ShCompileOptions driver_bug_workarounds = 0;
   if (workarounds().init_gl_position_in_vertex_shader)
     driver_bug_workarounds |= SH_INIT_GL_POSITION;
   if (workarounds().unfold_short_circuit_as_ternary_operation)
@@ -3737,7 +3737,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(
       GL_VERTEX_SHADER, shader_spec, &resources, shader_output_language,
-      static_cast<ShCompileOptions>(driver_bug_workarounds));
+      driver_bug_workarounds);
   if (!vertex_translator_.get()) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
     Destroy(true);
@@ -3746,7 +3746,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   fragment_translator_ = shader_translator_cache()->GetTranslator(
       GL_FRAGMENT_SHADER, shader_spec, &resources, shader_output_language,
-      static_cast<ShCompileOptions>(driver_bug_workarounds));
+      driver_bug_workarounds);
   if (!fragment_translator_.get()) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";
     Destroy(true);

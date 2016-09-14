@@ -205,7 +205,7 @@ bool ShaderTranslator::Init(GLenum shader_type,
   return compiler_ != NULL;
 }
 
-int ShaderTranslator::GetCompileOptions() const {
+ShCompileOptions ShaderTranslator::GetCompileOptions() const {
   return compile_options_;
 }
 
@@ -261,7 +261,7 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldAffectCompilation()
     const {
   DCHECK(compiler_ != NULL);
   return std::string(":CompileOptions:" +
-         base::IntToString(GetCompileOptions())) +
+         base::Uint64ToString(GetCompileOptions())) +
          ShGetBuiltInResourcesString(compiler_);
 }
 
