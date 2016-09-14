@@ -62,7 +62,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
   def delay():
     """'Jitter' the delay, up to 50% in either direction."""
     random_delay = random.uniform(.5 * delay_sec, 1.5 * delay_sec)
-    logging.warning('Retrying in %f seconds...', random_delay)
+    logging.debug('Retrying in %f seconds...', random_delay)
     time.sleep(random_delay)
 
 
@@ -104,7 +104,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
       if not handler(e):
-        logging.debug('Encounter unexpected exception %s(%s), will not retry.',
+        logging.debug('Encountered unexpected exception %s(%s), not retrying.',
                       e.__class__, e)
         if exception_to_raise:
           raise exception_to_raise(
@@ -112,7 +112,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
         else:
           raise
 
-      logging.warning('%s(%s)', e.__class__, e)
+      logging.debug('%s(%s)', e.__class__, e)
       # If raise_first_exception_on_failure, we intentionally ignore
       # any failures in later attempts since we'll throw the original
       # failure if all retries fail.
