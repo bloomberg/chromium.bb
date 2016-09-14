@@ -148,7 +148,13 @@ TEST(DesktopEngagementServiceTest, TestAudioEvent) {
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
 }
 
-TEST(DesktopEngagementServiceTest, TestTimeoutDiscount) {
+// Flaky on Mac Debug. See http://crbug.com/646758
+#if defined(OS_MACOSX)
+#define MAYBE_TestTimeoutDiscount DISABLED_TestTimeoutDiscount
+#else
+#define MAYBE_TestTimeoutDiscount TestTimeoutDiscount
+#endif
+TEST(DesktopEngagementServiceTest, MAYBE_TestTimeoutDiscount) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
   MockDesktopEngagementService instance;
