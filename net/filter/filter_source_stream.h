@@ -69,12 +69,13 @@ class NET_EXPORT_PRIVATE FilterSourceStream : public SourceStream {
   // FilterData() will be repeatedly invoked with the same |input_buffer| until
   // FilterData() returns 0 or an error. If FilterData() returns 0,
   // |input_buffer| must be fully drained. Upstream EOF is reached when
-  // FilterData() is called with |input_buffer->BytesRemaining() == 0|.
+  // FilterData() is called with |upstream_eof_reached| = true.
   // TODO(xunjieli): consider allowing asynchronous response via callback
   // to support off-thread decompression.
   virtual int FilterData(IOBuffer* output_buffer,
                          int output_buffer_size,
-                         DrainableIOBuffer* input_buffer) = 0;
+                         DrainableIOBuffer* input_buffer,
+                         bool upstream_eof_reached) = 0;
 
   // Returns a string representation of the type of this FilterSourceStream.
   // This is for UMA logging.
