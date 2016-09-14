@@ -260,9 +260,9 @@ void SpellCheckProvider::OnRespondTextCheck(
                                          &textcheck_results);
   completion->didFinishCheckingText(textcheck_results);
 
-  // TODO(groby): Add request caching once OSX reports back original request.
-  // (cf. SpellCheckProvider::OnRespondSpellingService)
   // Cache the request and the converted results.
+  last_request_ = line;
+  last_results_.swap(textcheck_results);
 }
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
