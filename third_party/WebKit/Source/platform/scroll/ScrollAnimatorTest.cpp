@@ -87,16 +87,6 @@ public:
         animator = scrollAnimator;
     }
 
-    bool shouldScrollOnMainThread() const override
-    {
-        return m_scrollOnMainThread;
-    }
-
-    void setScrollOnMainThread(bool scrollOnMainThread)
-    {
-        m_scrollOnMainThread = scrollOnMainThread;
-    }
-
     DoublePoint scrollPositionDouble() const override
     {
         if (animator)
@@ -123,7 +113,6 @@ private:
         : m_scrollAnimatorEnabled(scrollAnimatorEnabled) { }
 
     bool m_scrollAnimatorEnabled;
-    bool m_scrollOnMainThread = false;
     Member<ScrollAnimator> animator;
 };
 
@@ -167,7 +156,6 @@ static void reset(ScrollAnimator& scrollAnimator)
 TEST(ScrollAnimatorTest, MainThreadStates)
 {
     MockScrollableArea* scrollableArea = MockScrollableArea::create(true);
-    scrollableArea->setScrollOnMainThread(true);
     ScrollAnimator* scrollAnimator = new ScrollAnimator(scrollableArea, getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
@@ -175,8 +163,8 @@ TEST(ScrollAnimatorTest, MainThreadStates)
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(2);
-    // Once from userScroll.
-    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(1);
+    // Once from userScroll, once from updateCompositorAnimations.
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
     EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
         .WillRepeatedly(Return(true));
 
@@ -188,7 +176,7 @@ TEST(ScrollAnimatorTest, MainThreadStates)
     // WaitingToSendToCompositor
     scrollAnimator->userScroll(ScrollByLine, FloatSize(10, 0));
     EXPECT_EQ(scrollAnimator->m_runState,
-        ScrollAnimatorCompositorCoordinator::RunState::RunningOnMainThread);
+        ScrollAnimatorCompositorCoordinator::RunState::WaitingToSendToCompositor);
 
     // RunningOnMainThread
     gMockedTime += 0.05;

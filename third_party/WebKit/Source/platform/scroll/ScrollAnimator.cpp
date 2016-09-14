@@ -188,14 +188,8 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
     m_targetOffset = targetPos;
     m_startTime = m_timeFunction();
 
-    if (registerAndScheduleAnimation()) {
-        if (m_scrollableArea->shouldScrollOnMainThread()) {
-            createAnimationCurve();
-            m_runState = RunState::RunningOnMainThread;
-        } else {
-            m_runState = RunState::WaitingToSendToCompositor;
-        }
-    }
+    if (registerAndScheduleAnimation())
+        m_runState = RunState::WaitingToSendToCompositor;
 
     return true;
 }
@@ -305,13 +299,6 @@ void ScrollAnimator::createAnimationCurve()
 void ScrollAnimator::updateCompositorAnimations()
 {
     ScrollAnimatorCompositorCoordinator::updateCompositorAnimations();
-    if (m_runState == RunState::RunningOnMainThread) {
-        // We add a temporary main thread scrolling reason so that subsequent
-        // scrolls get handled on the main thread. This is removed when the
-        // animation is finished in ::tickAnimation.
-        addMainThreadScrollingReason();
-        return;
-    }
 
     if (m_runState == RunState::PostAnimationCleanup) {
         postAnimationCleanupAndReset();
