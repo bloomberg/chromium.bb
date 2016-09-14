@@ -110,7 +110,7 @@ enum class CustomElementState {
     NotDefinedFlag = 2 << nodeCustomElementShift,
 };
 
-class NodeRareDataBase {
+class CORE_EXPORT NodeRareDataBase {
 public:
     LayoutObject* layoutObject() const { return m_layoutObject; }
     void setLayoutObject(LayoutObject* layoutObject) { m_layoutObject = layoutObject; }

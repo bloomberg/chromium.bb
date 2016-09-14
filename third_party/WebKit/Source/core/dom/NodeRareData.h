@@ -60,7 +60,7 @@ private:
     NodeMutationObserverData() { }
 };
 
-class NodeRareData : public GarbageCollectedFinalized<NodeRareData>, public NodeRareDataBase {
+class CORE_EXPORT NodeRareData : public GarbageCollectedFinalized<NodeRareData>, public NodeRareDataBase {
     WTF_MAKE_NONCOPYABLE(NodeRareData);
 public:
     static NodeRareData* create(LayoutObject* layoutObject)
