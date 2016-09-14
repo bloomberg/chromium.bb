@@ -412,7 +412,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
         positionDialog();
 
     clearNeedsLayout();
-    m_isSelfCollapsing = checkIfIsSelfCollapsingBlock();
+    updateIsSelfCollapsing();
 }
 
 DISABLE_CFI_PERF

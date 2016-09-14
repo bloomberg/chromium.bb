@@ -301,6 +301,10 @@ public:
     bool hasOverhangingFloats() const { return parent() && containsFloats() && lowestFloatLogicalBottom() > logicalHeight(); }
     bool isOverhangingFloat(const FloatingObject& floatObject) const { return logicalBottomForFloat(floatObject) > logicalHeight(); }
 
+    // This function is only public so we can call it from NGBox while we're
+    // still working on LayoutNG.
+    void updateIsSelfCollapsing() { m_isSelfCollapsing = checkIfIsSelfCollapsingBlock(); }
+
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
 #endif

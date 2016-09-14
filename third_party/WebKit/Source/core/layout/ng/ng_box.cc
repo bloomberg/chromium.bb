@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_box.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -63,6 +64,9 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
       if (layout_box_->isLayoutBlock())
         toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
       layout_box_->clearNeedsLayout();
+      if (layout_box_->isLayoutBlockFlow()) {
+        toLayoutBlockFlow(layout_box_)->updateIsSelfCollapsing();
+      }
     }
   } else {
     DCHECK(layout_box_);
