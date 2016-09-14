@@ -1,0 +1,15 @@
+{
+  "name": "exe:content_browser",
+  "capabilities": {
+    "provided": {
+      "web": [
+        "autofill::mojom::AutofillDriver",
+        "autofill::mojom::PasswordManagerDriver",
+        "extensions::StashService",
+        "metrics::mojom::LeakDetector",
+        "startup_metric_utils::mojom::StartupMetricHost",
+        "translate::mojom::ContentTranslateDriver"
+      ]
+    }
+  }
+}
