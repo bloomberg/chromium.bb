@@ -1456,7 +1456,7 @@ void Widget::SetInitialBoundsForFramelessWindow(const gfx::Rect& bounds) {
       native_widget_->CenterWindow(size);
   } else {
     // Use the supplied initial bounds.
-    SetBoundsConstrained(bounds);
+    SetBounds(bounds);
   }
 }
 

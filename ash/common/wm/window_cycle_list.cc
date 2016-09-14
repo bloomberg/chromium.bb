@@ -612,14 +612,14 @@ void WindowCycleList::InitWindowCycleView() {
   WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_OverlayContainer, &params);
-  widget->Init(params);
-
-  screen_observer_.Add(display::Screen::GetScreen());
   gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();
   int widget_height = cycle_view_->GetPreferredSize().height();
   widget_rect.set_y((widget_rect.height() - widget_height) / 2);
   widget_rect.set_height(widget_height);
-  widget->SetBounds(widget_rect);
+  params.bounds = widget_rect;
+  widget->Init(params);
+
+  screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();
   widget->SetCapture(cycle_view_);
   widget->set_auto_release_capture(false);
