@@ -9,6 +9,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
+#include "wtf/Compiler.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -82,7 +83,7 @@ public:
     // Returns Error when errored.
     // |buffer| can be null if |size| is 0.
     // |*readSize| will be set to 0 if not readable.
-    virtual Result read(char* buffer, size_t /* size */, size_t* readSize);
+    virtual Result read(char* buffer, size_t /* size */, size_t* readSize) WARN_UNUSED_RESULT;
 
     // Begins a two-phase read. On success, the function stores a buffer
     // that contains the read data of length |*available| into |*buffer|.
@@ -98,10 +99,10 @@ public:
     //
     // |*buffer| will be set to null and |*available| will be set to 0 if not
     // readable.
-    virtual Result beginRead(const char** buffer, size_t* available) = 0;
+    virtual Result beginRead(const char** buffer, size_t* available) WARN_UNUSED_RESULT = 0;
 
     // Ends a two-phase read.
-    virtual Result endRead(size_t readSize) = 0;
+    virtual Result endRead(size_t readSize) WARN_UNUSED_RESULT = 0;
 
     // Drains the data as a BlobDataHandle.
     // When this function returns a non-null value, the returned blob handle

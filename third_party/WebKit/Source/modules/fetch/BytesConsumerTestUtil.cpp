@@ -209,7 +209,10 @@ void BytesConsumerTestUtil::TwoPhaseReader::onStateChange()
             // because of the same reasons as Reader::onStateChange.
             size_t read = std::max(static_cast<size_t>(3), available);
             m_data.append(buffer, read);
-            m_consumer->endRead(read);
+            if (m_consumer->endRead(read) != BytesConsumer::Result::Ok) {
+                m_result = BytesConsumer::Result::Error;
+                return;
+            }
             break;
         }
         case BytesConsumer::Result::ShouldWait:

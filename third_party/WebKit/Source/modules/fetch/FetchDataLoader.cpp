@@ -63,7 +63,10 @@ public:
             switch (m_consumer->beginRead(&buffer, &available)) {
             case BytesConsumer::Result::Ok:
                 m_blobData->appendBytes(buffer, available);
-                m_consumer->endRead(available);
+                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
+                    m_client->didFetchDataLoadFailed();
+                    return;
+                }
                 break;
             case BytesConsumer::Result::ShouldWait:
                 return;
@@ -125,14 +128,18 @@ public:
                 if (available > 0) {
                     unsigned bytesAppended = m_rawData->append(buffer, available);
                     if (!bytesAppended) {
-                        m_consumer->endRead(0);
+                        auto unused = m_consumer->endRead(0);
+                        ALLOW_UNUSED_LOCAL(unused);
                         m_consumer->cancel();
                         m_client->didFetchDataLoadFailed();
                         return;
                     }
                     DCHECK_EQ(bytesAppended, available);
                 }
-                m_consumer->endRead(available);
+                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
+                    m_client->didFetchDataLoadFailed();
+                    return;
+                }
                 break;
             case BytesConsumer::Result::ShouldWait:
                 return;
@@ -185,7 +192,10 @@ public:
             case BytesConsumer::Result::Ok:
                 if (available > 0)
                     m_builder.append(m_decoder->decode(buffer, available));
-                m_consumer->endRead(available);
+                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
+                    m_client->didFetchDataLoadFailed();
+                    return;
+                }
                 break;
             case BytesConsumer::Result::ShouldWait:
                 return;
@@ -248,7 +258,11 @@ public:
             switch (m_consumer->beginRead(&buffer, &available)) {
             case BytesConsumer::Result::Ok:
                 m_outStream->addData(buffer, available);
-                m_consumer->endRead(available);
+                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
+                    m_outStream->abort();
+                    m_client->didFetchDataLoadFailed();
+                    return;
+                }
                 needToFlush = true;
                 break;
             case BytesConsumer::Result::ShouldWait:
