@@ -152,6 +152,10 @@ def StepRunBrowserTests(toolchains, experimental):
   if experimental:
     args.append('-x')
   for toolchain in toolchains:
+    # TODO(sbc): Re-enable brower tests for native PPAPI platforms:
+    # http://crbug.com/646666
+    if toolchain in ['mac', 'linux', 'win']:
+      continue
     args.extend(['-t', toolchain])
 
   try:
