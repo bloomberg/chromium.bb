@@ -96,8 +96,20 @@ _service_config_cache = {}
 _service_config_cache_lock = threading.Lock()
 
 
+# LUCI context parameters as loaded from JSON file.
+LuciContextParameters = collections.namedtuple('LuciContextParameters',
+[
+  'rpc_port',
+  'secret',
+])
+
+
 class BadServiceAccountCredentials(Exception):
   """Service account JSON is missing or not valid."""
+
+
+class BadLuciContextParameters(Exception):
+  """LUCI context JSON parameters are missing or not valid."""
 
 
 def make_oauth_config(
@@ -142,6 +154,7 @@ def make_oauth_config(
   if disabled:
     service_account_json = None
     luci_context_json = None
+
   return OAuthConfig(
       disabled,
       tokens_cache,
@@ -205,13 +218,22 @@ def extract_oauth_config_from_options(options):
 
   OptionParser should be populated with oauth options by 'add_oauth_options'.
   """
+
   # Validate service account JSON is correct by trying to load it.
-  try:
-    if options.auth_service_account_json:
+  if options.auth_service_account_json:
+    try:
       acc = _load_service_account_json(options.auth_service_account_json)
       _parse_private_key(acc.private_key)
-  except BadServiceAccountCredentials as exc:
-    raise ValueError('Bad service account credentials: %s' % exc)
+    except BadServiceAccountCredentials as exc:
+      raise ValueError('Bad service account credentials: %s' % exc)
+
+  # Validate LUCI context JSON is correct by trying to load it.
+  if options.auth_luci_context_json:
+    try:
+      _load_luci_context_json(options.auth_luci_context_json)
+    except BadLuciContextParameters as exc:
+      raise ValueError('Bad LUCI context auth parameters: %s' % exc)
+
   return make_oauth_config(
       disabled=bool(options.auth_disabled),
       tokens_cache=options.auth_tokens_cache,
@@ -581,6 +603,120 @@ def _run_oauth_dance(urlhost, config):
   except client.FlowExchangeError as e:
     err('Authentication has failed: %s' % e)
     return None
+
+
+# LUCI context auth related code.
+
+
+def _load_luci_context_json(path):
+  """Returns a LuciContextParameters tuple from a JSON file.
+
+  Args:
+    path: path to a JSON file containing a `local_auth` JSON entry
+
+  Returns:
+    LuciContextParameters for connecting to a LUCI context auth server.
+
+  Raises:
+    BadLuciContextParameters if file is missing or not valid.
+  """
+  try:
+    with open(path, 'r') as f:
+      data = json.load(f)
+  except IOError as e:
+    raise BadLuciContextParameters('Can\'t open %s: %s' % (path, e))
+  except ValueError as e:
+    raise BadLuciContextParameters('Not a JSON file %s: %s' % (path, e))
+
+  try:
+    return LuciContextParameters(
+        rpc_port=int(data['local_auth']['rpc_port']),
+        secret=str(data['local_auth']['secret']))
+  except KeyError as e:
+    raise BadLuciContextParameters('Missing key in %s: %s' % (path, e))
+  except ValueError as e:
+    raise BadLuciContextParameters('Invalid values in JSON file %s: %s' %
+                                   (path, e))
+
+
+def _get_luci_context_access_token(luci_context):
+  """Returns a valid AccessToken from the local LUCI context auth server.
+
+  Args:
+    luci_context: path to a valid JSON file containing LUCI context details.
+
+  Returns:
+    AccessToken on success.
+    None on failure.
+  """
+  try:
+    luci_auth = _load_luci_context_json(luci_context)
+  except BadLuciContextParameters as e:
+    logging.error('Bad Luci context parameters: %s', e)
+    return None
+
+  body = json.dumps({
+    'scopes': [OAUTH_SCOPES],
+    'secret': luci_auth.secret
+  })
+  http = httplib2.Http()
+  host = 'http://127.0.0.1:%d' % luci_auth.rpc_port
+  resp, content = http.request(
+      uri='%s/rpc/LuciLocalAuthService.GetOAuthToken' % host,
+      method='POST',
+      body=body,
+      headers={'Content-Type': 'application/json'})
+  if resp.status != 200:
+    logging.error('Failed to grab access token from LUCI context server: %r',
+                  content)
+    return None
+
+  try:
+    token = json.loads(content)
+    error_code = token.get('error_code')
+    error_message = token.get('error_message')
+    access_token = token.get('access_token')
+    expiry = token.get('expiry')
+  except (KeyError, ValueError) as e:
+    logging.error('Unexpected access token response format: %s', e)
+    return None
+
+  if error_code or not access_token:
+    logging.error('Error %d in retrieving access token: %s',
+                  error_code, error_message)
+    return None
+
+  try:
+    expiry = datetime.datetime.utcfromtimestamp(expiry)
+  except (TypeError, ValueError) as e:
+    logging.error('Invalid expiry in returned token: %s', e)
+    return None
+
+  access_token = AccessToken(access_token, expiry)
+  if not _validate_luci_context_access_token(access_token):
+    return None
+  return access_token
+
+
+def _validate_luci_context_access_token(access_token):
+  """Validates access_token to be a valid AccessToken.
+
+  Args:
+    access_token: an AccessToken instance to validate.
+
+  Returns:
+    True if a valid AccessToken that is not expired.
+    False otherwise.
+  """
+  if isinstance(access_token, AccessToken) and access_token.token:
+    # Valid if expires_at is None or it is not expired soon
+    if access_token.expires_at:
+      if (not isinstance(access_token.expires_at, datetime.datetime) or
+          datetime.datetime.utcfromtimestamp(time.time()) >
+          access_token.expires_at - datetime.timedelta(seconds=60)):
+        return False
+    return True
+  return False
 
 
 class ClientRedirectServer(BaseHTTPServer.HTTPServer):

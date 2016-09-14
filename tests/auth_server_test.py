@@ -7,7 +7,9 @@ import contextlib
 import json
 import logging
 import os
+import socket
 import sys
+import tempfile
 import time
 import unittest
 
@@ -20,7 +22,11 @@ from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from third_party import requests
 
+from utils import authenticators
 from utils import auth_server
+from utils import net
+from utils import oauth
+import net_utils
 
 
 def global_test_setup():
@@ -192,6 +198,153 @@ class LocalAuthServerTest(auto_stub.TestCase):
           'Invalid "secret"',
           {'scopes': ['a'], 'secret': 'abc'},
           code=403)
+
+
+@contextlib.contextmanager
+def luci_context_server(token_cb, secret=None, rpc_port=None):
+  class MockedProvider(object):
+    def generate_token(self, scopes):
+      return token_cb(scopes)
+  s = auth_server.LocalAuthServer()
+  try:
+    luci_context = s.start(MockedProvider())
+    local_auth = {'local_auth': {
+        'secret': secret if secret else luci_context['secret'],
+        'rpc_port': rpc_port if rpc_port else luci_context['rpc_port']}}
+    fd, luci_context_path = tempfile.mkstemp(
+        suffix='.json', prefix='luci_context.')
+    with os.fdopen(fd, 'w') as f:
+      json.dump(local_auth, f, indent=2, sort_keys=True)
+    yield luci_context_path
+  finally:
+    s.stop()
+    try:
+      os.remove(luci_context_path)
+    except OSError:
+      pass
+
+
+class LocalAuthHttpServiceTest(auto_stub.TestCase):
+  """Tests for LocalAuthServer and LuciContextAuthenticator."""
+  epoch = 12345678
+
+  def setUp(self):
+    super(LocalAuthHttpServiceTest, self).setUp()
+    self.mock_time(0)
+
+  def mock_time(self, delta):
+    self.mock(time, 'time', lambda: self.epoch + delta)
+
+  @staticmethod
+  def mocked_http_service(
+      url='http://example.com',
+      config=None,
+      perform_request=None):
+
+    class MockedRequestEngine(object):
+      def perform_request(self, request):
+        return perform_request(request) if perform_request else None
+      @classmethod
+      def timeout_exception_classes(cls):
+        return ()
+      @classmethod
+      def parse_request_exception(cls, exc):
+        del exc  # Unused argument
+        return None, None
+
+    return net.HttpService(
+        url,
+        authenticator=authenticators.LuciContextAuthenticator(config),
+        engine=MockedRequestEngine())
+
+  def test_works(self):
+    service_url = 'http://example.com'
+    request_url = '/some_request'
+    response = 'True'
+    token = 'notasecret'
+
+    def token_gen(scopes):
+      self.assertEqual(1, len(scopes))
+      self.assertEqual(oauth.OAUTH_SCOPES, scopes[0])
+      return auth_server.AccessToken(token, time.time() + 300)
+
+    def handle_request(request):
+      self.assertTrue(
+          request.get_full_url().startswith(service_url + request_url))
+      self.assertEqual('', request.body)
+      self.assertEqual(u'Bearer %s' % token,
+                       request.headers['Authorization'])
+      return net_utils.make_fake_response(response, request.get_full_url())
+
+    with luci_context_server(token_gen) as luci_context:
+      config = oauth.make_oauth_config(luci_context_json=luci_context)
+      service = self.mocked_http_service(perform_request=handle_request,
+                                         config=config)
+      self.assertEqual(service.request(request_url, data={}).read(), response)
+
+  def test_bad_secret(self):
+    service_url = 'http://example.com'
+    request_url = '/some_request'
+    response = 'False'
+
+    def token_gen(scopes):
+      del scopes  # Unused argument
+      self.fail('must not be called')
+
+    def handle_request(request):
+      self.assertTrue(
+          request.get_full_url().startswith(service_url + request_url))
+      self.assertEqual('', request.body)
+      self.assertIsNone(request.headers.get('Authorization'))
+      return net_utils.make_fake_response(response, request.get_full_url())
+
+    with luci_context_server(token_gen, secret='invalid') as luci_context:
+      config = oauth.make_oauth_config(luci_context_json=luci_context)
+      service = self.mocked_http_service(perform_request=handle_request,
+                                         config=config)
+      self.assertEqual(service.request(request_url, data={}).read(), response)
+
+  def test_bad_port(self):
+    request_url = '/some_request'
+
+    def token_gen(scopes):
+      del scopes  # Unused argument
+      self.fail('must not be called')
+
+    def handle_request(request):
+      del request  # Unused argument
+      self.fail('must not be called')
+
+    with luci_context_server(token_gen, rpc_port=22) as luci_context:
+      config = oauth.make_oauth_config(luci_context_json=luci_context)
+      service = self.mocked_http_service(perform_request=handle_request,
+                                         config=config)
+      with self.assertRaises(socket.error):
+        self.assertRaises(service.request(request_url, data={}).read())
+
+  def test_expired_token(self):
+    service_url = 'http://example.com'
+    request_url = '/some_request'
+    response = 'False'
+    token = 'notasecret'
+
+    def token_gen(scopes):
+      self.assertEqual(1, len(scopes))
+      self.assertEqual(oauth.OAUTH_SCOPES, scopes[0])
+      return auth_server.AccessToken(token, time.time())
+
+    def handle_request(request):
+      self.assertTrue(
+          request.get_full_url().startswith(service_url + request_url))
+      self.assertEqual('', request.body)
+      self.assertIsNone(request.headers.get('Authorization'))
+      return net_utils.make_fake_response(response, request.get_full_url())
+
+    with luci_context_server(token_gen) as luci_context:
+      config = oauth.make_oauth_config(luci_context_json=luci_context)
+      service = self.mocked_http_service(perform_request=handle_request,
+                                         config=config)
+      self.assertEqual(service.request(request_url, data={}).read(), response)
 
 
 if __name__ == '__main__':

@@ -83,15 +83,22 @@ class LuciContextAuthenticator(Authenticator):
   def __init__(self, config):
     super(LuciContextAuthenticator, self).__init__()
     assert isinstance(config, oauth.OAuthConfig)
-    self.config = config
+    self._luci_context = config.luci_context_json
     self._lock = threading.Lock()
     self._access_token = None
 
   def authorize(self, request):
+    access_token = None
     with self._lock:
-      if self._access_token:
-        request.headers['Authorization'] = (
-            'Bearer %s' % self._access_token.token)
+      access_token = self._access_token
+
+      if not oauth._validate_luci_context_access_token(access_token):
+        access_token = oauth._get_luci_context_access_token(self._luci_context)
+        if access_token:
+          self._access_token = access_token
+
+    if access_token:
+      request.headers['Authorization'] = ('Bearer %s' % access_token.token)
 
   def login(self, allow_user_interaction):
     """Run interactive authentication flow refreshing the token."""
