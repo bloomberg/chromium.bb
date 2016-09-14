@@ -80,6 +80,9 @@ const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
+// How long QUIC will be disabled for because of timeouts with open streams.
+const int kDisableQuicTimeoutSecs = 5 * 60;
+
 std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
     std::string trigger,
     NetLogCaptureMode capture_mode) {
@@ -769,6 +772,8 @@ QuicStreamFactory::QuicStreamFactory(
       prefer_aes_(prefer_aes),
       disable_quic_on_timeout_with_open_streams_(
           disable_quic_on_timeout_with_open_streams),
+      consecutive_disabled_count_(0),
+      need_to_evaluate_consecutive_disabled_count_(false),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
@@ -1203,8 +1208,18 @@ void QuicStreamFactory::OnTimeoutWithOpenStreams() {
   if (ping_timeout_ > reduced_ping_timeout_) {
     ping_timeout_ = reduced_ping_timeout_;
   }
-  if (disable_quic_on_timeout_with_open_streams_)
+  if (disable_quic_on_timeout_with_open_streams_) {
+    if (status_ == OPEN) {
+      task_runner_->PostDelayedTask(
+          FROM_HERE, base::Bind(&QuicStreamFactory::OpenFactory,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(kDisableQuicTimeoutSecs *
+                                       (1 << consecutive_disabled_count_)));
+      consecutive_disabled_count_++;
+      need_to_evaluate_consecutive_disabled_count_ = true;
+    }
     status_ = CLOSED;
+  }
 }
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
@@ -1584,6 +1599,15 @@ int QuicStreamFactory::CreateSession(
     base::TimeTicks dns_resolution_end_time,
     const BoundNetLog& net_log,
     QuicChromiumClientSession** session) {
+  if (need_to_evaluate_consecutive_disabled_count_) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicStreamFactory::MaybeClearConsecutiveDisabledCount,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kDisableQuicTimeoutSecs));
+
+    need_to_evaluate_consecutive_disabled_count_ = false;
+  }
   TRACE_EVENT0("net", "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   bool enable_port_selection = enable_port_selection_;
@@ -1874,6 +1898,15 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
       alternative_service);
+}
+
+void QuicStreamFactory::OpenFactory() {
+  status_ = OPEN;
+}
+
+void QuicStreamFactory::MaybeClearConsecutiveDisabledCount() {
+  if (status_ == OPEN)
+    consecutive_disabled_count_ = 0;
 }
 
 }  // namespace net

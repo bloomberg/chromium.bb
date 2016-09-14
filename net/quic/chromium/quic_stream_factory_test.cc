@@ -4112,6 +4112,196 @@ TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest,
+       DisableQuicWhenTimeoutsWithOpenStreamsExponentialBackoff) {
+  disable_disk_cache_ = true;
+  disable_quic_on_timeout_with_open_streams_ = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  // Test first timeouts with open streams will disable QUIC.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
+                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                callback_.callback()));
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  DVLOG(1)
+      << "Created 1st session and initialized a stream. Now trigger timeout."
+      << "Will disable QUIC.";
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, "test",
+                                         ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  ASSERT_EQ(clock_->NowInTicks() + base::TimeDelta::FromMinutes(5),
+            runner_->GetPostedTasks()[0].GetTimeToRun());
+  runner_->RunNextTask();
+
+  // Need to spin the loop now to ensure that
+  // QuicStreamFactory::OnSessionClosed() runs.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_TRUE(runner_->GetPostedTasks().empty());
+
+  // Create a new session which will cause a task to be posted to
+  // clear the exponential backoff.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+  HttpRequestInfo request_info2;
+  EXPECT_EQ(OK, stream2->InitializeStream(&request_info2, DEFAULT_PRIORITY,
+                                          net_log_, CompletionCallback()));
+
+  // Check that the clear task has been posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  ASSERT_EQ(clock_->NowInTicks() + base::TimeDelta::FromMinutes(5),
+            runner_->GetPostedTasks()[0].GetTimeToRun());
+
+  session2->connection()->CloseConnection(
+      QUIC_NETWORK_IDLE_TIMEOUT, "test", ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+  ASSERT_EQ(clock_->NowInTicks() + base::TimeDelta::FromMinutes(10),
+            runner_->GetPostedTasks()[1].GetTimeToRun());
+  runner_->RunNextTask();
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest,
+       DisableQuicWhenTimeoutsWithOpenStreamsExponentialBackoffReset) {
+  disable_disk_cache_ = true;
+  disable_quic_on_timeout_with_open_streams_ = true;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  // Test first timeouts with open streams will disable QUIC.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
+                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                callback_.callback()));
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  DVLOG(1)
+      << "Created 1st session and initialized a stream. Now trigger timeout."
+      << "Will disable QUIC.";
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, "test",
+                                         ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  ASSERT_EQ(clock_->NowInTicks() + base::TimeDelta::FromMinutes(5),
+            runner_->GetPostedTasks()[0].GetTimeToRun());
+  runner_->RunNextTask();
+
+  // Need to spin the loop now to ensure that
+  // QuicStreamFactory::OnSessionClosed() runs.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_TRUE(runner_->GetPostedTasks().empty());
+
+  // Create a new session which will cause a task to be posted to
+  // clear the exponential backoff.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
+  QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+  HttpRequestInfo request_info2;
+  EXPECT_EQ(OK, stream2->InitializeStream(&request_info2, DEFAULT_PRIORITY,
+                                          net_log_, CompletionCallback()));
+
+  // Run the clear task and verify that the next disabling is
+  // back to the default timeout.
+  runner_->RunNextTask();
+
+  // QUIC should still be enabled.
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  session2->connection()->CloseConnection(
+      QUIC_NETWORK_IDLE_TIMEOUT, "test", ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  ASSERT_EQ(clock_->NowInTicks() + base::TimeDelta::FromMinutes(5),
+            runner_->GetPostedTasks()[0].GetTimeToRun());
+  runner_->RunNextTask();
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get()));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();

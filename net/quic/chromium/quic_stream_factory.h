@@ -483,6 +483,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool close_session_on_error,
       const BoundNetLog& bound_net_log);
 
+  // Called to re-enable QUIC when QUIC has been disabled.
+  void OpenFactory();
+  // If QUIC has been working well after having been recently
+  // disabled, clear the |consecutive_disabled_count_|.
+  void MaybeClearConsecutiveDisabledCount();
+
   bool require_confirmation_;
   NetLog* net_log_;
   HostResolver* host_resolver_;
@@ -568,6 +574,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // True if QUIC should be disabled when there are timeouts with open
   // streams.
   bool disable_quic_on_timeout_with_open_streams_;
+
+  // Number of times in a row that QUIC has been disabled.
+  int consecutive_disabled_count_;
+  bool need_to_evaluate_consecutive_disabled_count_;
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;
