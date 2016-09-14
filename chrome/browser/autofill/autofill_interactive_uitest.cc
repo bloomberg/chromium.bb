@@ -1172,8 +1172,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   TryBasicFormFill();
 }
 
+// Flakily fails on ChromeOS (crbug.com/646576).
+#if defined(OS_CHROMEOS)
+#define MAYBE_DynamicFormFill DISABLED_DynamicFormFill
+#else
+#define MAYBE_DynamicFormFill DynamicFormFill
+#endif
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
