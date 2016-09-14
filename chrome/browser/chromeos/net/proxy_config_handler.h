@@ -31,7 +31,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs,
     const NetworkState& network,
-    onc::ONCSource* onc_source);
+    ::onc::ONCSource* onc_source);
 
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
                               const NetworkState& network);

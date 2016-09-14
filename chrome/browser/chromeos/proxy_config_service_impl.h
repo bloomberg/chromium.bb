@@ -54,15 +54,19 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   void DefaultNetworkChanged(const NetworkState* network) override;
   void OnShuttingDown() override;
 
- protected:
-  friend class UIProxyConfigService;
-
   // Returns true if proxy is to be ignored for this network profile and
   // |onc_source|, e.g. this happens if the network is shared and
   // use-shared-proxies is turned off. |profile_prefs| may be NULL.
   static bool IgnoreProxy(const PrefService* profile_prefs,
                           const std::string network_profile_path,
-                          onc::ONCSource onc_source);
+                          ::onc::ONCSource onc_source);
+
+  // Returns Pref Proxy configuration if available or a proxy config dictionary
+  // applied to the default network.
+  // Returns NULL if no Pref Proxy configuration and no active network.
+  // |profile_prefs| must be not NULL.
+  static std::unique_ptr<ProxyConfigDictionary> GetActiveProxyConfigDictionary(
+      const PrefService* profile_prefs);
 
  private:
   // Called when any proxy preference changes.

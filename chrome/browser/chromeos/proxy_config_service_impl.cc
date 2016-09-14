@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
@@ -22,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -171,6 +173,46 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   bool use_shared_proxies = profile_prefs->GetBoolean(prefs::kUseSharedProxies);
   VLOG(1) << "Use proxy of shared network: " << use_shared_proxies;
   return !use_shared_proxies;
+}
+
+// static
+std::unique_ptr<ProxyConfigDictionary>
+ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
+    const PrefService* profile_prefs) {
+  // Apply Pref Proxy configuration if available.
+  net::ProxyConfig pref_proxy_config;
+  ProxyPrefs::ConfigState pref_state =
+      PrefProxyConfigTrackerImpl::ReadPrefConfig(profile_prefs,
+                                                 &pref_proxy_config);
+  if (PrefProxyConfigTrackerImpl::PrefPrecedes(pref_state)) {
+    const PrefService::Preference* const pref =
+        profile_prefs->FindPreference(::proxy_config::prefs::kProxy);
+    const base::DictionaryValue* proxy_config_value;
+    bool value_exists = pref->GetValue()->GetAsDictionary(&proxy_config_value);
+    DCHECK(value_exists);
+
+    return base::MakeUnique<ProxyConfigDictionary>(proxy_config_value);
+  }
+
+  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
+                                              ->network_state_handler()
+                                              ->DefaultNetwork();
+  // No connected network.
+  if (!network)
+    return nullptr;
+
+  // Apply network proxy configuration.
+  ::onc::ONCSource onc_source;
+  std::unique_ptr<ProxyConfigDictionary> proxy_config =
+      chromeos::proxy_config::GetProxyConfigForNetwork(
+          profile_prefs, g_browser_process->local_state(), *network,
+          &onc_source);
+  if (!chromeos::ProxyConfigServiceImpl::IgnoreProxy(
+          profile_prefs, network->profile_path(), onc_source))
+    return proxy_config;
+
+  return base::MakeUnique<ProxyConfigDictionary>(
+      ProxyConfigDictionary::CreateDirect());
 }
 
 void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
