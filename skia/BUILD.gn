@@ -662,7 +662,7 @@ test("skia_unittests") {
     "ext/skia_utils_mac_unittest.mm",
   ]
 
-  if (!is_win && !is_mac) {
+  if (!is_win && !is_mac && !use_cairo) {
     sources -= [ "ext/platform_canvas_unittest.cc" ]
   }
 
@@ -683,6 +683,12 @@ test("skia_unittests") {
       "//mojo/public/cpp/bindings",
       "//skia/public/interfaces:test_interfaces",
     ]
+  }
+
+  if (is_linux) {
+    if (use_pango) {
+      configs += [ "//build/config/linux/pangocairo" ]
+    }
   }
 }
 

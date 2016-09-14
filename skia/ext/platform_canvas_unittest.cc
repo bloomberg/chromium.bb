@@ -26,6 +26,14 @@
 #include <unistd.h>
 #endif
 
+#if defined(USE_CAIRO)
+#if defined(OS_OPENBSD)
+#include <cairo.h>
+#else
+#include <cairo/cairo.h>
+#endif  // OS_OPENBSD
+#endif  // USE_CAIRO
+
 namespace skia {
 
 namespace {
@@ -116,12 +124,10 @@ bool VerifyBlackRect(const SkCanvas& canvas, int x, int y, int w, int h) {
   return VerifyRect(canvas, SK_ColorWHITE, SK_ColorBLACK, x, y, w, h);
 }
 
-#if !defined(USE_AURA)  // http://crbug.com/154358
 // Check that every pixel in the canvas is a single color.
 bool VerifyCanvasColor(const SkCanvas& canvas, uint32_t canvas_color) {
   return VerifyRect(canvas, canvas_color, 0, 0, 0, 0, 0);
 }
-#endif  // !defined(USE_AURA)
 
 #if defined(OS_WIN)
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
@@ -146,6 +152,15 @@ void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   CGContextSetFillColorWithColor(context, black);
   CGColorRelease(black);
   CGContextFillRect(context, inner_rc);
+}
+#elif defined(USE_CAIRO)
+void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
+  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+  cairo_t* context = scoped_platform_paint.GetPlatformSurface();
+
+  cairo_rectangle(context, x, y, w, h);
+  cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+  cairo_fill(context);
 }
 #else
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
@@ -225,7 +240,6 @@ TEST(PlatformCanvas, SkLayer) {
   EXPECT_TRUE(VerifyBlackRect(*canvas, kLayerX, kLayerY, kLayerW, kLayerH));
 }
 
-#if !defined(USE_AURA)  // http://crbug.com/154358
 // Test native clipping.
 TEST(PlatformCanvas, ClipRegion) {
   // Initialize a white canvas
@@ -250,7 +264,6 @@ TEST(PlatformCanvas, ClipRegion) {
   }
   EXPECT_TRUE(VerifyCanvasColor(*canvas, SK_ColorWHITE));
 }
-#endif  // !defined(USE_AURA)
 
 // Test the layers get filled properly by native rendering.
 TEST(PlatformCanvas, FillLayer) {
