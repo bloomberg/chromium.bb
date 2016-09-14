@@ -84,7 +84,7 @@ void DocumentWriter::appendReplacingData(const String& source)
 
 void DocumentWriter::addData(const char* bytes, size_t length)
 {
-    ASSERT(m_parser);
+    DCHECK(m_parser);
     if (m_parser->needsDecoder() && 0 < length) {
         std::unique_ptr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
         m_parser->setDecoder(std::move(decoder));
@@ -95,7 +95,7 @@ void DocumentWriter::addData(const char* bytes, size_t length)
 
 void DocumentWriter::end()
 {
-    ASSERT(m_document);
+    DCHECK(m_document);
 
     if (!m_parser)
         return;
@@ -112,7 +112,8 @@ void DocumentWriter::end()
 
 void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()
 {
-    ASSERT(m_parser && !m_parser->isStopped());
+    DCHECK(m_parser);
+    DCHECK(!m_parser->isStopped());
     m_parser->setDocumentWasLoadedAsPartOfNavigation();
 }
 

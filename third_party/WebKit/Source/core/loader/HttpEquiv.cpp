@@ -21,7 +21,8 @@ namespace blink {
 
 void HttpEquiv::process(Document& document, const AtomicString& equiv, const AtomicString& content, bool inDocumentHeadElement)
 {
-    ASSERT(!equiv.isNull() && !content.isNull());
+    DCHECK(!equiv.isNull());
+    DCHECK(!content.isNull());
 
     if (equalIgnoringCase(equiv, "default-style")) {
         processHttpEquivDefaultStyle(document, content);
@@ -59,7 +60,7 @@ void HttpEquiv::processHttpEquivContentSecurityPolicy(Document& document, const 
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
         document.contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
     else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
 }
 
 void HttpEquiv::processHttpEquivAcceptCH(Document& document, const AtomicString& content)

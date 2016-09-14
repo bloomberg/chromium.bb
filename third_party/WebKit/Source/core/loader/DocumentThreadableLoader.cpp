@@ -153,13 +153,13 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_didRedirect(false)
     , m_weakFactory(this)
 {
-    ASSERT(client);
+    DCHECK(client);
 }
 
 void DocumentThreadableLoader::start(const ResourceRequest& request)
 {
     // Setting an outgoing referer is only supported in the async code path.
-    ASSERT(m_async || request.httpReferrer().isEmpty());
+    DCHECK(m_async || request.httpReferrer().isEmpty());
 
     m_sameOriginRequest = getSecurityOrigin()->canRequestNoSuborigin(request.url());
     m_requestContext = request.requestContext();
@@ -263,16 +263,16 @@ void DocumentThreadableLoader::dispatchInitialRequest(const ResourceRequest& req
         return;
     }
 
-    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
+    DCHECK(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
 
     makeCrossOriginAccessRequest(request);
 }
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceRequest& request)
 {
-    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
-    ASSERT(m_client);
-    ASSERT(!resource());
+    DCHECK(m_options.crossOriginRequestPolicy == UseAccessControl || request.isExternalRequest());
+    DCHECK(m_client);
+    DCHECK(!resource());
 
     // Cross-origin requests are only allowed certain registered schemes.
     // We would catch this when checking response headers later, but there
@@ -346,7 +346,7 @@ DocumentThreadableLoader::~DocumentThreadableLoader()
 
 void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
 {
-    ASSERT(m_async);
+    DCHECK(m_async);
 
     // |m_requestStartedSeconds| == 0.0 indicates loading is already finished
     // and |m_timeoutTimer| is already stopped, and thus we do nothing for such
@@ -417,9 +417,9 @@ void DocumentThreadableLoader::clear()
 // the resource by calling clearResource().
 void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
-    ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_async);
+    DCHECK(m_client);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_checker.redirectReceived();
 
@@ -441,7 +441,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         // We use |m_redirectMode| to check the original redirect mode.
         // |request| is a new request for redirect. So we don't set the redirect
         // mode of it in WebURLLoaderImpl::Context::OnReceivedRedirect().
-        ASSERT(request.useStreamOnResponse());
+        DCHECK(request.useStreamOnResponse());
         // There is no need to read the body of redirect response because there
         // is no way to read the body of opaque-redirect filtered response's
         // internal response.
@@ -456,7 +456,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         }
 
         if (m_client) {
-            ASSERT(m_actualRequest.isNull());
+            DCHECK(m_actualRequest.isNull());
             notifyFinished(resource);
         }
 
@@ -567,9 +567,9 @@ void DocumentThreadableLoader::redirectBlocked()
 
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_async);
+    DCHECK(m_client);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_checker.dataSent();
     m_client->didSendData(bytesSent, totalBytesToBeSent);
@@ -577,10 +577,10 @@ void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long b
 
 void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength)
 {
-    ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_actualRequest.isNull());
-    ASSERT(m_async);
+    DCHECK(m_client);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_actualRequest.isNull());
+    DCHECK(m_async);
 
     m_checker.dataDownloaded();
     m_client->didDownloadData(dataLength);
@@ -588,17 +588,17 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
 
 void DocumentThreadableLoader::didReceiveResourceTiming(Resource* resource, const ResourceTimingInfo& info)
 {
-    ASSERT(m_client);
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_async);
+    DCHECK(m_client);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_client->didReceiveResourceTiming(info);
 }
 
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_async);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_checker.responseReceived();
 
@@ -643,7 +643,7 @@ void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, 
     LocalFrame* frame = document().frame();
     // We are seeing crashes caused by nullptr (crbug.com/578849). But the frame
     // must be set here. TODO(horo): Find the root cause of the unset frame.
-    ASSERT(frame);
+    DCHECK(frame);
     if (!frame)
         return;
     DocumentLoader* loader = frame->loader().documentLoader();
@@ -654,7 +654,7 @@ void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, 
 
 void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
 
     if (!m_actualRequest.isNull()) {
         reportResponseReceived(identifier, response);
@@ -670,7 +670,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             // (For SharedWorker the request won't be CORS or CORS-with-preflight,
             // therefore fallback-to-network is handled in the browser process
             // when the ServiceWorker does not call respondWith().)
-            ASSERT(!m_fallbackRequestForServiceWorker.isNull());
+            DCHECK(!m_fallbackRequestForServiceWorker.isNull());
             reportResponseReceived(identifier, response);
             loadFallbackRequestForServiceWorker();
             return;
@@ -689,7 +689,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     // loadFallbackRequestForServiceWorker().
     // FIXME: We should use |m_sameOriginRequest| when we will support
     // Suborigins (crbug.com/336894) for Service Worker.
-    ASSERT(m_fallbackRequestForServiceWorker.isNull() || getSecurityOrigin()->canRequest(m_fallbackRequestForServiceWorker.url()));
+    DCHECK(m_fallbackRequestForServiceWorker.isNull() || getSecurityOrigin()->canRequest(m_fallbackRequestForServiceWorker.url()));
     m_fallbackRequestForServiceWorker = ResourceRequest();
 
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
@@ -718,8 +718,8 @@ void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, size_t dataLength)
 {
-    ASSERT_UNUSED(resource, resource == this->resource());
-    ASSERT(m_async);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_checker.dataReceived();
 
@@ -733,22 +733,22 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
 
 void DocumentThreadableLoader::handleReceivedData(const char* data, size_t dataLength)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
 
     // Preflight data should be invisible to clients.
     if (!m_actualRequest.isNull())
         return;
 
-    ASSERT(m_fallbackRequestForServiceWorker.isNull());
+    DCHECK(m_fallbackRequestForServiceWorker.isNull());
 
     m_client->didReceiveData(data, dataLength);
 }
 
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
 {
-    ASSERT(m_client);
-    ASSERT(resource == this->resource());
-    ASSERT(m_async);
+    DCHECK(m_client);
+    DCHECK_EQ(resource, this->resource());
+    DCHECK(m_async);
 
     m_checker.notifyFinished(resource);
 
@@ -761,14 +761,14 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
 
 void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, double finishTime)
 {
-    ASSERT(m_fallbackRequestForServiceWorker.isNull());
+    DCHECK(m_fallbackRequestForServiceWorker.isNull());
 
     if (!m_actualRequest.isNull()) {
         // FIXME: Timeout should be applied to whole fetch, not for each of
         // preflight and actual request.
         m_timeoutTimer.stop();
-        ASSERT(!m_sameOriginRequest);
-        ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
+        DCHECK(!m_sameOriginRequest);
+        DCHECK_EQ(m_options.crossOriginRequestPolicy, UseAccessControl);
         loadActualRequest();
         return;
     }
@@ -783,7 +783,7 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
 
 void DocumentThreadableLoader::didTimeout(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_timeoutTimer);
+    DCHECK_EQ(timer, &m_timeoutTimer);
 
     // Using values from net/base/net_error_list.h ERR_TIMED_OUT,
     // Same as existing FIXME above - this error should be coming from FrameLoaderClient to be identifiable.
@@ -849,8 +849,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
 {
     // Any credential should have been removed from the cross-site requests.
     const KURL& requestURL = request.url();
-    ASSERT(m_sameOriginRequest || requestURL.user().isEmpty());
-    ASSERT(m_sameOriginRequest || requestURL.pass().isEmpty());
+    DCHECK(m_sameOriginRequest || requestURL.user().isEmpty());
+    DCHECK(m_sameOriginRequest || requestURL.pass().isEmpty());
 
     // Update resourceLoaderOptions with enforced values.
     if (m_forceDoNotAllowStoredCredentials)
@@ -866,7 +866,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         FetchRequest newRequest(request, m_options.initiator, resourceLoaderOptions);
         if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
             newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
-        ASSERT(!resource());
+        DCHECK(!resource());
 
         WeakPtr<DocumentThreadableLoader> self(m_weakFactory.createWeakPtr());
 
@@ -981,7 +981,7 @@ const SecurityOrigin* DocumentThreadableLoader::getSecurityOrigin() const
 
 Document& DocumentThreadableLoader::document() const
 {
-    ASSERT(m_document);
+    DCHECK(m_document);
     return *m_document;
 }
 

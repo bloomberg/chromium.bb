@@ -39,7 +39,7 @@ namespace blink {
 
 ScriptResource* ScriptResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
     ScriptResource* resource = toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
     if (resource && !request.integrityMetadata().isEmpty())
@@ -59,7 +59,7 @@ ScriptResource::~ScriptResource()
 
 void ScriptResource::didAddClient(ResourceClient* client)
 {
-    ASSERT(ScriptResourceClient::isExpectedType(client));
+    DCHECK(ScriptResourceClient::isExpectedType(client));
     Resource::didAddClient(client);
 }
 
@@ -82,7 +82,7 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
 
 const String& ScriptResource::script()
 {
-    ASSERT(isLoaded());
+    DCHECK(isLoaded());
 
     if (m_script.isNull() && data()) {
         String script = decodedText();
@@ -109,7 +109,7 @@ bool ScriptResource::mimeTypeAllowedByNosniff() const
 
 void ScriptResource::setIntegrityDisposition(ScriptIntegrityDisposition disposition)
 {
-    ASSERT(disposition != ScriptIntegrityDisposition::NotChecked);
+    DCHECK_NE(disposition, ScriptIntegrityDisposition::NotChecked);
     m_integrityDisposition = disposition;
 }
 bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const

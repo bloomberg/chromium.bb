@@ -61,7 +61,7 @@ bool FrameLoaderStateMachine::isDisplayingInitialEmptyDocument() const
 
 void FrameLoaderStateMachine::advanceTo(State state)
 {
-    ASSERT(m_state < state);
+    DCHECK_LT(m_state, state);
     m_state = state;
 }
 
@@ -77,7 +77,7 @@ String FrameLoaderStateMachine::toString() const
     case CommittedMultipleRealLoads:
         return "CommittedMultipleRealLoads";
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return "";
 }

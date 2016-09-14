@@ -401,7 +401,6 @@ bool sendPingCommon(LocalFrame* frame, ResourceRequest& request, const AtomicStr
     // The loader keeps itself alive until it receives a response and disposes itself.
     PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator, AllowStoredCredentials, true);
     DCHECK(loader);
-    ALLOW_UNUSED_LOCAL(loader);
 
     return true;
 }

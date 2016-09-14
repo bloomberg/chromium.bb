@@ -59,7 +59,7 @@ XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& r
 
 XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     applyXSLRequestProperties(request.mutableResourceRequest());
     return toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
 }
@@ -71,7 +71,7 @@ XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequ
 
 void XSLStyleSheetResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(StyleSheetResourceClient::isExpectedType(c));
+    DCHECK(StyleSheetResourceClient::isExpectedType(c));
     Resource::didAddClient(c);
     if (!isLoading())
         static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);

@@ -25,7 +25,7 @@ MultipartImageResourceParser::MultipartImageResourceParser(const ResourceRespons
 
 void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 {
-    ASSERT(!isCancelled());
+    DCHECK(!isCancelled());
     // m_sawLastBoundary means that we've already received the final boundary
     // token. The server should stop sending us data at this point, but if it
     // does, we just throw it away.
@@ -114,7 +114,7 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 
 void MultipartImageResourceParser::finish()
 {
-    ASSERT(!isCancelled());
+    DCHECK(!isCancelled());
     if (m_sawLastBoundary)
         return;
     // If we have any pending data and we're not in a header, go ahead and send

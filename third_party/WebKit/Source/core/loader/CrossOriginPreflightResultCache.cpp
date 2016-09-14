@@ -148,19 +148,19 @@ bool CrossOriginPreflightResultCacheItem::allowsRequest(StoredCredentials includ
 CrossOriginPreflightResultCache& CrossOriginPreflightResultCache::shared()
 {
     DEFINE_STATIC_LOCAL(CrossOriginPreflightResultCache, cache, ());
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return cache;
 }
 
 void CrossOriginPreflightResultCache::appendEntry(const String& origin, const KURL& url, std::unique_ptr<CrossOriginPreflightResultCacheItem> preflightResult)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_preflightHashMap.set(std::make_pair(origin, url), std::move(preflightResult));
 }
 
 bool CrossOriginPreflightResultCache::canSkipPreflight(const String& origin, const KURL& url, StoredCredentials includeCredentials, const String& method, const HTTPHeaderMap& requestHeaders)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     CrossOriginPreflightResultHashMap::iterator cacheIt = m_preflightHashMap.find(std::make_pair(origin, url));
     if (cacheIt == m_preflightHashMap.end())
         return false;

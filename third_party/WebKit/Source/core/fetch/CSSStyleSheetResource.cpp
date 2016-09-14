@@ -39,7 +39,7 @@ namespace blink {
 
 CSSStyleSheetResource* CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextStyle);
     return toCSSStyleSheetResource(fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
 }
@@ -76,7 +76,7 @@ DEFINE_TRACE(CSSStyleSheetResource)
 
 void CSSStyleSheetResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(StyleSheetResourceClient::isExpectedType(c));
+    DCHECK(StyleSheetResourceClient::isExpectedType(c));
     // Resource::didAddClient() must be before setCSSStyleSheet(),
     // because setCSSStyleSheet() may cause scripts to be executed, which could destroy 'c' if it is an instance of HTMLLinkElement.
     // see the comment of HTMLLinkElement::setCSSStyleSheet.
@@ -162,8 +162,8 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSPars
         return nullptr;
     }
 
-    ASSERT(m_parsedStyleSheetCache->isCacheableForResource());
-    ASSERT(m_parsedStyleSheetCache->isReferencedFromResource());
+    DCHECK(m_parsedStyleSheetCache->isCacheableForResource());
+    DCHECK(m_parsedStyleSheetCache->isReferencedFromResource());
 
     // Contexts must be identical so we know we would get the same exact result if we parsed again.
     if (m_parsedStyleSheetCache->parserContext() != context)
@@ -176,7 +176,8 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSPars
 
 void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet)
 {
-    ASSERT(sheet && sheet->isCacheableForResource());
+    DCHECK(sheet);
+    DCHECK(sheet->isCacheableForResource());
 
     if (!memoryCache()->contains(this)) {
         // This stylesheet resource did conflict with another resource and was

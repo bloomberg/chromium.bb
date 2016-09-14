@@ -108,7 +108,7 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
         // Also parser-blocking scripts (set explicitly in loadPriority)
         return ResourceLoadPriorityVeryHigh;
     case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::Raw:
     case Resource::ImportResource:
     case Resource::Script:
@@ -127,7 +127,7 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
         return ResourceLoadPriorityVeryLow;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return ResourceLoadPriorityUnresolved;
 }
 
@@ -181,7 +181,7 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
         // FIXME: Change this to a context frame type (once we introduce them): http://fetch.spec.whatwg.org/#concept-request-context-frame-type
         return WebURLRequest::RequestContextHyperlink;
     case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::CSSStyleSheet:
         return WebURLRequest::RequestContextStyle;
     case Resource::Script:
@@ -205,7 +205,7 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     case Resource::Manifest:
         return WebURLRequest::RequestContextManifest;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebURLRequest::RequestContextSubresource;
 }
 
@@ -314,7 +314,7 @@ static std::unique_ptr<TracedValue> urlForTraceEvent(const KURL& url)
 Resource* ResourceFetcher::resourceForStaticData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     const KURL& url = request.resourceRequest().url();
-    ASSERT(url.protocolIsData() || substituteData.isValid() || m_archive);
+    DCHECK(url.protocolIsData() || substituteData.isValid() || m_archive);
 
     // TODO(japhet): We only send main resource data: urls through WebURLLoader for the benefit of
     // a service worker test (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a
@@ -404,7 +404,7 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource, RevalidationPol
 
 Resource* ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
-    ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
+    DCHECK(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
 
     context().populateRequestData(request.mutableResourceRequest());
     if (request.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests") != AtomicString("1"))
@@ -481,7 +481,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     if (!resource)
         return nullptr;
     if (resource->getType() != factory.type()) {
-        ASSERT(request.forPreload());
+        DCHECK(request.forPreload());
         return nullptr;
     }
 
@@ -515,13 +515,13 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
 
     if (!startLoad(resource))
         return nullptr;
-    ASSERT(!resource->errorOccurred() || request.options().synchronousPolicy == RequestSynchronously);
+    DCHECK(!resource->errorOccurred() || request.options().synchronousPolicy == RequestSynchronously);
     return resource;
 }
 
 void ResourceFetcher::resourceTimingReportTimerFired(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
+    DCHECK_EQ(timer, &m_resourceTimingReportTimer);
     Vector<std::unique_ptr<ResourceTimingInfo>> timingReports;
     timingReports.swap(m_scheduledResourceTimingReports);
     for (const auto& timingInfo : timingReports)
@@ -553,17 +553,17 @@ void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resour
 
 void ResourceFetcher::initializeRevalidation(ResourceRequest& revalidatingRequest, Resource* resource)
 {
-    ASSERT(resource);
-    ASSERT(memoryCache()->contains(resource));
-    ASSERT(resource->isLoaded());
-    ASSERT(resource->canUseCacheValidator());
-    ASSERT(!resource->isCacheValidator());
-    ASSERT(!context().isControlledByServiceWorker());
+    DCHECK(resource);
+    DCHECK(memoryCache()->contains(resource));
+    DCHECK(resource->isLoaded());
+    DCHECK(resource->canUseCacheValidator());
+    DCHECK(!resource->isCacheValidator());
+    DCHECK(!context().isControlledByServiceWorker());
 
     const AtomicString& lastModified = resource->response().httpHeaderField(HTTPNames::Last_Modified);
     const AtomicString& eTag = resource->response().httpHeaderField(HTTPNames::ETag);
     if (!lastModified.isEmpty() || !eTag.isEmpty()) {
-        ASSERT(context().getCachePolicy() != CachePolicyReload);
+        DCHECK_NE(context().getCachePolicy(), CachePolicyReload);
         if (context().getCachePolicy() == CachePolicyRevalidate)
             revalidatingRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
     }
@@ -583,7 +583,7 @@ void ResourceFetcher::initializeRevalidation(ResourceRequest& revalidatingReques
 Resource* ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
 {
     const String cacheIdentifier = getCacheIdentifier();
-    ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
+    DCHECK(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
 
     RESOURCE_LOADING_DVLOG(1) << "Loading Resource for " << request.resourceRequest().url().elidedString();
 
@@ -1023,7 +1023,8 @@ void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader)
 
 bool ResourceFetcher::startLoad(Resource* resource)
 {
-    DCHECK(resource && resource->stillNeedsLoad());
+    DCHECK(resource);
+    DCHECK(resource->stillNeedsLoad());
     if (!context().shouldLoadNewResource(resource->getType())) {
         memoryCache()->remove(resource);
         return false;
@@ -1051,7 +1052,7 @@ void ResourceFetcher::removeResourceLoader(ResourceLoader* loader)
     else if (m_nonBlockingLoaders.contains(loader))
         m_nonBlockingLoaders.remove(loader);
     else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
 }
 
 void ResourceFetcher::stopFetching()
@@ -1216,7 +1217,7 @@ void ResourceFetcher::logPreloadStats()
             rawMisses += missCount;
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
     // TODO(csharrison): These can falsely attribute link rel="preload" requests

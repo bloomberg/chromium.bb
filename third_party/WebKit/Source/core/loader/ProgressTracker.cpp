@@ -91,7 +91,7 @@ void ProgressTracker::dispose()
 {
     if (m_frame->isLoading())
         progressCompleted();
-    ASSERT(!m_frame->isLoading());
+    DCHECK(!m_frame->isLoading());
 }
 
 double ProgressTracker::estimatedProgress() const
@@ -120,7 +120,7 @@ void ProgressTracker::progressStarted()
 
 void ProgressTracker::progressCompleted()
 {
-    ASSERT(m_frame->isLoading());
+    DCHECK(m_frame->isLoading());
     m_frame->setIsLoading(false);
     sendFinalProgress();
     reset();
@@ -212,7 +212,7 @@ void ProgressTracker::maybeSendProgress()
     DCHECK_GE(m_progressValue, initialProgressValue);
     // Always leave space at the end. This helps show the user that we're not
     // done until we're done.
-    DCHECK(m_progressValue <= 0.9);
+    DCHECK_LE(m_progressValue, 0.9);
     if (m_progressValue < m_lastNotifiedProgressValue)
         return;
 

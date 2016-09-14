@@ -67,13 +67,13 @@ ApplicationCacheHost::ApplicationCacheHost(DocumentLoader* documentLoader)
     , m_documentLoader(documentLoader)
     , m_defersEvents(true)
 {
-    ASSERT(m_documentLoader);
+    DCHECK(m_documentLoader);
 }
 
 ApplicationCacheHost::~ApplicationCacheHost()
 {
     // Verify that detachFromDocumentLoader() has been performed already.
-    ASSERT(!m_host);
+    DCHECK(!m_host);
 }
 
 void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request)
@@ -85,7 +85,7 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
     if (!isApplicationCacheEnabled())
         return;
 
-    ASSERT(m_documentLoader->frame());
+    DCHECK(m_documentLoader->frame());
     LocalFrame& frame = *m_documentLoader->frame();
     m_host = frame.loader().client()->createApplicationCacheHost(this);
     if (!m_host)
@@ -176,7 +176,7 @@ void ApplicationCacheHost::willStartLoadingResource(ResourceRequest& request)
 
 void ApplicationCacheHost::setApplicationCache(ApplicationCache* domApplicationCache)
 {
-    ASSERT(!m_domApplicationCache || !domApplicationCache);
+    DCHECK(!m_domApplicationCache || !domApplicationCache);
     m_domApplicationCache = domApplicationCache;
 }
 
@@ -279,7 +279,7 @@ void ApplicationCacheHost::abort()
 
 bool ApplicationCacheHost::isApplicationCacheEnabled()
 {
-    ASSERT(m_documentLoader->frame());
+    DCHECK(m_documentLoader->frame());
     return m_documentLoader->frame()->settings() && m_documentLoader->frame()->settings()->offlineWebApplicationCacheEnabled();
 }
 

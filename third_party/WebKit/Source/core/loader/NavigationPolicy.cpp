@@ -44,7 +44,7 @@ bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift
     if (!newTabModifier && !shift && !alt)
         return false;
 
-    ASSERT(policy);
+    DCHECK(policy);
     if (newTabModifier) {
         if (shift)
             *policy = NavigationPolicyNewForegroundTab;

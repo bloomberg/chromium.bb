@@ -57,8 +57,8 @@ public:
 
     static void provideDocumentToContext(FetchContext& context, Document* document)
     {
-        ASSERT(document);
-        RELEASE_ASSERT(context.isLiveContext());
+        DCHECK(document);
+        CHECK(context.isLiveContext());
         static_cast<FrameFetchContext&>(context).m_document = document;
     }
 

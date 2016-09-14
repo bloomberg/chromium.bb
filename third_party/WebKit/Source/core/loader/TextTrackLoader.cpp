@@ -51,7 +51,7 @@ TextTrackLoader::~TextTrackLoader()
 
 void TextTrackLoader::cueLoadTimerFired(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_cueLoadTimer);
+    DCHECK_EQ(timer, &m_cueLoadTimer);
 
     if (m_newCuesAvailable) {
         m_newCuesAvailable = false;
@@ -69,7 +69,7 @@ void TextTrackLoader::cancelLoad()
 
 void TextTrackLoader::dataReceived(Resource* resource, const char* data, size_t length)
 {
-    ASSERT(this->resource() == resource);
+    DCHECK_EQ(this->resource(), resource);
 
     if (m_state == Failed)
         return;
@@ -89,7 +89,7 @@ void TextTrackLoader::corsPolicyPreventedLoad(SecurityOrigin* securityOrigin, co
 
 void TextTrackLoader::notifyFinished(Resource* resource)
 {
-    ASSERT(this->resource() == resource);
+    DCHECK_EQ(this->resource(), resource);
     if (m_state != Failed)
         m_state = resource->errorOccurred() ? Failed : Finished;
 
@@ -147,14 +147,14 @@ void TextTrackLoader::fileFailedToParse()
 
 void TextTrackLoader::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues)
 {
-    ASSERT(m_cueParser);
+    DCHECK(m_cueParser);
     if (m_cueParser)
         m_cueParser->getNewCues(outputCues);
 }
 
 void TextTrackLoader::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions)
 {
-    ASSERT(m_cueParser);
+    DCHECK(m_cueParser);
     if (m_cueParser)
         m_cueParser->getNewRegions(outputRegions);
 }

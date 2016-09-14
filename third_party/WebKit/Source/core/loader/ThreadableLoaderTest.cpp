@@ -195,8 +195,8 @@ public:
     // Must be called on the worker thread.
     void cancelLoader() override
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
         m_loader->cancel();
     }
 
@@ -211,8 +211,8 @@ public:
     // Must be called on the worker thread.
     void clearLoader() override
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
         m_loader = nullptr;
     }
 
@@ -281,8 +281,8 @@ private:
 
     void workerCreateLoader(ThreadableLoaderClient* client, WaitableEvent* event, CrossOriginRequestPolicy crossOriginRequestPolicy)
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
 
         ThreadableLoaderOptions options;
         options.crossOriginRequestPolicy = crossOriginRequestPolicy;
@@ -295,14 +295,14 @@ private:
         DCHECK(m_workerThread->globalScope()->isWorkerGlobalScope());
 
         m_loader = ThreadableLoader::create(*m_workerThread->globalScope(), client, options, resourceLoaderOptions);
-        ASSERT(m_loader);
+        DCHECK(m_loader);
         event->signal();
     }
 
     void workerStartLoader(WaitableEvent* event, std::unique_ptr<CrossThreadResourceRequestData> requestData)
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
 
         ResourceRequest request(requestData.get());
         m_loader->start(request);
@@ -311,8 +311,8 @@ private:
 
     void workerCallCheckpoint(WaitableEvent* event, int n)
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
         m_checkpoint.Call(n);
         event->signal();
     }
@@ -320,14 +320,14 @@ private:
     // WorkerLoaderProxyProvider methods.
     void postTaskToLoader(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
     {
-        ASSERT(m_workerThread);
-        ASSERT(m_workerThread->isCurrentThread());
+        DCHECK(m_workerThread);
+        DCHECK(m_workerThread->isCurrentThread());
         document().postTask(location, std::move(task));
     }
 
     void postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
     {
-        ASSERT(m_workerThread);
+        DCHECK(m_workerThread);
         m_workerThread->postTask(location, std::move(task));
     }
 

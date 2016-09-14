@@ -74,8 +74,8 @@ static inline bool pageIsBeingDismissed(Document* document)
 
 static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader* loader)
 {
-    ASSERT(loader);
-    ASSERT(loader->element());
+    DCHECK(loader);
+    DCHECK(loader->element());
     if (loader->element()->document().frame() && loader->element()->document().frame()->script().shouldBypassMainWorldCSP())
         return ImageLoader::BypassMainWorldCSP;
     return ImageLoader::DoNotBypassMainWorldCSP;
@@ -105,7 +105,7 @@ public:
             m_scriptState = ScriptState::current(isolate);
         } else {
             m_scriptState = ScriptState::forMainWorld(loader->element()->document().frame());
-            ASSERT(m_scriptState);
+            DCHECK(m_scriptState);
         }
         m_requestURL = loader->imageSourceToKURL(loader->element()->imageSourceURL());
     }
@@ -192,7 +192,7 @@ void ImageLoader::setImage(ImageResource* newImage)
 
 void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newImage)
 {
-    ASSERT(m_failedLoadURL.isEmpty());
+    DCHECK(m_failedLoadURL.isEmpty());
     ImageResource* oldImage = m_image.get();
     if (newImage != oldImage) {
         m_image = newImage;
@@ -437,8 +437,8 @@ void ImageLoader::imageNotifyFinished(ImageResource* resource)
     RESOURCE_LOADING_DVLOG(1) << "ImageLoader::imageNotifyFinished " << this
         << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent;
 
-    ASSERT(m_failedLoadURL.isEmpty());
-    ASSERT(resource == m_image.get());
+    DCHECK(m_failedLoadURL.isEmpty());
+    DCHECK_EQ(resource, m_image.get());
 
     m_imageComplete = true;
 
@@ -534,7 +534,7 @@ void ImageLoader::updatedHasPendingEvent()
         else
             m_keepAlive = m_element;
     } else {
-        ASSERT(!m_derefElementTimer.isActive());
+        DCHECK(!m_derefElementTimer.isActive());
         m_derefElementTimer.startOneShot(0, BLINK_FROM_HERE);
     }
 }
@@ -547,7 +547,7 @@ void ImageLoader::timerFired(TimerBase*)
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
     RESOURCE_LOADING_DVLOG(1) << "ImageLoader::dispatchPendingEvent " << this;
-    ASSERT(eventSender == &loadEventSender() || eventSender == &errorEventSender());
+    DCHECK(eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
     if (eventType == EventTypeNames::load)
         dispatchPendingLoadEvent();

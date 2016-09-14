@@ -98,7 +98,7 @@ inline bool isRawResource(const Resource& resource)
 #endif
 inline RawResource* toRawResource(Resource* resource)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!resource || isRawResource(*resource));
+    SECURITY_DCHECK(!resource || isRawResource(*resource));
     return static_cast<RawResource*>(resource);
 }
 

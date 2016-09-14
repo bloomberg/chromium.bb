@@ -125,9 +125,9 @@ FrameLoader* DocumentLoader::frameLoader() const
 
 DocumentLoader::~DocumentLoader()
 {
-    ASSERT(!m_frame);
-    ASSERT(!m_mainResource);
-    ASSERT(!m_applicationCacheHost);
+    DCHECK(!m_frame);
+    DCHECK(!m_mainResource);
+    DCHECK(!m_applicationCacheHost);
 }
 
 DEFINE_TRACE(DocumentLoader)
@@ -196,7 +196,7 @@ Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& reques
         resource = RawResource::fetch(request, fetcher());
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     if (resource)
@@ -231,7 +231,7 @@ void DocumentLoader::didChangePerformanceTiming()
 void DocumentLoader::didObserveLoadingBehavior(WebLoadingBehaviorFlag behavior)
 {
     if (frame() && frame()->isMainFrame()) {
-        ASSERT(m_state >= Committed);
+        DCHECK_GE(m_state, Committed);
         frameLoader()->client()->didObserveLoadingBehavior(behavior);
     }
 }
@@ -266,8 +266,8 @@ void DocumentLoader::commitIfReady()
 
 void DocumentLoader::notifyFinished(Resource* resource)
 {
-    ASSERT_UNUSED(resource, m_mainResource == resource);
-    ASSERT(m_mainResource);
+    DCHECK_EQ(m_mainResource, resource);
+    DCHECK(m_mainResource);
 
     if (!m_mainResource->errorOccurred() && !m_mainResource->wasCanceled()) {
         finishedLoading(m_mainResource->loadFinishTime());
@@ -317,8 +317,8 @@ void DocumentLoader::finishedLoading(double finishTime)
 
 void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
-    ASSERT_UNUSED(resource, resource == m_mainResource);
-    ASSERT(!redirectResponse.isNull());
+    DCHECK_EQ(resource, m_mainResource);
+    DCHECK(!redirectResponse.isNull());
     m_request = request;
 
     // If the redirecting url is not allowed to display content from the target origin,
@@ -335,7 +335,7 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
         return;
     }
 
-    ASSERT(timing().fetchStart());
+    DCHECK(timing().fetchStart());
     appendRedirect(requestURL);
     didRedirect(redirectResponse.url(), requestURL);
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
@@ -397,9 +397,9 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceRespo
 
 void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT_UNUSED(resource, m_mainResource == resource);
-    ASSERT_UNUSED(handle, !handle);
-    ASSERT(frame());
+    DCHECK_EQ(m_mainResource, resource);
+    DCHECK(!handle);
+    DCHECK(frame());
 
     m_applicationCacheHost->didReceiveResponseForMainResource(response);
 
@@ -433,7 +433,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         }
     }
 
-    ASSERT(!m_frame->page()->defersLoading());
+    DCHECK(!m_frame->page()->defersLoading());
 
     m_response = response;
 
@@ -475,7 +475,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
     DocumentInit init(owner, url(), m_frame);
     init.withNewRegistrationContext();
     m_frame->loader().clear();
-    ASSERT(m_frame->page());
+    DCHECK(m_frame->page());
 
     ParserSynchronizationPolicy parsingPolicy = AllowAsynchronousParsing;
     if ((m_substituteData.isValid() && m_substituteData.forceSynchronousLoad()) || !Document::threadedParsingEnabledForTesting())
@@ -488,7 +488,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
 void DocumentLoader::commitData(const char* bytes, size_t length)
 {
-    ASSERT(m_state < MainResourceDone);
+    DCHECK_LT(m_state, MainResourceDone);
     ensureWriter(m_response.mimeType());
 
     // This can happen if document.close() is called by an event handler while
@@ -504,11 +504,11 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
 
 void DocumentLoader::dataReceived(Resource* resource, const char* data, size_t length)
 {
-    ASSERT(data);
-    ASSERT(length);
-    ASSERT_UNUSED(resource, resource == m_mainResource);
-    ASSERT(!m_response.isNull());
-    ASSERT(!m_frame->page()->defersLoading());
+    DCHECK(data);
+    DCHECK(length);
+    DCHECK_EQ(resource, m_mainResource);
+    DCHECK(!m_response.isNull());
+    DCHECK(!m_frame->page()->defersLoading());
 
     if (m_inDataReceived) {
         // If this function is reentered, defer processing of the additional
@@ -568,7 +568,7 @@ void DocumentLoader::appendRedirect(const KURL& url)
 
 void DocumentLoader::detachFromFrame()
 {
-    ASSERT(m_frame);
+    DCHECK(m_frame);
 
     // It never makes sense to have a document loader that is detached from its
     // frame have any loads active, so go ahead and kill all the loads.
@@ -601,7 +601,7 @@ bool DocumentLoader::maybeCreateArchive()
     if (!isArchiveMIMEType(m_response.mimeType()))
         return false;
 
-    ASSERT(m_mainResource);
+    DCHECK(m_mainResource);
     ArchiveResource* mainResource = m_fetcher->createArchive(m_mainResource.get());
     if (!mainResource)
         return false;
@@ -642,14 +642,14 @@ bool DocumentLoader::maybeLoadEmpty()
 void DocumentLoader::startLoadingMainResource()
 {
     timing().markNavigationStart();
-    ASSERT(!m_mainResource);
-    ASSERT(m_state == NotStarted);
+    DCHECK(!m_mainResource);
+    DCHECK_EQ(m_state, NotStarted);
     m_state = Provisional;
 
     if (maybeLoadEmpty())
         return;
 
-    ASSERT(timing().navigationStart());
+    DCHECK(timing().navigationStart());
 
     // PlzNavigate:
     // The fetch has already started in the browser. Don't mark it again.
@@ -675,7 +675,7 @@ void DocumentLoader::startLoadingMainResource()
 
 void DocumentLoader::endWriting(DocumentWriter* writer)
 {
-    ASSERT_UNUSED(writer, m_writer == writer);
+    DCHECK_EQ(m_writer, writer);
     m_writer->end();
     m_writer.clear();
 }
@@ -684,8 +684,8 @@ DocumentWriter* DocumentLoader::createWriterFor(const DocumentInit& init, const 
 {
     LocalFrame* frame = init.frame();
 
-    ASSERT(!frame->document() || !frame->document()->isActive());
-    ASSERT(frame->tree().childCount() == 0);
+    DCHECK(!frame->document() || !frame->document()->isActive());
+    DCHECK_EQ(frame->tree().childCount(), 0u);
 
     if (!init.shouldReuseDefaultView())
         frame->setDOMWindow(LocalDOMWindow::create(*frame));

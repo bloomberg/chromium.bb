@@ -73,7 +73,7 @@ FetchRequest::~FetchRequest()
 
 void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, CrossOriginAttributeValue crossOrigin)
 {
-    ASSERT(crossOrigin != CrossOriginAttributeNotSet);
+    DCHECK_NE(crossOrigin, CrossOriginAttributeNotSet);
     const bool useCredentials = crossOrigin == CrossOriginAttributeUseCredentials;
     const bool isSameOriginRequest = origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
 

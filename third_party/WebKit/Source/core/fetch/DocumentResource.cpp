@@ -32,7 +32,7 @@ namespace blink {
 
 DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
     return toDocumentResource(fetcher->requestResource(request, SVGDocumentResourceFactory()));
 }
@@ -41,7 +41,7 @@ DocumentResource::DocumentResource(const ResourceRequest& request, Type type, co
     : TextResource(request, type, options, "application/xml", String())
 {
     // FIXME: We'll support more types to support HTMLImports.
-    ASSERT(type == SVGDocument);
+    DCHECK_EQ(type, SVGDocument);
 }
 
 DocumentResource::~DocumentResource()
@@ -66,7 +66,7 @@ void DocumentResource::checkNotify()
 
 bool DocumentResource::mimeTypeAllowed() const
 {
-    ASSERT(getType() == SVGDocument);
+    DCHECK_EQ(getType(), SVGDocument);
     AtomicString mimeType = response().mimeType();
     if (response().isHTTP())
         mimeType = httpContentType();
@@ -83,7 +83,7 @@ Document* DocumentResource::createDocument(const KURL& url)
         return XMLDocument::createSVG(DocumentInit(url));
     default:
         // FIXME: We'll add more types to support HTMLImports.
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 }

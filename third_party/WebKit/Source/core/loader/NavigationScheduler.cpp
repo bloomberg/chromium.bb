@@ -294,7 +294,7 @@ private:
         : ScheduledNavigation(0, document, replacesCurrentItem, true)
         , m_submission(submission)
     {
-        ASSERT(m_submission->form());
+        DCHECK(m_submission->form());
     }
 
     Member<FormSubmission> m_submission;
@@ -409,14 +409,14 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
 
 void NavigationScheduler::schedulePageBlock(Document* originDocument)
 {
-    ASSERT(m_frame->page());
+    DCHECK(m_frame->page());
     const KURL& url = m_frame->document()->url();
     schedule(ScheduledPageBlock::create(originDocument, url));
 }
 
 void NavigationScheduler::scheduleFormSubmission(Document* document, FormSubmission* submission)
 {
-    ASSERT(m_frame->page());
+    DCHECK(m_frame->page());
     schedule(ScheduledFormSubmission::create(document, submission, mustReplaceCurrentItem(m_frame)));
 }
 
@@ -447,7 +447,7 @@ void NavigationScheduler::navigateTask()
 
 void NavigationScheduler::schedule(ScheduledNavigation* redirect)
 {
-    ASSERT(m_frame->page());
+    DCHECK(m_frame->page());
 
     // In a back/forward navigation, we sometimes restore history state to iframes, even though the state was generated
     // dynamically and JS will try to put something different in the iframe. In this case, we will load stale things
@@ -469,7 +469,7 @@ void NavigationScheduler::startTimer()
     if (!m_redirect)
         return;
 
-    ASSERT(m_frame->page());
+    DCHECK(m_frame->page());
     if (m_navigateTaskFactory->isPending())
         return;
     if (!m_redirect->shouldStartTimer(m_frame))

@@ -129,7 +129,7 @@ void HistoryItem::setPageScaleFactor(float scaleFactor)
 
 void HistoryItem::setDocumentState(const Vector<String>& state)
 {
-    ASSERT(!m_documentState);
+    DCHECK(!m_documentState);
     m_documentStateVector = state;
 }
 

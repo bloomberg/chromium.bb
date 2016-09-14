@@ -33,7 +33,7 @@ protected:
     LinkPreloadResourceClient(LinkLoader* loader)
         : m_loader(loader)
     {
-        ASSERT(loader);
+        DCHECK(loader);
     }
 
 private:
@@ -55,7 +55,7 @@ public:
 
     void notifyFinished(Resource* resource) override
     {
-        ASSERT(this->resource() == resource);
+        DCHECK_EQ(this->resource(), resource);
         triggerEvents(resource);
     }
 
@@ -88,7 +88,7 @@ public:
 
     void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource* resource) override
     {
-        ASSERT(this->resource() == resource);
+        DCHECK_EQ(this->resource(), resource);
         triggerEvents(static_cast<const Resource*>(resource));
     }
 
@@ -121,7 +121,7 @@ public:
 
     void notifyFinished(Resource* resource) override
     {
-        ASSERT(this->resource() == toImageResource(resource));
+        DCHECK_EQ(this->resource(), toImageResource(resource));
         triggerEvents(resource);
     }
 
@@ -154,7 +154,7 @@ public:
 
     void notifyFinished(Resource* resource) override
     {
-        ASSERT(this->resource() == toFontResource(resource));
+        DCHECK_EQ(this->resource(), toFontResource(resource));
         triggerEvents(resource);
     }
 
@@ -187,7 +187,7 @@ public:
 
     void notifyFinished(Resource* resource) override
     {
-        ASSERT(this->resource() == toRawResource(resource));
+        DCHECK_EQ(this->resource(), toRawResource(resource));
         triggerEvents(resource);
     }
 

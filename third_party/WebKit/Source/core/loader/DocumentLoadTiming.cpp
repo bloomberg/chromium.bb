@@ -102,10 +102,13 @@ void DocumentLoadTiming::markNavigationStart()
     // Allow the embedder to override navigationStart before we record it if
     // they have a more accurate timestamp.
     if (m_navigationStart) {
-        ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
+        DCHECK(m_referenceMonotonicTime);
+        DCHECK(m_referenceWallTime);
         return;
     }
-    ASSERT(!m_navigationStart && !m_referenceMonotonicTime && !m_referenceWallTime);
+    DCHECK(!m_navigationStart);
+    DCHECK(!m_referenceMonotonicTime);
+    DCHECK(!m_referenceWallTime);
     ensureReferenceTimesSet();
     m_navigationStart = m_referenceMonotonicTime;
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
@@ -122,7 +125,8 @@ void DocumentLoadTiming::setNavigationStart(double navigationStart)
     TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart", m_navigationStart, "frame", frame());
 
     // The reference times are adjusted based on the embedder's navigationStart.
-    ASSERT(m_referenceMonotonicTime && m_referenceWallTime);
+    DCHECK(m_referenceMonotonicTime);
+    DCHECK(m_referenceWallTime);
     m_referenceWallTime = monotonicTimeToPseudoWallTime(navigationStart);
     m_referenceMonotonicTime = navigationStart;
     notifyDocumentTimingChanged();

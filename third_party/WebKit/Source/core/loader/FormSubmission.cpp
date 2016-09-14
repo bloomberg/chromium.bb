@@ -129,7 +129,7 @@ String FormSubmission::Attributes::methodString(SubmitMethod method)
     case DialogMethod:
         return "dialog";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyString();
 }
 
@@ -164,7 +164,7 @@ inline FormSubmission::FormSubmission(const String& result)
 
 FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, Event* event)
 {
-    ASSERT(form);
+    DCHECK(form);
 
     HTMLFormControlElement* submitButton = 0;
     if (event && event->target()) {
@@ -223,7 +223,7 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& 
     bool containsPasswordData = false;
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
         FormAssociatedElement* control = form->associatedElements()[i];
-        ASSERT(control);
+        DCHECK(control);
         HTMLElement& element = toHTMLElement(*control);
         if (!element.isDisabledFormControl())
             control->appendToFormData(*domFormData);

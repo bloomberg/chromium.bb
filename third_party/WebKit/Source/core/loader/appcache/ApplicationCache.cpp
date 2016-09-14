@@ -130,7 +130,7 @@ const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID 
     case ApplicationCacheHost::kObsoleteEvent:
         return EventTypeNames::obsolete;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return EventTypeNames::error;
 }
 

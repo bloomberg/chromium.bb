@@ -100,7 +100,7 @@ public:
     }
     ~NavigationDisablerForUnload()
     {
-        ASSERT(s_navigationDisableCount);
+        DCHECK(s_navigationDisableCount);
         s_navigationDisableCount--;
     }
     static bool isNavigationAllowed() { return !s_navigationDisableCount; }

@@ -84,13 +84,13 @@ LinkLoader::~LinkLoader()
 
 void LinkLoader::linkLoadTimerFired(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_linkLoadTimer);
+    DCHECK_EQ(timer, &m_linkLoadTimer);
     m_client->linkLoaded();
 }
 
 void LinkLoader::linkLoadingErrorTimerFired(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_linkLoadingErrorTimer);
+    DCHECK_EQ(timer, &m_linkLoadingErrorTimer);
     m_client->linkLoadingErrored();
 }
 
@@ -104,7 +104,7 @@ void LinkLoader::triggerEvents(const Resource* resource)
 
 void LinkLoader::notifyFinished(Resource* resource)
 {
-    ASSERT(this->resource() == resource);
+    DCHECK_EQ(this->resource(), resource);
 
     triggerEvents(resource);
     clearResource();
@@ -173,7 +173,7 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
 
 bool LinkLoader::getResourceTypeFromAsAttribute(const String& as, Resource::Type& type)
 {
-    ASSERT(as.lower() == as);
+    DCHECK_EQ(as.lower(), as);
     if (as == "image") {
         type = Resource::Image;
     } else if (as == "script") {
@@ -217,7 +217,7 @@ void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
         m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource));
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -241,7 +241,7 @@ static bool isSupportedType(Resource::Type resourceType, const String& mimeType)
     case Resource::Raw:
         return true;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return false;
 }

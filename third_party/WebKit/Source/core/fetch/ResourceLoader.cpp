@@ -57,8 +57,8 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
     : m_fetcher(fetcher)
     , m_resource(resource)
 {
-    ASSERT(m_resource);
-    ASSERT(m_fetcher);
+    DCHECK(m_resource);
+    DCHECK(m_fetcher);
     m_resource->setLoader(this);
 }
 
@@ -75,7 +75,7 @@ DEFINE_TRACE(ResourceLoader)
 
 void ResourceLoader::start(const ResourceRequest& request, WebTaskRunner* loadingTaskRunner, bool defersLoading)
 {
-    ASSERT(!m_loader);
+    DCHECK(!m_loader);
     if (m_resource->options().synchronousPolicy == RequestSynchronously && defersLoading) {
         cancel();
         return;
@@ -83,7 +83,7 @@ void ResourceLoader::start(const ResourceRequest& request, WebTaskRunner* loadin
 
     m_loader = wrapUnique(Platform::current()->createURLLoader());
     m_loader->setDefersLoading(defersLoading);
-    ASSERT(m_loader);
+    DCHECK(m_loader);
     m_loader->setLoadingTaskRunner(loadingTaskRunner);
 
     if (m_resource->options().synchronousPolicy == RequestSynchronously)
@@ -102,7 +102,7 @@ void ResourceLoader::restartForServiceWorkerFallback(const ResourceRequest& requ
 
 void ResourceLoader::setDefersLoading(bool defers)
 {
-    ASSERT(m_loader);
+    DCHECK(m_loader);
     m_loader->setDefersLoading(defers);
 }
 
@@ -125,8 +125,8 @@ void ResourceLoader::cancel()
 
 void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse, int64_t encodedDataLength)
 {
-    ASSERT(!passedNewRequest.isNull());
-    ASSERT(!passedRedirectResponse.isNull());
+    DCHECK(!passedNewRequest.isNull());
+    DCHECK(!passedRedirectResponse.isNull());
 
     ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
@@ -164,7 +164,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader* loader, const WebURLRespon
 
 void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length, int encodedDataLength, int encodedBodyLength)
 {
-    RELEASE_ASSERT(length >= 0);
+    CHECK_GE(length, 0);
     m_fetcher->didReceiveData(m_resource.get(), data, length, encodedDataLength);
     m_resource->addToEncodedBodyLength(encodedBodyLength);
     m_resource->addToDecodedBodyLength(length);
@@ -191,9 +191,9 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 void ResourceLoader::requestSynchronously(const ResourceRequest& request)
 {
     // downloadToFile is not supported for synchronous requests.
-    ASSERT(!request.downloadToFile());
-    ASSERT(m_loader);
-    DCHECK(request.priority() == ResourceLoadPriorityHighest);
+    DCHECK(!request.downloadToFile());
+    DCHECK(m_loader);
+    DCHECK_EQ(request.priority(), ResourceLoadPriorityHighest);
 
     WrappedResourceRequest requestIn(request);
     WebURLResponse responseOut;

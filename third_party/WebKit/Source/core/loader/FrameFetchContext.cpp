@@ -157,7 +157,7 @@ FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
     : m_document(document)
     , m_documentLoader(loader)
 {
-    ASSERT(frame());
+    DCHECK(frame());
 }
 
 FrameFetchContext::~FrameFetchContext()
@@ -173,7 +173,7 @@ LocalFrame* FrameFetchContext::frame() const
         frame = m_documentLoader->frame();
     else if (m_document && m_document->importsController())
         frame = m_document->importsController()->master()->frame();
-    ASSERT(frame);
+    DCHECK(frame);
     return frame;
 }
 
@@ -183,11 +183,11 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
     if (!isMainResource) {
         RefPtr<SecurityOrigin> outgoingOrigin;
         if (!request.didSetHTTPReferrer()) {
-            ASSERT(m_document);
+            DCHECK(m_document);
             outgoingOrigin = m_document->getSecurityOrigin();
             request.setHTTPReferrer(SecurityPolicy::generateReferrer(m_document->getReferrerPolicy(), request.url(), m_document->outgoingReferrer()));
         } else {
-            RELEASE_ASSERT(SecurityPolicy::generateReferrer(request.getReferrerPolicy(), request.url(), request.httpReferrer()).referrer == request.httpReferrer());
+            CHECK_EQ(SecurityPolicy::generateReferrer(request.getReferrerPolicy(), request.url(), request.httpReferrer()).referrer, request.httpReferrer());
             outgoingOrigin = SecurityOrigin::createFromString(request.httpReferrer());
         }
 
@@ -253,7 +253,7 @@ static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(const CacheP
 
 WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceRequest& request, Resource::Type type, FetchRequest::DeferOption defer) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     if (type == Resource::MainResource) {
         FrameLoadType frameLoadType = frame()->loader().loadType();
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
@@ -522,7 +522,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
         }
         break;
     case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::SVGDocument:
         if (!securityOrigin->canRequest(url)) {
             printAccessDeniedMessage(url);
@@ -545,7 +545,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     }
 
     if (type == Resource::Script || type == Resource::ImportResource) {
-        ASSERT(frame());
+        DCHECK(frame());
         if (!frame()->loader().client()->allowScriptFromSource(!frame()->settings() || frame()->settings()->scriptEnabled(), url)) {
             frame()->loader().client()->didNotAllowScript();
             // TODO(estark): Use a different ResourceRequestBlockedReason
@@ -554,7 +554,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
             return ResourceRequestBlockedReasonCSP;
         }
     } else if (type == Resource::Media || type == Resource::TextTrack) {
-        ASSERT(frame());
+        DCHECK(frame());
         if (!frame()->loader().client()->allowMedia(url))
             return ResourceRequestBlockedReasonOther;
     }
@@ -568,7 +568,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
     // block them at some point in the future.
     if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
-        ASSERT(frame()->document());
+        DCHECK(frame()->document());
         if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->getSecurityOrigin()->protocol()))
             UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
         if (!url.user().isEmpty() || !url.pass().isEmpty())
@@ -593,7 +593,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
 
 bool FrameFetchContext::isControlledByServiceWorker() const
 {
-    ASSERT(m_documentLoader || frame()->loader().documentLoader());
+    DCHECK(m_documentLoader || frame()->loader().documentLoader());
     if (m_documentLoader)
         return frame()->loader().client()->isControlledByServiceWorker(*m_documentLoader);
     // m_documentLoader is null while loading resources from an HTML import.
@@ -604,7 +604,7 @@ bool FrameFetchContext::isControlledByServiceWorker() const
 
 int64_t FrameFetchContext::serviceWorkerID() const
 {
-    ASSERT(m_documentLoader || frame()->loader().documentLoader());
+    DCHECK(m_documentLoader || frame()->loader().documentLoader());
     if (m_documentLoader)
         return frame()->loader().client()->serviceWorkerID(*m_documentLoader);
     // m_documentLoader is null while loading resources from an HTML import.
@@ -730,7 +730,7 @@ void FrameFetchContext::populateRequestData(ResourceRequest& request)
 
 MHTMLArchive* FrameFetchContext::archive() const
 {
-    ASSERT(!isMainFrame());
+    DCHECK(!isMainFrame());
     // TODO(nasko): How should this work with OOPIF?
     // The MHTMLArchive is parsed as a whole, but can be constructed from
     // frames in mutliple processes. In that case, which process should parse

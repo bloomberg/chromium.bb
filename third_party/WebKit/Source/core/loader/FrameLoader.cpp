@@ -189,7 +189,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 FrameLoader::~FrameLoader()
 {
     // Verify that this FrameLoader has been detached.
-    ASSERT(!m_progressTracker);
+    DCHECK(!m_progressTracker);
 }
 
 DEFINE_TRACE(FrameLoader)
@@ -467,8 +467,8 @@ void FrameLoader::receivedFirstData()
 
 void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable)
 {
-    ASSERT(m_frame);
-    ASSERT(m_frame->document());
+    DCHECK(m_frame);
+    DCHECK(m_frame->document());
 
     m_frame->document()->setReadyState(Document::Loading);
 
@@ -483,9 +483,9 @@ void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable)
 
 void FrameLoader::didBeginDocument()
 {
-    ASSERT(m_frame);
-    ASSERT(m_frame->document());
-    ASSERT(m_frame->document()->fetcher());
+    DCHECK(m_frame);
+    DCHECK(m_frame->document());
+    DCHECK(m_frame->document()->fetcher());
 
     if (m_documentLoader) {
         String suboriginHeader = m_documentLoader->response().httpHeaderField(HTTPNames::Suborigin);
@@ -750,7 +750,7 @@ void FrameLoader::detachDocumentLoader(Member<DocumentLoader>& loader)
 void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType frameLoadType, HistoryLoadType historyLoadType, ClientRedirectPolicy clientRedirect, Document* initiatingDocument)
 {
     // If we have a state object, we cannot also be a new navigation.
-    ASSERT(!stateObject || frameLoadType == FrameLoadTypeBackForward);
+    DCHECK(!stateObject || frameLoadType == FrameLoadTypeBackForward);
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
     detachDocumentLoader(m_provisionalDocumentLoader);
@@ -934,7 +934,7 @@ static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& reque
 void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType frameLoadType,
     HistoryItem* historyItem, HistoryLoadType historyLoadType)
 {
-    ASSERT(m_frame->document());
+    DCHECK(m_frame->document());
 
     if (!m_frame->isNavigationAllowed())
         return;
@@ -956,7 +956,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
     Frame* targetFrame = request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame);
 
     if (isBackForwardLoadType(frameLoadType)) {
-        ASSERT(historyItem);
+        DCHECK(historyItem);
         m_provisionalItem = historyItem;
     }
 
@@ -995,7 +995,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
 
     // Perform same document navigation.
     if (sameDocumentHistoryNavigation || sameDocumentNavigation) {
-        ASSERT(historyItem || !sameDocumentHistoryNavigation);
+        DCHECK(historyItem || !sameDocumentHistoryNavigation);
         RefPtr<SerializedScriptValue> stateObject = sameDocumentHistoryNavigation ?
             historyItem->stateObject() : nullptr;
 
@@ -1018,14 +1018,14 @@ SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
     if (!shouldTreatURLAsSrcdocDocument(url))
         return SubstituteData();
     String srcdoc = m_frame->deprecatedLocalOwner()->fastGetAttribute(srcdocAttr);
-    ASSERT(!srcdoc.isNull());
+    DCHECK(!srcdoc.isNull());
     CString encodedSrcdoc = srcdoc.utf8();
     return SubstituteData(SharedBuffer::create(encodedSrcdoc.data(), encodedSrcdoc.length()), "text/html", "UTF-8", KURL());
 }
 
 void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
 {
-    ASSERT(!url.isEmpty());
+    DCHECK(!url.isEmpty());
     if (!frame)
         return;
 
@@ -1125,7 +1125,7 @@ bool FrameLoader::prepareForCommit()
     // 'abort' listeners can also detach the frame.
     if (!m_frame->client())
         return false;
-    ASSERT(m_provisionalDocumentLoader == pdl);
+    DCHECK_EQ(m_provisionalDocumentLoader, pdl);
     // No more events will be dispatched so detach the Document.
     // TODO(yoav): Should we also be nullifying domWindow's document (or domWindow) since the doc is now detached?
     if (m_frame->document())
@@ -1138,7 +1138,7 @@ bool FrameLoader::prepareForCommit()
 
 void FrameLoader::commitProvisionalLoad()
 {
-    ASSERT(client()->hasWebView());
+    DCHECK(client()->hasWebView());
 
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
@@ -1278,7 +1278,7 @@ void FrameLoader::loadFailed(DocumentLoader* loader, const ResourceError& error)
         detachDocumentLoader(m_provisionalDocumentLoader);
         m_progressTracker->progressCompleted();
     } else {
-        ASSERT(loader == m_documentLoader);
+        DCHECK_EQ(loader, m_documentLoader);
         if (m_frame->document()->parser())
             m_frame->document()->parser()->stopParsing();
         m_documentLoader->setSentDidFinishLoad();
@@ -1411,7 +1411,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
 
 void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType type, NavigationPolicy navigationPolicy)
 {
-    ASSERT(client()->hasWebView());
+    DCHECK(client()->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
@@ -1450,7 +1450,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
     double triggeringEventTime = frameLoadRequest.triggeringEvent() ? frameLoadRequest.triggeringEvent()->platformTimeStamp() : 0;
     client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
-    ASSERT(m_provisionalDocumentLoader);
+    DCHECK(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
 
     takeObjectSnapshot();
@@ -1459,7 +1459,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
 void FrameLoader::applyUserAgent(ResourceRequest& request)
 {
     String userAgent = this->userAgent();
-    ASSERT(!userAgent.isNull());
+    DCHECK(!userAgent.isNull());
     request.setHTTPUserAgent(AtomicString(userAgent));
 }
 
@@ -1588,7 +1588,7 @@ WebInsecureRequestPolicy FrameLoader::getInsecureRequestPolicy() const
 
 SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgrade() const
 {
-    ASSERT(m_frame);
+    DCHECK(m_frame);
     Frame* parentFrame = m_frame->tree().parent();
     if (!parentFrame)
         return nullptr;
@@ -1598,7 +1598,7 @@ SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgra
     if (!parentFrame->isLocalFrame())
         return nullptr;
 
-    ASSERT(toLocalFrame(parentFrame)->document());
+    DCHECK(toLocalFrame(parentFrame)->document());
     return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
 }
 

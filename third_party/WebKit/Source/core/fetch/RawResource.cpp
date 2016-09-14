@@ -43,44 +43,44 @@ Resource* RawResource::fetchSynchronously(FetchRequest& request, ResourceFetcher
 
 RawResource* RawResource::fetchImport(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImport);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::ImportResource)));
 }
 
 RawResource* RawResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    ASSERT(request.resourceRequest().requestContext() != WebURLRequest::RequestContextUnspecified);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
+    DCHECK_NE(request.resourceRequest().requestContext(), WebURLRequest::RequestContextUnspecified);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Raw)));
 }
 
 RawResource* RawResource::fetchMainResource(FetchRequest& request, ResourceFetcher* fetcher, const SubstituteData& substituteData)
 {
-    ASSERT(request.resourceRequest().frameType() != WebURLRequest::FrameTypeNone);
-    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextForm || request.resourceRequest().requestContext() == WebURLRequest::RequestContextFrame || request.resourceRequest().requestContext() == WebURLRequest::RequestContextHyperlink || request.resourceRequest().requestContext() == WebURLRequest::RequestContextIframe || request.resourceRequest().requestContext() == WebURLRequest::RequestContextInternal || request.resourceRequest().requestContext() == WebURLRequest::RequestContextLocation);
+    DCHECK_NE(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
+    DCHECK(request.resourceRequest().requestContext() == WebURLRequest::RequestContextForm || request.resourceRequest().requestContext() == WebURLRequest::RequestContextFrame || request.resourceRequest().requestContext() == WebURLRequest::RequestContextHyperlink || request.resourceRequest().requestContext() == WebURLRequest::RequestContextIframe || request.resourceRequest().requestContext() == WebURLRequest::RequestContextInternal || request.resourceRequest().requestContext() == WebURLRequest::RequestContextLocation);
 
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::MainResource), substituteData));
 }
 
 RawResource* RawResource::fetchMedia(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextAudio || request.resourceRequest().requestContext() == WebURLRequest::RequestContextVideo);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
+    DCHECK(request.resourceRequest().requestContext() == WebURLRequest::RequestContextAudio || request.resourceRequest().requestContext() == WebURLRequest::RequestContextVideo);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Media)));
 }
 
 RawResource* RawResource::fetchTextTrack(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextTrack);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::TextTrack)));
 }
 
 RawResource* RawResource::fetchManifest(FetchRequest& request, ResourceFetcher* fetcher)
 {
-    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextManifest);
+    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
+    DCHECK_EQ(request.resourceRequest().requestContext(), WebURLRequest::RequestContextManifest);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Manifest)));
 }
 
@@ -102,7 +102,7 @@ void RawResource::didAddClient(ResourceClient* c)
 {
     if (!hasClient(c))
         return;
-    ASSERT(RawResourceClient::isExpectedType(c));
+    DCHECK(RawResourceClient::isExpectedType(c));
     RawResourceClient* client = static_cast<RawResourceClient*>(c);
     for (const auto& redirect : redirectChain()) {
         ResourceRequest request(redirect.m_request);
@@ -126,7 +126,7 @@ void RawResource::willFollowRedirect(ResourceRequest& newRequest, const Resource
 {
     Resource::willFollowRedirect(newRequest, redirectResponse);
 
-    ASSERT(!redirectResponse.isNull());
+    DCHECK(!redirectResponse.isNull());
     ResourceClientWalker<RawResourceClient> w(clients());
     while (RawResourceClient* c = w.next())
         c->redirectReceived(this, newRequest, redirectResponse);

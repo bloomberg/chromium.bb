@@ -157,14 +157,14 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
 
 void ImageResource::removeObserver(ImageResourceObserver* observer)
 {
-    ASSERT(observer);
+    DCHECK(observer);
 
     if (m_observers.contains(observer))
         m_observers.remove(observer);
     else if (m_finishedObservers.contains(observer))
         m_finishedObservers.remove(observer);
     else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
 
     didRemoveClientOrObserver();
 }
@@ -443,8 +443,8 @@ void ImageResource::error(const ResourceError& error)
 
 void ImageResource::responseReceived(const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
-    ASSERT(!handle);
-    ASSERT(!m_multipartParser);
+    DCHECK(!handle);
+    DCHECK(!m_multipartParser);
     // If there's no boundary, just handle the request normally.
     if (response.isMultipart() && !response.multipartBoundary().isEmpty())
         m_multipartParser = new MultipartImageResourceParser(response, response.multipartBoundary(), this);
@@ -550,7 +550,7 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
 
 void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
 {
-    ASSERT(m_multipartParser);
+    DCHECK(m_multipartParser);
 
     setResponse(response);
     if (m_multipartParsingState == MultipartParsingState::WaitingForFirstPart) {
@@ -576,7 +576,7 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
 
 void ImageResource::multipartDataReceived(const char* bytes, size_t size)
 {
-    ASSERT(m_multipartParser);
+    DCHECK(m_multipartParser);
     Resource::appendData(bytes, size);
 }
 

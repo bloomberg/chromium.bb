@@ -137,7 +137,7 @@ void Resource::CachedMetadataHandlerImpl::setCachedMetadata(uint32_t dataTypeID,
     // Currently, only one type of cached metadata per resource is supported.
     // If the need arises for multiple types of metadata per resource this could
     // be enhanced to store types of metadata in a map.
-    ASSERT(!m_cachedMetadata);
+    DCHECK(!m_cachedMetadata);
     m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
     if (cacheType == CachedMetadataHandler::SendToPlatform)
         sendToPlatform();
@@ -167,7 +167,7 @@ void Resource::CachedMetadataHandlerImpl::setSerializedCachedMetadata(const char
     // We only expect to receive cached metadata from the platform once.
     // If this triggers, it indicates an efficiency problem which is most
     // likely unexpected in code designed to improve performance.
-    ASSERT(!m_cachedMetadata);
+    DCHECK(!m_cachedMetadata);
     m_cachedMetadata = CachedMetadata::createFromSerializedData(data, size);
 }
 
@@ -306,7 +306,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_cancelTimer(this, &Resource::cancelTimerFired)
     , m_resourceRequest(request)
 {
-    ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
+    DCHECK_EQ(m_type, unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
     // Currently we support the metadata caching only for HTTP family.
@@ -332,8 +332,8 @@ DEFINE_TRACE(Resource)
 
 void Resource::setLoader(ResourceLoader* loader)
 {
-    RELEASE_ASSERT(!m_loader);
-    ASSERT(stillNeedsLoad());
+    CHECK(!m_loader);
+    DCHECK(stillNeedsLoad());
     m_loader = loader;
     m_status = Pending;
 }
@@ -368,7 +368,7 @@ void Resource::appendData(const char* data, size_t length)
 {
     TRACE_EVENT0("blink", "Resource::appendData");
     DCHECK(!m_isRevalidating);
-    ASSERT(!errorOccurred());
+    DCHECK(!errorOccurred());
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return;
     if (m_data)
@@ -381,8 +381,8 @@ void Resource::appendData(const char* data, size_t length)
 void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer)
 {
     DCHECK(!m_isRevalidating);
-    ASSERT(!errorOccurred());
-    ASSERT(m_options.dataBufferingPolicy == BufferData);
+    DCHECK(!errorOccurred());
+    DCHECK_EQ(m_options.dataBufferingPolicy, BufferData);
     m_data = resourceBuffer;
     setEncodedSize(m_data->size());
 }
@@ -396,7 +396,7 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
 
 void Resource::error(const ResourceError& error)
 {
-    ASSERT(!error.isNull());
+    DCHECK(!error.isNull());
     m_error = error;
     m_isRevalidating = false;
 
@@ -405,7 +405,7 @@ void Resource::error(const ResourceError& error)
 
     if (!errorOccurred())
         setStatus(LoadError);
-    ASSERT(errorOccurred());
+    DCHECK(errorOccurred());
     m_data.clear();
     m_loader = nullptr;
     checkNotify();
@@ -580,7 +580,7 @@ void Resource::responseReceived(const ResourceResponse& response, std::unique_pt
 void Resource::setSerializedCachedMetadata(const char* data, size_t size)
 {
     DCHECK(!m_isRevalidating);
-    ASSERT(!m_response.isNull());
+    DCHECK(!m_response.isNull());
     if (m_cacheHandler)
         m_cacheHandler->setSerializedCachedMetadata(data, size);
 }
@@ -751,7 +751,7 @@ void Resource::allClientsAndObserversRemoved()
 
 void Resource::cancelTimerFired(TimerBase* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_cancelTimer);
+    DCHECK_EQ(timer, &m_cancelTimer);
     if (!hasClientsOrObservers() && m_loader)
         m_loader->cancel();
 }
@@ -810,7 +810,7 @@ void Resource::finishPendingClients()
         ResourceCallback::callbackHandler().cancel(this);
 
     // Prevent the case when there are clients waiting but no callback scheduled.
-    ASSERT(m_clientsAwaitingCallback.isEmpty() || scheduled);
+    DCHECK(m_clientsAwaitingCallback.isEmpty() || scheduled);
 }
 
 void Resource::prune()
@@ -1039,7 +1039,7 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
     case Resource::Manifest:
         return "Manifest";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return initatorTypeNameToString(initiatorInfo.name);
 }
 
@@ -1067,7 +1067,7 @@ bool Resource::isLoadEventBlockingResourceType() const
     case Resource::Manifest:
         return false;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 

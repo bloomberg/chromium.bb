@@ -378,7 +378,7 @@ void MixedContentChecker::handleCertificateError(LocalFrame* frame, const Resour
         // contextTypeFromRequestContext() never returns NotMixedContent (it
         // computes the type of mixed content, given that the content is
         // mixed).
-        DCHECK(contextType != WebMixedContent::ContextType::NotMixedContent);
+        DCHECK_NE(contextType, WebMixedContent::ContextType::NotMixedContent);
         client->didDisplayContentWithCertificateErrors(response.url());
     }
 }
