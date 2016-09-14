@@ -676,6 +676,10 @@ test("content_browsertests") {
       if (is_linux) {
         data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
       }
+
+      if (is_win || is_linux) {
+        data += [ "//testing/buildbot/filters/site-per-process.content_browsertests.filter" ]
+      }
     }
   }
 

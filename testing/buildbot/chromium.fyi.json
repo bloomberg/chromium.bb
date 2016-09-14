@@ -10964,7 +10964,7 @@
       {
         "args": [
           "--site-per-process",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -10992,7 +10992,7 @@
       {
         "args": [
           "--site-per-process",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11078,7 +11078,7 @@
       {
         "args": [
           "--site-per-process",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11106,7 +11106,7 @@
       {
         "args": [
           "--site-per-process",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
