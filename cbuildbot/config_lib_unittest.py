@@ -287,9 +287,11 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
                     value='override')
 
     site_config.Add('default_with_mixin',
+                    None,
                     mixin)
 
     site_config.Add('mixin_with_override',
+                    None,
                     mixin,
                     value='override')
 
@@ -578,10 +580,9 @@ class SiteConfigFindTest(cros_test_lib.TestCase):
 
   def testGetBoardsComplexConfig(self):
     site_config = MockSiteConfig()
-    site_config.Add('build_a', config_lib.BuildConfig(), boards=['foo_board'])
-    site_config.Add('build_b', config_lib.BuildConfig(), boards=['bar_board'])
-    site_config.Add('build_c', config_lib.BuildConfig(),
-                    boards=['foo_board', 'car_board'])
+    site_config.Add('build_a', boards=['foo_board'])
+    site_config.Add('build_b', boards=['bar_board'])
+    site_config.Add('build_c', boards=['foo_board', 'car_board'])
 
     self.assertEqual(
         site_config.GetBoards(),

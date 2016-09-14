@@ -1132,7 +1132,7 @@ class SiteConfig(dict):
   #
   # Methods used when creating a Config programatically.
   #
-  def Add(self, name, *args, **kwargs):
+  def Add(self, name, template=None, *args, **kwargs):
     """Add a new BuildConfig to the SiteConfig.
 
     Example usage:
@@ -1155,9 +1155,17 @@ class SiteConfig(dict):
                       mixin_build_config,
                       boards=['foo_board'])
 
+      # Creates build without a template but with mixin.
+      # Inheritance order is default, template, mixin, arguments.
+      site_config.Add('foo',
+                      None,
+                      mixin_build_config,
+                      boards=['foo_board'])
+
     Args:
       name: The name to label this configuration; this is what cbuildbot
             would see.
+      template: BuildConfig to use as a template for this build.
       args: BuildConfigs to patch into this config. First one (if present) is
             considered the template. See AddTemplate for help on templates.
       kwargs: BuildConfig values to explicitly set on this config.
@@ -1169,26 +1177,33 @@ class SiteConfig(dict):
 
     # TODO(kevcheng): Uncomment and fix unittests (or chromeos_config) since it
     #                 seems configs are repeatedly added.
-    # assert name not in self, '%s already exists.' % (name,)
-    overrides['name'] = name
+    # assert name not in self, ('%s already exists.' % name)
 
-    # Remember our template, if we have one.
-    if '_template' not in overrides and args and '_template' in args[0]:
-      overrides['_template'] = args[0]['_template']
+    if template:
+      inherits = (template,) + inherits
 
+    # Make sure we don't ignore that argument silently.
     if '_template' in overrides:
-      assert overrides['_template'] in self.templates, \
-          '%s inherits from non-template' % (name,)
+      raise ValueError('_template cannot be explicitly set.')
 
-    result = self.GetDefault().derive(*inherits, **overrides)
+    result = self.GetDefault()
+    result.apply(*inherits, **overrides)
 
+    # Select the template name based on template argument, or nothing.
+    resolved_template = template.get('_template') if template else None
+    assert not resolved_template or resolved_template in self.templates, \
+        '%s inherits from non-template %s' % (name, resolved_template)
+
+    # Our name is passed as an explicit argument. We use the first build
+    # config as our template, or nothing.
+    result['name'] = name
+    result['_template'] = resolved_template
     self[name] = result
     return result
 
   def AddWithoutTemplate(self, name, *args, **kwargs):
     """Add a config containing only explicitly listed values (no defaults)."""
-    self.Add(name, BuildConfig(), *args, **kwargs)
-    self[name]['_template'] = None
+    self.Add(name, None, *args, **kwargs)
 
   def AddGroup(self, name, *args, **kwargs):
     """Create a new group of build configurations.

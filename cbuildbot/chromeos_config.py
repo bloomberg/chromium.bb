@@ -1635,6 +1635,7 @@ def _GetConfig(site_config, ge_build_config):
   site_config.AddTemplate(
       'internal_nowithdebug_paladin',
       site_config.templates.internal_paladin,
+      _template='paladin',
       useflags=append_useflags(['-cros-debug']),
       description=(site_config.templates.paladin.description +
                    ' (internal, nowithdebug)'),
@@ -1645,14 +1646,12 @@ def _GetConfig(site_config, ge_build_config):
       site_config.templates.internal_nowithdebug_paladin,
       ['x86-generic', 'amd64-generic'],
       'nowithdebug-paladin',
-      _template='paladin',
       important=False,
   )
 
   site_config.Add(
       'x86-mario-nowithdebug-paladin',
       site_config.templates.internal_nowithdebug_paladin,
-      _template='paladin',
       boards=['x86-mario'])
 
   # Used for builders which build completely from source except Chrome.
