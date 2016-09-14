@@ -428,10 +428,4 @@ ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
 }
 #endif
 
-std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
-  return nullptr;
-}
-
-
 }  // namespace content
