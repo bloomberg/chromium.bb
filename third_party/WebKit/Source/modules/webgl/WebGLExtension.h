@@ -49,6 +49,7 @@ private:
 };
 
 class WebGLExtension : public GarbageCollectedFinalized<WebGLExtension>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(WebGLExtension);
 public:
     virtual ~WebGLExtension();
     virtual WebGLExtensionName name() const = 0;

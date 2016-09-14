@@ -58,6 +58,7 @@ GLuint objectNonZero(const T* object)
 }
 
 class WebGLObject : public GarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(WebGLObject);
 public:
     virtual ~WebGLObject();
 

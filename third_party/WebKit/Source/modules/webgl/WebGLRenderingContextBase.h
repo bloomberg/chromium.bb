@@ -129,6 +129,7 @@ private:
 };
 
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
+    WTF_MAKE_NONCOPYABLE(WebGLRenderingContextBase);
 public:
     ~WebGLRenderingContextBase() override;
 
