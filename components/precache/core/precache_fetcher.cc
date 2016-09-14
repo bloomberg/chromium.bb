@@ -280,6 +280,10 @@ void PrecacheFetcher::Fetcher::OnURLFetchDownloadProgress(
     response_bytes_ = network_response_bytes_ = current;
     was_cached_ = source->WasCached();
 
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes.NetworkWasted",
+                                network_response_bytes_, 1,
+                                1024 * 1024 /* 1 MB */, 100);
+
     // Cancel the download.
     network_url_fetcher_.reset();
     callback_.Run(*this);

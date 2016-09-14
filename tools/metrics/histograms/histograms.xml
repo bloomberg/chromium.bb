@@ -45291,6 +45291,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Fetch.ResponseBytes.NetworkWasted" units="bytes">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of response bytes received over the network for a wasted
+    resource precache fetch. Logged when a partially downloaded resource
+    precache fetch gets cancelled due to per-resource size limit or max precache
+    size limit.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Fetch.ResponseBytes.Total" units="bytes">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
