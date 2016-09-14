@@ -4026,6 +4026,10 @@ def SendUpstream(parser, args, cmd):
           'the contributor\'s "name <email>". If you can\'t upload such a '
           'commit for review, contact your repository admin and request'
           '"Forge-Author" permission.')
+    if not cl.GetIssue():
+      DieWithError('You must upload the issue first to Gerrit.\n'
+                   '  If you would rather have `git cl land` upload '
+                   'automatically for you, see http://crbug.com/642759')
     return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
                                        options.verbose)
 
