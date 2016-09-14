@@ -19,10 +19,9 @@
                 eventSender.keyDown('Backspace', kDeleteWordModifiers);
                 selection.document.execCommand('insertText', false, ' cha');
             },
-            // BR is a placeholder.
             [
                 '<div contenteditable>',
-                    'one two \u{00A0}abc cha|cha cha three four cha cha cha',
+                    'one two \u{00A0} cha|cha cha three four cha cha cha',
                 '</div>',
             ].join(''));
         }, 'Delete word');
@@ -39,10 +38,11 @@
                 eventSender.keyDown('Backspace', kDeleteWordModifiers);
                 selection.document.execCommand('undo');
             },
-            // BR is a placeholder.
             [
                 '<div contenteditable>',
-                    'one two |three four',
+                    isMac
+                        ? 'one |two ^three four'
+                        : 'one two |three four',
                 '</div>',
             ].join(''));
         }, 'Delete word then undo');

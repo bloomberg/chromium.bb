@@ -554,6 +554,9 @@ class Sample {
     this.selection_.document.offsetTop = this.iframe_.offsetTop;
     this.selection_.setClipboardData = setClipboardData;
 
+    // Set focus to sample IFRAME to make |eventSender| and
+    // |testRunner.execCommand()| to work on sample rather than main frame.
+    this.iframe_.focus();
     this.load(sampleText);
   }
 
