@@ -86,21 +86,18 @@ String StepsTimingFunction::toString() const
         positionString = "middle";
         break;
     case StepPosition::END:
-        positionString = "end";
+        // do not specify step position in output
         break;
     }
 
     StringBuilder builder;
-    if (this->numberOfSteps() == 1) {
-        builder.append("step-");
-        builder.append(positionString);
-    } else {
-        builder.append("steps(");
-        builder.append(String::numberToStringECMAScript(this->numberOfSteps()));
+    builder.append("steps(");
+    builder.append(String::numberToStringECMAScript(this->numberOfSteps()));
+    if (positionString) {
         builder.append(", ");
         builder.append(positionString);
-        builder.append(')');
     }
+    builder.append(')');
     return builder.toString();
 }
 

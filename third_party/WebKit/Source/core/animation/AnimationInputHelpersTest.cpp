@@ -96,15 +96,15 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
     timingFunctionRoundTrips("ease-in", exceptionState);
     timingFunctionRoundTrips("ease-out", exceptionState);
     timingFunctionRoundTrips("ease-in-out", exceptionState);
-    timingFunctionRoundTrips("step-start", exceptionState);
-    timingFunctionRoundTrips("step-middle", exceptionState);
-    timingFunctionRoundTrips("step-end", exceptionState);
-    timingFunctionRoundTrips("steps(3, start)", exceptionState);
-    timingFunctionRoundTrips("steps(3, middle)", exceptionState);
-    timingFunctionRoundTrips("steps(3, end)", exceptionState);
     timingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)", exceptionState);
 
-    EXPECT_EQ("steps(3, end)", parseTimingFunction("steps(3)", exceptionState)->toString());
+    EXPECT_EQ("steps(1, start)", parseTimingFunction("step-start", exceptionState)->toString());
+    EXPECT_EQ("steps(1, middle)", parseTimingFunction("step-middle", exceptionState)->toString());
+    EXPECT_EQ("steps(1)", parseTimingFunction("step-end", exceptionState)->toString());
+    EXPECT_EQ("steps(3, start)", parseTimingFunction("steps(3, start)", exceptionState)->toString());
+    EXPECT_EQ("steps(3, middle)", parseTimingFunction("steps(3, middle)", exceptionState)->toString());
+    EXPECT_EQ("steps(3)", parseTimingFunction("steps(3, end)", exceptionState)->toString());
+    EXPECT_EQ("steps(3)", parseTimingFunction("steps(3)", exceptionState)->toString());
 
     timingFunctionThrows("steps(3, nowhere)", exceptionState);
     timingFunctionThrows("steps(-3, end)", exceptionState);

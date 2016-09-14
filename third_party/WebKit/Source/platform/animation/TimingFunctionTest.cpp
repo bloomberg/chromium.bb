@@ -89,13 +89,13 @@ TEST_F(TimingFunctionTest, CubicToString)
 TEST_F(TimingFunctionTest, StepToString)
 {
     RefPtr<TimingFunction> stepTimingStart = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
-    EXPECT_EQ("step-start", stepTimingStart->toString());
+    EXPECT_EQ("steps(1, start)", stepTimingStart->toString());
 
     RefPtr<TimingFunction> stepTimingMiddle = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::MIDDLE);
-    EXPECT_EQ("step-middle", stepTimingMiddle->toString());
+    EXPECT_EQ("steps(1, middle)", stepTimingMiddle->toString());
 
     RefPtr<TimingFunction> stepTimingEnd = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
-    EXPECT_EQ("step-end", stepTimingEnd->toString());
+    EXPECT_EQ("steps(1)", stepTimingEnd->toString());
 
     RefPtr<TimingFunction> stepTimingCustomStart = StepsTimingFunction::create(3, StepsTimingFunction::StepPosition::START);
     EXPECT_EQ("steps(3, start)", stepTimingCustomStart->toString());
@@ -104,7 +104,7 @@ TEST_F(TimingFunctionTest, StepToString)
     EXPECT_EQ("steps(4, middle)", stepTimingCustomMiddle->toString());
 
     RefPtr<TimingFunction> stepTimingCustomEnd = StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::END);
-    EXPECT_EQ("steps(5, end)", stepTimingCustomEnd->toString());
+    EXPECT_EQ("steps(5)", stepTimingCustomEnd->toString());
 }
 
 TEST_F(TimingFunctionTest, BaseOperatorEq)

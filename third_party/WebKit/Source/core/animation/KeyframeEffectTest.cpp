@@ -129,7 +129,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     setV8ObjectPropertyAsNumber(scope.isolate(), timingInput, "iterationStart", 2);
     setV8ObjectPropertyAsNumber(scope.isolate(), timingInput, "iterations", 10);
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "direction", "reverse");
-    setV8ObjectPropertyAsString(scope.isolate(), timingInput, "easing", "step-start");
+    setV8ObjectPropertyAsString(scope.isolate(), timingInput, "easing", "ease-in-out");
     KeyframeEffectOptions timingInputDictionary;
     TrackExceptionState exceptionState;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInput, timingInputDictionary, exceptionState);
@@ -144,7 +144,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     EXPECT_EQ(2, specified->iterationStart());
     EXPECT_EQ(10, specified->iterations());
     EXPECT_EQ("reverse", specified->direction());
-    EXPECT_EQ("step-start", specified->easing());
+    EXPECT_EQ("ease-in-out", specified->easing());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
@@ -228,9 +228,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters)
     EXPECT_EQ("reverse", specified->direction());
 
     EXPECT_EQ("linear", specified->easing());
-    specified->setEasing("step-start", exceptionState);
+    specified->setEasing("ease-in-out", exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
-    EXPECT_EQ("step-start", specified->easing());
+    EXPECT_EQ("ease-in-out", specified->easing());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration)
