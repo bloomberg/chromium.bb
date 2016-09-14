@@ -81,18 +81,9 @@ void Cubic::Reset() {
 }
 
 void Cubic::OnApplicationLimited() {
-  if (FLAGS_shift_quic_cubic_epoch_when_app_limited) {
-    // When sender is not using the available congestion window, Cubic's epoch
-    // should not continue growing. Record the time when sender goes into an
-    // app-limited period here, to compensate later when cwnd growth happens.
-    if (app_limited_start_time_ == QuicTime::Zero()) {
-      app_limited_start_time_ = clock_->ApproximateNow();
-    }
-  } else {
-    // When sender is not using the available congestion window, Cubic's epoch
-    // should not continue growing. Reset the epoch when in such a period.
-    epoch_ = QuicTime::Zero();
-  }
+  // When sender is not using the available congestion window, Cubic's epoch
+  // should not continue growing. Reset the epoch when in such a period.
+  epoch_ = QuicTime::Zero();
 }
 
 QuicPacketCount Cubic::CongestionWindowAfterPacketLoss(
@@ -138,17 +129,6 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
           cbrt(kCubeFactor *
                (last_max_congestion_window_ - current_congestion_window)));
       origin_point_congestion_window_ = last_max_congestion_window_;
-    }
-  } else {
-    // If sender was app-limited, then freeze congestion window growth during
-    // app-limited period. Continue growth now by shifting the epoch-start
-    // through the app-limited period.
-    if (FLAGS_shift_quic_cubic_epoch_when_app_limited &&
-        app_limited_start_time_ != QuicTime::Zero()) {
-      QuicTime::Delta shift = current_time - app_limited_start_time_;
-      DVLOG(1) << "Shifting epoch for quiescence by " << shift.ToMicroseconds();
-      epoch_ = epoch_ + shift;
-      app_limited_start_time_ = QuicTime::Zero();
     }
   }
 

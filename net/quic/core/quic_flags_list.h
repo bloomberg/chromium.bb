@@ -40,9 +40,6 @@ QUIC_FLAG(bool, FLAGS_quic_enable_multipath, false)
 // TODO(rtenneti): Enable this flag after CryptoServerTest's are fixed.
 QUIC_FLAG(bool, FLAGS_quic_require_handshake_confirmation, false)
 
-// If true, Cubic's epoch is shifted when the sender is application-limited.
-QUIC_FLAG(bool, FLAGS_shift_quic_cubic_epoch_when_app_limited, false)
-
 // If true, QUIC will measure head of line (HOL) blocking due between
 // streams due to packet losses on the headers stream.  The
 // measurements will be surfaced via UMA histogram
