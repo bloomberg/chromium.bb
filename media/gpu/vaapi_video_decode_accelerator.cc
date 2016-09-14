@@ -486,7 +486,7 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
 
   // Set up a new input buffer and queue it for later.
   linked_ptr<InputBuffer> input_buffer(new InputBuffer());
-  input_buffer->shm.reset(shm.release());
+  input_buffer->shm = std::move(shm);
   input_buffer->id = bitstream_buffer.id();
 
   ++num_stream_bufs_at_decoder_;

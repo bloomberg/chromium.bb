@@ -242,7 +242,7 @@ void ClusterBuilder::ExtendBuffer(int bytes_needed) {
   std::unique_ptr<uint8_t[]> new_buffer(new uint8_t[new_buffer_size]);
 
   memcpy(new_buffer.get(), buffer_.get(), bytes_used_);
-  buffer_.reset(new_buffer.release());
+  buffer_ = std::move(new_buffer);
   buffer_size_ = new_buffer_size;
 }
 

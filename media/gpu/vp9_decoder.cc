@@ -59,7 +59,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
       switch (res) {
         case Vp9Parser::kOk:
-          curr_frame_hdr_.reset(hdr.release());
+          curr_frame_hdr_ = std::move(hdr);
           break;
 
         case Vp9Parser::kEOStream:
