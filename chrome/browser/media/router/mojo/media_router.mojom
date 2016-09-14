@@ -4,6 +4,8 @@
 
 module media_router.mojom;
 
+import "mojo/common/common_custom_types.mojom";
+
 // Represents an output sink to which media can be routed.
 struct MediaSink {
   enum IconType {
@@ -150,8 +152,8 @@ interface MediaRouteProvider {
   // same-tab scopes. Use -1 as |tab_id| in cases where the request is not
   // made on behalf of a tab.
   //
-  // If |timeout_millis| is positive, it will be used in place of the default
-  // timeout defined by Media Route Provider Manager.
+  // If |timeout| is positive, it will be used in place of the default timeout
+  // defined by Media Route Provider Manager.
   //
   // If |incognito| is true, the request was made by an incognito profile.
   //
@@ -166,7 +168,7 @@ interface MediaRouteProvider {
               string original_presentation_id,
               string origin,
               int32 tab_id,
-              int64 timeout_millis,
+              mojo.common.mojom.TimeDelta timeout,
               bool incognito) =>
                   (MediaRoute? route,
                    string? error_text,
@@ -178,8 +180,8 @@ interface MediaRouteProvider {
   // |origin| and |tab_id| are used for validating same-origin/tab scopes;
   // see CreateRoute for additional documentation.
   //
-  // If |timeout_millis| is positive, it will be used in place of the default
-  // timeout defined by Media Route Provider Manager.
+  // If |timeout| is positive, it will be used in place of the default timeout
+  // defined by Media Route Provider Manager.
   //
   // If the route request was created by an incognito profile,
   // |incognito| must be true.
@@ -194,7 +196,7 @@ interface MediaRouteProvider {
             string presentation_id,
             string origin,
             int32 tab_id,
-            int64 timeout_millis,
+            mojo.common.mojom.TimeDelta timeout,
             bool incognito) =>
                 (MediaRoute? route,
                  string? error_text,
@@ -210,9 +212,9 @@ interface MediaRouteProvider {
   // |origin| and |tab_id| are used for validating same-origin/tab scopes; see
   // CreateRoute for additional documentation.
   //
-  // If |timeout_millis| is positive, it will be used in place of the default
-  // timeout defined by Media Route Provider Manager; see CreateRoute for
-  // additional documentation.
+  // If |timeout| is positive, it will be used in place of the default timeout
+  // defined by Media Route Provider Manager; see CreateRoute for additional
+  // documentation.
   //
   // If the route request was created by an incognito profile,
   // |incognito| must be true.
@@ -228,7 +230,7 @@ interface MediaRouteProvider {
                         string presentation_id,
                         string origin,
                         int32 tab_id,
-                        int64 timeout_millis,
+                        mojo.common.mojom.TimeDelta timeout,
                         bool incognito) =>
                             (MediaRoute? route,
                              string? error_text,

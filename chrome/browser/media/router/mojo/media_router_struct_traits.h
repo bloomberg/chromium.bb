@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/media/router/mojo/media_router.mojom.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 

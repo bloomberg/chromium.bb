@@ -23,6 +23,19 @@ struct StructTraits<mojo::common::mojom::VersionDataView, base::Version> {
                    base::Version* out);
 };
 
+template <>
+struct StructTraits<mojo::common::mojom::TimeDeltaDataView, base::TimeDelta> {
+  static int64_t microseconds(const base::TimeDelta& delta) {
+    return delta.InMicroseconds();
+  }
+
+  static bool Read(mojo::common::mojom::TimeDeltaDataView data,
+                   base::TimeDelta* delta) {
+    *delta = base::TimeDelta::FromMicroseconds(data.microseconds());
+    return true;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_

@@ -10,6 +10,7 @@ define('media_router_bindings', [
     'content/public/renderer/frame_interfaces',
     'chrome/browser/media/router/mojo/media_router.mojom',
     'extensions/common/mojo/keep_alive.mojom',
+    'mojo/common/common_custom_types.mojom',
     'mojo/public/js/connection',
     'mojo/public/js/router',
 ], function(bindings,
@@ -17,6 +18,7 @@ define('media_router_bindings', [
             frameInterfaces,
             mediaRouterMojom,
             keepAliveMojom,
+            commonCustomTypesMojom,
             connector,
             routerModule) {
   'use strict';
@@ -599,9 +601,8 @@ define('media_router_bindings', [
    *     requesting presentation. TODO(mfoltz): Remove.
    * @param {!string} origin Origin of site requesting presentation.
    * @param {!number} tabId ID of tab requesting presentation.
-   * @param {!number} timeoutMillis If positive, the timeout duration for the
-   *     request, measured in seconds. Otherwise, the default duration will be
-   *     used.
+   * @param {!TimeDelta} timeout If positive, the timeout duration for the
+   *     request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
@@ -610,10 +611,10 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.createRoute =
       function(sourceUrn, sinkId, presentationId, origin, tabId,
-          timeoutMillis, incognito) {
+          timeout, incognito) {
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, presentationId, origin, tabId, timeoutMillis,
-        incognito)
+        sourceUrn, sinkId, presentationId, origin, tabId,
+        Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },
@@ -630,9 +631,8 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
-   * @param {!number} timeoutMillis If positive, the timeout duration for the
-   *     request, measured in seconds. Otherwise, the default duration will be
-   *     used.
+   * @param {!TimeDelta} timeout If positive, the timeout duration for the
+   *     request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
@@ -640,10 +640,11 @@ define('media_router_bindings', [
    *     failure.
    */
   MediaRouteProvider.prototype.joinRoute =
-      function(sourceUrn, presentationId, origin, tabId, timeoutMillis,
+      function(sourceUrn, presentationId, origin, tabId, timeout,
                incognito) {
     return this.handlers_.joinRoute(
-        sourceUrn, presentationId, origin, tabId, timeoutMillis, incognito)
+        sourceUrn, presentationId, origin, tabId,
+        Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },
@@ -661,9 +662,8 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
-   * @param {!number} timeoutMillis If positive, the timeout duration for the
-   *     request, measured in seconds. Otherwise, the default duration will be
-   *     used.
+   * @param {!TimeDelta} timeout If positive, the timeout duration for the
+   *     request. Otherwise, the default duration will be used.
    * @param {!boolean} incognito If true, the route is being requested by
    *     an incognito profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
@@ -672,10 +672,10 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.connectRouteByRouteId =
       function(sourceUrn, routeId, presentationId, origin, tabId,
-               timeoutMillis, incognito) {
+               timeout, incognito) {
     return this.handlers_.connectRouteByRouteId(
-        sourceUrn, routeId, presentationId, origin, tabId, timeoutMillis,
-        incognito)
+        sourceUrn, routeId, presentationId, origin, tabId,
+        Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },

@@ -203,7 +203,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& sink,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(CreateMojoRoute(), std::string(),
                    mojom::RouteRequestResultCode::OK);
@@ -237,7 +237,7 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& sink,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             mojom::MediaRoutePtr route = CreateMojoRoute();
             route->custom_controller_path =
@@ -264,12 +264,12 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
 TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
   EXPECT_CALL(
       mock_media_route_provider_,
-      CreateRoute(kSource, kSinkId, _, kOrigin, kInvalidTabId, kTimeoutMillis,
-                  _, _))
+      CreateRoute(kSource, kSinkId, _, kOrigin, kInvalidTabId,
+                  base::TimeDelta::FromMilliseconds(kTimeoutMillis), _, _))
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& sink,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(mojom::MediaRoutePtr(), std::string(kError),
                    mojom::RouteRequestResultCode::TIMED_OUT);
@@ -292,11 +292,12 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
 TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(kSource, kSinkId, _, kOrigin, kInvalidTabId,
-                          kTimeoutMillis, true, _))
+                          base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                          true, _))
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& sink,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             cb.Run(CreateMojoRoute(), std::string(),
                    mojom::RouteRequestResultCode::OK);
@@ -323,11 +324,12 @@ TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
 
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(kSource, kSinkId, _, kOrigin, kInvalidTabId,
-                          kTimeoutMillis, true, _))
+                          base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                          true, _))
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& sink,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             mojom::MediaRoutePtr route = CreateMojoRoute();
             route->incognito = true;
@@ -380,10 +382,10 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   EXPECT_CALL(
       mock_media_route_provider_,
       JoinRoute(kSource, kPresentationId, kOrigin, kInvalidTabId,
-                kTimeoutMillis, _, _))
+                base::TimeDelta::FromMilliseconds(kTimeoutMillis), _, _))
       .WillOnce(Invoke([&route](
           const std::string& source, const std::string& presentation_id,
-          const std::string& origin, int tab_id, int64_t timeout_millis,
+          const std::string& origin, int tab_id, base::TimeDelta timeout,
           bool incognito,
           const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), std::string(),
@@ -431,10 +433,10 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
   EXPECT_CALL(
       mock_media_route_provider_,
       JoinRoute(kSource, kPresentationId, kOrigin, kInvalidTabId,
-                kTimeoutMillis, _, _))
+                base::TimeDelta::FromMilliseconds(kTimeoutMillis), _, _))
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& presentation_id,
-             const std::string& origin, int tab_id, int64_t timeout_millis,
+             const std::string& origin, int tab_id, base::TimeDelta timeout,
              bool incognito,
              const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
             cb.Run(mojom::MediaRoutePtr(), std::string(kError),
@@ -472,10 +474,10 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteIncognitoMismatchFails) {
   EXPECT_CALL(
       mock_media_route_provider_,
       JoinRoute(kSource, kPresentationId, kOrigin, kInvalidTabId,
-                kTimeoutMillis, true, _))
+                base::TimeDelta::FromMilliseconds(kTimeoutMillis), true, _))
       .WillOnce(Invoke([&route](
           const std::string& source, const std::string& presentation_id,
-          const std::string& origin, int tab_id, int64_t timeout_millis,
+          const std::string& origin, int tab_id, base::TimeDelta timeout,
           bool incognito,
           const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), std::string(),
@@ -510,11 +512,12 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
   EXPECT_CALL(
       mock_media_route_provider_,
       ConnectRouteByRouteId(kSource, kRouteId, _, kOrigin, kInvalidTabId,
-                            kTimeoutMillis, false, _))
+                            base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                            false, _))
       .WillOnce(Invoke([&route](
           const std::string& source, const std::string& route_id,
           const std::string& presentation_id, const std::string& origin,
-          int tab_id, int64_t timeout_millis, bool incognito,
+          int tab_id, base::TimeDelta timeout, bool incognito,
           const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), std::string(),
                mojom::RouteRequestResultCode::OK);
@@ -538,11 +541,12 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
   EXPECT_CALL(
       mock_media_route_provider_,
       ConnectRouteByRouteId(kSource, kRouteId, _, kOrigin, kInvalidTabId,
-                            kTimeoutMillis, true, _))
+                            base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                            true, _))
       .WillOnce(Invoke(
           [](const std::string& source, const std::string& route_id,
              const std::string& presentation_id, const std::string& origin,
-             int tab_id, int64_t timeout_millis, bool incognito,
+             int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
             cb.Run(mojom::MediaRoutePtr(), std::string(kError),
                    mojom::RouteRequestResultCode::TIMED_OUT);
@@ -571,11 +575,12 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdIncognitoMismatchFails) {
   EXPECT_CALL(
       mock_media_route_provider_,
       ConnectRouteByRouteId(kSource, kRouteId, _, kOrigin, kInvalidTabId,
-                            kTimeoutMillis, true, _))
+                            base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                            true, _))
       .WillOnce(Invoke([&route](
           const std::string& source, const std::string& route_id,
           const std::string& presentation_id, const std::string& origin,
-          int tab_id, int64_t timeout_millis, bool incognito,
+          int tab_id, base::TimeDelta timeout, bool incognito,
           const mojom::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), std::string(),
                mojom::RouteRequestResultCode::OK);

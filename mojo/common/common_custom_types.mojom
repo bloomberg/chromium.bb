@@ -16,8 +16,9 @@ struct DictionaryValue;
 [Native]
 struct Time;
 
-[Native]
-struct TimeDelta;
+struct TimeDelta {
+  int64 microseconds;
+};
 
 [Native]
 struct TimeTicks;

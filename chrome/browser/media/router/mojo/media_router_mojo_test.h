@@ -36,7 +36,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     const std::string& presentation_id,
                     const std::string& origin,
                     int tab_id,
-                    int64_t timeout_secs,
+                    base::TimeDelta timeout,
                     bool incognito,
                     const CreateRouteCallback& callback));
   MOCK_METHOD7(JoinRoute,
@@ -44,7 +44,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     const std::string& presentation_id,
                     const std::string& origin,
                     int tab_id,
-                    int64_t timeout_secs,
+                    base::TimeDelta timeout,
                     bool incognito,
                     const JoinRouteCallback& callback));
   MOCK_METHOD8(ConnectRouteByRouteId,
@@ -53,7 +53,7 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                     const std::string& presentation_id,
                     const std::string& origin,
                     int tab_id,
-                    int64_t timeout_secs,
+                    base::TimeDelta timeout,
                     bool incognito,
                     const JoinRouteCallback& callback));
   MOCK_METHOD1(DetachRoute, void(const std::string& route_id));

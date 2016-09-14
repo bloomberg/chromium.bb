@@ -83,6 +83,10 @@ mojom("mojo_bindings") {
   sources = [
     "mojo/media_router.mojom",
   ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
 }
 
 static_library("test_support") {

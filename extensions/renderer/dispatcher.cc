@@ -840,6 +840,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair("chrome/browser/media/router/mojo/media_router.mojom",
                      IDR_MEDIA_ROUTER_MOJOM_JS));
+  resources.push_back(std::make_pair("mojo/common/common_custom_types.mojom",
+                                     IDR_MOJO_COMMON_CUSTOM_TYPES_MOJOM_JS));
   resources.push_back(
       std::make_pair("media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS));
 #endif  // defined(ENABLE_MEDIA_ROUTER)

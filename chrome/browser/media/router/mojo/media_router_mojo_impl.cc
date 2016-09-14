@@ -598,8 +598,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
                          << ", presentation ID: " << presentation_id;
 
   media_route_provider_->CreateRoute(
-      source_id, sink_id, presentation_id, origin, tab_id,
-      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0, incognito,
+      source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
                  base::Unretained(this), presentation_id, incognito,
                  callbacks));
@@ -617,8 +616,7 @@ void MediaRouterMojoImpl::DoJoinRoute(
                          << ", presentation ID: " << presentation_id;
 
   media_route_provider_->JoinRoute(
-      source_id, presentation_id, origin, tab_id,
-      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0, incognito,
+      source_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
                  base::Unretained(this), presentation_id, incognito,
                  callbacks));
@@ -638,8 +636,7 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
                          << ", presentation ID: " << presentation_id;
 
   media_route_provider_->ConnectRouteByRouteId(
-      source_id, route_id, presentation_id, origin, tab_id,
-      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0, incognito,
+      source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
                  base::Unretained(this), presentation_id, incognito,
                  callbacks));
