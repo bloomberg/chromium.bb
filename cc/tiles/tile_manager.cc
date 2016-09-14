@@ -632,11 +632,13 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     }
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
-    if (tile->use_picture_analysis() && kUseColorEstimator) {
+    if (!tile->is_solid_color_analysis_performed() &&
+        tile->use_picture_analysis() && kUseColorEstimator) {
       // We analyze for solid color here, to decide to continue
       // or drop the tile for scheduling and raster.
       // TODO(sohanjg): Check if we could use a shared analysis
       // canvas which is reset between tiles.
+      tile->set_solid_color_analysis_performed(true);
       SkColor color = SK_ColorTRANSPARENT;
       bool is_solid_color =
           prioritized_tile.raster_source()->PerformSolidColorAnalysis(

@@ -32,6 +32,7 @@ Tile::Tile(TileManager* tile_manager,
       tiling_j_index_(info.tiling_j_index),
       required_for_activation_(false),
       required_for_draw_(false),
+      is_solid_color_analysis_performed_(false),
       id_(tile_manager->GetUniqueTileId()),
       invalidated_id_(0),
       scheduled_priority_(0) {}

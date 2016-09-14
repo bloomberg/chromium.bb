@@ -107,6 +107,13 @@ class CC_EXPORT Tile {
 
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
+  void set_solid_color_analysis_performed(bool performed) {
+    is_solid_color_analysis_performed_ = performed;
+  }
+  bool is_solid_color_analysis_performed() const {
+    return is_solid_color_analysis_performed_;
+  }
+
  private:
   friend class TileManager;
   friend class FakeTileManager;
@@ -134,6 +141,7 @@ class CC_EXPORT Tile {
   const int tiling_j_index_;
   bool required_for_activation_ : 1;
   bool required_for_draw_ : 1;
+  bool is_solid_color_analysis_performed_ : 1;
 
   Id id_;
 
@@ -144,7 +152,6 @@ class CC_EXPORT Tile {
   Id invalidated_id_;
 
   unsigned scheduled_priority_;
-
   scoped_refptr<TileTask> raster_task_;
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
