@@ -242,6 +242,11 @@
             "$ref": "Bounds"
           }
         ]
+      },
+      {
+        "name": "onKeyboardClosed",
+        "type": "function",
+        "description": "Fired when the virtual keyboard window has been closed. For example, this can happen when turning off on-screen keyboard or exiting tablet mode."
       }
     ]
   }

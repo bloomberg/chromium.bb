@@ -247,6 +247,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
+  void OnKeyboardClosed() override;
 
   // Parent window associated with this layout manager.
   WmWindow* dock_container_;

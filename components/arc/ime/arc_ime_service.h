@@ -66,6 +66,7 @@ class ArcImeService : public ArcService,
 
   // Overridden from keyboard::KeyboardControllerObserver.
   void OnKeyboardBoundsChanging(const gfx::Rect& rect) override;
+  void OnKeyboardClosed() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;

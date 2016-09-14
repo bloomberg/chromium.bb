@@ -329,6 +329,8 @@ void AppListPresenterDelegate::OnKeyboardBoundsChanging(
   UpdateBounds();
 }
 
+void AppListPresenterDelegate::OnKeyboardClosed() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegate, ShellObserver implementation:
 void AppListPresenterDelegate::OnShelfAlignmentChanged(WmWindow* root_window) {

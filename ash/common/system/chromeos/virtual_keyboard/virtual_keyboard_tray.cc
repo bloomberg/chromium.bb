@@ -97,6 +97,8 @@ void VirtualKeyboardTray::OnKeyboardBoundsChanging(
   SetDrawBackgroundAsActive(!new_bounds.IsEmpty());
 }
 
+void VirtualKeyboardTray::OnKeyboardClosed() {}
+
 void VirtualKeyboardTray::SetIconBorderForShelfAlignment() {
   // Every time shelf alignment is updated, StatusAreaWidgetDelegate resets the
   // border to a non-null border. So, we need to remove it.

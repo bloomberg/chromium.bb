@@ -77751,6 +77751,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="401" label="ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE"/>
   <int value="402" label="QUICK_UNLOCK_PRIVATE_ON_ACTIVE_MODES_CHANGED"/>
   <int value="403" label="CLIPBOARD_ON_CLIPBOARD_DATA_CHANGED"/>
+  <int value="404" label="VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

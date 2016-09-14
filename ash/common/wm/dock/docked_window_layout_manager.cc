@@ -1386,4 +1386,6 @@ void DockedWindowLayoutManager::OnKeyboardBoundsChanging(
   UpdateDockBounds(DockedWindowLayoutManagerObserver::KEYBOARD_BOUNDS_CHANGING);
 }
 
+void DockedWindowLayoutManager::OnKeyboardClosed() {}
+
 }  // namespace ash

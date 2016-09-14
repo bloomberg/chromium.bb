@@ -119,6 +119,7 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardClosed() override;
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;

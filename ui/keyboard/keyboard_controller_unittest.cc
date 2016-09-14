@@ -171,7 +171,8 @@ class KeyboardContainerObserver : public aura::WindowObserver {
 class KeyboardControllerTest : public testing::Test,
                                public KeyboardControllerObserver {
  public:
-  KeyboardControllerTest() : number_of_calls_(0), ui_(nullptr) {}
+  KeyboardControllerTest()
+      : number_of_calls_(0), ui_(nullptr), keyboard_closed_(false) {}
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {
@@ -191,7 +192,8 @@ class KeyboardControllerTest : public testing::Test,
   }
 
   void TearDown() override {
-    controller()->RemoveObserver(this);
+    if (controller())
+      controller()->RemoveObserver(this);
     controller_.reset();
     focus_controller_.reset();
     aura_test_helper_->TearDown();
@@ -220,10 +222,13 @@ class KeyboardControllerTest : public testing::Test,
     notified_bounds_ = new_bounds;
     number_of_calls_++;
   }
+  void OnKeyboardClosed() override { keyboard_closed_ = true; }
 
   int number_of_calls() const { return number_of_calls_; }
 
   const gfx::Rect& notified_bounds() { return notified_bounds_; }
+
+  bool IsKeyboardClosed() { return keyboard_closed_; }
 
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = ui()->GetInputMethod();
@@ -251,6 +256,8 @@ class KeyboardControllerTest : public testing::Test,
             controller_->keyboard_visible());
   }
 
+  void ResetController() { controller_.reset(); }
+
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<TestFocusController> focus_controller_;
@@ -261,6 +268,7 @@ class KeyboardControllerTest : public testing::Test,
   KeyboardUI* ui_;
   std::unique_ptr<KeyboardController> controller_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
+  bool keyboard_closed_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 
@@ -525,6 +533,22 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   run_loop.Run();
   EXPECT_FALSE(keyboard_container->IsVisible());
   keyboard::SetAccessibilityKeyboardEnabled(false);
+}
+
+// Tests that deactivates keyboard will get closed event.
+TEST_F(KeyboardControllerTest, CloseKeyboard) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  root_window()->AddChild(keyboard_container);
+  keyboard_container->Show();
+
+  ShowKeyboard();
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_FALSE(IsKeyboardClosed());
+
+  root_window()->RemoveChild(keyboard_container);
+  ResetController();
+  EXPECT_TRUE(IsKeyboardClosed());
 }
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest {

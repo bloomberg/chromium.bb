@@ -386,6 +386,8 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
   }
 }
 
+void WebUIScreenLocker::OnKeyboardClosed() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver:
 

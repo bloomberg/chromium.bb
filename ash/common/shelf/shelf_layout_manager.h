@@ -143,6 +143,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardClosed() override;
 
   // Overridden from LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;

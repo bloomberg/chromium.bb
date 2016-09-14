@@ -906,4 +906,6 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
   OnWindowResized();
 }
 
+void PanelLayoutManager::OnKeyboardClosed() {}
+
 }  // namespace ash

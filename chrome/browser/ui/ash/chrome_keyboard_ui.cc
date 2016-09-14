@@ -105,6 +105,22 @@ class AshKeyboardControllerObserver
     router->BroadcastEvent(std::move(event));
   }
 
+  void OnKeyboardClosed() override {
+    extensions::EventRouter* router = extensions::EventRouter::Get(context_);
+
+    if (!router->HasEventListener(
+            virtual_keyboard_private::OnKeyboardClosed::kEventName)) {
+      return;
+    }
+
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
+        extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED,
+        virtual_keyboard_private::OnKeyboardClosed::kEventName,
+        base::WrapUnique(new base::ListValue())));
+    event->restrict_to_browser_context = context_;
+    router->BroadcastEvent(std::move(event));
+  }
+
  private:
   content::BrowserContext* context_;
 

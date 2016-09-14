@@ -120,6 +120,8 @@ void LockLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   OnWindowResized();
 }
 
+void LockLayoutManager::OnKeyboardClosed() {}
+
 void LockLayoutManager::AdjustWindowsForWorkAreaChange(
     const wm::WMEvent* event) {
   DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||

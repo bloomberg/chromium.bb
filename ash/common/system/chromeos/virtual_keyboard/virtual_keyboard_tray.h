@@ -36,6 +36,7 @@ class VirtualKeyboardTray : public TrayBackgroundView,
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardClosed() override;
 
  private:
   // Creates a new border for the icon. The padding is determined based on the

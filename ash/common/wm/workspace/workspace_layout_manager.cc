@@ -175,6 +175,8 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   }
 }
 
+void WorkspaceLayoutManager::OnKeyboardClosed() {}
+
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, aura::WindowObserver implementation:
 

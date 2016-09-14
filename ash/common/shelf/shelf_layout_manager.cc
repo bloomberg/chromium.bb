@@ -419,6 +419,8 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   }
 }
 
+void ShelfLayoutManager::OnKeyboardClosed() {}
+
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return ::ash::IsHorizontalAlignment(GetAlignment());
 }

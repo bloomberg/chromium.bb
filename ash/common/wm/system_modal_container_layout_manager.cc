@@ -44,7 +44,10 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     WmWindow* container)
     : container_(container) {}
 
-SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {}
+SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, WmLayoutManager implementation:
@@ -129,6 +132,8 @@ void SystemModalContainerLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   PositionDialogsAfterWorkAreaResize();
 }
+
+void SystemModalContainerLayoutManager::OnKeyboardClosed() {}
 
 bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
     WmWindow* window) {

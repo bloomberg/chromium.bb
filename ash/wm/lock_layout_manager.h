@@ -78,6 +78,7 @@ class ASH_EXPORT LockLayoutManager
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardClosed() override;
 
  private:
   // Adjusts the bounds of all managed windows when the display area changes.

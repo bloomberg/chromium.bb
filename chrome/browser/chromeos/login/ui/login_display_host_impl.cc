@@ -945,6 +945,8 @@ void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
   }
 }
 
+void LoginDisplayHostImpl::OnKeyboardClosed() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, display::DisplayObserver:
 
