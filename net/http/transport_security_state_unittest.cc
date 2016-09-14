@@ -47,7 +47,7 @@ const char kSubdomain[] = "foo.example.test";
 const uint16_t kPort = 443;
 const char kReportUri[] = "http://report-example.test/test";
 const char kExpectCTStaticHostname[] = "preloaded-expect-ct.badssl.com";
-const char kExpectCTStaticReportURI[] = "https://report.badssl.com/expect-ct";
+const char kExpectCTStaticReportURI[] = "https://clients3.google.com/ct_upload";
 const char kExpectStapleStaticHostname[] = "preloaded-expect-staple.badssl.com";
 const char kExpectStapleStaticReportURI[] =
     "https://report.badssl.com/expect-staple";
