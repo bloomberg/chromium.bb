@@ -12,10 +12,13 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/service/client_service_map.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -25,6 +28,31 @@ namespace gpu {
 namespace gles2 {
 
 class ContextGroup;
+
+struct PassthroughResources {
+  PassthroughResources();
+  ~PassthroughResources();
+
+  void Destroy(bool have_context);
+
+  // Mappings from client side IDs to service side IDs.
+  ClientServiceMap<GLuint, GLuint> texture_id_map;
+  ClientServiceMap<GLuint, GLuint> buffer_id_map;
+  ClientServiceMap<GLuint, GLuint> renderbuffer_id_map;
+  ClientServiceMap<GLuint, GLuint> sampler_id_map;
+  ClientServiceMap<GLuint, GLuint> program_id_map;
+  ClientServiceMap<GLuint, GLuint> shader_id_map;
+
+  static_assert(sizeof(uintptr_t) == sizeof(GLsync),
+                "GLsync not the same size as uintptr_t");
+  ClientServiceMap<GLuint, uintptr_t> sync_id_map;
+
+  // Mapping of client texture IDs to TexturePassthrough objects used to make
+  // sure all textures used by mailboxes are not deleted until all textures
+  // using the mailbox are deleted
+  std::unordered_map<GLuint, scoped_refptr<TexturePassthrough>>
+      texture_object_map;
+};
 
 class GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
@@ -247,6 +275,31 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;
   scoped_refptr<FeatureInfo> feature_info_;
+
+  // Callbacks
+  FenceSyncReleaseCallback fence_sync_release_callback_;
+  WaitFenceSyncCallback wait_fence_sync_callback_;
+
+  // Some objects may generate resources when they are bound even if they were
+  // not generated yet: texture, buffer, renderbuffer, framebuffer, transform
+  // feedback, vertex array
+  bool bind_generates_resource_;
+
+  // Mappings from client side IDs to service side IDs for shared objects
+  PassthroughResources* resources_;
+
+  // Mappings from client side IDs to service side IDs for per-context objects
+  ClientServiceMap<GLuint, GLuint> framebuffer_id_map_;
+  ClientServiceMap<GLuint, GLuint> transform_feedback_id_map_;
+  ClientServiceMap<GLuint, GLuint> query_id_map_;
+  ClientServiceMap<GLuint, GLuint> vertex_array_id_map_;
+
+  // Mailboxes
+  scoped_refptr<MailboxManager> mailbox_manager_;
+
+  // State tracking of currently bound 2D textures (client IDs)
+  size_t active_texture_unit_;
+  std::vector<GLuint> bound_textures_;
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

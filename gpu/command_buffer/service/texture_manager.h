@@ -65,6 +65,28 @@ class GPU_EXPORT TextureBase {
   MailboxManager* mailbox_manager_;
 };
 
+// A ref-counted version of the TextureBase class that deletes the texture after
+// all references have been released.
+class TexturePassthrough final : public TextureBase,
+                                 public base::RefCounted<TexturePassthrough> {
+ public:
+  explicit TexturePassthrough(GLuint service_id);
+
+  // Notify the texture that the context is lost and it shouldn't delete the
+  // native GL texture in the destructor
+  void MarkContextLost();
+
+ protected:
+  ~TexturePassthrough() override;
+
+ private:
+  friend class base::RefCounted<TexturePassthrough>;
+
+  bool have_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(TexturePassthrough);
+};
+
 // Info about Textures currently in the system.
 // This class wraps a real GL texture, keeping track of its meta-data. It is
 // jointly owned by possibly multiple TextureRef.

@@ -44,6 +44,7 @@ class ShaderManager;
 class TextureManager;
 class MemoryTracker;
 struct DisallowedFeatures;
+struct PassthroughResources;
 
 // A Context Group helps manage multiple GLES2Decoders that share
 // resources.
@@ -220,6 +221,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     syncs_id_map_.erase(client_id);
   }
 
+  PassthroughResources* passthrough_resources() const {
+    return passthrough_resources_.get();
+  }
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();
@@ -286,6 +291,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   // Mappings from client side IDs to service side IDs.
   base::hash_map<GLuint, GLsync> syncs_id_map_;
+
+  std::unique_ptr<PassthroughResources> passthrough_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

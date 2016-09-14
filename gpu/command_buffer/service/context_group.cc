@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/path_manager.h"
@@ -101,7 +102,8 @@ ContextGroup::ContextGroup(
       uniform_buffer_offset_alignment_(1u),
       program_cache_(NULL),
       feature_info_(feature_info),
-      image_factory_(image_factory) {
+      image_factory_(image_factory),
+      passthrough_resources_(new PassthroughResources) {
   {
     DCHECK(feature_info_);
     if (!mailbox_manager_.get())
@@ -534,6 +536,9 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   }
 
   memory_tracker_ = NULL;
+
+  passthrough_resources_->Destroy(have_context);
+  passthrough_resources_.reset();
 }
 
 uint32_t ContextGroup::GetMemRepresented() const {

@@ -372,6 +372,20 @@ void TextureBase::SetMailboxManager(MailboxManager* mailbox_manager) {
   mailbox_manager_ = mailbox_manager;
 }
 
+TexturePassthrough::TexturePassthrough(GLuint service_id)
+    : TextureBase(service_id), have_context_(true) {}
+
+TexturePassthrough::~TexturePassthrough() {
+  DeleteFromMailboxManager();
+  if (have_context_) {
+    glDeleteTextures(1, &service_id_);
+  }
+}
+
+void TexturePassthrough::MarkContextLost() {
+  have_context_ = false;
+}
+
 Texture::Texture(GLuint service_id)
     : TextureBase(service_id),
       memory_tracking_ref_(NULL),

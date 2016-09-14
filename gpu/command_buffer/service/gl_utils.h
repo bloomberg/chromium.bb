@@ -52,6 +52,8 @@ void QueryShaderPrecisionFormat(const gl::GLVersionInfo& gl_version_info,
 void PopulateNumericCapabilities(Capabilities* caps,
                                  const FeatureInfo* feature_info);
 
+bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids);
+
 } // gles2
 } // gpu
 

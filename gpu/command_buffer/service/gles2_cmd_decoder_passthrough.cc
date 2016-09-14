@@ -11,6 +11,52 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+template <typename ClientType, typename ServiceType, typename DeleteFunction>
+void DeleteServiceObjects(ClientServiceMap<ClientType, ServiceType>* id_map,
+                          bool have_context,
+                          DeleteFunction delete_function) {
+  if (have_context) {
+    for (auto client_service_id_pair : *id_map) {
+      delete_function(client_service_id_pair.second);
+    }
+  }
+
+  id_map->Clear();
+}
+
+}  // anonymous namespace
+
+PassthroughResources::PassthroughResources() {}
+
+PassthroughResources::~PassthroughResources() {}
+
+void PassthroughResources::Destroy(bool have_context) {
+  DeleteServiceObjects(&texture_id_map, have_context,
+                       [](GLuint texture) { glDeleteTextures(1, &texture); });
+  DeleteServiceObjects(&buffer_id_map, have_context,
+                       [](GLuint buffer) { glDeleteBuffersARB(1, &buffer); });
+  DeleteServiceObjects(
+      &renderbuffer_id_map, have_context,
+      [](GLuint renderbuffer) { glDeleteRenderbuffersEXT(1, &renderbuffer); });
+  DeleteServiceObjects(&sampler_id_map, have_context,
+                       [](GLuint sampler) { glDeleteSamplers(1, &sampler); });
+  DeleteServiceObjects(&program_id_map, have_context,
+                       [](GLuint program) { glDeleteProgram(program); });
+  DeleteServiceObjects(&shader_id_map, have_context,
+                       [](GLuint shader) { glDeleteShader(shader); });
+  DeleteServiceObjects(&sync_id_map, have_context, [](uintptr_t sync) {
+    glDeleteSync(reinterpret_cast<GLsync>(sync));
+  });
+
+  if (!have_context) {
+    for (auto passthrough_texture : texture_object_map) {
+      passthrough_texture.second->MarkContextLost();
+    }
+  }
+  texture_object_map.clear();
+}
+
 GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(ContextGroup* group)
     : commands_to_process_(0),
       debug_marker_manager_(),
@@ -113,6 +159,19 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 
   image_manager_.reset(new ImageManager());
 
+  bind_generates_resource_ = group_->bind_generates_resource();
+
+  resources_ = group_->passthrough_resources();
+
+  mailbox_manager_ = group_->mailbox_manager();
+
+  // Query information about the texture units
+  GLint num_texture_units = 0;
+  glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &num_texture_units);
+
+  active_texture_unit_ = 0;
+  bound_textures_.resize(num_texture_units, 0);
+
   set_initialized();
   return true;
 }
@@ -121,6 +180,24 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (image_manager_.get()) {
     image_manager_->Destroy(have_context);
     image_manager_.reset();
+  }
+
+  DeleteServiceObjects(
+      &framebuffer_id_map_, have_context,
+      [](GLuint framebuffer) { glDeleteFramebuffersEXT(1, &framebuffer); });
+  DeleteServiceObjects(&transform_feedback_id_map_, have_context,
+                       [](GLuint transform_feedback) {
+                         glDeleteTransformFeedbacks(1, &transform_feedback);
+                       });
+  DeleteServiceObjects(&query_id_map_, have_context,
+                       [](GLuint query) { glDeleteQueries(1, &query); });
+  DeleteServiceObjects(
+      &vertex_array_id_map_, have_context,
+      [](GLuint vertex_array) { glDeleteVertexArraysOES(1, &vertex_array); });
+
+  if (group_) {
+    group_->Destroy(this, have_context);
+    group_ = nullptr;
   }
 }
 
@@ -175,11 +252,11 @@ gl::GLContext* GLES2DecoderPassthroughImpl::GetGLContext() {
 }
 
 gpu::gles2::ContextGroup* GLES2DecoderPassthroughImpl::GetContextGroup() {
-  return nullptr;
+  return group_.get();
 }
 
 const FeatureInfo* GLES2DecoderPassthroughImpl::GetFeatureInfo() const {
-  return nullptr;
+  return group_->feature_info();
 }
 
 gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
@@ -294,10 +371,14 @@ size_t GLES2DecoderPassthroughImpl::GetCreatedBackTextureCountForTest() {
 }
 
 void GLES2DecoderPassthroughImpl::SetFenceSyncReleaseCallback(
-    const FenceSyncReleaseCallback& callback) {}
+    const FenceSyncReleaseCallback& callback) {
+  fence_sync_release_callback_ = callback;
+}
 
 void GLES2DecoderPassthroughImpl::SetWaitFenceSyncCallback(
-    const WaitFenceSyncCallback& callback) {}
+    const WaitFenceSyncCallback& callback) {
+  wait_fence_sync_callback_ = callback;
+}
 
 void GLES2DecoderPassthroughImpl::SetDescheduleUntilFinishedCallback(
     const NoParamCallback& callback) {}
@@ -344,7 +425,8 @@ void GLES2DecoderPassthroughImpl::PerformPollingWork() {}
 bool GLES2DecoderPassthroughImpl::GetServiceTextureId(
     uint32_t client_texture_id,
     uint32_t* service_texture_id) {
-  return false;
+  return resources_->texture_id_map.GetServiceID(client_texture_id,
+                                                 service_texture_id);
 }
 
 gpu::error::ContextLostReason
