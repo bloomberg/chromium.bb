@@ -44,6 +44,26 @@ test(() => {
 }, 'Custom iterator with basic keyframes.');
 
 test(() => {
+  assertAnimationEffect({
+    keyframes: {
+      left: createIterable([
+        {done: false, value: '100px'},
+        {done: false, value: '300px'},
+        {done: false, value: '200px'},
+        {done: true},
+      ]),
+    },
+    expect: [
+      {at: 0, is: {left: '100px'}},
+      {at: 0.25, is: {left: '200px'}},
+      {at: 0.5, is: {left: '300px'}},
+      {at: 0.75, is: {left: '250px'}},
+      {at: 1, is: {left: '200px'}},
+    ],
+  });
+}, 'Custom iterator in property indexed keyframes.');
+
+test(() => {
   var keyframes = createIterable([
     {done: false, value: {left: '100px'}},
     {done: false, value: {left: '300px'}},
@@ -125,4 +145,18 @@ test(() => {
     });
   });
 }, 'Custom iterator with value list in keyframe should throw.');
+
+test(() => {
+  assert_throws({name: 'TypeError'}, () => {
+    assertAnimationEffect({
+      keyframes: {
+        left: createIterable([
+          {done: false, value: {toString: null}},
+          {done: true},
+        ]),
+      },
+      expect: [],
+    });
+  });
+}, 'Custom iterator in property indexed keyframes with null toString method should throw.');
 </script>

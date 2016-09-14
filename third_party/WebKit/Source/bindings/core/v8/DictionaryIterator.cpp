@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8StringResource.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -19,12 +21,12 @@ DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isola
     , m_valueKey(v8String(isolate, "value"))
     , m_done(false)
 {
-    ASSERT(!iterator.IsEmpty());
+    DCHECK(!iterator.IsEmpty());
 }
 
 bool DictionaryIterator::next(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    ASSERT(!isNull());
+    DCHECK(!isNull());
 
     v8::Local<v8::Value> next;
     // TODO(alancutter): Support callable objects as well as functions.
@@ -56,8 +58,8 @@ bool DictionaryIterator::next(ExecutionContext* executionContext, ExceptionState
 
 bool DictionaryIterator::valueAsDictionary(Dictionary& result, ExceptionState& exceptionState)
 {
-    ASSERT(!isNull());
-    ASSERT(!m_done);
+    DCHECK(!isNull());
+    DCHECK(!m_done);
 
     v8::Local<v8::Value> value;
     if (!v8Call(m_value, value) || !value->IsObject())
@@ -65,6 +67,23 @@ bool DictionaryIterator::valueAsDictionary(Dictionary& result, ExceptionState& e
 
     result = Dictionary(value, m_isolate, exceptionState);
     return true;
+}
+
+bool DictionaryIterator::valueAsString(String& result)
+{
+    DCHECK(!isNull());
+    DCHECK(!m_done);
+
+    v8::Local<v8::Value> value;
+    if (!v8Call(m_value, value))
+        return false;
+
+    V8StringResource<> stringValue(value);
+    if (!stringValue.prepare())
+        return false;
+    result = stringValue;
+    return true;
+
 }
 
 } // namespace blink

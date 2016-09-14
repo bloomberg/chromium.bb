@@ -27,7 +27,7 @@ public:
 
 private:
     static EffectModel* convertArrayForm(Element&, const Vector<Dictionary>& keyframes, ExceptionState&);
-    static EffectModel* convertObjectForm(Element&, const Dictionary& keyframe, ExceptionState&);
+    static EffectModel* convertObjectForm(Element&, const Dictionary& keyframe, ExecutionContext*, ExceptionState&);
 };
 
 } // namespace blink

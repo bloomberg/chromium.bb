@@ -156,7 +156,7 @@ EffectModel* EffectInput::convert(Element* element, const DictionarySequenceOrDi
         return nullptr;
     }
 
-    return convertObjectForm(*element, dictionary, exceptionState);
+    return convertObjectForm(*element, dictionary, executionContext, exceptionState);
 }
 
 EffectModel* EffectInput::convertArrayForm(Element& element, const Vector<Dictionary>& keyframeDictionaries, ExceptionState& exceptionState)
@@ -220,7 +220,45 @@ EffectModel* EffectInput::convertArrayForm(Element& element, const Vector<Dictio
     return createEffectModelFromKeyframes(element, keyframes, exceptionState);
 }
 
-EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& keyframeDictionary, ExceptionState& exceptionState)
+static bool getPropertyIndexedKeyframeValues(const Dictionary& keyframeDictionary, const String& property, ExecutionContext* executionContext, ExceptionState& exceptionState, Vector<String>& result)
+{
+    DCHECK(result.isEmpty());
+
+    // Array of strings.
+    if (DictionaryHelper::get(keyframeDictionary, property, result))
+        return true;
+
+    Dictionary valuesDictionary;
+    if (!keyframeDictionary.get(property, valuesDictionary) || valuesDictionary.isUndefinedOrNull()) {
+        // Non-object.
+        String value;
+        DictionaryHelper::get(keyframeDictionary, property, value);
+        result.append(value);
+        return true;
+    }
+
+    DictionaryIterator iterator = valuesDictionary.getIterator(executionContext);
+    if (iterator.isNull()) {
+        // Non-iterable object.
+        String value;
+        DictionaryHelper::get(keyframeDictionary, property, value);
+        result.append(value);
+        return true;
+    }
+
+    // Iterable object.
+    while (iterator.next(executionContext, exceptionState)) {
+        String value;
+        if (!iterator.valueAsString(value)) {
+            exceptionState.throwTypeError("Unable to read keyframe value as string.");
+            return false;
+        }
+        result.append(value);
+    }
+    return !exceptionState.hadException();
+}
+
+EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& keyframeDictionary, ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
     StringKeyframeVector keyframes;
 
@@ -251,12 +289,8 @@ EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& 
         }
 
         Vector<String> values;
-        bool isList = DictionaryHelper::get(keyframeDictionary, property, values);
-        if (!isList) {
-            String value;
-            DictionaryHelper::get(keyframeDictionary, property, value);
-            values.append(value);
-        }
+        if (!getPropertyIndexedKeyframeValues(keyframeDictionary, property, executionContext, exceptionState, values))
+            return nullptr;
 
         size_t numKeyframes = values.size();
         for (size_t i = 0; i < numKeyframes; ++i) {

@@ -9,6 +9,12 @@
 #include "wtf/Allocator.h"
 #include <v8.h>
 
+namespace WTF {
+
+class String;
+
+} // namespace WTF
+
 namespace blink {
 
 class Dictionary;
@@ -32,6 +38,7 @@ public:
 
     v8::MaybeLocal<v8::Value> value() { return m_value; }
     bool valueAsDictionary(Dictionary& result, ExceptionState&);
+    bool valueAsString(WTF::String& result);
 
 private:
     v8::Isolate* m_isolate;
