@@ -64,9 +64,9 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
       manifest = base::MakeUnique<base::DictionaryValue>();
       manifest->SetString(kManifestOriginTrialsKey, "");
     }
-    ASSERT_TRUE(traits_->VerifyInstallation(*manifest, temp_dir_.path()));
+    ASSERT_TRUE(traits_->VerifyInstallation(*manifest, temp_dir_.GetPath()));
     const base::Version expected_version(kTestUpdateVersion);
-    traits_->ComponentReady(expected_version, temp_dir_.path(),
+    traits_->ComponentReady(expected_version, temp_dir_.GetPath(),
                             std::move(manifest));
   }
 

@@ -125,7 +125,7 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     async_file_util_.reset(new internal::ProviderAsyncFileUtil);
 
     file_system_context_ =
-        content::CreateFileSystemContextForTesting(NULL, data_dir_.path());
+        content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
     service->SetFileSystemFactoryForTesting(

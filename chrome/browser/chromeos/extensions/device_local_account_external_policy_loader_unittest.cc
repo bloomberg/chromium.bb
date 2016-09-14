@@ -142,7 +142,7 @@ DeviceLocalAccountExternalPolicyLoaderTest::
 
 void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  cache_dir_ = temp_dir_.path().Append(kCacheDir);
+  cache_dir_ = temp_dir_.GetPath().Append(kCacheDir);
   ASSERT_TRUE(base::CreateDirectoryAndGetError(cache_dir_, NULL));
   request_context_getter_ =
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
@@ -275,9 +275,9 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   // Create a temporary CRX file and return its path to the downloader.
   EXPECT_TRUE(base::CopyFile(
       test_dir_.Append(kExtensionCRXSourceDir).Append(kExtensionCRXFile),
-      temp_dir_.path().Append(kExtensionCRXFile)));
+      temp_dir_.GetPath().Append(kExtensionCRXFile)));
   fetcher->set_response_code(200);
-  fetcher->SetResponseFilePath(temp_dir_.path().Append(kExtensionCRXFile));
+  fetcher->SetResponseFilePath(temp_dir_.GetPath().Append(kExtensionCRXFile));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Spin the loop. Verify that the loader announces the presence of a new CRX

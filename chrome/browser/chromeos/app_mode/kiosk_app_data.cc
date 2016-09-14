@@ -162,7 +162,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     scoped_refptr<extensions::SandboxedUnpacker> unpacker(
         new extensions::SandboxedUnpacker(
             extensions::Manifest::INTERNAL, extensions::Extension::NO_FLAGS,
-            temp_dir_.path(), task_runner_.get(), this));
+            temp_dir_.GetPath(), task_runner_.get(), this));
     unpacker->StartWithCrx(extensions::CRXFileInfo(crx_file_));
   }
 
@@ -171,7 +171,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
 
     if (!temp_dir_.Delete()) {
       LOG(WARNING) << "Can not delete temp directory at "
-                   << temp_dir_.path().value();
+                   << temp_dir_.GetPath().value();
     }
 
     BrowserThread::PostTask(

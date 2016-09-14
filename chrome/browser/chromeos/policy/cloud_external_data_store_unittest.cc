@@ -57,7 +57,7 @@ CouldExternalDataStoreTest::CouldExternalDataStoreTest()
 
 void CouldExternalDataStoreTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(new ResourceCache(temp_dir_.path(), task_runner_));
+  resource_cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
 }
 
 TEST_F(CouldExternalDataStoreTest, StoreAndLoad) {

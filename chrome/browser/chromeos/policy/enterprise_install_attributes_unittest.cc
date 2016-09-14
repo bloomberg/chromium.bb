@@ -56,7 +56,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
   void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
 
   base::FilePath GetTempPath() const {
-    base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir_.path());
+    base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir_.GetPath());
     return temp_path.Append("install_attrs_test");
   }
 

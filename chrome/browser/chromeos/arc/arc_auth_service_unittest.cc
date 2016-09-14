@@ -66,7 +66,7 @@ class ArcAuthServiceTest : public testing::Test {
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
-    profile_builder.SetPath(temp_dir_.path().AppendASCII("TestArcProfile"));
+    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
 
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();

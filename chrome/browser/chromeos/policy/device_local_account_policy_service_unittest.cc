@@ -526,7 +526,7 @@ void DeviceLocalAccountPolicyExtensionCacheTest::SetUp() {
   ASSERT_TRUE(cache_root_dir_.CreateUniqueTempDir());
   cache_root_dir_override_.reset(new base::ScopedPathOverride(
       chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
-      cache_root_dir_.path()));
+      cache_root_dir_.GetPath()));
 
   cache_dir_1_ = GetCacheDirectoryForAccountID(kAccount1);
   cache_dir_2_ = GetCacheDirectoryForAccountID(kAccount2);
@@ -539,8 +539,8 @@ void DeviceLocalAccountPolicyExtensionCacheTest::SetUp() {
 
 base::FilePath DeviceLocalAccountPolicyExtensionCacheTest::
     GetCacheDirectoryForAccountID(const std::string& account_id) {
-  return cache_root_dir_.path().Append(base::HexEncode(account_id.c_str(),
-                                                       account_id.size()));
+  return cache_root_dir_.GetPath().Append(
+      base::HexEncode(account_id.c_str(), account_id.size()));
 }
 
 // Verifies that during startup, orphaned cache directories are deleted,

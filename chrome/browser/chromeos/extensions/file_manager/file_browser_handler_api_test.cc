@@ -170,7 +170,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     // Mount point will be called "tmp", and it will be located in a tmp
     // directory with an unique name.
     ASSERT_TRUE(scoped_tmp_dir_.CreateUniqueTempDir());
-    tmp_mount_point_ = scoped_tmp_dir_.path().Append("tmp");
+    tmp_mount_point_ = scoped_tmp_dir_.GetPath().Append("tmp");
     base::CreateDirectory(tmp_mount_point_);
 
     ExtensionApiTest::SetUp();

@@ -204,7 +204,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   }
 
   base::FilePath user_policy_dir() {
-    return tmp_dir_.path().AppendASCII("var_run_user_policy");
+    return tmp_dir_.GetPath().AppendASCII("var_run_user_policy");
   }
 
   base::FilePath user_policy_key_file() {
@@ -213,11 +213,11 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   }
 
   base::FilePath token_file() {
-    return tmp_dir_.path().AppendASCII("token");
+    return tmp_dir_.GetPath().AppendASCII("token");
   }
 
   base::FilePath policy_file() {
-    return tmp_dir_.path().AppendASCII("policy");
+    return tmp_dir_.GetPath().AppendASCII("policy");
   }
 
   base::MessageLoopForUI loop_;

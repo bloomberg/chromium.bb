@@ -71,7 +71,7 @@ class UserManagerTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.path()));
+        new UnittestProfileManager(temp_dir_.GetPath()));
 
     chromeos::DBusThreadManager::Initialize();
 

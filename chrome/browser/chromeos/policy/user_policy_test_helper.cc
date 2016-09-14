@@ -144,7 +144,7 @@ void UserPolicyTestHelper::WritePolicyFile(
 }
 
 base::FilePath UserPolicyTestHelper::PolicyFilePath() const {
-  return temp_dir_.path().AppendASCII("policy.json");
+  return temp_dir_.GetPath().AppendASCII("policy.json");
 }
 
 }  // namespace policy

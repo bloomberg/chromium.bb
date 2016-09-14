@@ -436,7 +436,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   // Copies the given file into temp dir and returns the full path
   // of the copied file.
   base::FilePath CopyFileToTempDir(const base::FilePath& file) {
-    base::FilePath target_file = temp_dir_.path().Append(file.BaseName());
+    base::FilePath target_file = temp_dir_.GetPath().Append(file.BaseName());
     CHECK(base::CopyFile(file, target_file));
     return target_file;
   }

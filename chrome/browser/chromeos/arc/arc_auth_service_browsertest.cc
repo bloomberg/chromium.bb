@@ -157,7 +157,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     // Create test profile.
     TestingProfile::Builder profile_builder;
-    profile_builder.SetPath(temp_dir_.path().AppendASCII("TestArcProfile"));
+    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_builder.SetProfileName(kFakeUserName);
     profile_builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),

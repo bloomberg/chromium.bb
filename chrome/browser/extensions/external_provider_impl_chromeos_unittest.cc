@@ -155,7 +155,7 @@ TEST_F(ExternalProviderImplChromeOSTest, PolicyDisabled) {
 
   // Log user in, start sync.
   TestingBrowserProcess::GetGlobal()->SetProfileManager(
-      new ProfileManagerWithoutInit(temp_dir().path()));
+      new ProfileManagerWithoutInit(temp_dir().GetPath()));
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
   signin->SetAuthenticatedAccountInfo("gaia-id-test_user@gmail.com",

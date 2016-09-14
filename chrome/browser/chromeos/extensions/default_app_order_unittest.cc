@@ -55,7 +55,7 @@ class DefaultAppOrderTest : public testing::Test {
 
   void CreateExternalOrderFile(const std::string& content) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath external_file = temp_dir_.path().Append(kTestFile);
+    base::FilePath external_file = temp_dir_.GetPath().Append(kTestFile);
     base::WriteFile(external_file, content.c_str(), content.size());
     SetExternalFile(external_file);
   }
@@ -102,7 +102,7 @@ TEST_F(DefaultAppOrderTest, NoExternalFile) {
   ASSERT_TRUE(scoped_tmp_dir.CreateUniqueTempDir());
 
   base::FilePath none_existent_file =
-      scoped_tmp_dir.path().AppendASCII("none_existent_file");
+      scoped_tmp_dir.GetPath().AppendASCII("none_existent_file");
   ASSERT_FALSE(base::PathExists(none_existent_file));
   SetExternalFile(none_existent_file);
 

@@ -284,7 +284,7 @@ TEST(BinderTransactionDataReadWriteTest, FileDescriptor) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &path));
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());

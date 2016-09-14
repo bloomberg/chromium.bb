@@ -22,7 +22,7 @@ class ExternalMetricsTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     external_metrics_ = ExternalMetrics::CreateForTesting(
-        dir_.path().Append("testfile").value());
+        dir_.GetPath().Append("testfile").value());
   }
 
   base::ScopedTempDir dir_;

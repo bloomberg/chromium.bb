@@ -143,7 +143,7 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!temp_dir->CreateUniqueTempDir())
     return false;
 
-  *mount_point_dir = temp_dir->path().AppendASCII(mount_point_name);
+  *mount_point_dir = temp_dir->GetPath().AppendASCII(mount_point_name);
   // Create the mount point.
   if (!base::CreateDirectory(*mount_point_dir))
     return false;

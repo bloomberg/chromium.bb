@@ -49,7 +49,7 @@ class TestService::TestObject : public LocalObject::TransactionHandler {
         base::ScopedTempDir temp_dir;
         base::FilePath path;
         if (!temp_dir.CreateUniqueTempDir() ||
-            !base::CreateTemporaryFileInDir(temp_dir.path(), &path) ||
+            !base::CreateTemporaryFileInDir(temp_dir.GetPath(), &path) ||
             !base::WriteFile(path, data.data(), data.size())) {
           LOG(ERROR) << "Failed to create a file";
           return std::unique_ptr<TransactionData>();

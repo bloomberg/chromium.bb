@@ -153,7 +153,7 @@ CloudExternalDataManagerBaseTest::CloudExternalDataManagerBaseTest() {
 void CloudExternalDataManagerBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   resource_cache_.reset(
-      new ResourceCache(temp_dir_.path(), message_loop_.task_runner()));
+      new ResourceCache(temp_dir_.GetPath(), message_loop_.task_runner()));
   SetUpExternalDataManager();
 
   // Set |kStringPolicy| to a string value.

@@ -217,12 +217,9 @@ class ExternalFileURLRequestJobTest : public testing::Test {
     fake_file_system_ = new drive::test_util::FakeFileSystem(drive_service);
     if (!drive_cache_dir_.CreateUniqueTempDir())
       return NULL;
-    return new drive::DriveIntegrationService(profile,
-                                              NULL,
-                                              drive_service,
-                                              drive_mount_name,
-                                              drive_cache_dir_.path(),
-                                              fake_file_system_);
+    return new drive::DriveIntegrationService(
+        profile, nullptr, drive_service, drive_mount_name,
+        drive_cache_dir_.GetPath(), fake_file_system_);
   }
 
   drive::FileSystemInterface* GetFileSystem() { return fake_file_system_; }

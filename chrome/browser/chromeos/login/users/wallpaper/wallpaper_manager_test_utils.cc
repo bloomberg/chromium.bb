@@ -169,34 +169,34 @@ void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
   std::vector<std::string> options;
   options.push_back(std::string("WM_Test_cmdline"));
   const base::FilePath small_file =
-      dir.path().Append(FILE_PATH_LITERAL("small.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("small.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kDefaultWallpaperSmall + "=" +
                     small_file.value());
   const base::FilePath large_file =
-      dir.path().Append(FILE_PATH_LITERAL("large.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("large.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kDefaultWallpaperLarge + "=" +
                     large_file.value());
 
   const base::FilePath guest_small_file =
-      dir.path().Append(FILE_PATH_LITERAL("guest_small.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("guest_small.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kGuestWallpaperSmall + "=" +
                     guest_small_file.value());
   const base::FilePath guest_large_file =
-      dir.path().Append(FILE_PATH_LITERAL("guest_large.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("guest_large.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kGuestWallpaperLarge + "=" +
                     guest_large_file.value());
 
   const base::FilePath child_small_file =
-      dir.path().Append(FILE_PATH_LITERAL("child_small.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("child_small.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kChildWallpaperSmall + "=" +
                     child_small_file.value());
   const base::FilePath child_large_file =
-      dir.path().Append(FILE_PATH_LITERAL("child_large.jpg"));
+      dir.GetPath().Append(FILE_PATH_LITERAL("child_large.jpg"));
   options.push_back(std::string("--") +
                     chromeos::switches::kChildWallpaperLarge + "=" +
                     child_large_file.value());

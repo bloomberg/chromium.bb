@@ -51,7 +51,7 @@ class LocalReaderProxyTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
-        temp_dir_.path(), 1024, &file_path_, &file_content_));
+        temp_dir_.GetPath(), 1024, &file_path_, &file_content_));
 
     worker_thread_.reset(new base::Thread("ReaderProxyTest"));
     ASSERT_TRUE(worker_thread_->Start());

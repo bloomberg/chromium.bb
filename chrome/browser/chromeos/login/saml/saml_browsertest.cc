@@ -780,7 +780,7 @@ SAMLEnrollmentTest::~SAMLEnrollmentTest() {
 void SAMLEnrollmentTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   const base::FilePath policy_file =
-      temp_dir_.path().AppendASCII("policy.json");
+      temp_dir_.GetPath().AppendASCII("policy.json");
   ASSERT_EQ(static_cast<int>(strlen(kPolicy)),
             base::WriteFile(policy_file, kPolicy, strlen(kPolicy)));
 

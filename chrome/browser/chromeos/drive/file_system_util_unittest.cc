@@ -131,7 +131,7 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           NULL,  // quota_manager_proxy,
           ScopedVector<storage::FileSystemBackend>(),
           std::vector<storage::URLRequestAutoMountHandler>(),
-          temp_dir_.path(),  // partition_path
+          temp_dir_.GetPath(),  // partition_path
           content::CreateAllowFileAccessOptions()));
 
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
@@ -158,7 +158,7 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   // Type:"external" + virtual_path:"Downloads/foo" is not a Drive path.
   mount_points->RegisterFileSystem(
       "Downloads", storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), temp_dir_.path());
+      storage::FileSystemMountOption(), temp_dir_.GetPath());
   EXPECT_EQ(
       base::FilePath(),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(

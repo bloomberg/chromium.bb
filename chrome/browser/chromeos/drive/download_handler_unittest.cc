@@ -99,7 +99,7 @@ class DownloadHandlerTest : public testing::Test {
         .WillRepeatedly(testing::Return(content::DownloadItem::IN_PROGRESS));
 
     download_handler_.reset(new DownloadHandler(&test_file_system_));
-    download_handler_->Initialize(download_manager_.get(), temp_dir_.path());
+    download_handler_->Initialize(download_manager_.get(), temp_dir_.GetPath());
     download_handler_->SetFreeDiskSpaceDelayForTesting(
         base::TimeDelta::FromMilliseconds(0));
   }
@@ -149,7 +149,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
   content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check the result.
-  EXPECT_TRUE(temp_dir_.path().IsParent(substituted_path));
+  EXPECT_TRUE(temp_dir_.GetPath().IsParent(substituted_path));
   ASSERT_TRUE(download_handler_->IsDriveDownload(&download_item_));
   EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
 }
@@ -190,7 +190,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check the result of SubstituteDriveDownloadPath().
-  EXPECT_TRUE(temp_dir_.path().IsParent(substituted_path));
+  EXPECT_TRUE(temp_dir_.GetPath().IsParent(substituted_path));
 
   // |download_item_| is not a drive download yet.
   EXPECT_FALSE(download_handler_->IsDriveDownload(&download_item_));

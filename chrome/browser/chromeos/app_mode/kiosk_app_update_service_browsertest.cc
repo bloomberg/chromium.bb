@@ -67,7 +67,7 @@ class KioskAppUpdateServiceTest
     extensions::PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    const base::FilePath& temp_dir = temp_dir_.path();
+    const base::FilePath& temp_dir = temp_dir_.GetPath();
 
     const base::TimeDelta uptime = base::TimeDelta::FromHours(3);
     const std::string uptime_seconds =
