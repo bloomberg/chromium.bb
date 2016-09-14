@@ -9,6 +9,6 @@ template("monochrome_repack_locales") {
   chrome_repack_locales(target_name) {
     forward_variables_from(invoker, "*")
     additional_source_patterns = webview_repack_locales_source_patterns
-    deps = webview_repack_locales_deps
+    additional_deps = webview_repack_locales_deps
   }
 }
