@@ -303,7 +303,7 @@ imported/wpt/tools [ Skip ]
 # imported/wpt/touch-events [ Pass ]
 imported/wpt/typedarrays [ Skip ]
 ## Owners: dtapuska@chromium.org
-# imported/wpt/uievents [ Pass ]
+imported/wpt/uievents [ Pass ]
 imported/wpt/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/user-timing [ Pass ]
@@ -507,6 +507,7 @@ imported/wpt/html/browsers/history/the-location-interface/scripted_click_locatio
 imported/wpt/html/browsers/history/the-location-interface/scripted_form_submit_assign_during_load.html [ Skip ]
 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.sub.html [ Skip ]
+imported/wpt/html/browsers/origin/origin-of-data-document.html [ Skip ]
 imported/wpt/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html [ Skip ]
 imported/wpt/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html [ Skip ]
 imported/wpt/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html [ Skip ]
