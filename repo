@@ -23,7 +23,7 @@ REPO_REV='stable'
 VERSION = (1, 21)
 
 # increment this if the MAINTAINER_KEYS block is modified
-KEYRING_VERSION = (1, 4)
+KEYRING_VERSION = (1, 5)
 MAINTAINER_KEYS = """
 
      Repo Maintainer <repo@android.kernel.org>
@@ -184,6 +184,48 @@ j8zzwdwkRpt3SSvqzh3+L3Zq8xeb2M6u/QLz4aLFTR7yQJed0DJFUcISii9ccJr/
 IM4=
 =6VNc
 -----END PGP PUBLIC KEY BLOCK-----
+
+     Mike Frysinger <vapier@chromium.org>
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+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
+=i88c
+-----END PGP PUBLIC KEY BLOCK-----
 """
 
 GIT = 'git'                     # our git command
@@ -199,6 +241,7 @@ import errno
 import optparse
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -223,17 +266,13 @@ def _print(*objects, **kwargs):
 
 # Python version check
 ver = sys.version_info
-if ver[0] == 3:
-  _print('warning: Python 3 support is currently experimental. YMMV.\n'
-         'Please use Python 2.6 - 2.7 instead.',
-         file=sys.stderr)
 if (ver[0], ver[1]) < MIN_PYTHON_VERSION:
   _print('error: Python version %s unsupported.\n'
          'Please use Python 2.6 - 2.7 instead.'
          % sys.version.split(' ')[0], file=sys.stderr)
   sys.exit(1)
 
-home_dot_repo = os.path.expanduser(os.path.join('~','.repoconfig'))
+home_dot_repo = os.path.expanduser('~/.repoconfig')
 gpg_dir = os.path.join(home_dot_repo, 'gnupg')
 
 extra_args = []
@@ -826,12 +865,7 @@ def main(orig_args):
       try:
         _Init(args)
       except CloneFailure:
-        for root, dirs, files in os.walk(repodir, topdown=False):
-          for name in files:
-            os.remove(os.path.join(root, name))
-          for name in dirs:
-            os.rmdir(os.path.join(root, name))
-        os.rmdir(repodir)
+        shutil.rmtree(os.path.join(repodir, S_repo), ignore_errors=True)
         sys.exit(1)
       repo_main, rel_repo_dir = _FindRepo()
     else:
@@ -860,4 +894,8 @@ def main(orig_args):
 
 
 if __name__ == '__main__':
+  if ver[0] == 3:
+    _print('warning: Python 3 support is currently experimental. YMMV.\n'
+           'Please use Python 2.6 - 2.7 instead.',
+           file=sys.stderr)
   main(sys.argv[1:])
