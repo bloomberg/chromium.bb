@@ -156,6 +156,8 @@ Response SecurityHandler::ShowCertificateViewer() {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   scoped_refptr<net::X509Certificate> certificate = web_contents->
       GetController().GetLastCommittedEntry()->GetSSL().certificate;
+  if (!certificate)
+    return Response::InternalError("Could not find certificate");
   web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
       web_contents, certificate);
   return Response::OK();
