@@ -63,7 +63,6 @@
 #include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
-#include "content/renderer/media/rtc_certificate_generator.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
@@ -137,6 +136,7 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
+#include "content/renderer/media/rtc_certificate_generator.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #endif
 

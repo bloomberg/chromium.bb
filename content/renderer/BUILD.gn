@@ -192,8 +192,6 @@ target(link_target_type, "renderer") {
     "manifest/manifest_parser.h",
     "manifest/manifest_uma_util.cc",
     "manifest/manifest_uma_util.h",
-    "media/aec_dump_message_filter.cc",
-    "media/aec_dump_message_filter.h",
     "media/android/media_info_loader.cc",
     "media/android/media_info_loader.h",
     "media/android/media_player_renderer_client.cc",
@@ -514,6 +512,8 @@ target(link_target_type, "renderer") {
   if (enable_webrtc) {
     # WebRTC plugin-related stuff goes in a different section below.
     sources += [
+      "media/aec_dump_message_filter.cc",
+      "media/aec_dump_message_filter.h",
       "media/audio_repetition_detector.cc",
       "media/audio_repetition_detector.h",
       "media/audio_track_recorder.cc",
@@ -595,6 +595,7 @@ target(link_target_type, "renderer") {
       "media/track_audio_renderer.cc",
       "media/track_audio_renderer.h",
       "media/user_media_client_impl.cc",
+      "media/user_media_client_impl.h",
       "media/video_track_adapter.cc",
       "media/video_track_adapter.h",
       "media/video_track_recorder.cc",

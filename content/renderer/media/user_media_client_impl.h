@@ -27,7 +27,6 @@
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
 class PeerConnectionDependencyFactory;

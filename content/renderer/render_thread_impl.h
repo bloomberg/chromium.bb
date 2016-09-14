@@ -564,16 +564,16 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
-#endif
-
-  // Used on the render thread.
-  std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
   // Used for communicating registering AEC dump consumers with the browser and
   // receving AEC dump file handles when AEC dump is enabled. An AEC dump is
   // diagnostic audio data for WebRTC stored locally when enabled by the user in
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
+#endif
+
+  // Used on the render thread.
+  std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;
