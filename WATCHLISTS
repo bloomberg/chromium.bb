@@ -1459,6 +1459,7 @@
                'marcinjb+watch-blimp@chromium.org',
                'nyquist+watch-blimp@chromium.org',
                'perumaal+watch-blimp@chromium.org',
+               'scf+watch-blimp@chromium.org',
                'shaktisahu+watch-blimp@chromium.org',
                'sriramsr+watch-blimp@chromium.org'],
     'blink': ['blink-reviews@chromium.org'],
