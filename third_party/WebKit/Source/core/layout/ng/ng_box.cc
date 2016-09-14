@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_direction.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {
@@ -42,6 +43,15 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     if (layout_box_) {
       layout_box_->setWidth(fragment_->Width());
       layout_box_->setHeight(fragment_->Height());
+      NGBoxStrut border_and_padding =
+          computeBorders(*Style()) +
+          computePadding(*constraint_space, *Style());
+      LayoutUnit intrinsic_logical_height =
+          layout_box_->style()->isHorizontalWritingMode()
+              ? fragment_->HeightOverflow()
+              : fragment_->WidthOverflow();
+      intrinsic_logical_height -= border_and_padding.BlockSum();
+      layout_box_->setIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
       // Ensure the position of the children are copied across to the
       // LayoutObject tree.
