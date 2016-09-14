@@ -125,8 +125,7 @@ std::unique_ptr<cc::SharedBitmap> HostSharedBitmapManager::AllocateSharedBitmap(
 
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   handle_map_[id] = data;
-  return base::WrapUnique(
-      new HostSharedBitmap(data->pixels.get(), data, id, this));
+  return base::MakeUnique<HostSharedBitmap>(data->pixels.get(), data, id, this);
 }
 
 std::unique_ptr<cc::SharedBitmap>
@@ -145,15 +144,15 @@ HostSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size& size,
     return std::unique_ptr<cc::SharedBitmap>();
 
   if (data->pixels) {
-    return base::WrapUnique(
-        new HostSharedBitmap(data->pixels.get(), data, id, nullptr));
+    return base::MakeUnique<HostSharedBitmap>(data->pixels.get(), data, id,
+                                              nullptr);
   }
   if (!data->memory->memory()) {
     return std::unique_ptr<cc::SharedBitmap>();
   }
 
-  return base::WrapUnique(new HostSharedBitmap(
-      static_cast<uint8_t*>(data->memory->memory()), data, id, nullptr));
+  return base::MakeUnique<HostSharedBitmap>(
+      static_cast<uint8_t*>(data->memory->memory()), data, id, nullptr);
 }
 
 bool HostSharedBitmapManager::OnMemoryDump(
@@ -194,7 +193,7 @@ bool HostSharedBitmapManager::ChildAllocatedSharedBitmap(
   scoped_refptr<BitmapData> data(new BitmapData(buffer_size));
 
   handle_map_[id] = data;
-  data->memory = base::WrapUnique(new base::SharedMemory(handle, false));
+  data->memory = base::MakeUnique<base::SharedMemory>(handle, false);
   data->memory->Map(data->buffer_size);
   data->memory->Close();
   return true;

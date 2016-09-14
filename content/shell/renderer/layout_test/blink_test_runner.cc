@@ -725,11 +725,10 @@ bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);
 #if defined(ENABLE_WEBRTC)
-  return AddVideoTrackToMediaStream(
-      base::WrapUnique(new MockVideoCapturerSource()),
-      false,  // is_remote
-      false,  // is_readonly
-      stream);
+  return AddVideoTrackToMediaStream(base::MakeUnique<MockVideoCapturerSource>(),
+                                    false,  // is_remote
+                                    false,  // is_readonly
+                                    stream);
 #else
   return false;
 #endif

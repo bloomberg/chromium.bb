@@ -632,7 +632,7 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
 }
 
 std::unique_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
-  return base::WrapUnique(new ResizeParams());
+  return base::MakeUnique<ResizeParams>();
 }
 
 void RenderViewTest::GoToOffset(int offset,

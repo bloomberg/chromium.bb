@@ -217,7 +217,7 @@ net::URLRequestJob* TestDownloadRequestHandler::PartialResponseJob::Factory(
     net::URLRequest* request,
     net::NetworkDelegate* delegate,
     base::WeakPtr<Interceptor> interceptor) {
-  return new PartialResponseJob(base::WrapUnique(new Parameters(parameters)),
+  return new PartialResponseJob(base::MakeUnique<Parameters>(parameters),
                                 interceptor, request, delegate);
 }
 

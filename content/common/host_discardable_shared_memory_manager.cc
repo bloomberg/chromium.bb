@@ -211,11 +211,11 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     base::TerminateBecauseOutOfMemory(size);
   // Close file descriptor to avoid running out.
   memory->Close();
-  return base::WrapUnique(new DiscardableMemoryImpl(
+  return base::MakeUnique<DiscardableMemoryImpl>(
       std::move(memory),
       base::Bind(
           &HostDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
-          base::Unretained(this), new_id, ChildProcessHost::kInvalidUniqueID)));
+          base::Unretained(this), new_id, ChildProcessHost::kInvalidUniqueID));
 }
 
 bool HostDiscardableSharedMemoryManager::OnMemoryDump(

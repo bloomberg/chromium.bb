@@ -916,8 +916,8 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
   ON_CALL(*device, CreateGattConnection(_, _))
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter, device_ptr]() {
-            return base::WrapUnique(new NiceMockBluetoothGattConnection(
-                adapter, device_ptr->GetAddress()));
+            return base::MakeUnique<NiceMockBluetoothGattConnection>(
+                adapter, device_ptr->GetAddress());
           }));
 
   ON_CALL(*device, IsGattServicesDiscoveryComplete())

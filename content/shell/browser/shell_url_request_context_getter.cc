@@ -139,8 +139,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_channel_id_service(base::WrapUnique(
         new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
                                   base::WorkerPool::GetTaskRunner(true))));
-    storage_->set_http_user_agent_settings(base::WrapUnique(
-        new net::StaticHttpUserAgentSettings("en-us,en", GetShellUserAgent())));
+    storage_->set_http_user_agent_settings(
+        base::MakeUnique<net::StaticHttpUserAgentSettings>(
+            "en-us,en", GetShellUserAgent()));
 
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(
@@ -158,7 +159,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
     storage_->set_http_server_properties(
-        base::WrapUnique(new net::HttpServerPropertiesImpl()));
+        base::MakeUnique<net::HttpServerPropertiesImpl>());
 
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
@@ -223,10 +224,10 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->host_resolver();
 
     storage_->set_http_network_session(
-        base::WrapUnique(new net::HttpNetworkSession(network_session_params)));
-    storage_->set_http_transaction_factory(base::WrapUnique(new net::HttpCache(
+        base::MakeUnique<net::HttpNetworkSession>(network_session_params));
+    storage_->set_http_transaction_factory(base::MakeUnique<net::HttpCache>(
         storage_->http_network_session(), std::move(main_backend),
-        true /* set_up_quic_server_info */)));
+        true /* set_up_quic_server_info */));
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
@@ -239,9 +240,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 #if !defined(DISABLE_FILE_SUPPORT)
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
-        base::WrapUnique(new net::FileProtocolHandler(
+        base::MakeUnique<net::FileProtocolHandler>(
             BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     DCHECK(set_protocol);
 #endif
 

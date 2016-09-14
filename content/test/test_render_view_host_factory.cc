@@ -36,9 +36,9 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     int32_t main_frame_routing_id,
     bool swapped_out) {
   return new TestRenderViewHost(instance,
-                                base::WrapUnique(new RenderWidgetHostImpl(
+                                base::MakeUnique<RenderWidgetHostImpl>(
                                     widget_delegate, instance->GetProcess(),
-                                    routing_id, false /* hidden */)),
+                                    routing_id, false /* hidden */),
                                 delegate, main_frame_routing_id, swapped_out);
 }
 
