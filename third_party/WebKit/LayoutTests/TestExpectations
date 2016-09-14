@@ -94,8 +94,6 @@ crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-bac
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
 crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
 
-crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
-
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
