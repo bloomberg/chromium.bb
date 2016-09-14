@@ -4214,7 +4214,7 @@ def SendUpstream(parser, args, cmd):
         assert branch.startswith('refs/'), branch
         assert pending_prefix[-1] == '/', pending_prefix
         pending_ref = pending_prefix + branch[len('refs/'):]
-        retcode, output = PushToGitPending(pushurl, pending_ref, branch)
+        retcode, output = PushToGitPending(pushurl, pending_ref)
         pushed_to_pending = (retcode == 0)
       if retcode == 0:
         revision = RunGit(['rev-parse', 'HEAD']).strip()
@@ -4321,7 +4321,7 @@ def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
     current_rev = to_rev
 
 
-def PushToGitPending(remote, pending_ref, upstream_ref):
+def PushToGitPending(remote, pending_ref):
   """Fetches pending_ref, cherry-picks current HEAD on top of it, pushes.
 
   Returns:
