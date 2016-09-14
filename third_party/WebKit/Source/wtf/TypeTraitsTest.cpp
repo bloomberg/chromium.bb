@@ -180,6 +180,42 @@ static_assert(!IsTriviallyDefaultConstructible<DefaultConstructorDeleted>::value
 static_assert(!IsTriviallyDestructible<DestructorDeleted>::value,
     "DestructorDeleted must not be trivially destructible.");
 
+template<typename T>
+class Wrapper
+{
+public:
+    template<typename U>
+    Wrapper(const Wrapper<U>&, EnsurePtrConvertibleArgDecl(U, T))
+    {
+    }
+};
+
+class ForwardDeclarationOnlyClass;
+
+static_assert(std::is_convertible<Wrapper<TestDerivedClass>, Wrapper<TestDerivedClass>>::value,
+    "EnsurePtrConvertibleArgDecl<T, T> should pass");
+
+static_assert(std::is_convertible<Wrapper<TestDerivedClass>, Wrapper<const TestDerivedClass>>::value,
+    "EnsurePtrConvertibleArgDecl<T, const T> should pass");
+
+static_assert(!std::is_convertible<Wrapper<const TestDerivedClass>, Wrapper<TestDerivedClass>>::value,
+    "EnsurePtrConvertibleArgDecl<const T, T> should not pass");
+
+static_assert(std::is_convertible<Wrapper<ForwardDeclarationOnlyClass>, Wrapper<ForwardDeclarationOnlyClass>>::value,
+    "EnsurePtrConvertibleArgDecl<T, T> should pass if T is not a complete type");
+
+static_assert(std::is_convertible<Wrapper<ForwardDeclarationOnlyClass>, Wrapper<const ForwardDeclarationOnlyClass>>::value,
+    "EnsurePtrConvertibleArgDecl<T, const T> should pass if T is not a complete type");
+
+static_assert(!std::is_convertible<Wrapper<const ForwardDeclarationOnlyClass>, Wrapper<ForwardDeclarationOnlyClass>>::value,
+    "EnsurePtrConvertibleArgDecl<const T, T> should not pass if T is not a complete type");
+
+static_assert(std::is_convertible<Wrapper<TestDerivedClass>, Wrapper<TestBaseClass<int>>>::value,
+    "EnsurePtrConvertibleArgDecl<U, T> should pass if U is a subclass of T");
+
+static_assert(!std::is_convertible<Wrapper<TestBaseClass<int>>, Wrapper<TestDerivedClass>>::value,
+    "EnsurePtrConvertibleArgDecl<U, T> should not pass if U is a base class of T");
+
 } // anonymous namespace
 
 } // namespace WTF

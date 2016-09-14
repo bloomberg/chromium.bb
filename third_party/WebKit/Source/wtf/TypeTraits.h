@@ -218,23 +218,23 @@ struct RemoveTemplate<OuterTemplate<T>, OuterTemplate> {
 // Here, we use a template specialization for same type case to allow incomplete
 // types.
 
-template <typename T, typename U> struct IsBaseOf {
-    static const bool value = std::is_base_of<T, U>::value;
+template <typename T, typename U> struct IsConvertible {
+    static const bool value = std::is_convertible<T, U>::value;
 };
 
-template <typename T> struct IsBaseOf<T, T> {
+template <typename T> struct IsConvertible<T, T> {
     static const bool value = true;
 };
 
 #define EnsurePtrConvertibleArgDecl(From, To) \
-    typename std::enable_if<WTF::IsBaseOf<To, From>::value>::type* = nullptr
+    typename std::enable_if<WTF::IsConvertible<From*, To*>::value>::type* = nullptr
 #define EnsurePtrConvertibleArgDefn(From, To) \
-    typename std::enable_if<WTF::IsBaseOf<To, From>::value>::type*
+    typename std::enable_if<WTF::IsConvertible<From*, To*>::value>::type*
 #else
 #define EnsurePtrConvertibleArgDecl(From, To) \
-    typename std::enable_if<std::is_base_of<To, From>::value>::type* = nullptr
+    typename std::enable_if<std::is_convertible<From*, To*>::value>::type* = nullptr
 #define EnsurePtrConvertibleArgDefn(From, To) \
-    typename std::enable_if<std::is_base_of<To, From>::value>::type*
+    typename std::enable_if<std::is_convertible<From*, To*>::value>::type*
 #endif
 
 } // namespace WTF
