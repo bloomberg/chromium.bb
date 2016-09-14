@@ -3432,7 +3432,7 @@ split_static_library("browser") {
   }
 
   if (is_desktop_linux) {
-    # Desktop linux, doesn"t count ChromeOS.
+    # Desktop linux, doesn't count ChromeOS.
     sources += [
       "first_run/upgrade_util.cc",
       "first_run/upgrade_util_linux.cc",
@@ -3442,8 +3442,6 @@ split_static_library("browser") {
       "media/webrtc/window_icon_util_x11.cc",
       "password_manager/native_backend_kwallet_x.cc",
       "password_manager/native_backend_kwallet_x.h",
-      "password_manager/native_backend_libsecret.cc",
-      "password_manager/native_backend_libsecret.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
@@ -3452,8 +3450,14 @@ split_static_library("browser") {
       "themes/theme_service_aurax11.h",
       "web_applications/web_app_linux.cc",
     ]
-    defines += [ "USE_LIBSECRET" ]
-    deps += [ "//third_party/libsecret" ]
+    if (!use_ozone) {
+      sources += [
+        "password_manager/native_backend_libsecret.cc",
+        "password_manager/native_backend_libsecret.h",
+      ]
+      defines += [ "USE_LIBSECRET" ]
+      deps += [ "//third_party/libsecret" ]
+    }
   }
 
   if (enable_plugin_installation) {

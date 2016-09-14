@@ -4324,7 +4324,7 @@ test("unit_tests") {
       "//components/os_crypt:gnome_keyring_direct",
     ]
   }
-  if (is_linux && !is_chromeos) {
+  if (is_linux && !is_chromeos && !use_ozone) {
     sources +=
         [ "../browser/password_manager/native_backend_libsecret_unittest.cc" ]
     deps += [ "//third_party/libsecret" ]
