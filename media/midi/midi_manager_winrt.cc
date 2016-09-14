@@ -4,17 +4,7 @@
 
 #include "media/midi/midi_manager_winrt.h"
 
-// TODO(shaochuan): Remove this once clang supports uuid syntax in <robuffer.h>.
-// https://reviews.llvm.org/D23895
-namespace Windows {
-namespace Storage {
-namespace Streams {
 #pragma warning(disable : 4467)
-struct __declspec(uuid("905a0fef-bc53-11df-8c49-001e4fc686da"))
-    IBufferByteAccess;
-}
-}
-}
 
 #include <initguid.h>  // Required by <devpkey.h>
 
