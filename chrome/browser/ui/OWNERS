@@ -6,6 +6,10 @@ sky@chromium.org
 # to load balance. Only use the above for subdirectories when doing refactorings
 # that touch all the platforms.
 
+# This is for the common case of adding or renaming files. If you're doing
+# structural changes, use usual OWNERS rules.
+per-file BUILD.gn=*
+
 per-file tab_helpers.*=avi@chromium.org
 
 # Instant/Search files.
