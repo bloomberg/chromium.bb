@@ -60,6 +60,7 @@ class ProfileMetrics {
     SWITCH_PROFILE_UNLOCK,   // User switches to locked profile via User Manager
     SWITCH_PROFILE_GUEST,    // User switches to guest profile
     SWITCH_PROFILE_CONTEXT_MENU,  // User switches profiles from context menu
+    SWITCH_PROFILE_DUPLICATE,     // User switches to existing duplicate profile
     NUM_PROFILE_OPEN_METRICS
   };
 

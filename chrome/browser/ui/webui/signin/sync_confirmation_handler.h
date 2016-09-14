@@ -55,8 +55,6 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // Sets the profile picture shown in the dialog to the image at |url|.
   virtual void SetUserImageURL(const std::string& url);
 
-  Browser* GetDesktopBrowser();
-
   // Closes the modal signin window and calls
   // LoginUIService::SyncConfirmationUIClosed with |result|. |result| indicates
   // the option chosen by the user in the confirmation UI.

@@ -79,6 +79,10 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS);
 }
 
-const base::string16& LoginUIService::GetLastLoginResult() {
+const base::string16& LoginUIService::GetLastLoginResult() const {
   return last_login_result_;
+}
+
+const base::string16& LoginUIService::GetLastLoginErrorEmail() const {
+  return last_login_error_email_;
 }

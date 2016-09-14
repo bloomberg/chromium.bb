@@ -11145,6 +11145,9 @@ I don't think this site should be blocked!
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
           This account is already being used on this computer.
         </message>
+        <message name="IDS_SYNC_USER_NAME_IN_USE_BY_ERROR" desc="An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile. This error message includes the avatar name of the existing duplicate profile and only appears in the signin error tab modal dialog.">
+          This account is already being used on this computer by <ph name="AVATAR_NAME">$1<ex>Jane</ex></ph>.
+        </message>
       </if>
 
       <!--  Sync Confirmation section of the tab modal signin flow -->
@@ -11174,6 +11177,26 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_SYNC_CONFIRMATION_UNDO_BUTTON_LABEL" desc="Label of the undo button in the sync confirmation dialog of the tab modal signin flow">
         Undo
+      </message>
+
+      <!-- Signin Error tab modal dialogue -->
+      <message name="IDS_SIGNIN_ERROR_TITLE" desc="Title of the signin error tab modal dialog.">
+        Can't sign in
+      </message>
+      <message name="IDS_SIGNIN_ERROR_EMAIL_TITLE" desc="Title of the signin error tab modal dialog when username can be retrieved to display.">
+        Can't sign in to <ph name="USERNAME">$1<ex>Jane.Doe@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_ERROR_LEARN_MORE_LINK" desc="Label in the signin error tab modal dialog containing the link to go to the Chrome Help page for sync problems.">
+        <ph name="SIGNIN_ERROR">$1<ex>Signing in with this username has been disabled by your administrator.</ex></ph> <ph name="BEGIN_LINK">&lt;a id="learnMoreLink" href="#"&gt;Learn more&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_SIGNIN_ERROR_CLOSE_BUTTON_LABEL" desc="Label of the Close button in the signin error dialog.">
+        Close
+      </message>
+      <message name="IDS_SIGNIN_ERROR_OK_BUTTON_LABEL" desc="Label of the confirmation button in the signin error dialog.">
+        OK
+      </message>
+      <message name="IDS_SIGNIN_ERROR_SWITCH_BUTTON_LABEL" desc="Label of the button for switching to an existing duplicate profile in the signin error dialog.">
+        Switch to <ph name="AVATAR_NAME">$1<ex>Jane</ex></ph>
       </message>
 
       <!-- Sign-in section of the tab modal signin flow -->

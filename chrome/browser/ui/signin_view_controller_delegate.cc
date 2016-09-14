@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/ui/signin_view_controller.h"
-#include "chrome/browser/ui/webui/signin/get_auth_frame.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
