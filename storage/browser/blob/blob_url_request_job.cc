@@ -261,10 +261,16 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
     case net::ERR_REQUEST_RANGE_NOT_SATISFIABLE:
       status_code = net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE;
       break;
+    case net::ERR_INVALID_ARGUMENT:
+      status_code = net::HTTP_BAD_REQUEST;
+      break;
+    case net::ERR_CACHE_READ_FAILURE:
+    case net::ERR_CACHE_CHECKSUM_READ_FAILURE:
+    case net::ERR_UNEXPECTED:
     case net::ERR_FAILED:
       break;
     default:
-      DCHECK(false);
+      DCHECK(false) << "Error code not supported: " << error_code;
       break;
   }
   HeadersCompleted(status_code);
