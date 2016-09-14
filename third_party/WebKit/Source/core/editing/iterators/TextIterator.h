@@ -149,6 +149,10 @@ private:
 
     bool excludesAutofilledValue() const { return m_behavior & TextIteratorExcludeAutofilledValue; }
 
+    bool doesNotBreakAtReplacedElement() const { return m_behavior & TextIteratorDoesNotBreakAtReplacedElement; }
+
+    bool forInnerText() const { return m_behavior & TextIteratorForInnerText; }
+
     bool isBetweenSurrogatePair(int position) const;
 
     // Append code units with offset range [position, position + copyLength)

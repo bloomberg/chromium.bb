@@ -619,11 +619,12 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                                 ++subrunEnd;
                         }
                         // For leading space.
-                        if (m_textBox->root().prevRootBox() && m_textBox->root().firstChild() == m_textBox) {
+                        if (!emitsImageAltText() && !doesNotBreakAtReplacedElement() && !forInnerText()
+                            && m_textBox->root().prevRootBox() && m_textBox->root().firstChild() == m_textBox) {
                             InlineBox* lastChildOfPrevRoot = m_textBox->root().prevRootBox()->lastChild();
-                            if (!lastChildOfPrevRoot->isText() && !lastChildOfPrevRoot->getLineLayoutItem().isBR()
+                            if (m_textBox->getLineLayoutItem() != lastChildOfPrevRoot->getLineLayoutItem() && !lastChildOfPrevRoot->getLineLayoutItem().isBR()
                                 && !lastChildOfPrevRoot->isInlineFlowBox()) {
-                                if (runStart > 0 && str[0] == ' ')
+                                if (runStart > 0 && str[0] == ' ' && str[1] != ' ')
                                     --runStart;
                             }
                         }

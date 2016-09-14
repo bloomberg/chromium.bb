@@ -524,4 +524,13 @@ TEST_F(TextIteratorTest, EndingConditionWithDisplayNoneInShadowTree)
     EXPECT_TRUE(iter.atEnd());
 }
 
+TEST_F(TextIteratorTest, PreserveLeadingSpace)
+{
+    setBodyContent("<div style='width: 2em;'><b><i>foo</i></b> bar</div>");
+    Element* div = document().querySelector("div");
+    Position start(div->firstChild()->firstChild()->firstChild(), 0);
+    Position end(div->lastChild(), 4);
+    EXPECT_EQ("foo bar", plainText(EphemeralRange(start, end), TextIteratorEmitsImageAltText));
+}
+
 } // namespace blink
