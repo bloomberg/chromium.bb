@@ -48,14 +48,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   void Add(mojom::GpuServiceInternalRequest request);
 
-  gpu::GpuChannelManager* gpu_channel_manager() const {
-    return gpu_channel_manager_.get();
-  }
-
-  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
-    return gpu_memory_buffer_factory_;
-  }
-
   // TODO(sad): These should be mojom API.
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
@@ -75,12 +67,8 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                      gpu::GpuWatchdogThread* watchdog,
                      gpu::GpuMemoryBufferFactory* memory_buffer_factory);
 
-  void EstablishGpuChannelInternal(int32_t client_id,
-                                   uint64_t client_tracing_id,
-                                   bool preempts,
-                                   bool allow_view_command_buffers,
-                                   bool allow_real_time_streams,
-                                   const EstablishGpuChannelCallback& callback);
+  void BindOnGpuThread(mojom::GpuServiceInternalRequest request);
+
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
       gfx::GpuMemoryBufferId id,
@@ -112,15 +100,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       uint64_t client_tracing_id,
       bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
-
-  void InitializeOnGpuThread(base::WaitableEvent* event);
-  void EstablishGpuChannelOnGpuThread(
-      int client_id,
-      uint64_t client_tracing_id,
-      bool preempts,
-      bool allow_view_command_buffers,
-      bool allow_real_time_streams,
-      mojo::ScopedMessagePipeHandle* channel_handle);
 
   // The main thread task runner.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
