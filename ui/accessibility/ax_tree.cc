@@ -243,8 +243,16 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
   if (!DeleteOldChildren(node, src.child_ids, update_state)) {
-    if (update_state->new_root)
-      DestroySubtree(update_state->new_root, update_state);
+    if (update_state->new_root) {
+      AXNode* old_root = root_;
+      root_ = nullptr;
+
+      DestroySubtree(old_root, update_state);
+      if (node != old_root &&
+          update_state->new_nodes.find(node) != update_state->new_nodes.end()) {
+        DestroySubtree(node, update_state);
+      }
+    }
     return false;
   }
 
@@ -261,7 +269,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     // DestroySubtree.
     AXNode* old_root = root_;
     root_ = node;
-    if (old_root)
+    if (old_root && old_root != node)
       DestroySubtree(old_root, update_state);
   }
 
