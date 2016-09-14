@@ -806,46 +806,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Taps the base page near the top.
-     */
-    private void tapBasePageToClosePanel() throws InterruptedException {
-        // TODO(pedrosimonetti): This is not reliable. Find a better approach.
-        // We use the far right side (x == 0.9f) to prevent simulating a tap on top of an
-        // existing long-press selection (the pins are a tap target). This might not work on RTL.
-        // We are using y == 0.35f because otherwise it will fail for long press cases.
-        // It might be better to get the position of the Panel and tap just about outside
-        // the Panel. I suspect some Flaky tests are caused by this problem (ones involving
-        // long press and trying to close with the bar peeking, with a long press selection
-        // established).
-        tapBasePage(0.9f, 0.35f);
-        waitForPanelToClose();
-    }
-
-    /**
-     * Taps the base page at the given x, y position.
-     */
-    private void tapBasePage(float x, float y) {
-        View root = getActivity().getWindow().getDecorView().getRootView();
-        x *= root.getWidth();
-        y *= root.getHeight();
-        TouchCommon.singleClickView(root, (int) x, (int) y);
-    }
-
-    /**
-     * Click various places to cause the panel to show, expand, then close.
+     * Click to cause the panel to show, tap the Bar to expand, then close.
      */
     private void clickToExpandAndClosePanel() throws InterruptedException, TimeoutException {
         clickWordNode("states");
-        tapBarToExpandAndClosePanel();
-        waitForSelectionDissolved();
-    }
-
-    /**
-     * Tap on the peeking Bar to expand the panel, then taps on the base page to close it.
-     */
-    private void tapBarToExpandAndClosePanel() throws InterruptedException {
         tapPeekingBarToExpandAndAssert();
-        tapBasePageToClosePanel();
+        closePanel();
+        waitForSelectionDissolved();
     }
 
     /**
@@ -1110,8 +1077,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertLoadedNormalPriorityUrl();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // tap the base page to close.
-        tapBasePageToClosePanel();
+        // close the panel.
+        closePanel();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
         assertNoContentViewCore();
     }
@@ -1736,7 +1703,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         pressAppMenuKey();
         assertAppMenuVisibility(false);
 
-        tapBasePageToClosePanel();
+        closePanel();
 
         pressAppMenuKey();
         assertAppMenuVisibility(true);
@@ -1902,7 +1869,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that ContextualSearchObserver gets notified when user brings up contextual search
-     * panel via long press and then dismisses the panel by tapping on the base page.
+     * panel via long press and when the panel is dismissed.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -1915,13 +1882,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         longPressNode("states");
         assertEquals(0, observer.hideCount);
 
-        tapBasePageToClosePanel();
+        closePanel();
         assertEquals(1, observer.hideCount);
     }
 
     /**
      * Tests that ContextualSearchObserver gets notified when user brings up contextual search
-     * panel via tap and then dismisses the panel by tapping on the base page.
+     * panel via tap and when the panel is dismissed.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -1932,7 +1899,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         clickWordNode("states");
         assertEquals(0, observer.hideCount);
 
-        tapBasePageToClosePanel();
+        closePanel();
         assertEquals(1, observer.hideCount);
     }
 
@@ -2155,7 +2122,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertFalse(mPanel.isPeekPromoVisible());
 
         // After closing the Panel the Promo should still be invisible.
-        tapBasePageToClosePanel();
+        closePanel();
         assertFalse(mPanel.isPeekPromoVisible());
 
         // Click elsewhere to clear the selection.
@@ -2189,7 +2156,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertContentViewCoreVisible();
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
     }
 
@@ -2212,7 +2179,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertContentViewCoreVisible();
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
     }
 
@@ -2246,7 +2213,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
     }
@@ -2282,7 +2249,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
     }
@@ -2321,7 +2288,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNotSame(cvc2, cvc3);
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
         assertEquals(3, mFakeServer.getLoadedUrlCount());
     }
@@ -2367,7 +2334,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNotSame(cvc1, cvc2);
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
         assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
@@ -2422,7 +2389,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         String url = mFakeServer.getLoadedUrl();
 
         // Close the Panel without seeing the Content.
-        tapBasePageToClosePanel();
+        closePanel();
 
         // Now check that the URL has been removed from history.
         assertTrue(mFakeServer.hasRemovedUrl(url));
@@ -2445,7 +2412,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         tapPeekingBarToExpandAndAssert();
 
         // Close the Panel.
-        tapBasePageToClosePanel();
+        closePanel();
 
         // Now check that the URL has not been removed from history, since the Content was seen.
         assertFalse(mFakeServer.hasRemovedUrl(url));
@@ -2480,7 +2447,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNotSame(url2, url3);
 
         // Close the Panel without seeing any Content.
-        tapBasePageToClosePanel();
+        closePanel();
 
         // Now check that all three URLs have been removed from history.
         assertEquals(3, mFakeServer.getLoadedUrlCount());
@@ -2598,15 +2565,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that Contextual Search works in fullscreen. Specifically, tests that tapping a word
-     * peeks the panel, expanding the bar results in the bar ending at the correct spot in the page
-     * and tapping the base page closes the panel.
+     * peeks the panel, expanding the bar results in the bar ending at the correct spot in the page.
      */
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTapContentAndExpandPanelInFullscreen()
             throws InterruptedException, TimeoutException {
-        // Toggle tab to fulllscreen.
+        // Toggle tab to fullscreen.
         FullscreenTestUtils.togglePersistentFullscreenAndAssert(getActivity().getActivityTab(),
                 true, getActivity());
 
@@ -2617,9 +2583,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         tapPeekingBarToExpandAndAssert();
         assertEquals(mManager.getContextualSearchPanel().getHeight(),
                 mManager.getContextualSearchPanel().getPanelHeightFromState(PanelState.EXPANDED));
-
-        // Tap the base page and assert that the panel is closed.
-        tapBasePageToClosePanel();
     }
 
     /**
