@@ -24,6 +24,7 @@ class ClipPaintPropertyNode;
 class EffectPaintPropertyNode;
 class FloatRect;
 class PaintArtifact;
+class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 
 // Useful for quickly making a paint artifact in unit tests.
@@ -45,7 +46,7 @@ public:
     ~TestPaintArtifact();
 
     // Add to the artifact.
-    TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>, PassRefPtr<ClipPaintPropertyNode>, PassRefPtr<EffectPaintPropertyNode>);
+    TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>, PassRefPtr<ClipPaintPropertyNode>, PassRefPtr<EffectPaintPropertyNode>, PassRefPtr<ScrollPaintPropertyNode> = nullptr);
     TestPaintArtifact& chunk(const PaintChunkProperties&);
     TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
     TestPaintArtifact& foreignLayer(const FloatPoint&, const IntSize&, scoped_refptr<cc::Layer>);

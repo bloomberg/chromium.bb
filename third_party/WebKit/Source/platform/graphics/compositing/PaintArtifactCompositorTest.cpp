@@ -12,10 +12,12 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/testing/PictureMatchers.h"
 #include "platform/testing/TestPaintArtifact.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
@@ -535,6 +537,81 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion)
     EXPECT_EQ(convertedEffect2.id, contentLayerAt(0)->effect_tree_index());
     EXPECT_EQ(convertedEffect1.id, contentLayerAt(1)->effect_tree_index());
     EXPECT_EQ(convertedEffect3.id, contentLayerAt(2)->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode)
+{
+    RefPtr<TransformPaintPropertyNode> scrollTranslation = TransformPaintPropertyNode::create(
+        nullptr, TransformationMatrix().translate(7, 9), FloatPoint3D());
+    RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
+        nullptr, scrollTranslation, IntSize(11, 13), IntSize(27, 31), true, false);
+
+    TestPaintArtifact artifact;
+    artifact.chunk(scrollTranslation, nullptr, nullptr, scroll)
+        .rectDrawing(FloatRect(11, 13, 17, 19), Color::white);
+    update(artifact.build());
+
+    const cc::ScrollTree& scrollTree = propertyTrees().scroll_tree;
+    // Node #0 reserved for null; #1 for root render surface.
+    ASSERT_EQ(3u, scrollTree.size());
+    const cc::ScrollNode& scrollNode = *scrollTree.Node(2);
+    EXPECT_EQ(gfx::Size(11, 13), scrollNode.scroll_clip_layer_bounds);
+    EXPECT_EQ(gfx::Size(27, 31), scrollNode.bounds);
+    EXPECT_TRUE(scrollNode.user_scrollable_horizontal);
+    EXPECT_FALSE(scrollNode.user_scrollable_vertical);
+    EXPECT_EQ(1, scrollNode.parent_id);
+
+    const cc::TransformTree& transformTree = propertyTrees().transform_tree;
+    const cc::TransformNode& transformNode = *transformTree.Node(scrollNode.transform_id);
+    EXPECT_TRUE(transformNode.local.IsIdentity());
+
+    EXPECT_EQ(gfx::ScrollOffset(-7, -9), scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes)
+{
+    RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(dummyRootEffect(), 0.5);
+
+    RefPtr<TransformPaintPropertyNode> scrollTranslationA = TransformPaintPropertyNode::create(
+        nullptr, TransformationMatrix().translate(11, 13), FloatPoint3D());
+    RefPtr<ScrollPaintPropertyNode> scrollA = ScrollPaintPropertyNode::create(
+        nullptr, scrollTranslationA, IntSize(2, 3), IntSize(5, 7), false, true);
+    RefPtr<TransformPaintPropertyNode> scrollTranslationB = TransformPaintPropertyNode::create(
+        scrollTranslationA, TransformationMatrix().translate(37, 41), FloatPoint3D());
+    RefPtr<ScrollPaintPropertyNode> scrollB = ScrollPaintPropertyNode::create(
+        scrollA, scrollTranslationB, IntSize(19, 23), IntSize(29, 31), true, false);
+
+    TestPaintArtifact artifact;
+    artifact.chunk(scrollTranslationA, nullptr, effect, scrollA)
+        .rectDrawing(FloatRect(7, 11, 13, 17), Color::white);
+    artifact.chunk(scrollTranslationB, nullptr, effect, scrollB)
+        .rectDrawing(FloatRect(1, 2, 3, 5), Color::white);
+    update(artifact.build());
+
+    const cc::ScrollTree& scrollTree = propertyTrees().scroll_tree;
+    // Node #0 reserved for null; #1 for root render surface.
+    ASSERT_EQ(4u, scrollTree.size());
+    const cc::ScrollNode& scrollNodeA = *scrollTree.Node(2);
+    EXPECT_EQ(gfx::Size(2, 3), scrollNodeA.scroll_clip_layer_bounds);
+    EXPECT_EQ(gfx::Size(5, 7), scrollNodeA.bounds);
+    EXPECT_FALSE(scrollNodeA.user_scrollable_horizontal);
+    EXPECT_TRUE(scrollNodeA.user_scrollable_vertical);
+    EXPECT_EQ(1, scrollNodeA.parent_id);
+    const cc::ScrollNode& scrollNodeB = *scrollTree.Node(3);
+    EXPECT_EQ(gfx::Size(19, 23), scrollNodeB.scroll_clip_layer_bounds);
+    EXPECT_EQ(gfx::Size(29, 31), scrollNodeB.bounds);
+    EXPECT_TRUE(scrollNodeB.user_scrollable_horizontal);
+    EXPECT_FALSE(scrollNodeB.user_scrollable_vertical);
+    EXPECT_EQ(scrollNodeA.id, scrollNodeB.parent_id);
+
+    const cc::TransformTree& transformTree = propertyTrees().transform_tree;
+    const cc::TransformNode& transformNodeA = *transformTree.Node(scrollNodeA.transform_id);
+    EXPECT_TRUE(transformNodeA.local.IsIdentity());
+    const cc::TransformNode& transformNodeB = *transformTree.Node(scrollNodeB.transform_id);
+    EXPECT_TRUE(transformNodeB.local.IsIdentity());
+
+    EXPECT_EQ(gfx::ScrollOffset(-11, -13), scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
+    EXPECT_EQ(gfx::ScrollOffset(-37, -41), scrollTree.current_scroll_offset(contentLayerAt(1)->id()));
 }
 
 } // namespace

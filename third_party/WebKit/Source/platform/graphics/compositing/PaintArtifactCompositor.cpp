@@ -15,6 +15,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -23,6 +24,7 @@
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -140,8 +142,9 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArt
     return layer;
 }
 
-
+// cc's property trees use 0 for the root node (always non-null).
 constexpr int kRealRootNodeId = 0;
+// cc allocates special nodes for root effects such as the device scale.
 constexpr int kSecondaryRootNodeId = 1;
 constexpr int kPropertyTreeSequenceNumber = 1;
 
@@ -175,6 +178,10 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
 
     cc::ScrollTree& scrollTree = propertyTrees->scroll_tree;
     scrollTree.clear();
+    cc::ScrollNode& scrollNode = *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
+    DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
+    scrollNode.owner_id = ownerId;
+    scrollNode.transform_id = kRealRootNodeId;
 }
 
 } // namespace
@@ -225,6 +232,10 @@ public:
     int compositorIdForClipNode(const ClipPaintPropertyNode*);
     int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
     int compositorIdForCurrentEffectNode() const { return m_effectStack.last().id; }
+    int compositorIdForScrollNode(const ScrollPaintPropertyNode*);
+
+    // Scroll offset has special treatment in the transform and scroll trees.
+    void updateScrollOffset(int layerId, int scrollId);
 
 private:
     void buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect);
@@ -232,6 +243,7 @@ private:
     cc::TransformTree& transformTree() { return m_propertyTrees.transform_tree; }
     cc::ClipTree& clipTree() { return m_propertyTrees.clip_tree; }
     cc::EffectTree& effectTree() { return m_propertyTrees.effect_tree; }
+    cc::ScrollTree& scrollTree() { return m_propertyTrees.scroll_tree; }
 
     const EffectPaintPropertyNode* currentEffectNode() const { return m_effectStack.last().effect; }
 
@@ -245,6 +257,7 @@ private:
     // Maps from Blink-side property tree nodes to cc property node indices.
     HashMap<const TransformPaintPropertyNode*, int> m_transformNodeMap;
     HashMap<const ClipPaintPropertyNode*, int> m_clipNodeMap;
+    HashMap<const ScrollPaintPropertyNode*, int> m_scrollNodeMap;
 
     struct BlinkEffectAndCcIdPair {
         const EffectPaintPropertyNode* effect;
@@ -340,6 +353,55 @@ int PropertyTreeManager::compositorIdForClipNode(const ClipPaintPropertyNode* cl
     DCHECK(result.isNewEntry);
     clipTree().set_needs_update(true);
     return id;
+}
+
+int PropertyTreeManager::compositorIdForScrollNode(const ScrollPaintPropertyNode* scrollNode)
+{
+    if (!scrollNode)
+        return kSecondaryRootNodeId;
+
+    auto it = m_scrollNodeMap.find(scrollNode);
+    if (it != m_scrollNodeMap.end())
+        return it->value;
+
+    int parentId = compositorIdForScrollNode(scrollNode->parent());
+    int id = scrollTree().Insert(cc::ScrollNode(), parentId);
+
+    cc::ScrollNode& compositorNode = *scrollTree().Node(id);
+    compositorNode.owner_id = parentId;
+
+    compositorNode.scrollable = true;
+
+    // TODO(pdr): Set main thread scrolling reasons.
+    compositorNode.scroll_clip_layer_bounds.SetSize(scrollNode->clip().width(), scrollNode->clip().height());
+    compositorNode.bounds.SetSize(scrollNode->bounds().width(), scrollNode->bounds().height());
+    compositorNode.user_scrollable_horizontal = scrollNode->userScrollableHorizontal();
+    compositorNode.user_scrollable_vertical = scrollNode->userScrollableVertical();
+    compositorNode.transform_id = compositorIdForTransformNode(scrollNode->scrollOffsetTranslation());
+
+    auto result = m_scrollNodeMap.set(scrollNode, id);
+    DCHECK(result.isNewEntry);
+    scrollTree().set_needs_update(true);
+
+    return id;
+}
+
+void PropertyTreeManager::updateScrollOffset(int layerId, int scrollId)
+{
+    cc::ScrollNode& scrollNode = *scrollTree().Node(scrollId);
+    cc::TransformNode& transformNode = *transformTree().Node(scrollNode.transform_id);
+
+    transformNode.scrolls = true;
+
+    // Blink creates a 2d transform node just for scroll offset whereas cc's
+    // transform node has a special scroll offset field. To handle this we
+    // adjust cc's transform node to remove the 2d scroll translation and
+    // let the cc scroll tree update the cc scroll offset.
+    DCHECK(transformNode.local.IsIdentityOr2DTranslation());
+    auto offset = transformNode.local.To2dTranslation();
+    transformNode.local.MakeIdentity();
+    scrollTree().SetScrollOffset(layerId, gfx::ScrollOffset(-offset.x(), -offset.y()));
+    scrollTree().set_needs_update(true);
 }
 
 unsigned depth(const EffectPaintPropertyNode* node)
@@ -461,8 +523,11 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
 
         int transformId = propertyTreeManager.compositorIdForTransformNode(paintChunk.properties.transform.get());
+        int scrollId = propertyTreeManager.compositorIdForScrollNode(paintChunk.properties.scroll.get());
         int clipId = propertyTreeManager.compositorIdForClipNode(paintChunk.properties.clip.get());
         int effectId = propertyTreeManager.switchToEffectNode(*paintChunk.properties.effect.get());
+
+        propertyTreeManager.updateScrollOffset(layer->id(), scrollId);
 
         layer->set_offset_to_transform_parent(layerOffset);
 
@@ -471,7 +536,7 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         layer->SetTransformTreeIndex(transformId);
         layer->SetClipTreeIndex(clipId);
         layer->SetEffectTreeIndex(effectId);
-        layer->SetScrollTreeIndex(kRealRootNodeId);
+        layer->SetScrollTreeIndex(scrollId);
 
         // TODO(jbroman): This probably shouldn't be necessary, but it is still
         // queried by RenderSurfaceImpl.
