@@ -1177,7 +1177,7 @@ class SiteConfig(dict):
       overrides['_template'] = args[0]['_template']
 
     if '_template' in overrides:
-      assert overrides['_template'] in self.GetTemplates(), \
+      assert overrides['_template'] in self.templates, \
           '%s inherits from non-template' % (name,)
 
     result = self.GetDefault().derive(*inherits, **overrides)
@@ -1262,7 +1262,7 @@ class SiteConfig(dict):
       args: See the docstring of BuildConfig.derive.
       kwargs: See the docstring of BuildConfig.derive.
     """
-    kwargs['_template'] = name
+    kwargs.setdefault('_template', name)
 
     if args:
       cfg = args[0].derive(*args[1:], **kwargs)

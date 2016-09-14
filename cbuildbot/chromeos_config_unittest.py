@@ -846,12 +846,6 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
 class TemplateTest(GenerateChromeosConfigTestBase):
   """Tests for templates."""
 
-  def testTemplatesUsed(self):
-    """Test that all templates are used."""
-    templates_used = set(cfg['_template'] for cfg in self.all_configs.values())
-    templates = set([None] + self.all_configs.GetTemplates().keys())
-    self.assertEqual(templates, templates_used)
-
   def testConfigNamesMatchTemplate(self):
     """Test that all configs have names that match their templates."""
     for name, config in self.all_configs.iteritems():

@@ -220,68 +220,6 @@
             ],
             "vm_tests_override": null
         },
-        "cheets_release": {
-            "_template": "cheets_release",
-            "afdo_use": true,
-            "archive_build_debug": true,
-            "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
-            "binhost_bucket": "gs://chromeos-dev-installer",
-            "binhost_key": "RELEASE_BINHOST",
-            "build_timeout": 28200,
-            "build_type": "canary",
-            "chrome_sdk": true,
-            "chromeos_official": true,
-            "description": "Cheets release builders",
-            "dev_installer_prebuilts": true,
-            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
-            "hw_tests": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
-            ],
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
-            "hwqual": true,
-            "image_test": true,
-            "images": [
-                "base",
-                "recovery",
-                "test",
-                "factory_install"
-            ],
-            "internal": true,
-            "manifest": "official.xml",
-            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": true,
-            "overlays": "both",
-            "paygen": true,
-            "push_image": true,
-            "sign_types": [
-                "recovery"
-            ],
-            "signer_tests": true,
-            "trybot_list": true,
-            "upload_symbols": true,
-            "useflags": [
-                "-cros-debug",
-                "chrome_internal"
-            ],
-            "usepkg_build_packages": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ]
-        },
         "chrome_perf": {
             "_template": "chrome_perf",
             "build_type": "chrome",
@@ -440,7 +378,8 @@
             "build_type": "chrome",
             "chrome_rev": "latest_release",
             "chrome_sdk": true,
-            "description": "Preflight Chromium Uprev & Build (public)",
+            "description": "Preflight Chromium Uprev & Build (internal)",
+            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -448,8 +387,11 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
             "important": true,
+            "internal": true,
+            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
-            "overlays": "public",
+            "overlays": "both",
+            "prebuilts": "public",
             "unittests": false,
             "uprev": false,
             "vm_tests": [
@@ -821,71 +763,6 @@
             "usepkg_build_packages": true,
             "vm_tests": [],
             "vm_tests_override": null
-        },
-        "moblab_release": {
-            "_template": "moblab_release",
-            "afdo_use": false,
-            "archive_build_debug": true,
-            "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
-            "binhost_bucket": "gs://chromeos-dev-installer",
-            "binhost_key": "RELEASE_BINHOST",
-            "build_timeout": 28200,
-            "build_type": "canary",
-            "chrome_sdk": true,
-            "chromeos_official": true,
-            "description": "Moblab release builders",
-            "dev_installer_prebuilts": true,
-            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
-            "hw_tests": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
-            ],
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
-            "hwqual": true,
-            "image_test": true,
-            "images": [
-                "base",
-                "recovery",
-                "test"
-            ],
-            "important": false,
-            "internal": true,
-            "manifest": "official.xml",
-            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": true,
-            "overlays": "both",
-            "paygen": true,
-            "paygen_skip_delta_payloads": true,
-            "paygen_skip_testing": true,
-            "push_image": true,
-            "sign_types": [
-                "recovery"
-            ],
-            "signer_tests": false,
-            "trybot_list": true,
-            "upload_symbols": true,
-            "useflags": [
-                "-cros-debug",
-                "chrome_internal"
-            ],
-            "usepkg_build_packages": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ]
         },
         "no_vmtest_pre_cq": {
             "_template": "no_vmtest_pre_cq",
@@ -1440,13 +1317,7 @@
         "boards": [
             "amd64-generic"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public"
+        "disk_layout": "2gb-rootfs"
     },
     "amd64-generic-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -1478,13 +1349,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -1801,13 +1666,7 @@
         "boards": [
             "amenia"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -1989,13 +1848,7 @@
             "arkham"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -2187,12 +2040,6 @@
         "boards": [
             "arm-generic"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -2278,12 +2125,6 @@
         "boards": [
             "arm-generic_freon"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -2432,13 +2273,7 @@
         "boards": [
             "arm64-generic"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -2561,13 +2396,7 @@
         "boards": [
             "arm64-llvmpipe"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -2652,13 +2481,7 @@
         "boards": [
             "asuka"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -2852,13 +2675,7 @@
         "boards": [
             "auron"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3076,13 +2893,7 @@
         "boards": [
             "auron_paine"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3262,13 +3073,7 @@
         "boards": [
             "auron_yuna"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3451,13 +3256,7 @@
         "boards": [
             "banjo"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3675,13 +3474,7 @@
         "boards": [
             "banon"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3876,13 +3669,7 @@
         "boards": [
             "beaglebone"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -4104,13 +3891,7 @@
         "boards": [
             "beaglebone_servo"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -4362,13 +4143,7 @@
         "boards": [
             "buddy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4551,13 +4326,7 @@
         "boards": [
             "butterfly"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4752,13 +4521,7 @@
         "boards": [
             "candy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4977,13 +4740,7 @@
         "boards": [
             "cave"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -5197,13 +4954,7 @@
         "boards": [
             "celes-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -5285,13 +5036,18 @@
         "vm_tests": []
     },
     "celes-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "celes-cheets"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -5396,13 +5152,7 @@
         "boards": [
             "celes"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -5586,13 +5336,7 @@
         "boards": [
             "chell-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -5674,13 +5418,18 @@
         "vm_tests": []
     },
     "chell-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "chell-cheets"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -5785,13 +5534,7 @@
         "boards": [
             "chell"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -6012,13 +5755,7 @@
         "boards": [
             "cid"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -6196,13 +5933,7 @@
         "boards": [
             "clapper"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -6428,13 +6159,7 @@
         "boards": [
             "cranky"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -6635,13 +6360,7 @@
         "boards": [
             "cyan"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -6891,12 +6610,6 @@
         "boards": [
             "daisy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -7140,13 +6853,7 @@
         "boards": [
             "daisy_skate"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -7363,13 +7070,7 @@
         "boards": [
             "daisy_spring"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -7583,13 +7284,7 @@
         "boards": [
             "edgar"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -7784,13 +7479,7 @@
         "boards": [
             "elm-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -7873,9 +7562,14 @@
         "vm_tests": []
     },
     "elm-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "boards": [
             "elm-cheets"
+        ],
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -7982,13 +7676,7 @@
         "boards": [
             "elm"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -8193,13 +7881,7 @@
         "boards": [
             "enguarde"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8417,13 +8099,7 @@
         "boards": [
             "expresso"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8670,13 +8346,7 @@
         "boards": [
             "falco"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8894,13 +8564,7 @@
         "boards": [
             "falco_li"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -9087,13 +8751,7 @@
             "gale"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -9276,13 +8934,7 @@
         "boards": [
             "gandof"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -9480,13 +9132,7 @@
         "boards": [
             "glados-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -9568,13 +9214,18 @@
         "vm_tests": []
     },
     "glados-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "glados-cheets"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -9679,13 +9330,7 @@
         "boards": [
             "glados"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -9889,13 +9534,7 @@
         "boards": [
             "glimmer-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -9977,13 +9616,18 @@
         "vm_tests": []
     },
     "glimmer-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "glimmer-cheets"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -10088,13 +9732,7 @@
         "boards": [
             "glimmer"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10312,13 +9950,7 @@
         "boards": [
             "gnawty"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10537,13 +10169,7 @@
         "boards": [
             "gru"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -10744,13 +10370,7 @@
         "boards": [
             "guado"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10933,13 +10553,7 @@
         "boards": [
             "guado_labstation"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11123,13 +10737,7 @@
         "boards": [
             "guado_moblab"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -11218,12 +10826,27 @@
         "vm_tests": []
     },
     "guado_moblab-release": {
-        "_template": "moblab_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
+        "afdo_use": false,
         "boards": [
             "guado_moblab"
         ],
+        "description": "Moblab release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
+        "paygen_skip_delta_payloads": true,
+        "paygen_skip_testing": true,
+        "signer_tests": false,
         "vm_tests": []
     },
     "guado_moblab-release-afdo": {
@@ -11335,13 +10958,7 @@
         "boards": [
             "heli"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11548,13 +11165,7 @@
         "boards": [
             "jecht"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11769,13 +11380,7 @@
         "boards": [
             "kefka"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -12056,13 +11661,7 @@
         "boards": [
             "kevin"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -12263,13 +11862,7 @@
         "boards": [
             "kevin-tpm2"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -12484,13 +12077,7 @@
         "boards": [
             "kip"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -12708,13 +12295,7 @@
         "boards": [
             "kunimitsu"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -12926,17 +12507,11 @@
             "lakitu"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
         "disk_layout": "base",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -13213,17 +12788,11 @@
             "lakitu_next"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
         "disk_layout": "base",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -13490,13 +13059,7 @@
         "boards": [
             "lars"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -13690,13 +13253,7 @@
         "boards": [
             "leon"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -13914,13 +13471,7 @@
         "boards": [
             "link"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -14144,13 +13695,7 @@
         "boards": [
             "lulu-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -14232,13 +13777,18 @@
         "vm_tests": []
     },
     "lulu-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "lulu-cheets"
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14344,13 +13894,7 @@
         "boards": [
             "lulu"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -14571,13 +14115,7 @@
         "boards": [
             "lumpy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -14810,18 +14348,12 @@
         "binhost_test": true,
         "boards": [],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
             "tree",
             "chrome"
         ],
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "master": true,
-        "overlays": "both",
-        "prebuilts": "public",
         "push_overlays": "both"
     },
     "master-paladin": {
@@ -14894,13 +14426,7 @@
         "boards": [
             "mccloud"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -15268,13 +14794,7 @@
         "boards": [
             "monroe"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -15468,13 +14988,7 @@
         "boards": [
             "ninja"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -15693,13 +15207,7 @@
         "boards": [
             "nyan"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -15927,13 +15435,7 @@
         "boards": [
             "nyan_big"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -16134,13 +15636,7 @@
         "boards": [
             "nyan_blaze"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -16343,13 +15839,7 @@
         "boards": [
             "nyan_freon"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -16549,13 +16039,7 @@
         "boards": [
             "nyan_kitty"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -16758,13 +16242,7 @@
         "boards": [
             "oak-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -16846,9 +16324,14 @@
         "vm_tests": []
     },
     "oak-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "boards": [
             "oak-cheets"
+        ],
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -16955,13 +16438,7 @@
         "boards": [
             "oak"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -17162,13 +16639,7 @@
         "boards": [
             "orco"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17386,13 +16857,7 @@
         "boards": [
             "panther"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17600,13 +17065,7 @@
         "boards": [
             "parrot"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17806,13 +17265,7 @@
         "boards": [
             "parrot_ivb"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17995,13 +17448,7 @@
         "boards": [
             "parry"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -18214,13 +17661,7 @@
         "boards": [
             "pbody"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -18414,13 +17855,7 @@
         "boards": [
             "peach_pi"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -18639,13 +18074,7 @@
         "boards": [
             "peach_pit"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -18863,13 +18292,7 @@
         "boards": [
             "peppy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19100,13 +18523,7 @@
             "purin"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -19275,13 +18692,7 @@
         "boards": [
             "quawks"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19499,13 +18910,7 @@
         "boards": [
             "rambi"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19726,13 +19131,7 @@
         "boards": [
             "reef"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -19932,13 +19331,7 @@
         "boards": [
             "reks"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -20132,13 +19525,7 @@
         "boards": [
             "relm"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -20332,13 +19719,7 @@
         "boards": [
             "rikku"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -20575,13 +19956,7 @@
         "boards": [
             "samus"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -20834,13 +20209,7 @@
         "boards": [
             "sentry"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -21034,13 +20403,7 @@
         "boards": [
             "setzer"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -21234,13 +20597,7 @@
         "boards": [
             "slippy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -21430,13 +20787,7 @@
         "boards": [
             "smaug-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -21518,10 +20869,15 @@
         "vm_tests": []
     },
     "smaug-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [
             "smaug-cheets"
+        ],
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -21631,16 +20987,10 @@
         "boards": [
             "smaug"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -21708,13 +21058,7 @@
         "boards": [
             "smaug-kasan"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -22132,13 +21476,7 @@
         "boards": [
             "squawks"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22360,13 +21698,7 @@
             "storm"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -22549,13 +21881,7 @@
         "boards": [
             "stout"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22748,13 +22074,7 @@
         "boards": [
             "strago"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22969,13 +22289,7 @@
         "boards": [
             "stumpy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23178,13 +22492,7 @@
         "boards": [
             "sumo"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23402,13 +22710,7 @@
         "boards": [
             "swanky"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23632,13 +22934,7 @@
         "boards": [
             "terra"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23864,13 +23160,7 @@
         "boards": [
             "tidus"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -24058,13 +23348,7 @@
         "boards": [
             "tricky"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -24251,13 +23535,7 @@
         "boards": [
             "ultima"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -24440,13 +23718,7 @@
         "boards": [
             "umaro"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -24630,13 +23902,7 @@
         "boards": [
             "veyron_fievel"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -24838,13 +24104,7 @@
         "boards": [
             "veyron_jaq"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -25048,12 +24308,6 @@
         "boards": [
             "veyron_jerry"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -25270,13 +24524,7 @@
         "boards": [
             "veyron_mickey"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -25478,13 +24726,7 @@
         "boards": [
             "veyron_mighty"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -25708,13 +24950,7 @@
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -25796,9 +25032,14 @@
         "vm_tests": []
     },
     "veyron_minnie-cheets-release": {
-        "_template": "cheets_release",
+        "_template": "release",
         "boards": [
             "veyron_minnie-cheets"
+        ],
+        "description": "Cheets release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -25909,13 +25150,7 @@
         "boards": [
             "veyron_minnie"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -26121,13 +25356,7 @@
         "boards": [
             "veyron_pinky"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -26328,13 +25557,7 @@
         "boards": [
             "veyron_rialto"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -26537,13 +25760,7 @@
         "boards": [
             "veyron_shark"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -26745,13 +25962,7 @@
         "boards": [
             "veyron_speedy"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -26971,13 +26182,7 @@
         "boards": [
             "veyron_tiger"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -27182,13 +26387,7 @@
             "whirlwind"
         ],
         "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -27369,13 +26568,7 @@
         "boards": [
             "winky"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27606,13 +26799,7 @@
         "boards": [
             "wizpig"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27795,13 +26982,7 @@
         "boards": [
             "wolf"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28013,13 +27194,7 @@
         "boards": [
             "x32-generic"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ],
@@ -28114,13 +27289,7 @@
         "boards": [
             "x86-alex"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28306,13 +27475,7 @@
         "boards": [
             "x86-alex_he"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28544,12 +27707,6 @@
         "boards": [
             "x86-generic"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28713,13 +27870,7 @@
         "boards": [
             "x86-mario"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28936,13 +28087,7 @@
         "boards": [
             "x86-zgb"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -29128,13 +28273,7 @@
         "boards": [
             "x86-zgb_he"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
@@ -29317,13 +28456,7 @@
         "boards": [
             "zako"
         ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
         "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
         ]
