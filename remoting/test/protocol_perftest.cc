@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <numeric>
 #include <utility>
 
 #include "base/base64.h"
@@ -24,14 +25,14 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/codec/video_decoder_verbatim.h"
-#include "remoting/codec/video_decoder_vpx.h"
+#include "remoting/client/software_video_renderer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/frame_consumer.h"
+#include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/session_config.h"
@@ -86,24 +87,14 @@ class FakeCursorShapeStub : public protocol::CursorShapeStub {
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override{};
 };
 
-std::unique_ptr<webrtc::DesktopFrame> DoDecodeFrame(
-    VideoDecoder* decoder,
-    VideoPacket* packet,
-    std::unique_ptr<webrtc::DesktopFrame> frame) {
-  if (!decoder->DecodePacket(*packet, frame.get()))
-    frame.reset();
-  return frame;
-}
-
 }  // namespace
 
 class ProtocolPerfTest
     : public testing::Test,
       public testing::WithParamInterface<NetworkPerformanceParams>,
       public ClientUserInterface,
-      public protocol::VideoRenderer,
-      public protocol::VideoStub,
       public protocol::FrameConsumer,
+      public protocol::FrameStatsConsumer,
       public HostStatusObserver {
  public:
   ProtocolPerfTest()
@@ -149,50 +140,6 @@ class ProtocolPerfTest
     return &cursor_shape_stub_;
   }
 
-  // VideoRenderer interface.
-  bool Initialize(const ClientContext& client_context,
-                  protocol::FrameStatsConsumer* stats_consumer) override {
-    return true;
-  }
-  void OnSessionConfig(const protocol::SessionConfig& config) override {}
-  protocol::VideoStub* GetVideoStub() override { return this; }
-  protocol::FrameConsumer* GetFrameConsumer() override { return this; }
-  protocol::FrameStatsConsumer* GetFrameStatsConsumer() override {
-    return nullptr;
-  }
-
-  // protocol::VideoStub interface.
-  void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
-                          const base::Closure& done) override {
-    if (packet->data().empty()) {
-      // Ignore keep-alive packets
-      done.Run();
-      return;
-    }
-
-    if (packet->format().has_screen_width() &&
-        packet->format().has_screen_height()) {
-      frame_size_.set(packet->format().screen_width(),
-                      packet->format().screen_height());
-    }
-
-    std::unique_ptr<webrtc::DesktopFrame> frame(
-        new webrtc::BasicDesktopFrame(frame_size_));
-    base::PostTaskAndReplyWithResult(
-        decode_thread_.task_runner().get(), FROM_HERE,
-        base::Bind(&DoDecodeFrame, video_decoder_.get(), packet.get(),
-                   base::Passed(&frame)),
-        base::Bind(&ProtocolPerfTest::OnFrameDecoded, base::Unretained(this),
-                   base::Passed(&packet), done));
-  }
-
-  void OnFrameDecoded(std::unique_ptr<VideoPacket> packet,
-                      const base::Closure& done,
-                      std::unique_ptr<webrtc::DesktopFrame> frame) {
-    last_video_packet_ = std::move(packet);
-    DrawFrame(std::move(frame), done);
-  }
-
   // protocol::FrameConsumer interface.
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override {
@@ -210,6 +157,16 @@ class ProtocolPerfTest
 
   protocol::FrameConsumer::PixelFormat GetPixelFormat() override {
     return FORMAT_BGRA;
+  }
+
+  // FrameStatsConsumer interface.
+  void OnVideoFrameStats(const protocol::FrameStats& frame_stats) override {
+    frame_stats_.push_back(frame_stats);
+
+    if (waiting_frame_stats_loop_ &&
+        frame_stats_.size() >= num_expected_frame_stats_) {
+      waiting_frame_stats_loop_->Quit();
+    }
   }
 
   // HostStatusObserver interface.
@@ -242,45 +199,27 @@ class ProtocolPerfTest
     waiting_frames_loop_.reset(new base::RunLoop());
     on_frame_task_ = waiting_frames_loop_->QuitClosure();
     waiting_frames_loop_->Run();
+    waiting_frames_loop_.reset();
 
     EXPECT_TRUE(last_video_frame_);
     return std::move(last_video_frame_);
   }
 
-  void ReceiveFrameAndGetLatency(base::TimeDelta* latency) {
-    last_video_packet_.reset();
+  void WaitFrameStats(int num_frames) {
+    num_expected_frame_stats_ = num_frames;
 
-    ReceiveFrame();
+    waiting_frame_stats_loop_.reset(new base::RunLoop());
+    waiting_frame_stats_loop_->Run();
+    waiting_frame_stats_loop_.reset();
 
-    if (latency) {
-      base::TimeTicks timestamp =
-          base::TimeTicks::FromInternalValue(last_video_packet_->timestamp());
-      *latency = base::TimeTicks::Now() - timestamp;
-    }
-  }
-
-  void ReceiveMultipleFramesAndGetMaxLatency(int frames,
-                                             base::TimeDelta* max_latency) {
-    if (max_latency)
-      *max_latency = base::TimeDelta();
-
-    for (int i = 0; i < frames; ++i) {
-      base::TimeDelta latency;
-
-      ReceiveFrameAndGetLatency(&latency);
-
-      if (max_latency && latency > *max_latency) {
-        *max_latency = latency;
-      }
-    }
+    EXPECT_GE(frame_stats_.size(), num_expected_frame_stats_);
   }
 
   // Creates test host and client and starts connection between them. Caller
   // should call WaitConnected() to wait until connection is established. The
   // host is started on |host_thread_| while the client works on the main
   // thread.
-  void StartHostAndClient(bool use_webrtc,
-                          protocol::ChannelConfig::Codec video_codec) {
+  void StartHostAndClient(bool use_webrtc) {
     fake_network_dispatcher_ =  new FakeNetworkDispatcher();
 
     client_signaling_.reset(new FakeSignalStrategy(kClientJid));
@@ -289,23 +228,8 @@ class ProtocolPerfTest
 
     protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
     protocol_config_->DisableAudioChannel();
-    protocol_config_->mutable_video_configs()->clear();
-    protocol_config_->mutable_video_configs()->push_back(
-        protocol::ChannelConfig(
-            protocol::ChannelConfig::TRANSPORT_STREAM, 2, video_codec));
     protocol_config_->set_webrtc_supported(use_webrtc);
     protocol_config_->set_ice_supported(!use_webrtc);
-
-    switch (video_codec) {
-      case ChannelConfig::CODEC_VERBATIM:
-        video_decoder_.reset(new VideoDecoderVerbatim());
-        break;
-      case ChannelConfig::CODEC_VP8:
-        video_decoder_ = VideoDecoderVpx::CreateForVP8();
-        break;
-      default:
-        NOTREACHED();
-    }
 
     host_thread_.task_runner()->PostTask(
         FROM_HERE,
@@ -384,6 +308,7 @@ class ProtocolPerfTest
     // Initialize client.
     client_context_.reset(
         new ClientContext(base::ThreadTaskRunnerHandle::Get()));
+    client_context_->Start();
 
     std::unique_ptr<FakePortAllocatorFactory> port_allocator_factory(
         new FakePortAllocatorFactory(fake_network_dispatcher_));
@@ -403,8 +328,11 @@ class ProtocolPerfTest
     client_auth_config.fetch_secret_callback =
         base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this));
 
-    client_.reset(
-        new ChromotingClient(client_context_.get(), this, this, nullptr));
+    video_renderer_.reset(new SoftwareVideoRenderer(this));
+    video_renderer_->Initialize(*client_context_, this);
+
+    client_.reset(new ChromotingClient(client_context_.get(), this,
+                                       video_renderer_.get(), nullptr));
     client_->set_protocol_config(protocol_config_->Clone());
     client_->Start(client_signaling_.get(), client_auth_config,
                    transport_context, kHostJid, std::string());
@@ -438,12 +366,14 @@ class ProtocolPerfTest
 
   std::unique_ptr<ChromotingHost> host_;
   std::unique_ptr<ClientContext> client_context_;
+  std::unique_ptr<SoftwareVideoRenderer> video_renderer_;
   std::unique_ptr<ChromotingClient> client_;
-  webrtc::DesktopSize frame_size_;
-  std::unique_ptr<VideoDecoder> video_decoder_;
 
   std::unique_ptr<base::RunLoop> connecting_loop_;
   std::unique_ptr<base::RunLoop> waiting_frames_loop_;
+
+  std::unique_ptr<base::RunLoop> waiting_frame_stats_loop_;
+  size_t num_expected_frame_stats_;
 
   bool client_connected_;
   bool host_connected_;
@@ -452,6 +382,7 @@ class ProtocolPerfTest
 
   std::unique_ptr<VideoPacket> last_video_packet_;
   std::unique_ptr<webrtc::DesktopFrame> last_video_frame_;
+  std::vector<protocol::FrameStats> frame_stats_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);
@@ -489,23 +420,6 @@ INSTANTIATE_TEST_CASE_P(
         // 800 kBps
         NetworkPerformanceParams(100000, 30000, 130, 5, 0.01),
         NetworkPerformanceParams(100000, 200000, 130, 5, 0.01)));
-
-TEST_P(ProtocolPerfTest, StreamFrameRate) {
-  StartHostAndClient(false, protocol::ChannelConfig::CODEC_VP8);
-  ASSERT_NO_FATAL_FAILURE(WaitConnected());
-
-  base::TimeDelta latency;
-
-  ReceiveFrameAndGetLatency(&latency);
-  LOG(INFO) << "First frame latency: " << latency.InMillisecondsF() << "ms";
-  ReceiveMultipleFramesAndGetMaxLatency(20, nullptr);
-
-  base::TimeTicks started = base::TimeTicks::Now();
-  ReceiveMultipleFramesAndGetMaxLatency(40, &latency);
-  base::TimeDelta elapsed = base::TimeTicks::Now() - started;
-  LOG(INFO) << "Frame rate: " << (40.0 / elapsed.InSecondsF());
-  LOG(INFO) << "Maximum latency: " << latency.InMillisecondsF() << "ms";
-}
 
 const int kIntermittentFrameSize = 100 * 1000;
 
@@ -550,39 +464,6 @@ class IntermittentChangeFrameGenerator
   DISALLOW_COPY_AND_ASSIGN(IntermittentChangeFrameGenerator);
 };
 
-TEST_P(ProtocolPerfTest, IntermittentChanges) {
-  desktop_environment_factory_.set_frame_generator(
-      base::Bind(&IntermittentChangeFrameGenerator::GenerateFrame,
-                 new IntermittentChangeFrameGenerator()));
-
-  StartHostAndClient(false, protocol::ChannelConfig::CODEC_VERBATIM);
-  ASSERT_NO_FATAL_FAILURE(WaitConnected());
-
-  ReceiveFrameAndGetLatency(nullptr);
-
-  base::TimeDelta expected = GetParam().latency_average;
-  if (GetParam().bandwidth > 0) {
-    expected += base::TimeDelta::FromSecondsD(kIntermittentFrameSize /
-                                              GetParam().bandwidth);
-  }
-  LOG(INFO) << "Expected: " << expected.InMillisecondsF() << "ms";
-
-  base::TimeDelta sum;
-
-  const int kFrames = 5;
-  for (int i = 0; i < kFrames; ++i) {
-    base::TimeDelta latency;
-    ReceiveFrameAndGetLatency(&latency);
-    LOG(INFO) << "Latency: " << latency.InMillisecondsF()
-              << "ms Encode: " << last_video_packet_->encode_time_ms()
-              << "ms Capture: " << last_video_packet_->capture_time_ms()
-              << "ms";
-    sum += latency;
-  }
-
-  LOG(INFO) << "Average: " << (sum / kFrames).InMillisecondsF();
-}
-
 // TotalLatency[Ice|Webrtc] tests measure video latency in the case when the
 // whole screen is updated occasionally. It's intended to simulate the case when
 // user actions (e.g. Alt-Tab, click on the task bar) cause whole screen to be
@@ -595,7 +476,7 @@ void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
   desktop_environment_factory_.set_frame_generator(
       base::Bind(&test::CyclicFrameGenerator::GenerateFrame, frame_generator));
 
-  StartHostAndClient(use_webrtc, protocol::ChannelConfig::CODEC_VP8);
+  StartHostAndClient(use_webrtc);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
 
   int skipped_frames = 0;
@@ -662,32 +543,48 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
   desktop_environment_factory_.set_frame_generator(
       base::Bind(&test::ScrollFrameGenerator::GenerateFrame, frame_generator));
 
-  StartHostAndClient(use_webrtc, protocol::ChannelConfig::CODEC_VP8);
+  StartHostAndClient(use_webrtc);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
+
+  int warm_up_frames = 0;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   const base::TimeDelta kWarmUpTime = base::TimeDelta::FromSeconds(2);
   while ((base::TimeTicks::Now() - start_time) < kWarmUpTime) {
     ReceiveFrame();
+    ++warm_up_frames;
   }
 
   // Run the test for 2 seconds.
   const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(2);
 
   int num_frames = 0;
-  base::TimeDelta total_latency;
+  base::TimeDelta latency_sum;
   start_time = base::TimeTicks::Now();
   while ((base::TimeTicks::Now() - start_time) < kTestTime) {
     std::unique_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
     ++num_frames;
-    total_latency += frame_generator->GetFrameLatency(*frame);
+    latency_sum += frame_generator->GetFrameLatency(*frame);
   }
 
-  VLOG(0) << "FPS: "
-          << num_frames / (base::TimeTicks::Now() - start_time).InSecondsF();
+  base::TimeDelta total_time = (base::TimeTicks::Now() - start_time);
 
-  VLOG(0) << "Average latency: "
-          << (total_latency).InMillisecondsF() / num_frames;
+  WaitFrameStats(warm_up_frames + num_frames);
+
+  int total_size =
+      std::accumulate(frame_stats_.begin() + warm_up_frames,
+                      frame_stats_.begin() + warm_up_frames + num_frames, 0,
+                      [](int sum, const protocol::FrameStats& stats) {
+                        return sum + stats.host_stats.frame_size;
+                      });
+
+  VLOG(0) << "FPS: " << num_frames / total_time.InSecondsF();
+  VLOG(0) << "Average latency: " << latency_sum.InMillisecondsF() / num_frames
+          << " ms";
+  VLOG(0) << "Total size: " << total_size << " bytes";
+  VLOG(0) << "Bandwidth utilization: "
+          << 100 * total_size / (total_time.InSecondsF() * GetParam().bandwidth)
+          << "%";
 }
 
 TEST_P(ProtocolPerfTest, ScrollPerformanceIce) {
