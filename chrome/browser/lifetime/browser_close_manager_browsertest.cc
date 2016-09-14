@@ -832,7 +832,7 @@ class BrowserCloseManagerWithDownloadsBrowserTest :
   }
 
   const base::FilePath& download_path() const {
-    return scoped_download_directory_.path();
+    return scoped_download_directory_.GetPath();
   }
 
  private:

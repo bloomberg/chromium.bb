@@ -174,7 +174,7 @@ class ThumbnailDatabaseTest : public testing::Test {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_name_ = temp_dir_.path().AppendASCII("TestFavicons.db");
+    file_name_ = temp_dir_.GetPath().AppendASCII("TestFavicons.db");
   }
 
   base::ScopedTempDir temp_dir_;

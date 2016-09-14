@@ -21,7 +21,7 @@ class FirefoxProfileLockTest : public testing::Test {
 };
 
 TEST_F(FirefoxProfileLockTest, LockTest) {
-  FirefoxProfileLock lock1(temp_dir_.path());
+  FirefoxProfileLock lock1(temp_dir_.GetPath());
   ASSERT_TRUE(lock1.HasAcquired());
   lock1.Unlock();
   ASSERT_FALSE(lock1.HasAcquired());
@@ -32,7 +32,7 @@ TEST_F(FirefoxProfileLockTest, LockTest) {
 // Tests basic functionality and verifies that the lock file is deleted after
 // use.
 TEST_F(FirefoxProfileLockTest, ProfileLock) {
-  base::FilePath test_path = temp_dir_.path();
+  base::FilePath test_path = temp_dir_.GetPath();
   base::FilePath lock_file_path =
       test_path.Append(FirefoxProfileLock::kLockFileName);
 
@@ -65,7 +65,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
 // If for some reason the lock file is left behind by the previous owner, we
 // should still be able to lock it, at least in the Windows implementation.
 TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
-  base::FilePath test_path = temp_dir_.path();
+  base::FilePath test_path = temp_dir_.GetPath();
   base::FilePath lock_file_path =
       test_path.Append(FirefoxProfileLock::kLockFileName);
 
@@ -88,7 +88,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 #if !defined(OS_POSIX)
 // Tests two locks contending for the same lock file.
 TEST_F(FirefoxProfileLockTest, ProfileLockContention) {
-  base::FilePath test_path = temp_dir_.path();
+  base::FilePath test_path = temp_dir_.GetPath();
 
   std::unique_ptr<FirefoxProfileLock> lock1;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock1.get());

@@ -34,7 +34,7 @@ class UrlsSQLHandlerTest : public testing::Test {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath history_db_name =
-        temp_dir_.path().AppendASCII(kHistoryFilename);
+        temp_dir_.GetPath().AppendASCII(kHistoryFilename);
     ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name));
   }
 

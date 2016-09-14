@@ -58,7 +58,7 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
     encryption_provider_.reset(new GCMEncryptionProvider);
-    encryption_provider_->Init(scoped_temp_dir_.path(),
+    encryption_provider_->Init(scoped_temp_dir_.GetPath(),
                                message_loop_.task_runner());
   }
 

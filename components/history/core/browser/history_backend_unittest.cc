@@ -3556,8 +3556,8 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   std::unique_ptr<HistoryService> service(
       new HistoryService(base::WrapUnique(new HistoryClientFakeBookmarks),
                          std::unique_ptr<history::VisitDelegate>()));
-  EXPECT_TRUE(
-      service->Init(TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
+  EXPECT_TRUE(service->Init(
+      TestHistoryDatabaseParamsForPath(scoped_temp_dir.GetPath())));
 
   service->AddPage(
       url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),

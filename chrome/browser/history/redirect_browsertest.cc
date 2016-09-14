@@ -136,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
-                                             &temp_file));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file));
   ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
             base::WriteFile(temp_file,
                             file_redirect_contents.data(),

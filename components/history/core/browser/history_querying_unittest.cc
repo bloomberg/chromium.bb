@@ -162,7 +162,7 @@ class HistoryQueryTest : public testing::Test {
  private:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
+    history_dir_ = temp_dir_.GetPath().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     history_.reset(new HistoryService);

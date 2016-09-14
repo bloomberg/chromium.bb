@@ -46,7 +46,7 @@ class URLDatabaseTest : public testing::Test,
   // Test setup.
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath db_file = temp_dir_.path().AppendASCII("URLTest.db");
+    base::FilePath db_file = temp_dir_.GetPath().AppendASCII("URLTest.db");
 
     EXPECT_TRUE(db_.Open(db_file));
 

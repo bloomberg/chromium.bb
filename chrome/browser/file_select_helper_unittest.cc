@@ -63,7 +63,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
   base::CommandLine cl(base::FilePath("/usr/bin/unzip"));
   cl.AppendArg(dest.value().c_str());
   cl.AppendArg("-d");
-  cl.AppendArg(temp_dir.path().value().c_str());
+  cl.AppendArg(temp_dir.GetPath().value().c_str());
   std::string output;
   EXPECT_TRUE(base::GetAppOutput(cl, &output));
 
@@ -76,7 +76,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
     const char* relative_path = files_to_verify[i];
     base::FilePath orig_file = src.Append(relative_path);
     base::FilePath final_file =
-        temp_dir.path().Append(app_name).Append(relative_path);
+        temp_dir.GetPath().Append(app_name).Append(relative_path);
     EXPECT_TRUE(base::ContentsEqual(orig_file, final_file));
   }
 }

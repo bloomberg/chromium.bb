@@ -268,7 +268,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     // Creates a new profile in a new subdirectory in the temp directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
+    base::FilePath test_path = temp_dir_.GetPath().AppendASCII("ImporterTest");
     base::DeleteFile(test_path, true);
     base::CreateDirectory(test_path);
     profile_path_ = test_path.AppendASCII("profile");

@@ -440,7 +440,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   db->Init(
-      kTestLevelDBClientName, temp_dir.path(),
+      kTestLevelDBClientName, temp_dir.GetPath(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   db.reset();
@@ -468,7 +468,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   db->Init(
-      kTestLevelDBClientName, temp_dir.path(),
+      kTestLevelDBClientName, temp_dir.GetPath(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(caller, DestroyCallback(_));
@@ -502,12 +502,12 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
   }
 
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
-  EXPECT_TRUE(db->Init(temp_dir.path()));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath()));
   EXPECT_TRUE(db->Save(save_entries, remove_keys));
 
   if (close_after_save) {
     db.reset(new LevelDB(kTestLevelDBClientName));
-    EXPECT_TRUE(db->Init(temp_dir.path()));
+    EXPECT_TRUE(db->Init(temp_dir.GetPath()));
   }
 
   EXPECT_TRUE(db->Load(&load_entries));
@@ -543,7 +543,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   std::vector<std::string> load_entries;
   KeyVector remove_keys;
 
-  EXPECT_FALSE(db->InitWithOptions(temp_dir.path(), options));
+  EXPECT_FALSE(db->InitWithOptions(temp_dir.GetPath(), options));
   EXPECT_FALSE(db->Load(&load_entries));
   EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }

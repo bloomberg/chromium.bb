@@ -40,7 +40,7 @@ void FileSystemImpl::OpenTempDirectory(
   std::unique_ptr<base::ScopedTempDir> temp_dir(new base::ScopedTempDir);
   CHECK(temp_dir->CreateUniqueTempDir());
 
-  base::FilePath path = temp_dir->path();
+  base::FilePath path = temp_dir->GetPath();
   scoped_refptr<SharedTempDir> shared_temp_dir =
       new SharedTempDir(std::move(temp_dir));
   mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(

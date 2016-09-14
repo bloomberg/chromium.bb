@@ -48,8 +48,8 @@ class GCMKeyStoreTest : public ::testing::Test {
   // Creates the GCM Key Store instance. May be called from within a test's body
   // to re-create the key store, causing the database to re-open.
   void CreateKeyStore() {
-    gcm_key_store_.reset(
-        new GCMKeyStore(scoped_temp_dir_.path(), message_loop_.task_runner()));
+    gcm_key_store_.reset(new GCMKeyStore(scoped_temp_dir_.GetPath(),
+                                         message_loop_.task_runner()));
   }
 
   // Callback to use with GCMKeyStore::{GetKeys, CreateKeys} calls.

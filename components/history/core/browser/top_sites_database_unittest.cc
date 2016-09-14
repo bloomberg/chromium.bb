@@ -68,7 +68,7 @@ class TopSitesDatabaseTest : public testing::Test {
   void SetUp() override {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_name_ = temp_dir_.path().AppendASCII("TestTopSites.db");
+    file_name_ = temp_dir_.GetPath().AppendASCII("TestTopSites.db");
   }
 
   base::ScopedTempDir temp_dir_;

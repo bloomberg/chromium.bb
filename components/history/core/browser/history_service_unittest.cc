@@ -66,7 +66,7 @@ class HistoryServiceTest : public testing::Test {
   // testing::Test
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    history_dir_ = temp_dir_.path().AppendASCII("HistoryServiceTest");
+    history_dir_ = temp_dir_.GetPath().AppendASCII("HistoryServiceTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new history::HistoryService);
     if (!history_service_->Init(

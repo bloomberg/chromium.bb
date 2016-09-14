@@ -364,14 +364,14 @@ class GCMClientImplTest : public testing::Test,
   }
 
   const base::FilePath& temp_directory_path() const {
-    return temp_directory_.path();
+    return temp_directory_.GetPath();
   }
 
   base::FilePath gcm_store_path() const {
     // Pass an non-existent directory as store path to match the exact
     // behavior in the production code. Currently GCMStoreImpl checks if
     // the directory exist or not to determine the store existence.
-    return temp_directory_.path().Append(FILE_PATH_LITERAL("GCM Store"));
+    return temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store"));
   }
 
   int64_t CurrentTime();

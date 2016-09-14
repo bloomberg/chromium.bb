@@ -145,7 +145,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     history_service_.reset(
         new HistoryService(nullptr, std::unique_ptr<VisitDelegate>()));
     ASSERT_TRUE(history_service_->Init(
-        TestHistoryDatabaseParamsForPath(scoped_temp_dir_.path())));
+        TestHistoryDatabaseParamsForPath(scoped_temp_dir_.GetPath())));
     ResetTopSites();
     WaitTopSitesLoaded();
   }
@@ -316,7 +316,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     top_sites_impl_ = new TopSitesImpl(
         pref_service_.get(), history_service_.get(),
         prepopulated_pages, base::Bind(MockCanAddURLToHistory));
-    top_sites_impl_->Init(scoped_temp_dir_.path().Append(kTopSitesFilename),
+    top_sites_impl_->Init(scoped_temp_dir_.GetPath().Append(kTopSitesFilename),
                           message_loop_.task_runner());
   }
 

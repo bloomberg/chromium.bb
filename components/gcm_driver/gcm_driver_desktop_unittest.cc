@@ -244,7 +244,7 @@ void GCMDriverTest::CreateDriver() {
       std::unique_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
       chrome_build_info, "http://channel.status.request.url",
-      "user-agent-string", &prefs_, temp_dir_.path(), request_context,
+      "user-agent-string", &prefs_, temp_dir_.GetPath(), request_context,
       base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
       message_loop_.task_runner()));
 

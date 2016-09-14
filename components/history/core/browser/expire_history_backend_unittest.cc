@@ -91,7 +91,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   static bool IsStringInFile(const base::FilePath& filename, const char* str);
 
   // Returns the path the db files are created in.
-  const base::FilePath& path() const { return tmp_dir_.path(); }
+  const base::FilePath& path() const { return tmp_dir_.GetPath(); }
 
   // This must be destroyed last.
   base::ScopedTempDir tmp_dir_;

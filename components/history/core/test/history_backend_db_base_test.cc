@@ -71,7 +71,7 @@ HistoryBackendDBBaseTest::~HistoryBackendDBBaseTest() {
 
 void HistoryBackendDBBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendDBBaseTest");
+  history_dir_ = temp_dir_.GetPath().AppendASCII("HistoryBackendDBBaseTest");
   ASSERT_TRUE(base::CreateDirectory(history_dir_));
 }
 
