@@ -7,6 +7,8 @@
 
 #include "chrome/installer/setup/install_worker.h"
 
+#include <windows.h>  // NOLINT
+#include <atlsecurity.h>
 #include <oaidl.h>
 #include <shlobj.h>
 #include <stddef.h>
@@ -32,7 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/app_launcher_installer.h"
 #include "chrome/installer/setup/install.h"
-#include "chrome/installer/setup/installer_metrics.h"
+#include "chrome/installer/setup/persistent_histogram_storage.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -389,6 +391,55 @@ void AddCleanupDelegateExecuteWorkItems(const InstallerState& installer_state,
     list->AddDeleteRegKeyWorkItem(root, delegate_execute_path, KEY_WOW64_32KEY);
     list->AddDeleteRegKeyWorkItem(root, delegate_execute_path, KEY_WOW64_64KEY);
   }
+}
+
+// Add to the ACL of an object on disk. This follows the method from MSDN:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa379283.aspx
+// This is done using explicit flags rather than the "security string" format
+// because strings do not necessarily read what is written which makes it
+// difficult to de-dup. Working with the binary format is always exact and the
+// system libraries will properly ignore duplicate ACL entries.
+bool AddAclToPath(const base::FilePath& path,
+                  const CSid& trustee,
+                  ACCESS_MASK access_mask,
+                  BYTE ace_flags) {
+  DCHECK(!path.empty());
+  DCHECK(trustee);
+
+  // Get the existing DACL.
+  ATL::CDacl dacl;
+  if (!ATL::AtlGetDacl(path.value().c_str(), SE_FILE_OBJECT, &dacl)) {
+    DPLOG(ERROR) << "Failed getting DACL for path \"" << path.value() << "\"";
+    return false;
+  }
+
+  // Check if the requested access already exists and return if so.
+  for (UINT i = 0; i < dacl.GetAceCount(); ++i) {
+    ATL::CSid sid;
+    ACCESS_MASK mask = 0;
+    BYTE type = 0;
+    BYTE flags = 0;
+    dacl.GetAclEntry(i, &sid, &mask, &type, &flags);
+    if (sid == trustee && type == ACCESS_ALLOWED_ACE_TYPE &&
+        (flags & ace_flags) == ace_flags &&
+        (mask & access_mask) == access_mask) {
+      return true;
+    }
+  }
+
+  // Add the new access to the DACL.
+  if (!dacl.AddAllowedAce(trustee, access_mask, ace_flags)) {
+    DPLOG(ERROR) << "Failed adding ACE to DACL";
+    return false;
+  }
+
+  // Attach the updated ACL as the object's DACL.
+  if (!ATL::AtlSetDacl(path.value().c_str(), SE_FILE_OBJECT, dacl)) {
+    DPLOG(ERROR) << "Failed setting DACL for path \"" << path.value() << "\"";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -1041,8 +1092,25 @@ void AddInstallWorkItems(const InstallationState& original_state,
   install_list->AddCreateDirWorkItem(target_path);
 
   // Create the directory in which persistent metrics will be stored.
-  install_list->AddCreateDirWorkItem(
-      GetPersistentHistogramStorageDir(target_path));
+  const base::FilePath histogram_storage_dir(
+      PersistentHistogramStorage::GetReportedStorageDir(target_path));
+  install_list->AddCreateDirWorkItem(histogram_storage_dir);
+
+  if (installer_state.system_install()) {
+    WorkItem* add_acl_to_histogram_storage_dir_work_item =
+        install_list->AddCallbackWorkItem(base::Bind(
+            [](const base::FilePath& histogram_storage_dir,
+               const CallbackWorkItem& work_item) {
+              DCHECK(!work_item.IsRollback());
+              return AddAclToPath(histogram_storage_dir,
+                                  ATL::Sids::AuthenticatedUser(),
+                                  FILE_GENERIC_READ | FILE_DELETE_CHILD,
+                                  CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
+            },
+            histogram_storage_dir));
+    add_acl_to_histogram_storage_dir_work_item->set_best_effort(true);
+    add_acl_to_histogram_storage_dir_work_item->set_rollback_enabled(false);
+  }
 
   if (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) ||
       installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES)) {
