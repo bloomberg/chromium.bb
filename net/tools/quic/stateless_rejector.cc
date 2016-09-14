@@ -19,12 +19,11 @@ class StatelessRejector::ValidateCallback
 
   ~ValidateCallback() override {}
 
-  void RunImpl(const CryptoHandshakeMessage& client_hello,
-               const Result& result,
-               std::unique_ptr<ProofSource::Details> /* proof_source_details */)
+  void Run(std::unique_ptr<Result> result,
+           std::unique_ptr<ProofSource::Details> /* proof_source_details */)
       override {
     StatelessRejector* rejector_ptr = rejector_.get();
-    rejector_ptr->ProcessClientHello(client_hello, result, std::move(rejector_),
+    rejector_ptr->ProcessClientHello(*result, std::move(rejector_),
                                      std::move(cb_));
   }
 
@@ -93,11 +92,11 @@ void StatelessRejector::Process(std::unique_ptr<StatelessRejector> rejector,
       rejector_ptr->chlo_, rejector_ptr->client_address_.address(),
       rejector_ptr->server_address_.address(), rejector_ptr->version_,
       rejector_ptr->clock_, &rejector_ptr->proof_,
-      new ValidateCallback(std::move(rejector), std::move(cb)));
+      std::unique_ptr<ValidateCallback>(
+          new ValidateCallback(std::move(rejector), std::move(cb))));
 }
 
 void StatelessRejector::ProcessClientHello(
-    const CryptoHandshakeMessage& client_hello,
     const ValidateClientHelloResultCallback::Result& result,
     std::unique_ptr<StatelessRejector> rejector,
     std::unique_ptr<StatelessRejector::ProcessDoneCallback> cb) {

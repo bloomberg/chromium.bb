@@ -69,7 +69,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // SetDiversificationNonce sets the nonce that will be sent in each public
   // header of packets encrypted at the initial encryption level. Should only
   // be called by servers.
-  void SetDiversificationNonce(const DiversificationNonce nonce);
+  void SetDiversificationNonce(const DiversificationNonce& nonce);
 
   // Update the packet number length to use in future packets as soon as it
   // can be safely changed.

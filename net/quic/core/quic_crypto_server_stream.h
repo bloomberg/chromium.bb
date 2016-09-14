@@ -125,7 +125,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
 
  protected:
   virtual QuicErrorCode ProcessClientHello(
-      const CryptoHandshakeMessage& message,
       const ValidateClientHelloResultCallback::Result& result,
       std::unique_ptr<ProofSource::Details> proof_source_details,
       CryptoHandshakeMessage* reply,
@@ -147,9 +146,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
     void Cancel();
 
     // From ValidateClientHelloResultCallback
-    void RunImpl(const CryptoHandshakeMessage& client_hello,
-                 const Result& result,
-                 std::unique_ptr<ProofSource::Details> details) override;
+    void Run(std::unique_ptr<Result> result,
+             std::unique_ptr<ProofSource::Details> details) override;
 
    private:
     QuicCryptoServerStream* parent_;
@@ -179,7 +177,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   // the client hello is complete.  Finishes processing of the client
   // hello message and handles handshake success/failure.
   void FinishProcessingHandshakeMessage(
-      const CryptoHandshakeMessage& message,
       const ValidateClientHelloResultCallback::Result& result,
       std::unique_ptr<ProofSource::Details> details);
 

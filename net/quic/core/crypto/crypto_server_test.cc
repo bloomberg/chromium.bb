@@ -201,9 +201,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
       *called_ = false;
     }
 
-    void RunImpl(const CryptoHandshakeMessage& client_hello,
-                 const Result& result,
-                 std::unique_ptr<ProofSource::Details> /* details */) override {
+    void Run(std::unique_ptr<Result> result,
+             std::unique_ptr<ProofSource::Details> /* details */) override {
       {
         // Ensure that the strike register client lock is not held.
         QuicCryptoServerConfigPeer peer(&test_->config_);
@@ -214,8 +213,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         base::AutoLock lock(*m);
       }
       ASSERT_FALSE(*called_);
-      test_->ProcessValidationResult(client_hello, result, should_succeed_,
-                                     error_substr_);
+      test_->ProcessValidationResult(*result, should_succeed_, error_substr_);
       *called_ = true;
     }
 
@@ -246,10 +244,11 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
     bool called = false;
     IPAddress server_ip;
-    config_.ValidateClientHello(message, client_address_.address(), server_ip,
-                                supported_versions_.front(), &clock_,
-                                &crypto_proof_,
-                                new ValidateCallback(this, true, "", &called));
+    config_.ValidateClientHello(
+        message, client_address_.address(), server_ip,
+        supported_versions_.front(), &clock_, &crypto_proof_,
+        std::unique_ptr<ValidateCallback>(
+            new ValidateCallback(this, true, "", &called)));
     EXPECT_TRUE(called);
   }
 
@@ -267,11 +266,11 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.address(), server_ip,
         supported_versions_.front(), &clock_, &crypto_proof_,
-        new ValidateCallback(this, false, error_substr, called));
+        std::unique_ptr<ValidateCallback>(
+            new ValidateCallback(this, false, error_substr, called)));
   }
 
-  void ProcessValidationResult(const CryptoHandshakeMessage& message,
-                               const ValidateCallback::Result& result,
+  void ProcessValidationResult(const ValidateCallback::Result& result,
                                bool should_succeed,
                                const char* error_substr) {
     IPAddress server_ip;
@@ -290,10 +289,10 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     if (should_succeed) {
       ASSERT_EQ(error, QUIC_NO_ERROR) << "Message failed with error "
                                       << error_details << ": "
-                                      << message.DebugString();
+                                      << result.client_hello.DebugString();
     } else {
       ASSERT_NE(error, QUIC_NO_ERROR) << "Message didn't fail: "
-                                      << message.DebugString();
+                                      << result.client_hello.DebugString();
 
       EXPECT_TRUE(error_details.find(error_substr) != string::npos)
           << error_substr << " not in " << error_details;
@@ -1182,9 +1181,10 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
 
   bool called = false;
   IPAddress server_ip;
-  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
-                              client_version_, &clock_, &crypto_proof_,
-                              new ValidateCallback(this, true, "", &called));
+  config_.ValidateClientHello(
+      msg, client_address_.address(), server_ip, client_version_, &clock_,
+      &crypto_proof_, std::unique_ptr<ValidateCallback>(
+                          new ValidateCallback(this, true, "", &called)));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(0u, out_.tag());
@@ -1198,9 +1198,10 @@ TEST_P(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(kSHLO, out_.tag());
 
   // Rejected if replayed.
-  config_.ValidateClientHello(msg, client_address_.address(), server_ip,
-                              client_version_, &clock_, &crypto_proof_,
-                              new ValidateCallback(this, true, "", &called));
+  config_.ValidateClientHello(
+      msg, client_address_.address(), server_ip, client_version_, &clock_,
+      &crypto_proof_, std::unique_ptr<ValidateCallback>(
+                          new ValidateCallback(this, true, "", &called)));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(1, strike_register_client_->PendingVerifications());

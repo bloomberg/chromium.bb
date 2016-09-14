@@ -106,10 +106,10 @@ void QuicPacketCreator::StopSendingVersion() {
 }
 
 void QuicPacketCreator::SetDiversificationNonce(
-    const DiversificationNonce nonce) {
+    const DiversificationNonce& nonce) {
   DCHECK(!have_diversification_nonce_);
   have_diversification_nonce_ = true;
-  memcpy(&diversification_nonce_, nonce, sizeof(diversification_nonce_));
+  diversification_nonce_ = nonce;
 }
 
 void QuicPacketCreator::UpdatePacketNumberLength(

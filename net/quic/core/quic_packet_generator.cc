@@ -264,7 +264,7 @@ void QuicPacketGenerator::StopSendingVersion() {
 }
 
 void QuicPacketGenerator::SetDiversificationNonce(
-    const DiversificationNonce nonce) {
+    const DiversificationNonce& nonce) {
   packet_creator_.SetDiversificationNonce(nonce);
 }
 

@@ -81,8 +81,11 @@ IPAddress DualstackIPAddress(const IPAddress& ip) {
 
 class ValidateClientHelloHelper {
  public:
-  ValidateClientHelloHelper(ValidateClientHelloResultCallback::Result* result,
-                            ValidateClientHelloResultCallback* done_cb)
+  // Note: stores pointers to unique_ptrs, and std::moves the unique_ptrs when
+  // ValidationComplete is called.
+  ValidateClientHelloHelper(
+      std::unique_ptr<ValidateClientHelloResultCallback::Result>* result,
+      std::unique_ptr<ValidateClientHelloResultCallback>* done_cb)
       : result_(result), done_cb_(done_cb) {}
 
   ~ValidateClientHelloHelper() {
@@ -94,9 +97,9 @@ class ValidateClientHelloHelper {
       QuicErrorCode error_code,
       const char* error_details,
       std::unique_ptr<ProofSource::Details> proof_source_details) {
-    result_->error_code = error_code;
-    result_->error_details = error_details;
-    done_cb_->Run(result_, std::move(proof_source_details));
+    (*result_)->error_code = error_code;
+    (*result_)->error_details = error_details;
+    (*done_cb_)->Run(std::move(*result_), std::move(proof_source_details));
     DetachCallback();
   }
 
@@ -106,8 +109,8 @@ class ValidateClientHelloHelper {
   }
 
  private:
-  ValidateClientHelloResultCallback::Result* result_;
-  ValidateClientHelloResultCallback* done_cb_;
+  std::unique_ptr<ValidateClientHelloResultCallback::Result>* result_;
+  std::unique_ptr<ValidateClientHelloResultCallback>* done_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloHelper);
 };
@@ -116,12 +119,12 @@ class VerifyNonceIsValidAndUniqueCallback
     : public StrikeRegisterClient::ResultCallback {
  public:
   VerifyNonceIsValidAndUniqueCallback(
-      ValidateClientHelloResultCallback::Result* result,
+      std::unique_ptr<ValidateClientHelloResultCallback::Result> result,
       std::unique_ptr<ProofSource::Details> proof_source_details,
-      ValidateClientHelloResultCallback* done_cb)
-      : result_(result),
+      std::unique_ptr<ValidateClientHelloResultCallback> done_cb)
+      : result_(std::move(result)),
         proof_source_details_(std::move(proof_source_details)),
-        done_cb_(done_cb) {}
+        done_cb_(std::move(done_cb)) {}
 
  protected:
   void RunImpl(bool nonce_is_valid_and_unique,
@@ -160,13 +163,13 @@ class VerifyNonceIsValidAndUniqueCallback
       }
       result_->info.reject_reasons.push_back(client_nonce_error);
     }
-    done_cb_->Run(result_, std::move(proof_source_details_));
+    done_cb_->Run(std::move(result_), std::move(proof_source_details_));
   }
 
  private:
-  ValidateClientHelloResultCallback::Result* result_;
+  std::unique_ptr<ValidateClientHelloResultCallback::Result> result_;
   std::unique_ptr<ProofSource::Details> proof_source_details_;
-  ValidateClientHelloResultCallback* done_cb_;
+  std::unique_ptr<ValidateClientHelloResultCallback> done_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VerifyNonceIsValidAndUniqueCallback);
 };
@@ -177,6 +180,8 @@ const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 ClientHelloInfo::ClientHelloInfo(const IPAddress& in_client_ip,
                                  QuicWallTime in_now)
     : client_ip(in_client_ip), now(in_now), valid_source_address_token(false) {}
+
+ClientHelloInfo::ClientHelloInfo(const ClientHelloInfo& other) = default;
 
 ClientHelloInfo::~ClientHelloInfo() {}
 
@@ -197,14 +202,6 @@ ValidateClientHelloResultCallback::Result::~Result() {}
 ValidateClientHelloResultCallback::ValidateClientHelloResultCallback() {}
 
 ValidateClientHelloResultCallback::~ValidateClientHelloResultCallback() {}
-
-void ValidateClientHelloResultCallback::Run(
-    const Result* result,
-    std::unique_ptr<ProofSource::Details> details) {
-  RunImpl(result->client_hello, *result, std::move(details));
-  delete result;
-  delete this;
-}
 
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
@@ -503,12 +500,12 @@ void QuicCryptoServerConfig::ValidateClientHello(
     QuicVersion version,
     const QuicClock* clock,
     QuicCryptoProof* crypto_proof,
-    ValidateClientHelloResultCallback* done_cb) const {
+    std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const {
   const QuicWallTime now(clock->WallNow());
 
-  ValidateClientHelloResultCallback::Result* result =
+  std::unique_ptr<ValidateClientHelloResultCallback::Result> result(
       new ValidateClientHelloResultCallback::Result(client_hello, client_ip,
-                                                    now);
+                                                    now));
 
   StringPiece requested_scid;
   client_hello.GetStringPiece(kSCID, &requested_scid);
@@ -547,9 +544,10 @@ void QuicCryptoServerConfig::ValidateClientHello(
       crypto_proof->cert_sct = "";
     }
     EvaluateClientHello(server_ip, version, primary_orbit, requested_config,
-                        primary_config, crypto_proof, result, done_cb);
+                        primary_config, crypto_proof, std::move(result),
+                        std::move(done_cb));
   } else {
-    done_cb->Run(result, nullptr /* proof_source_details */);
+    done_cb->Run(std::move(result), /* details = */ nullptr);
   }
 }
 
@@ -800,8 +798,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   CryptoUtils::Diversification diversification =
       CryptoUtils::Diversification::Never();
   if (version > QUIC_VERSION_32) {
-    rand->RandBytes(reinterpret_cast<char*>(out_diversification_nonce),
-                    sizeof(*out_diversification_nonce));
+    rand->RandBytes(out_diversification_nonce->data(),
+                    out_diversification_nonce->size());
     diversification =
         CryptoUtils::Diversification::Now(out_diversification_nonce);
   }
@@ -1003,8 +1001,9 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
       scoped_refptr<QuicCryptoServerConfig::Config> requested_config,
       scoped_refptr<QuicCryptoServerConfig::Config> primary_config,
       QuicCryptoProof* crypto_proof,
-      ValidateClientHelloResultCallback::Result* client_hello_state,
-      ValidateClientHelloResultCallback* done_cb)
+      std::unique_ptr<ValidateClientHelloResultCallback::Result>
+          client_hello_state,
+      std::unique_ptr<ValidateClientHelloResultCallback> done_cb)
       : config_(config),
         found_error_(found_error),
         server_ip_(server_ip),
@@ -1013,8 +1012,8 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
         requested_config_(std::move(requested_config)),
         primary_config_(std::move(primary_config)),
         crypto_proof_(crypto_proof),
-        client_hello_state_(client_hello_state),
-        done_cb_(done_cb) {}
+        client_hello_state_(std::move(client_hello_state)),
+        done_cb_(std::move(done_cb)) {}
 
   void Run(bool ok,
            const scoped_refptr<ProofSource::Chain>& chain,
@@ -1029,7 +1028,7 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
     config_.EvaluateClientHelloAfterGetProof(
         found_error_, server_ip_, version_, primary_orbit_, requested_config_,
         primary_config_, crypto_proof_, std::move(details), !ok,
-        client_hello_state_, done_cb_);
+        std::move(client_hello_state_), std::move(done_cb_));
   }
 
  private:
@@ -1041,8 +1040,9 @@ class EvaluateClientHelloCallback : public ProofSource::Callback {
   const scoped_refptr<QuicCryptoServerConfig::Config> requested_config_;
   const scoped_refptr<QuicCryptoServerConfig::Config> primary_config_;
   QuicCryptoProof* crypto_proof_;
-  ValidateClientHelloResultCallback::Result* client_hello_state_;
-  ValidateClientHelloResultCallback* done_cb_;
+  std::unique_ptr<ValidateClientHelloResultCallback::Result>
+      client_hello_state_;
+  std::unique_ptr<ValidateClientHelloResultCallback> done_cb_;
 };
 
 void QuicCryptoServerConfig::EvaluateClientHello(
@@ -1052,9 +1052,10 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     scoped_refptr<Config> requested_config,
     scoped_refptr<Config> primary_config,
     QuicCryptoProof* crypto_proof,
-    ValidateClientHelloResultCallback::Result* client_hello_state,
-    ValidateClientHelloResultCallback* done_cb) const {
-  ValidateClientHelloHelper helper(client_hello_state, done_cb);
+    std::unique_ptr<ValidateClientHelloResultCallback::Result>
+        client_hello_state,
+    std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const {
+  ValidateClientHelloHelper helper(&client_hello_state, &done_cb);
 
   const CryptoHandshakeMessage& client_hello = client_hello_state->client_hello;
   ClientHelloInfo* info = &(client_hello_state->info);
@@ -1132,7 +1133,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
           new EvaluateClientHelloCallback(
               *this, found_error, server_ip, version, primary_orbit,
               requested_config, primary_config, crypto_proof,
-              client_hello_state, done_cb));
+              std::move(client_hello_state), std::move(done_cb)));
       proof_source_->GetProof(server_ip, info->sni.as_string(),
                               serialized_config, version, chlo_hash,
                               std::move(cb));
@@ -1155,7 +1156,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   EvaluateClientHelloAfterGetProof(
       found_error, server_ip, version, primary_orbit, requested_config,
       primary_config, crypto_proof, nullptr /* proof_source_details */,
-      get_proof_failed, client_hello_state, done_cb);
+      get_proof_failed, std::move(client_hello_state), std::move(done_cb));
   helper.DetachCallback();
 }
 
@@ -1169,9 +1170,10 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     QuicCryptoProof* crypto_proof,
     std::unique_ptr<ProofSource::Details> proof_source_details,
     bool get_proof_failed,
-    ValidateClientHelloResultCallback::Result* client_hello_state,
-    ValidateClientHelloResultCallback* done_cb) const {
-  ValidateClientHelloHelper helper(client_hello_state, done_cb);
+    std::unique_ptr<ValidateClientHelloResultCallback::Result>
+        client_hello_state,
+    std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const {
+  ValidateClientHelloHelper helper(&client_hello_state, &done_cb);
   const CryptoHandshakeMessage& client_hello = client_hello_state->client_hello;
   ClientHelloInfo* info = &(client_hello_state->info);
 
@@ -1267,8 +1269,9 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
 
   strike_register_client->VerifyNonceIsValidAndUnique(
       info->client_nonce, info->now,
-      new VerifyNonceIsValidAndUniqueCallback(
-          client_hello_state, std::move(proof_source_details), done_cb));
+      new VerifyNonceIsValidAndUniqueCallback(std::move(client_hello_state),
+                                              std::move(proof_source_details),
+                                              std::move(done_cb)));
   helper.DetachCallback();
 }
 
@@ -1817,9 +1820,9 @@ void QuicCryptoServerConfig::set_enable_serving_sct(bool enable_serving_sct) {
 }
 
 void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
-    PrimaryConfigChangedCallback* cb) {
+    std::unique_ptr<PrimaryConfigChangedCallback> cb) {
   base::AutoLock locked(configs_lock_);
-  primary_config_changed_cb_.reset(cb);
+  primary_config_changed_cb_ = std::move(cb);
 }
 
 string QuicCryptoServerConfig::NewSourceAddressToken(

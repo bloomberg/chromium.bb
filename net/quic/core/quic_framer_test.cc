@@ -158,7 +158,7 @@ class TestDecrypter : public QuicDecrypter {
     QUIC_BUG << "should not be called";
     return false;
   }
-  bool SetDiversificationNonce(DiversificationNonce key) override {
+  bool SetDiversificationNonce(const DiversificationNonce& key) override {
     return true;
   }
   bool DecryptPacket(QuicPathId path_id,
@@ -1196,7 +1196,11 @@ TEST_P(QuicFramerTest, ReceivedPacketOnClosedPath) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
-  QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  if (FLAGS_quic_packet_numbers_largest_received) {
+    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
+  } else {
+    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  }
 
   // clang-format off
   unsigned char packet[] = {
@@ -1267,7 +1271,11 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
-  QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  if (FLAGS_quic_packet_numbers_largest_received) {
+    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
+  } else {
+    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  }
 
   // clang-format off
   unsigned char packet[] = {
@@ -1302,6 +1310,8 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
@@ -1338,7 +1348,11 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
-  QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  if (FLAGS_quic_packet_numbers_largest_received) {
+    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
+  } else {
+    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
+  }
 
   // clang-format off
   unsigned char packet[] = {
@@ -1373,6 +1387,8 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   EXPECT_FALSE(visitor_.header_->public_header.multipath_flag);
   EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
@@ -1406,6 +1422,69 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
         framer_.version() <= QUIC_VERSION_33 ? packet : packet_34, i,
         expected_error, QUIC_INVALID_PACKET_HEADER);
   }
+}
+
+TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
+  FLAGS_quic_packet_numbers_largest_received = true;
+  // Test the case when a packet is received from the past and future packet
+  // numbers are still calculated relative to the largest received packet.
+  QuicPacketHeader header;
+  header.public_header.connection_id = kConnectionId;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = false;
+  header.packet_number = kPacketNumber - 2;
+
+  QuicPaddingFrame padding_frame;
+  QuicFrames frames;
+  frames.push_back(QuicFrame(padding_frame));
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  QuicEncryptedPacket encrypted(data->data(), data->length(), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
+  EXPECT_EQ(kPacketNumber - 2, visitor_.header_->packet_number);
+
+  // Receive a 1 byte packet number.
+  header.packet_number = kPacketNumber;
+  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  data.reset(BuildDataPacket(header, frames));
+  QuicEncryptedPacket encrypted1(data->data(), data->length(), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted1));
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
+  EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
+
+  // Process a 2 byte packet number 256 packets ago.
+  header.packet_number = kPacketNumber - 256;
+  header.public_header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
+  data.reset(BuildDataPacket(header, frames));
+  QuicEncryptedPacket encrypted2(data->data(), data->length(), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted2));
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
+  EXPECT_EQ(kPacketNumber - 256, visitor_.header_->packet_number);
+
+  // Process another 1 byte packet number and ensure it works.
+  header.packet_number = kPacketNumber - 1;
+  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  data.reset(BuildDataPacket(header, frames));
+  QuicEncryptedPacket encrypted3(data->data(), data->length(), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted3));
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            visitor_.header_->public_header.packet_number_length);
+  EXPECT_EQ(kPacketNumber - 1, visitor_.header_->packet_number);
 }
 
 TEST_P(QuicFramerTest, InvalidPublicFlag) {

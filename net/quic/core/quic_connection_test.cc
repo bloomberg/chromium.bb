@@ -151,7 +151,7 @@ class TaggingDecrypter : public QuicDecrypter {
     return false;
   }
 
-  bool SetDiversificationNonce(DiversificationNonce key) override {
+  bool SetDiversificationNonce(const DiversificationNonce& key) override {
     return true;
   }
 
@@ -2642,61 +2642,6 @@ TEST_P(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
 
   connection_.RetransmitUnackedPackets(ALL_INITIAL_RETRANSMISSION);
-}
-
-TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilClientIsReady) {
-  FLAGS_quic_remove_obsolete_forward_secure = false;
-  // A TaggingEncrypter puts kTagSize copies of the given byte (0x02 here) at
-  // the end of the packet. We can test this to check which encrypter was used.
-  use_tagging_decrypter();
-  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(0x02));
-  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  SendAckPacketToPeer();
-  EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-
-  // Set a forward-secure encrypter but do not make it the default, and verify
-  // that it is not yet used.
-  connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                           new TaggingEncrypter(0x03));
-  SendAckPacketToPeer();
-  EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-
-  // Now simulate receipt of a forward-secure packet and verify that the
-  // forward-secure encrypter is now used.
-  connection_.OnDecryptedPacket(ENCRYPTION_FORWARD_SECURE);
-  SendAckPacketToPeer();
-  EXPECT_EQ(0x03030303u, writer_->final_bytes_of_last_packet());
-}
-
-TEST_P(QuicConnectionTest, DelayForwardSecureEncryptionUntilManyPacketSent) {
-  FLAGS_quic_remove_obsolete_forward_secure = false;
-  // Set a congestion window of 10 packets.
-  QuicPacketCount congestion_window = 10;
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillRepeatedly(Return(congestion_window * kDefaultMaxPacketSize));
-
-  // A TaggingEncrypter puts kTagSize copies of the given byte (0x02 here) at
-  // the end of the packet. We can test this to check which encrypter was used.
-  use_tagging_decrypter();
-  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(0x02));
-  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  SendAckPacketToPeer();
-  EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-
-  // Set a forward-secure encrypter but do not make it the default, and
-  // verify that it is not yet used.
-  connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                           new TaggingEncrypter(0x03));
-  SendAckPacketToPeer();
-  EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-
-  // Now send a packet "Far enough" after the encrypter was set and verify that
-  // the forward-secure encrypter is now used.
-  for (uint64_t i = 0; i < 3 * congestion_window - 1; ++i) {
-    EXPECT_EQ(0x02020202u, writer_->final_bytes_of_last_packet());
-    SendAckPacketToPeer();
-  }
-  EXPECT_EQ(0x03030303u, writer_->final_bytes_of_last_packet());
 }
 
 TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
@@ -5229,8 +5174,6 @@ TEST_P(QuicConnectionTest, AlwaysGetPacketTooLarge) {
 // Verify that if connection has no outstanding data, it notifies the send
 // algorithm after the write.
 TEST_P(QuicConnectionTest, SendDataAndBecomeApplicationLimited) {
-  FLAGS_quic_enable_app_limited_check = true;
-
   EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(1);
   {
     InSequence seq;
@@ -5247,8 +5190,6 @@ TEST_P(QuicConnectionTest, SendDataAndBecomeApplicationLimited) {
 // Verify that the connection does not become app-limited if there is
 // outstanding data to send after the write.
 TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedIfMoreDataAvailable) {
-  FLAGS_quic_enable_app_limited_check = true;
-
   EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
   {
     InSequence seq;
@@ -5263,8 +5204,6 @@ TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedIfMoreDataAvailable) {
 // Verify that the connection does not become app-limited after blocked write
 // even if there is outstanding data to send after the write.
 TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
-  FLAGS_quic_enable_app_limited_check = true;
-
   EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
   EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillRepeatedly(Return(true));
   BlockOnNextWrite();

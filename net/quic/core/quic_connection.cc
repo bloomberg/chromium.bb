@@ -199,8 +199,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       writer_(writer),
       owns_writer_(owns_writer),
       encryption_level_(ENCRYPTION_NONE),
-      has_forward_secure_encrypter_(false),
-      first_required_forward_secure_packet_(0),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
       connection_id_(connection_id),
@@ -636,13 +634,6 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   last_decrypted_packet_level_ = level;
   last_packet_decrypted_ = true;
-
-  // If this packet was foward-secure encrypted and the forward-secure encrypter
-  // is not being used, start using it.
-  if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
-      has_forward_secure_encrypter_ && level == ENCRYPTION_FORWARD_SECURE) {
-    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  }
 
   // Once the server receives a forward secure packet, the handshake is
   // confirmed.
@@ -1901,15 +1892,6 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
   }
 
   QuicUtils::ClearSerializedPacket(packet);
-  // If a forward-secure encrypter is available but is not being used and the
-  // next packet number is the first packet which requires
-  // forward security, start using the forward-secure encrypter.
-  if (!FLAGS_quic_remove_obsolete_forward_secure &&
-      encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
-      has_forward_secure_encrypter_ &&
-      packet->packet_number >= first_required_forward_secure_packet_ - 1) {
-    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  }
 }
 
 void QuicConnection::OnPingTimeout() {
@@ -1978,21 +1960,10 @@ void QuicConnection::OnRetransmissionTimeout() {
 void QuicConnection::SetEncrypter(EncryptionLevel level,
                                   QuicEncrypter* encrypter) {
   packet_generator_.SetEncrypter(level, encrypter);
-  if (!FLAGS_quic_remove_obsolete_forward_secure &&
-      level == ENCRYPTION_FORWARD_SECURE) {
-    has_forward_secure_encrypter_ = true;
-    first_required_forward_secure_packet_ =
-        packet_number_of_last_sent_packet_ +
-        // 3 times the current congestion window (in slow start) should cover
-        // about two full round trips worth of packets, which should be
-        // sufficient.
-        3 *
-            sent_packet_manager_->EstimateMaxPacketsInFlight(
-                max_packet_length());
-  }
 }
 
-void QuicConnection::SetDiversificationNonce(const DiversificationNonce nonce) {
+void QuicConnection::SetDiversificationNonce(
+    const DiversificationNonce& nonce) {
   DCHECK_EQ(Perspective::IS_SERVER, perspective_);
   packet_generator_.SetDiversificationNonce(nonce);
 }
@@ -2379,9 +2350,7 @@ QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
     //     pacing rate of the connection is 1 Gbps, and the pacer granularity is
     //     1 ms, the caller should send at least 125k bytes in order to not
     //     be marked as application-limited.
-    if (FLAGS_quic_enable_app_limited_check) {
-      connection_->CheckIfApplicationLimited();
-    }
+    connection_->CheckIfApplicationLimited();
   }
   DCHECK_EQ(already_in_batch_mode_,
             connection_->packet_generator_.InBatchMode());

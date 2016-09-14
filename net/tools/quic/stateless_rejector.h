@@ -76,7 +76,6 @@ class StatelessRejector {
   friend class ValidateCallback;
 
   void ProcessClientHello(
-      const CryptoHandshakeMessage& client_hello,
       const ValidateClientHelloResultCallback::Result& result,
       std::unique_ptr<StatelessRejector> rejector,
       std::unique_ptr<StatelessRejector::ProcessDoneCallback> cb);

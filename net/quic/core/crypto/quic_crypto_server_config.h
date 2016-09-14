@@ -49,6 +49,7 @@ struct QuicCryptoProof;
 // only kept for as long as it's being processed.
 struct ClientHelloInfo {
   ClientHelloInfo(const IPAddress& in_client_ip, QuicWallTime in_now);
+  ClientHelloInfo(const ClientHelloInfo& other);
   ~ClientHelloInfo();
 
   // Inputs to EvaluateClientHello.
@@ -88,7 +89,7 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
  public:
   // Opaque token that holds information about the client_hello and
   // its validity.  Can be interpreted by calling ProcessClientHello.
-  struct Result {
+  struct NET_EXPORT_PRIVATE Result {
     Result(const CryptoHandshakeMessage& in_client_hello,
            IPAddress in_client_ip,
            QuicWallTime in_now);
@@ -105,12 +106,8 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
 
   ValidateClientHelloResultCallback();
   virtual ~ValidateClientHelloResultCallback();
-  void Run(const Result* result, std::unique_ptr<ProofSource::Details> details);
-
- protected:
-  virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
-                       const Result& result,
-                       std::unique_ptr<ProofSource::Details> details) = 0;
+  virtual void Run(std::unique_ptr<Result> result,
+                   std::unique_ptr<ProofSource::Details> details) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloResultCallback);
@@ -242,13 +239,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     the client hello.  The callback will always be called exactly
   //     once, either under the current call stack, or after the
   //     completion of an asynchronous operation.
-  void ValidateClientHello(const CryptoHandshakeMessage& client_hello,
-                           const IPAddress& client_ip,
-                           const IPAddress& server_ip,
-                           QuicVersion version,
-                           const QuicClock* clock,
-                           QuicCryptoProof* crypto_proof,
-                           ValidateClientHelloResultCallback* done_cb) const;
+  void ValidateClientHello(
+      const CryptoHandshakeMessage& client_hello,
+      const IPAddress& client_ip,
+      const IPAddress& server_ip,
+      QuicVersion version,
+      const QuicClock* clock,
+      QuicCryptoProof* crypto_proof,
+      std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
@@ -419,7 +417,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   void set_enable_serving_sct(bool enable_serving_sct);
 
   // Set and take ownership of the callback to invoke on primary config changes.
-  void AcquirePrimaryConfigChangedCb(PrimaryConfigChangedCallback* cb);
+  void AcquirePrimaryConfigChangedCb(
+      std::unique_ptr<PrimaryConfigChangedCallback> cb);
 
   // Returns the number of configs this object owns.
   int NumberOfConfigs() const;
@@ -519,8 +518,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       scoped_refptr<Config> requested_config,
       scoped_refptr<Config> primary_config,
       QuicCryptoProof* crypto_proof,
-      ValidateClientHelloResultCallback::Result* client_hello_state,
-      ValidateClientHelloResultCallback* done_cb) const;
+      std::unique_ptr<ValidateClientHelloResultCallback::Result>
+          client_hello_state,
+      std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
 
   // Callback class for bridging between EvaluateClientHello and
   // EvaluateClientHelloAfterGetProof
@@ -541,8 +541,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicCryptoProof* crypto_proof,
       std::unique_ptr<ProofSource::Details> proof_source_details,
       bool get_proof_failed,
-      ValidateClientHelloResultCallback::Result* client_hello_state,
-      ValidateClientHelloResultCallback* done_cb) const;
+      std::unique_ptr<ValidateClientHelloResultCallback::Result>
+          client_hello_state,
+      std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(QuicVersion version,
@@ -689,7 +690,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb_;
   };
 
-  // Invoked by BuildServerConfigUpdateMessageProofSourceCallback::RunImpl once
+  // Invoked by BuildServerConfigUpdateMessageProofSourceCallback::Run once
   // the proof has been acquired.  Finishes building the server config update
   // message and invokes |cb|.
   void FinishBuildServerConfigUpdateMessage(

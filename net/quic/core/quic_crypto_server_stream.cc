@@ -115,18 +115,19 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
   CryptoUtils::HashHandshakeMessage(message, &chlo_hash_);
 
-  validate_client_hello_cb_ = new ValidateCallback(this);
+  std::unique_ptr<ValidateCallback> cb(new ValidateCallback(this));
+  validate_client_hello_cb_ = cb.get();
   crypto_config_->ValidateClientHello(
       message, session()->connection()->peer_address().address(),
       session()->connection()->self_address().address(), version(),
-      session()->connection()->clock(), &crypto_proof_,
-      validate_client_hello_cb_);
+      session()->connection()->clock(), &crypto_proof_, std::move(cb));
 }
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
-    const CryptoHandshakeMessage& message,
     const ValidateClientHelloResultCallback::Result& result,
     std::unique_ptr<ProofSource::Details> details) {
+  const CryptoHandshakeMessage& message = result.client_hello;
+
   // Clear the callback that got us here.
   DCHECK(validate_client_hello_cb_ != nullptr);
   validate_client_hello_cb_ = nullptr;
@@ -139,7 +140,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
   DiversificationNonce diversification_nonce;
   string error_details;
   QuicErrorCode error =
-      ProcessClientHello(message, result, std::move(details), &reply,
+      ProcessClientHello(result, std::move(details), &reply,
                          &diversification_nonce, &error_details);
 
   if (error != QUIC_NO_ERROR) {
@@ -379,12 +380,12 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
 }
 
 QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
-    const CryptoHandshakeMessage& message,
     const ValidateClientHelloResultCallback::Result& result,
     std::unique_ptr<ProofSource::Details> proof_source_details,
     CryptoHandshakeMessage* reply,
     DiversificationNonce* out_diversification_nonce,
     string* error_details) {
+  const CryptoHandshakeMessage& message = result.client_hello;
   if (!helper_->CanAcceptClientHello(
           message, session()->connection()->self_address(), error_details)) {
     return QUIC_HANDSHAKE_FAILED;
@@ -427,13 +428,11 @@ void QuicCryptoServerStream::ValidateCallback::Cancel() {
   parent_ = nullptr;
 }
 
-void QuicCryptoServerStream::ValidateCallback::RunImpl(
-    const CryptoHandshakeMessage& client_hello,
-    const Result& result,
+void QuicCryptoServerStream::ValidateCallback::Run(
+    std::unique_ptr<Result> result,
     std::unique_ptr<ProofSource::Details> details) {
   if (parent_ != nullptr) {
-    parent_->FinishProcessingHandshakeMessage(client_hello, result,
-                                              std::move(details));
+    parent_->FinishProcessingHandshakeMessage(*result, std::move(details));
   }
 }
 

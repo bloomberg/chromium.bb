@@ -571,7 +571,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // SetNonceForPublicHeader sets the nonce that will be transmitted in the
   // public header of each packet encrypted at the initial encryption level
   // decrypted. This should only be called on the server side.
-  void SetDiversificationNonce(const DiversificationNonce nonce);
+  void SetDiversificationNonce(const DiversificationNonce& nonce);
 
   // SetDefaultEncryptionLevel sets the encryption level that will be applied
   // to new packets.
@@ -880,11 +880,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Encryption level for new packets. Should only be changed via
   // SetDefaultEncryptionLevel().
   EncryptionLevel encryption_level_;
-  bool has_forward_secure_encrypter_;
-  // The packet number of the first packet which will be encrypted with the
-  // foward-secure encrypter, even if the peer has not started sending
-  // forward-secure packets.
-  QuicPacketNumber first_required_forward_secure_packet_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
 
