@@ -309,6 +309,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   </dom-module>
+<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/" css-build="shadow">
+
+  <template>
+    <style scope="iron-overlay-backdrop">:host {
+  position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--iron-overlay-backdrop-background-color, #000);
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        ;
+}
+
+:host(.opened) {
+  opacity: var(--iron-overlay-backdrop-opacity, 0.6);
+        pointer-events: auto;
+        ;
+}
+
+</style>
+
+    <content></content>
+  </template>
+
+</dom-module>
+
+<script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
+
+
+<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/" css-build="shadow">
+  <template>
+    <style scope="iron-dropdown">:host {
+  position: fixed;
+}
+
+#contentWrapper ::content > * {
+  overflow: auto;
+}
+
+#contentWrapper.animating ::content > * {
+  overflow: hidden;
+}
+
+</style>
+
+    <div id="contentWrapper">
+      <content id="content" select=".dropdown-content"></content>
+    </div>
+  </template>
+
+  </dom-module>
+<dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
+  <template>
+    <style scope="iron-icon">:host {
+  display: var(--layout-inline_-_display);
+        -ms-flex-align: var(--layout-center-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center-center_-_-webkit-align-items); align-items: var(--layout-center-center_-_align-items); -ms-flex-pack: var(--layout-center-center_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-center_-_-webkit-justify-content); justify-content: var(--layout-center-center_-_justify-content);
+        position: relative;
+
+        vertical-align: middle;
+
+        fill: var(--iron-icon-fill-color, currentcolor);
+        stroke: var(--iron-icon-stroke-color, none);
+
+        width: var(--iron-icon-width, 24px);
+        height: var(--iron-icon-height, 24px);
+        ;
+}
+
+</style>
+  </template>
+
+  </dom-module>
 <dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/" css-build="shadow">
 
   <template>
@@ -525,26 +600,41 @@ paper-ripple {
   </template>
 
   </dom-module>
-<dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
-  <template>
-    <style scope="iron-icon">:host {
-  display: var(--layout-inline_-_display);
-        -ms-flex-align: var(--layout-center-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center-center_-_-webkit-align-items); align-items: var(--layout-center-center_-_align-items); -ms-flex-pack: var(--layout-center-center_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-center_-_-webkit-justify-content); justify-content: var(--layout-center-center_-_justify-content);
+<dom-module id="paper-icon-button-light" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
+  <template strip-whitespace="">
+    <style scope="paper-icon-button-light">:host {
+  vertical-align: middle;
+        color: inherit;
+        outline: none;
+        width: 24px;
+        height: 24px;
+        background: none;
+        margin: 0;
+        border: none;
+        padding: 0;
+
         position: relative;
+        cursor: pointer;
 
-        vertical-align: middle;
+        
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
+}
 
-        fill: var(--iron-icon-fill-color, currentcolor);
-        stroke: var(--iron-icon-stroke-color, none);
+:host([disabled]) {
+  color: #9b9b9b;
+        pointer-events: none;
+        cursor: auto;
+}
 
-        width: var(--iron-icon-width, 24px);
-        height: var(--iron-icon-height, 24px);
-        ;
+paper-ripple {
+  opacity: 0.6;
+        color: currentColor;
 }
 
 </style>
+    <content></content>
   </template>
-
   </dom-module>
 <style is="custom-style" css-build="shadow">html {
   --google-red-100: #f4c7c3;
@@ -2759,7 +2849,7 @@ h1 {
 }
 
 :host(:not([narrow_])) #rightContent {
-  ;
+  position: var(--cr-toolbar-right-content-wide_-_position); right: var(--cr-toolbar-right-content-wide_-_right);
 }
 
 :host([narrow_]) #centeredContent {
@@ -2796,6 +2886,7 @@ h1 {
     <defs>
       
       <g id="chevron-left"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></g>
+      <g id="info-outline"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"></path></g>
       <g id="today"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"></path></g>
     </defs>
   </svg>
@@ -2997,11 +3088,41 @@ cr-toolbar, #overlay-buttons, #overlay-wrapper, #toolbar-container {
 }
 
 cr-toolbar {
-  --cr-toolbar-field-margin: var(--side-bar-width);
+  --cr-toolbar-field-end-padding: 0;
+        --cr-toolbar-field-margin: var(--side-bar-width);
+        --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_right:  0;;
 }
 
 :host([has-drawer]) cr-toolbar {
   --cr-toolbar-field-margin: 0;
+}
+
+cr-toolbar .more-actions {
+  -webkit-margin-end: 12px;
+}
+
+#info-button {
+  height: 32px;
+        margin: 6px;
+        width: 32px;
+}
+
+#info-button-icon {
+  height: 20px;
+        width: 20px;
+}
+
+iron-dropdown {
+  margin-top: 28px;
+}
+
+.dropdown-content {
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
+        background-color: white;
+        border-radius: 2px;
+        color: var(--paper-grey-800);
+        overflow: hidden;
+        padding: 12px 20px;
 }
 
 :host(:not([has-drawer])) #overlay-wrapper {
@@ -3088,7 +3209,22 @@ paper-tabs {
 </style>
     <div id="toolbar-container">
       <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}" on-search-changed="onSearchChanged_">
+        <div class="more-actions">
+          <template is="dom-if" if="[[showSyncNotice]]">
+            <button is="paper-icon-button-light" id="info-button" on-tap="onInfoButtonTap_" aria-label="$i18n{hasSyncedResultsDescription}">
+              <iron-icon icon="history:info-outline" id="info-button-icon">
+              </iron-icon>
+            </button>
+          </template>
+        </div>
       </cr-toolbar>
+      <template is="history-lazy-render" id="syncNotice">
+        <iron-dropdown vertical-align="top" horizontal-align="right" allow-outside-scroll="">
+          <div class="dropdown-content">
+            $i18nRaw{hasSyncedResults}
+          </div>
+        </iron-dropdown>
+      </template>
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">
@@ -3217,60 +3353,8 @@ paper-tabs {
     <content select=".footer"></content>
   </template>
   </dom-module>
-<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/" css-build="shadow">
-
-  <template>
-    <style scope="iron-overlay-backdrop">:host {
-  position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: var(--iron-overlay-backdrop-background-color, #000);
-        opacity: 0;
-        transition: opacity 0.2s;
-        pointer-events: none;
-        ;
-}
-
-:host(.opened) {
-  opacity: var(--iron-overlay-backdrop-opacity, 0.6);
-        pointer-events: auto;
-        ;
-}
-
-</style>
-
-    <content></content>
-  </template>
-
-</dom-module>
-
-<script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
 
 
-<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/" css-build="shadow">
-  <template>
-    <style scope="iron-dropdown">:host {
-  position: fixed;
-}
-
-#contentWrapper ::content > * {
-  overflow: auto;
-}
-
-#contentWrapper.animating ::content > * {
-  overflow: hidden;
-}
-
-</style>
-
-    <div id="contentWrapper">
-      <content id="content" select=".dropdown-content"></content>
-    </div>
-  </template>
-
-  </dom-module>
 <link rel="import" href="chrome://resources/html/util.html">
 <dom-module id="cr-shared-menu" assetpath="chrome://resources/cr_elements/cr_shared_menu/" css-build="shadow">
   <template>
@@ -3520,42 +3604,6 @@ paper-tabs {
 
 </dom-module>
 
-<dom-module id="paper-icon-button-light" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
-  <template strip-whitespace="">
-    <style scope="paper-icon-button-light">:host {
-  vertical-align: middle;
-        color: inherit;
-        outline: none;
-        width: 24px;
-        height: 24px;
-        background: none;
-        margin: 0;
-        border: none;
-        padding: 0;
-
-        position: relative;
-        cursor: pointer;
-
-        
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-        -webkit-tap-highlight-color: transparent;
-}
-
-:host([disabled]) {
-  color: #9b9b9b;
-        pointer-events: none;
-        cursor: auto;
-}
-
-paper-ripple {
-  opacity: 0.6;
-        color: currentColor;
-}
-
-</style>
-    <content></content>
-  </template>
-  </dom-module>
 <dom-module id="history-searched-label" assetpath="chrome://history/" css-build="shadow">
   </dom-module>
 <dom-module id="history-item" assetpath="chrome://history/" css-build="shadow">
@@ -5074,7 +5122,7 @@ h1 {
     </app-route>
     <history-toolbar id="toolbar" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
-                                             queryState_.searchTerm)]]" is-grouped-mode="{{grouped_}}" grouped-range="{{queryState_.range}}" search-term="{{queryState_.searchTerm}}" query-start-time="[[queryResult_.info.queryStartTime]]" query-end-time="[[queryResult_.info.queryEndTime]]" has-drawer="[[hasDrawer_]]">
+                                             queryState_.searchTerm)]]" is-grouped-mode="{{grouped_}}" grouped-range="{{queryState_.range}}" search-term="{{queryState_.searchTerm}}" query-start-time="[[queryResult_.info.queryStartTime]]" query-end-time="[[queryResult_.info.queryEndTime]]" has-drawer="[[hasDrawer_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]">
     </history-toolbar>
 
     <div id="main-container">

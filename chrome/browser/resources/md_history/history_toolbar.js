@@ -42,6 +42,8 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    showSyncNotice: Boolean,
+
     // Whether domain-grouped history is enabled.
     isGroupedMode: {
       type: Boolean,
@@ -94,6 +96,17 @@ Polymer({
    */
   onSearchChanged_: function(event) {
     this.searchTerm = /** @type {string} */ (event.detail);
+  },
+
+  /** @private */
+  onInfoButtonTap_: function() {
+    this.$.syncNotice.get().then(function(dropdown) {
+      dropdown.positionTarget = this.$$('#info-button-icon');
+      // It is possible for this listener to trigger while the dialog is
+      // closing. Ensure the dialog is fully closed before reopening it.
+      if (dropdown.style.display == 'none')
+        dropdown.open();
+    }.bind(this));
   },
 
   onClearSelectionTap_: function() {

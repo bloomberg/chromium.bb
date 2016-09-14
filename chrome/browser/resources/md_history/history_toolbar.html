@@ -1,11 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tab.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://history/icons.html">
+<link rel="import" href="chrome://history/lazy_render.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-toolbar">
@@ -36,11 +40,44 @@
       }
 
       cr-toolbar {
+        --cr-toolbar-field-end-padding: 0;
         --cr-toolbar-field-margin: var(--side-bar-width);
+        --cr-toolbar-right-content-wide: {
+          position: absolute;
+          right: 0;
+        };
       }
 
       :host([has-drawer]) cr-toolbar {
         --cr-toolbar-field-margin: 0;
+      }
+
+      cr-toolbar .more-actions {
+        -webkit-margin-end: 12px;
+      }
+
+      #info-button {
+        height: 32px;
+        margin: 6px;
+        width: 32px;
+      }
+
+      #info-button-icon {
+        height: 20px;
+        width: 20px;
+      }
+
+      iron-dropdown {
+        margin-top: 28px;  /** Height of icon + 8px spacing. */
+      }
+
+      .dropdown-content {
+        @apply(--shadow-elevation-2dp);
+        background-color: white;
+        border-radius: 2px;
+        color: var(--paper-grey-800);
+        overflow: hidden;
+        padding: 12px 20px;
       }
 
       :host(:not([has-drawer])) #overlay-wrapper {
@@ -130,7 +167,25 @@
           hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]"
           show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}"
           on-search-changed="onSearchChanged_">
+        <div class="more-actions">
+          <template is="dom-if" if="[[showSyncNotice]]">
+            <button is="paper-icon-button-light" id="info-button"
+                on-tap="onInfoButtonTap_"
+                aria-label="$i18n{hasSyncedResultsDescription}">
+              <iron-icon icon="history:info-outline" id="info-button-icon">
+              </iron-icon>
+            </button>
+          </template>
+        </div>
       </cr-toolbar>
+      <template is="history-lazy-render" id="syncNotice">
+        <iron-dropdown vertical-align="top" horizontal-align="right"
+            allow-outside-scroll>
+          <div class="dropdown-content">
+            $i18nRaw{hasSyncedResults}
+          </div>
+        </iron-dropdown>
+      </template>
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">

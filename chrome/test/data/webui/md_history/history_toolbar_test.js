@@ -11,11 +11,15 @@ cr.define('md_history.history_toolbar_test', function() {
       var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        app = $('history-app');
-        element = app.$['history'].$['infinite-list'];
-        toolbar = app.$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://google.com')];
+      });
+
+      setup(function() {
+        app = replaceApp();
+        element = app.$['history'].$['infinite-list'];
+        toolbar = app.$['toolbar'];
+        return flush();
       });
 
       test('selecting checkbox causes toolbar to change', function() {
@@ -90,10 +94,8 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       teardown(function() {
-        element.historyData_ = [];
-        element.searchedTerm = '';
-        registerMessageCallback('queryHistory', this, undefined);
-        toolbar.count = 0;
+        registerMessageCallback('queryHistory', this, function() {});
+        app.set('queryState_.searchTerm', '');
       });
     });
   }

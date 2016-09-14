@@ -96,7 +96,8 @@
         search-term="{{queryState_.searchTerm}}"
         query-start-time="[[queryResult_.info.queryStartTime]]"
         query-end-time="[[queryResult_.info.queryEndTime]]"
-        has-drawer="[[hasDrawer_]]">
+        has-drawer="[[hasDrawer_]]"
+        show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]">
     </history-toolbar>
 
     <div id="main-container">

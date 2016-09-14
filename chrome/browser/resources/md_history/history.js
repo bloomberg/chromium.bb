@@ -58,14 +58,10 @@ function historyResult(info, results) {
  */
 function showNotification(
     hasSyncedResults, includeOtherFormsOfBrowsingHistory) {
-  // TODO(msramek): |hasSyncedResults| was used in the old WebUI to show
-  // the message about other signed-in devices. This message does not exist
-  // in the MD history anymore, so the parameter is not needed. Remove it
-  // when WebUI is removed and this becomes the only client of
-  // BrowsingHistoryHandler.
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */ ($('history-app')).showSidebarFooter =
-        includeOtherFormsOfBrowsingHistory;
+    var app = /** @type {HistoryAppElement} */ ($('history-app'));
+    app.showSidebarFooter = includeOtherFormsOfBrowsingHistory;
+    app.hasSyncedResults = hasSyncedResults;
   });
 }
 

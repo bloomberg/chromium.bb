@@ -8,7 +8,10 @@ Polymer({
   behaviors: [Polymer.IronScrollTargetBehavior],
 
   properties: {
+    // Used to display notices for profile sign-in status.
     showSidebarFooter: Boolean,
+
+    hasSyncedResults: Boolean,
 
     // The id of the currently selected page.
     selectedPage_: {type: String, observer: 'unselectAll'},
@@ -290,6 +293,16 @@ Polymer({
    */
   shouldShowSpinner_: function(querying, incremental, searchTerm) {
     return querying && !incremental && searchTerm != '';
+  },
+
+  /**
+   * @param {boolean} hasSyncedResults
+   * @param {string} selectedPage
+   * @return {boolean} Whether the (i) synced results notice should be shown.
+   * @private
+   */
+  showSyncNotice_: function(hasSyncedResults, selectedPage) {
+    return hasSyncedResults && selectedPage != 'syncedTabs';
   },
 
   /**
