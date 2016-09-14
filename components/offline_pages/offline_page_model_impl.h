@@ -79,8 +79,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;
-  void HasPages(const std::string& name_space,
-                const HasPagesCallback& callback) override;
   void CheckPagesExistOffline(
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback) override;
@@ -161,10 +159,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const SingleOfflinePageItemCallback& callback) const;
   void MarkPageAccessedWhenLoadDone(int64_t offline_id);
   void CheckMetadataConsistencyWhenLoadDone();
-
-  // Callback for checking whether we have offline pages.
-  void HasPagesAfterLoadDone(const std::string& name_space,
-                             const HasPagesCallback& callback) const;
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(const base::TimeTicks& start_time,

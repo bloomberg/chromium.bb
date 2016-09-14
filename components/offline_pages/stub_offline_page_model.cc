@@ -25,8 +25,6 @@ void StubOfflinePageModel::DeletePagesByOfflineId(
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {}
-void StubOfflinePageModel::HasPages(const std::string& name_space,
-                                    const HasPagesCallback& callback) {}
 void StubOfflinePageModel::CheckPagesExistOffline(
     const std::set<GURL>& urls,
     const CheckPagesExistOfflineCallback& callback) {}

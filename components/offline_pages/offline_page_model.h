@@ -108,11 +108,6 @@ class OfflinePageModel : public base::SupportsUserData {
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) = 0;
 
-  // Returns true via callback if there are offline pages in the given
-  // |name_space|.
-  virtual void HasPages(const std::string& name_space,
-                        const HasPagesCallback& callback) = 0;
-
   // Returns via callback all GURLs in |urls| that are equal to the online URL
   // of any offline page.
   virtual void CheckPagesExistOffline(

@@ -478,31 +478,6 @@ void OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate(
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
 
-void OfflinePageModelImpl::HasPages(const std::string& name_space,
-                                    const HasPagesCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::HasPagesAfterLoadDone,
-                           weak_ptr_factory_.GetWeakPtr(), name_space,
-                           callback));
-}
-
-void OfflinePageModelImpl::HasPagesAfterLoadDone(
-    const std::string& name_space,
-    const HasPagesCallback& callback) const {
-  DCHECK(is_loaded_);
-
-  bool has_pages = false;
-
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id.name_space == name_space &&
-        !id_page_pair.second.IsExpired()) {
-      has_pages = true;
-      break;
-    }
-  }
-
-  callback.Run(has_pages);
-}
-
 void OfflinePageModelImpl::CheckPagesExistOffline(
     const std::set<GURL>& urls,
     const CheckPagesExistOfflineCallback& callback) {

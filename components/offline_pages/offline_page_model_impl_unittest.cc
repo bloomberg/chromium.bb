@@ -83,7 +83,6 @@ class OfflinePageModelImplTest
   // OfflinePageModel callbacks.
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   void OnDeletePageDone(DeletePageResult result);
-  void OnHasPagesDone(bool result);
   void OnCheckPagesExistOfflineDone(const CheckPagesExistOfflineResult& result);
   void OnClearAllDone();
   void OnGetOfflineIdsForClientIdDone(MultipleOfflineIdResult* storage,
@@ -181,7 +180,6 @@ class OfflinePageModelImplTest
   base::FilePath last_archiver_path_;
   int64_t last_deleted_offline_id_;
   ClientId last_deleted_client_id_;
-  bool last_has_pages_result_;
   CheckPagesExistOfflineResult last_pages_exist_result_;
   int last_cleared_pages_count_;
   DeletePageResult last_clear_page_result_;
@@ -241,10 +239,6 @@ void OfflinePageModelImplTest::OnSavePageDone(SavePageResult result,
 
 void OfflinePageModelImplTest::OnDeletePageDone(DeletePageResult result) {
   last_delete_result_ = result;
-}
-
-void OfflinePageModelImplTest::OnHasPagesDone(bool result) {
-  last_has_pages_result_ = result;
 }
 
 void OfflinePageModelImplTest::OnCheckPagesExistOfflineDone(
@@ -415,11 +409,13 @@ MultipleOfflinePageItemResult OfflinePageModelImplTest::GetPagesByOnlineURL(
 }
 
 bool OfflinePageModelImplTest::HasPages(std::string name_space) {
-  model()->HasPages(
-      name_space,
-      base::Bind(&OfflinePageModelImplTest::OnHasPagesDone, AsWeakPtr()));
-  PumpLoop();
-  return last_has_pages_result_;
+  MultipleOfflinePageItemResult all_pages = GetAllPages();
+  for (const auto& page : all_pages) {
+    if (page.client_id.name_space == name_space)
+      return true;
+  }
+
+  return false;
 }
 
 TEST_F(OfflinePageModelImplTest, SavePageSuccessful) {

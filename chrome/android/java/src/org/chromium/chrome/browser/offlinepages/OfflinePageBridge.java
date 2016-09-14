@@ -170,19 +170,9 @@ public class OfflinePageBridge {
      * @param callback The callback to run when the operation completes.
      */
     @VisibleForTesting
-    public void getAllPages(final Callback<List<OfflinePageItem>> callback) {
+    void getAllPages(final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
         nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
-    }
-
-    /**
-     * Returns via callback whether we have any offline pages at all.
-     *
-     * TODO(dewittj): Remove @VisibleForTesting when this method is called in mainline Chrome.
-     */
-    @VisibleForTesting
-    public void hasPages(final String namespace, final Callback<Boolean> callback) {
-        nativeHasPages(mNativeOfflinePageBridge, namespace, callback);
     }
 
     /** @return A list of all offline ids that match a particular (namespace, client_id) pair. */
@@ -587,8 +577,6 @@ public class OfflinePageBridge {
             final Callback<List<OfflinePageItem>> callback);
     private native void nativeCheckPagesExistOffline(long nativeOfflinePageBridge, Object[] urls,
             CheckPagesExistOfflineCallbackInternal callback);
-    native void nativeHasPages(
-            long nativeOfflinePageBridge, String nameSpace, final Callback<Boolean> callback);
 
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
