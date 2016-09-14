@@ -265,6 +265,16 @@ public class WebappDataStorage {
     }
 
     /**
+     * Update the information associated with the web app with the specified data. Used for testing.
+     * @param splashScreenImage The image encoded as a string which should be shown on the splash
+     *                          screen of the web app.
+     */
+    @VisibleForTesting
+    void updateSplashScreenImageForTests(String splashScreenImage) {
+        mPreferences.edit().putString(KEY_SPLASH_ICON, splashScreenImage).apply();
+    }
+
+    /**
      * Creates and returns a web app launch intent from the data stored in this object. Must not be
      * called on the UI thread as a Bitmap is decoded from a String (a potentially expensive
      * operation).

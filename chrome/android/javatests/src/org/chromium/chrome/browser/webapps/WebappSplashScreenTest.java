@@ -204,7 +204,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         waitUntilSplashscreenHides();
 
         // DURATION and HIDES should now have a value.
-        assertTrue(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
+        assertTrue(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 5000));
         assertEquals(1, getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_HIDES,
                 WebappUma.SPLASHSCREEN_HIDES_REASON_MAX));
 

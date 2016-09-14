@@ -32,7 +32,7 @@ public class WebappSplashScreenIconTest extends WebappActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         WebappDataStorage.open(getInstrumentation().getTargetContext(), WEBAPP_ID)
-                .updateSplashScreenImage(ShortcutHelper.decodeBitmapFromString(TEST_SPLASH_ICON));
+                .updateSplashScreenImageForTests(TEST_SPLASH_ICON);
 
         super.setUp();
         startWebappActivity();
