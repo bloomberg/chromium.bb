@@ -197,6 +197,47 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TestInterface3V8Internal::iteratorMethod(info);
 }
 
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    V8TestInterface3::namedPropertyGetterCustom(propertyName, info);
+}
+
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    V8TestInterface3::namedPropertySetterCustom(propertyName, v8Value, info);
+}
+
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    V8TestInterface3::namedPropertyDeleterCustom(propertyName, info);
+}
+
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    V8TestInterface3::namedPropertyQueryCustom(propertyName, info);
+}
+
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    V8TestInterface3::namedPropertyEnumeratorCustom(info);
+}
+
 void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     V8TestInterface3::indexedPropertyGetterCustom(index, info);
@@ -210,39 +251,6 @@ void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value,
 void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     V8TestInterface3::indexedPropertyDeleterCustom(index, info);
-}
-
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    V8TestInterface3::namedPropertyGetterCustom(name, info);
-}
-
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    V8TestInterface3::namedPropertySetterCustom(name, v8Value, info);
-}
-
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    if (!name->IsString())
-        return;
-    V8TestInterface3::namedPropertyQueryCustom(name, info);
-}
-
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    if (!name->IsString())
-        return;
-    V8TestInterface3::namedPropertyDeleterCustom(name, info);
-}
-
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    V8TestInterface3::namedPropertyEnumeratorCustom(info);
 }
 
 } // namespace TestInterface3V8Internal

@@ -10959,10 +10959,117 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TestObjectV8Internal::iteratorMethod(info);
 }
 
+static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    ScriptValue result = impl->anonymousNamedGetter(scriptState, name);
+    if (result.isEmpty())
+        return;
+    v8SetReturnValue(info, result.v8Value());
+}
+
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestObjectV8Internal::namedPropertyGetter(propertyName, info);
+}
+
+static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    V8StringResource<> propertyValue = v8Value;
+    if (!propertyValue.prepare())
+        return;
+
+    bool result = impl->anonymousNamedSetter(scriptState, name, propertyValue);
+    if (!result)
+        return;
+    v8SetReturnValue(info, v8Value);
+}
+
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestObjectV8Internal::namedPropertySetter(propertyName, v8Value, info);
+}
+
+static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    DeleteResult result = impl->anonymousNamedDeleter(scriptState, name);
+    if (result == DeleteUnknownProperty)
+        return;
+    v8SetReturnValue(info, result == DeleteSuccess);
+}
+
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestObjectV8Internal::namedPropertyDeleter(propertyName, info);
+}
+
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    const CString& nameInUtf8 = name.utf8();
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestObject", nameInUtf8.data());
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    bool result = impl->namedPropertyQuery(scriptState, name, exceptionState);
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    if (!name->IsString())
+        return;
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestObjectV8Internal::namedPropertyQuery(propertyName, info);
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::EnumerationContext, "TestObject");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    Vector<String> names;
+    impl->namedPropertyEnumerator(names, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+}
+
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TestObjectV8Internal::namedPropertyEnumerator(info);
+}
+
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ScriptValue result = impl->item(scriptState, index);
     if (result.isEmpty())
         return;
@@ -10980,7 +11087,8 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     V8StringResource<> propertyValue = v8Value;
     if (!propertyValue.prepare())
         return;
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     bool result = impl->setItem(scriptState, index, propertyValue);
     if (!result)
         return;
@@ -10994,122 +11102,22 @@ void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value,
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::IndexedDeletionContext, "TestObject");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "TestObject", info.Holder(), info.GetIsolate());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
     DeleteResult result = impl->anonymousIndexedDeleter(scriptState, index, exceptionState);
     if (exceptionState.hadException())
         return;
-    if (result != DeleteUnknownProperty)
-        return v8SetReturnValueBool(info, result == DeleteSuccess);
+    if (result == DeleteUnknownProperty)
+        return;
+    v8SetReturnValue(info, result == DeleteSuccess);
 }
 
 void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestObjectV8Internal::indexedPropertyDeleter(index, info);
-}
-
-static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    auto nameString = name.As<v8::String>();
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(nameString);
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    ScriptValue result = impl->anonymousNamedGetter(scriptState, propertyName);
-    if (result.isEmpty())
-        return;
-    v8SetReturnValue(info, result.v8Value());
-}
-
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    TestObjectV8Internal::namedPropertyGetter(name, info);
-}
-
-static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    auto nameString = name.As<v8::String>();
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    V8StringResource<> propertyName(nameString);
-    if (!propertyName.prepare())
-        return;
-    V8StringResource<> propertyValue = v8Value;
-    if (!propertyValue.prepare())
-        return;
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    bool result = impl->anonymousNamedSetter(scriptState, propertyName, propertyValue);
-    if (!result)
-        return;
-    v8SetReturnValue(info, v8Value);
-}
-
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!name->IsString())
-        return;
-    TestObjectV8Internal::namedPropertySetter(name, v8Value, info);
-}
-
-static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
-    v8::String::Utf8Value namedProperty(name);
-    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestObject", info.Holder(), info.GetIsolate());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    bool result = impl->namedPropertyQuery(scriptState, propertyName, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (!result)
-        return;
-    v8SetReturnValueInt(info, v8::None);
-}
-
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    if (!name->IsString())
-        return;
-    TestObjectV8Internal::namedPropertyQuery(name, info);
-}
-
-static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    DeleteResult result = impl->anonymousNamedDeleter(scriptState, propertyName);
-    if (result != DeleteUnknownProperty)
-        return v8SetReturnValueBool(info, result == DeleteSuccess);
-}
-
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    if (!name->IsString())
-        return;
-    TestObjectV8Internal::namedPropertyDeleter(name, info);
-}
-
-static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Vector<String> names;
-    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestObject", info.Holder(), info.GetIsolate());
-    impl->namedPropertyEnumerator(names, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
-    for (size_t i = 0; i < names.size(); ++i) {
-        if (!v8CallBoolean(v8names->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), i, v8String(info.GetIsolate(), names[i]))))
-            return;
-    }
-    v8SetReturnValue(info, v8names);
-}
-
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    TestObjectV8Internal::namedPropertyEnumerator(info);
 }
 
 } // namespace TestObjectV8Internal

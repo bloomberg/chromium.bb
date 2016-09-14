@@ -228,9 +228,8 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, openedWindow, impl);
 }
 
-void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Window::namedPropertyGetterCustom(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    auto nameString = name.As<v8::String>();
     DOMWindow* window = V8Window::toImpl(info.Holder());
     if (!window)
         return;
@@ -240,12 +239,10 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!frame)
         return;
 
-    AtomicString propName = toCoreAtomicString(nameString);
-
     // Note that the spec doesn't allow any cross-origin named access to the window object. However,
     // UAs have traditionally allowed named access to named child browsing contexts, even across
     // origins. So first, search child frames for a frame with a matching name.
-    Frame* child = frame->tree().scopedChild(propName);
+    Frame* child = frame->tree().scopedChild(name);
     if (child) {
         v8SetReturnValueFast(info, child->domWindow(), window);
         return;
@@ -264,18 +261,18 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), window, BindingSecurity::ErrorReportOption::DoNotReport))
         return;
 
-    bool hasNamedItem = toHTMLDocument(doc)->hasNamedItem(propName);
-    bool hasIdItem = doc->hasElementWithId(propName);
+    bool hasNamedItem = toHTMLDocument(doc)->hasNamedItem(name);
+    bool hasIdItem = doc->hasElementWithId(name);
 
     if (!hasNamedItem && !hasIdItem)
         return;
 
-    if (!hasNamedItem && hasIdItem && !doc->containsMultipleElementsWithId(propName)) {
-        v8SetReturnValueFast(info, doc->getElementById(propName), window);
+    if (!hasNamedItem && hasIdItem && !doc->containsMultipleElementsWithId(name)) {
+        v8SetReturnValueFast(info, doc->getElementById(name), window);
         return;
     }
 
-    HTMLCollection* items = doc->windowNamedItems(propName);
+    HTMLCollection* items = doc->windowNamedItems(name);
     if (!items->isEmpty()) {
         // TODO(esprehn): Firefox doesn't return an HTMLCollection here if there's
         // multiple with the same name, but Chrome and Safari does. What's the

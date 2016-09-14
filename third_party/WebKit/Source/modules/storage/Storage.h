@@ -54,12 +54,9 @@ public:
 
     StorageArea* area() const { return m_storageArea.get(); }
 
-    String anonymousIndexedGetter(unsigned, ExceptionState&);
     String anonymousNamedGetter(const AtomicString&, ExceptionState&);
     bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState&);
-    bool anonymousIndexedSetter(unsigned, const AtomicString&, ExceptionState&);
     DeleteResult anonymousNamedDeleter(const AtomicString&, ExceptionState&);
-    DeleteResult anonymousIndexedDeleter(unsigned, ExceptionState&);
     void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 

@@ -190,22 +190,22 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {% block overloaded_constructor %}{% endblock %}
 {% block event_constructor %}{% endblock %}
 {# Special operations (methods) #}
+{% block named_property_getter %}{% endblock %}
+{% block named_property_getter_callback %}{% endblock %}
+{% block named_property_setter %}{% endblock %}
+{% block named_property_setter_callback %}{% endblock %}
+{% block named_property_deleter %}{% endblock %}
+{% block named_property_deleter_callback %}{% endblock %}
+{% block named_property_query %}{% endblock %}
+{% block named_property_query_callback %}{% endblock %}
+{% block named_property_enumerator %}{% endblock %}
+{% block named_property_enumerator_callback %}{% endblock %}
 {% block indexed_property_getter %}{% endblock %}
 {% block indexed_property_getter_callback %}{% endblock %}
 {% block indexed_property_setter %}{% endblock %}
 {% block indexed_property_setter_callback %}{% endblock %}
 {% block indexed_property_deleter %}{% endblock %}
 {% block indexed_property_deleter_callback %}{% endblock %}
-{% block named_property_getter %}{% endblock %}
-{% block named_property_getter_callback %}{% endblock %}
-{% block named_property_setter %}{% endblock %}
-{% block named_property_setter_callback %}{% endblock %}
-{% block named_property_query %}{% endblock %}
-{% block named_property_query_callback %}{% endblock %}
-{% block named_property_deleter %}{% endblock %}
-{% block named_property_deleter_callback %}{% endblock %}
-{% block named_property_enumerator %}{% endblock %}
-{% block named_property_enumerator_callback %}{% endblock %}
 } // namespace {{cpp_class_or_partial}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
@@ -340,7 +340,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     }
     {% endfor %}
 
-    {%- if indexed_property_getter and not is_partial %}{{newline}}
+    {% if (indexed_property_getter or named_property_getter) and not is_partial %}
     // Indexed properties
     {{install_indexed_property_handler('instanceTemplate') | indent}}
     {% endif %}

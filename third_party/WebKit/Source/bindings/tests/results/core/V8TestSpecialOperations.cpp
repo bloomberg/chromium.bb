@@ -77,13 +77,11 @@ static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
     TestSpecialOperationsV8Internal::namedItemMethod(info);
 }
 
-static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    auto nameString = name.As<v8::String>();
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(nameString);
     NodeOrNodeList result;
-    impl->getItem(propertyName, result);
+    impl->getItem(name, result);
     if (result.isNull())
         return;
     v8SetReturnValue(info, result);
@@ -93,22 +91,21 @@ void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCal
 {
     if (!name->IsString())
         return;
-    TestSpecialOperationsV8Internal::namedPropertyGetter(name, info);
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestSpecialOperationsV8Internal::namedPropertyGetter(propertyName, info);
 }
 
-static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    auto nameString = name.As<v8::String>();
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
-    V8StringResource<> propertyName(nameString);
-    if (!propertyName.prepare())
-        return;
     Node* propertyValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!propertyValue && !isUndefinedOrNull(v8Value)) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         return;
     }
-    bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
+
+    bool result = impl->anonymousNamedSetter(name, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, v8Value);
@@ -118,18 +115,19 @@ void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> 
 {
     if (!name->IsString())
         return;
-    TestSpecialOperationsV8Internal::namedPropertySetter(name, v8Value, info);
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestSpecialOperationsV8Internal::namedPropertySetter(propertyName, v8Value, info);
 }
 
-static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    const CString& nameInUtf8 = name.utf8();
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::GetterContext, "TestSpecialOperations", nameInUtf8.data());
+
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
-    v8::String::Utf8Value namedProperty(name);
-    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperations", info.Holder(), info.GetIsolate());
-    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
-    if (exceptionState.hadException())
-        return;
+
+    bool result = impl->namedPropertyQuery(name, exceptionState);
     if (!result)
         return;
     v8SetReturnValueInt(info, v8::None);
@@ -139,28 +137,41 @@ void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCall
 {
     if (!name->IsString())
         return;
-    TestSpecialOperationsV8Internal::namedPropertyQuery(name, info);
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestSpecialOperationsV8Internal::namedPropertyQuery(propertyName, info);
 }
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::EnumerationContext, "TestSpecialOperations");
+
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
+
     Vector<String> names;
-    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperations", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.hadException())
         return;
-    v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
-    for (size_t i = 0; i < names.size(); ++i) {
-        if (!v8CallBoolean(v8names->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), i, v8String(info.GetIsolate(), names[i]))))
-            return;
-    }
-    v8SetReturnValue(info, v8names);
+    v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
 void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     TestSpecialOperationsV8Internal::namedPropertyEnumerator(info);
+}
+
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    const AtomicString& propertyName = AtomicString::number(index);
+
+    TestSpecialOperationsV8Internal::namedPropertyGetter(propertyName, info);
+}
+
+void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    const AtomicString& propertyName = AtomicString::number(index);
+
+    TestSpecialOperationsV8Internal::namedPropertySetter(propertyName, v8Value, info);
 }
 
 } // namespace TestSpecialOperationsV8Internal
@@ -181,6 +192,10 @@ static void installV8TestSpecialOperationsTemplate(v8::Isolate* isolate, const D
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestSpecialOperationsMethods, WTF_ARRAY_LENGTH(V8TestSpecialOperationsMethods));
+
+    // Indexed properties
+    v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestSpecialOperationsV8Internal::indexedPropertyGetterCallback, TestSpecialOperationsV8Internal::indexedPropertySetterCallback, 0, 0, 0, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+    instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
     // Named properties
     v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestSpecialOperationsV8Internal::namedPropertyGetterCallback, TestSpecialOperationsV8Internal::namedPropertySetterCallback, TestSpecialOperationsV8Internal::namedPropertyQueryCallback, 0, TestSpecialOperationsV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)));
     instanceTemplate->SetHandler(namedPropertyHandlerConfig);

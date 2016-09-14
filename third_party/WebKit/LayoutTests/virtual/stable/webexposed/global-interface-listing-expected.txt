@@ -5219,7 +5219,6 @@ interface SpeechSynthesisUtterance : EventTarget
 interface Storage
     attribute @@toStringTag
     getter length
-    method @@iterator
     method clear
     method constructor
     method getItem

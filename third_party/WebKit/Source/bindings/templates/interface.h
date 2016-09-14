@@ -123,17 +123,17 @@ public:
     static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
     {% endif %}
     {% if named_property_getter and named_property_getter.is_custom %}
-    static void namedPropertyGetterCustom(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void namedPropertyGetterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Value>&);
     {% endif %}
     {% if named_property_setter and named_property_setter.is_custom %}
-    static void namedPropertySetterCustom(v8::Local<v8::Name>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void namedPropertySetterCustom(const AtomicString&, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     {% endif %}
     {% if named_property_getter and
           named_property_getter.is_custom_property_query %}
-    static void namedPropertyQueryCustom(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Integer>&);
+    static void namedPropertyQueryCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Integer>&);
     {% endif %}
     {% if named_property_deleter and named_property_deleter.is_custom %}
-    static void namedPropertyDeleterCustom(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Boolean>&);
+    static void namedPropertyDeleterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Boolean>&);
     {% endif %}
     {% if named_property_getter and
           named_property_getter.is_custom_property_enumerator %}

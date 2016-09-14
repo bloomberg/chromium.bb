@@ -39,9 +39,4 @@
     [RaisesException] getter DOMString (DOMString name);
     [RaisesException] setter DOMString (DOMString name, DOMString value);
     [RaisesException] deleter boolean (DOMString name);
-
-    // Non-standard APIs
-    [NotEnumerable, RaisesException] getter DOMString (unsigned long index);
-    [RaisesException] setter DOMString (unsigned long index, DOMString value);
-    [RaisesException] deleter boolean (unsigned long index);
 };

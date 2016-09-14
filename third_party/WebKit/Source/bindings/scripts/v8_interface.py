@@ -579,7 +579,7 @@ def interface_context(interface):
         'indexed_property_setter': property_setter(interface.indexed_property_setter, interface),
         'indexed_property_deleter': property_deleter(interface.indexed_property_deleter),
         'is_override_builtins': 'OverrideBuiltins' in extended_attributes,
-        'named_property_getter': property_getter(interface.named_property_getter, ['propertyName']),
+        'named_property_getter': property_getter(interface.named_property_getter, ['name']),
         'named_property_setter': property_setter(interface.named_property_setter, interface),
         'named_property_deleter': property_deleter(interface.named_property_deleter),
     })

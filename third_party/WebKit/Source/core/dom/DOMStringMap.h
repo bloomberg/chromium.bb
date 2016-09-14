@@ -63,19 +63,6 @@ public:
     }
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
-    String anonymousIndexedGetter(uint32_t index)
-    {
-        return item(String::number(index));
-    }
-    bool anonymousIndexedSetter(uint32_t index, const String& value, ExceptionState& exceptionState)
-    {
-        return anonymousNamedSetter(String::number(index), value, exceptionState);
-    }
-    DeleteResult anonymousIndexedDeleter(uint32_t index)
-    {
-        return anonymousNamedDeleter(AtomicString::number(index));
-    }
-
     virtual Element* element() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

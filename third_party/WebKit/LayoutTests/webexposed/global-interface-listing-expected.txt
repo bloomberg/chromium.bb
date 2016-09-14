@@ -6134,7 +6134,6 @@ interface StaticRange
 interface Storage
     attribute @@toStringTag
     getter length
-    method @@iterator
     method clear
     method constructor
     method getItem

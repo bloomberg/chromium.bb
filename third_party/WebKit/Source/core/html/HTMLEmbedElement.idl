@@ -38,8 +38,6 @@
     [CEReactions, Reflect] attribute DOMString name;
 
     // FIXME: None of these getters and setters are in the spec.
-    [Custom, NotEnumerable] getter boolean (unsigned long index);
-    [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
 };

@@ -37,8 +37,4 @@
     [CEReactions] attribute DOMString value;
     stringifier;
     iterable<DOMString>;
-
-
-    // FIXME: This getter is not in the spec.
-    [ImplementedAs=item] getter DOMString? (unsigned long index);
 };

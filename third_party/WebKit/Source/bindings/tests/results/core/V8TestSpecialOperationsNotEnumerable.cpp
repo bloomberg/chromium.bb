@@ -47,26 +47,10 @@ static_assert(
 
 namespace TestSpecialOperationsNotEnumerableV8Internal {
 
-static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
-    String result = impl->anonymousIndexedGetter(index);
-    if (result.isNull())
-        return;
-    v8SetReturnValueString(info, result, info.GetIsolate());
-}
-
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
-}
-
-static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    auto nameString = name.As<v8::String>();
-    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(nameString);
-    String result = impl->anonymousNamedGetter(propertyName);
+    String result = impl->anonymousNamedGetter(name);
     if (result.isNull())
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
@@ -76,7 +60,24 @@ void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCal
 {
     if (!name->IsString())
         return;
-    TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetter(name, info);
+    const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+
+    TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetter(propertyName, info);
+}
+
+static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
+
+    String result = impl->anonymousIndexedGetter(index);
+    if (result.isNull())
+        return;
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
 }
 
 } // namespace TestSpecialOperationsNotEnumerableV8Internal
