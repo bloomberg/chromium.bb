@@ -196,7 +196,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Mac failures
-    # La la la la la la la la ...
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['mac'], bug=599272)
 
     # Mac AMD failures
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
@@ -206,11 +207,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
 
-    # Mac Retina AMD failures
-    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
-        ['mac', ('amd', 0x6821)], bug=599272)
-
-    # Mac Retine NVidia failures
+    # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
     self.Fail('conformance/programs/' +
