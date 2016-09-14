@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,8 +55,8 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::DBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingStub(
-          chromeos::DBusClientBundle::BLUETOOTH));
+      chromeos::DBusThreadManager::Get()->IsUsingFake(
+          chromeos::DBusClientType::BLUETOOTH));
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
   ash::MaterialDesignController::Initialize();

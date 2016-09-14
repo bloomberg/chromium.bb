@@ -805,7 +805,7 @@ PowerManagerClient* PowerManagerClient::Create(
     DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new PowerManagerClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakePowerManagerClient();
 }
 

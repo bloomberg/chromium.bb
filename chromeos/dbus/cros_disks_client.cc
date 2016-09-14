@@ -634,7 +634,7 @@ CrosDisksClient::~CrosDisksClient() {}
 CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new CrosDisksClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeCrosDisksClient();
 }
 

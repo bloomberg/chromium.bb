@@ -52,7 +52,7 @@ using bluez::FakeBluetoothInputClient;
 using chromeos::DBusThreadManager;
 using chromeos::DBusThreadManagerSetter;
 using chromeos::PowerManagerClient;
-using chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION;
+using chromeos::FAKE_DBUS_CLIENT_IMPLEMENTATION;
 
 class ChromeOSMetricsProviderTest : public testing::Test {
  public:
@@ -91,7 +91,7 @@ class ChromeOSMetricsProviderTest : public testing::Test {
     std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetPowerManagerClient(std::unique_ptr<PowerManagerClient>(
-        PowerManagerClient::Create(STUB_DBUS_CLIENT_IMPLEMENTATION)));
+        PowerManagerClient::Create(FAKE_DBUS_CLIENT_IMPLEMENTATION)));
 
     // Grab pointers to members of the thread manager for easier testing.
     fake_bluetooth_adapter_client_ = static_cast<FakeBluetoothAdapterClient*>(

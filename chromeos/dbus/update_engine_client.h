@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
 namespace chromeos {

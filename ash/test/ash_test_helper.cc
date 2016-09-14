@@ -35,6 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -99,8 +100,8 @@ void AshTestHelper::SetUp(bool start_session,
   if (!bluez::BluezDBusManager::IsInitialized()) {
     bluez::BluezDBusManager::Initialize(
         chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingStub(
-            chromeos::DBusClientBundle::BLUETOOTH));
+        chromeos::DBusThreadManager::Get()->IsUsingFake(
+            chromeos::DBusClientType::BLUETOOTH));
     bluez_dbus_manager_initialized_ = true;
   }
 

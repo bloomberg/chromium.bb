@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_bundle.h"
+#include "chromeos/dbus/dbus_client_types.h"
 
 namespace base {
 class Thread;
@@ -30,6 +30,7 @@ class ArcObbMounterClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
+class DBusClientBundle;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
@@ -73,7 +74,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Sets the global instance. Must be called before any calls to Get().
   // We explicitly initialize and shut down the global object, rather than
   // making it a Singleton, to ensure clean startup and shutdown.
-  // This will initialize real or stub DBusClients depending on command-line
+  // This will initialize real or fake DBusClients depending on command-line
   // arguments and whether this process runs in a ChromeOS environment.
   static void Initialize();
 
@@ -92,8 +93,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // Returns true if |client| is stubbed.
-  bool IsUsingStub(DBusClientBundle::DBusClientType client);
+  // Returns true if |client| is faked.
+  bool IsUsingFake(DBusClientType client);
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   dbus::Bus* GetSystemBus();
@@ -132,23 +133,21 @@ class CHROMEOS_EXPORT DBusThreadManager {
   ~DBusThreadManager();
 
   // Creates a global instance of DBusThreadManager with the real
-  // implementations for all clients that are listed in |unstub_client_mask| and
-  // stub implementations for all clients that are not included. Cannot be
+  // implementations for all clients that are listed in |real_client_mask| and
+  // fake implementations for all clients that are not included. Cannot be
   // called more than once.
-  static void CreateGlobalInstance(
-      DBusClientBundle::DBusClientTypeMask unstub_client_mask);
+  static void CreateGlobalInstance(DBusClientTypeMask real_client_mask);
 
   // Initialize global thread manager instance with all real dbus client
   // implementations.
   static void InitializeWithRealClients();
 
-  // Initialize global thread manager instance with stubbed-out dbus clients
-  // implementation.
-  static void InitializeWithStubs();
+  // Initialize global thread manager instance with fake dbus clients.
+  static void InitializeWithFakeClients();
 
-  // Initialize with stub implementations for only certain clients that are
-  // not included in the comma-separated |unstub_clients| list.
-  static void InitializeWithPartialStub(const std::string& unstub_clients);
+  // Initialize with fake implementations for only certain clients that are
+  // not included in the comma-separated |force_real_clients| list.
+  static void InitializeWithPartialFakes(const std::string& force_real_clients);
 
   // Initializes all currently stored DBusClients with the system bus and
   // performs additional setup.

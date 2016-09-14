@@ -47,6 +47,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -105,8 +106,8 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingStub(
-          chromeos::DBusClientBundle::BLUETOOTH));
+      chromeos::DBusThreadManager::Get()->IsUsingFake(
+          chromeos::DBusClientType::BLUETOOTH));
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(

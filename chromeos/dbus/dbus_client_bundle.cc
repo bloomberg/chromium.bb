@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
@@ -56,83 +54,44 @@
 
 namespace chromeos {
 
-namespace {
-
-// Command line switch mapping for --dbus-unstub-clients.
-const struct {
-  const char* param_name;
-  DBusClientBundle::DBusClientType client_type;
-} client_type_map[] = {
-    { "bluetooth",  DBusClientBundle::BLUETOOTH },
-    { "cras",  DBusClientBundle::CRAS },
-    { "cros_disks",  DBusClientBundle::CROS_DISKS },
-    { "cryptohome",  DBusClientBundle::CRYPTOHOME },
-    { "debug_daemon",  DBusClientBundle::DEBUG_DAEMON },
-    { "easy_unlock",  DBusClientBundle::EASY_UNLOCK },
-    { "lorgnette_manager",  DBusClientBundle::LORGNETTE_MANAGER },
-    { "shill",  DBusClientBundle::SHILL },
-    { "gsm_sms",  DBusClientBundle::GSM_SMS },
-    { "image_burner",  DBusClientBundle::IMAGE_BURNER },
-    { "modem_messaging",  DBusClientBundle::MODEM_MESSAGING },
-    { "permission_broker",  DBusClientBundle::PERMISSION_BROKER },
-    { "power_manager",  DBusClientBundle::POWER_MANAGER },
-    { "session_manager",  DBusClientBundle::SESSION_MANAGER },
-    { "sms",  DBusClientBundle::SMS },
-    { "system_clock",  DBusClientBundle::SYSTEM_CLOCK },
-    { "update_engine",  DBusClientBundle::UPDATE_ENGINE },
-};
-
-// Parses single command line param value for dbus subsystem. If successful,
-// returns its enum representation. Otherwise returns NO_CLIENT.
-DBusClientBundle::DBusClientType GetDBusClientType(
-    const std::string& client_type_name) {
-  for (size_t i = 0; i < arraysize(client_type_map); i++) {
-    if (base::LowerCaseEqualsASCII(client_type_name,
-                                   client_type_map[i].param_name))
-      return client_type_map[i].client_type;
-  }
-  return DBusClientBundle::NO_CLIENT;
-}
-
-}  // namespace
-
-DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
-    : unstub_client_mask_(unstub_client_mask) {
-  if (!IsUsingStub(ARC_OBB_MOUNTER))
+DBusClientBundle::DBusClientBundle(DBusClientTypeMask real_client_mask)
+    : real_client_mask_(real_client_mask) {
+  if (IsUsingReal(DBusClientType::ARC_OBB_MOUNTER))
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
   else
     arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
 
-  if (!IsUsingStub(CRAS))
+  if (IsUsingReal(DBusClientType::CRAS))
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
     cras_audio_client_.reset(new FakeCrasAudioClient);
 
-  cros_disks_client_.reset(CrosDisksClient::Create(
-      IsUsingStub(CROS_DISKS) ? STUB_DBUS_CLIENT_IMPLEMENTATION
-                              : REAL_DBUS_CLIENT_IMPLEMENTATION));
+  cros_disks_client_.reset(
+      CrosDisksClient::Create(IsUsingReal(DBusClientType::CROS_DISKS)
+                                  ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                                  : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (!IsUsingStub(CRYPTOHOME))
+  if (IsUsingReal(DBusClientType::CRYPTOHOME))
     cryptohome_client_.reset(CryptohomeClient::Create());
   else
     cryptohome_client_.reset(new FakeCryptohomeClient);
 
-  if (!IsUsingStub(DEBUG_DAEMON))
+  if (IsUsingReal(DBusClientType::DEBUG_DAEMON))
     debug_daemon_client_.reset(DebugDaemonClient::Create());
   else
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
-  if (!IsUsingStub(EASY_UNLOCK))
+  if (IsUsingReal(DBusClientType::EASY_UNLOCK))
     easy_unlock_client_.reset(EasyUnlockClient::Create());
   else
     easy_unlock_client_.reset(new FakeEasyUnlockClient);
 
-  if (!IsUsingStub(LORGNETTE_MANAGER))
+  if (IsUsingReal(DBusClientType::LORGNETTE_MANAGER))
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
 
-  if (!IsUsingStub(SHILL)) {
+  if (IsUsingReal(DBusClientType::SHILL)) {
     shill_manager_client_.reset(ShillManagerClient::Create());
     shill_device_client_.reset(ShillDeviceClient::Create());
     shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
@@ -150,7 +109,7 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
         new FakeShillThirdPartyVpnDriverClient);
   }
 
-  if (!IsUsingStub(GSM_SMS)) {
+  if (IsUsingReal(DBusClientType::GSM_SMS)) {
     gsm_sms_client_.reset(GsmSMSClient::Create());
   } else {
     FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
@@ -160,54 +119,56 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     gsm_sms_client_.reset(gsm_sms_client);
   }
 
-  if (!IsUsingStub(IMAGE_BURNER))
+  if (IsUsingReal(DBusClientType::IMAGE_BURNER))
     image_burner_client_.reset(ImageBurnerClient::Create());
   else
     image_burner_client_.reset(new FakeImageBurnerClient);
 
-  if (!IsUsingStub(MODEM_MESSAGING))
+  if (IsUsingReal(DBusClientType::MODEM_MESSAGING))
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
 
-  if (!IsUsingStub(PERMISSION_BROKER))
+  if (IsUsingReal(DBusClientType::PERMISSION_BROKER))
     permission_broker_client_.reset(PermissionBrokerClient::Create());
   else
     permission_broker_client_.reset(new FakePermissionBrokerClient);
 
-  power_manager_client_.reset(PowerManagerClient::Create(
-      IsUsingStub(POWER_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION
-                                 : REAL_DBUS_CLIENT_IMPLEMENTATION));
+  power_manager_client_.reset(
+      PowerManagerClient::Create(IsUsingReal(DBusClientType::POWER_MANAGER)
+                                     ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                                     : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  session_manager_client_.reset(SessionManagerClient::Create(
-      IsUsingStub(SESSION_MANAGER) ? STUB_DBUS_CLIENT_IMPLEMENTATION
-                                   : REAL_DBUS_CLIENT_IMPLEMENTATION));
+  session_manager_client_.reset(
+      SessionManagerClient::Create(IsUsingReal(DBusClientType::SESSION_MANAGER)
+                                       ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (!IsUsingStub(SMS))
+  if (IsUsingReal(DBusClientType::SMS))
     sms_client_.reset(SMSClient::Create());
   else
     sms_client_.reset(new FakeSMSClient);
 
-  if (!IsUsingStub(SYSTEM_CLOCK))
+  if (IsUsingReal(DBusClientType::SYSTEM_CLOCK))
     system_clock_client_.reset(SystemClockClient::Create());
   else
     system_clock_client_.reset(new FakeSystemClockClient);
 
-  update_engine_client_.reset(UpdateEngineClient::Create(
-      IsUsingStub(UPDATE_ENGINE) ? STUB_DBUS_CLIENT_IMPLEMENTATION
-                                 : REAL_DBUS_CLIENT_IMPLEMENTATION));
+  update_engine_client_.reset(
+      UpdateEngineClient::Create(IsUsingReal(DBusClientType::UPDATE_ENGINE)
+                                     ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                                     : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 }
 
-DBusClientBundle::~DBusClientBundle() {
+DBusClientBundle::~DBusClientBundle() {}
+
+bool DBusClientBundle::IsUsingReal(DBusClientType client) const {
+  return real_client_mask_ & static_cast<DBusClientTypeMask>(client);
 }
 
-bool DBusClientBundle::IsUsingStub(DBusClientType client) {
-  return !(unstub_client_mask_ & client);
-}
-
-bool DBusClientBundle::IsUsingAnyRealClient() {
-  // 'Using any real client' is equivalent to 'Unstubbed any client'.
-  return unstub_client_mask_ != 0;
+bool DBusClientBundle::IsUsingAnyRealClient() const {
+  return real_client_mask_ !=
+         static_cast<DBusClientTypeMask>(DBusClientType::NONE);
 }
 
 void DBusClientBundle::SetupDefaultEnvironment() {
@@ -215,24 +176,6 @@ void DBusClientBundle::SetupDefaultEnvironment() {
       shill_manager_client_->GetTestInterface();
   if (manager)
     manager->SetupDefaultEnvironment();
-}
-
-// static
-DBusClientBundle::DBusClientTypeMask DBusClientBundle::ParseUnstubList(
-    const std::string& unstub_list) {
-  DBusClientTypeMask unstub_mask = 0;
-  for (const std::string& cur : base::SplitString(
-           unstub_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    DBusClientBundle::DBusClientType client = GetDBusClientType(cur);
-    if (client != NO_CLIENT) {
-      LOG(WARNING) << "Unstubbing dbus client for " << cur;
-      unstub_mask |= client;
-    } else {
-      LOG(ERROR) << "Unknown dbus client: " << cur;
-    }
-  }
-
-  return unstub_mask;
 }
 
 }  // namespace chromeos

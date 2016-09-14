@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client_types.h"
 
 namespace chromeos {
 
@@ -41,47 +42,19 @@ class UpdateEngineClient;
 // system bus. See also the comment in the destructor of DBusThreadManager.
 class CHROMEOS_EXPORT DBusClientBundle {
  public:
-  typedef int DBusClientTypeMask;
-
-  // TODO(zelidrag): We might want to collapse few more of these subsystems if
-  // their dbus interfaced correspond to the same daemon.
-  enum DBusClientType {
-    NO_CLIENT = 0,
-    BLUETOOTH = 1 << 0,
-    CRAS = 1 << 1,
-    CROS_DISKS = 1 << 2,
-    CRYPTOHOME = 1 << 3,
-    DEBUG_DAEMON = 1 << 4,
-    EASY_UNLOCK = 1 << 5,
-    LORGNETTE_MANAGER = 1 << 6,
-    SHILL = 1 << 7,
-    GSM_SMS = 1 << 8,
-    IMAGE_BURNER = 1 << 9,
-    MODEM_MESSAGING = 1 << 10,
-    PERMISSION_BROKER = 1 << 11,
-    POWER_MANAGER = 1 << 12,
-    SESSION_MANAGER = 1 << 13,
-    SMS = 1 << 14,
-    SYSTEM_CLOCK = 1 << 15,
-    UPDATE_ENGINE = 1 << 16,
-    ARC_OBB_MOUNTER = 1 << 17,
-  };
-
-  explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
+  // Creates real implementations for |real_client_mask| and fakes for all
+  // others. Fakes are used when running on Linux desktop and in tests.
+  explicit DBusClientBundle(DBusClientTypeMask real_client_mask);
   ~DBusClientBundle();
 
-  // Returns true if |client| is stubbed.
-  bool IsUsingStub(DBusClientType client);
+  // Returns true if |client| has a real (non-fake) client implementation.
+  bool IsUsingReal(DBusClientType client) const;
 
   // Returns true if any real DBusClient is used.
-  bool IsUsingAnyRealClient();
+  bool IsUsingAnyRealClient() const;
 
   // Initialize proper runtime environment for its dbus clients.
   void SetupDefaultEnvironment();
-
-  // Parses command line param values for dbus subsystem that should be
-  // un-stubbed.
-  static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
 
   ArcObbMounterClient* arc_obb_mounter_client() {
     return arc_obb_mounter_client_.get();
@@ -174,9 +147,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
  private:
   friend class DBusThreadManagerSetter;
 
-  // Bitmask that defines which dbus clients are not stubbed out. Bitmap flags
-  // are defined within DBusClientType enum.
-  DBusClientTypeMask unstub_client_mask_;
+  // Bitmask for clients with real implementations.
+  const DBusClientTypeMask real_client_mask_;
 
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<CrasAudioClient> cras_audio_client_;

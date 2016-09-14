@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
@@ -135,8 +136,8 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
     chromeos::DBusThreadManager::Initialize();
     bluez::BluezDBusManager::Initialize(
         chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingStub(
-            chromeos::DBusClientBundle::BLUETOOTH));
+        chromeos::DBusThreadManager::Get()->IsUsingFake(
+            chromeos::DBusClientType::BLUETOOTH));
     client_ = chromeos::DBusThreadManager::Get()->GetEasyUnlockClient();
 
     extensions::ExtensionApiUnittest::SetUp();

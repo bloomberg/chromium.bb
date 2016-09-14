@@ -600,7 +600,7 @@ UpdateEngineClient* UpdateEngineClient::Create(
     DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new UpdateEngineClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestAutoUpdateUI))
     return new UpdateEngineClientFakeImpl();

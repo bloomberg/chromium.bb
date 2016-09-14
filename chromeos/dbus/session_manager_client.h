@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace cryptohome {

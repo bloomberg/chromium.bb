@@ -36,7 +36,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
