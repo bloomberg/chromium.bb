@@ -28,6 +28,7 @@ class ContentSettingBubbleViewsBridge;
 
 namespace views {
 class RadioButton;
+class LabelButton;
 }
 
 // ContentSettingBubbleContents is used when the user turns on different kinds
@@ -116,6 +117,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   RadioGroup radio_group_;
   views::Link* custom_link_;
   views::Link* manage_link_;
+  views::LabelButton* manage_button_;
   views::Link* learn_more_link_;
 
   // Combobox models the bubble owns.

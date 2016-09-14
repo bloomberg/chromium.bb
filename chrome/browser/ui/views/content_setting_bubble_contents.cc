@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -159,9 +160,10 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
-      custom_link_(NULL),
-      manage_link_(NULL),
-      learn_more_link_(NULL) {
+      custom_link_(nullptr),
+      manage_link_(nullptr),
+      manage_button_(nullptr),
+      learn_more_link_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
@@ -381,10 +383,18 @@ void ContentSettingBubbleContents::Init() {
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
-  manage_link_ = new views::Link(base::UTF8ToUTF16(
-      content_setting_bubble_model_->bubble_content().manage_link));
-  manage_link_->set_listener(this);
-  return manage_link_;
+  if (content_setting_bubble_model_->bubble_content()
+          .show_manage_text_as_button) {
+    manage_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, base::UTF8ToUTF16(
+                  content_setting_bubble_model_->bubble_content().manage_text));
+    return manage_button_;
+  } else {
+    manage_link_ = new views::Link(base::UTF8ToUTF16(
+        content_setting_bubble_model_->bubble_content().manage_text));
+    manage_link_->set_listener(this);
+    return manage_link_;
+  }
 }
 
 bool ContentSettingBubbleContents::Accept() {
@@ -415,10 +425,15 @@ void ContentSettingBubbleContents::DidNavigateMainFrame(
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  RadioGroup::const_iterator i(
-      std::find(radio_group_.begin(), radio_group_.end(), sender));
-  DCHECK(i != radio_group_.end());
-  content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
+  if (manage_button_ == sender) {
+    GetWidget()->Close();
+    content_setting_bubble_model_->OnManageLinkClicked();
+  } else {
+    RadioGroup::const_iterator i(
+        std::find(radio_group_.begin(), radio_group_.end(), sender));
+    DCHECK(i != radio_group_.end());
+    content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
+  }
 }
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,

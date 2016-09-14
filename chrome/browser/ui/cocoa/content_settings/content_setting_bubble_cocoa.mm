@@ -742,7 +742,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (void)initManageDoneButtons {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
-  [manageButton_ setTitle:base::SysUTF8ToNSString(content.manage_link)];
+  [manageButton_ setTitle:base::SysUTF8ToNSString(content.manage_text)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:[manageButton_ superview]];
 
   CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);

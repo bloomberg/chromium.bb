@@ -115,7 +115,7 @@ ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
   // Notifications do not have a bubble.
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   SetTitle();
-  SetManageLink();
+  SetManageText();
   SetCustomLink();
 }
 
@@ -162,7 +162,7 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
     set_title(l10n_util::GetStringUTF16(title_id));
 }
 
-void ContentSettingSimpleBubbleModel::SetManageLink() {
+void ContentSettingSimpleBubbleModel::SetManageText() {
   static const ContentSettingsTypeIdEntry kLinkIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_LINK},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_LINK},
@@ -176,7 +176,7 @@ void ContentSettingSimpleBubbleModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOADS_LINK},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
   };
-  set_manage_link(l10n_util::GetStringUTF8(
+  set_manage_text(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
 }
 
@@ -617,7 +617,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   SetTitle();
   SetRadioGroup();
   SetMediaMenus();
-  SetManageLink();
+  SetManageText();
   SetCustomLink();
 }
 
@@ -860,7 +860,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   }
 }
 
-void ContentSettingMediaStreamBubbleModel::SetManageLink() {
+void ContentSettingMediaStreamBubbleModel::SetManageText() {
   // By default, the manage link refers to both media types. We only need
   // to change the link text if only one media type was accessed.
   int link_id;
@@ -875,7 +875,7 @@ void ContentSettingMediaStreamBubbleModel::SetManageLink() {
     return;
   }
 
-  set_manage_link(l10n_util::GetStringUTF8(link_id));
+  set_manage_text(l10n_util::GetStringUTF8(link_id));
 }
 
 void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
@@ -1200,7 +1200,7 @@ ContentSettingSubresourceFilterBubbleModel::
     : ContentSettingBubbleModel(delegate, web_contents, profile) {
   SetTitle();
   SetMessage();
-  SetManageLink();
+  SetManageText();
 }
 
 ContentSettingSubresourceFilterBubbleModel::
@@ -1211,10 +1211,10 @@ void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
       l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
 }
 
-void ContentSettingSubresourceFilterBubbleModel::SetManageLink() {
-  // TODO(melandory): introduce the button instead of link.
-  set_manage_link(
+void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
+  set_manage_text(
       l10n_util::GetStringUTF8(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+  set_show_manage_text_as_button(true);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
@@ -1405,8 +1405,8 @@ ContentSettingBubbleModel::MediaMenu::~MediaMenu() {}
 
 ContentSettingBubbleModel::BubbleContent::BubbleContent()
     : radio_group_enabled(false),
-      custom_link_enabled(false) {
-}
+      custom_link_enabled(false),
+      show_manage_text_as_button(false) {}
 
 ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}
 

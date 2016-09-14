@@ -120,7 +120,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     std::vector<DomainList> domain_lists;
     std::string custom_link;
     bool custom_link_enabled;
-    std::string manage_link;
+    std::string manage_text;
+    bool show_manage_text_as_button;
     MediaMenuMap media_menus;
     std::string learn_more_link;
 
@@ -211,8 +212,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_custom_link_enabled(bool enabled) {
     bubble_content_.custom_link_enabled = enabled;
   }
-  void set_manage_link(const std::string& link) {
-    bubble_content_.manage_link = link;
+  void set_manage_text(const std::string& link) {
+    bubble_content_.manage_text = link;
+  }
+  void set_show_manage_text_as_button(bool show_manage_text_as_button) {
+    bubble_content_.show_manage_text_as_button = show_manage_text_as_button;
   }
   void set_learn_more_link(const std::string& link) {
     bubble_content_.learn_more_link = link;
@@ -233,7 +237,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
  private:
   virtual void SetTitle() = 0;
-  virtual void SetManageLink() = 0;
+  virtual void SetManageText() = 0;
 
   content::WebContents* web_contents_;
   Profile* profile_;
@@ -266,7 +270,7 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
  private:
   // ContentSettingBubbleModel implementation.
   void SetTitle() override;
-  void SetManageLink() override;
+  void SetManageText() override;
   void OnManageLinkClicked() override;
   void SetCustomLink();
   void OnCustomLinkClicked() override;
@@ -324,7 +328,7 @@ class ContentSettingSubresourceFilterBubbleModel
 
   // ContentSettingBubbleModel:
   void SetTitle() override;
-  void SetManageLink() override;
+  void SetManageText() override;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterBubbleModel);
 };
@@ -350,7 +354,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 
   // ContentSettingBubbleModel:
   void SetTitle() override;
-  void SetManageLink() override;
+  void SetManageText() override;
 
   // Sets the data for the radio buttons of the bubble.
   void SetRadioGroup();
