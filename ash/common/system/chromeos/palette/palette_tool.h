@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -51,6 +52,12 @@ class ASH_EXPORT PaletteTool {
 
     // Returns the root window.
     virtual WmWindow* GetWindow() = 0;
+
+    // Record usage of each pen palette option.
+    virtual void RecordPaletteOptionsUsage(PaletteTrayOptions option) = 0;
+
+    // Record mode cancellation of pen palette.
+    virtual void RecordPaletteModeCancellation(PaletteModeCancelType type) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

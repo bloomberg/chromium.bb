@@ -58,6 +58,8 @@ class PaletteToolManagerTest : public ::testing::Test,
     NOTREACHED();
     return nullptr;
   }
+  void RecordPaletteOptionsUsage(PaletteTrayOptions option) override {}
+  void RecordPaletteModeCancellation(PaletteModeCancelType type) override {}
 
   // PaletteTool::Delegate:
   void EnableTool(PaletteToolId tool_id) override {}

@@ -20,6 +20,8 @@ class MockPaletteToolDelegate : public PaletteTool::Delegate {
   MOCK_METHOD1(DisableTool, void(PaletteToolId tool_id));
   MOCK_METHOD0(HidePalette, void());
   MOCK_METHOD0(GetWindow, WmWindow*());
+  MOCK_METHOD1(RecordPaletteOptionsUsage, void(PaletteTrayOptions option));
+  MOCK_METHOD1(RecordPaletteModeCancellation, void(PaletteModeCancelType type));
 };
 
 }  // namespace ash

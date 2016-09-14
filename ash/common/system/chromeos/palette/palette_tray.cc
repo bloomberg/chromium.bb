@@ -18,6 +18,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "base/metrics/histogram_macros.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,9 +109,13 @@ class TitleView : public views::View, public views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == settings_button_) {
+      palette_tray_->RecordPaletteOptionsUsage(
+          PaletteTrayOptions::PALETTE_SETTINGS_BUTTON);
       WmShell::Get()->system_tray_delegate()->ShowPaletteSettings();
       palette_tray_->HidePalette();
     } else if (sender == help_button_) {
+      palette_tray_->RecordPaletteOptionsUsage(
+          PaletteTrayOptions::PALETTE_HELP_BUTTON);
       WmShell::Get()->system_tray_delegate()->ShowPaletteHelp();
       palette_tray_->HidePalette();
     } else {
@@ -173,7 +178,9 @@ PaletteTray::~PaletteTray() {
 
 bool PaletteTray::PerformAction(const ui::Event& event) {
   if (bubble_) {
-    bubble_.reset();
+    if (num_actions_in_bubble_ == 0)
+      RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION);
+    HidePalette();
     return true;
   }
 
@@ -243,7 +250,9 @@ void PaletteTray::OnLockStateChanged(bool locked) {
 }
 
 void PaletteTray::ClickedOutsideBubble() {
-  bubble_.reset();
+  if (num_actions_in_bubble_ == 0)
+    RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION);
+  HidePalette();
 }
 
 base::string16 PaletteTray::GetAccessibleNameForTray() {
@@ -252,7 +261,7 @@ base::string16 PaletteTray::GetAccessibleNameForTray() {
 
 void PaletteTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {
   if (bubble_->bubble_view() == bubble_view)
-    bubble_.reset();
+    HidePalette();
 }
 
 void PaletteTray::BubbleViewDestroyed() {
@@ -310,7 +319,30 @@ void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 }
 
 void PaletteTray::HidePalette() {
+  is_bubble_auto_opened_ = false;
+  num_actions_in_bubble_ = 0;
   bubble_.reset();
+}
+
+void PaletteTray::RecordPaletteOptionsUsage(PaletteTrayOptions option) {
+  DCHECK_NE(option, PaletteTrayOptions::PALETTE_OPTIONS_COUNT);
+
+  if (is_bubble_auto_opened_) {
+    UMA_HISTOGRAM_ENUMERATION("Ash.Shelf.Palette.Usage.AutoOpened", option,
+                              PaletteTrayOptions::PALETTE_OPTIONS_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Ash.Shelf.Palette.Usage", option,
+                              PaletteTrayOptions::PALETTE_OPTIONS_COUNT);
+  }
+}
+
+void PaletteTray::RecordPaletteModeCancellation(PaletteModeCancelType type) {
+  if (type == PaletteModeCancelType::PALETTE_MODE_CANCEL_TYPE_COUNT)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Ash.Shelf.Palette.ModeCancellation", type,
+      PaletteModeCancelType::PALETTE_MODE_CANCEL_TYPE_COUNT);
 }
 
 bool PaletteTray::ShouldBlockShelfAutoHide() const {
@@ -318,6 +350,7 @@ bool PaletteTray::ShouldBlockShelfAutoHide() const {
 }
 
 void PaletteTray::OnActiveToolChanged() {
+  ++num_actions_in_bubble_;
   UpdateTrayIcon();
 }
 
@@ -361,10 +394,12 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   if (!WmShell::Get()->palette_delegate()->ShouldAutoOpenPalette())
     return;
 
-  if (stylus_state == ui::StylusState::REMOVED && !bubble_)
+  if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
+    is_bubble_auto_opened_ = true;
     ShowPalette();
-  else if (stylus_state == ui::StylusState::INSERTED && bubble_)
-    bubble_.reset();
+  } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
+    HidePalette();
+  }
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {

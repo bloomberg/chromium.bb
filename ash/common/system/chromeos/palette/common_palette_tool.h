@@ -8,6 +8,7 @@
 #include "ash/common/system/chromeos/palette/palette_tool.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -41,6 +42,10 @@ class CommonPaletteTool : public PaletteTool, public ash::ViewClickListener {
 
  private:
   HoverHighlightView* highlight_view_ = nullptr;
+
+  // start_time_ is initialized when the tool becomes active.
+  // Used for recording UMA metrics.
+  base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CommonPaletteTool);
 };

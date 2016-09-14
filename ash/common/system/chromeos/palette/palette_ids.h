@@ -27,9 +27,41 @@ enum class PaletteToolId {
   MAGNIFY,
 };
 
+// Usage of each pen palette option. This enum is used to back an UMA histogram
+// and should be treated as append-only.
+enum PaletteTrayOptions {
+  PALETTE_CLOSED_NO_ACTION = 0,
+  PALETTE_SETTINGS_BUTTON,
+  PALETTE_HELP_BUTTON,
+  PALETTE_CAPTURE_REGION,
+  PALETTE_CAPTURE_SCREEN,
+  PALETTE_NEW_NOTE,
+  PALETTE_MAGNIFY,
+  PALETTE_LASER_POINTER,
+  PALETTE_OPTIONS_COUNT
+};
+
+// Type of palette mode cancellation. This enum is used to back an UMA histogram
+// and should be treated as append-only.
+enum PaletteModeCancelType {
+  PALETTE_MODE_LASER_POINTER_CANCELLED = 0,
+  PALETTE_MODE_LASER_POINTER_SWITCHED,
+  PALETTE_MODE_MAGNIFY_CANCELLED,
+  PALETTE_MODE_MAGNIFY_SWITCHED,
+  PALETTE_MODE_CANCEL_TYPE_COUNT
+};
+
 // Helper functions that convert PaletteToolIds and PaletteGroups to strings.
 ASH_EXPORT std::string PaletteToolIdToString(PaletteToolId tool_id);
 ASH_EXPORT std::string PaletteGroupToString(PaletteGroup group);
+
+// Helper functions that convert PaletteToolIds to PaletteTrayOptions.
+ASH_EXPORT PaletteTrayOptions
+PaletteToolIdToPaletteTrayOptions(PaletteToolId tool_id);
+
+// Helper functions that convert PaletteToolIds to PaletteModeCancelType.
+ASH_EXPORT PaletteModeCancelType
+PaletteToolIdToPaletteModeCancelType(PaletteToolId tool_id, bool is_switched);
 
 }  // namespace ash
 

@@ -61,6 +61,8 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // PaletteToolManager::Delegate:
   void HidePalette() override;
+  void RecordPaletteOptionsUsage(PaletteTrayOptions option) override;
+  void RecordPaletteModeCancellation(PaletteModeCancelType type) override;
 
   // Returns true if the shelf should not autohide.
   bool ShouldBlockShelfAutoHide() const;
@@ -120,6 +122,13 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
+
+  // Used to indicate whether the palette bubble is automatically opened by a
+  // stylus eject event.
+  bool is_bubble_auto_opened_ = false;
+
+  // Number of actions in pen palette bubble.
+  int num_actions_in_bubble_ = 0;
 
   base::WeakPtrFactory<PaletteTray> weak_factory_;
 

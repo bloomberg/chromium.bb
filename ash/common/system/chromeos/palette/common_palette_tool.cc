@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,6 +34,18 @@ const int kExtraMarginFromLeftEdge = 4;
 // Distance between the icon and the name of the tool in DP.
 const int kMarginBetweenIconAndText = 18;
 
+void AddHistogramTimes(PaletteToolId id, base::TimeDelta duration) {
+  if (id == PaletteToolId::LASER_POINTER) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Ash.Shelf.Palette.InLaserPointerMode", duration,
+                               base::TimeDelta::FromMilliseconds(100),
+                               base::TimeDelta::FromHours(1), 50);
+  } else if (id == PaletteToolId::MAGNIFY) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Ash.Shelf.Palette.InMagnifyMode", duration,
+                               base::TimeDelta::FromMilliseconds(100),
+                               base::TimeDelta::FromHours(1), 50);
+  }
+}
+
 }  // namespace
 
 CommonPaletteTool::CommonPaletteTool(Delegate* delegate)
@@ -52,6 +65,7 @@ void CommonPaletteTool::OnViewDestroyed() {
 
 void CommonPaletteTool::OnEnable() {
   PaletteTool::OnEnable();
+  start_time_ = base::TimeTicks::Now();
 
   if (highlight_view_) {
     highlight_view_->SetHighlight(true);
@@ -61,6 +75,7 @@ void CommonPaletteTool::OnEnable() {
 
 void CommonPaletteTool::OnDisable() {
   PaletteTool::OnDisable();
+  AddHistogramTimes(GetToolId(), base::TimeTicks::Now() - start_time_);
 
   if (highlight_view_) {
     highlight_view_->SetHighlight(false);
@@ -69,10 +84,16 @@ void CommonPaletteTool::OnDisable() {
 }
 
 void CommonPaletteTool::OnViewClicked(views::View* sender) {
-  if (enabled())
+  delegate()->RecordPaletteOptionsUsage(
+      PaletteToolIdToPaletteTrayOptions(GetToolId()));
+  if (enabled()) {
     delegate()->DisableTool(GetToolId());
-  else
+    delegate()->RecordPaletteModeCancellation(
+        PaletteToolIdToPaletteModeCancelType(GetToolId(),
+                                             false /*is_switched*/));
+  } else {
     delegate()->EnableTool(GetToolId());
+  }
 }
 
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
