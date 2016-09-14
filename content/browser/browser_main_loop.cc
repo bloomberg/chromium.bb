@@ -1096,12 +1096,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       case BrowserThread::IO: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
         ResetThread_IO(std::move(io_thread_));
-
-        // TODO(alokp): Remove after collecting crash data.
-        // Temporary checks to verify that all shared workers are terminated.
-        // It is suspected that shared workers prevent render process hosts
-        // from shutting down: crbug.com/608049
-        RenderProcessHostImpl::CheckAllWorkersTerminated();
         break;
       }
       case BrowserThread::UI:

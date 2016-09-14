@@ -250,12 +250,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void RegisterRendererMainThreadFactory(
       RendererMainThreadFactoryFunction create);
 
-  // TODO(alokp): Remove after collecting crash data.
-  // Temporary checks to verify that all shared workers are terminated.
-  // It is suspected that shared workers prevent render process hosts
-  // from shutting down: crbug.com/608049
-  static void CheckAllWorkersTerminated();
-
 #if defined(OS_ANDROID)
   const scoped_refptr<BrowserDemuxerAndroid>& browser_demuxer_android() {
     return browser_demuxer_android_;

@@ -791,32 +791,6 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
   g_renderer_main_thread_factory = create;
 }
 
-// static
-// TODO(alokp): Remove after collecting crash data.
-// Temporary checks to verify that all shared workers are terminated.
-// It is suspected that shared workers prevent render process hosts
-// from shutting down: crbug.com/608049
-void RenderProcessHostImpl::CheckAllWorkersTerminated() {
-  iterator iter(AllHostsIterator());
-  while (!iter.IsAtEnd()) {
-    RenderProcessHostImpl* host =
-        static_cast<RenderProcessHostImpl*>(iter.GetCurrentValue());
-    if (host->worker_ref_count() != 0) {
-      std::string message = base::StringPrintf(
-          "%zu service workers, %zu shared workers",
-          host->service_worker_ref_count_, host->shared_worker_ref_count_);
-      // Use separate CHECKs for better crash report readability.
-      CHECK(host->service_worker_ref_count_ == 0 ||
-            host->shared_worker_ref_count_ == 0)
-          << message;
-      CHECK_EQ(0UL, host->service_worker_ref_count_) << message;
-      CHECK_EQ(0UL, host->shared_worker_ref_count_) << message;
-    }
-
-    iter.Advance();
-  }
-}
-
 RenderProcessHostImpl::~RenderProcessHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #ifndef NDEBUG

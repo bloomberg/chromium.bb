@@ -98,12 +98,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
 
   void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id);
 
-  // TODO(alokp): Remove after collecting crash data.
-  // Temporary checks to verify that all shared workers are terminated.
-  // It is suspected that shared workers prevent render process hosts
-  // from shutting down: crbug.com/608049
-  void CheckAllWorkersTerminated();
-
  private:
   class SharedWorkerPendingInstance;
   class SharedWorkerReserver;

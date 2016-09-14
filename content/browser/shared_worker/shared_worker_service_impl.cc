@@ -474,15 +474,6 @@ void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
                     WorkerDestroyed(worker_process_id, worker_route_id));
 }
 
-// TODO(alokp): Remove after collecting crash data.
-// Temporary checks to verify that all shared workers are terminated.
-// It is suspected that shared workers prevent render process hosts
-// from shutting down: crbug.com/608049
-void SharedWorkerServiceImpl::CheckAllWorkersTerminated() {
-  std::set<int> dependent_renderers = GetRenderersWithWorkerDependency();
-  CHECK_EQ(0u, dependent_renderers.size());
-}
-
 blink::WebWorkerCreationError
 SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
     std::unique_ptr<SharedWorkerPendingInstance> pending_instance) {
