@@ -457,7 +457,8 @@ def diff_binary(first_filepath, second_filepath, file_len):
       #   6 -  7: machine
       #   8 - 11: timestamp.
       COFF_HEADER_TO_COMPARE_SIZE = 12
-      if (sys.platform == 'win32' and first_filepath.endswith('.obj')
+      if (sys.platform == 'win32'
+          and os.path.splitext(first_filepath)[1] in ('.o', '.obj')
           and file_len > COFF_HEADER_TO_COMPARE_SIZE):
         rhs_data = rhs.read(COFF_HEADER_TO_COMPARE_SIZE)
         lhs_data = lhs.read(COFF_HEADER_TO_COMPARE_SIZE)
