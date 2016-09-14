@@ -86,7 +86,7 @@
 
     <request name="preedit_styling">
       <description summary="pre-edit styling">
-	Sets styling information on composing text. The style is applied for
+	Set the styling information on composing text. The style is applied for
 	length in bytes from index relative to the beginning of
 	the composing text (as byte offset). Multiple styles can
 	be applied to a composing text.
@@ -100,7 +100,7 @@
 
     <request name="preedit_cursor">
       <description summary="pre-edit cursor">
-	Sets the cursor position inside the composing text (as byte offset)
+	Set the cursor position inside the composing text (as byte offset)
 	relative to the start of the composing text.
 
 	When index is negative no cursor should be displayed.
@@ -112,6 +112,8 @@
 
     <request name="delete_surrounding_text">
       <description summary="delete text">
+	Remove the surrounding text.
+
 	This request will be handled on the text_input side directly following
 	a commit_string request.
       </description>
@@ -121,7 +123,7 @@
 
     <request name="cursor_position">
       <description summary="set cursor to a new position">
-	Sets the cursor and anchor to a new position. Index is the new cursor
+	Set the cursor and anchor to a new position. Index is the new cursor
 	position in bytes (when >= 0 this is relative to the end of the inserted text,
 	otherwise it is relative to the beginning of the inserted text). Anchor is
 	the new anchor position in bytes (when >= 0 this is relative to the end of the
@@ -156,7 +158,7 @@
 
     <request name="grab_keyboard">
       <description summary="grab hardware keyboard">
-	Allows an input method to receive hardware keyboard input and process
+	Allow an input method to receive hardware keyboard input and process
 	key events to generate text events (with pre-edit) over the wire. This
 	allows input methods which compose multiple key events for inputting
 	text like it is done for CJK languages.
@@ -166,11 +168,9 @@
 
     <request name="key">
       <description summary="forward key event">
-	Should be used when filtering key events with grab_keyboard.
-
-	When the wl_keyboard::key event is not processed by the input
-	method itself and should be sent to the client instead, forward it
-	with this request. The arguments should be the ones from the
+	Forward a wl_keyboard::key event to the client that was not processed
+	by the input method itself. Should be used when filtering key events
+	with grab_keyboard.  The arguments should be the ones from the
 	wl_keyboard::key event.
 
 	For generating custom key events use the keysym request instead.
@@ -183,10 +183,9 @@
 
     <request name="modifiers">
       <description summary="forward modifiers event">
-	Should be used when filtering key events with grab_keyboard.
-
-	When the wl_keyboard::modifiers event should also be sent to the
-	client, forward it with this request. The arguments should be the ones
+	Forward a wl_keyboard::modifiers event to the client that was not
+	processed by the input method itself.  Should be used when filtering
+	key events with grab_keyboard. The arguments should be the ones
 	from the wl_keyboard::modifiers event.
       </description>
       <arg name="serial" type="uint" summary="serial from wl_keyboard::modifiers"/>
@@ -285,6 +284,8 @@
 
     <request name="set_toplevel">
       <description summary="set the surface type as a keyboard">
+	Set the input_panel_surface type to keyboard.
+
 	A keyboard surface is only shown when a text input is active.
       </description>
       <arg name="output" type="object" interface="wl_output"/>
@@ -293,8 +294,10 @@
 
     <request name="set_overlay_panel">
       <description summary="set the surface type as an overlay panel">
-	An overlay panel is shown near the input cursor above the application
-	window when a text input is active.
+	Set the input_panel_surface to be an overlay panel.
+
+	This is shown near the input cursor above the application window when
+	a text input is active.
       </description>
     </request>
   </interface>
