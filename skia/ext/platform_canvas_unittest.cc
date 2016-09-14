@@ -38,7 +38,12 @@ namespace skia {
 
 namespace {
 
-#if defined(OS_WIN)
+// Uses DstATop transfer mode with SK_ColorBLACK 0xff000000:
+//   the destination pixel will end up with 0xff alpha
+//   if it was transparent black (0x0) before the blend,
+//      it will be set to opaque black (0xff000000).
+//   if it has nonzero alpha before the blend,
+//      it will retain its color.
 void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   if (width <= 0 || height <= 0)
     return;
@@ -51,7 +56,6 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
   canvas->drawRect(rect, paint);
 }
-#endif
 
 bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
   // For masking out the alpha values.
@@ -276,9 +280,7 @@ TEST(PlatformCanvas, FillLayer) {
   {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), 0, 0, 100, 100);
-#endif
   }
   EXPECT_TRUE(VerifyBlackRect(*canvas, kLayerX, kLayerY, kLayerW, kLayerH));
 
@@ -287,9 +289,7 @@ TEST(PlatformCanvas, FillLayer) {
   {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
-#endif
   }
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH));
 
@@ -300,9 +300,7 @@ TEST(PlatformCanvas, FillLayer) {
     canvas->save();
     AddClip(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
-#endif
     canvas->restore();
   }
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH));
@@ -314,15 +312,11 @@ TEST(PlatformCanvas, FillLayer) {
   {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), 0, 0, 100, 100);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH));
 }
-
-#if !defined(USE_AURA)  // http://crbug.com/154358
 
 // Test that translation + make layer works properly.
 TEST(PlatformCanvas, TranslateLayer) {
@@ -337,9 +331,7 @@ TEST(PlatformCanvas, TranslateLayer) {
   {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), 0, 0, 100, 100);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyBlackRect(*canvas, kLayerX + 1, kLayerY + 1,
@@ -352,9 +344,7 @@ TEST(PlatformCanvas, TranslateLayer) {
   {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX + 1, kInnerY + 1,
@@ -367,9 +357,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(*canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     canvas->translate(1, 1);
     DrawNativeRect(*canvas, kInnerX, kInnerY, kInnerW, kInnerH);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kInnerX, kInnerY, kInnerW, kInnerH);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX + 1, kInnerY + 1,
@@ -385,9 +373,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     canvas->translate(1, 1);
     AddClip(*canvas, kInnerX + 1, kInnerY + 1, kInnerW - 1, kInnerH - 1);
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kLayerX, kLayerY, kLayerW, kLayerH);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyBlackRect(*canvas, kInnerX + 3, kInnerY + 3,
@@ -395,7 +381,7 @@ TEST(PlatformCanvas, TranslateLayer) {
 
 // TODO(dglazkov): Figure out why this fails on Mac (antialiased clipping?),
 // modify test and remove this guard.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(USE_AURA)
   // Translate both before and after, and have a path clip.
   canvas->drawColor(SK_ColorWHITE);
   canvas->save();
@@ -414,16 +400,12 @@ TEST(PlatformCanvas, TranslateLayer) {
     canvas->clipPath(path);
 
     DrawNativeRect(*canvas, 0, 0, 100, 100);
-#if defined(OS_WIN)
     MakeOpaque(canvas.get(), kLayerX, kLayerY, kLayerW, kLayerH);
-#endif
   }
   canvas->restore();
   EXPECT_TRUE(VerifyRoundedRect(*canvas, SK_ColorWHITE, SK_ColorBLACK,
                                 kInnerX + 1, kInnerY + 1, kInnerW, kInnerH));
 #endif
 }
-
-#endif  // #if !defined(USE_AURA)
 
 }  // namespace skia
