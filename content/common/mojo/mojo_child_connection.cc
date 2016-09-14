@@ -134,7 +134,6 @@ MojoChildConnection::MojoChildConnection(
   mojo::ScopedMessagePipeHandle service_pipe =
       mojo::edk::CreateParentMessagePipe(service_token_, child_token);
 
-  context_ = new IOThreadContext;
   context_->Initialize(child_identity_, connector, std::move(service_pipe),
                        io_task_runner);
   remote_interfaces_.Forward(
