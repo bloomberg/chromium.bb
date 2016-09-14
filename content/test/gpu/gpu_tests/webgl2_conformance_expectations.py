@@ -159,6 +159,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # self.Fail('deqp/functional/gles3/fbocompleteness.html',
     #     ['mac', ('nvidia', 0xfe9)], bug=616562)
 
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['mac'], bug=634525)
+
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=641129)
 
