@@ -72,16 +72,17 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         v8SetReturnValue(info, info.Holder());
         return;
     }
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper);

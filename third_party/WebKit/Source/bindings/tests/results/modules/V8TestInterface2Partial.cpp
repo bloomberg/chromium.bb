@@ -26,17 +26,18 @@ namespace TestInterface2PartialV8Internal {
 
 static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial1", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     TestInterface2Partial::voidMethodPartial1(*impl, value);
 }
 
@@ -47,17 +48,18 @@ static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPartial2", "TestInterface2", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     TestInterface2Partial2::voidMethodPartial2(*impl, value);
 }
 

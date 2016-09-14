@@ -154,22 +154,25 @@ void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::Fun
 
 static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterfaceOriginTrialEnabled", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodDoubleArgFloatArg");
+
+    TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+
     double doubleArg;
     float floatArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-        floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
@@ -181,25 +184,27 @@ static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallback
 static void voidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+
     impl->voidMethodPartialOverload();
 }
 
 static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodPartialOverload", "TestInterfaceOriginTrialEnabled", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
+
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
+
     double doubleArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodPartialOverload(doubleArg);
 }
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodPartialOverload", "TestInterfaceOriginTrialEnabled", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -214,10 +219,14 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -51,15 +51,15 @@ namespace TestInterfaceConstructor3V8Internal {
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor3", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor3", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     TestInterfaceConstructor3* impl = TestInterfaceConstructor3::create(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper);

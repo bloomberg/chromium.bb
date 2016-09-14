@@ -80,19 +80,21 @@ void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(info.Holder());
+
     Document* document;
-    {
-        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!document) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", "parameter 1 is not of type 'Document'."));
-            return;
-        }
+    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!document) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestIntegerIndexedGlobal", "parameter 1 is not of type 'Document'."));
+
+        return;
     }
+
     impl->voidMethodDocument(document);
 }
 

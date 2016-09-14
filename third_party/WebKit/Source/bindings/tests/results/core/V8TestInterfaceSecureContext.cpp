@@ -237,6 +237,7 @@ void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(co
 static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextMethod();
 }
 
@@ -248,6 +249,7 @@ static void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextRuntimeEnabledMethod();
 }
 
@@ -259,6 +261,7 @@ static void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCa
 static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextWindowExposedMethod();
 }
 
@@ -270,6 +273,7 @@ static void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCal
 static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextWorkerExposedMethod();
 }
 
@@ -281,6 +285,7 @@ static void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCal
 static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
@@ -292,6 +297,7 @@ static void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v
 static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(info.Holder());
+
     impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 

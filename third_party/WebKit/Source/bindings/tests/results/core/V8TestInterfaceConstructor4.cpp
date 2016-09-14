@@ -52,13 +52,13 @@ namespace TestInterfaceConstructor4V8Internal {
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceConstructor4* testInterface4Arg;
-    {
-        testInterface4Arg = V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterface4Arg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor4", "parameter 1 is not of type 'TestInterfaceConstructor4'."));
-            return;
-        }
+    testInterface4Arg = V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterface4Arg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor4", "parameter 1 is not of type 'TestInterfaceConstructor4'."));
+
+        return;
     }
+
     TestInterfaceConstructor4* impl = TestInterfaceConstructor4::create(testInterface4Arg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper);
@@ -67,13 +67,13 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor4");
+
     V8StringResource<> usvStringArg;
-    {
-        usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     TestInterfaceConstructor4* impl = TestInterfaceConstructor4::create(usvStringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper);

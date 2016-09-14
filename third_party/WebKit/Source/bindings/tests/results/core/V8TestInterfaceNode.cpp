@@ -231,6 +231,7 @@ void reflectUrlStringAttributeAttributeSetterCallback(const v8::FunctionCallback
 static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
+
     v8SetReturnValueFast(info, impl->testInterfaceEmptyMethod(), impl);
 }
 
@@ -242,6 +243,7 @@ static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInf
 static void perWorldBindingsTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
+
     v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethod(), impl);
 }
 
@@ -253,6 +255,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallback(const v8::Fun
 static void perWorldBindingsTestInterfaceEmptyMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
+
     v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethod());
 }
 
@@ -263,24 +266,25 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(c
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", "TestInterfaceNode", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceNode", "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg");
+
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
+
     bool optionalBooleanArgument;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(), impl);
-            return;
-        }
-        optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(), impl);
+        return;
+    }
+    optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument), impl);
 }
 
@@ -291,24 +295,25 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCall
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", "TestInterfaceNode", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceNode", "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg");
+
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
+
     bool optionalBooleanArgument;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg());
-            return;
-        }
-        optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg());
+        return;
+    }
+    optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument));
 }
 

@@ -85,19 +85,21 @@ void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("func", "TestInterfaceGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("func", "TestInterfaceGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     TestInterfaceGarbageCollected* arg;
-    {
-        arg = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!arg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("func", "TestInterfaceGarbageCollected", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."));
-            return;
-        }
+    arg = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!arg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("func", "TestInterfaceGarbageCollected", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."));
+
+        return;
     }
+
     impl->func(arg);
 }
 
@@ -108,9 +110,12 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "keys");
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -125,9 +130,12 @@ static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "values");
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -142,9 +150,12 @@ static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "entries");
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -159,23 +170,28 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "forEach");
+
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptValue callback;
     ScriptValue thisArg;
-    {
-        if (!info[0]->IsFunction()) {
-            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            return;
-        }
-        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
-        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    if (!info[0]->IsFunction()) {
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+
+        return;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
+    thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -189,19 +205,22 @@ static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "has");
+
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     bool result = impl->hasForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -216,19 +235,22 @@ static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "add");
+
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     TestInterfaceGarbageCollected* result = impl->addForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -243,9 +265,12 @@ static void addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "clear", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "clear");
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     impl->clearForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -259,19 +284,22 @@ static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "delete", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "delete");
+
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     bool result = impl->deleteForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -286,9 +314,12 @@ static void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterfaceGarbageCollected", "iterator");
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -304,15 +335,15 @@ static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
+
     V8StringResource<> str;
-    {
-        str = info[0];
-        if (!str.prepare())
-            return;
-    }
+    str = info[0];
+    if (!str.prepare())
+        return;
+
     TestInterfaceGarbageCollected* impl = TestInterfaceGarbageCollected::create(str);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceGarbageCollected::wrapperTypeInfo, wrapper);

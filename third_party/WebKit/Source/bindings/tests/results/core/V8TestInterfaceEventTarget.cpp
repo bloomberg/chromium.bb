@@ -72,6 +72,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
         v8SetReturnValue(info, info.Holder());
         return;
     }
+
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceEventTarget* impl = TestInterfaceEventTarget::createForJSConstructor(document);
     v8::Local<v8::Object> wrapper = info.Holder();

@@ -407,6 +407,46 @@ def shorten_union_name(union_type):
     return name
 
 
+def format_remove_duplicates(text, patterns):
+    """Removes duplicated line-basis patterns.
+
+    Based on simple pattern matching, removes duplicated lines in a block
+    of lines.  Lines that match with a same pattern are considered as
+    duplicates.
+
+    Designed to be used as a filter function for Jinja2.
+
+    Args:
+        text: A str of multi-line text.
+        patterns: A list of str where each str represents a simple
+            pattern.  The patterns are not considered as regexp, and
+            exact match is applied.
+
+    Returns:
+        A formatted str with duplicates removed.
+    """
+    pattern_founds = [False] * len(patterns)
+    output = []
+    for line in text.split('\n'):
+        to_be_removed = False
+        for i, pattern in enumerate(patterns):
+            if pattern not in line:
+                continue
+            if pattern_founds[i]:
+                to_be_removed = True
+            else:
+                pattern_founds[i] = True
+        if to_be_removed:
+            continue
+        output.append(line)
+
+    # Let |'\n'.join| emit the last newline.
+    if output:
+        output.append('')
+
+    return '\n'.join(output)
+
+
 def format_blink_cpp_source_code(text):
     """Formats C++ source code.
 
@@ -423,6 +463,7 @@ def format_blink_cpp_source_code(text):
     Returns:
         A formatted str of the source code.
     """
+    re_empty_line = re.compile(r'^\s*$')
     re_first_brace = re.compile(r'(?P<first>[{}])')
     re_last_brace = re.compile(r'.*(?P<last>[{}]).*?$')
     was_open_brace = True  # Trick to remove the empty lines at the beginning.
@@ -430,7 +471,7 @@ def format_blink_cpp_source_code(text):
     output = []
     for line in text.split('\n'):
         # Skip empty lines.
-        if not line:  # empty line
+        if re_empty_line.match(line):
             was_empty_line = True
             continue
 

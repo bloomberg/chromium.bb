@@ -67,19 +67,21 @@ void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallb
 
 static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     Document* document;
-    {
-        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!document) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
-            return;
-        }
+    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!document) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
+
+        return;
     }
+
     impl->voidMethodDocument(document);
 }
 
@@ -90,9 +92,12 @@ static void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterface3", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "keys");
+
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->iterableKeys(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -107,9 +112,12 @@ static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterface3", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "values");
+
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -124,9 +132,12 @@ static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterface3", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "entries");
+
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -141,23 +152,28 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface3", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "forEach");
+
+    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     ScriptValue callback;
     ScriptValue thisArg;
-    {
-        if (!info[0]->IsFunction()) {
-            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            return;
-        }
-        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
-        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    if (!info[0]->IsFunction()) {
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+
+        return;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
+    thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -172,6 +188,7 @@ static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
@@ -182,9 +199,12 @@ static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 
 static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface3", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface3", "iterator");
+
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;

@@ -86,7 +86,7 @@ import v8_union
 from v8_utilities import capitalize, cpp_name, for_origin_trial_feature, unique_by
 from utilities import (
     idl_filename_to_component, is_valid_component_dependency, is_testing_target,
-    shorten_union_name, format_blink_cpp_source_code)
+    shorten_union_name, format_remove_duplicates, format_blink_cpp_source_code)
 
 
 def normalize_and_sort_includes(include_paths):
@@ -430,6 +430,7 @@ def initialize_jinja_env(cache_dir):
         'exposed': exposed_if,
         'for_origin_trial_feature': for_origin_trial_feature,
         'format_blink_cpp_source_code': format_blink_cpp_source_code,
+        'format_remove_duplicates': format_remove_duplicates,
         'runtime_enabled': runtime_enabled_if,
         'secure_context': secure_context_if,
         'unique_by': unique_by,

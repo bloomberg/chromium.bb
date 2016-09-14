@@ -55,8 +55,9 @@ namespace TestInterfaceConstructorV8Internal {
 
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, exceptionState);
@@ -70,7 +71,9 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     double doubleArg;
     V8StringResource<> stringArg;
     TestInterfaceEmpty* testInterfaceEmptyArg;
@@ -80,48 +83,58 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     HeapVector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
     Dictionary optionalDictionaryArg;
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-        stringArg = info[1];
-        if (!stringArg.prepare())
-            return;
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
-        if (!testInterfaceEmptyArg) {
-            exceptionState.throwTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
-            return;
-        }
-        if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
-            exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
-            return;
-        }
-        dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
-            exceptionState.throwTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
-            return;
-        }
-        optionalDictionaryArg = Dictionary(info[7], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
-        if (!optionalTestInterfaceEmptyArg) {
-            exceptionState.throwTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
-            return;
-        }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    stringArg = info[1];
+    if (!stringArg.prepare())
+        return;
+
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+    if (!testInterfaceEmptyArg) {
+        exceptionState.throwTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
+
+        return;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
+        exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
+
+        return;
+    }
+    dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
+        exceptionState.throwTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
+
+        return;
+    }
+    optionalDictionaryArg = Dictionary(info[7], info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
+    if (!optionalTestInterfaceEmptyArg) {
+        exceptionState.throwTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
+
+        return;
+    }
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
@@ -135,37 +148,37 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     V8StringResource<> arg;
     V8StringResource<> optArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        arg = info[0];
-        if (!arg.prepare())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            ScriptState* scriptState = ScriptState::forReceiverObject(info);
-            ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-            Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-            TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
-            if (exceptionState.hadException()) {
-                return;
-            }
-            v8::Local<v8::Object> wrapper = info.Holder();
-            wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
-            v8SetReturnValue(info, wrapper);
-            return;
-        }
-        optArg = info[1];
-        if (!optArg.prepare())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    arg = info[0];
+    if (!arg.prepare())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+        Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+        TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
+        if (exceptionState.hadException()) {
+            return;
+        }
+        v8::Local<v8::Object> wrapper = info.Holder();
+        wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+        v8SetReturnValue(info, wrapper);
+        return;
+    }
+    optArg = info[1];
+    if (!optArg.prepare())
+        return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, optArg, exceptionState);
@@ -179,22 +192,24 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     V8StringResource<> arg;
     V8StringResource<> arg2;
     V8StringResource<> arg3;
-    {
-        arg = info[0];
-        if (!arg.prepare())
-            return;
-        arg2 = info[1];
-        if (!arg2.prepare())
-            return;
-        arg3 = info[2];
-        if (!arg3.prepare())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    arg = info[0];
+    if (!arg.prepare())
+        return;
+
+    arg2 = info[1];
+    if (!arg2.prepare())
+        return;
+
+    arg3 = info[2];
+    if (!arg3.prepare())
+        return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
@@ -287,41 +302,43 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
         v8SetReturnValue(info, info.Holder());
         return;
     }
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceConstructor");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
+
     V8StringResource<> arg;
     V8StringResource<> optArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        arg = info[0];
-        if (!arg.prepare())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            ScriptState* scriptState = ScriptState::forReceiverObject(info);
-            ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-            Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-            TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
-            if (exceptionState.hadException()) {
-                return;
-            }
-            v8::Local<v8::Object> wrapper = info.Holder();
-            wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
-            v8SetReturnValue(info, wrapper);
-            return;
-        }
-        optArg = info[1];
-        if (!optArg.prepare())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    arg = info[0];
+    if (!arg.prepare())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+        Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+        TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
+        if (exceptionState.hadException()) {
+            return;
+        }
+        v8::Local<v8::Object> wrapper = info.Holder();
+        wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
+        v8SetReturnValue(info, wrapper);
+        return;
+    }
+    optArg = info[1];
+    if (!optArg.prepare())
+        return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);

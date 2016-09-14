@@ -4844,6 +4844,7 @@ void enumForPrivateScriptAttributeSetterCallback(const v8::FunctionCallbackInfo<
 static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->unscopeableVoidMethod();
 }
 
@@ -4855,6 +4856,7 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 static void unscopeableRuntimeEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->unscopeableRuntimeEnabledVoidMethod();
 }
 
@@ -4866,6 +4868,7 @@ static void unscopeableRuntimeEnabledVoidMethodMethodCallback(const v8::Function
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->voidMethod();
 }
 
@@ -4887,6 +4890,7 @@ static void staticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void dateMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, v8DateOrNaN(info.GetIsolate(), impl->dateMethod()));
 }
 
@@ -4898,6 +4902,7 @@ static void dateMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 static void stringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->stringMethod(), info.GetIsolate());
 }
 
@@ -4909,6 +4914,7 @@ static void stringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>
 static void byteStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->byteStringMethod(), info.GetIsolate());
 }
 
@@ -4920,6 +4926,7 @@ static void byteStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void usvStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->usvStringMethod(), info.GetIsolate());
 }
 
@@ -4931,6 +4938,7 @@ static void usvStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 static void readonlyDOMTimeStampMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, static_cast<double>(impl->readonlyDOMTimeStampMethod()));
 }
 
@@ -4942,6 +4950,7 @@ static void readonlyDOMTimeStampMethodMethodCallback(const v8::FunctionCallbackI
 static void booleanMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueBool(info, impl->booleanMethod());
 }
 
@@ -4953,6 +4962,7 @@ static void booleanMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 static void byteMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueInt(info, impl->byteMethod());
 }
 
@@ -4964,6 +4974,7 @@ static void byteMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 static void doubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->doubleMethod());
 }
 
@@ -4975,6 +4986,7 @@ static void doubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>
 static void floatMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->floatMethod());
 }
 
@@ -4986,6 +4998,7 @@ static void floatMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 static void longMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueInt(info, impl->longMethod());
 }
 
@@ -4997,6 +5010,7 @@ static void longMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 static void longLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, static_cast<double>(impl->longLongMethod()));
 }
 
@@ -5008,6 +5022,7 @@ static void longLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void octetMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueUnsigned(info, impl->octetMethod());
 }
 
@@ -5019,6 +5034,7 @@ static void octetMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 static void shortMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueInt(info, impl->shortMethod());
 }
 
@@ -5030,6 +5046,7 @@ static void shortMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 static void unsignedLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueUnsigned(info, impl->unsignedLongMethod());
 }
 
@@ -5041,6 +5058,7 @@ static void unsignedLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void unsignedLongLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, static_cast<double>(impl->unsignedLongLongMethod()));
 }
 
@@ -5052,6 +5070,7 @@ static void unsignedLongLongMethodMethodCallback(const v8::FunctionCallbackInfo<
 static void unsignedShortMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueUnsigned(info, impl->unsignedShortMethod());
 }
 
@@ -5062,18 +5081,20 @@ static void unsignedShortMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDateArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDateArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     double dateArg;
-    {
-        dateArg = toCoreDate(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    dateArg = toCoreDate(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDateArg(dateArg);
 }
 
@@ -5084,17 +5105,18 @@ static void voidMethodDateArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->voidMethodStringArg(stringArg);
 }
 
@@ -5105,18 +5127,20 @@ static void voidMethodStringArgMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodByteStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodByteStringArg(stringArg);
 }
 
@@ -5127,18 +5151,20 @@ static void voidMethodByteStringArgMethodCallback(const v8::FunctionCallbackInfo
 
 static void voidMethodUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUSVStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodUSVStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> usvStringArg;
-    {
-        usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodUSVStringArg(usvStringArg);
 }
 
@@ -5149,18 +5175,20 @@ static void voidMethodUSVStringArgMethodCallback(const v8::FunctionCallbackInfo<
 
 static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDOMTimeStampArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDOMTimeStampArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned long long domTimeStampArg;
-    {
-        domTimeStampArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    domTimeStampArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDOMTimeStampArg(domTimeStampArg);
 }
 
@@ -5171,18 +5199,20 @@ static void voidMethodDOMTimeStampArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodBooleanArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     bool booleanArg;
-    {
-        booleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    booleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodBooleanArg(booleanArg);
 }
 
@@ -5193,18 +5223,20 @@ static void voidMethodBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodByteArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int byteArg;
-    {
-        byteArg = toInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    byteArg = toInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodByteArg(byteArg);
 }
 
@@ -5215,18 +5247,20 @@ static void voidMethodByteArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     double doubleArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDoubleArg(doubleArg);
 }
 
@@ -5237,18 +5271,20 @@ static void voidMethodDoubleArgMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodFloatArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodFloatArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     float floatArg;
-    {
-        floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodFloatArg(floatArg);
 }
 
@@ -5259,18 +5295,20 @@ static void voidMethodFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodLongArg(longArg);
 }
 
@@ -5281,18 +5319,20 @@ static void voidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     long long longLongArg;
-    {
-        longLongArg = toInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longLongArg = toInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodLongLongArg(longLongArg);
 }
 
@@ -5303,18 +5343,20 @@ static void voidMethodLongLongArgMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOctetArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodOctetArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned octetArg;
-    {
-        octetArg = toUInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    octetArg = toUInt8(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodOctetArg(octetArg);
 }
 
@@ -5325,18 +5367,20 @@ static void voidMethodOctetArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodShortArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodShortArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int shortArg;
-    {
-        shortArg = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    shortArg = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodShortArg(shortArg);
 }
 
@@ -5347,18 +5391,20 @@ static void voidMethodShortArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodUnsignedLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned unsignedLongArg;
-    {
-        unsignedLongArg = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    unsignedLongArg = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodUnsignedLongArg(unsignedLongArg);
 }
 
@@ -5369,18 +5415,20 @@ static void voidMethodUnsignedLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodUnsignedLongLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned long long unsignedLongLongArg;
-    {
-        unsignedLongLongArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    unsignedLongLongArg = toUInt64(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodUnsignedLongLongArg(unsignedLongLongArg);
 }
 
@@ -5391,18 +5439,20 @@ static void voidMethodUnsignedLongLongArgMethodCallback(const v8::FunctionCallba
 
 static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedShortArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodUnsignedShortArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned unsignedShortArg;
-    {
-        unsignedShortArg = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    unsignedShortArg = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodUnsignedShortArg(unsignedShortArg);
 }
 
@@ -5414,6 +5464,7 @@ static void voidMethodUnsignedShortArgMethodCallback(const v8::FunctionCallbackI
 static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->testInterfaceEmptyMethod());
 }
 
@@ -5424,19 +5475,21 @@ static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInf
 
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -5447,24 +5500,28 @@ static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongArgTestInterfaceEmptyArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!testInterfaceEmptyArg) {
-            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-            return;
-        }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!testInterfaceEmptyArg) {
+        exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+
+        return;
     }
+
     impl->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
 
@@ -5476,6 +5533,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethodCallback(const v8::Funct
 static void voidCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->voidCallbackFunctionMethod().v8Value());
 }
 
@@ -5487,6 +5545,7 @@ static void voidCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackI
 static void anyCallbackFunctionOptionalAnyArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->anyCallbackFunctionOptionalAnyArgMethod().v8Value());
 }
 
@@ -5497,19 +5556,21 @@ static void anyCallbackFunctionOptionalAnyArgMethodMethodCallback(const v8::Func
 
 static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue voidCallbackFunctionArg;
-    {
-        if (!info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
 
@@ -5521,24 +5582,25 @@ static void voidMethodVoidCallbackFunctionArgMethodCallback(const v8::FunctionCa
 static void voidMethodOptionalVoidCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue voidCallbackFunctionArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->voidMethodOptionalVoidCallbackFunctionArg();
-            return;
-        }
-        if (!info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->voidMethodOptionalVoidCallbackFunctionArg();
+        return;
+    }
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
+    }
+    voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->voidMethodOptionalVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
 
@@ -5549,19 +5611,21 @@ static void voidMethodOptionalVoidCallbackFunctionArgMethodCallback(const v8::Fu
 
 static void voidMethodNullableVoidCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableVoidCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue voidCallbackFunctionArg;
-    {
-        if (!info[0]->IsFunction() && !info[0]->IsNull()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!info[0]->IsFunction() && !info[0]->IsNull()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableVoidCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    voidCallbackFunctionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->voidMethodNullableVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
 
@@ -5572,19 +5636,21 @@ static void voidMethodNullableVoidCallbackFunctionArgMethodCallback(const v8::Fu
 
 static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue anyCallbackFunctionOptionalAnyArgArg;
-    {
-        if (!info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        anyCallbackFunctionOptionalAnyArgArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyCallbackFunctionOptionalAnyArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    anyCallbackFunctionOptionalAnyArgArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);
 }
 
@@ -5596,6 +5662,7 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback(const v8::
 static void anyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->anyMethod().v8Value());
 }
 
@@ -5606,19 +5673,21 @@ static void anyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     EventTarget* eventTargetArg;
-    {
-        eventTargetArg = toEventTarget(info.GetIsolate(), info[0]);
-        if (!eventTargetArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", "parameter 1 is not of type 'EventTarget'."));
-            return;
-        }
+    eventTargetArg = toEventTarget(info.GetIsolate(), info[0]);
+    if (!eventTargetArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodEventTargetArg", "TestObject", "parameter 1 is not of type 'EventTarget'."));
+
+        return;
     }
+
     impl->voidMethodEventTargetArg(eventTargetArg);
 }
 
@@ -5629,15 +5698,16 @@ static void voidMethodEventTargetArgMethodCallback(const v8::FunctionCallbackInf
 
 static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAnyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue anyArg;
-    {
-        anyArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
-    }
+    anyArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->voidMethodAnyArg(anyArg);
 }
 
@@ -5648,19 +5718,21 @@ static void voidMethodAnyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Attr* attrArg;
-    {
-        attrArg = V8Attr::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!attrArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", "parameter 1 is not of type 'Attr'."));
-            return;
-        }
+    attrArg = V8Attr::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!attrArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodAttrArg", "TestObject", "parameter 1 is not of type 'Attr'."));
+
+        return;
     }
+
     impl->voidMethodAttrArg(attrArg);
 }
 
@@ -5671,19 +5743,21 @@ static void voidMethodAttrArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Document* documentArg;
-    {
-        documentArg = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!documentArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", "parameter 1 is not of type 'Document'."));
-            return;
-        }
+    documentArg = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!documentArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentArg", "TestObject", "parameter 1 is not of type 'Document'."));
+
+        return;
     }
+
     impl->voidMethodDocumentArg(documentArg);
 }
 
@@ -5694,19 +5768,21 @@ static void voidMethodDocumentArgMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DocumentType* documentTypeArg;
-    {
-        documentTypeArg = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!documentTypeArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", "parameter 1 is not of type 'DocumentType'."));
-            return;
-        }
+    documentTypeArg = V8DocumentType::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!documentTypeArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDocumentTypeArg", "TestObject", "parameter 1 is not of type 'DocumentType'."));
+
+        return;
     }
+
     impl->voidMethodDocumentTypeArg(documentTypeArg);
 }
 
@@ -5717,19 +5793,21 @@ static void voidMethodDocumentTypeArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Element* elementArg;
-    {
-        elementArg = V8Element::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!elementArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", "parameter 1 is not of type 'Element'."));
-            return;
-        }
+    elementArg = V8Element::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!elementArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodElementArg", "TestObject", "parameter 1 is not of type 'Element'."));
+
+        return;
     }
+
     impl->voidMethodElementArg(elementArg);
 }
 
@@ -5740,19 +5818,21 @@ static void voidMethodElementArgMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Node* nodeArg;
-    {
-        nodeArg = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!nodeArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", "parameter 1 is not of type 'Node'."));
-            return;
-        }
+    nodeArg = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!nodeArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeArg", "TestObject", "parameter 1 is not of type 'Node'."));
+
+        return;
     }
+
     impl->voidMethodNodeArg(nodeArg);
 }
 
@@ -5764,6 +5844,7 @@ static void voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void arrayBufferMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->arrayBufferMethod());
 }
 
@@ -5775,6 +5856,7 @@ static void arrayBufferMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void arrayBufferViewMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->arrayBufferViewMethod());
 }
 
@@ -5786,6 +5868,7 @@ static void arrayBufferViewMethodMethodCallback(const v8::FunctionCallbackInfo<v
 static void float32ArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->float32ArrayMethod());
 }
 
@@ -5797,6 +5880,7 @@ static void float32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void int32ArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->int32ArrayMethod());
 }
 
@@ -5808,6 +5892,7 @@ static void int32ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void uint8ArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->uint8ArrayMethod());
 }
 
@@ -5818,19 +5903,21 @@ static void uint8ArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestArrayBuffer* arrayBufferArg;
-    {
-        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
-        if (!arrayBufferArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
-            return;
-        }
+    arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
+    if (!arrayBufferArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
+
+        return;
     }
+
     impl->voidMethodArrayBufferArg(arrayBufferArg);
 }
 
@@ -5841,19 +5928,21 @@ static void voidMethodArrayBufferArgMethodCallback(const v8::FunctionCallbackInf
 
 static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestArrayBuffer* arrayBufferArg;
-    {
-        arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
-        if (!arrayBufferArg && !isUndefinedOrNull(info[0])) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
-            return;
-        }
+    arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::toImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
+    if (!arrayBufferArg && !isUndefinedOrNull(info[0])) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
+
+        return;
     }
+
     impl->voidMethodArrayBufferOrNullArg(arrayBufferArg);
 }
 
@@ -5864,19 +5953,21 @@ static void voidMethodArrayBufferOrNullArgMethodCallback(const v8::FunctionCallb
 
 static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestArrayBufferView* arrayBufferViewArg;
-    {
-        arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Local<v8::ArrayBufferView>::Cast(info[0])) : 0;
-        if (!arrayBufferViewArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
-            return;
-        }
+    arrayBufferViewArg = info[0]->IsArrayBufferView() ? V8ArrayBufferView::toImpl(v8::Local<v8::ArrayBufferView>::Cast(info[0])) : 0;
+    if (!arrayBufferViewArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
+
+        return;
     }
+
     impl->voidMethodArrayBufferViewArg(arrayBufferViewArg);
 }
 
@@ -5887,19 +5978,21 @@ static void voidMethodArrayBufferViewArgMethodCallback(const v8::FunctionCallbac
 
 static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     FlexibleArrayBufferView arrayBufferViewArg;
-    {
-        toFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
-        if (!arrayBufferViewArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
-            return;
-        }
+    toFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+    if (!arrayBufferViewArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewArg", "TestObject", "parameter 1 is not of type 'ArrayBufferView'."));
+
+        return;
     }
+
     impl->voidMethodFlexibleArrayBufferViewArg(arrayBufferViewArg);
 }
 
@@ -5910,19 +6003,21 @@ static void voidMethodFlexibleArrayBufferViewArgMethodCallback(const v8::Functio
 
 static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     FlexibleFloat32ArrayView typedArrayBufferViewArg;
-    {
-        toFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
-        if (!typedArrayBufferViewArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
-            return;
-        }
+    toFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
+    if (!typedArrayBufferViewArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFlexibleArrayBufferViewTypedArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
+
+        return;
     }
+
     impl->voidMethodFlexibleArrayBufferViewTypedArg(typedArrayBufferViewArg);
 }
 
@@ -5933,19 +6028,21 @@ static void voidMethodFlexibleArrayBufferViewTypedArgMethodCallback(const v8::Fu
 
 static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DOMFloat32Array* float32ArrayArg;
-    {
-        float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(info[0])) : 0;
-        if (!float32ArrayArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
-            return;
-        }
+    float32ArrayArg = info[0]->IsFloat32Array() ? V8Float32Array::toImpl(v8::Local<v8::Float32Array>::Cast(info[0])) : 0;
+    if (!float32ArrayArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodFloat32ArrayArg", "TestObject", "parameter 1 is not of type 'Float32Array'."));
+
+        return;
     }
+
     impl->voidMethodFloat32ArrayArg(float32ArrayArg);
 }
 
@@ -5956,19 +6053,21 @@ static void voidMethodFloat32ArrayArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DOMInt32Array* int32ArrayArg;
-    {
-        int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Local<v8::Int32Array>::Cast(info[0])) : 0;
-        if (!int32ArrayArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", "parameter 1 is not of type 'Int32Array'."));
-            return;
-        }
+    int32ArrayArg = info[0]->IsInt32Array() ? V8Int32Array::toImpl(v8::Local<v8::Int32Array>::Cast(info[0])) : 0;
+    if (!int32ArrayArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodInt32ArrayArg", "TestObject", "parameter 1 is not of type 'Int32Array'."));
+
+        return;
     }
+
     impl->voidMethodInt32ArrayArg(int32ArrayArg);
 }
 
@@ -5979,19 +6078,21 @@ static void voidMethodInt32ArrayArgMethodCallback(const v8::FunctionCallbackInfo
 
 static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DOMUint8Array* uint8ArrayArg;
-    {
-        uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(info[0])) : 0;
-        if (!uint8ArrayArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", "parameter 1 is not of type 'Uint8Array'."));
-            return;
-        }
+    uint8ArrayArg = info[0]->IsUint8Array() ? V8Uint8Array::toImpl(v8::Local<v8::Uint8Array>::Cast(info[0])) : 0;
+    if (!uint8ArrayArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodUint8ArrayArg", "TestObject", "parameter 1 is not of type 'Uint8Array'."));
+
+        return;
     }
+
     impl->voidMethodUint8ArrayArg(uint8ArrayArg);
 }
 
@@ -6003,6 +6104,7 @@ static void voidMethodUint8ArrayArgMethodCallback(const v8::FunctionCallbackInfo
 static void longArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->longArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6014,6 +6116,7 @@ static void longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 static void stringArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->stringArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6025,6 +6128,7 @@ static void stringArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void testInterfaceEmptyArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->testInterfaceEmptyArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6035,18 +6139,20 @@ static void testInterfaceEmptyArrayMethodMethodCallback(const v8::FunctionCallba
 
 static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<int> arrayLongArg;
-    {
-        arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodArrayLongArg(arrayLongArg);
 }
 
@@ -6057,18 +6163,20 @@ static void voidMethodArrayLongArgMethodCallback(const v8::FunctionCallbackInfo<
 
 static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<String> arrayStringArg;
-    {
-        arrayStringArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arrayStringArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodArrayStringArg(arrayStringArg);
 }
 
@@ -6079,18 +6187,20 @@ static void voidMethodArrayStringArgMethodCallback(const v8::FunctionCallbackInf
 
 static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayTestInterfaceEmptyArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
-    {
-        arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return;
-    }
+    arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodArrayTestInterfaceEmptyArg(arrayTestInterfaceEmptyArg);
 }
 
@@ -6101,20 +6211,22 @@ static void voidMethodArrayTestInterfaceEmptyArgMethodCallback(const v8::Functio
 
 static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodNullableArrayLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodNullableArrayLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Nullable<Vector<int>> arrayLongArg;
-    {
-        if (!isUndefinedOrNull(info[0])) {
-            arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-            if (exceptionState.hadException())
-                return;
-        }
+    if (!isUndefinedOrNull(info[0])) {
+        arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.hadException())
+            return;
     }
+
     impl->voidMethodNullableArrayLongArg(arrayLongArg);
 }
 
@@ -6126,6 +6238,7 @@ static void voidMethodNullableArrayLongArgMethodCallback(const v8::FunctionCallb
 static void longSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->longSequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6137,6 +6250,7 @@ static void longSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void stringSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->stringSequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6148,6 +6262,7 @@ static void stringSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void testInterfaceEmptySequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, toV8(impl->testInterfaceEmptySequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
@@ -6158,18 +6273,20 @@ static void testInterfaceEmptySequenceMethodMethodCallback(const v8::FunctionCal
 
 static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodSequenceLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<int> longSequenceArg;
-    {
-        longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodSequenceLongArg(longSequenceArg);
 }
 
@@ -6180,18 +6297,20 @@ static void voidMethodSequenceLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodSequenceStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<String> stringSequenceArg;
-    {
-        stringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodSequenceStringArg(stringSequenceArg);
 }
 
@@ -6202,18 +6321,20 @@ static void voidMethodSequenceStringArgMethodCallback(const v8::FunctionCallback
 
 static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodSequenceTestInterfaceEmptyArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
-    {
-        testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return;
-    }
+    testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodSequenceTestInterfaceEmptyArg(testInterfaceEmptySequenceArg);
 }
 
@@ -6224,18 +6345,20 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSequenceSequenceDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodSequenceSequenceDOMStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<Vector<String>> stringSequenceSequenceArg;
-    {
-        stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodSequenceSequenceDOMStringArg(stringSequenceSequenceArg);
 }
 
@@ -6246,20 +6369,22 @@ static void voidMethodSequenceSequenceDOMStringArgMethodCallback(const v8::Funct
 
 static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodNullableSequenceLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodNullableSequenceLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Nullable<Vector<int>> longSequenceArg;
-    {
-        if (!isUndefinedOrNull(info[0])) {
-            longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-            if (exceptionState.hadException())
-                return;
-        }
+    if (!isUndefinedOrNull(info[0])) {
+        longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.hadException())
+            return;
     }
+
     impl->voidMethodNullableSequenceLongArg(longSequenceArg);
 }
 
@@ -6271,6 +6396,7 @@ static void voidMethodNullableSequenceLongArgMethodCallback(const v8::FunctionCa
 static void longFrozenArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, freezeV8Object(toV8(impl->longFrozenArrayMethod(), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
@@ -6281,18 +6407,20 @@ static void longFrozenArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodStringFrozenArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringFrozenArrayMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodStringFrozenArrayMethod");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<String> stringFrozenArrayArg;
-    {
-        stringFrozenArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringFrozenArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodStringFrozenArrayMethod(stringFrozenArrayArg);
 }
 
@@ -6303,18 +6431,20 @@ static void voidMethodStringFrozenArrayMethodMethodCallback(const v8::FunctionCa
 
 static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyFrozenArrayMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestInterfaceEmptyFrozenArrayMethod");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyFrozenArrayArg;
-    {
-        testInterfaceEmptyFrozenArrayArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return;
-    }
+    testInterfaceEmptyFrozenArrayArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodTestInterfaceEmptyFrozenArrayMethod(testInterfaceEmptyFrozenArrayArg);
 }
 
@@ -6326,6 +6456,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethodCallback(const v8
 static void nullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Nullable<int> result = impl->nullableLongMethod();
     if (result.isNull())
         v8SetReturnValueNull(info);
@@ -6341,6 +6472,7 @@ static void nullableLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void nullableStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueStringOrNull(info, impl->nullableStringMethod(), info.GetIsolate());
 }
 
@@ -6352,6 +6484,7 @@ static void nullableStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void nullableTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->nullableTestInterfaceMethod());
 }
 
@@ -6363,6 +6496,7 @@ static void nullableTestInterfaceMethodMethodCallback(const v8::FunctionCallback
 static void nullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Nullable<Vector<int>> result = impl->nullableLongSequenceMethod();
     if (result.isNull())
         v8SetReturnValueNull(info);
@@ -6378,6 +6512,7 @@ static void nullableLongSequenceMethodMethodCallback(const v8::FunctionCallbackI
 static void testInterfaceGarbageCollectedOrDOMStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceGarbageCollectedOrString result;
     impl->testInterfaceGarbageCollectedOrDOMStringMethod(result);
     v8SetReturnValue(info, result);
@@ -6391,6 +6526,7 @@ static void testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v
 static void booleanOrDOMStringOrUnrestrictedDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     BooleanOrStringOrUnrestrictedDouble result;
     impl->booleanOrDOMStringOrUnrestrictedDoubleMethod(result);
     v8SetReturnValue(info, result);
@@ -6404,6 +6540,7 @@ static void booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback(const v8:
 static void testInterfaceOrLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceOrLong result;
     impl->testInterfaceOrLongMethod(result);
     v8SetReturnValue(info, result);
@@ -6416,18 +6553,20 @@ static void testInterfaceOrLongMethodMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleOrDOMStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DoubleOrString arg;
-    {
-        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDoubleOrDOMStringArg(arg);
 }
 
@@ -6438,18 +6577,20 @@ static void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallb
 
 static void voidMethodDoubleOrDOMStringOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrDOMStringOrNullArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleOrDOMStringOrNullArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DoubleOrString arg;
-    {
-        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8DoubleOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDoubleOrDOMStringOrNullArg(arg);
 }
 
@@ -6460,18 +6601,20 @@ static void voidMethodDoubleOrDOMStringOrNullArgMethodCallback(const v8::Functio
 
 static void voidMethodDoubleOrNullOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleOrNullOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleOrNullOrDOMStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DoubleOrString arg;
-    {
-        V8DoubleOrNullOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8DoubleOrNullOrString::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::Nullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDoubleOrNullOrDOMStringArg(arg);
 }
 
@@ -6482,18 +6625,20 @@ static void voidMethodDoubleOrNullOrDOMStringArgMethodCallback(const v8::Functio
 
 static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     StringOrArrayBufferOrArrayBufferView arg;
-    {
-        V8StringOrArrayBufferOrArrayBufferView::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8StringOrArrayBufferOrArrayBufferView::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg(arg);
 }
 
@@ -6504,18 +6649,20 @@ static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback(c
 
 static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ArrayBufferOrArrayBufferViewOrDictionary arg;
-    {
-        V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg(arg);
 }
 
@@ -6526,14 +6673,15 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(
 
 static void voidMethodArrayOfDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayOfDoubleOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayOfDoubleOrDOMStringArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<DoubleOrString> arg;
-    {
-        arg = toImplArguments<HeapVector<DoubleOrString>>(info, 0, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toImplArguments<HeapVector<DoubleOrString>>(info, 0, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodArrayOfDoubleOrDOMStringArg(arg);
 }
 
@@ -6544,19 +6692,21 @@ static void voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::Functi
 
 static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* nullableTestInterfaceEmptyArg;
-    {
-        nullableTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!nullableTestInterfaceEmptyArg && !isUndefinedOrNull(info[0])) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    nullableTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!nullableTestInterfaceEmptyArg && !isUndefinedOrNull(info[0])) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->voidMethodTestInterfaceEmptyOrNullArg(nullableTestInterfaceEmptyArg);
 }
 
@@ -6567,19 +6717,21 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::Functi
 
 static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* testCallbackInterfaceArg;
-    {
-        if (info.Length() <= 0 || !info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+
     impl->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg);
 }
 
@@ -6591,18 +6743,19 @@ static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionC
 static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* optionalTestCallbackInterfaceArg;
-    {
-        if (!isUndefinedOrNull(info[0])) {
-            if (!info[0]->IsFunction()) {
-                V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-                return;
-            }
-            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
-        } else {
-            optionalTestCallbackInterfaceArg = nullptr;
+    if (!isUndefinedOrNull(info[0])) {
+        if (!info[0]->IsFunction()) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+            return;
         }
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    } else {
+        optionalTestCallbackInterfaceArg = nullptr;
     }
+
     impl->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg);
 }
 
@@ -6613,19 +6766,21 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::F
 
 static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* testCallbackInterfaceArg;
-    {
-        if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+
     impl->voidMethodTestCallbackInterfaceOrNullArg(testCallbackInterfaceArg);
 }
 
@@ -6637,6 +6792,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethodCallback(const v8::Fun
 static void testEnumMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->testEnumMethod(), info.GetIsolate());
 }
 
@@ -6647,27 +6803,29 @@ static void testEnumMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 
 static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestEnumArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestEnumArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> testEnumTypeArg;
-    {
-        testEnumTypeArg = info[0];
-        if (!testEnumTypeArg.prepare())
-            return;
-        const char* validValues[] = {
-            "",
-            "EnumValue1",
-            "EnumValue2",
-            "EnumValue3",
-        };
-        if (!isValidEnum(testEnumTypeArg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
-            return;
-        }
+    testEnumTypeArg = info[0];
+    if (!testEnumTypeArg.prepare())
+        return;
+    const char* validValues[] = {
+        "",
+        "EnumValue1",
+        "EnumValue2",
+        "EnumValue3",
+    };
+    if (!isValidEnum(testEnumTypeArg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
+        return;
     }
+
     impl->voidMethodTestEnumArg(testEnumTypeArg);
 }
 
@@ -6679,6 +6837,7 @@ static void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v
 static void dictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->dictionaryMethod());
 }
 
@@ -6690,6 +6849,7 @@ static void dictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestDictionary result;
     impl->testDictionaryMethod(result);
     v8SetReturnValue(info, result);
@@ -6703,6 +6863,7 @@ static void testDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Nullable<TestDictionary> result;
     impl->nullableTestDictionaryMethod(result);
     if (result.isNull())
@@ -6718,14 +6879,15 @@ static void nullableTestDictionaryMethodMethodCallback(const v8::FunctionCallbac
 
 static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "passPermissiveDictionaryMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "passPermissiveDictionaryMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestDictionary arg;
-    {
-        V8TestDictionary::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    V8TestDictionary::toImpl(info.GetIsolate(), info[0], arg, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->passPermissiveDictionaryMethod(arg);
 }
 
@@ -6737,6 +6899,7 @@ static void passPermissiveDictionaryMethodMethodCallback(const v8::FunctionCallb
 static void nodeFilterMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->nodeFilterMethod());
 }
 
@@ -6745,46 +6908,45 @@ static void nodeFilterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TestObjectV8Internal::nodeFilterMethodMethod(info);
 }
 
-static void promiseMethodMethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
+static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "promiseMethod");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 3)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(3, info.Length()));
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg1;
     Dictionary arg2;
     V8StringResource<> arg3;
     Vector<String> variadic;
-    {
-        arg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
-            exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
-            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-            return;
-        }
-        arg2 = Dictionary(info[1], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-        arg3 = info[2];
-        if (!arg3.prepare(exceptionState))
-            return;
-        variadic = toImplArguments<Vector<String>>(info, 3, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
-}
-
-static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethod", "TestObject", info.Holder(), info.GetIsolate());
-    promiseMethodMethodPromise(info, exceptionState);
+    arg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
     if (exceptionState.hadException())
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+
+    if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
+        exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
+
+        return;
+    }
+    arg2 = Dictionary(info[1], info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    arg3 = info[2];
+    if (!arg3.prepare(exceptionState))
+        return;
+
+    variadic = toImplArguments<Vector<String>>(info, 3, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
 }
 
 static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6792,34 +6954,30 @@ static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value
     TestObjectV8Internal::promiseMethodMethod(info);
 }
 
-static void promiseMethodWithoutExceptionStateMethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-        return;
-    }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Dictionary arg1;
-    {
-        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            exceptionState.throwTypeError("parameter 1 ('arg1') is not an object.");
-            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-            return;
-        }
-        arg1 = Dictionary(info[0], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
-}
-
 static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethodWithoutExceptionState", "TestObject", info.Holder(), info.GetIsolate());
-    promiseMethodWithoutExceptionStateMethodPromise(info, exceptionState);
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "promiseMethodWithoutExceptionState");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    if (UNLIKELY(info.Length() < 1)) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        return;
+    }
+
+    Dictionary arg1;
+    if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+        exceptionState.throwTypeError("parameter 1 ('arg1') is not an object.");
+
+        return;
+    }
+    arg1 = Dictionary(info[0], info.GetIsolate(), exceptionState);
     if (exceptionState.hadException())
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+
+    v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
 }
 
 static void promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6830,6 +6988,7 @@ static void promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionC
 static void serializedScriptValueMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, v8Deserialize(info.GetIsolate(), impl->serializedScriptValueMethod()));
 }
 
@@ -6841,6 +7000,7 @@ static void serializedScriptValueMethodMethodCallback(const v8::FunctionCallback
 static void xPathNSResolverMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValue(info, impl->xPathNSResolverMethod());
 }
 
@@ -6851,22 +7011,25 @@ static void xPathNSResolverMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDictionaryArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Dictionary dictionaryArg;
-    {
-        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
-            return;
-        }
-        dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
+    if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+        exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
+
+        return;
     }
+    dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDictionaryArg(dictionaryArg);
 }
 
@@ -6877,15 +7040,16 @@ static void voidMethodDictionaryArgMethodCallback(const v8::FunctionCallbackInfo
 
 static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeFilterArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNodeFilterArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     NodeFilter* nodeFilterArg;
-    {
-        nodeFilterArg = toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate()));
-    }
+    nodeFilterArg = toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate()));
+
     impl->voidMethodNodeFilterArg(nodeFilterArg);
 }
 
@@ -6896,19 +7060,21 @@ static void voidMethodNodeFilterArgMethodCallback(const v8::FunctionCallbackInfo
 
 static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptPromise promiseArg;
-    {
-        promiseArg = ScriptPromise::cast(ScriptState::current(info.GetIsolate()), info[0]);
-        if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."));
-            return;
-        }
+    promiseArg = ScriptPromise::cast(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."));
+
+        return;
     }
+
     impl->voidMethodPromiseArg(promiseArg);
 }
 
@@ -6919,18 +7085,20 @@ static void voidMethodPromiseArgMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodSerializedScriptValueArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodSerializedScriptValueArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
-    {
-        serializedScriptValueArg = SerializedScriptValue::serialize(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    serializedScriptValueArg = SerializedScriptValue::serialize(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
 
@@ -6941,19 +7109,21 @@ static void voidMethodSerializedScriptValueArgMethodCallback(const v8::FunctionC
 
 static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     XPathNSResolver* xPathNSResolverArg;
-    {
-        xPathNSResolverArg = toXPathNSResolver(ScriptState::current(info.GetIsolate()), info[0]);
-        if (!xPathNSResolverArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", "parameter 1 is not of type 'XPathNSResolver'."));
-            return;
-        }
+    xPathNSResolverArg = toXPathNSResolver(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!xPathNSResolverArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodXPathNSResolverArg", "TestObject", "parameter 1 is not of type 'XPathNSResolver'."));
+
+        return;
     }
+
     impl->voidMethodXPathNSResolverArg(xPathNSResolverArg);
 }
 
@@ -6964,18 +7134,20 @@ static void voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbac
 
 static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDictionarySequenceArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDictionarySequenceArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<Dictionary> dictionarySequenceArg;
-    {
-        dictionarySequenceArg = toImplArray<Vector<Dictionary>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    dictionarySequenceArg = toImplArray<Vector<Dictionary>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDictionarySequenceArg(dictionarySequenceArg);
 }
 
@@ -6986,22 +7158,25 @@ static void voidMethodDictionarySequenceArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodStringArgLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
     int longArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-        longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
+    longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodStringArgLongArg(stringArg, longArg);
 }
 
@@ -7013,22 +7188,22 @@ static void voidMethodStringArgLongArgMethodCallback(const v8::FunctionCallbackI
 static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> optionalStringArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->voidMethodOptionalStringArg();
-            return;
-        }
-        optionalStringArg = info[0];
-        if (!optionalStringArg.prepare())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->voidMethodOptionalStringArg();
+        return;
+    }
+    optionalStringArg = info[0];
+    if (!optionalStringArg.prepare())
+        return;
+
     impl->voidMethodOptionalStringArg(optionalStringArg);
 }
 
@@ -7040,24 +7215,25 @@ static void voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallback
 static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->voidMethodOptionalTestInterfaceEmptyArg();
-            return;
-        }
-        optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!optionalTestInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->voidMethodOptionalTestInterfaceEmptyArg();
+        return;
+    }
+    optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!optionalTestInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
+    }
+
     impl->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
 
@@ -7068,24 +7244,25 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodOptionalLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->voidMethodOptionalLongArg();
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->voidMethodOptionalLongArg();
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodOptionalLongArg(optionalLongArg);
 }
 
@@ -7096,24 +7273,25 @@ static void voidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "stringMethodOptionalLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(optionalLongArg), info.GetIsolate());
 }
 
@@ -7124,24 +7302,25 @@ static void stringMethodOptionalLongArgMethodCallback(const v8::FunctionCallback
 
 static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "testInterfaceEmptyMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "testInterfaceEmptyMethodOptionalLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -7152,24 +7331,25 @@ static void testInterfaceEmptyMethodOptionalLongArgMethodCallback(const v8::Func
 
 static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "longMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "longMethodOptionalLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValueInt(info, impl->longMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -7180,32 +7360,35 @@ static void longMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongArgOptionalLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->voidMethodLongArgOptionalLongArg(longArg);
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->voidMethodLongArgOptionalLongArg(longArg);
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodLongArgOptionalLongArg(longArg, optionalLongArg);
 }
 
@@ -7216,40 +7399,44 @@ static void voidMethodLongArgOptionalLongArgMethodCallback(const v8::FunctionCal
 
 static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongArgOptionalLongArgOptionalLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     int optionalLongArg1;
     int optionalLongArg2;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
-            return;
-        }
-        optionalLongArg1 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (UNLIKELY(numArgsPassed <= 2)) {
-            impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
-            return;
-        }
-        optionalLongArg2 = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
+        return;
+    }
+    optionalLongArg1 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 2)) {
+        impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
+        return;
+    }
+    optionalLongArg2 = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1, optionalLongArg2);
 }
 
@@ -7260,34 +7447,38 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const 
 
 static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodLongArgOptionalTestInterfaceEmptyArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
-            return;
-        }
-        optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!optionalTestInterfaceEmpty) {
-            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-            return;
-        }
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
+        return;
+    }
+    optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!optionalTestInterfaceEmpty) {
+        exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+
+        return;
+    }
+
     impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
 
@@ -7298,34 +7489,38 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback(const v
 
 static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestInterfaceEmptyArgOptionalLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* optionalTestInterfaceEmpty;
     int longArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!optionalTestInterfaceEmpty) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-            return;
-        }
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
-            return;
-        }
-        longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    optionalTestInterfaceEmpty = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!optionalTestInterfaceEmpty) {
+        exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+
+        return;
+    }
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
+        return;
+    }
+    longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty, longArg);
 }
 
@@ -7336,18 +7531,20 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v
 
 static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOptionalDictionaryArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodOptionalDictionaryArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Dictionary optionalDictionaryArg;
-    {
-        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            exceptionState.throwTypeError("parameter 1 ('optionalDictionaryArg') is not an object.");
-            return;
-        }
-        optionalDictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
+    if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+        exceptionState.throwTypeError("parameter 1 ('optionalDictionaryArg') is not an object.");
+
+        return;
     }
+    optionalDictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }
 
@@ -7358,18 +7555,19 @@ static void voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultByteStringArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> defaultByteStringArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultByteStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultByteStringArg = String("foo");
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultByteStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultByteStringArg = String("foo");
     }
+
     impl->voidMethodDefaultByteStringArg(defaultByteStringArg);
 }
 
@@ -7381,16 +7579,16 @@ static void voidMethodDefaultByteStringArgMethodCallback(const v8::FunctionCallb
 static void voidMethodDefaultStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> defaultStringArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultStringArg = info[0];
-            if (!defaultStringArg.prepare())
-                return;
-        } else {
-            defaultStringArg = String("foo");
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultStringArg = info[0];
+        if (!defaultStringArg.prepare())
+            return;
+    } else {
+        defaultStringArg = String("foo");
     }
+
     impl->voidMethodDefaultStringArg(defaultStringArg);
 }
 
@@ -7401,34 +7599,35 @@ static void voidMethodDefaultStringArgMethodCallback(const v8::FunctionCallbackI
 
 static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultIntegerArgs", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultIntegerArgs");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int defaultLongArg;
     long long defaultLongLongArg;
     unsigned defaultUnsignedArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultLongArg = 10;
-        }
-        if (!info[1]->IsUndefined()) {
-            defaultLongLongArg = toInt64(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultLongLongArg = -10;
-        }
-        if (!info[2]->IsUndefined()) {
-            defaultUnsignedArg = toUInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultUnsignedArg = 4294967295u;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultLongArg = 10;
     }
+    if (!info[1]->IsUndefined()) {
+        defaultLongLongArg = toInt64(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultLongLongArg = -10;
+    }
+    if (!info[2]->IsUndefined()) {
+        defaultUnsignedArg = toUInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultUnsignedArg = 4294967295u;
+    }
+
     impl->voidMethodDefaultIntegerArgs(defaultLongArg, defaultLongLongArg, defaultUnsignedArg);
 }
 
@@ -7439,18 +7638,19 @@ static void voidMethodDefaultIntegerArgsMethodCallback(const v8::FunctionCallbac
 
 static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultDoubleArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultDoubleArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     double defaultDoubleArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultDoubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultDoubleArg = 0.5;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultDoubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultDoubleArg = 0.5;
     }
+
     impl->voidMethodDefaultDoubleArg(defaultDoubleArg);
 }
 
@@ -7461,18 +7661,19 @@ static void voidMethodDefaultDoubleArgMethodCallback(const v8::FunctionCallbackI
 
 static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultTrueBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultTrueBooleanArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     bool defaultBooleanArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultBooleanArg = true;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultBooleanArg = true;
     }
+
     impl->voidMethodDefaultTrueBooleanArg(defaultBooleanArg);
 }
 
@@ -7483,18 +7684,19 @@ static void voidMethodDefaultTrueBooleanArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultFalseBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultFalseBooleanArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     bool defaultBooleanArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultBooleanArg = false;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultBooleanArg = false;
     }
+
     impl->voidMethodDefaultFalseBooleanArg(defaultBooleanArg);
 }
 
@@ -7505,18 +7707,19 @@ static void voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCal
 
 static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultNullableByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultNullableByteStringArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<TreatNullAndUndefinedAsNullString> defaultStringArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultStringArg = nullptr;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultStringArg = toByteString(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultStringArg = nullptr;
     }
+
     impl->voidMethodDefaultNullableByteStringArg(defaultStringArg);
 }
 
@@ -7528,16 +7731,16 @@ static void voidMethodDefaultNullableByteStringArgMethodCallback(const v8::Funct
 static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<TreatNullAndUndefinedAsNullString> defaultStringArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultStringArg = info[0];
-            if (!defaultStringArg.prepare())
-                return;
-        } else {
-            defaultStringArg = nullptr;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultStringArg = info[0];
+        if (!defaultStringArg.prepare())
+            return;
+    } else {
+        defaultStringArg = nullptr;
     }
+
     impl->voidMethodDefaultNullableStringArg(defaultStringArg);
 }
 
@@ -7549,18 +7752,19 @@ static void voidMethodDefaultNullableStringArgMethodCallback(const v8::FunctionC
 static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceImplementation* defaultTestInterfaceArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultTestInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-            if (!defaultTestInterfaceArg && !isUndefinedOrNull(info[0])) {
-                V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultNullableTestInterfaceArg", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-                return;
-            }
-        } else {
-            defaultTestInterfaceArg = nullptr;
+    if (!info[0]->IsUndefined()) {
+        defaultTestInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!defaultTestInterfaceArg && !isUndefinedOrNull(info[0])) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultNullableTestInterfaceArg", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+
+            return;
         }
+    } else {
+        defaultTestInterfaceArg = nullptr;
     }
+
     impl->voidMethodDefaultNullableTestInterfaceArg(defaultTestInterfaceArg);
 }
 
@@ -7571,34 +7775,35 @@ static void voidMethodDefaultNullableTestInterfaceArgMethodCallback(const v8::Fu
 
 static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultDoubleOrStringArgs", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultDoubleOrStringArgs");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     DoubleOrString defaultLongArg;
     DoubleOrString defaultStringArg;
     DoubleOrString defaultNullArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, UnionTypeConversionMode::NotNullable, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultLongArg.setDouble(10);
-        }
-        if (!info[1]->IsUndefined()) {
-            V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::Nullable, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            defaultStringArg.setString(String("foo"));
-        }
-        if (!info[2]->IsUndefined()) {
-            V8DoubleOrString::toImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::Nullable, exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            /* null default value */;
-        }
+    if (!info[0]->IsUndefined()) {
+        V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, UnionTypeConversionMode::NotNullable, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultLongArg.setDouble(10);
     }
+    if (!info[1]->IsUndefined()) {
+        V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::Nullable, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        defaultStringArg.setString(String("foo"));
+    }
+    if (!info[2]->IsUndefined()) {
+        V8DoubleOrString::toImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::Nullable, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        /* null default value */;
+    }
+
     impl->voidMethodDefaultDoubleOrStringArgs(defaultLongArg, defaultStringArg, defaultNullArg);
 }
 
@@ -7609,18 +7814,19 @@ static void voidMethodDefaultDoubleOrStringArgsMethodCallback(const v8::Function
 
 static void voidMethodDefaultStringSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultStringSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultStringSequenceArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<String> defaultStringSequenceArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            defaultStringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
-            if (exceptionState.hadException())
-                return;
-        } else {
-            /* Nothing to do */;
-        }
+    if (!info[0]->IsUndefined()) {
+        defaultStringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        /* Nothing to do */;
     }
+
     impl->voidMethodDefaultStringSequenceArg(defaultStringSequenceArg);
 }
 
@@ -7631,14 +7837,15 @@ static void voidMethodDefaultStringSequenceArgMethodCallback(const v8::FunctionC
 
 static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodVariadicStringArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<String> variadicStringArgs;
-    {
-        variadicStringArgs = toImplArguments<Vector<String>>(info, 0, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    variadicStringArgs = toImplArguments<Vector<String>>(info, 0, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodVariadicStringArg(variadicStringArgs);
 }
 
@@ -7649,22 +7856,25 @@ static void voidMethodVariadicStringArgMethodCallback(const v8::FunctionCallback
 
 static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodStringArgVariadicStringArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
     Vector<String> variadicStringArgs;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-        variadicStringArgs = toImplArguments<Vector<String>>(info, 1, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
+    variadicStringArgs = toImplArguments<Vector<String>>(info, 1, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
 }
 
@@ -7675,18 +7885,20 @@ static void voidMethodStringArgVariadicStringArgMethodCallback(const v8::Functio
 
 static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodVariadicTestInterfaceEmptyArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
-    {
-        for (int i = 0; i < info.Length(); ++i) {
-            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-                return;
-            }
-            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    for (int i = 0; i < info.Length(); ++i) {
+        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+
+            return;
         }
+        variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
     }
+
     impl->voidMethodVariadicTestInterfaceEmptyArg(variadicTestInterfaceEmptyArgs);
 }
 
@@ -7697,28 +7909,33 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
     HeapVector<Member<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+
+        return;
+    }
+
+    for (int i = 1; i < info.Length(); ++i) {
+        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+            exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+
             return;
         }
-        for (int i = 1; i < info.Length(); ++i) {
-            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-                return;
-            }
-            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
-        }
+        variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
     }
+
     impl->voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(testInterfaceEmptyArg, variadicTestInterfaceEmptyArgs);
 }
 
@@ -7729,18 +7946,20 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
 
 static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceGarbageCollectedArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodVariadicTestInterfaceGarbageCollectedArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceGarbageCollected>> variadicTestInterfaceGarbageCollectedArg;
-    {
-        for (int i = 0; i < info.Length(); ++i) {
-            if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceGarbageCollected'.");
-                return;
-            }
-            variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    for (int i = 0; i < info.Length(); ++i) {
+        if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceGarbageCollected'.");
+
+            return;
         }
+        variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
     }
+
     impl->voidMethodVariadicTestInterfaceGarbageCollectedArg(variadicTestInterfaceGarbageCollectedArg);
 }
 
@@ -7751,37 +7970,40 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback(con
 
 static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodA");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodA(longArg);
 }
 
 static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodA");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg1;
     int longArg2;
-    {
-        longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodA(longArg1, longArg2);
 }
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(2, info.Length())) {
     case 1:
         if (true) {
@@ -7796,14 +8018,18 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodA");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7813,47 +8039,50 @@ static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodB");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodB(longArg);
 }
 
 static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodB");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
     int longArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->overloadedMethodB(stringArg);
-            return;
-        }
-        longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->overloadedMethodB(stringArg);
+        return;
+    }
+    longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodB(stringArg, longArg);
 }
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(2, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -7876,14 +8105,18 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodB");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7893,34 +8126,36 @@ static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodC");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodC(longArg);
 }
 
 static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->overloadedMethodC(testInterfaceEmptyArg);
 }
 
 static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
@@ -7933,14 +8168,18 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodC");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7950,33 +8189,35 @@ static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodD");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodD(longArg);
 }
 
 static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodD");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Vector<int> longArrayArg;
-    {
-        longArrayArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArrayArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodD(longArrayArg);
 }
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsArray()) {
@@ -7989,14 +8230,18 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodD");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8006,34 +8251,36 @@ static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodE");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodE(longArg);
 }
 
 static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
-    {
-        testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodE", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodE", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->overloadedMethodE(testInterfaceEmptyOrNullArg);
 }
 
 static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (isUndefinedOrNull(info[0])) {
@@ -8050,14 +8297,18 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodE");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8068,41 +8319,42 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->overloadedMethodF();
-            return;
-        }
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->overloadedMethodF();
+        return;
+    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->overloadedMethodF(stringArg);
 }
 
 static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodF");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     double doubleArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodF(doubleArg);
 }
 
 static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -8129,10 +8381,14 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodF");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8142,38 +8398,40 @@ static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodG");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodG(longArg);
 }
 
 static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
-    {
-        if (!info[0]->IsUndefined()) {
-            testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-            if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
-                V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodG", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-                return;
-            }
-        } else {
-            testInterfaceEmptyOrNullArg = nullptr;
+    if (!info[0]->IsUndefined()) {
+        testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceEmptyOrNullArg && !isUndefinedOrNull(info[0])) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodG", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+            return;
         }
+    } else {
+        testInterfaceEmptyOrNullArg = nullptr;
     }
+
     impl->overloadedMethodG(testInterfaceEmptyOrNullArg);
 }
 
 static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -8200,10 +8458,14 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodG");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8214,34 +8476,36 @@ static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceImplementation* testInterfaceArg;
-    {
-        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-            return;
-        }
+    testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+
+        return;
     }
+
     impl->overloadedMethodH(testInterfaceArg);
 }
 
 static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->overloadedMethodH(testInterfaceEmptyArg);
 }
 
 static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodH", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
@@ -8254,14 +8518,18 @@ static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodH");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8272,31 +8540,32 @@ static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->overloadedMethodI(stringArg);
 }
 
 static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodI");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     double doubleArg;
-    {
-        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodI(doubleArg);
 }
 
 static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -8313,14 +8582,18 @@ static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodI");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8331,35 +8604,37 @@ static void overloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->overloadedMethodJ(stringArg);
 }
 
 static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodJ");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestDictionary testDictionaryArg;
-    {
-        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            exceptionState.throwTypeError("parameter 1 ('testDictionaryArg') is not an object.");
-            return;
-        }
-        V8TestDictionary::toImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+        exceptionState.throwTypeError("parameter 1 ('testDictionaryArg') is not an object.");
+
+        return;
     }
+    V8TestDictionary::toImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodJ(testDictionaryArg);
 }
 
 static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsObject()) {
@@ -8372,14 +8647,18 @@ static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodJ");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8390,32 +8669,33 @@ static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue functionArg;
-    {
-        if (!info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        functionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    functionArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
     impl->overloadedMethodK(functionArg);
 }
 
 static void overloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->overloadedMethodK(stringArg);
 }
 
 static void overloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodK", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsFunction()) {
@@ -8428,14 +8708,18 @@ static void overloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodK");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8445,41 +8729,45 @@ static void overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodL", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodL");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     Vector<ScriptValue> restArgs;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodL(longArg, restArgs);
 }
 
 static void overloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodL", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodL");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
     Vector<ScriptValue> restArgs;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-        restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
+    restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedMethodL(stringArg, restArgs);
 }
 
 static void overloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodL", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(2, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -8510,14 +8798,18 @@ static void overloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodL");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8528,34 +8820,36 @@ static void overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodN1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceImplementation* testInterfaceArg;
-    {
-        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-            return;
-        }
+    testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+
+        return;
     }
+
     impl->overloadedMethodN(testInterfaceArg);
 }
 
 static void overloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* testCallbackInterfaceArg;
-    {
-        if (info.Length() <= 0 || !info[0]->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not a function."));
-            return;
-        }
-        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
     }
+    testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+
     impl->overloadedMethodN(testCallbackInterfaceArg);
 }
 
 static void overloadedMethodNMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodN", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
@@ -8568,14 +8862,18 @@ static void overloadedMethodNMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedMethodN");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedMethodNMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8586,66 +8884,61 @@ static void overloadedMethodNMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void promiseOverloadMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, impl->promiseOverloadMethod().v8Value());
-}
 
-static void promiseOverloadMethod2MethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    DOMWindow* arg1;
-    double arg2;
-    {
-        arg1 = toDOMWindow(info.GetIsolate(), info[0]);
-        if (!arg1) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'Window'.");
-            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-            return;
-        }
-        arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
+    v8SetReturnValue(info, impl->promiseOverloadMethod().v8Value());
 }
 
 static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
-    promiseOverloadMethod2MethodPromise(info, exceptionState);
-    if (exceptionState.hadException())
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-}
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "promiseOverloadMethod");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
 
-static void promiseOverloadMethod3MethodPromise(const v8::FunctionCallbackInfo<v8::Value>& info, ExceptionState& exceptionState)
-{
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Document* arg1;
+
+    DOMWindow* arg1;
     double arg2;
-    {
-        arg1 = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!arg1) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
-            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-            return;
-        }
-        arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.hadException())
-            return;
+    arg1 = toDOMWindow(info.GetIsolate(), info[0]);
+    if (!arg1) {
+        exceptionState.throwTypeError("parameter 1 is not of type 'Window'.");
+
+        return;
     }
+
+    arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
 }
 
 static void promiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
-    promiseOverloadMethod3MethodPromise(info, exceptionState);
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "promiseOverloadMethod");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    Document* arg1;
+    double arg2;
+    arg1 = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!arg1) {
+        exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
+
+        return;
+    }
+
+    arg2 = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
     if (exceptionState.hadException())
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+
+    v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
 }
 
 static void promiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(2, info.Length())) {
     case 0:
         if (true) {
@@ -8664,16 +8957,20 @@ static void promiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value
         }
         break;
     default:
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "promiseOverloadMethod");
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+
+    if (isArityError) {
         if (info.Length() >= 0) {
             exceptionState.throwTypeError(ExceptionMessages::invalidArity("[0, 2]", info.Length()));
-            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
-        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-    return;
 }
 
 static void promiseOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8684,31 +8981,34 @@ static void promiseOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v
 static void overloadedPerWorldBindingsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->overloadedPerWorldBindingsMethod();
 }
 
 static void overloadedPerWorldBindingsMethod1MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->overloadedPerWorldBindingsMethod();
 }
 
 static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedPerWorldBindingsMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedPerWorldBindingsMethod(longArg);
 }
 
 static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -8723,10 +9023,14 @@ static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInf
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedPerWorldBindingsMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8736,20 +9040,21 @@ static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCal
 
 static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedPerWorldBindingsMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->overloadedPerWorldBindingsMethod(longArg);
 }
 
 static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -8764,10 +9069,14 @@ static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::Functio
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedPerWorldBindingsMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8777,35 +9086,36 @@ static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8:
 
 static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedStaticMethod");
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     TestObject::overloadedStaticMethod(longArg);
 }
 
 static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedStaticMethod");
+
     int longArg1;
     int longArg2;
-    {
-        longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg1 = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    longArg2 = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     TestObject::overloadedStaticMethod(longArg1, longArg2);
 }
 
 static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(2, info.Length())) {
     case 1:
         if (true) {
@@ -8820,14 +9130,18 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "overloadedStaticMethod");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8837,19 +9151,22 @@ static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "item");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned index;
-    {
-        index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     ScriptValue result = impl->item(scriptState, index);
     v8SetReturnValue(info, result.v8Value());
 }
@@ -8861,23 +9178,27 @@ static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "setItem", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "setItem");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned index;
     V8StringResource<> value;
-    {
-        index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        value = info[1];
-        if (!value.prepare())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    value = info[1];
+    if (!value.prepare())
+        return;
+
     String result = impl->setItem(scriptState, index, value);
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
@@ -8889,18 +9210,20 @@ static void setItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedShortArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodClampUnsignedShortArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned clampUnsignedShortArg;
-    {
-        clampUnsignedShortArg = toUInt16(info.GetIsolate(), info[0], Clamp, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    clampUnsignedShortArg = toUInt16(info.GetIsolate(), info[0], Clamp, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodClampUnsignedShortArg(clampUnsignedShortArg);
 }
 
@@ -8911,18 +9234,20 @@ static void voidMethodClampUnsignedShortArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodClampUnsignedLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     unsigned clampUnsignedLongArg;
-    {
-        clampUnsignedLongArg = toUInt32(info.GetIsolate(), info[0], Clamp, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    clampUnsignedLongArg = toUInt32(info.GetIsolate(), info[0], Clamp, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodClampUnsignedLongArg(clampUnsignedLongArg);
 }
 
@@ -8934,14 +9259,15 @@ static void voidMethodClampUnsignedLongArgMethodCallback(const v8::FunctionCallb
 static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* defaultUndefinedTestInterfaceEmptyArg;
-    {
-        defaultUndefinedTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!defaultUndefinedTestInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultUndefinedTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    defaultUndefinedTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!defaultUndefinedTestInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodDefaultUndefinedTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
 
@@ -8952,14 +9278,15 @@ static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback(const 
 
 static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultUndefinedLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDefaultUndefinedLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int defaultUndefinedLongArg;
-    {
-        defaultUndefinedLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    defaultUndefinedLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodDefaultUndefinedLongArg(defaultUndefinedLongArg);
 }
 
@@ -8971,12 +9298,12 @@ static void voidMethodDefaultUndefinedLongArgMethodCallback(const v8::FunctionCa
 static void voidMethodDefaultUndefinedStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> defaultUndefinedStringArg;
-    {
-        defaultUndefinedStringArg = info[0];
-        if (!defaultUndefinedStringArg.prepare())
-            return;
-    }
+    defaultUndefinedStringArg = info[0];
+    if (!defaultUndefinedStringArg.prepare())
+        return;
+
     impl->voidMethodDefaultUndefinedStringArg(defaultUndefinedStringArg);
 }
 
@@ -8987,18 +9314,20 @@ static void voidMethodDefaultUndefinedStringArgMethodCallback(const v8::Function
 
 static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEnforceRangeLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodEnforceRangeLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int enforceRangeLongArg;
-    {
-        enforceRangeLongArg = toInt32(info.GetIsolate(), info[0], EnforceRange, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    enforceRangeLongArg = toInt32(info.GetIsolate(), info[0], EnforceRange, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodEnforceRangeLongArg(enforceRangeLongArg);
 }
 
@@ -9009,17 +9338,18 @@ static void voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallba
 
 static void voidMethodTreatNullAsEmptyStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsEmptyStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsEmptyStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<TreatNullAsEmptyString> treatNullAsEmptyStringStringArg;
-    {
-        treatNullAsEmptyStringStringArg = info[0];
-        if (!treatNullAsEmptyStringStringArg.prepare())
-            return;
-    }
+    treatNullAsEmptyStringStringArg = info[0];
+    if (!treatNullAsEmptyStringStringArg.prepare())
+        return;
+
     impl->voidMethodTreatNullAsEmptyStringStringArg(treatNullAsEmptyStringStringArg);
 }
 
@@ -9030,17 +9360,18 @@ static void voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const v8::Fu
 
 static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<TreatNullAsNullString> treatNullAsNullStringStringArg;
-    {
-        treatNullAsNullStringStringArg = info[0];
-        if (!treatNullAsNullStringStringArg.prepare())
-            return;
-    }
+    treatNullAsNullStringStringArg = info[0];
+    if (!treatNullAsNullStringStringArg.prepare())
+        return;
+
     impl->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
 
@@ -9051,17 +9382,18 @@ static void voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::Fun
 
 static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<TreatNullAndUndefinedAsNullString> treatNullAsNullStringStringArg;
-    {
-        treatNullAsNullStringStringArg = info[0];
-        if (!treatNullAsNullStringStringArg.prepare())
-            return;
-    }
+    treatNullAsNullStringStringArg = info[0];
+    if (!treatNullAsNullStringStringArg.prepare())
+        return;
+
     impl->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
 
@@ -9073,6 +9405,7 @@ static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMe
 static void activityLoggingAccessForAllWorldsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->activityLoggingAccessForAllWorldsMethod();
 }
 
@@ -9081,7 +9414,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingAccessForAllWorldsMethod", "TestObject", info.Holder(), info.GetIsolate());
+        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "activityLoggingAccessForAllWorldsMethod");
         Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data());
     }
@@ -9091,6 +9424,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
 static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->callWithExecutionContextVoidMethod(executionContext);
 }
@@ -9103,7 +9437,9 @@ static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionC
 static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     impl->callWithScriptStateVoidMethod(scriptState);
 }
 
@@ -9115,7 +9451,9 @@ static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     int result = impl->callWithScriptStateLongMethod(scriptState);
     v8SetReturnValueInt(info, result);
 }
@@ -9128,7 +9466,9 @@ static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->callWithScriptStateExecutionContextVoidMethod(scriptState, executionContext);
 }
@@ -9141,7 +9481,9 @@ static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8
 static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 0));
     impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments);
 }
@@ -9153,27 +9495,28 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8:
 
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    bool optionalBooleanArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            ScriptState* scriptState = ScriptState::forReceiverObject(info);
-            ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
-            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments);
-            return;
-        }
-        optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
+    bool optionalBooleanArg;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
+    }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
+        impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments);
+        return;
+    }
+    optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments, optionalBooleanArg);
 }
@@ -9186,6 +9529,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 static void callWithCurrentWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->callWithCurrentWindow(currentDOMWindow(info.GetIsolate()));
 }
 
@@ -9197,6 +9541,7 @@ static void callWithCurrentWindowMethodCallback(const v8::FunctionCallbackInfo<v
 static void callWithCurrentWindowScriptWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->callWithCurrentWindowScriptWindow(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
 }
 
@@ -9208,7 +9553,9 @@ static void callWithCurrentWindowScriptWindowMethodCallback(const v8::FunctionCa
 static void callWithThisValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     impl->callWithThisValue(ScriptValue(scriptState, info.Holder()));
 }
 
@@ -9220,10 +9567,13 @@ static void callWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "checkSecurityForNodeVoidMethod");
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeVoidMethod(), exceptionState)) {
         v8SetReturnValueNull(info);
         return;
     }
+
     impl->checkSecurityForNodeVoidMethod();
 }
 
@@ -9240,6 +9590,7 @@ static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void customCallPrologueVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8TestObject::customCallPrologueVoidMethodMethodPrologueCustom(info, impl);
     impl->customCallPrologueVoidMethod();
 }
@@ -9252,6 +9603,7 @@ static void customCallPrologueVoidMethodMethodCallback(const v8::FunctionCallbac
 static void customCallEpilogueVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->customCallEpilogueVoidMethod();
     V8TestObject::customCallEpilogueVoidMethodMethodEpilogueCustom(info, impl);
 }
@@ -9264,7 +9616,9 @@ static void customCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbac
 static void customElementCallbacksVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+
     impl->customElementCallbacksVoidMethod();
 }
 
@@ -9276,6 +9630,7 @@ static void customElementCallbacksVoidMethodMethodCallback(const v8::FunctionCal
 static void deprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->deprecatedVoidMethod();
 }
 
@@ -9288,6 +9643,7 @@ static void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void implementedAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->implementedAsMethodName();
 }
 
@@ -9299,6 +9655,7 @@ static void implementedAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo
 static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->measureAsVoidMethod();
 }
 
@@ -9311,6 +9668,7 @@ static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void measureMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->measureMethod();
 }
 
@@ -9323,25 +9681,27 @@ static void measureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 static void measureOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->measureOverloadedMethod();
 }
 
 static void measureOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->measureOverloadedMethod(arg);
 }
 
 static void measureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9358,10 +9718,14 @@ static void measureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void measureOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9372,25 +9736,27 @@ static void measureOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo
 static void DeprecateAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->DeprecateAsOverloadedMethod();
 }
 
 static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "DeprecateAsOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->DeprecateAsOverloadedMethod(arg);
 }
 
 static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9407,10 +9773,14 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "DeprecateAsOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void DeprecateAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9421,26 +9791,29 @@ static void DeprecateAsOverloadedMethodMethodCallback(const v8::FunctionCallback
 static void DeprecateAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->DeprecateAsSameValueOverloadedMethod();
 }
 
 static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "DeprecateAsSameValueOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->DeprecateAsSameValueOverloadedMethod(arg);
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9455,10 +9828,14 @@ static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbac
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "DeprecateAsSameValueOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9469,25 +9846,27 @@ static void DeprecateAsSameValueOverloadedMethodMethodCallback(const v8::Functio
 static void measureAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->measureAsOverloadedMethod();
 }
 
 static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureAsOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->measureAsOverloadedMethod(arg);
 }
 
 static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9504,10 +9883,14 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureAsOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void measureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9518,25 +9901,27 @@ static void measureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackIn
 static void measureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->measureAsSameValueOverloadedMethod();
 }
 
 static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureAsSameValueOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->measureAsSameValueOverloadedMethod(arg);
 }
 
 static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9553,10 +9938,14 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "measureAsSameValueOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void measureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9567,25 +9956,27 @@ static void measureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionC
 static void deprecateAsMeasureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->deprecateAsMeasureAsSameValueOverloadedMethod();
 }
 
 static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsMeasureAsSameValueOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
 }
 
 static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9604,10 +9995,14 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsMeasureAsSameValueOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9618,26 +10013,29 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8
 static void deprecateAsSameValueMeasureAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->deprecateAsSameValueMeasureAsOverloadedMethod();
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsSameValueMeasureAsOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9654,10 +10052,14 @@ static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::Functi
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsSameValueMeasureAsOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9668,26 +10070,29 @@ static void deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback(const v8
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod();
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsSameValueMeasureAsSameValueOverloadedMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int arg;
-    {
-        arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    arg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
@@ -9704,10 +10109,14 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v
         }
         break;
     default:
-        break;
+        isArityError = true;
+    }
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "deprecateAsSameValueMeasureAsSameValueOverloadedMethod");
+
+    if (isArityError) {
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9718,6 +10127,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback
 static void notEnumerableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->notEnumerableVoidMethod();
 }
 
@@ -9729,6 +10139,7 @@ static void notEnumerableVoidMethodMethodCallback(const v8::FunctionCallbackInfo
 static void originTrialEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->originTrialEnabledVoidMethod();
 }
 
@@ -9740,6 +10151,7 @@ static void originTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbac
 static void perWorldBindingsOriginTrialEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsOriginTrialEnabledVoidMethod();
 }
 
@@ -9751,6 +10163,7 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback(const v8:
 static void perWorldBindingsOriginTrialEnabledVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsOriginTrialEnabledVoidMethod();
 }
 
@@ -9762,6 +10175,7 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWor
 static void perWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsVoidMethod();
 }
 
@@ -9773,6 +10187,7 @@ static void perWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackI
 static void perWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsVoidMethod();
 }
 
@@ -9783,19 +10198,21 @@ static void perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::Funct
 
 static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -9806,19 +10223,21 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback(const 
 
 static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceEmptyArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-            return;
-        }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceEmptyArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+
+        return;
     }
+
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -9857,6 +10276,7 @@ static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
 }
 
@@ -9865,7 +10285,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
         Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
@@ -9875,6 +10295,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
 }
 
@@ -9883,7 +10304,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "activityLoggingForAllWorldsPerWorldBindingsVoidMethod");
         Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
@@ -9893,6 +10314,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
 static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
 }
 
@@ -9901,7 +10323,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
-        ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod");
         Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
@@ -9911,6 +10333,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
 static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
 }
 
@@ -9921,8 +10344,10 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
 
 static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->raisesExceptionVoidMethod(exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -9936,8 +10361,10 @@ static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackIn
 
 static void raisesExceptionStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionStringMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionStringMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     String result = impl->raisesExceptionStringMethod(exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -9952,27 +10379,28 @@ static void raisesExceptionStringMethodMethodCallback(const v8::FunctionCallback
 
 static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionVoidMethodOptionalLongArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int optionalLongArg;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        if (UNLIKELY(numArgsPassed <= 0)) {
-            impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
-            if (exceptionState.hadException()) {
-                return;
-            }
-            return;
-        }
-        optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    if (UNLIKELY(numArgsPassed <= 0)) {
+        impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
+        if (exceptionState.hadException()) {
+            return;
+        }
+        return;
+    }
+    optionalLongArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -9986,20 +10414,23 @@ static void raisesExceptionVoidMethodOptionalLongArgMethodCallback(const v8::Fun
 
 static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionVoidMethodTestCallbackInterfaceArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* testCallbackInterfaceArg;
-    {
-        if (info.Length() <= 0 || !info[0]->IsFunction()) {
-            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            return;
-        }
-        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+
+        return;
     }
+    testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+
     impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10013,20 +10444,22 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback(cons
 
 static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestCallbackInterface* optionalTestCallbackInterfaceArg;
-    {
-        if (!isUndefinedOrNull(info[0])) {
-            if (!info[0]->IsFunction()) {
-                exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-                return;
-            }
-            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
-        } else {
-            optionalTestCallbackInterfaceArg = nullptr;
+    if (!isUndefinedOrNull(info[0])) {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+
+            return;
         }
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
+    } else {
+        optionalTestCallbackInterfaceArg = nullptr;
     }
+
     impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10040,8 +10473,10 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallb
 
 static void raisesExceptionTestInterfaceEmptyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionTestInterfaceEmptyVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionTestInterfaceEmptyVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* result = impl->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10056,8 +10491,10 @@ static void raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback(const v8::
 
 static void raisesExceptionXPathNSResolverVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionXPathNSResolverVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "raisesExceptionXPathNSResolverVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     XPathNSResolver* result = impl->raisesExceptionXPathNSResolverVoidMethod(exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10072,18 +10509,20 @@ static void raisesExceptionXPathNSResolverVoidMethodMethodCallback(const v8::Fun
 
 static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "callWithExecutionContextRaisesExceptionVoidMethodLongArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "callWithExecutionContextRaisesExceptionVoidMethodLongArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(executionContext, longArg, exceptionState);
     if (exceptionState.hadException()) {
@@ -10099,6 +10538,7 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallba
 static void runtimeEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->runtimeEnabledVoidMethod();
 }
 
@@ -10110,6 +10550,7 @@ static void runtimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInf
 static void perWorldBindingsRuntimeEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsRuntimeEnabledVoidMethod();
 }
 
@@ -10121,6 +10562,7 @@ static void perWorldBindingsRuntimeEnabledVoidMethodMethodCallback(const v8::Fun
 static void perWorldBindingsRuntimeEnabledVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->perWorldBindingsRuntimeEnabledVoidMethod();
 }
 
@@ -10132,31 +10574,32 @@ static void perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld(c
 static void runtimeEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->runtimeEnabledOverloadedVoidMethod(stringArg);
 }
 
 static void runtimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "runtimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "runtimeEnabledOverloadedVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     impl->runtimeEnabledOverloadedVoidMethod(longArg);
 }
 
 static void runtimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "runtimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -10173,14 +10616,18 @@ static void runtimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackI
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "runtimeEnabledOverloadedVoidMethod");
+
+    if (isArityError) {
+        if (info.Length() < 1) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void runtimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10191,66 +10638,73 @@ static void runtimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionC
 static void partiallyRuntimeEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> stringArg;
-    {
-        stringArg = info[0];
-        if (!stringArg.prepare())
-            return;
-    }
+    stringArg = info[0];
+    if (!stringArg.prepare())
+        return;
+
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(stringArg);
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceImplementation* testInterfaceArg;
-    {
-        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!testInterfaceArg) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-            return;
-        }
+    testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!testInterfaceArg) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+
+        return;
     }
+
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(testInterfaceArg);
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "partiallyRuntimeEnabledOverloadedVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     V8StringResource<> stringArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        stringArg = info[1];
-        if (!stringArg.prepare())
-            return;
-    }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    stringArg = info[1];
+    if (!stringArg.prepare())
+        return;
+
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg);
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "partiallyRuntimeEnabledOverloadedVoidMethod");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int longArg;
     V8StringResource<> stringArg;
     TestInterfaceImplementation* testInterfaceArg;
-    {
-        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        stringArg = info[1];
-        if (!stringArg.prepare())
-            return;
-        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
-        if (!testInterfaceArg) {
-            exceptionState.throwTypeError("parameter 3 is not of type 'TestInterface'.");
-            return;
-        }
+    longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    stringArg = info[1];
+    if (!stringArg.prepare())
+        return;
+
+    testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+    if (!testInterfaceArg) {
+        exceptionState.throwTypeError("parameter 3 is not of type 'TestInterface'.");
+
+        return;
     }
+
     impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg, testInterfaceArg);
 }
 
@@ -10275,7 +10729,7 @@ static int partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg()
 
 static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    bool isArityError = false;
     switch (std::min(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg(), info.Length())) {
     case 1:
         if (RuntimeEnabledFeatures::featureName2Enabled()) {
@@ -10306,14 +10760,18 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
         }
         break;
     default:
-        break;
+        isArityError = true;
     }
-    if (info.Length() < TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), info.Length()));
-        return;
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "partiallyRuntimeEnabledOverloadedVoidMethod");
+
+    if (isArityError) {
+        if (info.Length() < TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()) {
+            exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), info.Length()));
+            return;
+        }
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    return;
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10323,15 +10781,16 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback(const v8::
 
 static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    {
-        testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-    }
+    testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+
     impl->legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -10342,18 +10801,20 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCall
 
 static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyArg;
-    {
-        for (int i = 0; i < info.Length(); ++i) {
-            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-                return;
-            }
-            testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    for (int i = 0; i < info.Length(); ++i) {
+        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+
+            return;
         }
+        testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
     }
+
     impl->legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
 }
 
@@ -10364,35 +10825,39 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMe
 
 static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Node* node1;
     Node* node2;
-    {
-        int numArgsPassed = info.Length();
-        while (numArgsPassed > 0) {
-            if (!info[numArgsPassed - 1]->IsUndefined())
-                break;
-            --numArgsPassed;
-        }
-        node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!node1) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 1 is not of type 'Node'."));
-            return;
-        }
-        if (UNLIKELY(numArgsPassed <= 1)) {
-            impl->useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(node1);
-            return;
-        }
-        node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!node2) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 2 is not of type 'Node'."));
-            return;
-        }
+    int numArgsPassed = info.Length();
+    while (numArgsPassed > 0) {
+        if (!info[numArgsPassed - 1]->IsUndefined())
+            break;
+        --numArgsPassed;
     }
+    node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!node1) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 1 is not of type 'Node'."));
+
+        return;
+    }
+
+    if (UNLIKELY(numArgsPassed <= 1)) {
+        impl->useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(node1);
+        return;
+    }
+    node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!node2) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 2 is not of type 'Node'."));
+
+        return;
+    }
+
     impl->useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(node1, node2);
 }
 
@@ -10403,25 +10868,29 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback(c
 
 static void useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 2)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Node* node1;
     Node* node2;
-    {
-        node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!node1) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 1 is not of type 'Node'."));
-            return;
-        }
-        node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!node2 && !isUndefinedOrNull(info[1])) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 2 is not of type 'Node'."));
-            return;
-        }
+    node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!node1) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 1 is not of type 'Node'."));
+
+        return;
     }
+
+    node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!node2 && !isUndefinedOrNull(info[1])) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 2 is not of type 'Node'."));
+
+        return;
+    }
+
     impl->useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(node1, node2);
 }
 
@@ -10432,25 +10901,29 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback(c
 
 static void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Node* node1;
     Node* node2;
-    {
-        node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!node1) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 1 is not of type 'Node'."));
-            return;
-        }
-        node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!node2) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 2 is not of type 'Node'."));
-            return;
-        }
+    node1 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!node1) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 1 is not of type 'Node'."));
+
+        return;
     }
+
+    node2 = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!node2) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 2 is not of type 'Node'."));
+
+        return;
+    }
+
     impl->useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(node1, node2);
 }
 
@@ -10462,6 +10935,7 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback(
 static void unforgeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     impl->unforgeableVoidMethod();
 }
 
@@ -10472,18 +10946,20 @@ static void unforgeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestInterfaceGarbageCollectedSequenceArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceArg;
-    {
-        testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return;
-    }
+    testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodTestInterfaceGarbageCollectedSequenceArg(testInterfaceGarbageCollectedSequenceArg);
 }
 
@@ -10494,18 +10970,20 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback(con
 
 static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceGarbageCollectedArrayArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodTestInterfaceGarbageCollectedArrayArg");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
-    {
-        testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return;
-    }
+    testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+    if (exceptionState.hadException())
+        return;
+
     impl->voidMethodTestInterfaceGarbageCollectedArrayArg(testInterfaceGarbageCollectedArrayArg);
 }
 
@@ -10517,6 +10995,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const 
 static void newObjectTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     TestInterfaceImplementation* result = impl->newObjectTestInterfaceMethod();
     // [NewObject] must always create a new wrapper.  Check that a wrapper
     // does not exist yet.
@@ -10532,6 +11011,7 @@ static void newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbac
 static void serializerMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
 }
 
@@ -10543,6 +11023,7 @@ static void serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 static void voidMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl);
 }
 
@@ -10554,6 +11035,7 @@ static void voidMethodImplementedInPrivateScriptMethodCallback(const v8::Functio
 static void shortMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int result = 0;
     if (!V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
         return;
@@ -10567,18 +11049,20 @@ static void shortMethodImplementedInPrivateScriptMethodCallback(const v8::Functi
 
 static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int value;
-    {
-        value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     int result = 0;
     if (!V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
         return;
@@ -10592,17 +11076,18 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback
 
 static void stringMethodWithStringArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     V8StringResource<> value;
-    {
-        value = info[0];
-        if (!value.prepare())
-            return;
-    }
+    value = info[0];
+    if (!value.prepare())
+        return;
+
     String result;
     if (!V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
         return;
@@ -10616,19 +11101,21 @@ static void stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallba
 
 static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length()))));
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Node* value;
-    {
-        value = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!value) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", "parameter 1 is not of type 'Node'."));
-            return;
-        }
+    value = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!value) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", "parameter 1 is not of type 'Node'."));
+
+        return;
     }
+
     Node* result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
         return;
@@ -10642,38 +11129,46 @@ static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback(c
 
 static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 5)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(5, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     Document* document;
     Node* node;
     int value1;
     double value2;
     V8StringResource<> string;
-    {
-        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!document) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
-            return;
-        }
-        node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-        if (!node) {
-            exceptionState.throwTypeError("parameter 2 is not of type 'Node'.");
-            return;
-        }
-        value1 = toInt16(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        value2 = toRestrictedDouble(info.GetIsolate(), info[3], exceptionState);
-        if (exceptionState.hadException())
-            return;
-        string = info[4];
-        if (!string.prepare())
-            return;
+    document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!document) {
+        exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
+
+        return;
     }
+
+    node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
+    if (!node) {
+        exceptionState.throwTypeError("parameter 2 is not of type 'Node'.");
+
+        return;
+    }
+
+    value1 = toInt16(info.GetIsolate(), info[2], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    value2 = toRestrictedDouble(info.GetIsolate(), info[3], exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    string = info[4];
+    if (!string.prepare())
+        return;
+
     Node* result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, document, node, value1, value2, string, &result))
         return;
@@ -10687,22 +11182,25 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallba
 
 static void methodImplementedInCPPForPrivateScriptOnlyMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodImplementedInCPPForPrivateScriptOnly", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "methodImplementedInCPPForPrivateScriptOnly");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int value1;
     int value2;
-    {
-        value1 = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        value2 = toInt16(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
+    value1 = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    value2 = toInt16(info.GetIsolate(), info[1], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     v8SetReturnValueInt(info, impl->methodImplementedInCPPForPrivateScriptOnly(value1, value2));
 }
 
@@ -10713,9 +11211,12 @@ static void methodImplementedInCPPForPrivateScriptOnlyMethodCallback(const v8::F
 
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "keys");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10730,9 +11231,12 @@ static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "values");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10747,9 +11251,12 @@ static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "entries");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10764,23 +11271,28 @@ static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "forEach");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptValue callback;
     ScriptValue thisArg;
-    {
-        if (!info[0]->IsFunction()) {
-            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            return;
-        }
-        callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
-        thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+    if (!info[0]->IsFunction()) {
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+
+        return;
     }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
+
+    thisArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[1]);
+
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10794,19 +11306,22 @@ static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "has");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int key;
-    {
-        key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     bool result = impl->hasForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10821,19 +11336,22 @@ static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void getMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "get", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "get");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int key;
-    {
-        key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     ScriptValue result = impl->getForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10848,9 +11366,12 @@ static void getMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "clear", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "clear");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     impl->clearForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10864,19 +11385,22 @@ static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "delete", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "delete");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int key;
-    {
-        key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     bool result = impl->deleteForBinding(scriptState, key, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10891,23 +11415,27 @@ static void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 
 static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "set", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "set");
+
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     int key;
     StringOrDouble value;
-    {
-        key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, UnionTypeConversionMode::NotNullable, exceptionState);
-        if (exceptionState.hadException())
-            return;
-    }
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
+    key = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
+    V8StringOrDouble::toImpl(info.GetIsolate(), info[1], value, UnionTypeConversionMode::NotNullable, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     TestObject* result = impl->setForBinding(scriptState, key, value, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -10923,6 +11451,7 @@ static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->serializerMethod(), info.GetIsolate());
 }
 
@@ -10934,6 +11463,7 @@ static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     v8SetReturnValueString(info, impl->stringifierAttribute(), info.GetIsolate());
 }
 
@@ -10944,9 +11474,12 @@ static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 
 static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "iterator");
+
     TestObject* impl = V8TestObject::toImpl(info.Holder());
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
+
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         return;
@@ -11794,11 +12327,11 @@ bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(Loc
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> *argv = 0;
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
     if (v8Value.IsEmpty())
         return false;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11818,7 +12351,7 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> *argv = 0;
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
     if (v8Value.IsEmpty())
         return false;
@@ -11826,7 +12359,7 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
     if (exceptionState.hadException())
         return false;
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11847,7 +12380,7 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
     v8::Local<v8::Value> argv[] = { valueHandle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
@@ -11855,7 +12388,7 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
     if (exceptionState.hadException())
         return false;
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11876,7 +12409,7 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> valueHandle = v8String(scriptState->isolate(), value);
     v8::Local<v8::Value> argv[] = { valueHandle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
@@ -11884,7 +12417,7 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     if (!cppValue.prepare())
         return false;
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11905,13 +12438,13 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> valueHandle = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> argv[] = { valueHandle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
     Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11936,13 +12469,13 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
     v8::Local<v8::Value> value2Handle = v8::Number::New(scriptState->isolate(), value2);
     v8::Local<v8::Value> stringHandle = v8String(scriptState->isolate(), string);
     v8::Local<v8::Value> argv[] = { documentHandle, nodeHandle, value1Handle, value2Handle, stringHandle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
     if (v8Value.IsEmpty())
         return false;
     Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 
@@ -11964,7 +12497,7 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
     v8::Local<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
     v8::Local<v8::Value> value2Handle = v8::Integer::New(scriptState->isolate(), value2);
     v8::Local<v8::Value> argv[] = { value1Handle, value2Handle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodForPrivateScriptOnly", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "methodForPrivateScriptOnly");
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "methodForPrivateScriptOnly", holder, 2, argv);
     if (v8Value.IsEmpty())
         return false;
@@ -11972,7 +12505,7 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
     if (exceptionState.hadException())
         return false;
     *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
+    CHECK(!exceptionState.hadException());
     return true;
 }
 

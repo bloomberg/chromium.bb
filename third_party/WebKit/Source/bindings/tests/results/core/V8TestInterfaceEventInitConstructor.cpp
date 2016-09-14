@@ -75,25 +75,28 @@ void isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceEventInitConstructor", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "TestInterfaceEventInitConstructor");
+
     if (UNLIKELY(info.Length() < 2)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
         return;
     }
+
     V8StringResource<> type;
     TestInterfaceEventInit testInterfaceEventInit;
-    {
-        type = info[0];
-        if (!type.prepare())
-            return;
-        if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
-            exceptionState.throwTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
-            return;
-        }
-        V8TestInterfaceEventInit::toImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState);
-        if (exceptionState.hadException())
-            return;
+    type = info[0];
+    if (!type.prepare())
+        return;
+
+    if (!isUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
+        exceptionState.throwTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
+
+        return;
     }
+    V8TestInterfaceEventInit::toImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     TestInterfaceEventInitConstructor* impl = TestInterfaceEventInitConstructor::create(type, testInterfaceEventInit);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventInitConstructor::wrapperTypeInfo, wrapper);
