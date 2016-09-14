@@ -1414,33 +1414,6 @@ void applyTextTransform(const ComputedStyle* style, String& text, UChar previous
     }
 }
 
-void LayoutText::applyTextTransformFromTo(int from, int len, const ComputedStyle* style)
-{
-    if (!style)
-        return;
-    if (m_text.isEmpty())
-        return;
-
-    String textToTransform = m_text.substring(from, len);
-    if (textToTransform.isEmpty())
-        return;
-
-    switch (style->textTransform()) {
-    case TTNONE:
-        break;
-    case CAPITALIZE:
-        makeCapitalized(&textToTransform, previousCharacter());
-        m_text.replace(from, len, textToTransform);
-        break;
-    case UPPERCASE:
-        m_text.replace(from, len, textToTransform.upper(style->locale()));
-        break;
-    case LOWERCASE:
-        m_text.replace(from, len, textToTransform.lower(style->locale()));
-        break;
-    }
-}
-
 void LayoutText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     ASSERT(text);
