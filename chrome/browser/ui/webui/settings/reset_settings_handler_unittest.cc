@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/test/base/testing_profile.h"
@@ -70,10 +71,12 @@ private:
 
 class ResetSettingsHandlerTest : public testing::Test {
  public:
-  ResetSettingsHandlerTest() : handler_(&profile_, &web_ui_) {
+  ResetSettingsHandlerTest() {
+    google_brand::BrandForTesting brand_for_testing("");
+    handler_.reset(new TestingResetSettingsHandler(&profile_, &web_ui_));
   }
 
-  TestingResetSettingsHandler* handler() { return &handler_; }
+  TestingResetSettingsHandler* handler() { return handler_.get(); }
   content::TestWebUI* web_ui() { return &web_ui_; }
 
  private:
@@ -81,7 +84,7 @@ class ResetSettingsHandlerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
-  TestingResetSettingsHandler handler_;
+  std::unique_ptr<TestingResetSettingsHandler> handler_;
 };
 
 TEST_F(ResetSettingsHandlerTest, HandleResetProfileSettings) {
