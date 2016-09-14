@@ -74,15 +74,6 @@ class ServiceManager : public Service {
   mojom::ServiceRequest StartEmbedderService(const std::string& name);
 
  private:
-  enum class InstanceErrorType {
-    // The Instance has lost it's Service pointer, but still has connections. It
-    // should not be immediately deleted.
-    LOST_SERVICE,
-
-    // The Instance should no longer be kept around.
-    DESTROY,
-  };
-
   class Instance;
 
   // Service:
@@ -102,10 +93,15 @@ class ServiceManager : public Service {
   // have a chance to shut down.
   void TerminateServiceManagerConnections();
 
-  // Called when |instance| encounters an error. If |error_type| is DESTROY
-  // the instance is deleted immediately, otherwise it is moved to
-  // |instances_without_service_|.
-  void OnInstanceError(Instance* instance, InstanceErrorType error_type);
+  // Called when |instance| encounters an error. Deletes |instance|.
+  void OnInstanceError(Instance* instance);
+
+  // Called when |instance| becomes unreachable to new connections because it
+  // no longer has any pipes to the ServiceManager.
+  void OnInstanceUnreachable(Instance* instance);
+
+  // Called by an Instance as it's being destroyed.
+  void OnInstanceStopped(const Identity& identity);
 
   // Completes a connection between a source and target application as defined
   // by |params|, exchanging InterfaceProviders between them. If no existing
@@ -162,14 +158,18 @@ class ServiceManager : public Service {
 
   base::WeakPtr<ServiceManager> GetWeakPtr();
 
+  // Ownership of all root Instances. Non-root Instances are owned by their
+  // parent Instance.
+  using InstanceMap = std::map<Instance*, std::unique_ptr<Instance>>;
+  InstanceMap root_instances_;
+
+  // Maps service identities to reachable instances. Note that the Instance*
+  // values here are NOT owned by this map.
   std::map<Identity, Instance*> identity_to_instance_;
 
   // Tracks the names of instances that are allowed to field connection requests
   // from all users.
   std::set<std::string> singletons_;
-
-  // See OnInstanceError() for details.
-  std::set<Instance*> instances_without_service_;
 
   std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
   std::map<Identity, mojom::ResolverPtr> identity_to_resolver_;

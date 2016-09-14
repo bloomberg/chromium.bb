@@ -133,13 +133,6 @@ class ServiceManager::Instance
   }
 
   ~Instance() override {
-    if (parent_)
-      parent_->RemoveChild(this);
-    // |children_| will be modified during destruction.
-    std::set<Instance*> children = children_;
-    for (auto* child : children)
-      service_manager_->OnInstanceError(child, InstanceErrorType::DESTROY);
-
     // Shutdown all bindings before we close the runner. This way the process
     // should see the pipes closed and exit, as well as waking up any potential
     // sync/WaitForIncomingResponse().
@@ -148,6 +141,10 @@ class ServiceManager::Instance
       pid_receiver_binding_.Close();
     connectors_.CloseAllBindings();
     service_manager_bindings_.CloseAllBindings();
+
+    // Notify the ServiceManager that this Instance is really going away.
+    service_manager_->OnInstanceStopped(identity_);
+
     // Release |runner_| so that if we are called back to OnRunnerCompleted()
     // we know we're in the destructor.
     std::unique_ptr<NativeRunner> runner = std::move(runner_);
@@ -156,16 +153,17 @@ class ServiceManager::Instance
 
   Instance* parent() { return parent_; }
 
-  void AddChild(Instance* child) {
-    children_.insert(child);
+  void AddChild(std::unique_ptr<Instance> child) {
     child->parent_ = this;
+    children_.insert(std::make_pair(child.get(), std::move(child)));
   }
 
   void RemoveChild(Instance* child) {
     auto it = children_.find(child);
     DCHECK(it != children_.end());
+
+    // Deletes |child|.
     children_.erase(it);
-    child->parent_ = nullptr;
   }
 
   bool ConnectToService(std::unique_ptr<ConnectParams>* connect_params) {
@@ -402,7 +400,7 @@ class ServiceManager::Instance
 
   void PIDAvailable(base::ProcessId pid) {
     if (pid == base::kNullProcessId) {
-      service_manager_->OnInstanceError(this, InstanceErrorType::DESTROY);
+      service_manager_->OnInstanceError(this);
       return;
     }
     pid_ = pid;
@@ -418,10 +416,10 @@ class ServiceManager::Instance
     // Any time a Connector is lost or we lose the Service connection, it
     // may have been the last pipe using this Instance. If so, clean up.
     if (service_manager && !service_) {
-      InstanceErrorType instance_error_type =
-          connectors_.empty() ? InstanceErrorType::DESTROY
-                              : InstanceErrorType::LOST_SERVICE;
-      service_manager->OnInstanceError(this, instance_error_type);
+      if (connectors_.empty())
+        service_manager->OnInstanceError(this);
+      else
+        service_manager->OnInstanceUnreachable(this);
     }
   }
 
@@ -439,7 +437,7 @@ class ServiceManager::Instance
     if (!runner_.get())
       return;  // We're in the destructor.
 
-    service_manager_->OnInstanceError(this, InstanceErrorType::DESTROY);
+    service_manager_->OnInstanceError(this);
   }
 
   shell::ServiceManager* const service_manager_;
@@ -458,7 +456,7 @@ class ServiceManager::Instance
   mojo::BindingSet<mojom::ServiceManager> service_manager_bindings_;
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
-  std::set<Instance*> children_;
+  InstanceMap children_;
   base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
@@ -500,16 +498,6 @@ ServiceManager::ServiceManager(
 
 ServiceManager::~ServiceManager() {
   TerminateServiceManagerConnections();
-  // Terminate any remaining instances.
-  while (!identity_to_instance_.empty()) {
-    OnInstanceError(identity_to_instance_.begin()->second,
-                    InstanceErrorType::DESTROY);
-  }
-  while (!instances_without_service_.empty()) {
-    OnInstanceError(*instances_without_service_.begin(),
-                    InstanceErrorType::DESTROY);
-  }
-  identity_to_resolver_.clear();
 }
 
 void ServiceManager::SetInstanceQuitCallback(
@@ -588,32 +576,36 @@ mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
 void ServiceManager::TerminateServiceManagerConnections() {
   Instance* instance = GetExistingInstance(CreateServiceManagerIdentity());
   if (instance)
-    OnInstanceError(instance, InstanceErrorType::DESTROY);
+    OnInstanceError(instance);
 }
 
-void ServiceManager::OnInstanceError(Instance* instance,
-                                     InstanceErrorType error_type) {
+void ServiceManager::OnInstanceError(Instance* instance) {
   const Identity identity = instance->identity();
+  identity_to_instance_.erase(identity);
 
-  const bool in_identity_to_instance =
-      identity_to_instance_.erase(identity) > 0;
-  const bool in_instances_without_services =
-      instances_without_service_.erase(instance) > 0;
-  DCHECK_NE(in_identity_to_instance, in_instances_without_services);
+  if (instance->parent()) {
+    // Deletes |instance|.
+    instance->parent()->RemoveChild(instance);
+  } else {
+    auto it = root_instances_.find(instance);
+    DCHECK(it != root_instances_.end());
 
-  if (error_type == InstanceErrorType::LOST_SERVICE) {
-    // |instance| has lost its service but still has connections to it, we need
-    // to keep it around. The instance is removed from |identity_to_instance_|
-    // so that if an attempt is made to connect to the same identity a new
-    // Instance is created.
-    instances_without_service_.insert(instance);
-    return;
+    // Deletes |instance|.
+    root_instances_.erase(it);
   }
+}
 
+void ServiceManager::OnInstanceUnreachable(Instance* instance) {
+  // If an Instance becomes unreachable, new connection requests for this
+  // identity will elicit a new Instance instantiation. The unreachable instance
+  // remains alive.
+  identity_to_instance_.erase(instance->identity());
+}
+
+void ServiceManager::OnInstanceStopped(const Identity& identity) {
   listeners_.ForAllPtrs([identity](mojom::ServiceManagerListener* listener) {
     listener->OnServiceStopped(identity);
   });
-  delete instance;
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
 }
@@ -685,18 +677,29 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     const Identity& target,
     const CapabilitySpec& spec) {
   CHECK(target.user_id() != mojom::kInheritUserID);
-  Instance* instance = new Instance(this, target, spec);
-  DCHECK(identity_to_instance_.find(target) ==
-         identity_to_instance_.end());
+
+  std::unique_ptr<Instance> instance(new Instance(this, target, spec));
+  Instance* raw_instance = instance.get();
+
   Instance* source_instance = GetExistingInstance(source);
   if (source_instance)
-    source_instance->AddChild(instance);
-  identity_to_instance_[target] = instance;
-  mojom::ServiceInfoPtr info = instance->CreateServiceInfo();
+    source_instance->AddChild(std::move(instance));
+  else
+    root_instances_.insert(std::make_pair(raw_instance, std::move(instance)));
+
+  // NOTE: |instance| has been passed elsewhere. Use |raw_instance| from this
+  // point forward. It's safe for the extent of this method.
+
+  auto result =
+      identity_to_instance_.insert(std::make_pair(target, raw_instance));
+  DCHECK(result.second);
+
+  mojom::ServiceInfoPtr info = raw_instance->CreateServiceInfo();
   listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
     listener->OnServiceCreated(info.Clone());
   });
-  return instance;
+
+  return raw_instance;
 }
 
 void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
