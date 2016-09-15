@@ -387,8 +387,15 @@ void WaitForMultipleFullscreenEvents(
 // - document.webkitFullscreenElement is correctly updated in both frames.
 // - fullscreenchange events fire in both frames.
 // - fullscreen CSS is applied correctly in both frames.
+//
+// Flaky on Windows: https://crbug.com/647311
+#if defined(OS_WIN)
+#define MAYBE_FullscreenElementInSubframe DISABLED_FullscreenElementInSubframe
+#else
+#define MAYBE_FullscreenElementInSubframe FullscreenElementInSubframe
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       FullscreenElementInSubframe) {
+                       MAYBE_FullscreenElementInSubframe) {
   // Start on a page with one subframe (id "child-0") that has
   // "allowfullscreen" enabled.
   GURL main_url(embedded_test_server()->GetURL(
