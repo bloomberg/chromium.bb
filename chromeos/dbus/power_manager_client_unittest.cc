@@ -23,6 +23,7 @@
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::SaveArg;
 
 namespace chromeos {
 
@@ -176,9 +177,11 @@ class PowerManagerClientTest : public testing::Test {
                     dbus::ObjectPath(power_manager::kPowerManagerServicePath)))
         .WillRepeatedly(Return(proxy_.get()));
 
-    // Save |client_|'s signal callbacks.
+    // Save |client_|'s signal and name-owner-changed callbacks.
     EXPECT_CALL(*proxy_.get(), ConnectToSignal(kInterface, _, _, _))
         .WillRepeatedly(Invoke(this, &PowerManagerClientTest::ConnectToSignal));
+    EXPECT_CALL(*proxy_.get(), SetNameOwnerChangedCallback(_))
+        .WillRepeatedly(SaveArg<0>(&name_owner_changed_callback_));
 
     // |client_|'s Init() method should register regular and dark suspend
     // delays.
@@ -259,6 +262,10 @@ class PowerManagerClientTest : public testing::Test {
   // Maps from powerd signal name to the corresponding callback provided by
   // |client_|.
   std::map<std::string, dbus::ObjectProxy::SignalCallback> signal_callbacks_;
+
+  // Callback passed to |proxy_|'s SetNameOwnerChangedCallback() method.
+  // TODO(derat): Test that |client_| handles powerd restarts.
+  dbus::ObjectProxy::NameOwnerChangedCallback name_owner_changed_callback_;
 
  private:
   // Handles calls to |proxy_|'s ConnectToSignal() method.
