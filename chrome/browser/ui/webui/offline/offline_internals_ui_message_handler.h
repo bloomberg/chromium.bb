@@ -24,14 +24,8 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
-  // Deletes all the pages in the store.
-  void HandleDeleteAllPages(const base::ListValue* args);
-
   // Delete selected list of page ids from the store.
   void HandleDeleteSelectedPages(const base::ListValue* args);
-
-  // Deletes all the requests in the request queue.
-  void HandleDeleteAllRequests(const base::ListValue* args);
 
   // Delete selected list of requests from the request queue.
   void HandleDeleteSelectedRequests(const base::ListValue* args);
@@ -59,11 +53,6 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Load whether device is currently offline.
   void HandleGetNetworkStatus(const base::ListValue* args);
-
-  // Callback used by DeleteAllRequests to get the request_ids to delete.
-  void HandleGetAllRequestsForDeleteCallback(
-      std::string callback_id,
-      std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests);
 
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(

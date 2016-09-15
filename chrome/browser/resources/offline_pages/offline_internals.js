@@ -128,14 +128,28 @@ cr.define('offlineInternals', function() {
    * Delete all pages in the offline store.
    */
   function deleteAllPages() {
-    browserProxy_.deleteAllPages().then(pagesDeleted);
+    var checkboxes = document.getElementsByName('stored');
+    var selectedIds = [];
+
+    for (var i = 0; i < checkboxes.length; i++) {
+      selectedIds.push(checkboxes[i].value);
+    }
+
+    browserProxy_.deleteSelectedPages(selectedIds).then(pagesDeleted);
   }
 
   /**
    * Delete all pending SavePageRequest items in the request queue.
    */
   function deleteAllRequests() {
-    browserProxy_.deleteAllRequests().then(requestsDeleted);
+    var checkboxes = document.getElementsByName('requests');
+    var selectedIds = [];
+
+    for (var i = 0; i < checkboxes.length; i++) {
+      selectedIds.push(checkboxes[i].value);
+    }
+
+    browserProxy_.deleteSelectedRequests(selectedIds).then(requestsDeleted);
   }
 
   /**
@@ -235,8 +249,8 @@ cr.define('offlineInternals', function() {
     }
 
     var incognito = loadTimeData.getBoolean('isIncognito');
-    $('clear-all').disabled = incognito;
-    $('clear-selected').disabled = incognito;
+    $('delete-all-pages').disabled = incognito;
+    $('delete-selected-pages').disabled = incognito;
     $('delete-all-requests').disabled = incognito;
     $('delete-selected-requests').disabled = incognito;
     $('log-model-on').disabled = incognito;
@@ -245,8 +259,8 @@ cr.define('offlineInternals', function() {
     $('log-request-off').disabled = incognito;
     $('refresh').disabled = incognito;
 
-    $('clear-all').onclick = deleteAllPages;
-    $('clear-selected').onclick = deleteSelectedPages;
+    $('delete-all-pages').onclick = deleteAllPages;
+    $('delete-selected-pages').onclick = deleteSelectedPages;
     $('delete-all-requests').onclick = deleteAllRequests;
     $('delete-selected-requests').onclick = deleteSelectedRequests;
     $('refresh').onclick = refreshAll;

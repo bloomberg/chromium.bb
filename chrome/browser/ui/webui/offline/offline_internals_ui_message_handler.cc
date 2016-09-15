@@ -64,18 +64,6 @@ std::string OfflineInternalsUIMessageHandler::GetStringFromSavePageStatus() {
   return "Available";
 }
 
-void OfflineInternalsUIMessageHandler::HandleDeleteAllPages(
-    const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  // Pass back success because ClearAll doesn't return a status.
-  offline_page_model_->ClearAll(
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleDeletedPagesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback_id,
-                 offline_pages::DeletePageResult::SUCCESS));
-}
-
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
     const base::ListValue* args) {
   std::string callback_id;
@@ -99,20 +87,6 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
                  weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
-void OfflineInternalsUIMessageHandler::HandleDeleteAllRequests(
-    const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  // First do a get, then in the callback, build a list of IDs, and
-  // call RemoveRequests with that list.
-  if (request_coordinator_) {
-    request_coordinator_->GetAllRequests(
-        base::Bind(&OfflineInternalsUIMessageHandler::
-                       HandleGetAllRequestsForDeleteCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback_id));
-  }
-}
-
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
     const base::ListValue* args) {
   std::string callback_id;
@@ -128,25 +102,6 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
     int64_t int_value;
     base::StringToInt64(value, &int_value);
     offline_ids.push_back(int_value);
-  }
-
-  // Call RequestCoordinator to delete them
-  if (request_coordinator_) {
-    request_coordinator_->RemoveRequests(
-        offline_ids,
-        base::Bind(
-            &OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback,
-            weak_ptr_factory_.GetWeakPtr(), callback_id));
-  }
-}
-
-void OfflineInternalsUIMessageHandler::HandleGetAllRequestsForDeleteCallback(
-    std::string callback_id,
-    std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests) {
-  std::vector<int64_t> offline_ids;
-  // Build a list of offline_ids from the requests.
-  for (const auto& request : requests) {
-    offline_ids.push_back(request->request_id());
   }
 
   // Call RequestCoordinator to delete them
@@ -342,16 +297,8 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
 
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "deleteAllPages",
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteAllPages,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
       "deleteSelectedPages",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "deleteAllRequests",
-      base::Bind(&OfflineInternalsUIMessageHandler::HandleDeleteAllRequests,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "deleteSelectedRequests",
