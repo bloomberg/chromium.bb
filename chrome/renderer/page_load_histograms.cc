@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(bmcquade): delete this class in October 2016, as it is deprecated by the
+// new PageLoad.* UMA histograms.
+
 #include "chrome/renderer/page_load_histograms.h"
 
 #include <stddef.h>
