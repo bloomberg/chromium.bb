@@ -1906,7 +1906,6 @@
       'url_request/url_request_http_job_unittest.cc',
       'url_request/url_request_job_factory_impl_unittest.cc',
       'url_request/url_request_job_unittest.cc',
-      'url_request/url_request_quic_unittest.cc',
       'url_request/url_request_simple_job_unittest.cc',
       'url_request/url_request_throttler_simulation_unittest.cc',
       'url_request/url_request_throttler_test_support.cc',

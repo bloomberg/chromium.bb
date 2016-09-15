@@ -318,13 +318,11 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
-        &push_promise_index_, base::ThreadTaskRunnerHandle::Get().get(),
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &push_promise_index_,
+        base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
     session_->Initialize();
-    TestCompletionCallback callback;
-    session_->CryptoConnect(/*require_confirmation=*/false,
-                            callback.callback());
+    session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_
                       ? new AutoClosingStream(session_->GetWeakPtr())
@@ -401,13 +399,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       bool should_include_version,
       bool fin,
       RequestPriority request_priority,
-      size_t* spdy_headers_frame_length,
-      QuicStreamOffset* offset) {
+      size_t* spdy_headers_frame_length) {
     SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
-        std::move(request_headers_), spdy_headers_frame_length, offset);
+        std::move(request_headers_), spdy_headers_frame_length);
   }
 
   std::unique_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
@@ -417,7 +414,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       size_t* spdy_headers_frame_length) {
     return InnerConstructRequestHeadersPacket(
         packet_number, stream_id_, kIncludeVersion, fin, request_priority,
-        spdy_headers_frame_length, nullptr);
+        spdy_headers_frame_length);
   }
 
   std::unique_ptr<QuicReceivedPacket> InnerConstructResponseHeadersPacket(
@@ -529,31 +526,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream->OnPromiseHeadersComplete(id, serialized_push_promise_.size());
   }
 
-  void assertLoadTimingValid(const LoadTimingInfo& load_timing_info,
-                             bool session_reused) {
-    EXPECT_EQ(session_reused, load_timing_info.socket_reused);
-
-    // If |session_reused| is true, these fields should all be null, non-null
-    // otherwise.
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.connect_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.connect_end.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.ssl_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.ssl_end.is_null());
-    EXPECT_EQ(load_timing_info.connect_timing.connect_start,
-              load_timing_info.connect_timing.ssl_start);
-    EXPECT_EQ(load_timing_info.connect_timing.connect_end,
-              load_timing_info.connect_timing.ssl_end);
-
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_end.is_null());
-  }
-
   BoundTestNetLog net_log_;
   bool use_closing_stream_;
   MockSendAlgorithm* send_algorithm_;
@@ -636,10 +608,6 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   request_.method = "GET";
   request_.url = GURL("http://www.example.org/");
 
-  // Make sure getting load timing from the stream early does not crash.
-  LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
-
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
@@ -672,96 +640,12 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   EXPECT_TRUE(stream_->IsResponseBodyComplete());
   EXPECT_TRUE(AtEof());
 
-  EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
-  assertLoadTimingValid(load_timing_info, /*session_reused=*/false);
-
   // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
   // headers and payload.
   EXPECT_EQ(static_cast<int64_t>(spdy_request_header_frame_length),
             stream_->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_header_frame_length),
             stream_->GetTotalReceivedBytes());
-}
-
-TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
-  SetRequest("GET", "/", DEFAULT_PRIORITY);
-  size_t spdy_request_header_frame_length;
-
-  QuicStreamOffset offset = 0;
-  AddWrite(InnerConstructRequestHeadersPacket(
-      1, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
-      &spdy_request_header_frame_length, &offset));
-
-  // SetRequest() again for second request as |request_headers_| was moved.
-  SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(InnerConstructRequestHeadersPacket(
-      2, kClientDataStreamId2, kIncludeVersion, kFin, DEFAULT_PRIORITY,
-      &spdy_request_header_frame_length, &offset));
-  AddWrite(ConstructClientAckPacket(3, 3, 1));  // Ack the responses.
-
-  Initialize();
-
-  request_.method = "GET";
-  request_.url = GURL("http://www.example.org/");
-  // Start first request.
-  EXPECT_EQ(OK,
-            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                      net_log_.bound(), callback_.callback()));
-  EXPECT_EQ(OK,
-            stream_->SendRequest(headers_, &response_, callback_.callback()));
-
-  // Start a second request.
-  QuicHttpStream stream2(session_->GetWeakPtr());
-  TestCompletionCallback callback2;
-  EXPECT_EQ(OK,
-            stream2.InitializeStream(&request_, DEFAULT_PRIORITY,
-                                     net_log_.bound(), callback2.callback()));
-  EXPECT_EQ(OK,
-            stream2.SendRequest(headers_, &response_, callback2.callback()));
-
-  // Ack both requests.
-  ProcessPacket(ConstructServerAckPacket(1, 0, 0));
-
-  EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
-              IsError(ERR_IO_PENDING));
-  size_t spdy_response_header_frame_length;
-  SetResponse("200 OK", string());
-  ProcessPacket(InnerConstructResponseHeadersPacket(
-      2, kClientDataStreamId1, kFin, &spdy_response_header_frame_length));
-
-  // Now that the headers have been processed, the callback will return.
-  EXPECT_THAT(callback_.WaitForResult(), IsOk());
-  EXPECT_EQ(200, response_.headers->response_code());
-
-  // There is no body, so this should return immediately.
-  EXPECT_EQ(0,
-            stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
-                                      callback_.callback()));
-  EXPECT_TRUE(stream_->IsResponseBodyComplete());
-
-  LoadTimingInfo load_timing_info;
-  EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
-  assertLoadTimingValid(load_timing_info, /*session_reused=*/false);
-
-  // SetResponse() again for second request as |response_headers_| was moved.
-  SetResponse("200 OK", string());
-  EXPECT_THAT(stream2.ReadResponseHeaders(callback2.callback()),
-              IsError(ERR_IO_PENDING));
-
-  ProcessPacket(InnerConstructResponseHeadersPacket(
-      3, kClientDataStreamId2, kFin, &spdy_response_header_frame_length));
-
-  EXPECT_THAT(callback2.WaitForResult(), IsOk());
-
-  // There is no body, so this should return immediately.
-  EXPECT_EQ(0,
-            stream2.ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
-                                     callback2.callback()));
-  EXPECT_TRUE(stream2.IsResponseBodyComplete());
-
-  LoadTimingInfo load_timing_info2;
-  EXPECT_TRUE(stream2.GetLoadTimingInfo(&load_timing_info2));
-  assertLoadTimingValid(load_timing_info2, /*session_reused=*/true);
 }
 
 // QuicHttpStream does not currently support trailers. It should ignore
@@ -1900,7 +1784,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   AddWrite(ConstructClientRstStreamVaryMismatchPacket(1));
   AddWrite(InnerConstructRequestHeadersPacket(
       2, stream_id_ + 2, !kIncludeVersion, kFin, DEFAULT_PRIORITY,
-      &spdy_request_header_frame_length, /*offset=*/nullptr));
+      &spdy_request_header_frame_length));
   AddWrite(ConstructClientAckPacket(3, 3, 1));
   AddWrite(ConstructClientRstStreamCancelledPacket(4));
   Initialize();
