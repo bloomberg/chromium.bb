@@ -73,6 +73,12 @@ class OzonePlatformCaca : public OzonePlatform {
   }
 
   void InitializeGPU() override {
+    if (!window_manager_) {
+      // The return value of GetSurfaceFactoryOzone() must be non-null so a
+      // dummy instance of CacaWindowManager is needed to make the GPU
+      // initialization gracefully fail.
+      window_manager_.reset(new CacaWindowManager);
+    }
   }
 
  private:
