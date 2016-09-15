@@ -213,6 +213,9 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
+  // Reset |floating_close_button_widget_| when |surface_| is changed.
+  floating_close_button_widget_.reset();
+
   if (surface_ && surface_->window()) {
     surface_->window()->RemoveObserver(this);
     surface_->window()->RemovePreTargetHandler(event_forwarder_.get());
