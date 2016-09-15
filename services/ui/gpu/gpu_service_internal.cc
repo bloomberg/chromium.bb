@@ -28,9 +28,32 @@
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
+namespace {
+
+#if defined(OS_WIN)
+std::unique_ptr<base::MessagePump> CreateMessagePumpWin() {
+  base::MessagePumpForGpu::InitFactory();
+  return base::MessageLoop::CreateMessagePumpForType(
+      base::MessageLoop::TYPE_UI);
+}
+#endif  // defined(OS_WIN)
+
+#if defined(USE_X11)
+std::unique_ptr<base::MessagePump> CreateMessagePumpX11() {
+  // TODO(sad): This should create a TYPE_UI message pump, and create a
+  // PlatformEventSource when gpu process split happens.
+  return base::MessageLoop::CreateMessagePumpForType(
+      base::MessageLoop::TYPE_DEFAULT);
+}
+#endif  // defined(USE_X11)
+
+#if defined(OS_MACOSX)
+std::unique_ptr<base::MessagePump> CreateMessagePumpMac() {
+  return base::MakeUnique<base::MessagePumpCFRunLoop>();
+}
+#endif  // defined(OS_MACOSX)
+
+}  // namespace
 
 namespace ui {
 
@@ -47,15 +70,30 @@ GpuServiceInternal::GpuServiceInternal(
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info),
       binding_(this) {
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
+  base::Thread::Options thread_options;
+
+#if defined(OS_WIN)
+  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpWin);
+#elif defined(USE_X11)
+  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpX11);
+#elif defined(OS_LINUX)
+  thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+#elif defined(OS_MACOSX)
+  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpMac);
+#else
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  thread_options.priority = base::ThreadPriority::DISPLAY;
+#endif
   CHECK(gpu_thread_.StartWithOptions(thread_options));
 
   // TODO(sad): We do not need the IO thread once gpu has a separate process. It
   // should be possible to use |main_task_runner_| for doing IO tasks.
   thread_options = base::Thread::Options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // TODO(reveman): Remove this in favor of setting it explicitly for each type
   // of process.
   thread_options.priority = base::ThreadPriority::DISPLAY;
