@@ -205,7 +205,7 @@ void MCSClientTest::SetUp() {
 
 void MCSClientTest::BuildMCSClient() {
   gcm_store_.reset(
-      new GCMStoreImpl(temp_directory_.path(), message_loop_.task_runner(),
+      new GCMStoreImpl(temp_directory_.GetPath(), message_loop_.task_runner(),
                        base::WrapUnique<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,

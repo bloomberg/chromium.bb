@@ -113,7 +113,7 @@ class CastCrashReporterClientTest : public testing::Test {
   }
 
   base::FilePath minidump_path() { return minidump_.path(); }
-  base::FilePath home_path() { return fake_home_dir_.path(); }
+  base::FilePath home_path() { return fake_home_dir_.GetPath(); }
 
  private:
   base::ScopedTempDir fake_home_dir_;

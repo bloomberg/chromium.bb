@@ -75,9 +75,9 @@ class MinidumpUploaderTest : public testing::Test {
     // Set up a temporary directory which will be used as our fake home dir.
     ASSERT_TRUE(fake_home_dir_.CreateUniqueTempDir());
     path_override_.reset(
-        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_.path()));
+        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_.GetPath()));
 
-    minidump_dir_ = fake_home_dir_.path().Append(kMinidumpSubdir);
+    minidump_dir_ = fake_home_dir_.GetPath().Append(kMinidumpSubdir);
     lockfile_ = minidump_dir_.Append(kLockfileName);
     metadata_ = minidump_dir_.Append(kMetadataName);
 

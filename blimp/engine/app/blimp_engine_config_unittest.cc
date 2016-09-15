@@ -58,7 +58,7 @@ class BlimpEngineConfigTest : public testing::Test {
 
   base::FilePath GetFilepathForSwitch(
       const std::string& filepath_switch) const {
-    return temp_dir_.path().Append(filepath_switch);
+    return temp_dir_.GetPath().Append(filepath_switch);
   }
 
   const std::vector<std::string> all_filepath_switches_ = {

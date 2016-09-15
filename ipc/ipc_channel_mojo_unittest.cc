@@ -1378,7 +1378,7 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.path()),
+  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.GetPath()),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                       base::File::FLAG_READ);
   HandleSendingHelper::WriteFileThenSend(channel(), file);
@@ -1434,7 +1434,7 @@ TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.path()),
+  base::File file(HandleSendingHelper::GetSendingFilePath(temp_dir.GetPath()),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
                       base::File::FLAG_READ);
   TestingMessagePipe pipe;

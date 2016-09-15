@@ -24,7 +24,7 @@ ScopedTestNSSDB::ScopedTestNSSDB() {
     return;
 
   const char kTestDescription[] = "Test DB";
-  slot_ = OpenSoftwareNSSDB(temp_dir_.path(), kTestDescription);
+  slot_ = OpenSoftwareNSSDB(temp_dir_.GetPath(), kTestDescription);
 }
 
 ScopedTestNSSDB::~ScopedTestNSSDB() {

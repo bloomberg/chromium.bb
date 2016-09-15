@@ -213,12 +213,12 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
 
   // Newly created temp directory should be empty.
-  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
 
   HeadlessBrowserContext* browser_context =
       browser()
           ->CreateBrowserContextBuilder()
-          .SetUserDataDir(user_data_dir.path())
+          .SetUserDataDir(user_data_dir.GetPath())
           .SetIncognitoMode(false)
           .Build();
 
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // Something should be written to this directory.
   // If it is not the case, more complex page may be needed.
   // ServiceWorkers may be a good option.
-  EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir.path()));
+  EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
@@ -246,12 +246,12 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
   ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
 
   // Newly created temp directory should be empty.
-  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
 
   HeadlessBrowserContext* browser_context =
       browser()
           ->CreateBrowserContextBuilder()
-          .SetUserDataDir(user_data_dir.path())
+          .SetUserDataDir(user_data_dir.GetPath())
           .SetIncognitoMode(true)
           .Build();
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
 
   // Similar to test above, but now we are in incognito mode,
   // so nothing should be written to this directory.
-  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.path()));
+  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
 }
 
 }  // namespace headless

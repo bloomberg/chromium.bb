@@ -255,7 +255,8 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   void SetUp() override {
     IPCTestBase::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_path_));
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_path_));
   }
 
   void TearDown() override { IPCTestBase::TearDown(); }

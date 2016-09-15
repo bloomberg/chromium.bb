@@ -112,7 +112,7 @@ base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
       CHECK(temp_dir->Set(system_tmp_dir));
     }
   }
-  return temp_dir->path();
+  return temp_dir->GetPath();
 }
 }  // namespace
 

@@ -55,7 +55,7 @@ class BaseRequestsServerTest : public testing::Test {
 
   // Returns a temporary file path suitable for storing the cache file.
   base::FilePath GetTestCachedFilePath(const base::FilePath& file_name) {
-    return temp_dir_.path().Append(file_name);
+    return temp_dir_.GetPath().Append(file_name);
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.

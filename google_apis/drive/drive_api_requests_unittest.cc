@@ -1056,7 +1056,7 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1154,7 +1154,7 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
   const char kTestContentType[] = "text/plain";
   const char kTestContent[] = "";
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("empty_file.txt");
+      temp_dir_.GetPath().AppendASCII("empty_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1243,7 +1243,7 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
   const size_t kNumChunkBytes = 10;  // Num bytes in a chunk.
   const std::string kTestContent(100, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1476,7 +1476,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1568,7 +1568,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1702,7 +1702,7 @@ TEST_F(DriveApiRequestsTest,
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(100, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1851,7 +1851,7 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileWithMetadataRequest) {
 
 TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
   const base::FilePath kDownloadedFilePath =
-      temp_dir_.path().AppendASCII("cache_file");
+      temp_dir_.GetPath().AppendASCII("cache_file");
   const std::string kTestId("dummyId");
 
   DriveApiErrorCode result_code = DRIVE_OTHER_ERROR;
@@ -1888,7 +1888,7 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
 
 TEST_F(DriveApiRequestsTest, DownloadFileRequest_GetContentCallback) {
   const base::FilePath kDownloadedFilePath =
-      temp_dir_.path().AppendASCII("cache_file");
+      temp_dir_.GetPath().AppendASCII("cache_file");
   const std::string kTestId("dummyId");
 
   DriveApiErrorCode result_code = DRIVE_OTHER_ERROR;
@@ -2001,7 +2001,7 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
   const char kTestContentType[] = "text/plain";
   const std::string kTestContent(10, 'a');
   const base::FilePath kTestFilePath =
-      temp_dir_.path().AppendASCII("upload_file.txt");
+      temp_dir_.GetPath().AppendASCII("upload_file.txt");
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   // Create batch request.

@@ -88,7 +88,7 @@ std::unique_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
       // Pass an non-existent directory as store path to match the exact
       // behavior in the production code. Currently GCMStoreImpl checks if
       // the directory exist or not to determine the store existence.
-      temp_directory_.path().Append(FILE_PATH_LITERAL("GCM Store")),
+      temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store")),
       task_runner_, base::WrapUnique<Encryptor>(new FakeEncryptor)));
 }
 

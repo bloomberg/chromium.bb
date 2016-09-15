@@ -18,7 +18,7 @@ ScopedTestNSSChromeOSUser::ScopedTestNSSChromeOSUser(
   // This opens a software DB in the given folder. In production code that is in
   // the home folder, but for testing the temp folder is used.
   constructed_successfully_ =
-      InitializeNSSForChromeOSUser(username_hash, temp_dir_.path());
+      InitializeNSSForChromeOSUser(username_hash, temp_dir_.GetPath());
 }
 
 ScopedTestNSSChromeOSUser::~ScopedTestNSSChromeOSUser() {

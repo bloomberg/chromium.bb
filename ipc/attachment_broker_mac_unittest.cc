@@ -820,8 +820,8 @@ TEST_F(IPCAttachmentBrokerMacTest, SendPosixFDAndMachPort) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath fp1, fp2;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &fp1));
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &fp2));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &fp1));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &fp2));
 
   CommonSetUp("SendPosixFDAndMachPort");
 

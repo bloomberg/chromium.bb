@@ -40,7 +40,7 @@ class AwFormDatabaseServiceTest : public Test {
     ASSERT_TRUE(env_ != NULL);
     ASSERT_TRUE(l10n_util::RegisterLocalizationUtil(env_));
 
-    service_.reset(new AwFormDatabaseService(temp_dir_.path()));
+    service_.reset(new AwFormDatabaseService(temp_dir_.GetPath()));
   }
 
   void TearDown() override { service_->Shutdown(); }

@@ -22,8 +22,8 @@ TEST(DummyMinidumpGeneratorTest, GenerateFailsWithInvalidPath) {
 
   // Attempt to generate a minidump from an invalid path.
   DummyMinidumpGenerator generator("/path/does/not/exist/minidump.dmp");
-  ASSERT_FALSE(
-      generator.Generate(minidump_dir.path().Append("minidump.dmp").value()));
+  ASSERT_FALSE(generator.Generate(
+      minidump_dir.GetPath().Append("minidump.dmp").value()));
 }
 
 TEST(DummyMinidumpGeneratorTest, GenerateSucceedsWithSmallSource) {
@@ -38,7 +38,7 @@ TEST(DummyMinidumpGeneratorTest, GenerateSucceedsWithSmallSource) {
             base::WriteFile(fake_minidump.path(), data.c_str(), data.size()));
 
   DummyMinidumpGenerator generator(fake_minidump.path().value());
-  base::FilePath new_minidump = minidump_dir.path().Append("minidump.dmp");
+  base::FilePath new_minidump = minidump_dir.GetPath().Append("minidump.dmp");
   EXPECT_TRUE(generator.Generate(new_minidump.value()));
 
   // Original file should not exist, and new file should contain original
@@ -64,7 +64,7 @@ TEST(DummyMinidumpGeneratorTest, GenerateSucceedsWithLargeSource) {
   ASSERT_EQ(static_cast<int>(data.size()),
             base::WriteFile(fake_minidump.path(), data.c_str(), data.size()));
 
-  base::FilePath new_minidump = minidump_dir.path().Append("minidump.dmp");
+  base::FilePath new_minidump = minidump_dir.GetPath().Append("minidump.dmp");
   DummyMinidumpGenerator generator(fake_minidump.path().value());
   ASSERT_TRUE(generator.Generate(new_minidump.value()));
 

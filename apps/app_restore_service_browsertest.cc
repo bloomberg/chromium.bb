@@ -117,13 +117,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
-                                             &temp_file));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file));
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &temp_file);
   FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
-      "temp", temp_directory.path());
+      "temp", temp_directory.GetPath());
 
   const Extension* extension = LoadAndLaunchPlatformApp(
       "file_access_saved_to_prefs_test", "fileWritten");
@@ -157,13 +157,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
-                                             &temp_file));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file));
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &temp_file);
   FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
-      "temp", temp_directory.path());
+      "temp", temp_directory.GetPath());
 
   ExtensionTestMessageListener access_ok_listener(
       "restartedFileAccessOK", false);

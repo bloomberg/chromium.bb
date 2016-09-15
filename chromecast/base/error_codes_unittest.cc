@@ -24,10 +24,10 @@ class ErrorCodesTest : public testing::Test {
     // Set up a temporary directory which will be used as our fake home dir.
     ASSERT_TRUE(fake_home_dir_.CreateUniqueTempDir());
     path_override_.reset(
-        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_.path()));
+        new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_.GetPath()));
   }
 
-  base::FilePath home_path() const { return fake_home_dir_.path(); }
+  base::FilePath home_path() const { return fake_home_dir_.GetPath(); }
 
  private:
   base::ScopedTempDir fake_home_dir_;
