@@ -4,8 +4,8 @@
 
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 OpenTabsUIDelegate::~OpenTabsUIDelegate() {}
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

@@ -54,7 +54,6 @@ using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::ChromeReportUnrecoverableError;
 using browser_sync::HistoryDeleteDirectivesDataTypeController;
 using browser_sync::PasswordDataTypeController;
-using browser_sync::SessionDataTypeController;
 using browser_sync::SyncBackendHost;
 using browser_sync::TypedUrlDataTypeController;
 using sync_bookmarks::BookmarkChangeProcessor;
@@ -68,6 +67,7 @@ using sync_driver::DeviceInfoDataTypeController;
 using sync_driver::ProxyDataTypeController;
 using sync_driver::UIDataTypeController;
 using sync_driver_v2::UIModelTypeController;
+using sync_sessions::SessionDataTypeController;
 
 namespace {
 

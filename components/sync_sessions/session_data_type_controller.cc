@@ -12,7 +12,7 @@
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 SessionDataTypeController::SessionDataTypeController(
     const base::Closure& dump_stack,
@@ -37,12 +37,11 @@ SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
-  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter =
+  SyncedWindowDelegatesGetter* synced_window_getter =
       sync_client_->GetSyncSessionsClient()->GetSyncedWindowDelegatesGetter();
-  std::set<const browser_sync::SyncedWindowDelegate*> window =
+  std::set<const SyncedWindowDelegate*> window =
       synced_window_getter->GetSyncedWindowDelegates();
-  for (std::set<const browser_sync::SyncedWindowDelegate*>::const_iterator i =
-           window.begin();
+  for (std::set<const SyncedWindowDelegate*>::const_iterator i = window.begin();
        i != window.end(); ++i) {
     if ((*i)->IsSessionRestoreInProgress()) {
       waiting_on_session_restore_ = true;
@@ -111,4 +110,4 @@ void SessionDataTypeController::OnSavingBrowserHistoryPrefChanged() {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

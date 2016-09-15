@@ -53,7 +53,7 @@ class FakeSyncService : public sync_driver::SyncService {
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
   bool IsBackendInitialized() const override;
-  OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
+  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;

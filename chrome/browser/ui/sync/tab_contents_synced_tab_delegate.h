@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
@@ -16,7 +19,7 @@ class WebContents;
 }
 
 class TabContentsSyncedTabDelegate
-    : public browser_sync::SyncedTabDelegate,
+    : public sync_sessions::SyncedTabDelegate,
       public content::WebContentsUserData<TabContentsSyncedTabDelegate> {
  public:
   ~TabContentsSyncedTabDelegate() override;

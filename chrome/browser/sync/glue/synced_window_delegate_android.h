@@ -12,17 +12,18 @@
 
 class TabModel;
 
+namespace sync_sessions {
+class SyncedTabDelegate;
+}  // namespace sync_sessions
+
 namespace browser_sync {
 
-class SyncedTabDelegate;
-
-class SyncedWindowDelegateAndroid : public browser_sync::SyncedWindowDelegate {
+class SyncedWindowDelegateAndroid : public sync_sessions::SyncedWindowDelegate {
  public:
   explicit SyncedWindowDelegateAndroid(TabModel* tab_model);
   ~SyncedWindowDelegateAndroid() override;
 
-  // browser_sync::SyncedWindowDelegate implementation.
-
+  // sync_sessions::SyncedWindowDelegate implementation.
   bool HasWindow() const override;
   SessionID::id_type GetSessionId() const override;
   int GetTabCount() const override;
@@ -30,8 +31,8 @@ class SyncedWindowDelegateAndroid : public browser_sync::SyncedWindowDelegate {
   bool IsApp() const override;
   bool IsTypeTabbed() const override;
   bool IsTypePopup() const override;
-  bool IsTabPinned(const SyncedTabDelegate* tab) const override;
-  SyncedTabDelegate* GetTabAt(int index) const override;
+  bool IsTabPinned(const sync_sessions::SyncedTabDelegate* tab) const override;
+  sync_sessions::SyncedTabDelegate* GetTabAt(int index) const override;
   SessionID::id_type GetTabIdAt(int index) const override;
   bool IsSessionRestoreInProgress() const override;
   bool ShouldSync() const override;
@@ -42,6 +43,6 @@ class SyncedWindowDelegateAndroid : public browser_sync::SyncedWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegateAndroid);
 };
 
-} // namespace browser_sync
+}  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_SYNCED_WINDOW_DELEGATE_ANDROID_H_

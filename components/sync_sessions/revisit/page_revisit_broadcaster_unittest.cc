@@ -10,9 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
-using sync_sessions::PageVisitObserver;
-
-namespace browser_sync {
+namespace sync_sessions {
 
 class SyncPageRevisitBroadcasterTest : public ::testing::Test {
  protected:
@@ -109,4 +107,4 @@ TEST_F(SyncPageRevisitBroadcasterTest, ConvertUnknown) {
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

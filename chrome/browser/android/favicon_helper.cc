@@ -197,7 +197,7 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   DCHECK(sync_service);
 
   scoped_refptr<base::RefCountedMemory> favicon_png;
-  sync_driver::OpenTabsUIDelegate* open_tabs =
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
       sync_service->GetOpenTabsUIDelegate();
   DCHECK(open_tabs);
 

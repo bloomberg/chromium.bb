@@ -21,11 +21,10 @@ using content::NotificationService;
 static int INVALID_TAB_INDEX = -1;
 
 TabModel::TabModel(Profile* profile)
-  : profile_(profile),
-    live_tab_context_(new AndroidLiveTabContext(this)),
-    synced_window_delegate_(
-        new browser_sync::SyncedWindowDelegateAndroid(this)) {
-
+    : profile_(profile),
+      live_tab_context_(new AndroidLiveTabContext(this)),
+      synced_window_delegate_(
+          new browser_sync::SyncedWindowDelegateAndroid(this)) {
   if (profile) {
     // A normal Profile creates an OTR profile if it does not exist when
     // GetOffTheRecordProfile() is called, so we guard it with
@@ -57,7 +56,7 @@ bool TabModel::IsOffTheRecord() const {
   return is_off_the_record_;
 }
 
-browser_sync::SyncedWindowDelegate* TabModel::GetSyncedWindowDelegate() const {
+sync_sessions::SyncedWindowDelegate* TabModel::GetSyncedWindowDelegate() const {
   return synced_window_delegate_.get();
 }
 
@@ -69,7 +68,7 @@ const SessionID& TabModel::SessionId() const {
   return session_id_;
 }
 
-sessions::LiveTabContext* TabModel::GetLiveTabContext() const{
+sessions::LiveTabContext* TabModel::GetLiveTabContext() const {
   return live_tab_context_.get();
 }
 

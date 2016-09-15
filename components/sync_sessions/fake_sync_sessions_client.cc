@@ -28,12 +28,12 @@ bool FakeSyncSessionsClient::ShouldSyncURL(const GURL& url) const {
   return url.is_valid();
 }
 
-browser_sync::SyncedWindowDelegatesGetter*
+SyncedWindowDelegatesGetter*
 FakeSyncSessionsClient::GetSyncedWindowDelegatesGetter() {
   return nullptr;
 }
 
-std::unique_ptr<browser_sync::LocalSessionEventRouter>
+std::unique_ptr<LocalSessionEventRouter>
 FakeSyncSessionsClient::GetLocalSessionEventRouter() {
   return nullptr;
 }

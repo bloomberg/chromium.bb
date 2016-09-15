@@ -6,7 +6,7 @@
 
 #include "base/stl_util.h"
 
-namespace sync_driver {
+namespace sync_sessions {
 
 SyncedSession::SyncedSession()
     : session_tag("invalid"), device_type(TYPE_UNSET) {}
@@ -51,4 +51,4 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
   return header;
 }
 
-}  // namespace sync_driver
+}  // namespace sync_sessions

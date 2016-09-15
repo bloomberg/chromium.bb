@@ -56,7 +56,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
                                         SessionID::id_type window_num);
 
   // Returns a pointer to the current session model associator or NULL.
-  static sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
+  static sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
       content::WebUI* web_ui);
 
  private:

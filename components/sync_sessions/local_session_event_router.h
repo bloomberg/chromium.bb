@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "url/gurl.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 class SyncedTabDelegate;
 
@@ -58,6 +58,6 @@ class LocalSessionEventRouter {
   DISALLOW_COPY_AND_ASSIGN(LocalSessionEventRouter);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_LOCAL_SESSION_EVENT_ROUTER_H_

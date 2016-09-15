@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "content/public/browser/web_contents.h"
 
+using sync_sessions::SyncedTabDelegate;
+
 namespace browser_sync {
 
 // SyncedWindowDelegateAndroid implementations

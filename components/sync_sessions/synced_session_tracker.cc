@@ -9,13 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
 // Helper for iterating through all tabs within a window, and all navigations
 // within a tab, to find if there's a valid syncable url.
-bool ShouldSyncSessionWindow(sync_sessions::SyncSessionsClient* sessions_client,
+bool ShouldSyncSessionWindow(SyncSessionsClient* sessions_client,
                              const sessions::SessionWindow& window) {
   for (sessions::SessionTab* const tab : window.tabs) {
     for (const sessions::SerializedNavigationEntry& navigation :
@@ -29,9 +29,9 @@ bool ShouldSyncSessionWindow(sync_sessions::SyncSessionsClient* sessions_client,
 }
 
 // Presentable means |foreign_session| must have syncable content.
-bool IsPresentable(sync_sessions::SyncSessionsClient* sessions_client,
-                   sync_driver::SyncedSession* foreign_session) {
-  for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator iter =
+bool IsPresentable(SyncSessionsClient* sessions_client,
+                   SyncedSession* foreign_session) {
+  for (SyncedSession::SyncedWindowMap::const_iterator iter =
            foreign_session->windows.begin();
        iter != foreign_session->windows.end(); ++iter) {
     if (ShouldSyncSessionWindow(sessions_client, *(iter->second))) {
@@ -43,8 +43,7 @@ bool IsPresentable(sync_sessions::SyncSessionsClient* sessions_client,
 
 }  // namespace
 
-SyncedSessionTracker::SyncedSessionTracker(
-    sync_sessions::SyncSessionsClient* sessions_client)
+SyncedSessionTracker::SyncedSessionTracker(SyncSessionsClient* sessions_client)
     : sessions_client_(sessions_client) {}
 
 SyncedSessionTracker::~SyncedSessionTracker() {
@@ -57,13 +56,13 @@ void SyncedSessionTracker::SetLocalSessionTag(
 }
 
 bool SyncedSessionTracker::LookupAllForeignSessions(
-    std::vector<const sync_driver::SyncedSession*>* sessions,
+    std::vector<const SyncedSession*>* sessions,
     SessionLookup lookup) const {
   DCHECK(sessions);
   sessions->clear();
   for (SyncedSessionMap::const_iterator i = synced_session_map_.begin();
        i != synced_session_map_.end(); ++i) {
-    sync_driver::SyncedSession* foreign_session = i->second;
+    SyncedSession* foreign_session = i->second;
     if (i->first != local_session_tag_ &&
         (lookup == RAW || IsPresentable(sessions_client_, foreign_session))) {
       sessions->push_back(foreign_session);
@@ -81,7 +80,7 @@ bool SyncedSessionTracker::LookupSessionWindows(
   if (iter == synced_session_map_.end())
     return false;
   windows->clear();
-  for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator window_iter =
+  for (SyncedSession::SyncedWindowMap::const_iterator window_iter =
            iter->second->windows.begin();
        window_iter != iter->second->windows.end(); ++window_iter) {
     windows->push_back(window_iter->second);
@@ -125,7 +124,7 @@ void SyncedSessionTracker::LookupTabNodeIds(const std::string& session_tag,
 }
 
 bool SyncedSessionTracker::LookupLocalSession(
-    const sync_driver::SyncedSession** output) const {
+    const SyncedSession** output) const {
   SyncedSessionMap::const_iterator it =
       synced_session_map_.find(local_session_tag_);
   if (it != synced_session_map_.end()) {
@@ -135,13 +134,13 @@ bool SyncedSessionTracker::LookupLocalSession(
   return false;
 }
 
-sync_driver::SyncedSession* SyncedSessionTracker::GetSession(
+SyncedSession* SyncedSessionTracker::GetSession(
     const std::string& session_tag) {
-  sync_driver::SyncedSession* synced_session = NULL;
+  SyncedSession* synced_session = NULL;
   if (synced_session_map_.find(session_tag) != synced_session_map_.end()) {
     synced_session = synced_session_map_[session_tag];
   } else {
-    synced_session = new sync_driver::SyncedSession;
+    synced_session = new SyncedSession;
     DVLOG(1) << "Creating new session with tag " << session_tag << " at "
              << synced_session;
     synced_session->session_tag = session_tag;
@@ -160,11 +159,10 @@ bool SyncedSessionTracker::DeleteSession(const std::string& session_tag) {
   bool header_existed = false;
   SyncedSessionMap::iterator iter = synced_session_map_.find(session_tag);
   if (iter != synced_session_map_.end()) {
-    sync_driver::SyncedSession* session = iter->second;
+    SyncedSession* session = iter->second;
     // An implicitly created session that has children tabs but no header node
     // will have never had the device_type changed from unset.
-    header_existed =
-        session->device_type != sync_driver::SyncedSession::TYPE_UNSET;
+    header_existed = session->device_type != SyncedSession::TYPE_UNSET;
     synced_session_map_.erase(iter);
     // SyncedSession's destructor will trigger deletion of windows which will in
     // turn trigger the deletion of tabs. This doesn't affect wrappers.
@@ -443,4 +441,4 @@ void SyncedSessionTracker::Clear() {
   local_session_tag_.clear();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

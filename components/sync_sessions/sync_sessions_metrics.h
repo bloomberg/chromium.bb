@@ -11,15 +11,10 @@ namespace base {
 class Time;
 }  // namespace base
 
-namespace browser_sync {
-class SessionsSyncManager;
-}  // namespace browser_sync
-
-namespace sync_driver {
-struct SyncedSession;
-}  // namespace sync_driver
-
 namespace sync_sessions {
+
+class SessionsSyncManager;
+struct SyncedSession;
 
 class SyncSessionsMetrics {
  public:
@@ -29,7 +24,7 @@ class SyncSessionsMetrics {
   // session present, or a foreign tab with a timestamp in the future then no
   // metric is emitted.
   static void RecordYoungestForeignTabAgeOnNTP(
-      browser_sync::SessionsSyncManager* sessions_sync_manager);
+      SessionsSyncManager* sessions_sync_manager);
 
  private:
   friend class SyncSessionsMetricsTest;
@@ -39,7 +34,7 @@ class SyncSessionsMetrics {
   // always be greater or equal to children window/tab timestamps. No navigation
   // timestamps are checked.
   static base::Time MaxTabTimestamp(
-      const std::vector<const sync_driver::SyncedSession*>& sessions);
+      const std::vector<const SyncedSession*>& sessions);
 };
 
 }  // namespace sync_sessions

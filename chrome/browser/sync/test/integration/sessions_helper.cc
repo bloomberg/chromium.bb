@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -61,7 +63,7 @@ void ScopedWindowMap::Reset(SessionWindowMap* windows) {
   std::swap(*windows, windows_);
 }
 
-bool GetLocalSession(int index, const sync_driver::SyncedSession** session) {
+bool GetLocalSession(int index, const sync_sessions::SyncedSession** session) {
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       test()->GetProfile(index))->GetOpenTabsUIDelegate()->
           GetLocalSession(session);
@@ -69,7 +71,7 @@ bool GetLocalSession(int index, const sync_driver::SyncedSession** session) {
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
   content::RunAllPendingInMessageLoop();
-  const sync_driver::SyncedSession* local_session;
+  const sync_sessions::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -132,7 +134,7 @@ bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
 
 namespace {
 
-class TabEventHandler : public browser_sync::LocalSessionEventHandler {
+class TabEventHandler : public sync_sessions::LocalSessionEventHandler {
  public:
   TabEventHandler() : weak_factory_(this) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -142,7 +144,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
   }
 
   void OnLocalTabModified(
-      browser_sync::SyncedTabDelegate* modified_tab) override {
+      sync_sessions::SyncedTabDelegate* modified_tab) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -183,7 +185,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
       }
       if (!found) {
         TabEventHandler handler;
-        browser_sync::NotificationServiceSessionsRouter router(
+        sync_sessions::NotificationServiceSessionsRouter router(
             test()->GetProfile(index),
             ProfileSyncServiceFactory::GetInstance()
                 ->GetForProfile(test()->GetProfile(index))
@@ -201,7 +203,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
 bool GetLocalWindows(int index, SessionWindowMap* local_windows) {
   // The local session provided by GetLocalSession is owned, and has lifetime
   // controlled, by the model associator, so we must make our own copy.
-  const sync_driver::SyncedSession* local_session;
+  const sync_sessions::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -242,7 +244,7 @@ bool CheckInitialState(int index) {
 }
 
 int GetNumWindows(int index) {
-  const sync_driver::SyncedSession* local_session;
+  const sync_sessions::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return 0;
   }
@@ -271,8 +273,8 @@ bool GetSessionData(int index, SyncedSessionVector* sessions) {
   return true;
 }
 
-bool CompareSyncedSessions(const sync_driver::SyncedSession* lhs,
-                           const sync_driver::SyncedSession* rhs) {
+bool CompareSyncedSessions(const sync_sessions::SyncedSession* lhs,
+                           const sync_sessions::SyncedSession* rhs) {
   if (!lhs ||
       !rhs ||
       lhs->windows.size() < 1 ||

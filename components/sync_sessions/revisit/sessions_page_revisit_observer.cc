@@ -53,9 +53,9 @@ void SessionsPageRevisitObserver::CheckForRevisit(
   CurrentTabMatcher current_matcher(page_equality);
   OffsetTabMatcher offset_matcher(page_equality);
 
-  std::vector<const sync_driver::SyncedSession*> foreign_sessions;
+  std::vector<const SyncedSession*> foreign_sessions;
   if (provider_->GetAllForeignSessions(&foreign_sessions)) {
-    for (const sync_driver::SyncedSession* session : foreign_sessions) {
+    for (const SyncedSession* session : foreign_sessions) {
       for (const std::pair<const SessionID::id_type, sessions::SessionWindow*>&
                key_value : session->windows) {
         for (const sessions::SessionTab* tab : key_value.second->tabs) {

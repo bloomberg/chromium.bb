@@ -63,8 +63,6 @@ class SyncTypePreferenceProvider;
 
 namespace browser_sync {
 class BackendMigrator;
-class FaviconCache;
-class SessionsSyncManager;
 }  // namespace browser_sync
 
 namespace sync_driver {
@@ -72,7 +70,6 @@ class DataTypeManager;
 class DeviceInfoSyncService;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
-class OpenTabsUIDelegate;
 class SyncApiComponentFactory;
 class SyncClient;
 }  // namespace sync_driver
@@ -80,6 +77,12 @@ class SyncClient;
 namespace sync_driver_v2 {
 class DeviceInfoService;
 }
+
+namespace sync_sessions {
+class FaviconCache;
+class OpenTabsUIDelegate;
+class SessionsSyncManager;
+}  // namespace sync_sessions
 
 namespace syncer {
 class BaseTransaction;
@@ -289,7 +292,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
   bool IsBackendInitialized() const override;
-  sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
+  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -566,7 +569,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // once (before this object is destroyed).
   void Shutdown() override;
 
-  browser_sync::FaviconCache* GetFaviconCache();
+  sync_sessions::FaviconCache* GetFaviconCache();
 
   // Overrides the NetworkResources used for Sync connections.
   // This function takes ownership of |network_resources|.
@@ -972,7 +975,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 
   // Locally owned SyncableService and ModelTypeService implementations.
-  std::unique_ptr<browser_sync::SessionsSyncManager> sessions_sync_manager_;
+  std::unique_ptr<sync_sessions::SessionsSyncManager> sessions_sync_manager_;
   std::unique_ptr<sync_driver::DeviceInfoSyncService> device_info_sync_service_;
   std::unique_ptr<sync_driver_v2::DeviceInfoService> device_info_service_;
 

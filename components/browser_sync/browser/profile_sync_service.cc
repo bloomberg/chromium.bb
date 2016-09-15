@@ -100,7 +100,6 @@
 #include "components/sync/core/read_transaction.h"
 #endif
 
-using browser_sync::SessionsSyncManager;
 using browser_sync::SyncBackendHost;
 using sync_driver::ChangeProcessor;
 using sync_driver::DataTypeController;
@@ -108,6 +107,7 @@ using sync_driver::DataTypeManager;
 using sync_driver::DataTypeStatusTable;
 using sync_driver::DeviceInfoSyncService;
 using sync_driver_v2::DeviceInfoService;
+using sync_sessions::SessionsSyncManager;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::JsBackend;
@@ -277,7 +277,7 @@ void ProfileSyncService::Initialize() {
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                  weak_factory_.GetWeakPtr())));
-  std::unique_ptr<browser_sync::LocalSessionEventRouter> router(
+  std::unique_ptr<sync_sessions::LocalSessionEventRouter> router(
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
@@ -440,13 +440,13 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
   return iter->second->state() == DataTypeController::RUNNING;
 }
 
-sync_driver::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
+sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
   if (!IsDataTypeControllerRunning(syncer::SESSIONS))
     return NULL;
   return sessions_sync_manager_.get();
 }
 
-browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
+sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
   return sessions_sync_manager_->GetFaviconCache();
 }
 
@@ -481,7 +481,7 @@ void ProfileSyncService::OnSessionRestoreComplete() {
   }
   DCHECK(iter->second);
 
-  static_cast<browser_sync::SessionDataTypeController*>(iter->second.get())
+  static_cast<sync_sessions::SessionDataTypeController*>(iter->second.get())
       ->OnSessionRestoreComplete();
 }
 

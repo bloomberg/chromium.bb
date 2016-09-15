@@ -80,7 +80,7 @@ void SessionsSyncPerfTest::RemoveTabs(int profile) {
 
 int SessionsSyncPerfTest::GetTabCount(int profile) {
   int tab_count = 0;
-  const sync_driver::SyncedSession* local_session;
+  const sync_sessions::SyncedSession* local_session;
   SyncedSessionVector sessions;
 
   if (!GetLocalSession(profile, &local_session)) {

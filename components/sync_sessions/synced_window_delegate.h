@@ -9,7 +9,7 @@
 
 #include "components/sessions/core/session_id.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 class SyncedTabDelegate;
 
@@ -65,6 +65,6 @@ class SyncedWindowDelegate {
   virtual ~SyncedWindowDelegate() {}
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_WINDOW_DELEGATE_H_

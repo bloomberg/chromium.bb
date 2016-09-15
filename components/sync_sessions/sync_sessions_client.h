@@ -15,11 +15,6 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
-namespace browser_sync {
-class LocalSessionEventRouter;
-class SyncedWindowDelegatesGetter;
-}
-
 namespace favicon {
 class FaviconService;
 }
@@ -29,6 +24,9 @@ class HistoryService;
 }
 
 namespace sync_sessions {
+
+class LocalSessionEventRouter;
+class SyncedWindowDelegatesGetter;
 
 // Interface for clients of a sync sessions datatype. Should be used as a getter
 // for services and data the Sync Sessions datatype depends on.
@@ -50,12 +48,11 @@ class SyncSessionsClient {
   virtual bool ShouldSyncURL(const GURL& url) const = 0;
 
   // Returns the SyncedWindowDelegatesGetter for this client.
-  virtual browser_sync::SyncedWindowDelegatesGetter*
-  GetSyncedWindowDelegatesGetter() = 0;
+  virtual SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() = 0;
 
   // Returns a LocalSessionEventRouter instance that is customized for the
   // embedder's context.
-  virtual std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  virtual std::unique_ptr<LocalSessionEventRouter>
   GetLocalSessionEventRouter() = 0;
 
   // TODO(zea): add getters for the history and favicon services for the favicon

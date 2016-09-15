@@ -106,12 +106,12 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
            !url.SchemeIsFile();
   }
 
-  browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
+  sync_sessions::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
       override {
     return window_delegates_getter_.get();
   }
 
-  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  std::unique_ptr<sync_sessions::LocalSessionEventRouter>
   GetLocalSessionEventRouter() override {
     syncer::SyncableService::StartSyncFlare flare(
         ios::sync_start_util::GetFlareForSyncableService(
@@ -122,7 +122,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
  private:
   ios::ChromeBrowserState* const browser_state_;
-  const std::unique_ptr<browser_sync::SyncedWindowDelegatesGetter>
+  const std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
       window_delegates_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
@@ -297,7 +297,7 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
-      browser_sync::FaviconCache* favicons =
+      sync_sessions::FaviconCache* favicons =
           IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
               ->GetFaviconCache();
       return favicons ? favicons->AsWeakPtr()

@@ -19,7 +19,7 @@ namespace sessions {
 struct SessionWindow;
 }
 
-namespace sync_driver {
+namespace sync_sessions {
 
 // Defines a synced session for use by session sync. A synced session is a
 // list of windows along with a unique session identifer (tag) and meta-data
@@ -103,6 +103,6 @@ struct SyncedSession {
   DISALLOW_COPY_AND_ASSIGN(SyncedSession);
 };
 
-}  // namespace sync_driver
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_H_

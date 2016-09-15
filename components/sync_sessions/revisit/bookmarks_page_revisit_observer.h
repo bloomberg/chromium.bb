@@ -37,7 +37,7 @@ class BookmarksByUrlProvider {
 // processing in task/thread, which is okay since it only accesses values in
 // memory. Potential slow downs could occur when it fails to get bookmarks lock
 // and when the number of matching Bookmarks for a single URL is very large.
-class BookmarksPageRevisitObserver : public sync_sessions::PageVisitObserver {
+class BookmarksPageRevisitObserver : public PageVisitObserver {
  public:
   explicit BookmarksPageRevisitObserver(
       std::unique_ptr<BookmarksByUrlProvider> provider);

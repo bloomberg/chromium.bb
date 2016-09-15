@@ -19,10 +19,8 @@
 #include "components/sync_sessions/tab_node_pool.h"
 
 namespace sync_sessions {
-class SyncSessionsClient;
-}
 
-namespace browser_sync {
+class SyncSessionsClient;
 
 // Class to manage synced sessions. The tracker will own all SyncedSession
 // and SyncedSessionTab objects it creates, and deletes them appropriately on
@@ -37,8 +35,7 @@ class SyncedSessionTracker {
     PRESENTABLE  // Have one window with at least one tab with syncable content.
   };
 
-  explicit SyncedSessionTracker(
-      sync_sessions::SyncSessionsClient* sessions_client);
+  explicit SyncedSessionTracker(SyncSessionsClient* sessions_client);
   ~SyncedSessionTracker();
 
   // We track and distinguish the local session from foreign sessions.
@@ -49,9 +46,8 @@ class SyncedSessionTracker {
   // SyncedSessionTracker. Lookup parameter is used to decide which foreign tabs
   // should be include.
   // Returns true if we had foreign sessions to fill it with, false otherwise.
-  bool LookupAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions,
-      SessionLookup lookup) const;
+  bool LookupAllForeignSessions(std::vector<const SyncedSession*>* sessions,
+                                SessionLookup lookup) const;
 
   // Attempts to look up the session windows associatd with the session given
   // by |session_tag|. Ownership Of SessionWindows stays within the
@@ -76,12 +72,12 @@ class SyncedSessionTracker {
 
   // Allows retrieval of existing data for the local session. Unlike GetSession
   // this won't create-if-not-present.
-  bool LookupLocalSession(const sync_driver::SyncedSession** output) const;
+  bool LookupLocalSession(const SyncedSession** output) const;
 
   // Returns a pointer to the SyncedSession object associated with
   // |session_tag|. If none exists, creates one. Ownership of the
   // SyncedSession remains within the SyncedSessionTracker.
-  sync_driver::SyncedSession* GetSession(const std::string& session_tag);
+  SyncedSession* GetSession(const std::string& session_tag);
 
   // Deletes the session associated with |session_tag| if it exists.
   // Returns true if the session existed and was deleted, false otherwise.
@@ -214,7 +210,7 @@ class SyncedSessionTracker {
       IDToSessionWindowMap;
   typedef std::map<std::string, IDToSessionWindowMap> SyncedWindowMap;
 
-  typedef std::map<std::string, sync_driver::SyncedSession*> SyncedSessionMap;
+  typedef std::map<std::string, SyncedSession*> SyncedSessionMap;
 
   // Helper methods for deleting SessionWindows and SessionTabs without owners.
   bool DeleteOldSessionWindowIfNecessary(
@@ -227,7 +223,7 @@ class SyncedSessionTracker {
                                    int tab_node_id);
 
   // The client of the sync sessions datatype.
-  sync_sessions::SyncSessionsClient* const sessions_client_;
+  SyncSessionsClient* const sessions_client_;
 
   // Per client mapping of tab id's to their SessionTab objects.
   // Key: session tag.
@@ -257,6 +253,6 @@ class SyncedSessionTracker {
   DISALLOW_COPY_AND_ASSIGN(SyncedSessionTracker);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_

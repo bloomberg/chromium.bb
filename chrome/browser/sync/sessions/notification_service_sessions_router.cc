@@ -39,7 +39,7 @@
 using content::NavigationController;
 using content::WebContents;
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
@@ -59,7 +59,7 @@ SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
 
 NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
     Profile* profile,
-    sync_sessions::SyncSessionsClient* sessions_client,
+    SyncSessionsClient* sessions_client,
     const syncer::SyncableService::StartSyncFlare& flare)
     : handler_(NULL),
       profile_(profile),
@@ -210,4 +210,4 @@ void NotificationServiceSessionsRouter::Stop() {
   handler_ = NULL;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

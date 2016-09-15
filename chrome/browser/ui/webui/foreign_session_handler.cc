@@ -145,7 +145,7 @@ void ForeignSessionHandler::OpenForeignSessionTab(
     SessionID::id_type window_num,
     SessionID::id_type tab_id,
     const WindowOpenDisposition& disposition) {
-  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
   if (!open_tabs)
     return;
 
@@ -169,7 +169,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
     content::WebUI* web_ui,
     const std::string& session_string_value,
     SessionID::id_type window_num) {
-  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
   if (!open_tabs)
     return;
 
@@ -191,7 +191,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
 }
 
 // static
-sync_driver::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
+sync_sessions::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
     content::WebUI* web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ProfileSyncService* service =
@@ -255,8 +255,9 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
 
 void ForeignSessionHandler::HandleGetForeignSessions(
     const base::ListValue* /*args*/) {
-  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      GetOpenTabsUIDelegate(web_ui());
+  std::vector<const sync_sessions::SyncedSession*> sessions;
 
   base::ListValue session_list;
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
@@ -278,7 +279,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
 
     // Note: we don't own the SyncedSessions themselves.
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
-      const sync_driver::SyncedSession* session = sessions[i];
+      const sync_sessions::SyncedSession* session = sessions[i];
       const std::string& session_tag = session->session_tag;
       std::unique_ptr<base::DictionaryValue> session_data(
           new base::DictionaryValue());
@@ -403,7 +404,8 @@ void ForeignSessionHandler::HandleDeleteForeignSession(
     return;
   }
 
-  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      GetOpenTabsUIDelegate(web_ui());
   if (open_tabs)
     open_tabs->DeleteForeignSession(session_tag);
 }

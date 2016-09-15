@@ -12,17 +12,15 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/core/session_id.h"
 
-// BrowserSyncedWindowDelegate implementations
-
 BrowserSyncedWindowDelegate::BrowserSyncedWindowDelegate(Browser* browser)
     : browser_(browser) {}
 
 BrowserSyncedWindowDelegate::~BrowserSyncedWindowDelegate() {}
 
 bool BrowserSyncedWindowDelegate::IsTabPinned(
-    const browser_sync::SyncedTabDelegate* tab) const {
+    const sync_sessions::SyncedTabDelegate* tab) const {
   for (int i = 0; i < browser_->tab_strip_model()->count(); i++) {
-    browser_sync::SyncedTabDelegate* current = GetTabAt(i);
+    sync_sessions::SyncedTabDelegate* current = GetTabAt(i);
     if (tab == current)
       return browser_->tab_strip_model()->IsTabPinned(i);
   }
@@ -31,7 +29,7 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
   return false;
 }
 
-browser_sync::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
+sync_sessions::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
     int index) const {
   return TabContentsSyncedTabDelegate::FromWebContents(
       browser_->tab_strip_model()->GetWebContentsAt(index));

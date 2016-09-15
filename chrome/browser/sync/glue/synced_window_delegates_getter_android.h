@@ -10,19 +10,24 @@
 #include "base/macros.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 
+namespace sync_sessions {
+class SyncedWindowDelegate;
+}
+
 namespace browser_sync {
 
-class SyncedWindowDelegate;
-
 // This class defines how to access SyncedWindowDelegates on Android.
-class SyncedWindowDelegatesGetterAndroid : public SyncedWindowDelegatesGetter {
+class SyncedWindowDelegatesGetterAndroid
+    : public sync_sessions::SyncedWindowDelegatesGetter {
  public:
   SyncedWindowDelegatesGetterAndroid();
   ~SyncedWindowDelegatesGetterAndroid() override;
 
   // SyncedWindowDelegatesGetter implementation
-  std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates() override;
-  const SyncedWindowDelegate* FindById(SessionID::id_type id) override;
+  std::set<const sync_sessions::SyncedWindowDelegate*>
+  GetSyncedWindowDelegates() override;
+  const sync_sessions::SyncedWindowDelegate* FindById(
+      SessionID::id_type id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegatesGetterAndroid);

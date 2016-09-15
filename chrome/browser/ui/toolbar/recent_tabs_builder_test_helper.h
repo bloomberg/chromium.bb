@@ -12,16 +12,13 @@
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 
-namespace browser_sync {
-class SessionsSyncManager;
-}
-
-namespace sync_driver {
-class OpenTabsUIDelegate;
-}
-
 namespace sync_pb {
 class SessionSpecifics;
+}
+
+namespace sync_sessions {
+class OpenTabsUIDelegate;
+class SessionsSyncManager;
 }
 
 // Utility class to help add recent tabs for testing.
@@ -55,8 +52,7 @@ class RecentTabsBuilderTestHelper {
                        int window_index,
                        int tab_index);
 
-  void ExportToSessionsSyncManager(
-      browser_sync::SessionsSyncManager* manager);
+  void ExportToSessionsSyncManager(sync_sessions::SessionsSyncManager* manager);
 
   std::vector<base::string16> GetTabTitlesSortedByRecency();
 
@@ -70,7 +66,7 @@ class RecentTabsBuilderTestHelper {
                          int window_index,
                          int tab_index,
                          sync_pb::SessionSpecifics* tab_base);
-  void VerifyExport(sync_driver::OpenTabsUIDelegate* delegate);
+  void VerifyExport(sync_sessions::OpenTabsUIDelegate* delegate);
 
   struct TabInfo;
   struct WindowInfo;

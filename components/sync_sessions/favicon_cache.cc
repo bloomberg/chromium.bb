@@ -20,7 +20,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "ui/gfx/favicon_size.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 // Synced favicon storage and tracking.
 // Note: we don't use the favicon service for storing these because these
@@ -1047,4 +1047,4 @@ void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

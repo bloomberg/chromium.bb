@@ -85,8 +85,8 @@ const int kHistorySeparatorIndex = 1;
 
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
-bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
-                           const sync_driver::SyncedSession* s2) {
+bool SortSessionsByRecency(const sync_sessions::SyncedSession* s1,
+                           const sync_sessions::SyncedSession* s2) {
   return s1->modified_time > s2->modified_time;
 }
 
@@ -180,13 +180,14 @@ const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 1121;
 RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
     Browser* browser,
-    sync_driver::OpenTabsUIDelegate* open_tabs_delegate)
+    sync_sessions::OpenTabsUIDelegate* open_tabs_delegate)
     : ui::SimpleMenuModel(this),
       browser_(browser),
       open_tabs_delegate_(open_tabs_delegate),
       last_local_model_index_(kHistorySeparatorIndex),
-      default_favicon_(ui::ResourceBundle::GetSharedInstance().
-                       GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
+      default_favicon_(
+          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+              IDR_DEFAULT_FAVICON)),
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
@@ -317,7 +318,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
         service->RestoreEntryById(context, item.tab_id, disposition);
       }
     } else {  // Restore tab of session from other devices.
-      sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+      sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
       if (!open_tabs)
         return;
       const sessions::SessionTab* tab;
@@ -476,8 +477,8 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   // a menu item, because they are always only built once (i.e. invoked from
   // Constructor()) and don't change after that.
 
-  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+  std::vector<const sync_sessions::SyncedSession*> sessions;
   if (!open_tabs || !open_tabs->GetAllForeignSessions(&sessions)) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_RECENT_TABS_NO_DEVICE_TABS,
@@ -492,7 +493,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   size_t num_sessions_added = 0;
   for (size_t i = 0;
        i < sessions.size() && num_sessions_added < kMaxSessionsToShow; ++i) {
-    const sync_driver::SyncedSession* session = sessions[i];
+    const sync_sessions::SyncedSession* session = sessions[i];
     const std::string& session_tag = session->session_tag;
 
     // Collect tabs from all windows of the session, ordered by recency.
@@ -578,24 +579,24 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
 
 void RecentTabsSubMenuModel::AddDeviceFavicon(
     int index_in_menu,
-    sync_driver::SyncedSession::DeviceType device_type) {
+    sync_sessions::SyncedSession::DeviceType device_type) {
 #if defined(OS_MACOSX)
   int favicon_id = -1;
   switch (device_type) {
-    case sync_driver::SyncedSession::TYPE_PHONE:
+    case sync_sessions::SyncedSession::TYPE_PHONE:
       favicon_id = IDR_PHONE_FAVICON;
       break;
 
-    case sync_driver::SyncedSession::TYPE_TABLET:
+    case sync_sessions::SyncedSession::TYPE_TABLET:
       favicon_id = IDR_TABLET_FAVICON;
       break;
 
-    case sync_driver::SyncedSession::TYPE_CHROMEOS:
-    case sync_driver::SyncedSession::TYPE_WIN:
-    case sync_driver::SyncedSession::TYPE_MACOSX:
-    case sync_driver::SyncedSession::TYPE_LINUX:
-    case sync_driver::SyncedSession::TYPE_OTHER:
-    case sync_driver::SyncedSession::TYPE_UNSET:
+    case sync_sessions::SyncedSession::TYPE_CHROMEOS:
+    case sync_sessions::SyncedSession::TYPE_WIN:
+    case sync_sessions::SyncedSession::TYPE_MACOSX:
+    case sync_sessions::SyncedSession::TYPE_LINUX:
+    case sync_sessions::SyncedSession::TYPE_OTHER:
+    case sync_sessions::SyncedSession::TYPE_UNSET:
       favicon_id = IDR_LAPTOP_FAVICON;
       break;
   }
@@ -605,20 +606,20 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
 #else
   gfx::VectorIconId favicon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   switch (device_type) {
-    case sync_driver::SyncedSession::TYPE_PHONE:
+    case sync_sessions::SyncedSession::TYPE_PHONE:
       favicon_id = gfx::VectorIconId::SMARTPHONE;
       break;
 
-    case sync_driver::SyncedSession::TYPE_TABLET:
+    case sync_sessions::SyncedSession::TYPE_TABLET:
       favicon_id = gfx::VectorIconId::TABLET;
       break;
 
-    case sync_driver::SyncedSession::TYPE_CHROMEOS:
-    case sync_driver::SyncedSession::TYPE_WIN:
-    case sync_driver::SyncedSession::TYPE_MACOSX:
-    case sync_driver::SyncedSession::TYPE_LINUX:
-    case sync_driver::SyncedSession::TYPE_OTHER:
-    case sync_driver::SyncedSession::TYPE_UNSET:
+    case sync_sessions::SyncedSession::TYPE_CHROMEOS:
+    case sync_sessions::SyncedSession::TYPE_WIN:
+    case sync_sessions::SyncedSession::TYPE_MACOSX:
+    case sync_sessions::SyncedSession::TYPE_LINUX:
+    case sync_sessions::SyncedSession::TYPE_OTHER:
+    case sync_sessions::SyncedSession::TYPE_UNSET:
       favicon_id = gfx::VectorIconId::LAPTOP;
       break;
   }
@@ -637,7 +638,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     // --sync-tab-favicons switch is on; according to zea@, this flag is now
     // automatically enabled for iOS and android, and they're looking into
     // enabling it for other platforms.
-    sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+    sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
     scoped_refptr<base::RefCountedMemory> favicon_png;
     if (open_tabs &&
         open_tabs->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
@@ -707,7 +708,7 @@ void RecentTabsSubMenuModel::ClearLocalEntries() {
   local_window_items_.clear();
 }
 
-sync_driver::OpenTabsUIDelegate*
+sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   if (!open_tabs_delegate_) {
     ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->

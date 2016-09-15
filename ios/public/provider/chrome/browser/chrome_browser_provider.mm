@@ -102,7 +102,7 @@ bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
   return false;
 }
 
-std::unique_ptr<browser_sync::SyncedWindowDelegatesGetter>
+std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
 ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
     ios::ChromeBrowserState* browser_state) {
   return nullptr;

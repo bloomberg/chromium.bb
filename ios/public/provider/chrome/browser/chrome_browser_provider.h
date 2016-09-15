@@ -28,12 +28,12 @@ class CardUnmaskPromptController;
 class CardUnmaskPromptView;
 }
 
-namespace browser_sync {
-class SyncedWindowDelegatesGetter;
-}
-
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace sync_sessions {
+class SyncedWindowDelegatesGetter;
 }
 
 namespace user_prefs {
@@ -115,7 +115,7 @@ class ChromeBrowserProvider {
   virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
   // Returns the SyncedWindowDelegatesGetter implementation.
-  virtual std::unique_ptr<browser_sync::SyncedWindowDelegatesGetter>
+  virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
 };
 

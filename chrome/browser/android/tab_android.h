@@ -125,7 +125,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Helper methods to make it easier to access objects from the associated
   // WebContents.  Can return NULL.
   Profile* GetProfile() const;
-  browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() const;
+  sync_sessions::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
   void SetWindowSessionID(SessionID::id_type window_id);
   void SetSyncId(int sync_id);

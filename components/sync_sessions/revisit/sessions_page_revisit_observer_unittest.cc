@@ -19,14 +19,13 @@
 
 using sessions::SessionTab;
 using sessions::SessionWindow;
-using sync_driver::SyncedSession;
 
 namespace sync_sessions {
 
 namespace {
 
-static const std::string kExampleUrl = "http://www.example.com";
-static const std::string kDifferentUrl = "http://www.different.com";
+static const char kExampleUrl[] = "http://www.example.com";
+static const char kDifferentUrl[] = "http://www.different.com";
 
 class TestForeignSessionsProvider : public ForeignSessionsProvider {
  public:

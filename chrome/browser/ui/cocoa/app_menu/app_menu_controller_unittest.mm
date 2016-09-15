@@ -49,11 +49,11 @@ class MockAppMenuModel : public AppMenuModel {
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
-class DummyRouter : public browser_sync::LocalSessionEventRouter {
+class DummyRouter : public sync_sessions::LocalSessionEventRouter {
  public:
   ~DummyRouter() override {}
   void StartRoutingTo(
-      browser_sync::LocalSessionEventHandler* handler) override {}
+      sync_sessions::LocalSessionEventHandler* handler) override {}
   void Stop() override {}
 };
 
@@ -77,12 +77,12 @@ class AppMenuControllerTest : public CocoaProfileTest {
     fake_model_.reset(new MockAppMenuModel);
 
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
-    manager_.reset(new browser_sync::SessionsSyncManager(
+    manager_.reset(new sync_sessions::SessionsSyncManager(
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
             ->GetSyncSessionsClient(),
         sync_prefs_.get(), local_device_.get(),
-        std::unique_ptr<browser_sync::LocalSessionEventRouter>(
+        std::unique_ptr<sync_sessions::LocalSessionEventRouter>(
             new DummyRouter()),
         base::Closure(), base::Closure()));
     manager_->MergeDataAndStartSyncing(
@@ -97,7 +97,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
     helper->ExportToSessionsSyncManager(manager_.get());
   }
 
-  sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {
+  sync_sessions::OpenTabsUIDelegate* GetOpenTabsDelegate() {
     return manager_.get();
   }
 
@@ -118,7 +118,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
 
  private:
   std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  std::unique_ptr<browser_sync::SessionsSyncManager> manager_;
+  std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
   std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 

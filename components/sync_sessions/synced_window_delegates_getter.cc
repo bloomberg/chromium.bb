@@ -4,10 +4,10 @@
 
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 SyncedWindowDelegatesGetter::SyncedWindowDelegatesGetter() {}
 
 SyncedWindowDelegatesGetter::~SyncedWindowDelegatesGetter() {}
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

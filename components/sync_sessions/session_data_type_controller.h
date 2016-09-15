@@ -12,7 +12,7 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 // Overrides StartModels to avoid sync contention with sessions during
 // a session restore operation at startup and to wait for the local
@@ -58,6 +58,6 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_

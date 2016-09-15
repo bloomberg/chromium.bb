@@ -25,7 +25,7 @@
 
 using sync_driver::LocalDeviceInfoProviderMock;
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
@@ -79,20 +79,19 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   std::set<const SyncedWindowDelegate*> delegates_;
 };
 
-class TestSyncSessionsClient : public sync_sessions::FakeSyncSessionsClient {
+class TestSyncSessionsClient : public FakeSyncSessionsClient {
  public:
-  browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
-      override {
+  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
     return synced_window_getter_;
   }
 
   void SetSyncedWindowDelegatesGetter(
-      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+      SyncedWindowDelegatesGetter* synced_window_getter) {
     synced_window_getter_ = synced_window_getter;
   }
 
  private:
-  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter_;
+  SyncedWindowDelegatesGetter* synced_window_getter_;
 };
 
 class SessionDataTypeControllerTest : public testing::Test,
@@ -107,7 +106,7 @@ class SessionDataTypeControllerTest : public testing::Test,
   // FakeSyncClient overrides.
   PrefService* GetPrefService() override { return &prefs_; }
 
-  sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override {
+  SyncSessionsClient* GetSyncSessionsClient() override {
     return sync_sessions_client_.get();
   }
 
@@ -270,4 +269,4 @@ TEST_F(SessionDataTypeControllerTest,
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

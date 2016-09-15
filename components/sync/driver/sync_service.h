@@ -36,11 +36,14 @@ struct UserShare;
 
 }  // namespace syncer
 
+namespace sync_sessions {
+class OpenTabsUIDelegate;
+}  // namespace sync_sessions
+
 namespace sync_driver {
 
 class DataTypeController;
 class LocalDeviceInfoProvider;
-class OpenTabsUIDelegate;
 class SyncClient;
 
 // UIs that need to prevent Sync startup should hold an instance of this class
@@ -212,7 +215,7 @@ class SyncService : public DataTypeEncryptionHandler {
 
   // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
   // currently syncing, returns nullptr.
-  virtual OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
+  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // Returns true if OnPassphraseRequired has been called for decryption and
   // we have an encrypted data type enabled.

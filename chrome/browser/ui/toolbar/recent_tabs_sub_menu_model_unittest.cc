@@ -53,7 +53,7 @@ class TestRecentTabsSubMenuModel : public RecentTabsSubMenuModel {
  public:
   TestRecentTabsSubMenuModel(ui::AcceleratorProvider* provider,
                              Browser* browser,
-                             sync_driver::OpenTabsUIDelegate* delegate)
+                             sync_sessions::OpenTabsUIDelegate* delegate)
       : RecentTabsSubMenuModel(provider, browser, delegate),
         execute_count_(0),
         enable_count_(0) {}
@@ -107,11 +107,11 @@ class TestRecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestRecentTabsMenuModelDelegate);
 };
 
-class DummyRouter : public browser_sync::LocalSessionEventRouter {
+class DummyRouter : public sync_sessions::LocalSessionEventRouter {
  public:
   ~DummyRouter() override {}
   void StartRoutingTo(
-      browser_sync::LocalSessionEventHandler* handler) override {}
+      sync_sessions::LocalSessionEventHandler* handler) override {}
   void Stop() override {}
 };
 
@@ -130,10 +130,10 @@ class RecentTabsSubMenuModelTest
             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
             "device_id")) {
     sync_prefs_.reset(new sync_driver::SyncPrefs(testing_profile_.GetPrefs()));
-    manager_.reset(new browser_sync::SessionsSyncManager(
+    manager_.reset(new sync_sessions::SessionsSyncManager(
         sync_service_.GetSyncClient()->GetSyncSessionsClient(),
         sync_prefs_.get(), local_device_.get(),
-        std::unique_ptr<browser_sync::LocalSessionEventRouter>(
+        std::unique_ptr<sync_sessions::LocalSessionEventRouter>(
             new DummyRouter()),
         base::Closure(), base::Closure()));
     manager_->MergeDataAndStartSyncing(
@@ -156,7 +156,7 @@ class RecentTabsSubMenuModelTest
         nullptr);
   }
 
-  sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {
+  sync_sessions::OpenTabsUIDelegate* GetOpenTabsDelegate() {
     return manager_.get();
   }
 
@@ -168,7 +168,7 @@ class RecentTabsSubMenuModelTest
   TestingProfile testing_profile_;
   ProfileSyncServiceMock sync_service_;
   std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
-  std::unique_ptr<browser_sync::SessionsSyncManager> manager_;
+  std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
   std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 

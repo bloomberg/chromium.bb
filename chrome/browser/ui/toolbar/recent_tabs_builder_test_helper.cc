@@ -183,7 +183,7 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
 }
 
 void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
-    browser_sync::SessionsSyncManager* manager) {
+    sync_sessions::SessionsSyncManager* manager) {
   syncer::SyncChangeList changes;
   for (int s = 0; s < GetSessionCount(); ++s) {
     sync_pb::EntitySpecifics session_entity;
@@ -221,9 +221,9 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(
-    sync_driver::OpenTabsUIDelegate* delegate) {
+    sync_sessions::OpenTabsUIDelegate* delegate) {
   // Make sure data is populated correctly in SessionModelAssociator.
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  std::vector<const sync_sessions::SyncedSession*> sessions;
   ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
   ASSERT_EQ(GetSessionCount(), static_cast<int>(sessions.size()));
   for (int s = 0; s < GetSessionCount(); ++s) {

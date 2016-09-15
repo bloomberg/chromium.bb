@@ -43,7 +43,7 @@ namespace history {
 class HistoryService;
 }
 
-namespace browser_sync {
+namespace sync_sessions {
 
 enum IconSize {
   SIZE_INVALID,
@@ -250,6 +250,6 @@ class FaviconCache : public syncer::SyncableService,
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_FAVICON_CACHE_H_

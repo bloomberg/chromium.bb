@@ -52,7 +52,7 @@ namespace extensions {
 class ExtensionSessionsTest;
 }  // namespace extensions
 
-namespace browser_sync {
+namespace sync_sessions {
 
 class SyncedTabDelegate;
 class SyncedWindowDelegatesGetter;
@@ -60,10 +60,10 @@ class SyncedWindowDelegatesGetter;
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
 class SessionsSyncManager : public syncer::SyncableService,
-                            public sync_driver::OpenTabsUIDelegate,
+                            public OpenTabsUIDelegate,
                             public LocalSessionEventHandler {
  public:
-  SessionsSyncManager(sync_sessions::SyncSessionsClient* sessions_client,
+  SessionsSyncManager(SyncSessionsClient* sessions_client,
                       sync_driver::SyncPrefs* sync_prefs,
                       sync_driver::LocalDeviceInfoProvider* local_device,
                       std::unique_ptr<LocalSessionEventRouter> router,
@@ -88,7 +88,7 @@ class SessionsSyncManager : public syncer::SyncableService,
       const std::string& pageurl,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
   bool GetAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions) override;
+      std::vector<const SyncedSession*>* sessions) override;
   bool GetForeignSession(
       const std::string& tag,
       std::vector<const sessions::SessionWindow*>* windows) override;
@@ -99,8 +99,7 @@ class SessionsSyncManager : public syncer::SyncableService,
       const std::string& tag,
       std::vector<const sessions::SessionTab*>* tabs) override;
   void DeleteForeignSession(const std::string& tag) override;
-  bool GetLocalSession(
-      const sync_driver::SyncedSession** local_session) override;
+  bool GetLocalSession(const SyncedSession** local_session) override;
 
   // LocalSessionEventHandler implementation.
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
@@ -231,7 +230,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   static void PopulateSessionHeaderFromSpecifics(
       const sync_pb::SessionHeader& header_specifics,
       base::Time mtime,
-      sync_driver::SyncedSession* session_header);
+      SyncedSession* session_header);
 
   // Builds |session_window| from the session specifics window
   // provided and updates the SessionTracker with foreign session data created.
@@ -324,7 +323,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   SyncedWindowDelegatesGetter* synced_window_delegates_getter() const;
 
   // The client of this sync sessions datatype.
-  sync_sessions::SyncSessionsClient* const sessions_client_;
+  SyncSessionsClient* const sessions_client_;
 
   // Mapping of current open (local) tabs to their sync identifiers.
   TabLinksMap local_tab_map_;
@@ -380,6 +379,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_

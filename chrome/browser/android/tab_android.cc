@@ -189,7 +189,7 @@ Profile* TabAndroid::GetProfile() const {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
-browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
+sync_sessions::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
 }
 

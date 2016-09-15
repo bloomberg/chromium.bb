@@ -25,7 +25,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
@@ -1935,4 +1935,4 @@ TEST_F(SyncFaviconCacheTest, MixedThreshold) {
   EXPECT_EQ(0, GetFaviconId(changes[5]));
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

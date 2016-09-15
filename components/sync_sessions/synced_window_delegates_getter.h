@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 class SyncedWindowDelegate;
 
@@ -31,6 +31,6 @@ class SyncedWindowDelegatesGetter {
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegatesGetter);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_WINDOW_DELEGATES_GETTER_H_

@@ -20,21 +20,20 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
 // Simple implementation of ForeignSessionsProvider that delegates to
 // SessionsSyncManager. It holds onto a non-owning pointer, with the assumption
 // that this class is only used by classes owned by SessionsSyncManager itself.
-class SessionsSyncManagerWrapper
-    : public sync_sessions::ForeignSessionsProvider {
+class SessionsSyncManagerWrapper : public ForeignSessionsProvider {
  public:
   explicit SessionsSyncManagerWrapper(SessionsSyncManager* manager)
       : manager_(manager) {}
   ~SessionsSyncManagerWrapper() override{};
   bool GetAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions) override {
+      std::vector<const SyncedSession*>* sessions) override {
     return manager_->GetAllForeignSessions(sessions);
   }
 
@@ -47,27 +46,24 @@ class SessionsSyncManagerWrapper
 
 PageRevisitBroadcaster::PageRevisitBroadcaster(
     SessionsSyncManager* manager,
-    sync_sessions::SyncSessionsClient* sessions_client)
+    SyncSessionsClient* sessions_client)
     : sessions_client_(sessions_client) {
   const std::string group_name =
       base::FieldTrialList::FindFullName("PageRevisitInstrumentation");
   bool shouldInstrument = group_name == "Enabled";
   if (shouldInstrument) {
-    revisit_observers_.push_back(new sync_sessions::SessionsPageRevisitObserver(
+    revisit_observers_.push_back(new SessionsPageRevisitObserver(
         base::MakeUnique<SessionsSyncManagerWrapper>(manager)));
 
     history::HistoryService* history = sessions_client_->GetHistoryService();
     if (history) {
-      revisit_observers_.push_back(
-          new sync_sessions::TypedUrlPageRevisitObserver(history));
+      revisit_observers_.push_back(new TypedUrlPageRevisitObserver(history));
     }
 
     bookmarks::BookmarkModel* bookmarks = sessions_client_->GetBookmarkModel();
     if (bookmarks) {
-      revisit_observers_.push_back(
-          new sync_sessions::BookmarksPageRevisitObserver(
-              base::MakeUnique<sync_sessions::BookmarksByUrlProviderImpl>(
-                  bookmarks)));
+      revisit_observers_.push_back(new BookmarksPageRevisitObserver(
+          base::MakeUnique<BookmarksByUrlProviderImpl>(bookmarks)));
     }
   }
 }
@@ -77,7 +73,7 @@ PageRevisitBroadcaster::~PageRevisitBroadcaster() {}
 void PageRevisitBroadcaster::OnPageVisit(const GURL& url,
                                          const ui::PageTransition transition) {
   if (sessions_client_->ShouldSyncURL(url)) {
-    sync_sessions::PageVisitObserver::TransitionType converted(
+    PageVisitObserver::TransitionType converted(
         ConvertTransitionEnum(transition));
     for (auto* observer : revisit_observers_) {
       observer->OnPageVisit(url, converted);
@@ -86,52 +82,51 @@ void PageRevisitBroadcaster::OnPageVisit(const GURL& url,
 }
 
 // Static
-sync_sessions::PageVisitObserver::TransitionType
-PageRevisitBroadcaster::ConvertTransitionEnum(
+PageVisitObserver::TransitionType PageRevisitBroadcaster::ConvertTransitionEnum(
     const ui::PageTransition original) {
   switch (ui::PageTransitionStripQualifier(original)) {
     case ui::PAGE_TRANSITION_LINK:
       if (original & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
-        return sync_sessions::PageVisitObserver::kTransitionCopyPaste;
+        return PageVisitObserver::kTransitionCopyPaste;
       } else {
-        return sync_sessions::PageVisitObserver::kTransitionPage;
+        return PageVisitObserver::kTransitionPage;
       }
     case ui::PAGE_TRANSITION_TYPED:
-      return sync_sessions::PageVisitObserver::kTransitionOmniboxUrl;
+      return PageVisitObserver::kTransitionOmniboxUrl;
 
     case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
-      return sync_sessions::PageVisitObserver::kTransitionBookmark;
+      return PageVisitObserver::kTransitionBookmark;
 
     case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
     case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
       // These are not expected, we only expect top-level frame transitions.
-      return sync_sessions::PageVisitObserver::kTransitionUnknown;
+      return PageVisitObserver::kTransitionUnknown;
 
     case ui::PAGE_TRANSITION_GENERATED:
-      return sync_sessions::PageVisitObserver::kTransitionOmniboxDefaultSearch;
+      return PageVisitObserver::kTransitionOmniboxDefaultSearch;
 
     case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
       if (original & ui::PAGE_TRANSITION_FORWARD_BACK) {
-        return sync_sessions::PageVisitObserver::kTransitionForwardBackward;
+        return PageVisitObserver::kTransitionForwardBackward;
       } else {
-        return sync_sessions::PageVisitObserver::kTransitionUnknown;
+        return PageVisitObserver::kTransitionUnknown;
       }
 
     case ui::PAGE_TRANSITION_FORM_SUBMIT:
-      return sync_sessions::PageVisitObserver::kTransitionPage;
+      return PageVisitObserver::kTransitionPage;
 
     case ui::PAGE_TRANSITION_RELOAD:
       // Refreshing pages also carry PAGE_TRANSITION_RELOAD but the url never
       // changes so we don't expect to ever get them.
-      return sync_sessions::PageVisitObserver::kTransitionRestore;
+      return PageVisitObserver::kTransitionRestore;
 
     case ui::PAGE_TRANSITION_KEYWORD:
     case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
-      return sync_sessions::PageVisitObserver::kTransitionOmniboxTemplateSearch;
+      return PageVisitObserver::kTransitionOmniboxTemplateSearch;
 
     default:
-      return sync_sessions::PageVisitObserver::kTransitionUnknown;
+      return PageVisitObserver::kTransitionUnknown;
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

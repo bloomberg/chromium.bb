@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 
+using sync_sessions::SyncedWindowDelegate;
+
 namespace browser_sync {
 
 SyncedWindowDelegatesGetterAndroid::SyncedWindowDelegatesGetterAndroid() {}

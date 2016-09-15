@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
-#include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
@@ -30,6 +29,7 @@
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
@@ -45,11 +45,10 @@ using sessions::SerializedNavigationEntryTestHelper;
 using sync_driver::DeviceInfo;
 using sync_driver::LocalDeviceInfoProvider;
 using sync_driver::LocalDeviceInfoProviderMock;
-using sync_driver::SyncedSession;
 using syncer::SyncChange;
 using syncer::SyncData;
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
@@ -210,11 +209,10 @@ int CountIfTagMatches(const syncer::SyncChangeList& changes,
       });
 }
 
-int CountIfTagMatches(
-    const std::vector<const sync_driver::SyncedSession*>& sessions,
-    const std::string& tag) {
+int CountIfTagMatches(const std::vector<const SyncedSession*>& sessions,
+                      const std::string& tag) {
   return std::count_if(sessions.begin(), sessions.end(),
-                       [&tag](const sync_driver::SyncedSession* session) {
+                       [&tag](const SyncedSession* session) {
                          return session->session_tag == tag;
                        });
 }
@@ -245,10 +243,9 @@ std::unique_ptr<LocalSessionEventRouter> NewDummyRouter() {
 
 // Provides ability to override SyncedWindowDelegatesGetter.
 // All other calls are passed through to the original SyncSessionsClient.
-class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
+class SyncSessionsClientShim : public SyncSessionsClient {
  public:
-  SyncSessionsClientShim(
-      sync_sessions::SyncSessionsClient* sync_sessions_client)
+  explicit SyncSessionsClientShim(SyncSessionsClient* sync_sessions_client)
       : sync_sessions_client_(sync_sessions_client),
         synced_window_getter_(nullptr) {}
   ~SyncSessionsClientShim() override {}
@@ -269,8 +266,7 @@ class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
     return sync_sessions_client_->ShouldSyncURL(url);
   }
 
-  browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
-      override {
+  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
     // The idea here is to allow the test code override the default
     // SyncedWindowDelegatesGetter provided by |sync_sessions_client_|.
     // If |synced_window_getter_| is explicitly set, return it; otherwise return
@@ -280,19 +276,19 @@ class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
                : sync_sessions_client_->GetSyncedWindowDelegatesGetter();
   }
 
-  std::unique_ptr<browser_sync::LocalSessionEventRouter>
-  GetLocalSessionEventRouter() override {
+  std::unique_ptr<LocalSessionEventRouter> GetLocalSessionEventRouter()
+      override {
     return sync_sessions_client_->GetLocalSessionEventRouter();
   }
 
   void set_synced_window_getter(
-      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+      SyncedWindowDelegatesGetter* synced_window_getter) {
     synced_window_getter_ = synced_window_getter;
   }
 
  private:
-  sync_sessions::SyncSessionsClient* const sync_sessions_client_;
-  browser_sync::SyncedWindowDelegatesGetter* synced_window_getter_;
+  SyncSessionsClient* const sync_sessions_client_;
+  SyncedWindowDelegatesGetter* synced_window_getter_;
 };
 
 }  // namespace
@@ -316,8 +312,8 @@ class SessionsSyncManagerTest
     sync_client_.reset(new browser_sync::ChromeSyncClient(profile()));
     sessions_client_shim_.reset(
         new SyncSessionsClientShim(sync_client_->GetSyncSessionsClient()));
-    browser_sync::NotificationServiceSessionsRouter* router(
-        new browser_sync::NotificationServiceSessionsRouter(
+    NotificationServiceSessionsRouter* router(
+        new NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),
             syncer::SyncableService::StartSyncFlare()));
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
@@ -392,18 +388,18 @@ class SessionsSyncManagerTest
     return list;
   }
 
-  sync_sessions::SyncSessionsClient* GetSyncSessionsClient() {
+  SyncSessionsClient* GetSyncSessionsClient() {
     return sessions_client_shim_.get();
   }
 
   sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
-  browser_sync::SyncedWindowDelegatesGetter* get_synced_window_getter() {
+  SyncedWindowDelegatesGetter* get_synced_window_getter() {
     return manager()->synced_window_delegates_getter();
   }
 
   void set_synced_window_getter(
-      browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
+      SyncedWindowDelegatesGetter* synced_window_getter) {
     sessions_client_shim_->set_synced_window_getter(synced_window_getter);
   }
 
@@ -578,7 +574,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int GetSyncId() const override { return sync_id_; }
   void SetSyncId(int sync_id) override { sync_id_ = sync_id; }
 
-  bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override {
+  bool ShouldSync(SyncSessionsClient* sessions_client) override {
     return false;
   }
 
@@ -1781,7 +1777,7 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesBadHash) {
   EXPECT_EQ(1, CountIfTagMatches(output, bad_header_tag));
   EXPECT_EQ(1, CountIfTagMatches(output, bad_tab_tag));
 
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   manager()->session_tracker_.LookupAllForeignSessions(
       &sessions, SyncedSessionTracker::RAW);
   ASSERT_EQ(2U, sessions.size());
@@ -2606,4 +2602,4 @@ TEST_F(SessionsSyncManagerTest, GetForeignSessionTabs) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

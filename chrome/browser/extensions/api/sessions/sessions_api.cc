@@ -63,8 +63,8 @@ const char kRestoreInIncognitoError[] =
 
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
-bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
-                           const sync_driver::SyncedSession* s2) {
+bool SortSessionsByRecency(const sync_sessions::SyncedSession* s1,
+                           const sync_sessions::SyncedSession* s2) {
   return s1->modified_time > s2->modified_time;
 }
 
@@ -323,7 +323,7 @@ SessionsGetDevicesFunction::CreateSessionModel(
 }
 
 api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
-    const sync_driver::SyncedSession* session) {
+    const sync_sessions::SyncedSession* session) {
   int max_results = api::sessions::MAX_SESSION_RESULTS;
   // Already validated in RunAsync().
   std::unique_ptr<GetDevices::Params> params(
@@ -335,7 +335,7 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
   device_struct.info = session->session_name;
   device_struct.device_name = session->session_name;
 
-  for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator it =
+  for (sync_sessions::SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin();
        it != session->windows.end() &&
        static_cast<int>(device_struct.sessions.size()) < max_results;
@@ -358,8 +358,9 @@ bool SessionsGetDevicesFunction::RunSync() {
     return true;
   }
 
-  sync_driver::OpenTabsUIDelegate* open_tabs = service->GetOpenTabsUIDelegate();
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      service->GetOpenTabsUIDelegate();
+  std::vector<const sync_sessions::SyncedSession*> sessions;
   if (!(open_tabs && open_tabs->GetAllForeignSessions(&sessions))) {
     results_ =
         GetDevices::Results::Create(std::vector<api::sessions::Device>());
@@ -501,7 +502,8 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
     SetError(kSessionSyncError);
     return false;
   }
-  sync_driver::OpenTabsUIDelegate* open_tabs = service->GetOpenTabsUIDelegate();
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      service->GetOpenTabsUIDelegate();
   if (!open_tabs) {
     SetError(kSessionSyncError);
     return false;

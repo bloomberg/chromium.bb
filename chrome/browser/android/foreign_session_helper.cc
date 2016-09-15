@@ -34,8 +34,8 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
-using sync_driver::OpenTabsUIDelegate;
-using sync_driver::SyncedSession;
+using sync_sessions::OpenTabsUIDelegate;
+using sync_sessions::SyncedSession;
 
 namespace {
 
@@ -74,7 +74,7 @@ bool ShouldSkipWindow(const sessions::SessionWindow& window) {
   return true;
 }
 
-bool ShouldSkipSession(const sync_driver::SyncedSession& session) {
+bool ShouldSkipSession(const SyncedSession& session) {
   for (SyncedSession::SyncedWindowMap::const_iterator it =
       session.windows.begin(); it != session.windows.end(); ++it) {
     const sessions::SessionWindow  &window = *(it->second);
@@ -216,7 +216,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(
   if (!open_tabs)
     return false;
 
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   if (!open_tabs->GetAllForeignSessions(&sessions))
     return false;
 
@@ -234,7 +234,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(
 
   // Note: we don't own the SyncedSessions themselves.
   for (size_t i = 0; i < sessions.size(); ++i) {
-    const sync_driver::SyncedSession& session = *(sessions[i]);
+    const SyncedSession& session = *(sessions[i]);
     if (ShouldSkipSession(session))
       continue;
 

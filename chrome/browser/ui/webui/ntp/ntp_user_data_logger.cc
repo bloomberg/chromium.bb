@@ -189,8 +189,8 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
         Profile::FromBrowserContext(contents->GetBrowserContext()));
     if (sync) {
-      browser_sync::SessionsSyncManager* sessions =
-          static_cast<browser_sync::SessionsSyncManager*>(
+      sync_sessions::SessionsSyncManager* sessions =
+          static_cast<sync_sessions::SessionsSyncManager*>(
               sync->GetSessionsSyncableService());
       if (sessions) {
         sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(

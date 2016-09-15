@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/session_sync_test_helper.h"
+#include "components/sync_sessions/session_sync_test_helper.h"
 
 #include <stddef.h>
 
@@ -12,8 +12,7 @@
 #include "components/sync_sessions/synced_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
-namespace browser_sync {
+namespace sync_sessions {
 
 static const char* kClientName = "name";
 static const char* kAppId = "app_id";
@@ -51,19 +50,18 @@ void SessionSyncTestHelper::AddWindowSpecifics(
 void SessionSyncTestHelper::VerifySyncedSession(
     const std::string& tag,
     const std::vector<std::vector<SessionID::id_type>>& windows,
-    const sync_driver::SyncedSession& session) {
+    const SyncedSession& session) {
   ASSERT_EQ(tag, session.session_tag);
-  ASSERT_EQ(sync_driver::SyncedSession::TYPE_LINUX, session.device_type);
+  ASSERT_EQ(SyncedSession::TYPE_LINUX, session.device_type);
   ASSERT_EQ(kClientName, session.session_name);
   ASSERT_EQ(windows.size(), session.windows.size());
 
   // We assume the window id's are in increasing order.
   int i = 0;
-  for (std::vector<std::vector<int> >::const_iterator win_iter =
-           windows.begin();
+  for (std::vector<std::vector<int>>::const_iterator win_iter = windows.begin();
        win_iter != windows.end(); ++win_iter, ++i) {
     sessions::SessionWindow* win_ptr;
-    sync_driver::SyncedSession::SyncedWindowMap::const_iterator map_iter =
+    SyncedSession::SyncedWindowMap::const_iterator map_iter =
         session.windows.find(i);
     if (map_iter != session.windows.end())
       win_ptr = map_iter->second;
@@ -85,8 +83,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
       ASSERT_EQ(1U, tab->navigations.size());
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL(kVirtualUrl));
       ASSERT_EQ(tab->navigations[0].referrer_url(), GURL(kReferrer));
-      ASSERT_EQ(tab->navigations[0].title(),
-                base::ASCIIToUTF16(kTitle));
+      ASSERT_EQ(tab->navigations[0].title(), base::ASCIIToUTF16(kTitle));
       ASSERT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
           tab->navigations[0].transition_type(), ui::PAGE_TRANSITION_TYPED));
     }
@@ -144,4 +141,4 @@ sync_pb::SessionSpecifics SessionSyncTestHelper::BuildForeignSession(
   return meta;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

@@ -5,6 +5,7 @@
 #include "components/sync_sessions/sync_sessions_metrics.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
@@ -15,7 +16,6 @@
 #include "components/sync_sessions/synced_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_driver::SyncedSession;
 using sessions::SessionWindow;
 using sessions::SessionTab;
 using base::Time;
@@ -25,20 +25,20 @@ namespace sync_sessions {
 
 namespace {
 
-class FakeSessionsSyncManager : public browser_sync::SessionsSyncManager {
+class FakeSessionsSyncManager : public SessionsSyncManager {
  public:
   FakeSessionsSyncManager(SyncSessionsClient* sessions_client,
                           std::vector<std::unique_ptr<SyncedSession>>* sessions)
-      : browser_sync::SessionsSyncManager(sessions_client,
-                                          nullptr,
-                                          nullptr,
-                                          nullptr,
-                                          base::Closure(),
-                                          base::Closure()),
+      : SessionsSyncManager(sessions_client,
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            base::Closure(),
+                            base::Closure()),
         sessions_(sessions) {}
 
   bool GetAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions) override {
+      std::vector<const SyncedSession*>* sessions) override {
     for (auto& session : *sessions_) {
       sessions->push_back(session.get());
     }
@@ -102,9 +102,7 @@ class SyncSessionsMetricsTest : public ::testing::Test {
     return SyncSessionsMetrics::MaxTabTimestamp(typed_sessions);
   }
 
-  browser_sync::SessionsSyncManager* get_sessions_sync_manager() {
-    return &fake_manager_;
-  }
+  SessionsSyncManager* get_sessions_sync_manager() { return &fake_manager_; }
 
  private:
   std::vector<std::unique_ptr<SyncedSession>> sessions_;

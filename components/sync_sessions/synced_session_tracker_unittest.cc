@@ -15,7 +15,7 @@
 #include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_sessions {
 
 namespace {
 
@@ -32,13 +32,13 @@ class SyncedSessionTrackerTest : public testing::Test {
   SyncedSessionTracker* GetTracker() { return &tracker_; }
 
  private:
-  sync_sessions::FakeSyncSessionsClient sessions_client_;
+  FakeSyncSessionsClient sessions_client_;
   SyncedSessionTracker tracker_;
 };
 
 TEST_F(SyncedSessionTrackerTest, GetSession) {
-  sync_driver::SyncedSession* session1 = GetTracker()->GetSession("tag");
-  sync_driver::SyncedSession* session2 = GetTracker()->GetSession("tag2");
+  SyncedSession* session1 = GetTracker()->GetSession("tag");
+  SyncedSession* session2 = GetTracker()->GetSession("tag2");
   ASSERT_EQ(session1, GetTracker()->GetSession("tag"));
   ASSERT_NE(session1, session2);
   // Should clean up memory on its own.
@@ -52,7 +52,7 @@ TEST_F(SyncedSessionTrackerTest, GetTabUnmapped) {
 
 TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
   GetTracker()->PutWindowInSession("tag", 0);
-  sync_driver::SyncedSession* session = GetTracker()->GetSession("tag");
+  SyncedSession* session = GetTracker()->GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
   // Should clean up memory on its own.
 }
@@ -61,7 +61,7 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   GetTracker()->PutWindowInSession("tag", 10);
   GetTracker()->PutTabInWindow("tag", 10, 15,
                                0);  // win id 10, tab id 15, tab ind 0.
-  sync_driver::SyncedSession* session = GetTracker()->GetSession("tag");
+  SyncedSession* session = GetTracker()->GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
   ASSERT_EQ(1U, session->windows[10]->tabs.size());
   ASSERT_EQ(GetTracker()->GetTab("tag", 15, 1), session->windows[10]->tabs[0]);
@@ -69,7 +69,7 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
       &sessions, SyncedSessionTracker::PRESENTABLE));
   GetTracker()->GetSession("tag1");
@@ -149,10 +149,10 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   ASSERT_FALSE(GetTracker()->DeleteSession(tag3));
 
-  sync_driver::SyncedSession* session = GetTracker()->GetSession(tag1);
-  sync_driver::SyncedSession* session2 = GetTracker()->GetSession(tag2);
-  sync_driver::SyncedSession* session3 = GetTracker()->GetSession(tag3);
-  session3->device_type = sync_driver::SyncedSession::TYPE_OTHER;
+  SyncedSession* session = GetTracker()->GetSession(tag1);
+  SyncedSession* session2 = GetTracker()->GetSession(tag2);
+  SyncedSession* session3 = GetTracker()->GetSession(tag3);
+  session3->device_type = SyncedSession::TYPE_OTHER;
   ASSERT_EQ(3U, GetTracker()->num_synced_sessions());
 
   ASSERT_TRUE(session);
@@ -182,7 +182,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   ASSERT_EQ(0U, windows.size());
 
   // The sessions don't have valid tabs, lookup should not succeed.
-  std::vector<const sync_driver::SyncedSession*> sessions;
+  std::vector<const SyncedSession*> sessions;
   ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
       &sessions, SyncedSessionTracker::PRESENTABLE));
   ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
@@ -286,7 +286,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   std::string tag2 = "tag2";
 
   // Create some session information that is stale.
-  sync_driver::SyncedSession* session1 = GetTracker()->GetSession(tag1);
+  SyncedSession* session1 = GetTracker()->GetSession(tag1);
   GetTracker()->PutWindowInSession(tag1, 0);
   GetTracker()->PutTabInWindow(tag1, 0, 0, 0);
   GetTracker()->PutTabInWindow(tag1, 0, 1, 1);
@@ -301,7 +301,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   ASSERT_EQ(6U, GetTracker()->num_synced_tabs(tag1));
 
   // Create a session that should not be affected.
-  sync_driver::SyncedSession* session2 = GetTracker()->GetSession(tag2);
+  SyncedSession* session2 = GetTracker()->GetSession(tag2);
   GetTracker()->PutWindowInSession(tag2, 2);
   GetTracker()->PutTabInWindow(tag2, 2, 1, 0);
   ASSERT_EQ(1U, session2->windows.size());
@@ -368,4 +368,4 @@ TEST_F(SyncedSessionTrackerTest, DeleteForeignTab) {
   EXPECT_TRUE(result.empty());
 }
 
-}  // namespace browser_sync
+}  // namespace sync_sessions

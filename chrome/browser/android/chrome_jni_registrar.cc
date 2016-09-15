@@ -126,7 +126,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 #include "chrome/browser/supervised_user/supervised_user_content_provider_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
-#include "chrome/browser/sync/sync_sessions_metrics_android.h"
+#include "chrome/browser/sync/sessions/sync_sessions_metrics_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"

@@ -19,7 +19,7 @@ namespace syncer {
 class SyncChangeProcessor;
 }
 
-namespace browser_sync {
+namespace sync_sessions {
 
 // A pool for managing free/used tab sync nodes for the *local* session.
 // Performs lazy creation of sync nodes when necessary.
@@ -159,6 +159,6 @@ class TabNodePool {
   DISALLOW_COPY_AND_ASSIGN(TabNodePool);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
 #endif  // COMPONENTS_SYNC_SESSIONS_TAB_NODE_POOL_H_

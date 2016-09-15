@@ -263,7 +263,7 @@ void ExtensionSessionsTest::CreateSessionModels() {
     initial_data.push_back(syncer::SyncData::CreateRemoteData(
         1, entity, base::Time(), syncer::AttachmentIdList(),
         syncer::AttachmentServiceProxyForTest::Create(),
-        browser_sync::SessionsSyncManager::TagHashFromSpecifics(
+        sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
             entity.session())));
     for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics entity;
@@ -271,7 +271,7 @@ void ExtensionSessionsTest::CreateSessionModels() {
       initial_data.push_back(syncer::SyncData::CreateRemoteData(
           i + 2, entity, base::Time(), syncer::AttachmentIdList(),
           syncer::AttachmentServiceProxyForTest::Create(),
-          browser_sync::SessionsSyncManager::TagHashFromSpecifics(
+          sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
               entity.session())));
     }
   }

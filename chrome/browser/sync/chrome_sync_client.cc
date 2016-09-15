@@ -129,7 +129,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 #if BUILDFLAG(ANDROID_JAVA_UI)
         // Android doesn't have multi-profile support, so no need to pass the
         // profile in.
-        new browser_sync::SyncedWindowDelegatesGetterAndroid());
+        new SyncedWindowDelegatesGetterAndroid());
 #else
         new browser_sync::BrowserSyncedWindowDelegatesGetter(profile));
 #endif
@@ -161,21 +161,23 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
            !url.SchemeIs(chrome::kChromeNativeScheme) && !url.SchemeIsFile();
   }
 
-  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
+  sync_sessions::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
+      override {
     return window_delegates_getter_.get();
   }
 
-  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  std::unique_ptr<sync_sessions::LocalSessionEventRouter>
   GetLocalSessionEventRouter() override {
     syncer::SyncableService::StartSyncFlare flare(
         sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
-    return base::MakeUnique<NotificationServiceSessionsRouter>(profile_, this,
-                                                               flare);
+    return base::MakeUnique<sync_sessions::NotificationServiceSessionsRouter>(
+        profile_, this, flare);
   }
 
  private:
   Profile* profile_;
-  std::unique_ptr<SyncedWindowDelegatesGetter> window_delegates_getter_;
+  std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
+      window_delegates_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
 };
@@ -370,9 +372,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
-      browser_sync::FaviconCache* favicons =
-          ProfileSyncServiceFactory::GetForProfile(profile_)->
-              GetFaviconCache();
+      sync_sessions::FaviconCache* favicons =
+          ProfileSyncServiceFactory::GetForProfile(profile_)->GetFaviconCache();
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
     }

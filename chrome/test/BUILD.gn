@@ -3375,6 +3375,7 @@ test("unit_tests") {
     "//components/sync:test_support_sync_api",
     "//components/sync:test_support_sync_core",
     "//components/sync:test_support_sync_core_impl",
+    "//components/sync_sessions:test_support",
     "//content/public/app:both",
     "//content/test:test_support",
     "//crypto:platform",
@@ -4924,8 +4925,6 @@ if (!is_android && !is_ios && !is_chromecast) {
 static_library("test_support_unit") {
   testonly = true
   sources = [
-    "../browser/sync/glue/session_sync_test_helper.cc",
-    "../browser/sync/glue/session_sync_test_helper.h",
     "base/run_all_unittests.cc",
   ]
 

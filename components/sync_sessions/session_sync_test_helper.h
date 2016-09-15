@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SESSION_SYNC_TEST_HELPER_H_
-#define CHROME_BROWSER_SYNC_GLUE_SESSION_SYNC_TEST_HELPER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_SESSION_SYNC_TEST_HELPER_H_
+#define COMPONENTS_SYNC_SESSIONS_SESSION_SYNC_TEST_HELPER_H_
 
 #include <string>
 #include <vector>
@@ -11,15 +11,13 @@
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 
-namespace sync_driver {
-struct SyncedSession;
-}
-
 namespace sync_pb {
 class SessionSpecifics;
 }
 
-namespace browser_sync {
+namespace sync_sessions {
+
+struct SyncedSession;
 
 class SessionSyncTestHelper {
  public:
@@ -35,7 +33,7 @@ class SessionSyncTestHelper {
   static void VerifySyncedSession(
       const std::string& tag,
       const std::vector<std::vector<SessionID::id_type>>& windows,
-      const sync_driver::SyncedSession& session);
+      const SyncedSession& session);
 
   // Build a SessionSpecifics object with a tab and sample data. Uses a
   // monotonically increasing variable to generate tab_node_ids and avoid
@@ -66,6 +64,6 @@ class SessionSyncTestHelper {
   DISALLOW_COPY_AND_ASSIGN(SessionSyncTestHelper);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_sessions
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SESSION_SYNC_TEST_HELPER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_SESSION_SYNC_TEST_HELPER_H_

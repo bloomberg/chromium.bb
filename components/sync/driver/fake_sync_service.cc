@@ -98,7 +98,7 @@ bool FakeSyncService::IsBackendInitialized() const {
   return false;
 }
 
-OpenTabsUIDelegate* FakeSyncService::GetOpenTabsUIDelegate() {
+sync_sessions::OpenTabsUIDelegate* FakeSyncService::GetOpenTabsUIDelegate() {
   return nullptr;
 }
 

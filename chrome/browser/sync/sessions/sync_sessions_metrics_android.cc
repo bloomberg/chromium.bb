@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_sessions_metrics_android.h"
+#include "chrome/browser/sync/sessions/sync_sessions_metrics_android.h"
 
 #include <string>
 
@@ -38,8 +38,8 @@ void RecordYoungestForeignTabAgeOnNTP(
       ProfileSyncService* sync =
           ProfileSyncServiceFactory::GetForProfile(profile);
       if (sync) {
-        browser_sync::SessionsSyncManager* sessions =
-            static_cast<browser_sync::SessionsSyncManager*>(
+        sync_sessions::SessionsSyncManager* sessions =
+            static_cast<sync_sessions::SessionsSyncManager*>(
                 sync->GetSessionsSyncableService());
         if (sessions) {
           sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(

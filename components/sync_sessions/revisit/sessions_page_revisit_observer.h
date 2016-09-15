@@ -18,14 +18,11 @@ namespace sessions {
 struct SessionTab;
 }  // namespace sessions
 
-namespace sync_driver {
-struct SyncedSession;
-}  // namespace sync_driver
-
 namespace sync_sessions {
 
 class CurrentTabMatcher;
 class OffsetTabMatcher;
+struct SyncedSession;
 
 // A simple interface to abstract away who is providing sessions.
 class ForeignSessionsProvider {
@@ -34,7 +31,7 @@ class ForeignSessionsProvider {
   // Returned boolean representes if there were foreign sessions and the vector
   // should be examimed.
   virtual bool GetAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions) = 0;
+      std::vector<const SyncedSession*>* sessions) = 0;
   virtual ~ForeignSessionsProvider() {}
 };
 
