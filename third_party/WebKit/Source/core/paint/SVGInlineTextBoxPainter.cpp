@@ -83,7 +83,8 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(m_svgInlineTextBox.truncation() == cNoTruncation);
 
-    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible)
+    if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() != EVisibility::Visible
+        || !m_svgInlineTextBox.len())
         return;
 
     // We're explicitly not supporting composition & custom underlines and custom highlighters -- unlike InlineTextBox.
@@ -106,15 +107,14 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
             && (haveSelection || InlineTextBoxPainter::paintsMarkerHighlights(textLayoutObject));
         DrawingRecorder recorder(paintInfo.context, m_svgInlineTextBox, displayItemType,
             boundsForDrawingRecorder(paintInfo, style, paintOffset, includeSelectionRect));
-        InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
-            paintInfo, paintOffset, style,
+        InlineTextBoxPainter textPainter(m_svgInlineTextBox);
+        textPainter.paintDocumentMarkers(paintInfo, paintOffset, style,
             textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Background);
 
         if (!m_svgInlineTextBox.textFragments().isEmpty())
             paintTextFragments(paintInfo, parentLayoutObject);
 
-        InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
-            paintInfo, paintOffset, style,
+        textPainter.paintDocumentMarkers(paintInfo, paintOffset, style,
             textLayoutObject.scaledFont(), DocumentMarkerPaintPhase::Foreground);
     }
 }

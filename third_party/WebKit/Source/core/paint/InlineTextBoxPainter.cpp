@@ -265,15 +265,31 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
 
 unsigned InlineTextBoxPainter::underlinePaintStart(const CompositionUnderline& underline)
 {
-    return std::max(static_cast<unsigned>(m_inlineTextBox.start()), underline.startOffset());
+    DCHECK(m_inlineTextBox.truncation() != cFullTruncation);
+    DCHECK(m_inlineTextBox.len());
+
+    // Start painting at the beginning of the text or the specified underline
+    // start offset, whichever is higher.
+    unsigned paintStart = std::max(m_inlineTextBox.start(), underline.startOffset());
+    // Cap the maximum paint start to (if no truncation) the last character,
+    // else the last character before the truncation ellipsis.
+    return std::min(paintStart, (m_inlineTextBox.truncation() == cNoTruncation) ?
+        m_inlineTextBox.end() : m_inlineTextBox.start() + m_inlineTextBox.truncation() - 1);
 }
 
 unsigned InlineTextBoxPainter::underlinePaintEnd(const CompositionUnderline& underline)
 {
+    DCHECK(m_inlineTextBox.truncation() != cFullTruncation);
+    DCHECK(m_inlineTextBox.len());
+
+    // End painting just past the end of the text or the specified underline end
+    // offset, whichever is lower.
     unsigned paintEnd = std::min(m_inlineTextBox.end() + 1, underline.endOffset()); // end() points at the last char, not past it.
-    if (m_inlineTextBox.truncation() != cNoTruncation)
-        paintEnd = std::min(paintEnd, static_cast<unsigned>(m_inlineTextBox.start() + m_inlineTextBox.truncation()));
-    return paintEnd;
+    // Cap the maximum paint end to (if no truncation) one past the last
+    // character, else one past the last character before the truncation
+    // ellipsis.
+    return std::min(paintEnd, (m_inlineTextBox.truncation() == cNoTruncation) ?
+        m_inlineTextBox.end() + 1 : m_inlineTextBox.start() + m_inlineTextBox.truncation());
 }
 
 void InlineTextBoxPainter::paintSingleCompositionBackgroundRun(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, Color backgroundColor, int startPos, int endPos)
@@ -296,6 +312,9 @@ void InlineTextBoxPainter::paintDocumentMarkers(const PaintInfo& paintInfo, cons
 {
     if (!m_inlineTextBox.getLineLayoutItem().node())
         return;
+
+    DCHECK(m_inlineTextBox.truncation() != cFullTruncation);
+    DCHECK(m_inlineTextBox.len());
 
     DocumentMarkerVector markers = m_inlineTextBox.getLineLayoutItem().document().markers().markersFor(m_inlineTextBox.getLineLayoutItem().node());
     DocumentMarkerVector::const_iterator markerIt = markers.begin();
@@ -460,7 +479,6 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
         length = ltr == flowIsLTR ? m_inlineTextBox.truncation() : m_inlineTextBox.len() - m_inlineTextBox.truncation();
     }
     StringView string(m_inlineTextBox.getLineLayoutItem().text(), start, static_cast<unsigned>(length));
-
 
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == length && m_inlineTextBox.hasHyphen();
@@ -799,18 +817,22 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
 
     unsigned paintStart = underlinePaintStart(underline);
     unsigned paintEnd = underlinePaintEnd(underline);
+    DCHECK_LT(paintStart, paintEnd);
 
     // start of line to draw
-    float start = paintStart == static_cast<unsigned>(m_inlineTextBox.start()) ? 0 :
+    float start = paintStart == m_inlineTextBox.start() ? 0 :
         m_inlineTextBox.getLineLayoutItem().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // how much line to draw
     float width;
     bool ltr = m_inlineTextBox.isLeftToRightDirection();
     bool flowIsLTR = m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
-    if (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) {
+    if (paintStart == m_inlineTextBox.start() && paintEnd == m_inlineTextBox.end() + 1) {
         width = m_inlineTextBox.logicalWidth().toFloat();
     } else {
-        width = m_inlineTextBox.getLineLayoutItem().width(ltr == flowIsLTR ? paintStart : paintEnd, ltr == flowIsLTR ? paintEnd - paintStart : m_inlineTextBox.len() - paintEnd, LayoutUnit(m_inlineTextBox.textPos() + start), flowIsLTR ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+        unsigned paintFrom = ltr == flowIsLTR ? paintStart : paintEnd;
+        unsigned paintLength = ltr == flowIsLTR ? paintEnd - paintStart : m_inlineTextBox.start() + m_inlineTextBox.len() - paintEnd;
+        width = m_inlineTextBox.getLineLayoutItem().width(paintFrom, paintLength,
+            LayoutUnit(m_inlineTextBox.textPos() + start), flowIsLTR ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     }
     // In RTL mode, start and width are computed from the right end of the text box:
     // starting at |logicalWidth| - |start| and continuing left by |width| to
@@ -818,7 +840,6 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     // backwards: |logicalWidth| - |start| - |width| to |logicalWidth| - |start|.
     if (!flowIsLTR)
         start = m_inlineTextBox.logicalWidth().toFloat() - width - start;
-
 
     // Thick marked text underlines are 2px thick as long as there is room for the 2px line under the baseline.
     // All other marked text underlines are 1px thick.
@@ -880,6 +901,5 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paint
     context.clip(FloatRect(boxRect));
     context.drawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.height().toInt(), color, sPos, ePos);
 }
-
 
 } // namespace blink
