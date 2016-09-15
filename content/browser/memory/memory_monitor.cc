@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_monitor.h"
+#include "content/browser/memory/memory_monitor.h"
 
 #include "base/process/process_metrics.h"
 
-namespace memory_coordinator {
+namespace content {
+
+// static
+MemoryMonitorDelegate* MemoryMonitorDelegate::GetInstance() {
+  return base::Singleton<
+      MemoryMonitorDelegate,
+      base::LeakySingletonTraits<MemoryMonitorDelegate>>::get();
+}
 
 MemoryMonitorDelegate::~MemoryMonitorDelegate() {}
 
@@ -15,4 +22,4 @@ void MemoryMonitorDelegate::GetSystemMemoryInfo(
   base::GetSystemMemoryInfo(mem_info);
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

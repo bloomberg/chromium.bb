@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_
-#define COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_
+#ifndef CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_
+#define CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_
 
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 
-namespace memory_coordinator {
+namespace content {
 
-class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImplAndroid
+class CONTENT_EXPORT ChildMemoryCoordinatorImplAndroid
     : public ChildMemoryCoordinatorImpl {
  public:
   ChildMemoryCoordinatorImplAndroid(mojom::MemoryCoordinatorHandlePtr parent,
@@ -25,6 +25,6 @@ class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImplAndroid
   DISALLOW_COPY_AND_ASSIGN(ChildMemoryCoordinatorImplAndroid);
 };
 
-}  // namespace memory_coordinator
+}  // namespace content
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_
+#endif  // CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_ANDROID_H_

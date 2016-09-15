@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 
 #if defined(OS_ANDROID)
-#include "components/memory_coordinator/child/child_memory_coordinator_impl_android.h"
+#include "content/child/memory/child_memory_coordinator_impl_android.h"
 #endif  // defined(OS_ANDROID)
 
 #include <memory>
@@ -16,7 +16,7 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace memory_coordinator {
+namespace content {
 
 class MockMemoryCoordinatorHandle : public mojom::MemoryCoordinatorHandle {
  public:
@@ -185,4 +185,4 @@ TEST_F(ChildMemoryCoordinatorImplTest, OnTrimMemoryImmediately) {
 
 }  // namespace
 
-}  // namespace memory_coordinator
+}  // namespace content

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_LINUX_H_
-#define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_LINUX_H_
+#ifndef CONTENT_BROWSER_MEMORY_MEMORY_MONITOR_LINUX_H_
+#define CONTENT_BROWSER_MEMORY_MEMORY_MONITOR_LINUX_H_
 
-#include "components/memory_coordinator/browser/memory_monitor.h"
-#include "components/memory_coordinator/common/memory_coordinator_export.h"
+#include "content/browser/memory/memory_monitor.h"
+#include "content/common/content_export.h"
 
 namespace base {
 struct SystemMemoryInfoKB;
 }  // namespace base
 
-namespace memory_coordinator {
+namespace content {
 
 // A memory monitor for the Linux platform.
-class MEMORY_COORDINATOR_EXPORT MemoryMonitorLinux : public MemoryMonitor {
+class CONTENT_EXPORT MemoryMonitorLinux : public MemoryMonitor {
  public:
   MemoryMonitorLinux(MemoryMonitorDelegate* delegate);
-  ~MemoryMonitorLinux() override {}
+  ~MemoryMonitorLinux() override;
 
   // MemoryMonitor:
   int GetFreeMemoryUntilCriticalMB() override;
@@ -33,6 +33,6 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitorLinux : public MemoryMonitor {
   MemoryMonitorDelegate* delegate_;
 };
 
-}  // namespace memory_coordinator
+}  // namespace content
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_LINUX_H_
+#endif  // CONTENT_BROWSER_MEMORY_MEMORY_MONITOR_LINUX_H_

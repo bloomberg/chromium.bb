@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/child/child_memory_coordinator_impl_android.h"
+#include "content/child/memory/child_memory_coordinator_impl_android.h"
 
-namespace memory_coordinator {
+namespace content {
 
 ChildMemoryCoordinatorImplAndroid::ChildMemoryCoordinatorImplAndroid(
     mojom::MemoryCoordinatorHandlePtr parent,
@@ -26,4 +26,4 @@ std::unique_ptr<ChildMemoryCoordinatorImpl> CreateChildMemoryCoordinator(
       new ChildMemoryCoordinatorImplAndroid(std::move(parent), delegate));
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

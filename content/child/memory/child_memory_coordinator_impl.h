@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_H_
-#define COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_H_
+#ifndef CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_H_
+#define CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/memory_coordinator_client.h"
-#include "components/memory_coordinator/common/memory_coordinator_export.h"
-#include "components/memory_coordinator/common/memory_coordinator_features.h"
-#include "components/memory_coordinator/public/interfaces/child_memory_coordinator.mojom.h"
-#include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
+#include "content/common/child_memory_coordinator.mojom.h"
+#include "content/common/content_export.h"
+#include "content/common/memory_coordinator.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace memory_coordinator {
+namespace content {
 
-class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorDelegate {
+class CONTENT_EXPORT ChildMemoryCoordinatorDelegate {
  public:
   virtual ~ChildMemoryCoordinatorDelegate() {}
 
@@ -26,7 +25,7 @@ class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorDelegate {
 // ChildMemoryCoordinatorImpl is the implementation of ChildMemoryCoordinator.
 // It lives in child processes and is responsible for dispatching memory events
 // to its clients.
-class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImpl
+class CONTENT_EXPORT ChildMemoryCoordinatorImpl
     : NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:
   // Returns the instance of ChildMemoryCoordinatorImpl. Could be nullptr.
@@ -54,10 +53,10 @@ class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImpl
 
 // Factory function for creating a ChildMemoryCoordinator for the current
 // platform. Doesn't take the ownership of |delegate|.
-MEMORY_COORDINATOR_EXPORT std::unique_ptr<ChildMemoryCoordinatorImpl>
+CONTENT_EXPORT std::unique_ptr<ChildMemoryCoordinatorImpl>
 CreateChildMemoryCoordinator(mojom::MemoryCoordinatorHandlePtr parent,
                              ChildMemoryCoordinatorDelegate* delegate);
 
-}  // namespace memory_coordinator
+}  // namespace content
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_H_
+#endif  // CONTENT_CHILD_MEMORY_CHILD_MEMORY_COORDINATOR_IMPL_H_

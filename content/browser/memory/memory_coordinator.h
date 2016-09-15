@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
-#define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
+#ifndef CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_H_
+#define CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_H_
 
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
-#include "components/memory_coordinator/common/memory_coordinator_export.h"
-#include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
+#include "content/common/content_export.h"
+#include "content/common/memory_coordinator.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace memory_coordinator {
+namespace content {
 
 class MemoryCoordinatorHandleImpl;
 
 // MemoryCoordinator is responsible for the whole memory management accross the
 // browser and child proceeses. It dispatches memory events to its clients and
 // child processes based on its best knowledge of the memory usage.
-class MEMORY_COORDINATOR_EXPORT MemoryCoordinator {
+class CONTENT_EXPORT MemoryCoordinator {
  public:
   ~MemoryCoordinator();
 
@@ -86,6 +86,6 @@ class MEMORY_COORDINATOR_EXPORT MemoryCoordinator {
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinator);
 };
 
-}  // memory_coordinator
+}  // namespace content
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
+#endif  // CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_H_

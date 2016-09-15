@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_H_
-#define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_H_
+#ifndef CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_H_
+#define CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/memory_coordinator/common/memory_coordinator_export.h"
+#include "base/memory/singleton.h"
+#include "content/common/content_export.h"
 
 namespace base {
 struct SystemMemoryInfoKB;
 }
 
-namespace memory_coordinator {
+namespace content {
 
 // A simple class that monitors the amount of free memory available on a system.
 // This is an interface to facilitate dependency injection for testing.
-class MEMORY_COORDINATOR_EXPORT MemoryMonitor {
+class CONTENT_EXPORT MemoryMonitor {
  public:
   MemoryMonitor() {}
   virtual ~MemoryMonitor() {}
@@ -35,14 +36,15 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitor {
 };
 
 // Factory function for creating a monitor for the current platform.
-MEMORY_COORDINATOR_EXPORT std::unique_ptr<MemoryMonitor> CreateMemoryMonitor();
-
+CONTENT_EXPORT std::unique_ptr<MemoryMonitor> CreateMemoryMonitor();
 
 // A class for fetching system information used by a memory monitor. This can
 // be subclassed for testing or if a particular MemoryMonitor implementation
 // needs additional functionality.
-class MEMORY_COORDINATOR_EXPORT MemoryMonitorDelegate {
+class CONTENT_EXPORT MemoryMonitorDelegate {
  public:
+  static MemoryMonitorDelegate* GetInstance();
+
   MemoryMonitorDelegate() {}
   virtual ~MemoryMonitorDelegate();
 
@@ -50,9 +52,11 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitorDelegate {
   virtual void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info);
 
  private:
+  friend struct base::DefaultSingletonTraits<MemoryMonitorDelegate>;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryMonitorDelegate);
 };
 
-}  // namespace memory_coordinator
+}  // namespace content
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_H_
+#endif  // CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_H_

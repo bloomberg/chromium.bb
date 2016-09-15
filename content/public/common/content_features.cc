@@ -63,6 +63,14 @@ const base::Feature kMediaDocumentDownloadButton{
     base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables the memory coordinator.
+// WARNING:
+// The memory coordinator is not ready for use and enabling this may cause
+// unexpected memory regression at this point. Please do not enable this.
+const base::Feature kMemoryCoordinator {
+  "MemoryCoordinator", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 // Enable the material design playback UI for media elements.  This is always
 // on for OS_ANDROID, but may be enabled by experiment for other platforms.
 const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",

@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
-#define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
+#ifndef CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_WIN_H_
+#define CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_WIN_H_
 
-#include "components/memory_coordinator/browser/memory_monitor.h"
-#include "components/memory_coordinator/common/memory_coordinator_export.h"
+#include "content/browser/memory/memory_monitor.h"
 
 namespace base {
 struct SystemMemoryInfoKB;
 }  // namespace base
 
-namespace memory_coordinator {
+namespace content {
 
 // A memory monitor for the Windows platform. After much experimentation this
 // class uses a very simple heuristic to anticipate paging (critical memory
 // pressure). When the amount of memory available dips below a provided
 // threshold, it is assumed that paging is inevitable.
-class MEMORY_COORDINATOR_EXPORT MemoryMonitorWin : public MemoryMonitor {
+class CONTENT_EXPORT MemoryMonitorWin : public MemoryMonitor {
  public:
   // Default constants governing the amount of free memory that the memory
   // manager attempts to maintain.
@@ -60,6 +59,20 @@ class MEMORY_COORDINATOR_EXPORT MemoryMonitorWin : public MemoryMonitor {
   int target_free_mb_;
 };
 
-}  // namespace memory_coordinator
+// A delegate that wraps functions used by MemoryMonitorWin. Used as a testing
+// seam.
+class CONTENT_EXPORT MemoryMonitorWinDelegate {
+ public:
+  MemoryMonitorWinDelegate() {}
+  virtual ~MemoryMonitorWinDelegate() {}
 
-#endif  // COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
+  // Returns system memory information.
+  virtual void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorWinDelegate);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_MEMORY_BROWSER_MEMORY_MONITOR_WIN_H_

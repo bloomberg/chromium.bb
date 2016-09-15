@@ -22,8 +22,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
 #include "content/child/child_thread_impl.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
@@ -150,7 +150,7 @@ class CONTENT_EXPORT RenderThreadImpl
       public ChildThreadImpl,
       public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
-      public memory_coordinator::ChildMemoryCoordinatorDelegate,
+      public ChildMemoryCoordinatorDelegate,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -450,7 +450,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojom::StoragePartitionService* GetStoragePartitionService();
 
-  // memory_coordinator::ChildMemoryCoordinatorDelegate implementation.
+  // ChildMemoryCoordinatorDelegate implementation.
   void OnTrimMemoryImmediately() override;
 
  protected:
@@ -652,8 +652,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   std::unique_ptr<MemoryObserver> memory_observer_;
-  std::unique_ptr<memory_coordinator::ChildMemoryCoordinatorImpl>
-      memory_coordinator_;
+  std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
 #if defined(USE_AURA)
   std::unique_ptr<ui::GpuService> gpu_service_;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module memory_coordinator.mojom;
+module content.mojom;
 
-import "components/memory_coordinator/public/interfaces/child_memory_coordinator.mojom";
+import "content/common/child_memory_coordinator.mojom";
 
 // An interface to access the central memory coordinator from a child process.
 // The browser process creates a handle for each child process.

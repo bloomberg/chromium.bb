@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_monitor_win.h"
+#include "content/browser/memory/memory_monitor_win.h"
 
 #include "base/process/process_metrics.h"
 
 // TODO(chrisha): Implement a mechanism for observing swapping, and updating the
 // memory threshold on a per machine basis.
 
-namespace memory_coordinator {
+namespace content {
 
 namespace {
 
@@ -76,4 +76,4 @@ std::unique_ptr<MemoryMonitor> CreateMemoryMonitor() {
   return MemoryMonitorWin::Create(&g_memory_monitor_win_delegate);
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

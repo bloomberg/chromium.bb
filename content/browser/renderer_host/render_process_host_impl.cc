@@ -47,8 +47,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "components/memory_coordinator/browser/memory_coordinator.h"
-#include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -84,6 +82,7 @@
 #include "content/browser/media/capture/image_capture_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
+#include "content/browser/memory/memory_coordinator.h"
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_impl.h"
@@ -458,9 +457,9 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
-    memory_coordinator::mojom::MemoryCoordinatorHandleRequest request) {
-  memory_coordinator::MemoryCoordinator::GetInstance()->CreateHandle(
-      render_process_id, std::move(request));
+    mojom::MemoryCoordinatorHandleRequest request) {
+  MemoryCoordinator::GetInstance()->CreateHandle(render_process_id,
+                                                 std::move(request));
 }
 
 }  // namespace
@@ -1232,7 +1231,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&BroadcastChannelProvider::Connect,
                  base::Unretained(
                      storage_partition_impl_->GetBroadcastChannelProvider())));
-  if (memory_coordinator::IsEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     AddUIThreadInterface(
         registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }

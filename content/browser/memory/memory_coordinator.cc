@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator.h"
 
 #include "base/memory/memory_coordinator_client_registry.h"
-#include "components/memory_coordinator/common/memory_coordinator_features.h"
+#include "content/public/common/content_features.h"
 
-namespace memory_coordinator {
+namespace content {
 
 // The implementation of MemoryCoordinatorHandle. See memory_coordinator.mojom
 // for the role of this class.
@@ -35,7 +35,7 @@ class MemoryCoordinatorHandleImpl : public mojom::MemoryCoordinatorHandle {
 
 // static
 MemoryCoordinator* MemoryCoordinator::GetInstance() {
-  if (!IsEnabled())
+  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     return nullptr;
   return base::Singleton<MemoryCoordinator,
                          base::LeakySingletonTraits<MemoryCoordinator>>::get();
@@ -122,4 +122,4 @@ MemoryCoordinator::ChildInfo::ChildInfo(const ChildInfo& rhs) {
 
 MemoryCoordinator::ChildInfo::~ChildInfo() {}
 
-}  // namespace memory_coordinator
+}  // namespace content

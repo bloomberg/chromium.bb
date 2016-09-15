@@ -97,7 +97,6 @@ per-file leveldb_proto.gypi=file://components/leveldb_proto/OWNERS
 
 per-file login.gypi=file://components/login/OWNERS
 
-per-file memory_coordinator.gypi=file://components/memory_coordinator/OWNERS
 per-file memory_pressure.gypi=file://components/memory_pressure/OWNERS
 
 per-file metrics.gypi=file://components/metrics/OWNERS

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator.h"
 
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace memory_coordinator {
+namespace content {
 
 namespace {
 
@@ -137,4 +136,4 @@ TEST_F(MemoryCoordinatorTest, SetMemoryStateDelivered) {
   EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc2->state());
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

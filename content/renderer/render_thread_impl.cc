@@ -45,7 +45,6 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -58,6 +57,7 @@
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/resource_scheduling_filter.h"
 #include "content/child/runtime_features.h"
@@ -77,6 +77,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
@@ -810,13 +811,13 @@ void RenderThreadImpl::Init(
       base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
                  base::Unretained(this))));
 
-  if (memory_coordinator::IsEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     // TODO(bashi): Revisit how to manage the lifetime of
     // ChildMemoryCoordinatorImpl.
     // https://codereview.chromium.org/2094583002/#msg52
-    memory_coordinator::mojom::MemoryCoordinatorHandlePtr parent_coordinator;
+    mojom::MemoryCoordinatorHandlePtr parent_coordinator;
     GetRemoteInterfaces()->GetInterface(mojo::GetProxy(&parent_coordinator));
-    memory_coordinator_ = memory_coordinator::CreateChildMemoryCoordinator(
+    memory_coordinator_ = CreateChildMemoryCoordinator(
         std::move(parent_coordinator), this);
   }
 

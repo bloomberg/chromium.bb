@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_monitor.h"
+#ifndef CONTENT_BROWSER_MEMORY_TEST_MEMORY_MONITOR_H_
+#define CONTENT_BROWSER_MEMORY_TEST_MEMORY_MONITOR_H_
+
+#include "content/browser/memory/memory_monitor.h"
 
 #include "base/process/process_metrics.h"
 
-namespace memory_coordinator {
+namespace content {
 
 // A delegate that allows mocking the various inputs to MemoryMonitor.
 class TestMemoryMonitorDelegate : public MemoryMonitorDelegate {
@@ -35,4 +38,6 @@ class TestMemoryMonitorDelegate : public MemoryMonitorDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestMemoryMonitorDelegate);
 };
 
-}  // namespace memory_coordinator
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_MEMORY_TEST_MEMORY_MONITOR_H_

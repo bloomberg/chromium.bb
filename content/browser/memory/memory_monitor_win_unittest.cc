@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_monitor_win.h"
+#include "content/browser/memory/memory_monitor_win.h"
 
-#include "components/memory_coordinator/browser/test_memory_monitor.h"
+#include "content/browser/memory/test_memory_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace memory_coordinator {
+namespace content {
 
 namespace {
 
@@ -135,4 +135,4 @@ TEST_F(MemoryMonitorWinTest, GetFreeMemoryUntilCriticalMB) {
   delegate_.ResetCalls();
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

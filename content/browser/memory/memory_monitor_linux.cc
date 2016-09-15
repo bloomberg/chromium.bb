@@ -2,18 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/browser/memory_monitor_linux.h"
+#include "content/browser/memory/memory_monitor_linux.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 
-namespace memory_coordinator {
+namespace content {
 
 namespace {
-
-// A global static instance of the default delegate. Used by default by
-// MemoryMonitorLinux.
-MemoryMonitorDelegate g_memory_monitor_delegate;
 
 // The number of bits to shift to convert KiB to MiB.
 const int kShiftKiBtoMiB = 10;
@@ -22,6 +18,8 @@ const int kShiftKiBtoMiB = 10;
 
 MemoryMonitorLinux::MemoryMonitorLinux(MemoryMonitorDelegate* delegate)
     : delegate_(delegate) {}
+
+MemoryMonitorLinux::~MemoryMonitorLinux() {}
 
 int MemoryMonitorLinux::GetFreeMemoryUntilCriticalMB() {
   base::SystemMemoryInfoKB mem_info = {};
@@ -48,7 +46,7 @@ std::unique_ptr<MemoryMonitorLinux> MemoryMonitorLinux::Create(
 
 // Implementation of factory function defined in memory_monitor.h.
 std::unique_ptr<MemoryMonitor> CreateMemoryMonitor() {
-  return MemoryMonitorLinux::Create(&g_memory_monitor_delegate);
+  return MemoryMonitorLinux::Create(MemoryMonitorDelegate::GetInstance());
 }
 
-}  // namespace memory_coordinator
+}  // namespace content

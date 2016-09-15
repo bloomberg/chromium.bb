@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
+#include "content/child/memory/child_memory_coordinator_impl.h"
 
 #include "base/lazy_instance.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/synchronization/lock.h"
 
-namespace memory_coordinator {
+namespace content {
 
 namespace {
 
@@ -72,4 +72,4 @@ std::unique_ptr<ChildMemoryCoordinatorImpl> CreateChildMemoryCoordinator(
 }
 #endif
 
-}  // namespace memory_coordinator
+}  // namespace content
