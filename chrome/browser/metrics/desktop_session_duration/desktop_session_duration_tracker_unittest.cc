@@ -149,19 +149,13 @@ TEST(DesktopSessionDurationTrackerTest, TestAudioEvent) {
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
 }
 
-// Flaky on Mac Debug. See http://crbug.com/646758
-#if defined(OS_MACOSX)
-#define MAYBE_TestTimeoutDiscount DISABLED_TestTimeoutDiscount
-#else
-#define MAYBE_TestTimeoutDiscount TestTimeoutDiscount
-#endif
-TEST(DesktopEngagementServiceTest, MAYBE_TestTimeoutDiscount) {
+TEST(DesktopSessionDurationTrackerTest, TestTimeoutDiscount) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
   MockDesktopSessionDurationTracker instance;
 
-  int inactivity_interval = 2;
-  instance.SetInactivityTimeoutForTesting(inactivity_interval);
+  int inactivity_interval_seconds = 2;
+  instance.SetInactivityTimeoutForTesting(inactivity_interval_seconds);
 
   instance.OnVisibilityChanged(true);
   base::TimeTicks before_session_start = base::TimeTicks::Now();
@@ -175,10 +169,11 @@ TEST(DesktopEngagementServiceTest, MAYBE_TestTimeoutDiscount) {
   base::TimeTicks after_session_end = base::TimeTicks::Now();
 
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
-  // The recorded value should be shorter than the specified inactivity
-  // interval.
   base::Bucket bucket =
       histogram_tester.GetAllSamples("Session.TotalDuration")[0];
-  EXPECT_LE(bucket.min + inactivity_interval,
-            (after_session_end - before_session_start).InSeconds());
+  int max_expected_value =
+      (after_session_end - before_session_start -
+       base::TimeDelta::FromSeconds(inactivity_interval_seconds))
+          .InMilliseconds();
+  EXPECT_LE(bucket.min, max_expected_value);
 }
