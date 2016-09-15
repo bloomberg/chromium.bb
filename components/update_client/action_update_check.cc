@@ -66,7 +66,7 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
 
     item->id = GetCrxComponentID(crx_component);
     item->component = crx_component;
-    item->last_check = base::Time::Now();
+    item->last_check = base::TimeTicks::Now();
     item->crx_urls.clear();
     item->crx_diffurls.clear();
     item->previous_version = crx_component.version;

@@ -25,6 +25,7 @@
 #include "components/update_client/update_client.h"
 
 namespace base {
+class TimeTicks;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }  // namespace base
@@ -89,7 +90,7 @@ class UpdateEngine {
   // effect of rejecting the update call if the update call occurs before
   // a certain time, which is negotiated with the server as part of the
   // update protocol. See the comments for X-Retry-After header.
-  base::Time throttle_updates_until_;
+  base::TimeTicks throttle_updates_until_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngine);
 };

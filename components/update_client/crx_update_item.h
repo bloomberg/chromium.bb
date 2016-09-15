@@ -80,7 +80,7 @@ struct CrxUpdateItem {
   CrxComponent component;
 
   // Time when an update check for this CRX has happened.
-  base::Time last_check;
+  base::TimeTicks last_check;
 
   // Time when the update of this CRX has begun.
   base::TimeTicks update_begin;

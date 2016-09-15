@@ -50,7 +50,7 @@ class UrlFetcherDownloader : public CrxDownloader,
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_;
 
-  base::Time download_start_time_;
+  base::TimeTicks download_start_time_;
 
   int64_t downloaded_bytes_;
   int64_t total_bytes_;

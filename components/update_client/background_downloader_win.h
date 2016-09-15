@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <bits.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -134,10 +136,10 @@ class BackgroundDownloader : public CrxDownloader {
   base::win::ScopedComPtr<IBackgroundCopyJob> job_;
 
   // Contains the time when the download of the current url has started.
-  base::Time download_start_time_;
+  base::TimeTicks download_start_time_;
 
   // Contains the time when the BITS job is last seen making progress.
-  base::Time job_stuck_begin_time_;
+  base::TimeTicks job_stuck_begin_time_;
 
   // Contains the path of the downloaded file if the download was successful.
   base::FilePath response_;

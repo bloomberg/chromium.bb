@@ -128,8 +128,9 @@ void UpdateEngine::UpdateComplete(UpdateContext* update_context, int error) {
   if (throttle_sec >= 0)
     throttle_updates_until_ =
         throttle_sec
-            ? base::Time::Now() + base::TimeDelta::FromSeconds(throttle_sec)
-            : base::Time();
+            ? base::TimeTicks::Now() +
+                  base::TimeDelta::FromSeconds(throttle_sec)
+            : base::TimeTicks();
 
   auto callback = update_context->callback;
 
@@ -143,7 +144,7 @@ bool UpdateEngine::IsThrottled(bool is_foreground) const {
   if (is_foreground || throttle_updates_until_.is_null())
     return false;
 
-  const auto now(base::Time::Now());
+  const auto now(base::TimeTicks::Now());
 
   // Throttle the calls in the interval (t - 1 day, t) to limit the effect of
   // unset clocks or clock drift.
