@@ -11,6 +11,7 @@
 
 #include "base/android/jni_android.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -64,7 +65,8 @@ class UI_ANDROID_EXPORT ResourceManager {
 
   // Return a handle to a static resource specified by |res_id| that has a tint
   // of |tint_color| applied to it.
-  virtual Resource* GetStaticResourceWithTint(int res_id, int tint_color) = 0;
+  virtual Resource* GetStaticResourceWithTint(int res_id,
+                                              SkColor tint_color) = 0;
 
   // Remove tints that were unused in the current frame being built. This
   // function takes a set |used_tints| and removes all the tints not in the set

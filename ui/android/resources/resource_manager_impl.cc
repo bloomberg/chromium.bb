@@ -67,15 +67,21 @@ ResourceManager::Resource* ResourceManagerImpl::GetResource(
   DCHECK_GE(res_type, ANDROID_RESOURCE_TYPE_FIRST);
   DCHECK_LE(res_type, ANDROID_RESOURCE_TYPE_LAST);
 
-  Resource* resource = resources_[res_type].Lookup(res_id);
+  std::unordered_map<int, std::unique_ptr<Resource>>::iterator item =
+      resources_[res_type].find(res_id);
 
-  if (!resource || res_type == ANDROID_RESOURCE_TYPE_DYNAMIC ||
+  if (item == resources_[res_type].end() ||
+      res_type == ANDROID_RESOURCE_TYPE_DYNAMIC ||
       res_type == ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP) {
     RequestResourceFromJava(res_type, res_id);
-    resource = resources_[res_type].Lookup(res_id);
+
+    // Check if the resource has been added (some dynamic may not have been).
+    item = resources_[res_type].find(res_id);
+    if (item == resources_[res_type].end())
+      return nullptr;
   }
 
-  return resource;
+  return item->second.get();
 }
 
 void ResourceManagerImpl::RemoveUnusedTints(
@@ -93,19 +99,19 @@ void ResourceManagerImpl::RemoveUnusedTints(
 
 ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
     int res_id,
-    int tint_color) {
+    SkColor tint_color) {
   if (tinted_resources_.find(tint_color) == tinted_resources_.end()) {
     tinted_resources_[tint_color] = base::MakeUnique<ResourceMap>();
   }
   ResourceMap* resource_map = tinted_resources_[tint_color].get();
 
-  Resource* tinted_resource = resource_map->Lookup(res_id);
-
   // If the resource is already cached, use it.
-  if (tinted_resource)
-    return tinted_resource;
+  std::unordered_map<int, std::unique_ptr<Resource>>::iterator item =
+      resource_map->find(res_id);
+  if (item != resource_map->end())
+    return item->second.get();
 
-  tinted_resource = new Resource();
+  std::unique_ptr<Resource> tinted_resource = base::MakeUnique<Resource>();
 
   ResourceManager::Resource* base_image =
       GetResource(ANDROID_RESOURCE_TYPE_STATIC, res_id);
@@ -132,16 +138,15 @@ ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
   tinted_bitmap.setImmutable();
 
   // Create a UI resource from the new bitmap.
-  tinted_resource = new Resource();
   tinted_resource->size = gfx::Size(base_image->size);
   tinted_resource->padding = gfx::Rect(base_image->padding);
   tinted_resource->aperture = gfx::Rect(base_image->aperture);
   tinted_resource->ui_resource = cc::ScopedUIResource::Create(
       ui_resource_manager_, cc::UIResourceBitmap(tinted_bitmap));
 
-  resource_map->AddWithID(tinted_resource, res_id);
+  (*resource_map)[res_id].swap(tinted_resource);
 
-  return tinted_resource;
+  return (*resource_map)[res_id].get();
 }
 
 void ResourceManagerImpl::ClearTintedResourceCache(JNIEnv* env,
@@ -155,7 +160,7 @@ void ResourceManagerImpl::PreloadResource(AndroidResourceType res_type,
   DCHECK_LE(res_type, ANDROID_RESOURCE_TYPE_LAST);
 
   // Don't send out a query if the resource is already loaded.
-  if (resources_[res_type].Lookup(res_id))
+  if (resources_[res_type].find(res_id) != resources_[res_type].end())
     return;
 
   PreloadResourceFromJava(res_type, res_id);
@@ -180,11 +185,13 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
                "resource_type", res_type,
                "resource_id", res_id);
 
-  Resource* resource = resources_[res_type].Lookup(res_id);
-  if (!resource) {
-    resource = new Resource();
-    resources_[res_type].AddWithID(resource, res_id);
+  std::unordered_map<int, std::unique_ptr<Resource>>::iterator item =
+      resources_[res_type].find(res_id);
+  if (item == resources_[res_type].end()) {
+    resources_[res_type][res_id] = base::MakeUnique<Resource>();
   }
+
+  Resource* resource = resources_[res_type][res_id].get();
 
   gfx::JavaBitmap jbitmap(bitmap.obj());
   resource->size = jbitmap.size();
@@ -203,11 +210,16 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
 
 CrushedSpriteResource* ResourceManagerImpl::GetCrushedSpriteResource(
     int bitmap_res_id, int metadata_res_id) {
-  CrushedSpriteResource* resource =
-      crushed_sprite_resources_.Lookup(bitmap_res_id);
+
+  CrushedSpriteResource* resource = nullptr;
+  if (crushed_sprite_resources_.find(bitmap_res_id)
+      != crushed_sprite_resources_.end()) {
+    resource = crushed_sprite_resources_[bitmap_res_id].get();
+  }
+
   if (!resource) {
     RequestCrushedSpriteResourceFromJava(bitmap_res_id, metadata_res_id, false);
-    resource = crushed_sprite_resources_.Lookup(bitmap_res_id);
+    resource = crushed_sprite_resources_[bitmap_res_id].get();
   } else if (resource->BitmapHasBeenEvictedFromMemory()) {
     RequestCrushedSpriteResourceFromJava(bitmap_res_id, metadata_res_id, true);
   }
@@ -236,17 +248,14 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReady(
   SkBitmap skbitmap =
       gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
 
-  CrushedSpriteResource* resource = new CrushedSpriteResource(
-      skbitmap,
-      src_dst_rects,
-      gfx::Size(unscaled_sprite_width, unscaled_sprite_height),
-      gfx::Size(scaled_sprite_width, scaled_sprite_height));
+  std::unique_ptr<CrushedSpriteResource> resource =
+      base::MakeUnique<CrushedSpriteResource>(
+          skbitmap,
+          src_dst_rects,
+          gfx::Size(unscaled_sprite_width, unscaled_sprite_height),
+          gfx::Size(scaled_sprite_width, scaled_sprite_height));
 
-  if (crushed_sprite_resources_.Lookup(bitmap_res_id)) {
-    crushed_sprite_resources_.Replace(bitmap_res_id, resource);
-  } else {
-    crushed_sprite_resources_.AddWithID(resource, bitmap_res_id);
-  }
+  crushed_sprite_resources_[bitmap_res_id].swap(resource);
 }
 
 CrushedSpriteResource::SrcDstRects
@@ -283,15 +292,15 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReloaded(
     const JavaRef<jobject>& jobj,
     jint bitmap_res_id,
     const JavaRef<jobject>& bitmap) {
-  CrushedSpriteResource* resource =
-      crushed_sprite_resources_.Lookup(bitmap_res_id);
-  if (!resource) {
+  std::unordered_map<int, std::unique_ptr<CrushedSpriteResource>>::iterator
+      item = crushed_sprite_resources_.find(bitmap_res_id);
+  if (item == crushed_sprite_resources_.end()) {
     // Cannot reload a resource that has not been previously loaded.
     return;
   }
   SkBitmap skbitmap =
       gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap.obj()));
-  resource->SetBitmap(skbitmap);
+  item->second->SetBitmap(skbitmap);
 }
 
 // static

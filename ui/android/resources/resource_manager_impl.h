@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/id_map.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,7 +33,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   Resource* GetResource(AndroidResourceType res_type, int res_id) override;
   Resource* GetStaticResourceWithTint(
-      int res_id, int tint_color) override;
+      int res_id, SkColor tint_color) override;
   void RemoveUnusedTints(const std::unordered_set<int>& used_tints) override;
   void PreloadResource(AndroidResourceType res_type, int res_id) override;
   CrushedSpriteResource* GetCrushedSpriteResource(
@@ -90,11 +90,11 @@ class UI_ANDROID_EXPORT ResourceManagerImpl : public ResourceManager {
                                                     int metadata_res_id,
                                                     bool reloading);
 
-  typedef IDMap<Resource, IDMapOwnPointer> ResourceMap;
-  typedef IDMap<CrushedSpriteResource, IDMapOwnPointer>
-      CrushedSpriteResourceMap;
-  typedef std::unordered_map<int, std::unique_ptr<ResourceMap> >
-      TintedResourceMap;
+  using ResourceMap = std::unordered_map<int, std::unique_ptr<Resource>>;
+  using CrushedSpriteResourceMap =
+      std::unordered_map<int, std::unique_ptr<CrushedSpriteResource>>;
+  using TintedResourceMap =
+      std::unordered_map<SkColor, std::unique_ptr<ResourceMap>>;
 
   cc::UIResourceManager* ui_resource_manager_;
   ResourceMap resources_[ANDROID_RESOURCE_TYPE_COUNT];
