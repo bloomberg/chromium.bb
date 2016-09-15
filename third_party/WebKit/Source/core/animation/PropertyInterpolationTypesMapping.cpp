@@ -234,7 +234,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWebkitMaskBoxImageSlice:
             applicableTypes->append(wrapUnique(new CSSImageSliceInterpolationType(cssProperty)));
             break;
-        case CSSPropertyWebkitClipPath:
+        case CSSPropertyClipPath:
         case CSSPropertyShapeOutside:
             applicableTypes->append(wrapUnique(new CSSBasicShapeInterpolationType(cssProperty)));
             break;

@@ -370,7 +370,7 @@ bool SVGLayoutSupport::hasFilterResource(const LayoutObject& object)
 
 bool SVGLayoutSupport::pointInClippingArea(const LayoutObject& object, const FloatPoint& point)
 {
-    ClipPathOperation* clipPathOperation = object.styleRef().svgStyle().clipPath();
+    ClipPathOperation* clipPathOperation = object.styleRef().clipPath();
     if (!clipPathOperation)
         return true;
     if (clipPathOperation->type() == ClipPathOperation::SHAPE) {
@@ -437,7 +437,7 @@ bool SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(const ComputedStyl
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
     return style.hasIsolation() || style.opacity() < 1 || style.hasBlendMode()
-        || style.hasFilter() || svgStyle.hasMasker() || svgStyle.clipPath();
+        || style.hasFilter() || svgStyle.hasMasker() || style.clipPath();
 }
 
 bool SVGLayoutSupport::willIsolateBlendingDescendantsForObject(const LayoutObject* object)

@@ -542,7 +542,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitBorderVerticalSpacing:
         style->setVerticalBorderSpacing(animatableValueClampTo<unsigned short>(value));
         return;
-    case CSSPropertyWebkitClipPath:
+    case CSSPropertyClipPath:
         style->setClipPath(toAnimatableClipPathOperation(value)->getClipPathOperation());
         return;
     case CSSPropertyColumnCount:

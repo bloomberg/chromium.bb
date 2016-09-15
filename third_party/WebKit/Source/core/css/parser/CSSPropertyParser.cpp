@@ -3427,7 +3427,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
         return consumeVerticalAlign(m_range, m_context.mode());
     case CSSPropertyShapeOutside:
         return consumeShapeOutside(m_range, m_context);
-    case CSSPropertyWebkitClipPath:
     case CSSPropertyClipPath:
         return consumeClipPath(m_range, m_context);
     case CSSPropertyJustifyContent:

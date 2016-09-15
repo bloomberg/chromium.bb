@@ -649,7 +649,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             ts << " " << masker->resourceBoundingBox(&object) << "\n";
         }
     }
-    if (ClipPathOperation* clipPathOperation = svgStyle.clipPath()) {
+    if (ClipPathOperation* clipPathOperation = style.clipPath()) {
         if (clipPathOperation->type() == ClipPathOperation::REFERENCE) {
             const ReferenceClipPathOperation& clipPathReference = toReferenceClipPathOperation(*clipPathOperation);
             AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(clipPathReference.url(), object.document());

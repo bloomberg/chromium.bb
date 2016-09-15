@@ -29,7 +29,6 @@
 #define SVGComputedStyleDefs_h
 
 #include "core/CoreExport.h"
-#include "core/style/ClipPathOperation.h"
 #include "core/style/StylePath.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
@@ -249,7 +248,6 @@ public:
         return !(*this == other);
     }
 
-    RefPtr<ClipPathOperation> clipPath;
     AtomicString masker;
 
 private:

@@ -66,7 +66,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
         return true;
 
     // If the current clip-path gets clipped itself, we have to fallback to masking.
-    if (style()->svgStyle().clipPath())
+    if (styleRef().clipPath())
         return false;
 
     unsigned opCount = 0;
@@ -90,7 +90,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
             continue;
 
         // Current shape in clip-path gets clipped too. Fallback to masking.
-        if (style->svgStyle().clipPath()) {
+        if (style->clipPath()) {
             m_clipContentPath.clear();
             return false;
         }

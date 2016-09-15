@@ -1,4 +1,3 @@
-
 /*
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2007 Rob Buis <buis@kde.org>
@@ -158,22 +157,19 @@ bool StyleMiscData::operator==(const StyleMiscData& other) const
 }
 
 StyleResourceData::StyleResourceData()
-    : clipPath(SVGComputedStyle::initialClipPath())
-    , masker(SVGComputedStyle::initialMaskerResource())
+    : masker(SVGComputedStyle::initialMaskerResource())
 {
 }
 
 StyleResourceData::StyleResourceData(const StyleResourceData& other)
     : RefCounted<StyleResourceData>()
-    , clipPath(other.clipPath)
     , masker(other.masker)
 {
 }
 
 bool StyleResourceData::operator==(const StyleResourceData& other) const
 {
-    return dataEquivalent(clipPath, other.clipPath)
-        && masker == other.masker;
+    return masker == other.masker;
 }
 
 StyleInheritedResourceData::StyleInheritedResourceData()

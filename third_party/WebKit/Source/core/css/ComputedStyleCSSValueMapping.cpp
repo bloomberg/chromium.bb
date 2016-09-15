@@ -2650,10 +2650,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         return valueForCounterDirectives(style, propertyID);
     case CSSPropertyCounterReset:
         return valueForCounterDirectives(style, propertyID);
-    case CSSPropertyWebkitClipPath:
     case CSSPropertyClipPath:
-        if (ClipPathOperation* operation = propertyID == CSSPropertyWebkitClipPath
-            ? style.clipPath() : style.svgStyle().clipPath()) {
+        if (ClipPathOperation* operation = style.clipPath()) {
             if (operation->type() == ClipPathOperation::SHAPE)
                 return valueForBasicShape(style, toShapeClipPathOperation(operation)->basicShape());
             if (operation->type() == ClipPathOperation::REFERENCE)

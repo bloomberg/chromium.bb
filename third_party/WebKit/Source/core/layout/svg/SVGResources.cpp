@@ -214,7 +214,8 @@ std::unique_ptr<SVGResources> SVGResources::buildResources(const LayoutObject* o
 
     std::unique_ptr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
-        if (ClipPathOperation* clipPathOperation = style.clipPath()) {
+        if (computedStyle.clipPath() && !object->isSVGRoot()) {
+            ClipPathOperation* clipPathOperation = computedStyle.clipPath();
             if (clipPathOperation->type() == ClipPathOperation::REFERENCE) {
                 const ReferenceClipPathOperation& clipPathReference = toReferenceClipPathOperation(*clipPathOperation);
                 AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(clipPathReference.url(), treeScope);

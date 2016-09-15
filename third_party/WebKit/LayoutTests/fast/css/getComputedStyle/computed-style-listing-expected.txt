@@ -20,7 +20,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-orient: horizontal
 -webkit-box-pack: start
 -webkit-box-reflect: none
--webkit-clip-path: none
 -webkit-font-smoothing: auto
 -webkit-highlight: none
 -webkit-hyphenate-character: auto

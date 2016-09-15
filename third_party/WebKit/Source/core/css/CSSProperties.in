@@ -184,7 +184,7 @@ buffered-rendering svg
 caption-side inherited
 clear
 clip interpolable, converter=convertClip, custom_all
-clip-path svg, converter=convertClipPath
+clip-path interpolable, converter=convertClipPath
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation
@@ -362,7 +362,6 @@ y interpolable, svg, converter=convertLength
 -webkit-box-orient
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
--webkit-clip-path interpolable, converter=convertClipPath
 column-count interpolable, type_name=unsigned short, custom_all
 column-gap interpolable, converter=convertComputedLength<float>, custom_all
 column-rule-color interpolable, custom_all
@@ -558,6 +557,7 @@ columns longhands=column-width;column-count
 -webkit-border-top-right-radius alias_for=border-top-right-radius
 -webkit-box-shadow alias_for=box-shadow
 -webkit-box-sizing alias_for=box-sizing
+-webkit-clip-path alias_for=clip-path
 -webkit-column-count alias_for=column-count
 -webkit-column-gap alias_for=column-gap
 -webkit-column-rule alias_for=column-rule

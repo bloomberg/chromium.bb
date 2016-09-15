@@ -87,7 +87,6 @@ public:
     static float initialFloodOpacity() { return 1; }
     static Color initialFloodColor() { return Color(0, 0, 0); }
     static Color initialLightingColor() { return Color(255, 255, 255); }
-    static ClipPathOperation* initialClipPath() { return nullptr; }
     static const AtomicString& initialMaskerResource() { return nullAtom; }
     static const AtomicString& initialMarkerStartResource() { return nullAtom; }
     static const AtomicString& initialMarkerMidResource() { return nullAtom; }
@@ -273,12 +272,6 @@ public:
     }
 
     // Setters for non-inherited resources
-    void setClipPath(PassRefPtr<ClipPathOperation> operation)
-    {
-        if (resources->clipPath != operation)
-            resources.access()->clipPath = operation;
-    }
-
     void setMaskerResource(const AtomicString& obj)
     {
         if (!(resources->masker == obj))
@@ -345,7 +338,6 @@ public:
     const Length& r() const { return geometry->r; }
     const Length& rx() const { return geometry->rx; }
     const Length& ry() const { return geometry->ry; }
-    ClipPathOperation* clipPath() const { return resources->clipPath.get(); }
     const AtomicString& maskerResource() const { return resources->masker; }
     const AtomicString& markerStartResource() const { return inheritedResources->markerStart; }
     const AtomicString& markerMidResource() const { return inheritedResources->markerMid; }

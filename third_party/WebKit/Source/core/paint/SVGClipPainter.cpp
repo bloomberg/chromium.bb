@@ -118,7 +118,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
 
         // Apply any clip-path clipping this clipPath (nested shape/clipPath.)
         Optional<ClipPathClipper> nestedClipPathClipper;
-        if (ClipPathOperation* clipPathOperation = m_clip.styleRef().svgStyle().clipPath())
+        if (ClipPathOperation* clipPathOperation = m_clip.styleRef().clipPath())
             nestedClipPathClipper.emplace(maskContext, *clipPathOperation, m_clip, targetBoundingBox, layerPositionOffset);
 
         {

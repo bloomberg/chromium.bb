@@ -19,7 +19,7 @@ LayoutSVGResourceClipper* resolveElementReference(
     const LayoutObject& layoutObject,
     const ReferenceClipPathOperation& referenceClipPathOperation)
 {
-    if (layoutObject.isSVG()) {
+    if (layoutObject.isSVG() && !layoutObject.isSVGRoot()) {
         // The reference will have been resolved in
         // SVGResources::buildResources, so we can just use the LayoutObject's
         // SVGResources.

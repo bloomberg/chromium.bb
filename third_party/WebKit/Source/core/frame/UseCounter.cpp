@@ -124,7 +124,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPrope
     case CSSPropertyCaptionSide: return 70;
     case CSSPropertyClear: return 71;
     case CSSPropertyClip: return 72;
-    case CSSPropertyWebkitClipPath: return 73;
+    case CSSPropertyAliasWebkitClipPath: return 73;
     case CSSPropertyContent: return 74;
     case CSSPropertyCounterIncrement: return 75;
     case CSSPropertyCounterReset: return 76;

@@ -65,6 +65,7 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
     // When rendering clip paths as masks, only geometric operations should be included so skip
     // non-geometric operations such as compositing, masking, and filtering.
     if (paintInfo().isRenderingClipPathAsMaskImage()) {
+        DCHECK(!m_object.isSVGRoot());
         applyClipIfNecessary();
         return true;
     }
@@ -78,7 +79,11 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary()
         applyCompositingIfNecessary();
     }
 
-    applyClipIfNecessary();
+    if (isSVGRoot) {
+        DCHECK(!m_object.styleRef().clipPath() || m_object.hasLayer());
+    } else {
+        applyClipIfNecessary();
+    }
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&m_object);
 
@@ -114,14 +119,7 @@ void SVGPaintContext::applyCompositingIfNecessary()
 
 void SVGPaintContext::applyClipIfNecessary()
 {
-    ClipPathOperation* clipPathOperation = m_object.styleRef().svgStyle().clipPath();
-    // If no 'clip-path' is specified, try '-webkit-clip-path'.
-    if (!clipPathOperation) {
-        clipPathOperation = m_object.styleRef().clipPath();
-        // We don't support URL references in '-webkit-clip-path'.
-        if (clipPathOperation && clipPathOperation->type() == ClipPathOperation::REFERENCE)
-            clipPathOperation = nullptr;
-    }
+    ClipPathOperation* clipPathOperation = m_object.styleRef().clipPath();
     if (!clipPathOperation)
         return;
     m_clipPathClipper.emplace(paintInfo().context, *clipPathOperation, m_object, m_object.objectBoundingBox(), FloatPoint());

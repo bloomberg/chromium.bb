@@ -212,7 +212,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitBoxOrient,
     CSSPropertyWebkitBoxPack,
     CSSPropertyWebkitBoxReflect,
-    CSSPropertyWebkitClipPath,
     CSSPropertyColumnCount,
     CSSPropertyColumnGap,
     CSSPropertyColumnRuleColor,

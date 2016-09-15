@@ -287,7 +287,6 @@ webkitBoxOrdinalGroup
 webkitBoxOrient
 webkitBoxPack
 webkitBoxReflect
-webkitClipPath
 webkitColumnBreakAfter
 webkitColumnBreakBefore
 webkitColumnBreakInside

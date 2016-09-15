@@ -979,7 +979,8 @@ static bool hasPropertyThatCreatesStackingContext(const Vector<CSSPropertyID>& p
         case CSSPropertyAliasWebkitPerspective:
         case CSSPropertyWebkitMask:
         case CSSPropertyWebkitMaskBoxImage:
-        case CSSPropertyWebkitClipPath:
+        case CSSPropertyClipPath:
+        case CSSPropertyAliasWebkitClipPath:
         case CSSPropertyWebkitBoxReflect:
         case CSSPropertyFilter:
         case CSSPropertyAliasWebkitFilter:

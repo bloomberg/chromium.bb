@@ -33,7 +33,7 @@ public:
             if (style.shapeOutside()->cssBox() != BoxMissing)
                 return nullptr;
             return style.shapeOutside()->shape();
-        case CSSPropertyWebkitClipPath:
+        case CSSPropertyClipPath:
             if (!style.clipPath())
                 return nullptr;
             if (style.clipPath()->type() != ClipPathOperation::SHAPE)
@@ -51,7 +51,7 @@ public:
         case CSSPropertyShapeOutside:
             style.setShapeOutside(ShapeValue::createShapeValue(std::move(shape), BoxMissing));
             break;
-        case CSSPropertyWebkitClipPath:
+        case CSSPropertyClipPath:
             style.setClipPath(ShapeClipPathOperation::create(std::move(shape)));
             break;
         default:

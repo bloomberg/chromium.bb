@@ -484,7 +484,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style.horizontalBorderSpacing());
     case CSSPropertyWebkitBorderVerticalSpacing:
         return createFromDouble(style.verticalBorderSpacing());
-    case CSSPropertyWebkitClipPath:
+    case CSSPropertyClipPath:
         if (ClipPathOperation* operation = style.clipPath())
             return AnimatableClipPathOperation::create(operation);
         return AnimatableUnknown::create(CSSValueNone);
