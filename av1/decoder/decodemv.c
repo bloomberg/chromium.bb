@@ -568,7 +568,7 @@ static int read_mv_component(aom_reader *r, const nmv_component *mvcomp,
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
-  // Fractional part
+// Fractional part
 #if CONFIG_DAALA_EC
   fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                        MV_FP_SIZE, ACCT_STR);

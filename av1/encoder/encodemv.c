@@ -45,7 +45,7 @@ static void encode_mv_component(aom_writer *w, int comp,
   // Sign
   aom_write(w, sign, mvcomp->sign);
 
-  // Class
+// Class
 #if CONFIG_DAALA_EC
   aom_write_symbol(w, mv_class, mvcomp->class_cdf, MV_CLASSES);
 #else
@@ -62,7 +62,7 @@ static void encode_mv_component(aom_writer *w, int comp,
     for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
   }
 
-  // Fractional bits
+// Fractional bits
 #if CONFIG_DAALA_EC
   aom_write_symbol(
       w, fr, mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
