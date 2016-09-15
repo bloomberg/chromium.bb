@@ -716,8 +716,6 @@ Scheduler::AsValue() const {
   state->EndDictionary();
 
   state->BeginDictionary("scheduler_state");
-  state->SetBoolean("throttle_frame_production_",
-                    settings_.throttle_frame_production);
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("observing_begin_frame_source",
@@ -778,7 +776,7 @@ bool Scheduler::ShouldRecoverImplLatency(
   // Disable impl thread latency recovery when using the unthrottled
   // begin frame source since we will always get a BeginFrame before
   // the swap ack and our heuristics below will not work.
-  if (!settings_.throttle_frame_production)
+  if (begin_frame_source_ && !begin_frame_source_->IsThrottled())
     return false;
 
   // If we are swap throttled at the BeginFrame, that means the impl thread is

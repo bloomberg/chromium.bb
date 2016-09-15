@@ -2803,17 +2803,6 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
 
-class LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync
-    : public LayerTreeHostTestAbortedCommitDoesntStall {
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
-    settings->wait_for_beginframe_interval = false;
-    settings->renderer_settings.disable_display_vsync = true;
-  }
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync);
-
 class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     : public LayerTreeHostTest {
  protected:
@@ -5161,8 +5150,6 @@ class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
   void InitializeSettings(LayerTreeSettings* settings) override {
     EXPECT_FALSE(settings->gpu_rasterization_enabled);
     settings->gpu_rasterization_enabled = true;
-    settings->wait_for_beginframe_interval = false;
-    settings->renderer_settings.disable_display_vsync = true;
   }
 
   void SetupTree() override {

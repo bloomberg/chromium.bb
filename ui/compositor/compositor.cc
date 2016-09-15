@@ -110,13 +110,11 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   if (command_line->HasSwitch(switches::kDisableGpuVsync)) {
     std::string display_vsync_string =
         command_line->GetSwitchValueASCII(switches::kDisableGpuVsync);
-    if (display_vsync_string == "gpu") {
+    // See comments in gl_switches about this flag.  The browser compositor
+    // is only unthrottled when "gpu" or no switch value is passed, as it
+    // is driven directly by the display compositor.
+    if (display_vsync_string != "beginframe") {
       settings.renderer_settings.disable_display_vsync = true;
-    } else if (display_vsync_string == "beginframe") {
-      settings.wait_for_beginframe_interval = false;
-    } else {
-      settings.renderer_settings.disable_display_vsync = true;
-      settings.wait_for_beginframe_interval = false;
     }
   }
   settings.renderer_settings.partial_swap_enabled =

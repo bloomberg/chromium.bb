@@ -154,6 +154,7 @@ class ExternalBeginFrameSource : public cc::BeginFrameSource,
   void RemoveObserver(cc::BeginFrameObserver* obs) override;
   void DidFinishFrame(cc::BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
+  bool IsThrottled() const override { return true; }
 
   // CompositorImpl::VSyncObserver implementation.
   void OnVSync(base::TimeTicks frame_time,

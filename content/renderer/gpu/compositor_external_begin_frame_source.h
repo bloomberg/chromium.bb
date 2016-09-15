@@ -44,6 +44,7 @@ class CompositorExternalBeginFrameSource
   void RemoveObserver(cc::BeginFrameObserver* obs) override;
   void DidFinishFrame(cc::BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
+  bool IsThrottled() const override;
 
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool need_begin_frames) override;

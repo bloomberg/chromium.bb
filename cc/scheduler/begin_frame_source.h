@@ -112,15 +112,20 @@ class CC_EXPORT BeginFrameSource {
   // should shut down its timers, disable vsync, etc.
   virtual void AddObserver(BeginFrameObserver* obs) = 0;
   virtual void RemoveObserver(BeginFrameObserver* obs) = 0;
+
+  // Returns false if the begin frame source will just continue to produce
+  // begin frames without waiting.
+  virtual bool IsThrottled() const = 0;
 };
 
 // A BeginFrameSource that does nothing.
-class StubBeginFrameSource : public BeginFrameSource {
+class CC_EXPORT StubBeginFrameSource : public BeginFrameSource {
  public:
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) override {}
   void RemoveObserver(BeginFrameObserver* obs) override {}
+  bool IsThrottled() const override;
 };
 
 // A frame source which ticks itself independently.
@@ -148,6 +153,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public SyntheticBeginFrameSource,
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override;
+  bool IsThrottled() const override;
 
   // SyntheticBeginFrameSource implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -180,6 +186,7 @@ class CC_EXPORT DelayBasedBeginFrameSource : public SyntheticBeginFrameSource,
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
+  bool IsThrottled() const override;
 
   // SyntheticBeginFrameSource implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -222,6 +229,7 @@ class CC_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
+  bool IsThrottled() const override;
 
   void OnSetBeginFrameSourcePaused(bool paused);
   void OnBeginFrame(const BeginFrameArgs& args);

@@ -162,6 +162,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -1589,6 +1590,25 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
 
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
+  const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(switches::kDisableGpuVsync)) {
+    std::string display_vsync_string =
+        cmd->GetSwitchValueASCII(switches::kDisableGpuVsync);
+    if (display_vsync_string != "gpu") {
+      // In disable gpu vsync mode, also let the renderer tick as fast as it
+      // can.  The top level begin frame source will also be running as a back
+      // to back begin frame source, but using a synthetic begin frame source
+      // here reduces latency when in this mode (at least for frames
+      // starting--it potentially increases it for input on the other hand.)
+      base::SingleThreadTaskRunner* compositor_impl_side_task_runner =
+          compositor_task_runner_ ? compositor_task_runner_.get()
+                                  : base::ThreadTaskRunnerHandle::Get().get();
+      return base::MakeUnique<cc::BackToBackBeginFrameSource>(
+          base::MakeUnique<cc::DelayBasedTimeSource>(
+              compositor_impl_side_task_runner));
+    }
+  }
+
   return base::MakeUnique<CompositorExternalBeginFrameSource>(
       compositor_message_filter_.get(), sync_message_filter(), routing_id);
 }

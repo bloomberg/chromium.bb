@@ -58,6 +58,10 @@ void FakeExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     client_->OnRemoveObserver(obs);
 }
 
+bool FakeExternalBeginFrameSource::IsThrottled() const {
+  return true;
+}
+
 void FakeExternalBeginFrameSource::TestOnBeginFrame(
     const BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());

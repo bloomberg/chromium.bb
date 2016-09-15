@@ -35,6 +35,7 @@ class FakeExternalBeginFrameSource
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs,
                       size_t remaining_frames) override {}
+  bool IsThrottled() const override;
 
   void TestOnBeginFrame(const BeginFrameArgs& args);
 

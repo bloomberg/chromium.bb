@@ -46,7 +46,10 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->wait_for_beginframe_interval = false;
+    // LayerTreeTests give the Display's BeginFrameSource directly to the
+    // LayerTreeHost like we do in the Browser process via
+    // TestDelegatingOutputSurface, so setting disable_display_vsync here
+    // unthrottles both the DisplayScheduler and the Scheduler.
     settings->renderer_settings.disable_display_vsync = true;
   }
 

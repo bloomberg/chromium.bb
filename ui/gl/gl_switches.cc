@@ -30,8 +30,9 @@ const char kDisableD3D11[]                  = "disable-d3d11";
 
 // Stop the GPU from synchronizing on the vsync before presenting.
 // We can select from the options below:
-//  beginframe : Next frame can start without any delay on cc::scheduler.
-//  gpu : Disable gpu vsync.
+//  beginframe: Next frame can start without any delay on cc::scheduler in
+//              renderer compositors.
+//  gpu: Disable display and browser vsync.
 //  default: Set both flags.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 

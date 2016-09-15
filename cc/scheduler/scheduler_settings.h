@@ -32,7 +32,6 @@ class CC_EXPORT SchedulerSettings {
   bool commit_to_active_tree = false;
   bool timeout_and_draw_when_animation_checkerboards = true;
   bool using_synchronous_renderer_compositor = false;
-  bool throttle_frame_production = true;
   bool abort_commit_before_compositor_frame_sink_creation = true;
 
   int maximum_number_of_failed_draws_before_draw_is_forced = 3;

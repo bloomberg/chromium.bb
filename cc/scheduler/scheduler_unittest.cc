@@ -215,6 +215,12 @@ class FakeSchedulerClient : public SchedulerClient,
   TestScheduler* scheduler_;
 };
 
+enum BeginFrameSourceType {
+  EXTERNAL_BFS,
+  UNTHROTTLED_BFS,
+  THROTTLED_BFS,
+};
+
 class SchedulerTest : public testing::Test {
  public:
   SchedulerTest()
@@ -232,8 +238,8 @@ class SchedulerTest : public testing::Test {
   ~SchedulerTest() override {}
 
  protected:
-  TestScheduler* CreateScheduler() {
-    BeginFrameSource* frame_source;
+  TestScheduler* CreateScheduler(BeginFrameSourceType bfs_type) {
+    BeginFrameSource* frame_source = nullptr;
     unthrottled_frame_source_.reset(new BackToBackBeginFrameSource(
         base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
                                                    task_runner_.get())));
@@ -243,13 +249,18 @@ class SchedulerTest : public testing::Test {
     synthetic_frame_source_.reset(new DelayBasedBeginFrameSource(
         base::MakeUnique<TestDelayBasedTimeSource>(now_src_.get(),
                                                    task_runner_.get())));
-    if (!scheduler_settings_.throttle_frame_production) {
-      frame_source = unthrottled_frame_source_.get();
-    } else if (scheduler_settings_.use_external_begin_frame_source) {
-      frame_source = fake_external_begin_frame_source_.get();
-    } else {
-      frame_source = synthetic_frame_source_.get();
+    switch (bfs_type) {
+      case EXTERNAL_BFS:
+        frame_source = fake_external_begin_frame_source_.get();
+        break;
+      case UNTHROTTLED_BFS:
+        frame_source = unthrottled_frame_source_.get();
+        break;
+      case THROTTLED_BFS:
+        frame_source = synthetic_frame_source_.get();
+        break;
     }
+    DCHECK(frame_source);
 
     std::unique_ptr<FakeCompositorTimingHistory>
         fake_compositor_timing_history = FakeCompositorTimingHistory::Create(
@@ -269,22 +280,20 @@ class SchedulerTest : public testing::Test {
     return scheduler_.get();
   }
 
-  void CreateSchedulerAndInitSurface() {
-    CreateScheduler();
+  void SetUpScheduler(BeginFrameSourceType bfs_type,
+                      std::unique_ptr<FakeSchedulerClient> client) {
+    client_ = std::move(client);
+    CreateScheduler(bfs_type);
     EXPECT_SCOPED(InitializeCompositorFrameSinkAndFirstCommit());
   }
 
-  void SetUpScheduler(bool initSurface) {
-    SetUpScheduler(base::WrapUnique(new FakeSchedulerClient), initSurface);
+  void SetUpScheduler(BeginFrameSourceType bfs_type) {
+    SetUpScheduler(bfs_type, base::MakeUnique<FakeSchedulerClient>());
   }
 
-  void SetUpScheduler(std::unique_ptr<FakeSchedulerClient> client,
-                      bool initSurface) {
-    client_ = std::move(client);
-    if (initSurface)
-      CreateSchedulerAndInitSurface();
-    else
-      CreateScheduler();
+  void SetUpSchedulerWithNoCompositorFrameSink(BeginFrameSourceType bfs_type) {
+    client_ = base::MakeUnique<FakeSchedulerClient>();
+    CreateScheduler(bfs_type);
   }
 
   OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
@@ -410,11 +419,8 @@ class SchedulerTest : public testing::Test {
   void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
   void ImplFrameSkippedAfterLateSwapAck(bool swap_ack_before_deadline);
   void ImplFrameNotSkippedAfterLateSwapAck();
-  void BeginFramesNotFromClient(bool use_external_begin_frame_source,
-                                bool throttle_frame_production);
-  void BeginFramesNotFromClient_SwapThrottled(
-      bool use_external_begin_frame_source,
-      bool throttle_frame_production);
+  void BeginFramesNotFromClient(BeginFrameSourceType bfs_type);
+  void BeginFramesNotFromClient_SwapThrottled(BeginFrameSourceType bfs_type);
   bool BeginMainFrameOnCriticalPath(TreePriority tree_priority,
                                     ScrollHandlerState scroll_handler_state,
                                     base::TimeDelta durations);
@@ -432,8 +438,7 @@ class SchedulerTest : public testing::Test {
 };
 
 TEST_F(SchedulerTest, InitializeCompositorFrameSinkDoesNotBeginImplFrame) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(false);
+  SetUpSchedulerWithNoCompositorFrameSink(EXTERNAL_BFS);
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
@@ -445,8 +450,7 @@ TEST_F(SchedulerTest, InitializeCompositorFrameSinkDoesNotBeginImplFrame) {
 }
 
 TEST_F(SchedulerTest, VideoNeedsBeginFrames) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetVideoNeedsBeginFrames(true);
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -476,8 +480,7 @@ TEST_F(SchedulerTest, VideoNeedsBeginFrames) {
 }
 
 TEST_F(SchedulerTest, RequestCommit) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -539,8 +542,7 @@ TEST_F(SchedulerTest, RequestCommit) {
 }
 
 TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetDeferCommits(true);
 
@@ -566,8 +568,7 @@ TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
 }
 
 TEST_F(SchedulerTest, DeferCommitWithRedraw) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetDeferCommits(true);
 
@@ -597,8 +598,7 @@ TEST_F(SchedulerTest, DeferCommitWithRedraw) {
 }
 
 TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -704,8 +704,7 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 TEST_F(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
   client->SetRequestRedrawsInsideDraw(true);
 
   scheduler_->SetNeedsRedraw();
@@ -740,8 +739,7 @@ TEST_F(SchedulerTest, RequestRedrawInsideDraw) {
 TEST_F(SchedulerTest, RequestRedrawInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   client->SetRequestRedrawsInsideDraw(true);
   client->SetDrawWillHappen(false);
@@ -815,9 +813,7 @@ class SchedulerClientThatSetNeedsBeginMainFrameInsideDraw
 TEST_F(SchedulerTest, RequestCommitInsideDraw) {
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
-
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   EXPECT_FALSE(client->needs_begin_frames());
   scheduler_->SetNeedsRedraw();
@@ -858,8 +854,7 @@ TEST_F(SchedulerTest, RequestCommitInsideDraw) {
 TEST_F(SchedulerTest, RequestCommitInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
       new SchedulerClientThatsetNeedsDrawInsideDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   client->SetDrawWillHappen(false);
 
@@ -901,8 +896,7 @@ TEST_F(SchedulerTest, RequestCommitInsideFailedDraw) {
 TEST_F(SchedulerTest, NoSwapWhenDrawFails) {
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   scheduler_->SetNeedsRedraw();
   EXPECT_TRUE(scheduler_->RedrawPending());
@@ -939,8 +933,7 @@ class SchedulerClientNeedsPrepareTilesInDraw : public FakeSchedulerClient {
 TEST_F(SchedulerTest, PrepareTiles) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   // Request both draw and prepare tiles. PrepareTiles shouldn't
   // be trigged until BeginImplFrame.
@@ -1039,8 +1032,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
 // Test that PrepareTiles only happens once per frame.  If an external caller
 // initiates it, then the state machine should not PrepareTiles on that frame.
 TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // If DidPrepareTiles during a frame, then PrepareTiles should not occur
   // again.
@@ -1152,8 +1144,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
 TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
   std::unique_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
       base::WrapUnique(new SchedulerClientNeedsPrepareTilesInDraw);
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(std::move(client), true);
+  SetUpScheduler(EXTERNAL_BFS, std::move(client));
 
   // Simulate a few visibility changes and associated PrepareTiles.
   for (int i = 0; i < 10; i++) {
@@ -1185,8 +1176,7 @@ TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
 TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SCOPED(AdvanceFrame());
@@ -1199,9 +1189,8 @@ TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
 TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -1239,9 +1228,8 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
 TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
-  scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.commit_to_active_tree = true;
-  SetUpScheduler(base::WrapUnique(client), true);
+  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -1313,8 +1301,7 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
 }
 
 TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
   bool expect_send_begin_main_frame = false;
@@ -1326,8 +1313,7 @@ TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {
 // should not affect whether we recover latency or not.
 TEST_F(SchedulerTest,
        MainFrameSkippedAfterLateCommit_LongMainFrameQueueDurationNotCritical) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
@@ -1341,8 +1327,7 @@ TEST_F(SchedulerTest,
 // should affect whether we recover latency or not.
 TEST_F(SchedulerTest,
        MainFrameNotSkippedAfterLateCommit_LongMainFrameQueueDurationCritical) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationCriticalEstimate(kSlowDuration);
@@ -1356,8 +1341,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        MainFrameNotSkippedAfterLateCommitInPreferImplLatencyMode) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   scheduler_->SetTreePrioritiesAndScrollState(
       SMOOTHNESS_TAKES_PRIORITY,
       ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
@@ -1370,8 +1354,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        MainFrameNotSkippedAfterLateCommit_CommitEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameStartToCommitDurationEstimate(kSlowDuration);
@@ -1383,8 +1366,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        MainFrameNotSkippedAfterLateCommit_ReadyToActivateEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       kSlowDuration);
@@ -1396,8 +1378,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        MainFrameNotSkippedAfterLateCommit_ActivateEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetActivateDurationEstimate(kSlowDuration);
 
@@ -1407,8 +1388,7 @@ TEST_F(SchedulerTest,
 }
 
 TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kSlowDuration);
 
@@ -1420,8 +1400,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
 // If the BeginMainFrame aborts, it doesn't actually insert a frame into the
 // queue, which means there is no latency to recover.
 TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginMainFrameAbort) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // Use fast estimates so we think we can recover latency if needed.
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
@@ -1457,8 +1436,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginMainFrameAbort) {
 // If the BeginMainFrame aborts, it doesn't actually insert a frame into the
 // queue, which means there is no latency to recover.
 TEST_F(SchedulerTest, MainFrameNotSkippedAfterCanDrawChanges) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // Use fast estimates so we think we can recover latency if needed.
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
@@ -1579,8 +1557,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateSwapAck_FastEstimates_SwapAckThenDeadline) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
   bool swap_ack_before_deadline = true;
@@ -1589,8 +1566,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateSwapAck_FastEstimates_DeadlineThenSwapAck) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
   bool swap_ack_before_deadline = false;
@@ -1599,8 +1575,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateSwapAck_LongMainFrameQueueDurationNotCritical) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
@@ -1611,8 +1586,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateSwapAck_ImplLatencyTakesPriority) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // Even if every estimate related to the main thread is slow, we should
   // still expect to recover impl thread latency if the draw is fast and we
@@ -1630,8 +1604,7 @@ TEST_F(SchedulerTest,
 TEST_F(SchedulerTest,
        ImplFrameSkippedAfterLateSwapAck_OnlyImplSideUpdatesExpected) {
   // This tests that we recover impl thread latency when there are no commits.
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // To get into a high latency state, this test disables automatic swap acks.
   client_->SetAutomaticSwapAck(false);
@@ -1745,8 +1718,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateSwapAck() {
 TEST_F(
     SchedulerTest,
     ImplFrameNotSkippedAfterLateSwapAck_MainFrameQueueDurationCriticalTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationCriticalEstimate(kSlowDuration);
@@ -1757,8 +1729,7 @@ TEST_F(
 
 TEST_F(SchedulerTest,
        ImplFrameNotSkippedAfterLateSwapAck_CommitEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameStartToCommitDurationEstimate(kSlowDuration);
@@ -1767,8 +1738,7 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameNotSkippedAfterLateSwapAck_ReadyToActivateEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       kSlowDuration);
@@ -1777,16 +1747,14 @@ TEST_F(SchedulerTest,
 
 TEST_F(SchedulerTest,
        ImplFrameNotSkippedAfterLateSwapAck_ActivateEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetActivateDurationEstimate(kSlowDuration);
   EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
 }
 
 TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateSwapAck_DrawEstimateTooLong) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kSlowDuration);
   EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
@@ -1798,8 +1766,7 @@ TEST_F(SchedulerTest,
   // This test starts off with expensive estimates to prevent latency recovery
   // initially, then lowers the estimates to enable it once both the main
   // and impl threads are in a high latency mode.
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
 
   // To get into a high latency state, this test disables automatic swap acks.
@@ -1920,9 +1887,8 @@ TEST_F(
   // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
   // thread. This prevents the scheduler from receiving any pending swap acks.
 
-  scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1984,10 +1950,9 @@ TEST_F(
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -2044,8 +2009,7 @@ TEST_F(
 }
 
 TEST_F(SchedulerTest, BeginRetroFrame) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2118,8 +2082,7 @@ TEST_F(SchedulerTest, BeginRetroFrame) {
 }
 
 TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
@@ -2177,8 +2140,7 @@ TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
 }
 
 TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
@@ -2229,8 +2191,7 @@ TEST_F(SchedulerTest, RetroFrameExpiresOnTime) {
 }
 
 TEST_F(SchedulerTest, MissedFrameDoesNotExpireTooEarly) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
@@ -2254,8 +2215,7 @@ TEST_F(SchedulerTest, MissedFrameDoesNotExpireTooEarly) {
 }
 
 TEST_F(SchedulerTest, MissedFrameExpiresOnTime) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
@@ -2278,13 +2238,8 @@ TEST_F(SchedulerTest, MissedFrameExpiresOnTime) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 }
 
-void SchedulerTest::BeginFramesNotFromClient(
-    bool use_external_begin_frame_source,
-    bool throttle_frame_production) {
-  scheduler_settings_.use_external_begin_frame_source =
-      use_external_begin_frame_source;
-  scheduler_settings_.throttle_frame_production = throttle_frame_production;
-  SetUpScheduler(true);
+void SchedulerTest::BeginFramesNotFromClient(BeginFrameSourceType bfs_type) {
+  SetUpScheduler(bfs_type);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame
   // without calling SetNeedsBeginFrame.
@@ -2344,33 +2299,16 @@ void SchedulerTest::BeginFramesNotFromClient(
 }
 
 TEST_F(SchedulerTest, SyntheticBeginFrames) {
-  bool use_external_begin_frame_source = false;
-  bool throttle_frame_production = true;
-  BeginFramesNotFromClient(use_external_begin_frame_source,
-                           throttle_frame_production);
+  BeginFramesNotFromClient(THROTTLED_BFS);
 }
 
-TEST_F(SchedulerTest, VSyncThrottlingDisabled) {
-  bool use_external_begin_frame_source = true;
-  bool throttle_frame_production = false;
-  BeginFramesNotFromClient(use_external_begin_frame_source,
-                           throttle_frame_production);
-}
-
-TEST_F(SchedulerTest, SyntheticBeginFrames_And_VSyncThrottlingDisabled) {
-  bool use_external_begin_frame_source = false;
-  bool throttle_frame_production = false;
-  BeginFramesNotFromClient(use_external_begin_frame_source,
-                           throttle_frame_production);
+TEST_F(SchedulerTest, UnthrottledBeginFrames) {
+  BeginFramesNotFromClient(UNTHROTTLED_BFS);
 }
 
 void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
-    bool use_external_begin_frame_source,
-    bool throttle_frame_production) {
-  scheduler_settings_.use_external_begin_frame_source =
-      use_external_begin_frame_source;
-  scheduler_settings_.throttle_frame_production = throttle_frame_production;
-  SetUpScheduler(true);
+    BeginFrameSourceType bfs_type) {
+  SetUpScheduler(bfs_type);
 
   scheduler_->SetEstimatedParentDrawTime(
       BeginFrameArgs::DefaultEstimatedParentDrawTime());
@@ -2460,31 +2398,16 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
 }
 
 TEST_F(SchedulerTest, SyntheticBeginFrames_SwapThrottled) {
-  bool use_external_begin_frame_source = false;
-  bool throttle_frame_production = true;
-  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
-                                         throttle_frame_production);
+  BeginFramesNotFromClient_SwapThrottled(THROTTLED_BFS);
 }
 
-TEST_F(SchedulerTest, VSyncThrottlingDisabled_SwapThrottled) {
-  bool use_external_begin_frame_source = true;
-  bool throttle_frame_production = false;
-  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
-                                         throttle_frame_production);
-}
-
-TEST_F(SchedulerTest,
-       SyntheticBeginFrames_And_VSyncThrottlingDisabled_SwapThrottled) {
-  bool use_external_begin_frame_source = false;
-  bool throttle_frame_production = false;
-  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
-                                         throttle_frame_production);
+TEST_F(SchedulerTest, UnthrottledBeginFrames_SwapThrottled) {
+  BeginFramesNotFromClient_SwapThrottled(UNTHROTTLED_BFS);
 }
 
 TEST_F(SchedulerTest,
        DidLoseCompositorFrameSinkAfterCompositorFrameSinkIsInitialized) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(false);
+  SetUpSchedulerWithNoCompositorFrameSink(EXTERNAL_BFS);
 
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
@@ -2501,8 +2424,7 @@ TEST_F(SchedulerTest,
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2535,8 +2457,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
 
 TEST_F(SchedulerTest,
        DidLoseCompositorFrameSinkAfterBeginFrameStartedWithHighLatency) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2581,8 +2502,7 @@ TEST_F(SchedulerTest,
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterReadyToCommit) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2614,8 +2534,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterReadyToCommit) {
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterSetNeedsPrepareTiles) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsPrepareTiles();
   scheduler_->SetNeedsRedraw();
@@ -2641,8 +2560,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterSetNeedsPrepareTiles) {
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginRetroFramePosted) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2702,8 +2620,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginRetroFramePosted) {
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkDuringBeginRetroFrameRunning) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2778,7 +2695,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkDuringBeginRetroFrameRunning) {
 
 TEST_F(SchedulerTest,
        DidLoseCompositorFrameSinkWithDelayBasedBeginFrameSource) {
-  SetUpScheduler(true);
+  SetUpScheduler(THROTTLED_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   EXPECT_FALSE(scheduler_->begin_frames_expected());
@@ -2820,8 +2737,7 @@ TEST_F(SchedulerTest,
 }
 
 TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2856,8 +2772,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
 }
 
 TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2886,8 +2801,7 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
 }
 
 TEST_F(SchedulerTest, ScheduledActionActivateAfterBeginFrameSourcePaused) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -2915,8 +2829,7 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBeginFrameSourcePaused) {
 
 // Tests to ensure frame sources can be successfully changed while drawing.
 TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottled) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsRedraw should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsRedraw();
@@ -2952,8 +2865,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottled) {
 // Tests to ensure frame sources can be successfully changed while a frame
 // deadline is pending.
 TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottledBeforeDeadline) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsRedraw should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsRedraw();
@@ -2987,9 +2899,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottledBeforeDeadline) {
 // Tests to ensure that the active frame source can successfully be changed from
 // unthrottled to throttled.
 TEST_F(SchedulerTest, SwitchFrameSourceToThrottled) {
-  scheduler_settings_.throttle_frame_production = false;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(UNTHROTTLED_BFS);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_NO_ACTION(client_);
@@ -3025,8 +2935,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToThrottled) {
 }
 
 TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3078,8 +2987,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
 // This test maskes sure that switching a frame source when not observing
 // such as when not visible also works.
 TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -3133,8 +3041,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
 
 // Tests to ensure that we send a BeginMainFrameNotExpectedSoon when expected.
 TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -3169,8 +3076,7 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
 
 TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsOneBeginImplFrame();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3225,8 +3131,7 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
 
 TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
@@ -3246,8 +3151,7 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
 }
 
 TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   EXPECT_FALSE(scheduler_->begin_frames_expected());
 
@@ -3285,8 +3189,7 @@ TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
 
 TEST_F(SchedulerTest, SynchronousCompositorCommit) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3342,8 +3245,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommit) {
 
 TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3399,11 +3301,10 @@ class SchedulerClientSetNeedsPrepareTilesOnDraw : public FakeSchedulerClient {
 
 TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
 
   std::unique_ptr<FakeSchedulerClient> client =
       base::WrapUnique(new SchedulerClientSetNeedsPrepareTilesOnDraw);
-  SetUpScheduler(std::move(client), true);
+  SetUpScheduler(EXTERNAL_BFS, std::move(client));
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3446,9 +3347,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
 TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
@@ -3505,8 +3404,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
 
 TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetVisible(false);
 
@@ -3520,7 +3418,7 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
 }
 
 TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
-  SetUpScheduler(true);
+  SetUpScheduler(THROTTLED_BFS);
   base::TimeDelta initial_interval = scheduler_->BeginImplFrameInterval();
   base::TimeDelta authoritative_interval =
       base::TimeDelta::FromMilliseconds(33);
@@ -3548,7 +3446,7 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
 }
 
 TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
-  SetUpScheduler(true);
+  SetUpScheduler(THROTTLED_BFS);
 
   scheduler_->SetTreePrioritiesAndScrollState(
       SMOOTHNESS_TAKES_PRIORITY,
@@ -3584,7 +3482,7 @@ TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
 }
 
 TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
-  SetUpScheduler(true);
+  SetUpScheduler(THROTTLED_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -3617,7 +3515,7 @@ TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
 TEST_F(SchedulerTest, CompositorFrameSinkCreationWhileCommitPending) {
   scheduler_settings_.abort_commit_before_compositor_frame_sink_creation =
       false;
-  SetUpScheduler(true);
+  SetUpScheduler(THROTTLED_BFS);
 
   // SetNeedsBeginMainFrame should begin the frame.
   scheduler_->SetNeedsBeginMainFrame();
@@ -3651,8 +3549,7 @@ bool SchedulerTest::BeginMainFrameOnCriticalPath(
     TreePriority tree_priority,
     ScrollHandlerState scroll_handler_state,
     base::TimeDelta durations) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
+  SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(durations);
   client_->Reset();
   scheduler_->SetTreePrioritiesAndScrollState(tree_priority,

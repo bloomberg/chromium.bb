@@ -55,6 +55,10 @@ void CompositorExternalBeginFrameSource::RemoveObserver(
   external_begin_frame_source_.RemoveObserver(obs);
 }
 
+bool CompositorExternalBeginFrameSource::IsThrottled() const {
+  return true;
+}
+
 void CompositorExternalBeginFrameSource::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   Send(new ViewHostMsg_SetNeedsBeginFrames(routing_id_, needs_begin_frames));

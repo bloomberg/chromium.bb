@@ -44,6 +44,10 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   }
 }
 
+bool StubBeginFrameSource::IsThrottled() const {
+  return true;
+}
+
 // SyntheticBeginFrameSource ---------------------------------------------
 SyntheticBeginFrameSource::~SyntheticBeginFrameSource() = default;
 
@@ -83,6 +87,10 @@ void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
+}
+
+bool BackToBackBeginFrameSource::IsThrottled() const {
+  return false;
 }
 
 void BackToBackBeginFrameSource::OnTimerTick() {
@@ -165,6 +173,10 @@ void DelayBasedBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     time_source_->SetActive(false);
 }
 
+bool DelayBasedBeginFrameSource::IsThrottled() const {
+  return true;
+}
+
 void DelayBasedBeginFrameSource::OnTimerTick() {
   BeginFrameArgs args = CreateBeginFrameArgs(time_source_->LastTickTime(),
                                              BeginFrameArgs::NORMAL);
@@ -215,6 +227,10 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
     missed_begin_frame_args_ = BeginFrameArgs();
     client_->OnNeedsBeginFrames(false);
   }
+}
+
+bool ExternalBeginFrameSource::IsThrottled() const {
+  return true;
 }
 
 void ExternalBeginFrameSource::OnSetBeginFrameSourcePaused(bool paused) {

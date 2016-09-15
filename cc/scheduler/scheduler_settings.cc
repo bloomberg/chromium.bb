@@ -18,8 +18,6 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
-  state->SetBoolean("use_external_begin_frame_source",
-                    use_external_begin_frame_source);
   state->SetBoolean("main_frame_while_swap_throttled_enabled",
                     main_frame_while_swap_throttled_enabled);
   state->SetBoolean("main_frame_before_activation_enabled",
@@ -31,7 +29,6 @@ SchedulerSettings::AsValue() const {
                     maximum_number_of_failed_draws_before_draw_is_forced);
   state->SetBoolean("using_synchronous_renderer_compositor",
                     using_synchronous_renderer_compositor);
-  state->SetBoolean("throttle_frame_production", throttle_frame_production);
   state->SetInteger("background_frame_interval",
                     background_frame_interval.InMicroseconds());
   state->SetBoolean("abort_commit_before_compositor_frame_sink_creation",
