@@ -460,8 +460,12 @@ NaClManager.prototype.handleModelLoaded_ = function() {
     return;
   }
   this.sendDataToPlugin_(this.stream_.getAudioTracks()[0]);
-  this.waitForMessage_(hotword.constants.TimeoutMs.LONG,
-                       hotword.constants.NaClPlugin.MS_CONFIGURED);
+  // The plugin will send a MS_CONFIGURED, but don't set a timeout waiting for
+  // it. MediaStreamAudioTrack::Configure() will remain pending until the first
+  // audio buffer is received. When the audio source is a DSP for always-on
+  // detection, no audio sample is sent until the DSP detects a potential
+  // hotword trigger. Thus, Configure would remain pending indefinitely if we
+  // were to wait here. See https://crbug.com/616203
 };
 
 /**
