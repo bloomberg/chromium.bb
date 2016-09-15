@@ -381,8 +381,10 @@ class SequencedWorkerPool::Inner {
   };
 
   // Helper used by PostTask() to complete the work when redirection is on.
+  // Returns true if the task may run at some point in the future and false if
+  // it will definitely not run.
   // Coalesce upon resolution of http://crbug.com/622400.
-  void PostTaskToTaskScheduler(const SequencedTask& sequenced,
+  bool PostTaskToTaskScheduler(const SequencedTask& sequenced,
                                const TimeDelta& delay);
 
   // Returns the TaskScheduler TaskRunner for the specified |sequence_token_id|
@@ -731,7 +733,8 @@ bool SequencedWorkerPool::Inner::PostTask(
 
     if (subtle::NoBarrier_Load(&g_all_pools_state) ==
         AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
-      PostTaskToTaskScheduler(sequenced, delay);
+      if (!PostTaskToTaskScheduler(sequenced, delay))
+        return false;
     } else {
       pending_tasks_.insert(sequenced);
 
@@ -770,7 +773,7 @@ bool SequencedWorkerPool::Inner::PostTask(
   return true;
 }
 
-void SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
+bool SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
     const SequencedTask& sequenced,
     const TimeDelta& delay) {
   DCHECK_EQ(AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER,
@@ -800,7 +803,7 @@ void SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
                                 .WithFileIO()
                                 .WithPriority(task_priority_)
                                 .WithShutdownBehavior(task_shutdown_behavior);
-  GetTaskSchedulerTaskRunner(sequenced.sequence_token_id, traits)
+  return GetTaskSchedulerTaskRunner(sequenced.sequence_token_id, traits)
       ->PostDelayedTask(sequenced.posted_from, sequenced.task, delay);
 }
 
