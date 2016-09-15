@@ -8,30 +8,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcel;
-import android.util.Base64;
+import android.os.StrictMode;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
-
-import java.util.concurrent.Executor;
 
 /**
- * Retrieves app restrictions and provides them to the parent class as Bundles. Ensures that
- * restrictions can be retrieved early in the application's life cycle by caching previously
- * obtained bundles.
+ * Retrieves app restrictions and provides them to the parent class as Bundles.
  *
  * Needs to be subclassed to specify how to retrieve the restrictions.
  */
 public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
-    private static final String PREFERENCE_KEY = "App Restrictions";
-
     private static final String TAG = "policy";
 
     /** {@link Bundle} holding the restrictions to be used during tests. */
@@ -44,8 +34,6 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
             refresh();
         }
     };
-
-    private Executor mExecutor = AsyncTask.THREAD_POOL_EXECUTOR;
 
     /**
      * @param context The application context.
@@ -91,27 +79,16 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
             return;
         }
 
-        final Bundle cachedResult = getCachedPolicies();
-        if (cachedResult != null) {
-            notifySettingsAvailable(cachedResult);
-        }
+        // Because some policies are needed during startup this has to be synchronous. There is
+        // no way of reading policies (or cached policies from a previous run) without doing
+        // a disk read, so we have to disable strict mode here.
+        StrictMode.ThreadPolicy policy = StrictMode.allowThreadDiskReads();
+        long startTime = System.currentTimeMillis();
+        final Bundle bundle = getApplicationRestrictions(mContext.getPackageName());
+        recordStartTimeHistogram(startTime);
+        StrictMode.setThreadPolicy(policy);
 
-        mExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                long startTime = System.currentTimeMillis();
-                final Bundle bundle = getApplicationRestrictions(mContext.getPackageName());
-                recordStartTimeHistogram(startTime);
-
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        cachePolicies(bundle);
-                        notifySettingsAvailable(bundle);
-                    }
-                });
-            }
-        });
+        notifySettingsAvailable(bundle);
     }
 
     @Override
@@ -130,55 +107,11 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
         }
     }
 
-    private void cachePolicies(Bundle policies) {
-        Parcel p = Parcel.obtain();
-        p.writeBundle(policies);
-        byte bytes[] = p.marshall();
-        String s = Base64.encodeToString(bytes, 0);
-        ContextUtils.getAppSharedPreferences().edit().putString(PREFERENCE_KEY, s).apply();
-    }
-
-    private Bundle getCachedPolicies() {
-        String s = ContextUtils.getAppSharedPreferences().getString(PREFERENCE_KEY, null);
-        if (s == null) {
-            return null;
-        }
-        byte bytes[] = Base64.decode(s, 0);
-        Parcel p = Parcel.obtain();
-        // Unmarshalling the parcel is, in theory, unsafe if the Android version or API version has
-        // changed, but the worst that is likely to happen is that the bundle comes back empty, and
-        // this will be corrected once the Android returns the real App Restrictions.
-        p.unmarshall(bytes, 0, bytes.length);
-        p.setDataPosition(0);
-        Bundle result;
-        try {
-            result = p.readBundle();
-        } catch (IllegalStateException e) {
-            result = null;
-        }
-        recordCacheLoadResultHistogram(result != null);
-        return result;
-    }
-
-    // Extracted to allow stubbing, since it calls a static that can't easily be stubbed
-    @VisibleForTesting
-    protected void recordCacheLoadResultHistogram(final boolean success) {
-        RecordHistogram.recordBooleanHistogram(
-                "Enterprise.AppRestrictionsCacheLoad", success);
-    }
-
     // Extracted to allow stubbing, since it calls a static that can't easily be stubbed
     @VisibleForTesting
     protected void recordStartTimeHistogram(long startTime) {
         // TODO(aberent): Re-implement once we understand why the previous implementation was giving
         // random crashes (https://crbug.com/535043)
-    }
-    /**
-     * @param testExecutor - The executor to use for this class's AsyncTasks.
-     */
-    @VisibleForTesting
-    void setTaskExecutor(Executor testExecutor) {
-        mExecutor = testExecutor;
     }
 
     /**
