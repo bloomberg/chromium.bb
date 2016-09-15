@@ -20,6 +20,7 @@
       }
 
       #card-heading {
+        -webkit-padding-end: 0;
         cursor: pointer;
         justify-content: space-between;
       }
@@ -30,6 +31,17 @@
 
       #last-update-time {
         color: var(--secondary-text-color);
+      }
+
+      #title-left-content {
+        display: flex;
+        overflow: hidden;
+      }
+
+      #device-name {
+        overflow: hidden;
+        padding-right: 3px;
+        text-overflow: ellipsis;
       }
 
       #right-buttons {
@@ -67,8 +79,10 @@
     <div id="history-item-container">
       <div class="card-title" id="card-heading" aria-expanded$="[[opened]]"
           aria-controls="collapse" on-tap="toggleTabCard">
-        <div>
-          [[device]]
+        <div id="title-left-content">
+          <div id="device-name">
+            [[device]]
+          </div>
           <span id="last-update-time">[[lastUpdateTime]]</span>
         </div>
         <div id="right-buttons">

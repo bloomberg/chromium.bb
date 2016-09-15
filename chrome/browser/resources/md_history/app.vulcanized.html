@@ -2916,8 +2916,7 @@ h1 {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -2925,6 +2924,11 @@ h1 {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -2996,8 +3000,7 @@ button.more-vert-button div {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -3005,6 +3008,11 @@ button.more-vert-button div {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -3613,8 +3621,7 @@ paper-tabs {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -3622,6 +3629,11 @@ paper-tabs {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -3713,7 +3725,7 @@ button.more-vert-button div {
 }
 
 :host([is-card-start]) #date-accessed {
-  display: flex;
+  display: block;
 }
 
 #item-container {
@@ -3915,8 +3927,7 @@ button.more-vert-button div {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -3924,6 +3935,11 @@ button.more-vert-button div {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4144,8 +4160,7 @@ history-item {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4153,6 +4168,11 @@ history-item {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4244,8 +4264,7 @@ history-item {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4253,6 +4272,11 @@ history-item {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4432,8 +4456,7 @@ dialog .body {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4441,6 +4464,11 @@ dialog .body {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4509,7 +4537,8 @@ button.more-vert-button div {
 }
 
 #card-heading {
-  cursor: pointer;
+  -webkit-padding-end: 0;
+        cursor: pointer;
         justify-content: space-between;
 }
 
@@ -4519,6 +4548,17 @@ button.more-vert-button div {
 
 #last-update-time {
   color: var(--secondary-text-color);
+}
+
+#title-left-content {
+  display: flex;
+        overflow: hidden;
+}
+
+#device-name {
+  overflow: hidden;
+        padding-right: 3px;
+        text-overflow: ellipsis;
 }
 
 #right-buttons {
@@ -4556,8 +4596,10 @@ button.more-vert-button div {
 </style>
     <div id="history-item-container">
       <div class="card-title" id="card-heading" aria-expanded$="[[opened]]" aria-controls="collapse" on-tap="toggleTabCard">
-        <div>
-          [[device]]
+        <div id="title-left-content">
+          <div id="device-name">
+            [[device]]
+          </div>
           <span id="last-update-time">[[lastUpdateTime]]</span>
         </div>
         <div id="right-buttons">
@@ -4597,8 +4639,7 @@ button.more-vert-button div {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4606,6 +4647,11 @@ button.more-vert-button div {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4817,8 +4863,7 @@ paper-spinner {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4826,6 +4871,11 @@ paper-spinner {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
@@ -4988,8 +5038,7 @@ iron-selector > a.iron-selected {
 }
 
 .card-title {
-  -webkit-padding-start: 20px;
-        align-items: center;
+  align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
@@ -4997,6 +5046,11 @@ iron-selector > a.iron-selected {
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+        line-height: 48px;
+        overflow: hidden;
+        padding: 0 20px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .centered-message {
