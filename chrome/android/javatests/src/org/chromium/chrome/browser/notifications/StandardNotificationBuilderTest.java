@@ -12,17 +12,31 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.SpannableStringBuilder;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /**
  * Instrumentation unit tests for StandardNotificationBuilder.
+ *
+ * Extends NativeLibraryTestBase so that {@link UrlUtilities#getDomainAndRegistry} can access
+ * native GetDomainAndRegistry, when called by {@link RoundedIconGenerator#getIconTextForUrl} during
+ * notification construction.
  */
-public class StandardNotificationBuilderTest extends InstrumentationTestCase {
+public class StandardNotificationBuilderTest extends NativeLibraryTestBase {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        // Not initializing the browser process is safe because GetDomainAndRegistry() is
+        // stand-alone.
+        loadNativeLibraryNoBrowserProcess();
+    }
+
     private NotificationBuilderBase createAllOptionsBuilder(
             PendingIntent[] outContentAndDeleteIntents) {
         if (outContentAndDeleteIntents == null || outContentAndDeleteIntents.length != 2)
@@ -104,6 +118,19 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals("button 1", NotificationTestUtil.getActionTitle(actions[0]));
         assertEquals("button 2", NotificationTestUtil.getActionTitle(actions[1]));
         assertEquals("settings", NotificationTestUtil.getActionTitle(actions[2]));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Notification.publicVersion was added in Android L.
+            assertNotNull(notification.publicVersion);
+            assertEquals(context.getString(R.string.notification_hidden_text),
+                    NotificationTestUtil.getExtraText(notification.publicVersion));
+        }
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            assertEquals(
+                    "origin", NotificationTestUtil.getExtraSubText(notification.publicVersion));
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            assertEquals("origin", NotificationTestUtil.getExtraTitle(notification.publicVersion));
+        }
     }
 
     @SmallTest

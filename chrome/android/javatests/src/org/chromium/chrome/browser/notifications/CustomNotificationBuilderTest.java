@@ -101,6 +101,14 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         assertSame(contentIntent, notification.contentIntent);
         assertSame(deleteIntent, notification.deleteIntent);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Notification.publicVersion was added in Android L.
+            assertNotNull(notification.publicVersion);
+            assertEquals("origin", Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+                            ? NotificationTestUtil.getExtraTitle(notification.publicVersion)
+                            : NotificationTestUtil.getExtraSubText(notification.publicVersion));
+        }
+
         // The regular actions and the settings action are added together in the notification
         // actions array, so they can be exposed on e.g. Wear and custom lockscreens.
         assertEquals(3, NotificationTestUtil.getActions(notification).length);

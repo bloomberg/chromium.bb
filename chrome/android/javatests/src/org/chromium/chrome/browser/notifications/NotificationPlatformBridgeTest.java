@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Notification;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -182,14 +181,16 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
     @RetryOnFailure
     public void testDefaultNotificationProperties() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        Context context = getInstrumentation().getTargetContext();
 
         Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
+        String expectedOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */);
 
         // Validate the contents of the notification.
         assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
         assertEquals("Hello", NotificationTestUtil.getExtraText(notification));
-        assertEquals(UrlFormatter.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */),
-                NotificationTestUtil.getExtraSubText(notification));
+        assertEquals(expectedOrigin, NotificationTestUtil.getExtraSubText(notification));
 
         // Verify that the ticker text contains the notification's title and body.
         String tickerText = notification.tickerText.toString();
@@ -197,12 +198,28 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         assertTrue(tickerText.contains("MyNotification"));
         assertTrue(tickerText.contains("Hello"));
 
+        // On L+, verify the public version of the notification contains the notification's origin,
+        // and that the body text has been replaced.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            assertNotNull(notification.publicVersion);
+            assertEquals(context.getString(R.string.notification_hidden_text),
+                    NotificationTestUtil.getExtraText(notification.publicVersion));
+        }
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            // On N+, origin should be set as the subtext of the public notification.
+            assertEquals(expectedOrigin,
+                    NotificationTestUtil.getExtraSubText(notification.publicVersion));
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // On L/M, origin should be the title of the public notification.
+            assertEquals(
+                    expectedOrigin, NotificationTestUtil.getExtraTitle(notification.publicVersion));
+        }
+
         // Verify that the notification's timestamp is set in the past 60 seconds. This number has
         // no significance, but needs to be high enough to not cause flakiness as it's set by the
         // renderer process on notification creation.
         assertTrue(Math.abs(System.currentTimeMillis() - notification.when) < 60 * 1000);
 
-        Context context = getInstrumentation().getTargetContext();
         assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
 
         // Validate the notification's behavior.
@@ -315,8 +332,9 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
 
     /**
      * Verifies that on Android M+, notifications which specify a badge will have that icon
-     * fetched and included as the small icon in the notification.
-     * If the test target is L or below, verifies the small icon is the expected chrome logo.
+     * fetched and included as the small icon in the notification and public version.
+     * If the test target is L or below, verifies the small icon (and public small icon on L) is
+     * the expected chrome logo.
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
@@ -333,16 +351,35 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         assertNotNull(smallIcon);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Custom badges are only supported on M+.
+            // 1. Check the notification badge.
             URL badgeUrl =
                     new URL(getTestServer().getURL("/chrome/test/data/notifications/badge.png"));
             Bitmap bitmap = BitmapFactory.decodeStream(badgeUrl.openStream());
             Bitmap expected = bitmap.copy(bitmap.getConfig(), true);
             NotificationBuilderBase.applyWhiteOverlayToBitmap(expected);
             assertTrue(expected.sameAs(smallIcon));
+
+            // 2. Check the public notification badge.
+            assertNotNull(notification.publicVersion);
+            Bitmap publicSmallIcon = NotificationTestUtil.getSmallIconFromNotification(
+                    context, notification.publicVersion);
+            assertNotNull(publicSmallIcon);
+            assertEquals(expected.getWidth(), publicSmallIcon.getWidth());
+            assertEquals(expected.getHeight(), publicSmallIcon.getHeight());
+            assertTrue(expected.sameAs(publicSmallIcon));
         } else {
             Bitmap expected =
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
             assertTrue(expected.sameAs(smallIcon));
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Public versions of notifications are only supported on L+.
+                assertNotNull(notification.publicVersion);
+                Bitmap publicSmallIcon = NotificationTestUtil.getSmallIconFromNotification(
+                        context, notification.publicVersion);
+                assertTrue(expected.sameAs(publicSmallIcon));
+            }
         }
     }
 
@@ -390,63 +427,13 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
 
         // Create a second rounded icon for the test's origin, and compare its dimensions against
         // those of the icon associated to the notification itself.
-        RoundedIconGenerator generator = notificationBridge.mIconGenerator;
-        assertNotNull(generator);
+        RoundedIconGenerator generator =
+                NotificationBuilderBase.createIconGenerator(context.getResources());
 
         Bitmap generatedIcon = generator.generateIconForUrl(getOrigin());
         assertNotNull(generatedIcon);
         assertTrue(generatedIcon.sameAs(
                 NotificationTestUtil.getLargeIconFromNotification(context, notification)));
-    }
-
-    /**
-     * Tests the three paths for ensuring that a notification will be shown with a normalized icon:
-     *     (1) NULL bitmaps should have an auto-generated image.
-     *     (2) Large bitmaps should be resized to the device's intended size.
-     *     (3) Smaller bitmaps should be left alone.
-     */
-    @MediumTest
-    @Feature({"Browser", "Notifications"})
-    public void testEnsureNormalizedIconBehavior() throws Exception {
-        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
-
-        // Create a notification to ensure that the NotificationPlatformBridge is initialized.
-        showAndGetNotification("MyNotification", "{}");
-
-        // Get the dimensions of the notification icon that will be presented to the user.
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        Resources resources = appContext.getResources();
-
-        int largeIconWidthPx =
-                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-        int largeIconHeightPx =
-                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
-
-        String origin = "https://example.com";
-
-        NotificationPlatformBridge notificationBridge =
-                NotificationPlatformBridge.getInstanceForTests();
-        assertNotNull(notificationBridge);
-
-        Bitmap fromNullIcon = notificationBridge.ensureNormalizedIcon(null, origin);
-        assertNotNull(fromNullIcon);
-        assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
-        assertEquals(largeIconHeightPx, fromNullIcon.getHeight());
-
-        Bitmap largeIcon = Bitmap.createBitmap(largeIconWidthPx * 2, largeIconHeightPx * 2,
-                                               Bitmap.Config.ALPHA_8);
-
-        Bitmap fromLargeIcon = notificationBridge.ensureNormalizedIcon(largeIcon, origin);
-        assertNotNull(fromLargeIcon);
-        assertEquals(largeIconWidthPx, fromLargeIcon.getWidth());
-        assertEquals(largeIconHeightPx, fromLargeIcon.getHeight());
-
-        Bitmap smallIcon = Bitmap.createBitmap(largeIconWidthPx / 2, largeIconHeightPx / 2,
-                                               Bitmap.Config.ALPHA_8);
-
-        Bitmap fromSmallIcon = notificationBridge.ensureNormalizedIcon(smallIcon, origin);
-        assertNotNull(fromSmallIcon);
-        assertEquals(smallIcon, fromSmallIcon);
     }
 
     /*

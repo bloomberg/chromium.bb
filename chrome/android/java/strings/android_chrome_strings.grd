@@ -1636,6 +1636,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Web Notifications API -->
+      <message name="IDS_NOTIFICATION_HIDDEN_TEXT" desc="Text shown in place of notification contents when the notification's contents have been hidden on a secure lockscreen [CHAR-LIMIT=32]">
+        Contents hidden
+      </message>
       <message name="IDS_NOTIFICATION_SITE_SETTINGS_BUTTON" desc="Text of a button shown on notifications, that opens the Site Settings of the website that showed the notification. (If it isn't possible to fit within the char limit, the string will be ellipsized if 3 buttons are shown side by side, so try to ensure that the user can guess the meaning from the first 8 characters). [CHAR-LIMIT=9]">
         Settings
       </message>

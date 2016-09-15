@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -65,9 +64,6 @@ public class NotificationPlatformBridge {
     private static final String PLATFORM_TAG_PREFIX =
             NotificationPlatformBridge.class.getSimpleName();
 
-    private static final int NOTIFICATION_ICON_BG_COLOR = 0xFF969696;
-    private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
-
     // We always use the same request code for pending intents. We use other ways to force
     // uniqueness of pending intents when necessary.
     private static final int PENDING_INTENT_REQUEST_CODE = 0;
@@ -81,11 +77,6 @@ public class NotificationPlatformBridge {
 
     private final Context mAppContext;
     private final NotificationManagerProxy mNotificationManager;
-
-    @VisibleForTesting public RoundedIconGenerator mIconGenerator;
-    private final int mLargeIconWidthPx;
-    private final int mLargeIconHeightPx;
-    private final float mDensity;
 
     private long mLastNotificationClickMs = 0L;
 
@@ -141,14 +132,6 @@ public class NotificationPlatformBridge {
                     (NotificationManager) mAppContext.getSystemService(
                             Context.NOTIFICATION_SERVICE));
         }
-
-        Resources resources = mAppContext.getResources();
-
-        mLargeIconWidthPx =
-                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-        mLargeIconHeightPx =
-                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
-        mDensity = resources.getDisplayMetrics().density;
     }
 
     /**
@@ -524,7 +507,7 @@ public class NotificationPlatformBridge {
                         .setTitle(title)
                         .setBody(body)
                         .setImage(image)
-                        .setLargeIcon(ensureNormalizedIcon(icon, origin))
+                        .setLargeIcon(icon)
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setSmallIcon(badge)
                         .setContentIntent(clickIntent)
@@ -602,40 +585,6 @@ public class NotificationPlatformBridge {
                 0, title.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         return spannableStringBuilder;
-    }
-
-    /**
-     * Ensures the availability of an icon for the notification.
-     *
-     * If |icon| is a valid, non-empty Bitmap, the bitmap will be scaled to be of an appropriate
-     * size for the current Android device. Otherwise, a default icon will be created based on the
-     * origin the notification is being displayed for.
-     *
-     * @param icon The developer-provided icon they intend to use for the notification.
-     * @param origin The origin the notification is being displayed for.
-     * @return An appropriately sized icon to use for the notification.
-     */
-    @VisibleForTesting
-    public Bitmap ensureNormalizedIcon(Bitmap icon, String origin) {
-        if (icon == null || icon.getWidth() == 0) {
-            if (mIconGenerator == null) {
-                int cornerRadiusPx = Math.min(mLargeIconWidthPx, mLargeIconHeightPx) / 2;
-                mIconGenerator =
-                        new RoundedIconGenerator(mLargeIconWidthPx, mLargeIconHeightPx,
-                                                 cornerRadiusPx,
-                                                 NOTIFICATION_ICON_BG_COLOR,
-                                                 NOTIFICATION_TEXT_SIZE_DP * mDensity);
-            }
-
-            return mIconGenerator.generateIconForUrl(origin, true);
-        }
-
-        if (icon.getWidth() > mLargeIconWidthPx || icon.getHeight() > mLargeIconHeightPx) {
-            return icon.createScaledBitmap(icon, mLargeIconWidthPx, mLargeIconHeightPx,
-                                           false /* not filtered */);
-        }
-
-        return icon;
     }
 
     /**

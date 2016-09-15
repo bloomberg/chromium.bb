@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.notifications;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,6 +19,7 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,10 +59,26 @@ public abstract class NotificationBuilderBase {
     static final int MAX_CHARSEQUENCE_LENGTH = 5 * 1024;
 
     /**
+     * Background color for generated notification icons.
+     */
+    @VisibleForTesting
+    static final int NOTIFICATION_ICON_BG_COLOR = 0xFF969696;
+
+    /**
+     * Density-independent text size for generated notification icons.
+     */
+    @VisibleForTesting
+    static final int NOTIFICATION_ICON_TEXT_SIZE_DP = 28;
+
+    /**
      * The maximum number of author provided action buttons. The settings button is not part of this
      * count.
      */
     private static final int MAX_AUTHOR_PROVIDED_ACTION_BUTTONS = 2;
+
+    private final int mLargeIconWidthPx;
+    private final int mLargeIconHeightPx;
+    private final RoundedIconGenerator mIconGenerator;
 
     protected CharSequence mTitle;
     protected CharSequence mBody;
@@ -77,6 +96,14 @@ public abstract class NotificationBuilderBase {
     protected long[] mVibratePattern;
     protected long mTimestamp;
     protected boolean mRenotify;
+
+    public NotificationBuilderBase(Resources resources) {
+        mLargeIconWidthPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        mLargeIconHeightPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+        mIconGenerator = createIconGenerator(resources);
+    }
 
     /**
      * Combines all of the options that have been set and returns a new Notification object.
@@ -238,6 +265,79 @@ public abstract class NotificationBuilderBase {
         return this;
     }
 
+    /**
+     * Gets the large icon for the notification.
+     *
+     * If a large icon was supplied to the builder, returns this icon, scaled to an appropriate size
+     * if necessary.
+     *
+     * If no large icon was supplied then returns a default icon based on the notification origin.
+     *
+     * See {@link NotificationBuilderBase#ensureNormalizedIcon} for more details.
+     */
+    protected Bitmap getNormalizedLargeIcon() {
+        return ensureNormalizedIcon(mLargeIcon, mOrigin);
+    }
+
+    /**
+     * Ensures the availability of an icon for the notification.
+     *
+     * If |icon| is a valid, non-empty Bitmap, the bitmap will be scaled to be of an appropriate
+     * size for the current Android device. Otherwise, a default icon will be created based on the
+     * origin the notification is being displayed for.
+     *
+     * @param icon The developer-provided icon they intend to use for the notification.
+     * @param origin The origin the notification is being displayed for.
+     * @return An appropriately sized icon to use for the notification.
+     */
+    @VisibleForTesting
+    public Bitmap ensureNormalizedIcon(Bitmap icon, CharSequence origin) {
+        if (icon == null || icon.getWidth() == 0) {
+            return origin != null ? mIconGenerator.generateIconForUrl(origin.toString(), true)
+                                  : null;
+        }
+        if (icon.getWidth() > mLargeIconWidthPx || icon.getHeight() > mLargeIconHeightPx) {
+            return Bitmap.createScaledBitmap(
+                    icon, mLargeIconWidthPx, mLargeIconHeightPx, false /* not filtered */);
+        }
+        return icon;
+    }
+
+    /**
+     * Creates a public version of the notification to be displayed in sensitive contexts, such as
+     * on the lockscreen, displaying just the site origin and badge or generated icon.
+     */
+    protected Notification createPublicNotification(Context context) {
+        // Use Android's Notification.Builder because we want the default small icon behaviour.
+        Notification.Builder builder =
+                new Notification.Builder(context)
+                        .setContentText(context.getString(
+                                org.chromium.chrome.R.string.notification_hidden_text))
+                        .setSmallIcon(org.chromium.chrome.R.drawable.ic_chrome);
+
+        // TODO Change the following version check to '== Build.VERSION_CODES.N' when we bump the
+        // targetSdkVersion to 24.
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            // On N, 'subtext' displays at the top of the notification and this looks better.
+            builder.setSubText(mOrigin);
+        } else {
+            // Set origin as title on L & M, because they look odd without one.
+            builder.setContentTitle(mOrigin);
+        }
+
+        // Use the badge if provided and SDK supports it, else use a generated icon.
+        if (mSmallIconBitmap != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // The Icon class was added in Android M.
+            Bitmap publicIcon = mSmallIconBitmap.copy(mSmallIconBitmap.getConfig(), true);
+            builder.setSmallIcon(Icon.createWithBitmap(publicIcon));
+        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && mOrigin != null) {
+            // Only set the large icon for L & M because on N(+?) it would add an extra icon on
+            // the right hand side, which looks odd without a notification title.
+            builder.setLargeIcon(mIconGenerator.generateIconForUrl(mOrigin.toString(), true));
+        }
+        return builder.build();
+    }
+
     @Nullable
     private static CharSequence limitLength(@Nullable CharSequence input) {
         if (input == null) {
@@ -289,5 +389,17 @@ public abstract class NotificationBuilderBase {
         paint.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP));
         Canvas canvas = new Canvas(bitmap);
         canvas.drawBitmap(bitmap, 0, 0, paint);
+    }
+
+    @VisibleForTesting
+    static RoundedIconGenerator createIconGenerator(Resources resources) {
+        int largeIconWidthPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        int largeIconHeightPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+        float density = resources.getDisplayMetrics().density;
+        int cornerRadiusPx = Math.min(largeIconWidthPx, largeIconHeightPx) / 2;
+        return new RoundedIconGenerator(largeIconWidthPx, largeIconHeightPx, cornerRadiusPx,
+                NOTIFICATION_ICON_BG_COLOR, NOTIFICATION_ICON_TEXT_SIZE_DP * density);
     }
 }

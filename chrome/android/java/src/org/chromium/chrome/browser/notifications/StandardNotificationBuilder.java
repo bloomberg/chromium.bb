@@ -15,6 +15,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
     private final Context mContext;
 
     public StandardNotificationBuilder(Context context) {
+        super(context.getResources());
         mContext = context;
     }
 
@@ -41,7 +42,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
             // If there is no image, let the body text wrap only multiple lines when expanded.
             builder.setStyle(new Notification.BigTextStyle().bigText(mBody));
         }
-        builder.setLargeIcon(mLargeIcon);
+        builder.setLargeIcon(getNormalizedLargeIcon());
         setSmallIconOnBuilder(builder, mSmallIconId, mSmallIconBitmap);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
@@ -55,6 +56,10 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setVibrate(mVibratePattern);
         builder.setWhen(mTimestamp);
         builder.setOnlyAlertOnce(!mRenotify);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Notification.Builder.setPublicVersion was added in Android L.
+            builder.setPublicVersion(createPublicNotification(mContext));
+        }
         return builder.build();
     }
 }
