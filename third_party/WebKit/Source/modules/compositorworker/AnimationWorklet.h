@@ -12,7 +12,7 @@
 namespace blink {
 
 class LocalFrame;
-class ThreadedWorkletMessagingProxy;
+class ThreadedWorkletGlobalScopeProxy;
 class WorkletGlobalScopeProxy;
 
 class MODULES_EXPORT AnimationWorklet final : public Worklet {
@@ -28,9 +28,8 @@ public:
 private:
     explicit AnimationWorklet(LocalFrame*);
 
-    // The proxy outlives the worklet as it is used to perform thread shutdown,
-    // it deletes itself once this has occured.
-    ThreadedWorkletMessagingProxy* const m_workletMessagingProxy;
+    // TODO(ikilpatrick): this will change to a raw ptr once we have a thread.
+    std::unique_ptr<ThreadedWorkletGlobalScopeProxy> m_workletGlobalScopeProxy;
 };
 
 } // namespace blink

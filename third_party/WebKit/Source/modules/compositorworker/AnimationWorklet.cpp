@@ -5,17 +5,14 @@
 #include "modules/compositorworker/AnimationWorklet.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/compositorworker/AnimationWorkletMessagingProxy.h"
-#include "modules/compositorworker/AnimationWorkletThread.h"
+#include "core/workers/ThreadedWorkletGlobalScopeProxy.h"
 
 namespace blink {
 
 // static
 AnimationWorklet* AnimationWorklet::create(LocalFrame* frame)
 {
-    AnimationWorkletThread::ensureSharedBackingThread();
     AnimationWorklet* worklet = new AnimationWorklet(frame);
     worklet->suspendIfNeeded();
     return worklet;
@@ -23,19 +20,17 @@ AnimationWorklet* AnimationWorklet::create(LocalFrame* frame)
 
 AnimationWorklet::AnimationWorklet(LocalFrame* frame)
     : Worklet(frame)
-    , m_workletMessagingProxy(new AnimationWorkletMessagingProxy(frame->document()))
+    , m_workletGlobalScopeProxy(new ThreadedWorkletGlobalScopeProxy())
 {
-    m_workletMessagingProxy->initialize();
 }
 
 AnimationWorklet::~AnimationWorklet()
 {
-    m_workletMessagingProxy->parentObjectDestroyed();
 }
 
 WorkletGlobalScopeProxy* AnimationWorklet::workletGlobalScopeProxy() const
 {
-    return m_workletMessagingProxy;
+    return m_workletGlobalScopeProxy.get();
 }
 
 DEFINE_TRACE(AnimationWorklet)
