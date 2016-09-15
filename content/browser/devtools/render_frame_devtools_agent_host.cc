@@ -864,8 +864,8 @@ void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
 }
 
 std::string RenderFrameDevToolsAgentHost::GetParentId() {
-  if (IsChildFrame()) {
-    RenderFrameHostImpl* frame_host = current_->host();
+  if (IsChildFrame() && current_) {
+    RenderFrameHostImpl* frame_host = current_->host()->GetParent();
     while (frame_host && !ShouldCreateDevToolsFor(frame_host))
       frame_host = frame_host->GetParent();
     if (frame_host)

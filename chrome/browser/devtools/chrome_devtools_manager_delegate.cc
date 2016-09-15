@@ -49,6 +49,10 @@ void ChromeDevToolsManagerDelegate::Inspect(
     DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
     return;
   }
+  if (type == content::DevToolsAgentHost::kTypeFrame) {
+    DevToolsWindow::OpenDevToolsWindow(profile, agent_host);
+    return;
+  }
   content::WebContents* web_contents = agent_host->GetWebContents();
   if (web_contents)
     DevToolsWindow::OpenDevToolsWindow(web_contents);
