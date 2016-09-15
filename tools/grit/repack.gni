@@ -119,17 +119,16 @@ template("repack") {
 #   repack_whitelist [optional]
 #       Normal meaning.
 template("repack_locales") {
-  # GN can't handle invoker.output_locales[foo] (http://crbug.com/614747).
-  _output_locales = invoker.output_locales
   if (defined(invoker.output_dir)) {
     _output_dir = invoker.output_dir
+  } else if (is_ios) {
+    _output_dir = "$target_gen_dir"
   } else {
-    if (is_ios) {
-      _output_dir = "$target_gen_dir"
-    } else {
-      _output_dir = "$target_gen_dir/$target_name"
-    }
+    _output_dir = "$target_gen_dir/$target_name"
   }
+
+  # GN can't handle invoker.output_locales[foo] (http://crbug.com/614747).
+  _output_locales = invoker.output_locales
 
   # Collects all targets the loop generates.
   _locale_targets = []
@@ -157,12 +156,12 @@ template("repack_locales") {
       visibility = [ ":${invoker.target_name}" ]
       if (is_ios) {
         output = "$_output_dir/${_output_locale}.lproj/locale.pak"
-        if (defined(copy_data_to_bundle) && copy_data_to_bundle) {
-          bundle_output =
-              "{{bundle_resources_dir}}/${_output_locale}.lproj/locale.pak"
-        }
       } else {
         output = "$_output_dir/${_output_locale}.pak"
+      }
+      if (defined(copy_data_to_bundle) && copy_data_to_bundle) {
+        bundle_output =
+            "{{bundle_resources_dir}}/${_output_locale}.lproj/locale.pak"
       }
       set_sources_assignment_filter([])
       sources = []
