@@ -565,8 +565,14 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
+    LayoutRect rectToScroll = rect;
+    if (rectToScroll.width() <= 0)
+        rectToScroll.setWidth(LayoutUnit(1));
+    if (rectToScroll.height() <= 0)
+        rectToScroll.setHeight(LayoutUnit(1));
+
     LayoutBox* parentBox = nullptr;
-    LayoutRect newRect = rect;
+    LayoutRect newRect = rectToScroll;
 
     bool restrictedByLineClamp = false;
     if (parent()) {
@@ -577,7 +583,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     if (hasOverflowClip() && !restrictedByLineClamp) {
         // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
         // This will prevent us from revealing text hidden by the slider in Safari RSS.
-        newRect = getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+        newRect = getScrollableArea()->scrollIntoView(rectToScroll, alignX, alignY, scrollType);
         if (newRect.isEmpty())
             return;
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
@@ -585,15 +591,15 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
             HTMLFrameOwnerElement* ownerElement = document().localOwner();
             if (!isDisallowedAutoscroll(ownerElement, frameView)) {
                 if (makeVisibleInVisualViewport) {
-                    frameView->getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+                    frameView->getScrollableArea()->scrollIntoView(rectToScroll, alignX, alignY, scrollType);
                 } else {
-                    frameView->layoutViewportScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+                    frameView->layoutViewportScrollableArea()->scrollIntoView(rectToScroll, alignX, alignY, scrollType);
                 }
                 if (ownerElement && ownerElement->layoutObject()) {
                     if (frameView->safeToPropagateScrollToParent()) {
                         parentBox = ownerElement->layoutObject()->enclosingBox();
                         LayoutView* parentView = ownerElement->layoutObject()->view();
-                        newRect = enclosingLayoutRect(view()->localToAncestorQuad(FloatRect(rect), parentView, UseTransforms | TraverseDocumentBoundaries).boundingBox());
+                        newRect = enclosingLayoutRect(view()->localToAncestorQuad(FloatRect(rectToScroll), parentView, UseTransforms | TraverseDocumentBoundaries).boundingBox());
                     } else {
                         parentBox = nullptr;
                     }
