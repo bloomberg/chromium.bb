@@ -15,6 +15,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -28,8 +29,50 @@
 
 namespace ui {
 
+namespace {
+
+class GLOzoneEGLGbm : public GLOzoneEGL {
+ public:
+  GLOzoneEGLGbm(GbmSurfaceFactory* surface_factory, DrmThreadProxy* drm_thread)
+      : surface_factory_(surface_factory), drm_thread_(drm_thread) {}
+  ~GLOzoneEGLGbm() override {}
+
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    return gl::InitializeGLSurface(new GbmSurface(
+        surface_factory_, drm_thread_->CreateDrmWindowProxy(window), window));
+  }
+
+  scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    return gl::InitializeGLSurface(new GbmSurfaceless(
+        surface_factory_, drm_thread_->CreateDrmWindowProxy(window), window));
+  }
+
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      const gfx::Size& size) override {
+    DCHECK_EQ(size.width(), 0);
+    DCHECK_EQ(size.height(), 0);
+    return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
+  }
+
+ protected:
+  intptr_t GetNativeDisplay() override { return EGL_DEFAULT_DISPLAY; }
+
+  bool LoadGLES2Bindings() override { return LoadDefaultEGLGLES2Bindings(); }
+
+ private:
+  GbmSurfaceFactory* surface_factory_;
+  DrmThreadProxy* drm_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLGbm);
+};
+
+}  // namespace
+
 GbmSurfaceFactory::GbmSurfaceFactory(DrmThreadProxy* drm_thread)
-    : drm_thread_(drm_thread) {}
+    : egl_implementation_(new GLOzoneEGLGbm(this, drm_thread)),
+      drm_thread_(drm_thread) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -54,58 +97,23 @@ GbmSurfaceless* GbmSurfaceFactory::GetSurface(
   return it->second;
 }
 
-scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateViewGLSurface(
-    gl::GLImplementation implementation,
-    gfx::AcceleratedWidget widget) {
+std::vector<gl::GLImplementation>
+GbmSurfaceFactory::GetAllowedGLImplementations() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  std::vector<gl::GLImplementation> impls;
+  impls.push_back(gl::kGLImplementationEGLGLES2);
+  impls.push_back(gl::kGLImplementationOSMesaGL);
+  return impls;
+}
 
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
+GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  switch (implementation) {
+    case gl::kGLImplementationEGLGLES2:
+      return egl_implementation_.get();
+    default:
+      return nullptr;
   }
-
-  return gl::InitializeGLSurface(
-      new GbmSurface(this, drm_thread_->CreateDrmWindowProxy(widget), widget));
-}
-
-scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateSurfacelessViewGLSurface(
-    gl::GLImplementation implementation,
-    gfx::AcceleratedWidget widget) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  return gl::InitializeGLSurface(new GbmSurfaceless(
-      this, drm_thread_->CreateDrmWindowProxy(widget), widget));
-}
-
-scoped_refptr<gl::GLSurface> GbmSurfaceFactory::CreateOffscreenGLSurface(
-    gl::GLImplementation implementation,
-    const gfx::Size& size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  DCHECK_EQ(size.width(), 0);
-  DCHECK_EQ(size.height(), 0);
-
-  return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
-}
-
-intptr_t GbmSurfaceFactory::GetNativeDisplay() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return EGL_DEFAULT_DISPLAY;
-}
-
-bool GbmSurfaceFactory::LoadEGLGLES2Bindings() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return LoadDefaultEGLGLES2Bindings();
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
