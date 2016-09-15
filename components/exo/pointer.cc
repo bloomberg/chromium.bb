@@ -130,6 +130,13 @@ void Pointer::SetStylusDelegate(PointerStylusDelegate* delegate) {
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   Surface* target = GetEffectiveTargetForEvent(event);
 
+  auto new_pointer_type = pointer_type_;
+  if ((event->flags() & ui::EF_IS_SYNTHESIZED) == 0) {
+    new_pointer_type = event->pointer_details().pointer_type;
+    if (new_pointer_type == ui::EventPointerType::POINTER_TYPE_UNKNOWN)
+      new_pointer_type = ui::EventPointerType::POINTER_TYPE_MOUSE;
+  }
+
   // If target is different than the current pointer focus then we need to
   // generate enter and leave events.
   if (target != focus_) {
@@ -147,9 +154,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       delegate_->OnPointerEnter(target, event->location_f(),
                                 event->button_flags());
       location_ = event->location_f();
-      // Defaulting pointer_type to POINTER_TYPE_MOUSE prevents the tool change
-      // event from being fired when using a mouse.
-      pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
+      if (stylus_delegate_) {
+        stylus_delegate_->OnPointerToolChange(new_pointer_type);
+        pointer_type_ = new_pointer_type;
+      }
 
       focus_ = target;
       focus_->AddSurfaceObserver(this);
@@ -157,10 +165,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     delegate_->OnPointerFrame();
   }
 
-  // Report changes in pointer type. We treat unknown devices as a mouse.
-  auto new_pointer_type = event->pointer_details().pointer_type;
-  if (new_pointer_type == ui::EventPointerType::POINTER_TYPE_UNKNOWN)
-    new_pointer_type = ui::EventPointerType::POINTER_TYPE_MOUSE;
+  // Report changes in pointer type.
   if (focus_ && stylus_delegate_ && new_pointer_type != pointer_type_) {
     stylus_delegate_->OnPointerToolChange(new_pointer_type);
     pointer_type_ = new_pointer_type;
