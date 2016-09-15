@@ -33,6 +33,11 @@ namespace {
 const base::FilePath::CharType kAndroidDownloadDir[] =
     FILE_PATH_LITERAL("/storage/emulated/0/Download");
 
+// How long to wait for new inotify events before building the updated timestamp
+// map.
+const base::TimeDelta kBuildTimestampMapDelay =
+    base::TimeDelta::FromMilliseconds(1000);
+
 // Compares two TimestampMaps and returns the list of file paths added/removed
 // or whose timestamp have changed.
 std::vector<base::FilePath> CollectChangedPaths(
@@ -70,6 +75,37 @@ std::vector<base::FilePath> CollectChangedPaths(
   return changed_paths;
 }
 
+// Scans files under |downloads_dir| recursively and builds a map from file
+// paths (in Android filesystem) to last modified timestamps.
+TimestampMap BuildTimestampMap(base::FilePath downloads_dir) {
+  DCHECK(!downloads_dir.EndsWithSeparator());
+  TimestampMap timestamp_map;
+
+  // Enumerate normal files only; directories and symlinks are skipped.
+  base::FileEnumerator enumerator(downloads_dir, true,
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath cros_path = enumerator.Next(); !cros_path.empty();
+       cros_path = enumerator.Next()) {
+    // Android file path can be obtained by replacing |downloads_dir| prefix
+    // with |kAndroidDownloadDir|.
+    base::FilePath android_path(kAndroidDownloadDir);
+    downloads_dir.AppendRelativePath(cros_path, &android_path);
+    const base::FileEnumerator::FileInfo& info = enumerator.GetInfo();
+    timestamp_map[android_path] = info.GetLastModifiedTime();
+  }
+  return timestamp_map;
+}
+
+std::pair<base::TimeTicks, TimestampMap> BuildTimestampMapCallback(
+    base::FilePath downloads_dir) {
+  // The TimestampMap may include changes form after snapshot_time.
+  // We must take the snapshot_time before we build the TimestampMap since
+  // changes that occur while building the map may not be captured.
+  base::TimeTicks snapshot_time = base::TimeTicks::Now();
+  TimestampMap current_timestamp_map = BuildTimestampMap(downloads_dir);
+  return std::make_pair(snapshot_time, std::move(current_timestamp_map));
+}
+
 }  // namespace
 
 // The core part of ArcDownloadsWatcherService to watch for file changes in
@@ -86,16 +122,27 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
 
  private:
   // Called by base::FilePathWatcher to notify file changes.
+  // Kicks off the update of last_timestamp_map_ if one is not already in
+  // progress.
   void OnFilePathChanged(const base::FilePath& path, bool error);
 
-  // Scans files under |downloads_dir_| recursively and builds a map from file
-  // paths (in Android filesystem) to last modified timestamps.
-  TimestampMap BuildTimestampMap() const;
+  // Called with a delay to allow additional inotify events for the same user
+  // action to queue up so that they can be dealt with in batch.
+  void DelayBuildTimestampMap();
+
+  // Called after a new timestamp map has been created and causes any recently
+  // modified files to be sent to the media scanner.
+  void OnBuildTimestampMap(
+      std::pair<base::TimeTicks, TimestampMap> timestamp_and_map);
 
   Callback callback_;
   base::FilePath downloads_dir_;
   std::unique_ptr<base::FilePathWatcher> watcher_;
   TimestampMap last_timestamp_map_;
+  // The timestamp of the last OnFilePathChanged callback received.
+  base::TimeTicks last_notify_time_;
+  // Whether or not there is an outstanding task to update last_timestamp_map_.
+  bool outstanding_task_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
@@ -106,7 +153,10 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
 
 ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
     const Callback& callback)
-    : callback_(callback), weak_ptr_factory_(this) {
+    : callback_(callback),
+      last_notify_time_(base::TimeTicks()),
+      outstanding_task_(false),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   downloads_dir_ = DownloadPrefs(ProfileManager::GetActiveUserProfile())
@@ -123,7 +173,8 @@ void ArcDownloadsWatcherService::DownloadsWatcher::Start() {
 
   // Initialize with the current timestamp map and avoid initial notification.
   // It is not needed since MediaProvider scans whole storage area on boot.
-  last_timestamp_map_ = BuildTimestampMap();
+  last_notify_time_ = base::TimeTicks::Now();
+  last_timestamp_map_ = BuildTimestampMap(downloads_dir_);
 
   watcher_ = base::MakeUnique<base::FilePathWatcher>();
   // On Linux, base::FilePathWatcher::Watch() always returns true.
@@ -138,9 +189,34 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
   // On Linux, |error| is always false. Also, |path| is always the same path
   // as one given to FilePathWatcher::Watch().
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  if (!outstanding_task_) {
+    outstanding_task_ = true;
+    BrowserThread::PostDelayedTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DownloadsWatcher::DelayBuildTimestampMap,
+                   weak_ptr_factory_.GetWeakPtr()),
+        kBuildTimestampMapDelay);
+  } else {
+    last_notify_time_ = base::TimeTicks::Now();
+  }
+}
 
-  TimestampMap current_timestamp_map = BuildTimestampMap();
+void ArcDownloadsWatcherService::DownloadsWatcher::DelayBuildTimestampMap() {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(outstanding_task_);
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&BuildTimestampMapCallback, downloads_dir_),
+      base::Bind(&DownloadsWatcher::OnBuildTimestampMap,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
+void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
+    std::pair<base::TimeTicks, TimestampMap> timestamp_and_map) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(outstanding_task_);
+  base::TimeTicks snapshot_time = timestamp_and_map.first;
+  TimestampMap current_timestamp_map = std::move(timestamp_and_map.second);
   std::vector<base::FilePath> changed_paths =
       CollectChangedPaths(last_timestamp_map_, current_timestamp_map);
 
@@ -153,28 +229,15 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(callback_, base::Passed(std::move(mojo_paths))));
-}
-
-TimestampMap ArcDownloadsWatcherService::DownloadsWatcher::BuildTimestampMap()
-    const {
-  DCHECK(!downloads_dir_.EndsWithSeparator());
-  TimestampMap timestamp_map;
-
-  // Enumerate normal files only; directories and symlinks are skipped.
-  base::FileEnumerator enumerator(downloads_dir_, true,
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath cros_path = enumerator.Next(); !cros_path.empty();
-       cros_path = enumerator.Next()) {
-    // Android file path can be obtained by replacing |downloads_dir_| prefix
-    // with |kAndroidDownloadDir|.
-    const base::FilePath& android_path =
-        base::FilePath(kAndroidDownloadDir)
-            .Append(
-                cros_path.value().substr(downloads_dir_.value().length() + 1));
-    const base::FileEnumerator::FileInfo& info = enumerator.GetInfo();
-    timestamp_map[android_path] = info.GetLastModifiedTime();
+  if (last_notify_time_ > snapshot_time) {
+    base::PostTaskAndReplyWithResult(
+        BrowserThread::GetBlockingPool(), FROM_HERE,
+        base::Bind(&BuildTimestampMapCallback, downloads_dir_),
+        base::Bind(&DownloadsWatcher::OnBuildTimestampMap,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    outstanding_task_ = false;
   }
-  return timestamp_map;
 }
 
 ArcDownloadsWatcherService::ArcDownloadsWatcherService(
