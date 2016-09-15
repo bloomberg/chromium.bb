@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("stability_report_proto") {
+  sources = [
+    "stability_report.proto",
+  ]
+}
+
 static_library("browser_watcher") {
   # This is a separate lib to minimize the dependencies for its
   # hosting binary "chrome_watcher.dll".
@@ -33,12 +41,28 @@ static_library("browser_watcher_client") {
   ]
 }
 
+static_library("postmortem_minidump_writer") {
+  # TODO(manzagop): remove this lib once Crashpad writes the minidumps.
+  sources = [
+    "postmortem_minidump_writer.h",
+    "postmortem_minidump_writer_win.cc",
+  ]
+  deps = [
+    ":stability_report_proto",
+    "//base",
+    "//third_party/crashpad/crashpad/client",
+    "//third_party/crashpad/crashpad/minidump",
+    "//third_party/crashpad/crashpad/util",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "endsession_watcher_window_win_unittest.cc",
     "exit_code_watcher_win_unittest.cc",
     "exit_funnel_win_unittest.cc",
+    "postmortem_minidump_writer_win_unittest.cc",
     "watcher_client_win_unittest.cc",
     "watcher_metrics_provider_win_unittest.cc",
     "window_hang_monitor_win_unittest.cc",
@@ -47,8 +71,17 @@ source_set("unit_tests") {
   deps = [
     ":browser_watcher",
     ":browser_watcher_client",
+    ":postmortem_minidump_writer",
+    ":stability_report_proto",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
+    "//third_party/crashpad/crashpad/client",
+
+    # TODO(manzagop): remove this lib once Crashpad writes the minidumps.
+    "//third_party/crashpad/crashpad/compat",
+    "//third_party/crashpad/crashpad/minidump",
+    "//third_party/crashpad/crashpad/snapshot",
+    "//third_party/crashpad/crashpad/util",
   ]
 }

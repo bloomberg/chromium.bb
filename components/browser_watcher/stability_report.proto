@@ -1,0 +1,78 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package browser_watcher;
+
+// The state of the system on which Chrome is running (shutting down, battery
+// level, load, etc.).
+message SystemState {
+  // TODO(manzagop): flesh out.
+}
+
+message CodeModule {
+  // The base address of this code module as it was loaded by the process.
+  optional int64 base_address = 1;
+
+  // The size of the code module.
+  optional int64 size = 2;
+
+  // The path or file name that the code module was loaded from.
+  optional string code_file = 3;
+
+  // An identifying string used to discriminate between multiple versions and
+  // builds of the same code module.  This may contain a uuid, timestamp,
+  // version number, or any combination of this or other information, in an
+  // implementation-defined format.
+  optional string code_identifier = 4;
+
+  // The filename containing debugging information associated with the code
+  // module.  If debugging information is stored in a file separate from the
+  // code module itself (as is the case when .pdb or .dSYM files are used),
+  // this will be different from code_file.  If debugging information is
+  // stored in the code module itself (possibly prior to stripping), this
+  // will be the same as code_file.
+  optional string debug_file = 5;
+
+  // An identifying string similar to code_identifier, but identifies a
+  // specific version and build of the associated debug file.  This may be
+  // the same as code_identifier when the debug_file and code_file are
+  // identical or when the same identifier is used to identify distinct
+  // debug and code files.
+  optional string debug_identifier = 6;
+
+  // A human-readable representation of the code module's version.
+  optional string version = 7;
+}
+
+// The state of a thread.
+message ThreadState {
+  optional string thread_name = 1;
+  // TODO(manzagop): flesh out.
+}
+
+// The state of a process.
+message ProcessState {
+  // Note: likely only a subset of modules of interest (e.g. Chromium's own
+  // modules).
+  repeated CodeModule modules = 1;
+  repeated ThreadState threads = 2;
+  // TODO(manzagop): add experiment state.
+}
+
+// A stability report contains information pertaining to the execution of a
+// single logical instance of a "chrome browser". It is comprised of information
+// about the system state and about the chrome browser's processes.
+message StabilityReport {
+  optional SystemState system_state = 1;
+  // TODO(manzagop): revisit whether a single repeated field should contain all
+  //     processes, or whether it's preferable to have separate fields per type.
+  // TODO(manzagop): add information about the type of process, pid, process
+  //     times (e.g. start time), hierarchical relationships (e.g. parent pid),
+  //     command line, etc.
+  repeated ProcessState process_states = 2;
+}
