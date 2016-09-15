@@ -30,8 +30,6 @@ source_set("browser") {
     "cast_download_manager_delegate.h",
     "cast_http_user_agent_settings.cc",
     "cast_http_user_agent_settings.h",
-    "cast_media_blocker.cc",
-    "cast_media_blocker.h",
     "cast_net_log.cc",
     "cast_net_log.h",
     "cast_network_delegate.cc",
@@ -181,7 +179,6 @@ config("browser_test_config") {
 test("cast_shell_browser_test") {
   sources = [
     "test/chromecast_shell_browser_test.cc",
-    "test/chromecast_shell_media_blocking_browser_test.cc",
   ]
 
   configs += [ ":browser_test_config" ]

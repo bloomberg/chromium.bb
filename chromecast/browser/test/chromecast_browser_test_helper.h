@@ -24,7 +24,6 @@ class ChromecastBrowserTestHelper {
 
   virtual ~ChromecastBrowserTestHelper() {}
   virtual content::WebContents* NavigateToURL(const GURL& url) = 0;
-  virtual void BlockMediaLoading(bool block) = 0;
 };
 
 }  // namespace shell
