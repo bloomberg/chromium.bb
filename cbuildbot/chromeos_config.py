@@ -868,13 +868,11 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def _GetConfig(site_config, ge_build_config):
-  """Method with un-refactored build configs/templates.
+def CreateBuilderTemplates(site_config):
+  """CreateBuilderTemplates defines all BuildConfig templates.
 
   Args:
-    site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
+    site_config: A SiteConfig object to add the templates too.
   """
   default_hw_tests_override = config_lib.BuildConfig(
       hw_tests_override=HWTestList.DefaultList(
@@ -887,7 +885,6 @@ def _GetConfig(site_config, ge_build_config):
           num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
   )
-
 
   # Config parameters for builders that do not run tests on the builder.
   site_config.AddTemplate(
@@ -1046,26 +1043,6 @@ def _GetConfig(site_config, ge_build_config):
       chromeos_official=True,
   )
 
-  site_config.AddWithoutTemplate(
-      'chromiumos-sdk',
-      site_config.templates.full,
-      site_config.templates.no_hwtest_builder,
-      # The amd64-host has to be last as that is when the toolchains
-      # are bundled up for inclusion in the sdk.
-      boards=[
-          'x86-generic', 'arm-generic', 'amd64-generic', 'peppy'
-      ],
-      build_type=constants.CHROOT_BUILDER_TYPE,
-      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
-      builder_class_name='sdk_builders.ChrootSdkBuilder',
-      use_sdk=False,
-      trybot_list=True,
-      prebuilts=constants.PUBLIC,
-      description='Build the SDK and all the cross-compilers',
-      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Continuous',
-  )
-
   site_config.AddTemplate(
       'asan',
       default_hw_tests_override,
@@ -1121,20 +1098,6 @@ def _GetConfig(site_config, ge_build_config):
       prebuilts=constants.PUBLIC,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
-  )
-
-  site_config.Add(
-      'master-chromium-pfq',
-      site_config.templates.chromium_pfq,
-      boards=[],
-      master=True,
-      binhost_test=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      afdo_update_ebuild=True,
-      chrome_sdk=False,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree',
-                               'chrome'],
   )
 
   site_config.AddTemplate(
@@ -1219,6 +1182,407 @@ def _GetConfig(site_config, ge_build_config):
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
+
+  site_config.AddTemplate(
+      'tot_asan_informational',
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.asan,
+      unittests=True,
+      description='Build TOT Chrome with Address Sanitizer (Clang)',
+  )
+
+  # Because branch directories may be shared amongst builders on multiple
+  # branches, they must delete the chroot every time they run.
+  # They also potentially need to build [new] Chrome.
+  site_config.AddTemplate(
+      'pre_flight_branch',
+      site_config.templates.internal,
+      site_config.templates.official_chrome,
+      site_config.templates.pfq,
+      overlays=constants.BOTH_OVERLAYS,
+      prebuilts=constants.PRIVATE,
+      branch=True,
+      trybot_list=False,
+      sync_chrome=True,
+      active_waterfall=constants.WATERFALL_RELEASE)
+
+  site_config.AddTemplate(
+      'internal_paladin',
+      site_config.templates.paladin,
+      site_config.templates.internal,
+      site_config.templates.official_chrome,
+      _template='paladin',
+      manifest=constants.OFFICIAL_MANIFEST,
+      overlays=constants.BOTH_OVERLAYS,
+      prebuilts=constants.PRIVATE,
+      vm_tests=[],
+      description=site_config.templates.paladin.description + ' (internal)',
+  )
+
+  # Used for paladin builders with nowithdebug flag (a.k.a -cros-debug)
+  site_config.AddTemplate(
+      'internal_nowithdebug_paladin',
+      site_config.templates.internal_paladin,
+      _template='paladin',
+      useflags=append_useflags(['-cros-debug']),
+      description=(site_config.templates.paladin.description +
+                   ' (internal, nowithdebug)'),
+      prebuilts=False,
+  )
+
+  site_config.AddTemplate(
+      'pre_cq',
+      site_config.templates.paladin,
+      build_type=constants.INCREMENTAL_TYPE,
+      build_packages_in_background=True,
+      pre_cq=True,
+      archive=False,
+      chrome_sdk=False,
+      chroot_replace=True,
+      debug_symbols=False,
+      prebuilts=False,
+      cpe_export=False,
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests_override=None,
+      description='Verifies compilation, building an image, and vm/unit tests '
+                  'if supported.',
+      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-Pre-CQ',
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
+      health_threshold=3,
+  )
+
+  # Pre-CQ targets that only check compilation and unit tests.
+  site_config.AddTemplate(
+      'unittest_only_pre_cq',
+      site_config.templates.pre_cq,
+      site_config.templates.no_vmtest_builder,
+      description='Verifies compilation and unit tests only',
+      compilecheck=True,
+  )
+
+  # Pre-CQ targets that don't run VMTests.
+  site_config.AddTemplate(
+      'no_vmtest_pre_cq',
+      site_config.templates.pre_cq,
+      site_config.templates.no_vmtest_builder,
+      description='Verifies compilation, building an image, and unit tests '
+                  'if supported.',
+  )
+
+  # Pre-CQ targets that only check compilation.
+  site_config.AddTemplate(
+      'compile_only_pre_cq',
+      site_config.templates.unittest_only_pre_cq,
+      description='Verifies compilation only',
+      unittests=False,
+  )
+
+  # Internal incremental builders don't use official chrome because we want
+  # to test the developer workflow.
+  site_config.AddTemplate(
+      'internal_incremental',
+      site_config.templates.internal,
+      site_config.templates.incremental,
+      _template='incremental',
+      overlays=constants.BOTH_OVERLAYS,
+      description='Incremental Builds (internal)',
+  )
+
+  # A test-ap image is just a test image with a special profile enabled.
+  # Note that each board enabled for test-ap use has to have the testbed-ap
+  # profile linked to from its private overlay.
+  site_config.AddTemplate(
+      'test_ap',
+      site_config.templates.internal,
+      default_hw_tests_override,
+      build_type=constants.INCREMENTAL_TYPE,
+      description='WiFi AP images used in testing',
+      profile='testbed-ap',
+      vm_tests=[],
+  )
+
+  # Create tryjob build configs to help with stress testing.
+  site_config.AddTemplate(
+      'unittest_stress',
+      site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
+      build_type=constants.TRYJOB_TYPE,
+      description='Run Unittests repeatedly to look for flake.',
+
+      builder_class_name='test_builders.UnittestStressBuilder',
+
+      # Make this available, so we can stress a previous build.
+      manifest_version=True,
+  )
+
+  site_config.AddTemplate(
+      'release',
+      site_config.templates.full,
+      site_config.templates.official,
+      site_config.templates.internal,
+      default_hw_tests_override,
+      build_type=constants.CANARY_TYPE,
+      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      useflags=append_useflags(['-cros-debug']),
+      afdo_use=True,
+      manifest=constants.OFFICIAL_MANIFEST,
+      manifest_version=True,
+      images=['base', 'recovery', 'test', 'factory_install'],
+      sign_types=['recovery'],
+      push_image=True,
+      upload_symbols=True,
+      binhost_bucket='gs://chromeos-dev-installer',
+      binhost_key='RELEASE_BINHOST',
+      binhost_base_url='https://commondatastorage.googleapis.com/'
+                       'chromeos-dev-installer',
+      dev_installer_prebuilts=True,
+      git_sync=False,
+      vm_tests=[
+          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
+      # Some release builders disable VMTests to be able to build on GCE, but
+      # still want VMTests enabled on trybot builders.
+      vm_tests_override=[
+          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
+      hw_tests=HWTestList.SharedPoolCanary(),
+      paygen=True,
+      signer_tests=True,
+      trybot_list=True,
+      hwqual=True,
+      description="Release Builds (canary) (internal)",
+      chrome_sdk=True,
+      image_test=True,
+      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-Canaries',
+  )
+
+  site_config.AddTemplate(
+      'toolchain',
+      # Make sure that we are doing a full build and that we are using AFDO.
+      site_config.templates.full,
+      site_config.templates.internal,
+      site_config.templates.official_chrome,
+      site_config.templates.no_vmtest_builder,
+      build_type=constants.TOOLCHAIN_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      images=['base', 'test', 'recovery'],
+      build_timeout=(15 * 60 + 50) * 60,
+      useflags=append_useflags(['-cros-debug']),
+      afdo_use=True,
+      manifest=constants.OFFICIAL_MANIFEST,
+      manifest_version=True,
+      git_sync=False,
+      trybot_list=False,
+      description="Toolchain Builds (internal)",
+  )
+
+  ### Release AFDO configs.
+
+  release_afdo = site_config.templates.release.derive(
+      trybot_list=False,
+      hw_tests=(
+          HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
+          HWTestList.AFDOList()
+      ),
+      push_image=False,
+      paygen=False,
+      dev_installer_prebuilts=False,
+  )
+
+  site_config.AddTemplate(
+      'release_afdo_generate',
+      release_afdo,
+      afdo_generate_min=True,
+      afdo_use=False,
+      afdo_update_ebuild=True,
+
+      hw_tests=[HWTestList.AFDORecordTest()],
+      hw_tests_override=[HWTestList.AFDORecordTest(
+          num=constants.HWTEST_TRYBOT_NUM,
+          pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False,
+          priority=constants.HWTEST_DEFAULT_PRIORITY,
+      )],
+  )
+
+  site_config.AddTemplate(
+      'release_afdo_use',
+      release_afdo,
+      afdo_use=True,
+  )
+
+  site_config.AddTemplate(
+      'moblab_release',
+      site_config.templates.release,
+      description='Moblab release builders',
+      images=['base', 'recovery', 'test'],
+      paygen_skip_delta_payloads=True,
+      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+      paygen_skip_testing=True,
+      important=False,
+      afdo_use=False,
+      signer_tests=False,
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
+                                  num=1, timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                  warn_only=True, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
+                                  warn_only=True, num=1)],
+      _template='release',
+  )
+
+  site_config.AddTemplate(
+      'cheets_release',
+      site_config.templates.release,
+      description='Cheets release builders',
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
+                                  warn_only=True, num=1)],
+      _template='release',
+  )
+
+  site_config.AddTemplate(
+      'wificell_pre_cq',
+      site_config.templates.pre_cq,
+      unittests=False,
+      hw_tests=HWTestList.WiFiCellPoolPreCQ(),
+      hw_tests_override=HWTestList.WiFiCellPoolPreCQ(),
+      archive=True,
+      image_test=False,
+      description='WiFi tests acting as pre-cq for WiFi related changes',
+  )
+
+  # Factory and Firmware releases much inherit from these classes.
+  # Modifications for these release builders should go here.
+
+  # Naming conventions also must be followed. Factory and firmware branches
+  # must end in -factory or -firmware suffixes.
+
+  site_config.AddTemplate(
+      'factory',
+      site_config.templates.release,
+      upload_hw_test_artifacts=False,
+      upload_symbols=False,
+      hw_tests=[],
+      chrome_sdk=False,
+      description='Factory Builds',
+      paygen=False,
+      afdo_use=False,
+      sign_types=['factory'],
+  )
+
+  _firmware = config_lib.BuildConfig(
+      site_config.templates.no_vmtest_builder,
+      images=[],
+      factory_toolkit=False,
+      packages=['virtual/chromeos-firmware', 'chromeos-base/autotest-all'],
+      usepkg_build_packages=True,
+      sync_chrome=False,
+      chrome_sdk=False,
+      unittests=False,
+      hw_tests=[],
+      dev_installer_prebuilts=False,
+      upload_hw_test_artifacts=True,
+      upload_symbols=False,
+      useflags=['chromeless_tty'],
+      signer_tests=False,
+      trybot_list=False,
+      paygen=False,
+      image_test=False,
+      sign_types=['firmware'],
+  )
+
+  site_config.AddTemplate(
+      'firmware',
+      site_config.templates.release,
+      _firmware,
+      description='Firmware Canary',
+      manifest=constants.DEFAULT_MANIFEST,
+      afdo_use=False,
+  )
+
+  site_config.AddTemplate(
+      'depthcharge_firmware',
+      site_config.templates.firmware,
+      useflags=append_useflags(['depthcharge']))
+
+  site_config.AddTemplate(
+      'depthcharge_full_firmware',
+      site_config.templates.full,
+      site_config.templates.internal,
+      _firmware,
+      useflags=append_useflags(['depthcharge']),
+      description='Firmware Informational',
+  )
+
+  site_config.AddTemplate(
+      'payloads',
+      site_config.templates.internal,
+      site_config.templates.no_vmtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_hwtest_builder,
+      build_type=constants.PAYLOADS_TYPE,
+      builder_class_name='release_builders.GeneratePayloadsBuilder',
+      description='Regenerate release payloads.',
+
+      # Sync to the code used to do the build the first time.
+      manifest_version=True,
+
+      # This is the actual work we want to do.
+      paygen=True,
+
+      upload_hw_test_artifacts=False,
+  )
+
+
+def _GetConfig(site_config, ge_build_config):
+  """Method with un-refactored build configs/templates.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  site_config.AddWithoutTemplate(
+      'chromiumos-sdk',
+      site_config.templates.full,
+      site_config.templates.no_hwtest_builder,
+      # The amd64-host has to be last as that is when the toolchains
+      # are bundled up for inclusion in the sdk.
+      boards=[
+          'x86-generic', 'arm-generic', 'amd64-generic', 'peppy'
+      ],
+      build_type=constants.CHROOT_BUILDER_TYPE,
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
+      builder_class_name='sdk_builders.ChrootSdkBuilder',
+      use_sdk=False,
+      trybot_list=True,
+      prebuilts=constants.PUBLIC,
+      description='Build the SDK and all the cross-compilers',
+      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-Continuous',
+  )
+
+  site_config.Add(
+      'master-chromium-pfq',
+      site_config.templates.chromium_pfq,
+      boards=[],
+      master=True,
+      binhost_test=True,
+      push_overlays=constants.BOTH_OVERLAYS,
+      afdo_update_ebuild=True,
+      chrome_sdk=False,
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                               'tree',
+                               'chrome'],
+  )
+
 
   site_config.Add(
       'master-android-pfq',
@@ -1490,14 +1854,6 @@ def _GetConfig(site_config, ge_build_config):
       trybot_list=True,
   )
 
-  site_config.AddTemplate(
-      'tot_asan_informational',
-      site_config.templates.chromium_pfq_informational,
-      site_config.templates.asan,
-      unittests=True,
-      description='Build TOT Chrome with Address Sanitizer (Clang)',
-  )
-
   site_config.Add(
       'x86-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
@@ -1603,45 +1959,6 @@ def _GetConfig(site_config, ge_build_config):
   # Internal Builds
   #
 
-  # Because branch directories may be shared amongst builders on multiple
-  # branches, they must delete the chroot every time they run.
-  # They also potentially need to build [new] Chrome.
-  site_config.AddTemplate(
-      'pre_flight_branch',
-      site_config.templates.internal,
-      site_config.templates.official_chrome,
-      site_config.templates.pfq,
-      overlays=constants.BOTH_OVERLAYS,
-      prebuilts=constants.PRIVATE,
-      branch=True,
-      trybot_list=False,
-      sync_chrome=True,
-      active_waterfall=constants.WATERFALL_RELEASE)
-
-  site_config.AddTemplate(
-      'internal_paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal,
-      site_config.templates.official_chrome,
-      _template='paladin',
-      manifest=constants.OFFICIAL_MANIFEST,
-      overlays=constants.BOTH_OVERLAYS,
-      prebuilts=constants.PRIVATE,
-      vm_tests=[],
-      description=site_config.templates.paladin.description + ' (internal)',
-  )
-
-  # Used for paladin builders with nowithdebug flag (a.k.a -cros-debug)
-  site_config.AddTemplate(
-      'internal_nowithdebug_paladin',
-      site_config.templates.internal_paladin,
-      _template='paladin',
-      useflags=append_useflags(['-cros-debug']),
-      description=(site_config.templates.paladin.description +
-                   ' (internal, nowithdebug)'),
-      prebuilts=False,
-  )
-
   _CreateConfigsForBoards(
       site_config.templates.internal_nowithdebug_paladin,
       ['x86-generic', 'amd64-generic'],
@@ -1678,54 +1995,6 @@ def _GetConfig(site_config, ge_build_config):
       'full-compile-paladin',
   )
 
-  site_config.AddTemplate(
-      'pre_cq',
-      site_config.templates.paladin,
-      build_type=constants.INCREMENTAL_TYPE,
-      build_packages_in_background=True,
-      pre_cq=True,
-      archive=False,
-      chrome_sdk=False,
-      chroot_replace=True,
-      debug_symbols=False,
-      prebuilts=False,
-      cpe_export=False,
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
-      vm_tests_override=None,
-      description='Verifies compilation, building an image, and vm/unit tests '
-                  'if supported.',
-      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Pre-CQ',
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
-      health_threshold=3,
-  )
-
-  # Pre-CQ targets that only check compilation and unit tests.
-  site_config.AddTemplate(
-      'unittest_only_pre_cq',
-      site_config.templates.pre_cq,
-      site_config.templates.no_vmtest_builder,
-      description='Verifies compilation and unit tests only',
-      compilecheck=True,
-  )
-
-  # Pre-CQ targets that don't run VMTests.
-  site_config.AddTemplate(
-      'no_vmtest_pre_cq',
-      site_config.templates.pre_cq,
-      site_config.templates.no_vmtest_builder,
-      description='Verifies compilation, building an image, and unit tests '
-                  'if supported.',
-  )
-
-  # Pre-CQ targets that only check compilation.
-  site_config.AddTemplate(
-      'compile_only_pre_cq',
-      site_config.templates.unittest_only_pre_cq,
-      description='Verifies compilation only',
-      unittests=False,
-  )
-
   site_config.AddWithoutTemplate(
       constants.BRANCH_UTIL_CONFIG,
       site_config.templates.internal_paladin,
@@ -1744,17 +2013,6 @@ def _GetConfig(site_config, ge_build_config):
       description='Used for creating/deleting branches (TPMs only)',
   )
 
-  # Internal incremental builders don't use official chrome because we want
-  # to test the developer workflow.
-  site_config.AddTemplate(
-      'internal_incremental',
-      site_config.templates.internal,
-      site_config.templates.incremental,
-      _template='incremental',
-      overlays=constants.BOTH_OVERLAYS,
-      description='Incremental Builds (internal)',
-  )
-
   site_config.Add(
       'samus-pre-flight-branch',
       site_config.templates.pre_flight_branch,
@@ -1768,19 +2026,6 @@ def _GetConfig(site_config, ge_build_config):
       hw_tests=[HWTestList.AFDORecordTest()],
   )
 
-  # A test-ap image is just a test image with a special profile enabled.
-  # Note that each board enabled for test-ap use has to have the testbed-ap
-  # profile linked to from its private overlay.
-  site_config.AddTemplate(
-      'test_ap',
-      site_config.templates.internal,
-      default_hw_tests_override,
-      build_type=constants.INCREMENTAL_TYPE,
-      description='WiFi AP images used in testing',
-      profile='testbed-ap',
-      vm_tests=[],
-  )
-
   site_config.AddGroup(
       'test-ap-group',
       site_config.Add('stumpy-test-ap',
@@ -1792,20 +2037,6 @@ def _GetConfig(site_config, ge_build_config):
       site_config.Add('whirlwind-test-ap',
                       site_config.templates.test_ap,
                       boards=['whirlwind']),
-  )
-
-  # Create tryjob build configs to help with stress testing.
-  site_config.AddTemplate(
-      'unittest_stress',
-      site_config.templates.no_vmtest_builder,
-      site_config.templates.no_hwtest_builder,
-      build_type=constants.TRYJOB_TYPE,
-      description='Run Unittests repeatedly to look for flake.',
-
-      builder_class_name='test_builders.UnittestStressBuilder',
-
-      # Make this available, so we can stress a previous build.
-      manifest_version=True,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
@@ -2256,70 +2487,6 @@ def _GetConfig(site_config, ge_build_config):
       site_config.templates.lakitu_test_customizations,
   )
 
-  site_config.AddTemplate(
-      'release',
-      site_config.templates.full,
-      site_config.templates.official,
-      site_config.templates.internal,
-      default_hw_tests_override,
-      build_type=constants.CANARY_TYPE,
-      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug']),
-      afdo_use=True,
-      manifest=constants.OFFICIAL_MANIFEST,
-      manifest_version=True,
-      images=['base', 'recovery', 'test', 'factory_install'],
-      sign_types=['recovery'],
-      push_image=True,
-      upload_symbols=True,
-      binhost_bucket='gs://chromeos-dev-installer',
-      binhost_key='RELEASE_BINHOST',
-      binhost_base_url='https://commondatastorage.googleapis.com/'
-                       'chromeos-dev-installer',
-      dev_installer_prebuilts=True,
-      git_sync=False,
-      vm_tests=[
-          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
-          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      # Some release builders disable VMTests to be able to build on GCE, but
-      # still want VMTests enabled on trybot builders.
-      vm_tests_override=[
-          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
-          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=HWTestList.SharedPoolCanary(),
-      paygen=True,
-      signer_tests=True,
-      trybot_list=True,
-      hwqual=True,
-      description="Release Builds (canary) (internal)",
-      chrome_sdk=True,
-      image_test=True,
-      doc='http://www.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Canaries',
-  )
-
-  site_config.AddTemplate(
-      'toolchain',
-      # Make sure that we are doing a full build and that we are using AFDO.
-      site_config.templates.full,
-      site_config.templates.internal,
-      site_config.templates.official_chrome,
-      site_config.templates.no_vmtest_builder,
-      build_type=constants.TOOLCHAIN_TYPE,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      images=['base', 'test', 'recovery'],
-      build_timeout=(15 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug']),
-      afdo_use=True,
-      manifest=constants.OFFICIAL_MANIFEST,
-      manifest_version=True,
-      git_sync=False,
-      trybot_list=False,
-      description="Toolchain Builds (internal)",
-  )
-
   _grouped_config = config_lib.BuildConfig(
       build_packages_in_background=True,
       chrome_sdk_build_chrome=False,
@@ -2486,41 +2653,6 @@ def _GetConfig(site_config, ge_build_config):
       branch_util_test=True,
   )
 
-  ### Release AFDO configs.
-
-  release_afdo = site_config.templates.release.derive(
-      trybot_list=False,
-      hw_tests=(
-          HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
-          HWTestList.AFDOList()
-      ),
-      push_image=False,
-      paygen=False,
-      dev_installer_prebuilts=False,
-  )
-
-  site_config.AddTemplate(
-      'release_afdo_generate',
-      release_afdo,
-      afdo_generate_min=True,
-      afdo_use=False,
-      afdo_update_ebuild=True,
-
-      hw_tests=[HWTestList.AFDORecordTest()],
-      hw_tests_override=[HWTestList.AFDORecordTest(
-          num=constants.HWTEST_TRYBOT_NUM,
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False,
-          priority=constants.HWTEST_DEFAULT_PRIORITY,
-      )],
-  )
-
-  site_config.AddTemplate(
-      'release_afdo_use',
-      release_afdo,
-      afdo_use=True,
-  )
-
   # Now generate generic release-afdo configs if we haven't created anything
   # more specific above already. release-afdo configs are builders that do AFDO
   # profile collection and optimization in the same builder. Used by developers
@@ -2634,49 +2766,6 @@ def _GetConfig(site_config, ge_build_config):
   _AddInformationalConfigs()
   _AddReleaseConfigs()
 
-  site_config.AddTemplate(
-      'moblab_release',
-      site_config.templates.release,
-      description='Moblab release builders',
-      images=['base', 'recovery', 'test'],
-      paygen_skip_delta_payloads=True,
-      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
-      paygen_skip_testing=True,
-      important=False,
-      afdo_use=False,
-      signer_tests=False,
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
-                                  num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                  warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
-                                  warn_only=True, num=1)],
-      _template='release',
-   )
-
-  site_config.AddTemplate(
-      'cheets_release',
-      site_config.templates.release,
-      description='Cheets release builders',
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
-                                  warn_only=True, num=1)],
-      _template='release',
-   )
-
-  site_config.AddTemplate(
-      'wificell_pre_cq',
-      site_config.templates.pre_cq,
-      unittests=False,
-      hw_tests=HWTestList.WiFiCellPoolPreCQ(),
-      hw_tests_override=HWTestList.WiFiCellPoolPreCQ(),
-      archive=True,
-      image_test=False,
-      description='WiFi tests acting as pre-cq for WiFi related changes',
-  )
-
   site_config.AddGroup(
       'mixed-wificell-pre-cq',
       site_config.Add(
@@ -2733,69 +2822,6 @@ def _GetConfig(site_config, ge_build_config):
           config_name, *configs, description=desc,
           important=important
       )
-
-  # Factory and Firmware releases much inherit from these classes.
-  # Modifications for these release builders should go here.
-
-  # Naming conventions also must be followed. Factory and firmware branches
-  # must end in -factory or -firmware suffixes.
-
-  site_config.AddTemplate(
-      'factory',
-      site_config.templates.release,
-      upload_hw_test_artifacts=False,
-      upload_symbols=False,
-      hw_tests=[],
-      chrome_sdk=False,
-      description='Factory Builds',
-      paygen=False,
-      afdo_use=False,
-      sign_types=['factory'],
-  )
-
-  _firmware = config_lib.BuildConfig(
-      site_config.templates.no_vmtest_builder,
-      images=[],
-      factory_toolkit=False,
-      packages=['virtual/chromeos-firmware', 'chromeos-base/autotest-all'],
-      usepkg_build_packages=True,
-      sync_chrome=False,
-      chrome_sdk=False,
-      unittests=False,
-      hw_tests=[],
-      dev_installer_prebuilts=False,
-      upload_hw_test_artifacts=True,
-      upload_symbols=False,
-      useflags=['chromeless_tty'],
-      signer_tests=False,
-      trybot_list=False,
-      paygen=False,
-      image_test=False,
-      sign_types=['firmware'],
-  )
-
-  site_config.AddTemplate(
-      'firmware',
-      site_config.templates.release,
-      _firmware,
-      description='Firmware Canary',
-      manifest=constants.DEFAULT_MANIFEST,
-      afdo_use=False,
-  )
-
-  site_config.AddTemplate(
-      'depthcharge_firmware',
-      site_config.templates.firmware,
-      useflags=append_useflags(['depthcharge']))
-
-  site_config.AddTemplate(
-      'depthcharge_full_firmware',
-      site_config.templates.full,
-      site_config.templates.internal,
-      _firmware,
-      useflags=append_useflags(['depthcharge']),
-      description='Firmware Informational',
-  )
 
   _firmware_boards = frozenset([
       'asuka',
@@ -3163,25 +3189,6 @@ def _GetConfig(site_config, ge_build_config):
 
   _OverwriteBoardConfigs()
 
-  site_config.AddTemplate(
-      'payloads',
-      site_config.templates.internal,
-      site_config.templates.no_vmtest_builder,
-      site_config.templates.no_unittest_builder,
-      site_config.templates.no_hwtest_builder,
-      build_type=constants.PAYLOADS_TYPE,
-      builder_class_name='release_builders.GeneratePayloadsBuilder',
-      description='Regenerate release payloads.',
-
-      # Sync to the code used to do the build the first time.
-      manifest_version=True,
-
-      # This is the actual work we want to do.
-      paygen=True,
-
-      upload_hw_test_artifacts=False,
-  )
-
   def _AddPayloadConfigs():
     """Create <board>-payloads configs for all payload generating boards.
 
@@ -3282,6 +3289,8 @@ def GetConfig():
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
+
+  CreateBuilderTemplates(site_config)
 
   # Fill in templates and build configurations.
   _GetConfig(site_config, ge_build_config)
