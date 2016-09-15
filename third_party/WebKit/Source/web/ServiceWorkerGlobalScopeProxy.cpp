@@ -189,11 +189,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, in
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Install, eventID);
-    Event* event;
-    if (OriginTrials::foreignFetchEnabled(workerGlobalScope()))
-        event = InstallEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
-    else
-        event = ExtendableEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
+    Event* event = InstallEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 

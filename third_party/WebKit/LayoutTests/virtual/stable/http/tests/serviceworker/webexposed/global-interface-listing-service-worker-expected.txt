@@ -387,6 +387,8 @@ interface ImageData
     getter height
     getter width
     method constructor
+interface InstallEvent : ExtendableEvent
+    method constructor
 interface MessageChannel
     getter port1
     getter port2

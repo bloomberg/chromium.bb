@@ -42,6 +42,7 @@
 #include "bindings/modules/v8/V8IDBIndex.h"
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8IDBObjectStore.h"
+#include "bindings/modules/v8/V8InstallEvent.h"
 #include "bindings/modules/v8/V8NavigatorPartial.h"
 #include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
 #include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
@@ -634,6 +635,7 @@ void installOriginTrialsForModules(ScriptState* scriptState)
     if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
         if (executionContext->isServiceWorkerGlobalScope()) {
             V8ServiceWorkerGlobalScope::installForeignFetch(scriptState, global);
+            V8InstallEvent::installForeignFetch(scriptState);
         }
     }
 }
