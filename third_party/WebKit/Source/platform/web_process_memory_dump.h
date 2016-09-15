@@ -39,6 +39,7 @@ namespace blink {
 // TODO(hajimehoshi): Remove this and use base::trace_event::
 // MemoryDumpLevelOfDetail instead.
 enum class WebMemoryDumpLevelOfDetail {
+    Background,
     Light,
     Detailed
 };

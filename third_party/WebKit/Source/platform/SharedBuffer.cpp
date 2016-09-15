@@ -275,12 +275,13 @@ void SharedBuffer::onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump* 
         WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpPrefix + "/shared_buffer");
         dump->addScalar("size", "bytes", m_buffer.size());
         memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
-    } else {
+    }
+    if (m_segments.size()) {
         // If there is data in the segments, then it should have been allocated
         // using fastMalloc.
         const String dataDumpName = dumpPrefix + "/segments";
         auto dump = memoryDump->createMemoryAllocatorDump(dataDumpName);
-        dump->addScalar("size", "bytes", m_size);
+        dump->addScalar("size", "bytes", m_size - m_buffer.size());
         memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
     }
 }

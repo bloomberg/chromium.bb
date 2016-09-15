@@ -110,6 +110,8 @@ public:
     void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
     void finish(double finishTime = 0.0) override;
 
+    void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const override;
+
     // For compatibility, images keep loading even if there are HTTP errors.
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 

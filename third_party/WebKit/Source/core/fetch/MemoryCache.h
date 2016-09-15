@@ -137,6 +137,7 @@ public:
         size_t liveSize;
         size_t decodedSize;
         size_t encodedSize;
+        size_t overheadSize;
         size_t encodedSizeDuplicatedInDataURLs;
 
         TypeStatistic()
@@ -145,6 +146,7 @@ public:
             , liveSize(0)
             , decodedSize(0)
             , encodedSize(0)
+            , overheadSize(0)
             , encodedSizeDuplicatedInDataURLs(0)
         {
         }

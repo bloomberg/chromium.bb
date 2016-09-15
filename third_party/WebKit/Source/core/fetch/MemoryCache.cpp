@@ -595,6 +595,7 @@ void MemoryCache::TypeStatistic::addResource(Resource* o)
     liveSize += o->isAlive() ? o->size() : 0;
     decodedSize += o->decodedSize();
     encodedSize += o->encodedSize();
+    overheadSize += o->overheadSize();
     encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
 }
 
@@ -732,6 +733,23 @@ void MemoryCache::updateFramePaintTimestamp()
 
 bool MemoryCache::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump)
 {
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Background) {
+        Statistics stats = getStatistics();
+        WebMemoryAllocatorDump* dump1 = memoryDump->createMemoryAllocatorDump("web_cache/Image_resources");
+        dump1->addScalar("size", "bytes", stats.images.encodedSize + stats.images.overheadSize);
+        WebMemoryAllocatorDump* dump2 = memoryDump->createMemoryAllocatorDump("web_cache/CSS stylesheet_resources");
+        dump2->addScalar("size", "bytes", stats.cssStyleSheets.encodedSize + stats.cssStyleSheets.overheadSize);
+        WebMemoryAllocatorDump* dump3 = memoryDump->createMemoryAllocatorDump("web_cache/Script_resources");
+        dump3->addScalar("size", "bytes", stats.scripts.encodedSize + stats.scripts.overheadSize);
+        WebMemoryAllocatorDump* dump4 = memoryDump->createMemoryAllocatorDump("web_cache/XSL stylesheet_resources");
+        dump4->addScalar("size", "bytes", stats.xslStyleSheets.encodedSize + stats.xslStyleSheets.overheadSize);
+        WebMemoryAllocatorDump* dump5 = memoryDump->createMemoryAllocatorDump("web_cache/Font_resources");
+        dump5->addScalar("size", "bytes", stats.fonts.encodedSize + stats.fonts.overheadSize);
+        WebMemoryAllocatorDump* dump6 = memoryDump->createMemoryAllocatorDump("web_cache/Other_resources");
+        dump6->addScalar("size", "bytes", stats.other.encodedSize + stats.other.overheadSize);
+        return true;
+    }
+
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->resource();
