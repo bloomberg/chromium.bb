@@ -484,16 +484,10 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         LayoutUnit oldClientAfterEdge = clientLogicalBottom();
         updateLogicalHeight();
 
-        // The above call might have changed the grid's logical height depending on min|max height restrictions.
-        // Update the sizes of the rows whose size depends on the logical height (also on definite|indefinite sizes).
-        LayoutUnit availableSpaceForRows = contentLogicalHeight();
-        if (!cachedHasDefiniteLogicalHeight())
-            computeTrackSizesForDirection(ForRows, sizingData, availableSpaceForRows);
-
         // 3- If the min-content contribution of any grid items have changed based on the row
         // sizes calculated in step 2, steps 1 and 2 are repeated with the new min-content
         // contribution (once only).
-        repeatTracksSizingIfNeeded(sizingData, availableSpaceForColumns, availableSpaceForRows);
+        repeatTracksSizingIfNeeded(sizingData, availableSpaceForColumns, contentLogicalHeight());
 
         // Grid container should have the minimum height of a line if it's editable. That doesn't affect track sizing though.
         if (hasLineIfEmpty())
@@ -623,6 +617,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
 
 void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
 {
+    DCHECK(sizingData.isValidTransition(ForRows));
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData));
     sizingData.setAvailableSpace(LayoutUnit());
     sizingData.freeSpace(ForRows) = LayoutUnit();
@@ -634,6 +629,8 @@ void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
     m_maxContentHeight += totalGuttersSize;
 
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, sizingData));
+    sizingData.nextState();
+    sizingData.sizingOperation = TrackSizing;
 }
 
 LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(const Length& logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
@@ -1892,6 +1889,7 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
 
 void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
 {
+    DCHECK_EQ(sizingData.sizingOperation, TrackSizing);
     populateGridPositionsForDirection(sizingData, ForColumns);
     populateGridPositionsForDirection(sizingData, ForRows);
     m_gridItemsOverflowingGridArea.resize(0);
