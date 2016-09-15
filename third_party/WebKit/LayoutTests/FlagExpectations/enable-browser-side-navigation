@@ -48,10 +48,12 @@
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
   http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
+  http/tests/navigation/rename-subframe-goback.html [ Failure ]
   imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
   imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
   imported/wpt/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
   virtual/stable/http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
+  virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Failure ]
 
 # https://crbug.com/551000: PlzNavigate: DevTools support
   http/tests/inspector-protocol/reload-memory-cache.html [ Failure ]
