@@ -390,10 +390,12 @@ cr.define('ntp', function() {
 
     /**
      * Invoked when an app is clicked.
-     * @param {Event} e The click/auxclick event.
+     * @param {MouseEvent} e The click/auxclick event.
      * @private
      */
     onClick_: function(e) {
+      if (e.button > 1) return;
+
       var url = !this.appData_.is_webstore ? '' :
           appendParam(this.appData_.url,
                       'utm_source',
