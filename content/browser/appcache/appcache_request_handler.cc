@@ -380,7 +380,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
     return;
   }
 
-  if (IsResourceTypeFrame(resource_type_) && cache_id != kAppCacheNoCacheId) {
+  if (IsMainResourceType(resource_type_) && cache_id != kAppCacheNoCacheId) {
     // AppCacheHost loads and holds a reference to the main resource cache
     // for two reasons, firstly to preload the cache into the working set
     // in advance of subresource loads happening, secondly to prevent the
