@@ -41,13 +41,16 @@ cr.define('extensions', function() {
     setItemCollectsErrors: assertNotReached,
 
     /**
-     * @param {string} id,
+     * @param {string} id
      * @param {chrome.developerPrivate.ExtensionView} view
      */
     inspectItemView: assertNotReached,
 
     /** @param {string} id */
     repairItem: assertNotReached,
+
+    /** @param {string} id */
+    showItemOptionsPage: assertNotReached,
   };
 
   var Item = Polymer({

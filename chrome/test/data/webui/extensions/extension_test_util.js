@@ -119,6 +119,9 @@ cr.define('extension_test_util', function() {
 
     /** @override */
     repairItem: function(id) {},
+
+    /** @override */
+    showItemOptionsPage: function(id) {},
   };
 
   /**

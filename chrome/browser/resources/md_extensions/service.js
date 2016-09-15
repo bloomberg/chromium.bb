@@ -216,6 +216,17 @@ cr.define('extensions', function() {
     },
 
     /** @override */
+    showItemOptionsPage: function(id) {
+      var extension = this.extensions_.find(function(extension) {
+        return extension.id == id;
+      });
+      assert(extension && extension.optionsPage);
+      if (extension.optionsPage.openInTab)
+        chrome.developerPrivate.showOptions(id);
+      // TODO(devlin): Handle embedded extension options.
+    },
+
+    /** @override */
     setProfileInDevMode: function(inDevMode) {
       chrome.developerPrivate.updateProfileConfiguration(
           {inDeveloperMode: inDevMode});

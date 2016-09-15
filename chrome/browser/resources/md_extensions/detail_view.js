@@ -28,7 +28,7 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onCloseButtonClick_: function() {
+    onCloseButtonTap_: function() {
       this.fire('close');
     },
 
@@ -52,11 +52,24 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
+    shouldShowOptionsButton_: function() {
+      return !!this.data.optionsPage;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
     shouldShowOptionsSection_: function() {
       return this.data.incognitoAccess.isEnabled ||
              this.data.fileAccess.isEnabled ||
              this.data.runOnAllUrls.isEnabled ||
              this.data.errorCollection.isEnabled;
+    },
+
+    /** @private */
+    onOptionsButtonTap_: function() {
+      this.delegate.showItemOptionsPage(this.data.id);
     },
 
     /** @private */

@@ -13,6 +13,9 @@
   <style include="iron-flex"></style>
   <template>
     <style>
+      [hidden] {
+        display: none !important;
+      }
       #main {
         background-color: white;
         height: 800px;
@@ -59,11 +62,13 @@
     <div id="main">
       <div id="top-bar">
         <paper-icon-button id="close-button" icon="arrow-back"
-            on-click="onCloseButtonClick_"></paper-icon-button>
+            on-tap="onCloseButtonTap_"></paper-icon-button>
         <span id="name">[[data.name]]</span>
         <paper-icon-button id="open-in-webstore" icon="open-in-new">
         </paper-icon-button>
-        <paper-icon-button id="options" icon="settings">
+        <paper-icon-button id="options" icon="settings"
+            on-tap="onOptionsButtonTap_"
+            hidden$="[[!shouldShowOptionsButton_(data.*)]]">
         </paper-icon-button>
       </div>
       <div class="section">
