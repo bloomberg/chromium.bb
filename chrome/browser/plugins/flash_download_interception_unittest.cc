@@ -5,8 +5,11 @@
 #include "chrome/browser/plugins/flash_download_interception.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -46,7 +49,7 @@ TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
   EXPECT_EQ(nullptr, throttle);
 }
 
-TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOn) {
+TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   std::unique_ptr<NavigationThrottle> throttle;
   std::unique_ptr<NavigationHandle> flash_slash_navigation_handle =
         NavigationHandle::CreateNavigationHandleForTesting(
@@ -105,4 +108,41 @@ TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOn) {
   throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
       example_flash_navigation_handle.get());
   EXPECT_EQ(nullptr, throttle);
+}
+
+TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
+  flash_navigation_handle_->CallWillStartRequestForTesting(
+      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
+
+  // Default Setting (which is DETECT)
+  std::unique_ptr<NavigationThrottle> throttle =
+      FlashDownloadInterception::MaybeCreateThrottleFor(
+          flash_navigation_handle_.get());
+  EXPECT_NE(nullptr, throttle);
+  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
+            throttle->WillStartRequest());
+
+  // ALLOW and BLOCK Settings
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(nullptr, FlashDownloadInterception::MaybeCreateThrottleFor(
+                         flash_navigation_handle_.get()));
+  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(nullptr, FlashDownloadInterception::MaybeCreateThrottleFor(
+                         flash_navigation_handle_.get()));
+
+  // Explicit DETECT
+  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
+      flash_navigation_handle_.get());
+  EXPECT_NE(nullptr, throttle);
+  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
+            throttle->WillStartRequest());
 }
