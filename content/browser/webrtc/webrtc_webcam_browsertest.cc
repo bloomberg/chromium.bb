@@ -74,10 +74,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
   NavigateToURL(shell(), url);
 
   std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell(), "hasVideoInputDeviceOnSystem()", &result));
-  if (result != "has-video-input-device") {
-    VLOG(0) << "No video device; skipping test...";
+  if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
+    DVLOG(0) << "No video device; skipping test...";
     return;
   }
 

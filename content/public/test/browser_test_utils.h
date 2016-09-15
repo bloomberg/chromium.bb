@@ -166,6 +166,9 @@ void SimulateKeyPress(WebContents* web_contents,
                       bool alt,
                       bool command);
 
+// Method to check what devices we have on the system.
+bool IsWebcamAvailableOnSystem(WebContents* web_contents);
+
 // Allow ExecuteScript* methods to target either a WebContents or a
 // RenderFrameHost.  Targetting a WebContents means executing the script in the
 // RenderFrameHost returned by WebContents::GetMainFrame(), which is the main
