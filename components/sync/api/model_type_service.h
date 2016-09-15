@@ -120,10 +120,10 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // TODO(crbug.com/584365): This needs to be called from DataTypeController.
   void DisableSync();
 
+  ModelTypeChangeProcessor* change_processor() const;
+
  protected:
   void CreateChangeProcessor();
-
-  ModelTypeChangeProcessor* change_processor() const;
 
   void clear_change_processor();
 

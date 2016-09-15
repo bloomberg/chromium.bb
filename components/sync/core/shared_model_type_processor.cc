@@ -15,6 +15,7 @@
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/processor_entity_tracker.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer_v2 {
@@ -189,6 +190,16 @@ bool SharedModelTypeProcessor::IsAllowingChanges() const {
 bool SharedModelTypeProcessor::IsConnected() const {
   DCHECK(CalledOnValidThread());
   return !!worker_;
+}
+
+void SharedModelTypeProcessor::GetAllNodes(
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::Callback<void(const syncer::ModelType,
+                              std::unique_ptr<base::ListValue>)>& callback) {
+  DCHECK(service_);
+  service_->GetAllData(
+      base::Bind(&SharedModelTypeProcessor::MergeDataWithMetadata,
+                 base::Unretained(this), task_runner, callback));
 }
 
 void SharedModelTypeProcessor::DisableSync() {
@@ -702,6 +713,49 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash, GetHashForTag(service_->GetClientTag(data)));
   return CreateEntity(service_->GetStorageKey(data), data);
+}
+
+void SharedModelTypeProcessor::MergeDataWithMetadata(
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::Callback<void(const syncer::ModelType,
+                              std::unique_ptr<base::ListValue>)>& callback,
+    syncer::SyncError error,
+    std::unique_ptr<DataBatch> batch) {
+  std::unique_ptr<base::ListValue> all_nodes =
+      base::MakeUnique<base::ListValue>();
+  std::string type_string = ModelTypeToString(type_);
+
+  while (batch->HasNext()) {
+    KeyAndData data = batch->Next();
+    std::unique_ptr<base::DictionaryValue> node =
+        data.second->ToDictionaryValue();
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
+    // Entity could be null if there are some unapplied changes.
+    if (entity != nullptr) {
+      node->Set("metadata", syncer::EntityMetadataToValue(entity->metadata()));
+    }
+    node->SetString("modelType", type_string);
+    all_nodes->Append(std::move(node));
+  }
+
+  // Create a permanent folder for this data type. Since sync server no longer
+  // create root folders, and USS won't migrate root folders from directory, we
+  // create root folders for each data type here.
+  std::unique_ptr<base::DictionaryValue> rootnode =
+      base::MakeUnique<base::DictionaryValue>();
+  // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
+  // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
+  // sync_node_browser.js uses modelType to check if root node is parent of real
+  // data node. NON_UNIQUE_NAME will be the name of node to display.
+  rootnode->SetString("PARENT_ID", "r");
+  rootnode->SetString("UNIQUE_SERVER_TAG", type_string);
+  rootnode->SetBoolean("IS_DIR", true);
+  rootnode->SetString("modelType", type_string);
+  rootnode->SetString("NON_UNIQUE_NAME", type_string);
+  all_nodes->Append(std::move(rootnode));
+
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(callback, type_, base::Passed(&all_nodes)));
 }
 
 }  // namespace syncer_v2

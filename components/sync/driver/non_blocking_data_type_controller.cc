@@ -79,7 +79,16 @@ void NonBlockingDataTypeController::LoadModels(
 
 void NonBlockingDataTypeController::GetAllNodes(
     const AllNodesCallback& callback) {
-  callback.Run(type(), base::WrapUnique(new base::ListValue()));
+  base::WeakPtr<syncer_v2::ModelTypeService> service =
+      sync_client_->GetModelTypeServiceForType(type());
+  // TODO(gangwu): Casting should happen "near" where the processor factory has
+  // code that instantiates a new processor.
+  syncer_v2::SharedModelTypeProcessor* processor =
+      (syncer_v2::SharedModelTypeProcessor*)service->change_processor();
+  RunOnModelThread(FROM_HERE,
+                   base::Bind(&syncer_v2::SharedModelTypeProcessor::GetAllNodes,
+                              base::Unretained(processor),
+                              base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 void NonBlockingDataTypeController::LoadModelsDone(

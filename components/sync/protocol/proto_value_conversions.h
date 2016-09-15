@@ -37,6 +37,7 @@ class DeviceInfoSpecifics;
 class DeviceInformation;
 class DictionarySpecifics;
 class EncryptedData;
+class EntityMetadata;
 class EntitySpecifics;
 class EverythingDirective;
 class ExperimentsSpecifics;
@@ -309,6 +310,9 @@ std::unique_ptr<base::DictionaryValue> ClientConfigParamsToValue(
 
 std::unique_ptr<base::DictionaryValue> AttachmentIdProtoToValue(
     const sync_pb::AttachmentIdProto& proto);
+
+std::unique_ptr<base::DictionaryValue> EntityMetadataToValue(
+    const sync_pb::EntityMetadata& metadata);
 
 }  // namespace syncer
 

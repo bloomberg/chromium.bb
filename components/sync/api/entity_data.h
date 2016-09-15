@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/sync/base/proto_value_ptr.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -73,6 +74,9 @@ struct EntityData {
   // Transfers this struct's data to EntityDataPtr.
   // The return value must be assigned into another EntityDataPtr.
   EntityDataPtr PassToPtr() WARN_UNUSED_RESULT;
+
+  // Dumps all info into a DictionaryValue and returns it.
+  std::unique_ptr<base::DictionaryValue> ToDictionaryValue();
 
  private:
   friend struct EntityDataTraits;

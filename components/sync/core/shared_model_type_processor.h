@@ -51,6 +51,15 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 
+  // Returns a ListValue representing all nodes for data type |type| through
+  // |callback| on this thread.
+  // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
+  // TODO(gangwu): GetAllNodes could be in a helper class.
+  void GetAllNodes(
+      const scoped_refptr<base::TaskRunner>& task_runner,
+      const base::Callback<void(const syncer::ModelType type,
+                                std::unique_ptr<base::ListValue>)>& callback);
+
   // ModelTypeChangeProcessor implementation.
   void Put(const std::string& storage_key,
            std::unique_ptr<EntityData> entity_data,
@@ -142,6 +151,15 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
+
+  // This is callback function for ModelTypeService::GetAllData. This function
+  // will merge real data |batch| with metadata, then pass to |callback|.
+  void MergeDataWithMetadata(
+      const scoped_refptr<base::TaskRunner>& task_runner,
+      const base::Callback<void(const syncer::ModelType,
+                                std::unique_ptr<base::ListValue>)>& callback,
+      syncer::SyncError error,
+      std::unique_ptr<DataBatch> batch);
 
   const syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;

@@ -29,6 +29,7 @@
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/dictionary_specifics.pb.h"
 #include "components/sync/protocol/encryption.pb.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/experiments_specifics.pb.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
@@ -1115,6 +1116,22 @@ std::unique_ptr<base::DictionaryValue> AttachmentIdProtoToValue(
     const sync_pb::AttachmentIdProto& proto) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   SET_STR(unique_id);
+  return value;
+}
+
+std::unique_ptr<base::DictionaryValue> EntityMetadataToValue(
+    const sync_pb::EntityMetadata& proto) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_STR(client_tag_hash);
+  SET_STR(server_id);
+  SET_BOOL(is_deleted);
+  SET_INT64(sequence_number);
+  SET_INT64(acked_sequence_number);
+  SET_INT64(server_version);
+  SET_INT64(creation_time);
+  SET_INT64(modification_time);
+  SET_STR(specifics_hash);
+  SET_STR(base_specifics_hash);
   return value;
 }
 
