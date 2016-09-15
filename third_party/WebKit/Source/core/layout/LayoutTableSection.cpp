@@ -32,7 +32,6 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/SubtreeLayoutScope.h"
-#include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/TableSectionPainter.h"
 #include "wtf/HashSet.h"
 #include <algorithm>
@@ -783,7 +782,6 @@ int LayoutTableSection::calcRowLogicalHeight()
                 }
 
                 if (cell->rowIndex() == r && cell->hasOverrideLogicalContentHeight()) {
-                    PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
                     cell->clearIntrinsicPadding();
                     cell->clearOverrideSize();
                     cell->forceChildLayout();

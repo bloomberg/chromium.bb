@@ -484,8 +484,13 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
     bool preferredLogicalWidthsBecameDirty = !preferredLogicalWidthsWereDirty && preferredLogicalWidthsDirty();
-    if (preferredLogicalWidthsBecameDirty)
-        return false;
+    if (preferredLogicalWidthsBecameDirty) {
+        // The only thing that should dirty preferred widths at this point is the addition of
+        // overflow:auto scrollbars in a descendant.  To avoid a potential infinite loop,
+        // run layout again with auto scrollbars frozen in their current state.
+        PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
+        return layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
+    }
 
     // Expand our intrinsic height to encompass floats.
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())
