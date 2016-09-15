@@ -1,0 +1,46 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "cc/tiles/image_manager.h"
+
+namespace cc {
+
+ImageManager::ImageManager() = default;
+ImageManager::~ImageManager() = default;
+
+void ImageManager::SetImageDecodeController(ImageDecodeController* controller) {
+  controller_ = controller;
+}
+
+void ImageManager::GetTasksForImagesAndRef(
+    std::vector<DrawImage>* images,
+    std::vector<scoped_refptr<TileTask>>* tasks,
+    const ImageDecodeController::TracingInfo& tracing_info) {
+  DCHECK(controller_);
+  for (auto it = images->begin(); it != images->end();) {
+    scoped_refptr<TileTask> task;
+    bool need_to_unref_when_finished =
+        controller_->GetTaskForImageAndRef(*it, tracing_info, &task);
+    if (task)
+      tasks->push_back(std::move(task));
+
+    if (need_to_unref_when_finished)
+      ++it;
+    else
+      it = images->erase(it);
+  }
+}
+
+void ImageManager::UnrefImages(const std::vector<DrawImage>& images) {
+  DCHECK(controller_);
+  for (auto image : images)
+    controller_->UnrefImage(image);
+}
+
+void ImageManager::ReduceMemoryUsage() {
+  DCHECK(controller_);
+  controller_->ReduceCacheUsage();
+}
+
+}  // namespace cc

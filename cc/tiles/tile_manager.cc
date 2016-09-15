@@ -361,9 +361,9 @@ void TileManager::FinishTasksAndCleanUp() {
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  for (auto& draw_image_pair : locked_images_)
-    image_decode_controller_->UnrefImage(draw_image_pair.first);
+  image_manager_.UnrefImages(locked_images_);
   locked_images_.clear();
+  locked_image_tasks_.clear();
 }
 
 void TileManager::SetResources(ResourcePool* resource_pool,
@@ -378,7 +378,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   use_gpu_rasterization_ = use_gpu_rasterization;
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
-  image_decode_controller_ = image_decode_controller;
+  image_manager_.SetImageDecodeController(image_decode_controller);
   tile_task_manager_ = tile_task_manager;
   raster_buffer_provider_ = raster_buffer_provider;
 }
@@ -836,7 +836,8 @@ void TileManager::ScheduleTasks(
 
   const std::vector<PrioritizedTile>& tiles_to_process_for_images =
       work_to_schedule.tiles_to_process_for_images;
-  std::vector<std::pair<DrawImage, scoped_refptr<TileTask>>> new_locked_images;
+  std::vector<DrawImage> new_locked_images;
+  std::vector<scoped_refptr<TileTask>> new_locked_image_tasks;
   for (const PrioritizedTile& prioritized_tile : tiles_to_process_for_images) {
     Tile* tile = prioritized_tile.tile();
 
@@ -845,45 +846,36 @@ void TileManager::ScheduleTasks(
         tile->enclosing_layer_rect(), tile->contents_scale(), &images);
     ImageDecodeController::TracingInfo tracing_info(
         prepare_tiles_count_, prioritized_tile.priority().priority_bin);
-    for (DrawImage& draw_image : images) {
-      scoped_refptr<TileTask> task;
-      bool need_to_unref_when_finished =
-          image_decode_controller_->GetTaskForImageAndRef(draw_image,
-                                                          tracing_info, &task);
-      // We only care about images that need to be locked (ie they need to be
-      // unreffed later).
-      if (!need_to_unref_when_finished)
-        continue;
-      new_locked_images.emplace_back(draw_image, task);
-
-      // If there's no actual task associated with this image, then we're done.
-      if (!task)
-        continue;
-
-      auto decode_it = std::find_if(graph_.nodes.begin(), graph_.nodes.end(),
-                                    [&task](const TaskGraph::Node& node) {
-                                      return node.task == task.get();
-                                    });
-      // If this task is already in the graph, then we don't have to insert it.
-      if (decode_it != graph_.nodes.end())
-        continue;
-
-      InsertNodeForDecodeTask(&graph_, task.get(), false, priority++);
-      all_count++;
-      graph_.edges.push_back(TaskGraph::Edge(task.get(), all_done_task.get()));
-    }
+    image_manager_.GetTasksForImagesAndRef(&images, &new_locked_image_tasks,
+                                           tracing_info);
+    new_locked_images.insert(new_locked_images.end(), images.begin(),
+                             images.end());
   }
 
-  for (auto& draw_image_pair : locked_images_)
-    image_decode_controller_->UnrefImage(draw_image_pair.first);
+  for (auto& task : new_locked_image_tasks) {
+    auto decode_it = std::find_if(graph_.nodes.begin(), graph_.nodes.end(),
+                                  [&task](const TaskGraph::Node& node) {
+                                    return node.task == task.get();
+                                  });
+    // If this task is already in the graph, then we don't have to insert it.
+    if (decode_it != graph_.nodes.end())
+      continue;
+
+    InsertNodeForDecodeTask(&graph_, task.get(), false, priority++);
+    all_count++;
+    graph_.edges.push_back(TaskGraph::Edge(task.get(), all_done_task.get()));
+  }
+
+  image_manager_.UnrefImages(locked_images_);
   // The old locked images have to stay around until past the ScheduleTasks call
   // below, so we do a swap instead of a move.
   locked_images_.swap(new_locked_images);
+  locked_image_tasks_.swap(new_locked_image_tasks);
 
   // We must reduce the amount of unused resources before calling
   // ScheduleTasks to prevent usage from rising above limits.
   resource_pool_->ReduceResourceUsage();
-  image_decode_controller_->ReduceCacheUsage();
+  image_manager_.ReduceMemoryUsage();
 
   // Insert nodes for our task completion tasks. We enqueue these using
   // NONCONCURRENT_FOREGROUND category this is the highest prioirty category and
@@ -963,21 +955,12 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   // We can skip the image hijack canvas if we have no images.
   playback_settings.use_image_hijack_canvas = !images.empty();
+
+  // Get the tasks for the required images.
   ImageDecodeController::TracingInfo tracing_info(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin);
-  for (auto it = images.begin(); it != images.end();) {
-    scoped_refptr<TileTask> task;
-    bool need_to_unref_when_finished =
-        image_decode_controller_->GetTaskForImageAndRef(*it, tracing_info,
-                                                        &task);
-    if (task)
-      decode_tasks.push_back(task);
+  image_manager_.GetTasksForImagesAndRef(&images, &decode_tasks, tracing_info);
 
-    if (need_to_unref_when_finished)
-      ++it;
-    else
-      it = images.erase(it);
-  }
   bool supports_concurrent_execution = !use_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer =
       raster_buffer_provider_->AcquireBufferForRaster(
@@ -1006,8 +989,7 @@ void TileManager::OnRasterTaskCompleted(
   // Unref all the images.
   auto images_it = scheduled_draw_images_.find(tile->id());
   const std::vector<DrawImage>& images = images_it->second;
-  for (const auto& image : images)
-    image_decode_controller_->UnrefImage(image);
+  image_manager_.UnrefImages(images);
   scheduled_draw_images_.erase(images_it);
 
   if (was_canceled) {
@@ -1157,15 +1139,15 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // If we're not in SMOOTHNESS_TAKES_PRIORITY  mode, we should unlock all
   // images since we're technically going idle here at least for this frame.
   if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
-    for (auto& draw_image_pair : locked_images_)
-      image_decode_controller_->UnrefImage(draw_image_pair.first);
+    image_manager_.UnrefImages(locked_images_);
     locked_images_.clear();
+    locked_image_tasks_.clear();
   }
 
   FreeResourcesForReleasedTiles();
 
   resource_pool_->ReduceResourceUsage();
-  image_decode_controller_->ReduceCacheUsage();
+  image_manager_.ReduceMemoryUsage();
 
   signals_.all_tile_tasks_completed = true;
   signals_check_notifier_.Schedule();

@@ -22,7 +22,7 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_manager.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_draw_info.h"
@@ -38,6 +38,7 @@ class TracedValue;
 namespace cc {
 class PictureLayerImpl;
 class ResourceProvider;
+class ImageDecodeController;
 
 class CC_EXPORT TileManagerClient {
  public:
@@ -312,7 +313,7 @@ class CC_EXPORT TileManager {
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
   bool did_oom_on_last_assign_;
 
-  ImageDecodeController* image_decode_controller_;
+  ImageManager image_manager_;
 
   RasterTaskCompletionStats flush_stats_;
 
@@ -337,7 +338,8 @@ class CC_EXPORT TileManager {
   uint64_t next_tile_id_;
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
-  std::vector<std::pair<DrawImage, scoped_refptr<TileTask>>> locked_images_;
+  std::vector<DrawImage> locked_images_;
+  std::vector<scoped_refptr<TileTask>> locked_image_tasks_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
 
