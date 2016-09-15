@@ -93,7 +93,7 @@ SerializedScriptValue* History::stateInternal() const
 void History::setScrollRestoration(const String& value)
 {
     ASSERT(value == "manual"  || value == "auto");
-    if (!m_frame || !m_frame->loader().client() || !RuntimeEnabledFeatures::scrollRestorationEnabled())
+    if (!m_frame || !m_frame->loader().client())
         return;
 
     HistoryScrollRestorationType scrollRestoration = value == "manual" ? ScrollRestorationManual : ScrollRestorationAuto;
@@ -113,7 +113,7 @@ String History::scrollRestoration()
 
 HistoryScrollRestorationType History::scrollRestorationInternal() const
 {
-    if (m_frame && RuntimeEnabledFeatures::scrollRestorationEnabled()) {
+    if (m_frame) {
         if (HistoryItem* historyItem = m_frame->loader().currentItem())
             return historyItem->scrollRestorationType();
     }

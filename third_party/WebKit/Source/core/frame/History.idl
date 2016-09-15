@@ -30,7 +30,7 @@ enum ScrollRestoration {"auto", "manual"};
 [
 ] interface History {
     readonly attribute unsigned long length;
-    [RuntimeEnabled=ScrollRestoration, Measure] attribute ScrollRestoration scrollRestoration;
+    [Measure] attribute ScrollRestoration scrollRestoration;
     // TODO(foolip): The SerializedScriptValue type should be any.
     [CachedAttribute=stateChanged] readonly attribute SerializedScriptValue state;
     [CallWith=ExecutionContext] void go(optional long delta = 0);
