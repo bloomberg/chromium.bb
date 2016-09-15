@@ -769,55 +769,56 @@ TEST_F(SequencedWorkerPoolTest, SpuriousWorkSignal) {
   EXPECT_EQ(old_has_work_call_count + 1, has_work_call_count());
 }
 
-void IsRunningOnCurrentThreadTask(
-    SequencedWorkerPool::SequenceToken test_positive_token,
-    SequencedWorkerPool::SequenceToken test_negative_token,
+void VerifyRunsTasksOnCurrentThread(
+    scoped_refptr<TaskRunner> test_positive_task_runner,
+    scoped_refptr<TaskRunner> test_negative_task_runner,
     SequencedWorkerPool* pool,
     SequencedWorkerPool* unused_pool) {
+  EXPECT_TRUE(test_positive_task_runner->RunsTasksOnCurrentThread());
+  EXPECT_FALSE(test_negative_task_runner->RunsTasksOnCurrentThread());
   EXPECT_TRUE(pool->RunsTasksOnCurrentThread());
-  EXPECT_TRUE(pool->IsRunningSequenceOnCurrentThread(test_positive_token));
-  EXPECT_FALSE(pool->IsRunningSequenceOnCurrentThread(test_negative_token));
   EXPECT_FALSE(unused_pool->RunsTasksOnCurrentThread());
-  EXPECT_FALSE(
-      unused_pool->IsRunningSequenceOnCurrentThread(test_positive_token));
-  EXPECT_FALSE(
-      unused_pool->IsRunningSequenceOnCurrentThread(test_negative_token));
 }
 
-// Verify correctness of the IsRunningSequenceOnCurrentThread method.
-TEST_F(SequencedWorkerPoolTest, IsRunningOnCurrentThread) {
-  SequencedWorkerPool::SequenceToken token1 = pool()->GetSequenceToken();
-  SequencedWorkerPool::SequenceToken token2 = pool()->GetSequenceToken();
-  SequencedWorkerPool::SequenceToken unsequenced_token;
+// Verify correctness of the RunsTasksOnCurrentThread() method on
+// SequencedWorkerPool and on TaskRunners it returns.
+TEST_F(SequencedWorkerPoolTest, RunsTasksOnCurrentThread) {
+  const scoped_refptr<SequencedTaskRunner> sequenced_task_runner_1 =
+      pool()->GetSequencedTaskRunner(SequencedWorkerPool::GetSequenceToken());
+  const scoped_refptr<SequencedTaskRunner> sequenced_task_runner_2 =
+      pool()->GetSequencedTaskRunner(SequencedWorkerPool::GetSequenceToken());
+  const scoped_refptr<TaskRunner> unsequenced_task_runner =
+      pool()->GetTaskRunnerWithShutdownBehavior(
+          SequencedWorkerPool::BLOCK_SHUTDOWN);
 
   SequencedWorkerPoolOwner unused_pool_owner(2, "unused_pool");
 
   EXPECT_FALSE(pool()->RunsTasksOnCurrentThread());
-  EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(token1));
-  EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(token2));
-  EXPECT_FALSE(pool()->IsRunningSequenceOnCurrentThread(unsequenced_token));
+  EXPECT_FALSE(sequenced_task_runner_1->RunsTasksOnCurrentThread());
+  EXPECT_FALSE(sequenced_task_runner_2->RunsTasksOnCurrentThread());
+  EXPECT_FALSE(unsequenced_task_runner->RunsTasksOnCurrentThread());
   EXPECT_FALSE(unused_pool_owner.pool()->RunsTasksOnCurrentThread());
-  EXPECT_FALSE(
-      unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(token1));
-  EXPECT_FALSE(
-      unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(token2));
-  EXPECT_FALSE(unused_pool_owner.pool()->IsRunningSequenceOnCurrentThread(
-      unsequenced_token));
 
-  pool()->PostSequencedWorkerTask(
-      token1, FROM_HERE,
-      base::Bind(&IsRunningOnCurrentThreadTask, token1, token2,
-                 base::RetainedRef(pool()),
+  // From a task posted to |sequenced_task_runner_1|:
+  // - sequenced_task_runner_1->RunsTasksOnCurrentThread() returns true.
+  // - sequenced_task_runner_2->RunsTasksOnCurrentThread() returns false.
+  // - pool()->RunsTasksOnCurrentThread() returns true.
+  // - unused_pool_owner.pool()->RunsTasksOnCurrentThread() returns false.
+  sequenced_task_runner_1->PostTask(
+      FROM_HERE,
+      base::Bind(&VerifyRunsTasksOnCurrentThread, sequenced_task_runner_1,
+                 sequenced_task_runner_2, base::RetainedRef(pool()),
                  base::RetainedRef(unused_pool_owner.pool())));
-  pool()->PostSequencedWorkerTask(
-      token2, FROM_HERE,
-      base::Bind(&IsRunningOnCurrentThreadTask, token2, unsequenced_token,
-                 base::RetainedRef(pool()),
+  // From a task posted to |unsequenced_task_runner|:
+  // - unsequenced_task_runner->RunsTasksOnCurrentThread() returns true.
+  // - sequenced_task_runner_1->RunsTasksOnCurrentThread() returns false.
+  // - pool()->RunsTasksOnCurrentThread() returns true.
+  // - unused_pool_owner.pool()->RunsTasksOnCurrentThread() returns false.
+  unsequenced_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&VerifyRunsTasksOnCurrentThread, unsequenced_task_runner,
+                 sequenced_task_runner_1, base::RetainedRef(pool()),
                  base::RetainedRef(unused_pool_owner.pool())));
-  pool()->PostWorkerTask(
-      FROM_HERE, base::Bind(&IsRunningOnCurrentThreadTask, unsequenced_token,
-                            token1, base::RetainedRef(pool()),
-                            base::RetainedRef(unused_pool_owner.pool())));
 }
 
 // Checks that tasks are destroyed in the right context during shutdown. If a

@@ -118,6 +118,14 @@ struct SequencedTaskLessThan {
   }
 };
 
+// Create a process-wide unique ID to represent this task in trace events. This
+// will be mangled with a Process ID hash to reduce the likelyhood of colliding
+// with MessageLoop pointers on other processes.
+uint64_t GetTaskTraceID(const SequencedTask& task, void* pool) {
+  return (static_cast<uint64_t>(task.trace_id) << 32) |
+         static_cast<uint64_t>(reinterpret_cast<intptr_t>(pool));
+}
+
 // SequencedWorkerPoolTaskRunner ---------------------------------------------
 // A TaskRunner which posts tasks to a SequencedWorkerPool with a
 // fixed ShutdownBehavior.
@@ -168,14 +176,17 @@ bool SequencedWorkerPoolTaskRunner::RunsTasksOnCurrentThread() const {
   return pool_->RunsTasksOnCurrentThread();
 }
 
-// SequencedWorkerPoolSequencedTaskRunner ------------------------------------
+}  // namespace
+
+// SequencedWorkerPool::PoolSequencedTaskRunner ------------------------------
 // A SequencedTaskRunner which posts tasks to a SequencedWorkerPool with a
 // fixed sequence token.
 //
 // Note that this class is RefCountedThreadSafe (inherited from TaskRunner).
-class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
+class SequencedWorkerPool::PoolSequencedTaskRunner
+    : public SequencedTaskRunner {
  public:
-  SequencedWorkerPoolSequencedTaskRunner(
+  PoolSequencedTaskRunner(
       scoped_refptr<SequencedWorkerPool> pool,
       SequencedWorkerPool::SequenceToken token,
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
@@ -192,7 +203,7 @@ class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
                                   TimeDelta delay) override;
 
  private:
-  ~SequencedWorkerPoolSequencedTaskRunner() override;
+  ~PoolSequencedTaskRunner() override;
 
   const scoped_refptr<SequencedWorkerPool> pool_;
 
@@ -200,25 +211,25 @@ class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
 
   const SequencedWorkerPool::WorkerShutdown shutdown_behavior_;
 
-  DISALLOW_COPY_AND_ASSIGN(SequencedWorkerPoolSequencedTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(PoolSequencedTaskRunner);
 };
 
-SequencedWorkerPoolSequencedTaskRunner::SequencedWorkerPoolSequencedTaskRunner(
-    scoped_refptr<SequencedWorkerPool> pool,
-    SequencedWorkerPool::SequenceToken token,
-    SequencedWorkerPool::WorkerShutdown shutdown_behavior)
+SequencedWorkerPool::PoolSequencedTaskRunner::
+    PoolSequencedTaskRunner(
+        scoped_refptr<SequencedWorkerPool> pool,
+        SequencedWorkerPool::SequenceToken token,
+        SequencedWorkerPool::WorkerShutdown shutdown_behavior)
     : pool_(std::move(pool)),
       token_(token),
       shutdown_behavior_(shutdown_behavior) {}
 
-SequencedWorkerPoolSequencedTaskRunner::
-~SequencedWorkerPoolSequencedTaskRunner() {
-}
+SequencedWorkerPool::PoolSequencedTaskRunner::
+    ~PoolSequencedTaskRunner() = default;
 
-bool SequencedWorkerPoolSequencedTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    const Closure& task,
-    TimeDelta delay) {
+bool SequencedWorkerPool::PoolSequencedTaskRunner::
+    PostDelayedTask(const tracked_objects::Location& from_here,
+                    const Closure& task,
+                    TimeDelta delay) {
   if (delay.is_zero()) {
     return pool_->PostSequencedWorkerTaskWithShutdownBehavior(
         token_, from_here, task, shutdown_behavior_);
@@ -226,28 +237,19 @@ bool SequencedWorkerPoolSequencedTaskRunner::PostDelayedTask(
   return pool_->PostDelayedSequencedWorkerTask(token_, from_here, task, delay);
 }
 
-bool SequencedWorkerPoolSequencedTaskRunner::RunsTasksOnCurrentThread() const {
+bool SequencedWorkerPool::PoolSequencedTaskRunner::
+    RunsTasksOnCurrentThread() const {
   return pool_->IsRunningSequenceOnCurrentThread(token_);
 }
 
-bool SequencedWorkerPoolSequencedTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const Closure& task,
-    TimeDelta delay) {
+bool SequencedWorkerPool::PoolSequencedTaskRunner::
+    PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                               const Closure& task,
+                               TimeDelta delay) {
   // There's no way to run nested tasks, so simply forward to
   // PostDelayedTask.
   return PostDelayedTask(from_here, task, delay);
 }
-
-// Create a process-wide unique ID to represent this task in trace events. This
-// will be mangled with a Process ID hash to reduce the likelyhood of colliding
-// with MessageLoop pointers on other processes.
-uint64_t GetTaskTraceID(const SequencedTask& task, void* pool) {
-  return (static_cast<uint64_t>(task.trace_id) << 32) |
-         static_cast<uint64_t>(reinterpret_cast<intptr_t>(pool));
-}
-
-}  // namespace
 
 // Worker ---------------------------------------------------------------------
 
@@ -1513,7 +1515,7 @@ scoped_refptr<SequencedTaskRunner> SequencedWorkerPool::GetSequencedTaskRunner(
 scoped_refptr<SequencedTaskRunner>
 SequencedWorkerPool::GetSequencedTaskRunnerWithShutdownBehavior(
     SequenceToken token, WorkerShutdown shutdown_behavior) {
-  return new SequencedWorkerPoolSequencedTaskRunner(
+  return new PoolSequencedTaskRunner(
       this, token, shutdown_behavior);
 }
 
@@ -1596,11 +1598,6 @@ bool SequencedWorkerPool::RunsTasksOnCurrentThread() const {
   return inner_->RunsTasksOnCurrentThread();
 }
 
-bool SequencedWorkerPool::IsRunningSequenceOnCurrentThread(
-    SequenceToken sequence_token) const {
-  return inner_->IsRunningSequenceOnCurrentThread(sequence_token);
-}
-
 void SequencedWorkerPool::FlushForTesting() {
   inner_->CleanupForTesting();
 }
@@ -1616,6 +1613,11 @@ void SequencedWorkerPool::Shutdown(int max_new_blocking_tasks_after_shutdown) {
 
 bool SequencedWorkerPool::IsShutdownInProgress() {
   return inner_->IsShutdownInProgress();
+}
+
+bool SequencedWorkerPool::IsRunningSequenceOnCurrentThread(
+    SequenceToken sequence_token) const {
+  return inner_->IsRunningSequenceOnCurrentThread(sequence_token);
 }
 
 }  // namespace base
