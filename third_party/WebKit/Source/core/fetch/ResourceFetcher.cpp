@@ -873,18 +873,27 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     if (!m_preloads)
         m_preloads = new HeapListHashSet<Member<Resource>>;
     m_preloads->add(resource);
+
+    if (m_preloadedURLsForTest)
+        m_preloadedURLsForTest->add(resource->url().getString());
 }
 
-bool ResourceFetcher::isPreloaded(const KURL& url) const
+void ResourceFetcher::enableIsPreloadedForTest()
 {
-    if (m_preloads) {
-        for (auto resource : *m_preloads) {
-            if (resource->url() == url)
-                return true;
-        }
-    }
+    if (m_preloadedURLsForTest)
+        return;
+    m_preloadedURLsForTest = wrapUnique(new HashSet<String>);
 
-    return false;
+    if (m_preloads) {
+        for (const auto& resource : *m_preloads)
+            m_preloadedURLsForTest->add(resource->url().getString());
+    }
+}
+
+bool ResourceFetcher::isPreloadedForTest(const KURL& url) const
+{
+    DCHECK(m_preloadedURLsForTest);
+    return m_preloadedURLsForTest->contains(url.getString());
 }
 
 void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)

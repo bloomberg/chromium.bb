@@ -94,7 +94,9 @@ public:
 
     enum ClearPreloadsPolicy { ClearAllPreloads, ClearSpeculativeMarkupPreloads };
 
-    bool isPreloaded(const KURL&) const;
+    void enableIsPreloadedForTest();
+    bool isPreloadedForTest(const KURL&) const;
+
     int countPreloads() const { return m_preloads ? m_preloads->size() : 0; }
     void clearPreloads(ClearPreloadsPolicy = ClearAllPreloads);
     void preloadStarted(Resource*);
@@ -207,6 +209,8 @@ private:
         int m_loadCount;
     };
     DeadResourceStatsRecorder m_deadStatsRecorder;
+
+    std::unique_ptr<HashSet<String>> m_preloadedURLsForTest;
 
     // 28 bits left
     bool m_autoLoadImages : 1;

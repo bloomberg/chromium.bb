@@ -250,6 +250,7 @@ Internals::Internals(ScriptState* scriptState)
     : ContextLifecycleObserver(scriptState->getExecutionContext())
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
+    contextDocument()->fetcher()->enableIsPreloadedForTest();
 }
 
 Document* Internals::contextDocument() const
@@ -396,7 +397,7 @@ bool Internals::isPreloadedBy(const String& url, Document* document)
 {
     if (!document)
         return false;
-    return document->fetcher()->isPreloaded(document->completeURL(url));
+    return document->fetcher()->isPreloadedForTest(document->completeURL(url));
 }
 
 bool Internals::isLoadingFromMemoryCache(const String& url)
