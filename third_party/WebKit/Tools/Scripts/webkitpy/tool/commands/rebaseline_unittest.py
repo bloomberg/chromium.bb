@@ -12,7 +12,7 @@ from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline import (
     AbstractParallelRebaselineCommand, CopyExistingBaselinesInternal,
-    Rebaseline, RebaselineExpectations, RebaselineJson, RebaselineTest
+    Rebaseline, RebaselineExpectations, RebaselineJson, RebaselineTest, ChangeSet
 )
 from webkitpy.tool.mock_tool import MockWebKitPatch
 
@@ -320,19 +320,22 @@ class TestRebaselineTest(BaseTestCase):
         OutputCapture().assert_outputs(
             self, self.command._rebaseline_test_and_update_expectations, args=[self.options(suffixes='png')],
             expected_logs="Cannot rebaseline image result for reftest: userscripts/another-test.html\n")
-        self.assertDictEqual(self.command._scm_changes, {'add': [], 'remove-lines': [], "delete": []})
+        self.assertDictEqual(self.command._scm_changes.to_dict(), {'add': [], 'remove-lines': [], "delete": []})
 
     def test_rebaseline_test_and_print_scm_changes(self):
         self.command._print_scm_changes = True
-        self.command._scm_changes = {'add': [], 'delete': []}
+        self.command._scm_changes = ChangeSet()
         self.tool._scm.exists = lambda x: False
 
         self.command._rebaseline_test("MOCK Trusty", "userscripts/another-test.html", "txt", None)
 
-        self.assertDictEqual(self.command._scm_changes, {
-            'add': ['/test.checkout/LayoutTests/platform/test-linux-trusty/userscripts/another-test-expected.txt'],
-            'delete': []
-        })
+        self.assertDictEqual(
+            self.command._scm_changes.to_dict(),
+            {
+                'add': ['/test.checkout/LayoutTests/platform/test-linux-trusty/userscripts/another-test-expected.txt'],
+                'delete': [],
+                'remove-lines': []
+            })
 
     def test_rebaseline_test_internal_with_port_that_lacks_buildbot(self):
         self.tool.executive = MockExecutive2()

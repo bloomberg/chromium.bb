@@ -51,7 +51,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         for test_name in tests:
             files_to_delete, files_to_add = self._optimize_baseline(optimizer, test_name)
             for path in files_to_delete:
-                self._delete_from_scm_later(path)
+                self._scm_changes.delete_file(path)
             for path in files_to_add:
-                self._add_to_scm_later(path)
+                self._scm_changes.add_file(path)
         self._print_scm_changes()

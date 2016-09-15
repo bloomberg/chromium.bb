@@ -63,17 +63,88 @@ class AbstractRebaseliningCommand(Command):
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
-        self._scm_changes = {'add': [], 'delete': [], 'remove-lines': []}
+        self._scm_changes = ChangeSet()
         self._tool = None
 
-    def _add_to_scm_later(self, path):
-        self._scm_changes['add'].append(path)
-
-    def _delete_from_scm_later(self, path):
-        self._scm_changes['delete'].append(path)
-
     def _print_scm_changes(self):
-        print(json.dumps(self._scm_changes))
+        print(json.dumps(self._scm_changes.to_dict()))
+
+
+class ChangeSet(object):
+    """A record of added and deleted files and TestExpectation lines to remove.
+
+    This class groups two kinds of changes together:
+     (1) files that have been added or removed.
+     (2) lines to remove from TestExpectations.
+
+    The reason for keeping track of these changes together is that after rebaselining
+    many tests in parallel by subprocesses, we can update the git staged files list
+    and the TestExpectations all at once at the end.
+
+    Each subprocess can communicate some set of changes by outputting JSON lines,
+    and another process can aggregate the changes.
+
+    TODO(qyearsley): Refactor this so that:
+     - lines to remove are only tracked in one format.
+     - files to add and delete are always disjoint sets.
+    """
+    def __init__(self, files_to_add=None, files_to_delete=None, lines_to_remove=None):
+        self.files_to_add = files_to_add or []
+        self.files_to_delete = files_to_delete or []
+        self.lines_to_remove = lines_to_remove or {}
+
+    def add_file(self, path):
+        self.files_to_add.append(path)
+
+    def delete_file(self, path):
+        self.files_to_delete.append(path)
+
+    def remove_line(self, test, builder):
+        if test not in self.lines_to_remove:
+            self.lines_to_remove[test] = []
+        self.lines_to_remove[test].append(builder)
+
+    def to_dict(self):
+        remove_lines = []
+        for test in self.lines_to_remove:
+            for builder in self.lines_to_remove[test]:
+                remove_lines.append({'test': test, 'builder': builder})
+        return {
+            'add': list(self.files_to_add),
+            'delete': list(self.files_to_delete),
+            'remove-lines': remove_lines,
+        }
+
+    @staticmethod
+    def from_dict(change_dict):
+        files_to_add = set()
+        files_to_delete = set()
+        lines_to_remove = {}
+        if 'add' in change_dict:
+            files_to_add.update(change_dict['add'])
+        if 'delete' in change_dict:
+            files_to_delete.update(change_dict['delete'])
+        if 'remove-lines' in change_dict:
+            for line_to_remove in change_dict['remove-lines']:
+                test = line_to_remove['test']
+                builder = line_to_remove['builder']
+                if test not in lines_to_remove:
+                    lines_to_remove[test] = []
+                lines_to_remove[test].append(builder)
+        return ChangeSet(
+            files_to_add=list(files_to_add),
+            files_to_delete=list(files_to_delete),
+            lines_to_remove=lines_to_remove)
+
+    def update(self, other):
+        assert isinstance(other, ChangeSet)
+        assert type(other.lines_to_remove) is dict
+        self.files_to_add.extend(other.files_to_add)
+        self.files_to_delete.extend(other.files_to_delete)
+        for test in other.lines_to_remove:
+            if test not in self.lines_to_remove:
+                self.lines_to_remove[test] = []
+            self.lines_to_remove[test].extend(other.lines_to_remove[test])
 
 
 class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
@@ -170,7 +241,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             self._tool.filesystem.maybe_make_directory(self._tool.filesystem.dirname(new_baseline))
             self._tool.filesystem.copyfile(old_baseline, new_baseline)
             if not self._tool.scm().exists(new_baseline):
-                self._add_to_scm_later(new_baseline)
+                self._scm_changes.add_file(new_baseline)
 
     def execute(self, options, args, tool):
         self._tool = tool
@@ -192,7 +263,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         filesystem.maybe_make_directory(filesystem.dirname(target_baseline))
         filesystem.write_binary_file(target_baseline, data)
         if not self._tool.scm().exists(target_baseline):
-            self._add_to_scm_later(target_baseline)
+            self._scm_changes.add_file(target_baseline)
 
     def _rebaseline_test(self, builder_name, test_name, suffix, results_url):
         baseline_directory = self._baseline_directory(builder_name)
@@ -221,7 +292,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
 
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(options.builder, options.test, suffix, results_url)
-        self._scm_changes['remove-lines'].append({'builder': options.builder, 'test': options.test})
+        self._scm_changes.remove_line(test=options.test, builder=options.builder)
 
     def execute(self, options, args, tool):
         self._tool = tool
@@ -333,26 +404,18 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     @staticmethod
     def _serial_commands(command_results):
-        files_to_add = set()
-        files_to_delete = set()
-        lines_to_remove = {}
+        """Parses the JSON lines from command output to extract SCM changes.
+
+        TODO(qyearsley): Refactor and rename this function.
+        """
+        change_set = ChangeSet()
         for output in [result[1].split('\n') for result in command_results]:
             file_added = False
             for line in output:
                 try:
                     if line:
                         parsed_line = json.loads(line)
-                        if 'add' in parsed_line:
-                            files_to_add.update(parsed_line['add'])
-                        if 'delete' in parsed_line:
-                            files_to_delete.update(parsed_line['delete'])
-                        if 'remove-lines' in parsed_line:
-                            for line_to_remove in parsed_line['remove-lines']:
-                                test = line_to_remove['test']
-                                builder = line_to_remove['builder']
-                                if test not in lines_to_remove:
-                                    lines_to_remove[test] = []
-                                lines_to_remove[test].append(builder)
+                        change_set.update(ChangeSet.from_dict(parsed_line))
                         file_added = True
                 except ValueError:
                     _log.debug('"%s" is not a JSON object, ignoring', line)
@@ -360,7 +423,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if not file_added:
                 _log.debug('Could not add file based off output "%s"', output)
 
-        return list(files_to_add), list(files_to_delete), lines_to_remove
+        return change_set
 
     def _optimize_baselines(self, test_prefix_list, verbose=False):
         optimize_commands = []
@@ -435,21 +498,24 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         if not commands:
             return {}
 
+        # TODO(qyearsley): Refactor this block.
         command_results = self._tool.executive.run_in_parallel(commands)
         log_output = '\n'.join(result[2] for result in command_results).replace('\n\n', '\n')
         for line in log_output.split('\n'):
             if line:
                 _log.error(line)
 
-        files_to_add, files_to_delete, lines_to_remove = self._serial_commands(command_results)
-        # TODO(qyearsley): Consider removing this if possible,
-        # or making it work and produce reasonable results for rebaseline-cl.
+        change_set = self._serial_commands(command_results)
+
+        # TODO(qyearsley): Instead of updating the SCM state here, aggregate changes
+        # and update once in _rebaseline. See http://crbug.com/639410.
         if update_scm:
-            if files_to_delete:
-                self._tool.scm().delete_list(files_to_delete)
-            if files_to_add:
-                self._tool.scm().add_list(files_to_add)
-        return lines_to_remove
+            if change_set.files_to_delete:
+                self._tool.scm().delete_list(change_set.files_to_delete)
+            if change_set.files_to_add:
+                self._tool.scm().add_list(change_set.files_to_add)
+
+        return change_set.lines_to_remove
 
     def _rebaseline(self, options, test_prefix_list, update_scm=True):
         """Downloads new baselines in parallel, then updates expectations files
