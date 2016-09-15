@@ -816,7 +816,6 @@ template("jar_src") {
     script = "//components/cronet/tools/jar_src.py"
     depfile = "$target_gen_dir/$target_name.d"
     outputs = [
-      depfile,
       invoker.jar_path,
     ]
     args = [
@@ -828,6 +827,7 @@ template("jar_src") {
     ]
 
     if (defined(invoker.src_jars)) {
+      inputs = invoker.src_jars
       _rebased_src_jars = rebase_path(invoker.src_jars, root_build_dir)
       args += [ "--src-jar=${_rebased_src_jars}" ]
     }
@@ -964,6 +964,9 @@ copy("cronet_package_copy_native_lib_unstripped") {
 if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
   action("enforce_no_neon") {
     script = "//components/cronet/tools/check_no_neon.py"
+    outputs = [
+      "$target_gen_dir/$target_name.stamp",
+    ]
     args = [
       rebase_path("${android_tool_prefix}objdump", root_build_dir),
 
@@ -972,9 +975,8 @@ if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
       # so instead check base/ as it represents a large swath of code that only
       # contains Neon instructions when Neon is enabled by default.
       rebase_path("$root_out_dir/obj/base/base/*.o", root_build_dir),
-    ]
-    outputs = [
-      "$root_out_dir/cronet_$target_name.d",
+      "--stamp",
+      rebase_path(outputs[0], root_build_dir),
     ]
     deps = [
       "//base:base",

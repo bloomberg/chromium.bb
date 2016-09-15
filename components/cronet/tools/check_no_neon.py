@@ -9,15 +9,27 @@ import argparse
 import os
 import sys
 
+REPOSITORY_ROOT = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
+
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android/gyp/util'))
+import build_utils
+
 
 def main(args):
   parser = argparse.ArgumentParser(
       description='Check modules do not contain ARM Neon instructions.')
   parser.add_argument('objdump', metavar='path/to/ARM/objdump')
   parser.add_argument('objects', metavar='files/to/check/*.o')
+  parser.add_argument('--stamp', help='Path to touch on success.')
   opts = parser.parse_args(args)
-  return os.system(opts.objdump + ' -d --no-show-raw-insn ' +
+  ret = os.system(opts.objdump + ' -d --no-show-raw-insn ' +
       opts.objects + ' | grep -q "vld[1-9]\\|vst[1-9]"')
+
+  # Non-zero exit code means no neon.
+  if ret and opts.stamp:
+    build_utils.Touch(opts.stamp)
+  return ret
 
 
 if __name__ == '__main__':

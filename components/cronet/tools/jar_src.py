@@ -52,8 +52,10 @@ def main():
 
   # A temporary directory to put the output of jar files.
   unzipped_jar_path = None
+  generated_src_dirs = []
   if options.src_jars:
     unzipped_jar_path = tempfile.mkdtemp(dir=os.path.dirname(options.jar_path))
+    generated_src_dirs.append(unzipped_jar_path)
     jar_list = []
     for gn_list in options.src_jars:
       jar_list.extend(build_utils.ParseGnList(gn_list))
@@ -64,10 +66,8 @@ def main():
   src_dirs = []
   for src_dir in options.src_dir:
     src_dirs.extend(build_utils.ParseGnList(src_dir))
-  if unzipped_jar_path:
-    src_dirs += [unzipped_jar_path]
 
-  for src_dir in src_dirs:
+  for src_dir in src_dirs + generated_src_dirs:
     JarSources(src_dir, options.jar_path)
 
   if options.depfile:
@@ -75,6 +75,7 @@ def main():
     for src_dir in src_dirs:
       for root, _, filenames in os.walk(src_dir):
         deps.extend(os.path.join(root, f) for f in filenames)
+    # Srcjar deps already captured in GN rules (no need to list them here).
     build_utils.WriteDepfile(options.depfile, options.jar_path, deps)
 
   # Clean up temporary output directory.
