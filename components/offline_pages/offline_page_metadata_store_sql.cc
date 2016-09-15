@@ -21,6 +21,7 @@
 namespace offline_pages {
 
 using StoreState = OfflinePageMetadataStore::StoreState;
+using ItemActionStatus = OfflinePageMetadataStore::ItemActionStatus;
 
 namespace {
 
@@ -182,6 +183,36 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   return item;
 }
 
+ItemActionStatus Insert(sql::Connection* db, const OfflinePageItem& item) {
+  // Using 'INSERT OR FAIL' or 'INSERT OR ABORT' in the query below causes debug
+  // builds to DLOG.
+  const char kSql[] =
+      "INSERT OR IGNORE INTO " OFFLINE_PAGES_TABLE_NAME
+      " (offline_id, online_url, client_namespace, client_id, file_path, "
+      "file_size, creation_time, last_access_time, access_count, "
+      "expiration_time, title)"
+      " VALUES "
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, item.offline_id);
+  statement.BindString(1, item.url.spec());
+  statement.BindString(2, item.client_id.name_space);
+  statement.BindString(3, item.client_id.id);
+  statement.BindString(4, GetUTF8StringFromPath(item.file_path));
+  statement.BindInt64(5, item.file_size);
+  statement.BindInt64(6, item.creation_time.ToInternalValue());
+  statement.BindInt64(7, item.last_access_time.ToInternalValue());
+  statement.BindInt(8, item.access_count);
+  statement.BindInt64(9, item.expiration_time.ToInternalValue());
+  statement.BindString16(10, item.title);
+  if (!statement.Run())
+    return ItemActionStatus::STORE_ERROR;
+  if (db->GetLastChangeCount() == 0)
+    return ItemActionStatus::ALREADY_EXISTS;
+  return ItemActionStatus::SUCCESS;
+}
+
 bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
   const char kSql[] =
       "INSERT OR REPLACE INTO " OFFLINE_PAGES_TABLE_NAME
@@ -279,10 +310,8 @@ void AddOfflinePageSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const OfflinePageItem& offline_page,
                         const OfflinePageMetadataStore::AddCallback& callback) {
-  // TODO(fgorski): Only insert should happen here.
-  InsertOrReplace(db, offline_page);
-  runner->PostTask(FROM_HERE,
-                   base::Bind(callback, OfflinePageMetadataStore::SUCCESS));
+  ItemActionStatus status = Insert(db, offline_page);
+  runner->PostTask(FROM_HERE, base::Bind(callback, status));
 }
 
 void UpdateOfflinePagesSync(

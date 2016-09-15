@@ -447,6 +447,31 @@ TEST_F(OfflinePageMetadataStoreTest, AddOfflinePage) {
   CheckThatOfflinePageCanBeSaved(BuildStore());
 }
 
+TEST_F(OfflinePageMetadataStoreTest, AddSameOfflinePageTwice) {
+  std::unique_ptr<OfflinePageMetadataStore> store(BuildStore());
+
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
+                               base::FilePath(kFilePath), kFileSize);
+  offline_page.title = base::UTF8ToUTF16("a title");
+  base::Time expiration_time = base::Time::Now();
+  offline_page.expiration_time = expiration_time;
+
+  store->AddOfflinePage(offline_page,
+                        base::Bind(&OfflinePageMetadataStoreTest::AddCallback,
+                                   base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+  ClearResults();
+
+  store->AddOfflinePage(offline_page,
+                        base::Bind(&OfflinePageMetadataStoreTest::AddCallback,
+                                   base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+}
+
 // Tests removing offline page metadata from the store, for which it first adds
 // metadata of an offline page.
 TEST_F(OfflinePageMetadataStoreTest, RemoveOfflinePage) {
