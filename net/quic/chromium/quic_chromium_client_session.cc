@@ -371,6 +371,13 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.MtuProbesSent",
                        connection()->mtu_probe_count());
 
+  if (stats.packets_sent >= 100) {
+    // Used to monitor for regressions that effect large uploads.
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Net.QuicSession.PacketRetransmitsPerMille",
+        1000 * stats.packets_retransmitted / stats.packets_sent);
+  }
+
   if (stats.max_sequence_reordering == 0)
     return;
   const base::HistogramBase::Sample kMaxReordering = 100;

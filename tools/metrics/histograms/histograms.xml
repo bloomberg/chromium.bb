@@ -31478,6 +31478,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PacketRetransmitsPerMille" units="permille">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The number of packets retransmitted per 1000.  Only sessions with
+    packets_sent &gt;= 100 are included.  Recorded in session destructor.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PacketWriteTime">
   <owner>rch@chromium.org</owner>
   <summary>
