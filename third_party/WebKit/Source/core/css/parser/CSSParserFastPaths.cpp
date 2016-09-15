@@ -663,7 +663,11 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
     case CSSPropertyFlexWrap:
         return valueID == CSSValueNowrap || valueID == CSSValueWrap || valueID == CSSValueWrapReverse;
     case CSSPropertyHyphens:
+#if OS(ANDROID) || OS(MACOSX)
         return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueManual;
+#else
+        return valueID == CSSValueNone || valueID == CSSValueManual;
+#endif
     case CSSPropertyJustifyContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
         return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround;
