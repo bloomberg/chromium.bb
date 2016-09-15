@@ -324,7 +324,7 @@ TEST_F(InstallUtilTest, ProgramCompare) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   const base::FilePath some_long_dir(
-      test_dir.path().Append(L"Some Long Directory Name"));
+      test_dir.GetPath().Append(L"Some Long Directory Name"));
   const base::FilePath expect(some_long_dir.Append(L"file.txt"));
   const base::FilePath expect_upcase(some_long_dir.Append(L"FILE.txt"));
   const base::FilePath other(some_long_dir.Append(L"otherfile.txt"));
@@ -373,7 +373,7 @@ TEST_F(InstallUtilTest, ProgramCompareWithDirectories) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   const base::FilePath some_long_dir(
-      test_dir.path().Append(L"Some Long Directory Name"));
+      test_dir.GetPath().Append(L"Some Long Directory Name"));
   const base::FilePath expect(some_long_dir.Append(L"directory"));
   const base::FilePath expect_upcase(some_long_dir.Append(L"DIRECTORY"));
   const base::FilePath other(some_long_dir.Append(L"other_directory"));

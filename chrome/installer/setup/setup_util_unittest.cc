@@ -93,37 +93,39 @@ TEST(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
   // Create a version dir
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath chrome_dir = test_dir.path().AppendASCII("1.0.0.0");
+  base::FilePath chrome_dir = test_dir.GetPath().AppendASCII("1.0.0.0");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
   std::unique_ptr<base::Version> version(
-      installer::GetMaxVersionFromArchiveDir(test_dir.path()));
+      installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
   base::DeleteFile(chrome_dir, true);
   ASSERT_FALSE(base::PathExists(chrome_dir)) << chrome_dir.value();
-  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.path()) == NULL);
+  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()) ==
+              NULL);
 
-  chrome_dir = test_dir.path().AppendASCII("ABC");
+  chrome_dir = test_dir.GetPath().AppendASCII("ABC");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.path()) == NULL);
+  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()) ==
+              NULL);
 
-  chrome_dir = test_dir.path().AppendASCII("2.3.4.5");
+  chrome_dir = test_dir.GetPath().AppendASCII("2.3.4.5");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir.path()));
+  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()));
   ASSERT_EQ(version->GetString(), "2.3.4.5");
 
   // Create multiple version dirs, ensure that we select the greatest.
-  chrome_dir = test_dir.path().AppendASCII("9.9.9.9");
+  chrome_dir = test_dir.GetPath().AppendASCII("9.9.9.9");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  chrome_dir = test_dir.path().AppendASCII("1.1.1.1");
+  chrome_dir = test_dir.GetPath().AppendASCII("1.1.1.1");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
 
-  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir.path()));
+  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()));
   ASSERT_EQ(version->GetString(), "9.9.9.9");
 }
 
@@ -131,7 +133,7 @@ TEST(SetupUtilTest, DeleteFileFromTempProcess) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file;
-  base::CreateTemporaryFileInDir(test_dir.path(), &test_file);
+  base::CreateTemporaryFileInDir(test_dir.GetPath(), &test_file);
   ASSERT_TRUE(base::PathExists(test_file));
   base::WriteFile(test_file, "foo", 3);
   EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));
@@ -335,7 +337,7 @@ class FindArchiveToPatchTest : public testing::Test {
   }
 
   base::FilePath GetArchivePath(const base::Version& version) const {
-    return test_dir_.path()
+    return test_dir_.GetPath()
         .AppendASCII(version.GetString())
         .Append(installer::kInstallerDir)
         .Append(installer::kChromeArchive);
@@ -356,7 +358,7 @@ class FindArchiveToPatchTest : public testing::Test {
 
     product->set_version(product_version_);
     base::CommandLine uninstall_command(
-        test_dir_.path()
+        test_dir_.GetPath()
             .AppendASCII(product_version_.GetString())
             .Append(installer::kInstallerDir)
             .Append(installer::kSetupExe));

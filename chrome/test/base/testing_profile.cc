@@ -280,7 +280,7 @@ TestingProfile::TestingProfile()
       delegate_(NULL),
       profile_name_(kTestingProfile) {
   CreateTempProfileDir();
-  profile_path_ = temp_dir_.path();
+  profile_path_ = temp_dir_.GetPath();
 
   Init();
   FinishInit();
@@ -363,7 +363,7 @@ TestingProfile::TestingProfile(
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
     CreateTempProfileDir();
-    profile_path_ = temp_dir_.path();
+    profile_path_ = temp_dir_.GetPath();
   }
 
   // Set any testing factories prior to initializing the services.

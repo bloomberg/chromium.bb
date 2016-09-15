@@ -793,7 +793,7 @@ Status ExecuteUploadFile(Session* session,
       return Status(kUnknownError, "unable to create temp dir");
   }
   base::FilePath upload_dir;
-  if (!base::CreateTemporaryDirInDir(session->temp_dir.path(),
+  if (!base::CreateTemporaryDirInDir(session->temp_dir.GetPath(),
                                      FILE_PATH_LITERAL("upload"),
                                      &upload_dir)) {
     return Status(kUnknownError, "unable to create temp dir");

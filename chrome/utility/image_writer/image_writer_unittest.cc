@@ -32,9 +32,10 @@ class ImageWriterUtilityTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_));
     ASSERT_TRUE(
-        base::CreateTemporaryFileInDir(temp_dir_.path(), &device_path_));
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_path_));
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &device_path_));
   }
 
   void TearDown() override {}

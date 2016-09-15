@@ -145,7 +145,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
 
   base::File CreateTempFile() {
     base::FilePath path;
-    if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &path))
+    if (!base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &path))
       return base::File();
     return base::File(path,
                       base::File::FLAG_CREATE_ALWAYS |

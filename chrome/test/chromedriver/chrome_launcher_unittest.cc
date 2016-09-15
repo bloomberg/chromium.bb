@@ -60,8 +60,8 @@ TEST(ProcessExtensions, GenerateIds) {
 
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
 
-  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
-                                              false, &switches, &bg_pages);
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir.GetPath(), false, &switches, &bg_pages);
 
   ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_EQ(3u, bg_pages.size());
@@ -82,8 +82,8 @@ TEST(ProcessExtensions, SingleExtensionWithBgPage) {
 
   Switches switches;
   std::vector<std::string> bg_pages;
-  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
-                                              false, &switches, &bg_pages);
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir.GetPath(), false, &switches, &bg_pages);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(switches.HasSwitch("load-extension"));
   base::FilePath temp_ext_path(switches.GetSwitchValueNative("load-extension"));
@@ -120,8 +120,8 @@ TEST(ProcessExtensions, MultipleExtensionsNoBgPages) {
 
   Switches switches;
   std::vector<std::string> bg_pages;
-  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
-                                              false, &switches, &bg_pages);
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir.GetPath(), false, &switches, &bg_pages);
   ASSERT_TRUE(status.IsOk());
   ASSERT_TRUE(switches.HasSwitch("load-extension"));
   base::CommandLine::StringType ext_paths =
@@ -144,8 +144,8 @@ TEST(ProcessExtensions, CommandLineExtensions) {
   Switches switches;
   switches.SetSwitch("load-extension", "/a");
   std::vector<std::string> bg_pages;
-  Status status = internal::ProcessExtensions(extensions, extension_dir.path(),
-                                              false, &switches, &bg_pages);
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir.GetPath(), false, &switches, &bg_pages);
   ASSERT_EQ(kOk, status.code());
   base::FilePath::StringType load = switches.GetSwitchValueNative(
       "load-extension");
@@ -174,13 +174,13 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   base::DictionaryValue local_state;
   local_state.SetString("myLocalKey", "ok");
   local_state.SetStringWithoutPathExpansion("local.state.sub", "2");
-  Status status = internal::PrepareUserDataDir(
-      temp_dir.path(), &prefs, &local_state);
+  Status status =
+      internal::PrepareUserDataDir(temp_dir.GetPath(), &prefs, &local_state);
   ASSERT_EQ(kOk, status.code());
 
-  base::FilePath prefs_file =
-      temp_dir.path().AppendASCII(chrome::kInitialProfile).Append(
-          chrome::kPreferencesFilename);
+  base::FilePath prefs_file = temp_dir.GetPath()
+                                  .AppendASCII(chrome::kInitialProfile)
+                                  .Append(chrome::kPreferencesFilename);
   std::string prefs_str;
   ASSERT_TRUE(base::ReadFileToString(prefs_file, &prefs_str));
   std::unique_ptr<base::Value> prefs_value = base::JSONReader::Read(prefs_str);
@@ -190,7 +190,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
   AssertEQ(*prefs_dict, "pref.sub", "1");
 
   base::FilePath local_state_file =
-      temp_dir.path().Append(chrome::kLocalStateFilename);
+      temp_dir.GetPath().Append(chrome::kLocalStateFilename);
   std::string local_state_str;
   ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
   std::unique_ptr<base::Value> local_state_value =

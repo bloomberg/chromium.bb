@@ -18,7 +18,7 @@ class ServiceProcessPrefsTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     prefs_.reset(new ServiceProcessPrefs(
-        temp_dir_.path().AppendASCII("service_process_prefs.txt"),
+        temp_dir_.GetPath().AppendASCII("service_process_prefs.txt"),
         message_loop_.task_runner().get()));
   }
 

@@ -77,7 +77,7 @@ std::unique_ptr<ReadStream> ReadStreamTest<MemoryReadStreamTest>::CreateStream(
 template <>
 std::unique_ptr<ReadStream> ReadStreamTest<FileReadStreamTest>::CreateStream(
     size_t data_size) {
-  base::FilePath path = test_helper_.temp_dir.path().Append("stream");
+  base::FilePath path = test_helper_.temp_dir.GetPath().Append("stream");
   test_helper_.file.Initialize(path,
       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   if (!test_helper_.file.IsValid()) {

@@ -58,10 +58,10 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
   uid_vector.push_back("uid2");
   uid_vector.push_back("uid3");
 
-  WriteAlbumTable(temp_dir.path(), category_vector, date_vector,
+  WriteAlbumTable(temp_dir.GetPath(), category_vector, date_vector,
                   filename_vector, name_vector, token_vector, uid_vector);
 
-  AlbumTableFiles album_table_files(temp_dir.path());
+  AlbumTableFiles album_table_files(temp_dir.GetPath());
   PicasaAlbumTableReader reader(std::move(album_table_files));
 
   ASSERT_TRUE(reader.Init());

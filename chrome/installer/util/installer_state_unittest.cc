@@ -82,7 +82,7 @@ TEST_F(InstallerStateTest, WithProduct) {
   machine_state.Initialize();
   MockInstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, machine_state);
-  installer_state.set_target_path(test_dir_.path());
+  installer_state.set_target_path(test_dir_.GetPath());
   EXPECT_EQ(1U, installer_state.products().size());
   EXPECT_EQ(system_level, installer_state.system_install());
 
@@ -217,7 +217,7 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &temp_file));
 
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 

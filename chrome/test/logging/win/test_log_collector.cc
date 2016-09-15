@@ -220,7 +220,7 @@ void TestLogCollector::StartSessionForTest(const testing::TestInfo& test_info) {
     std::string log_file_name(test_info.name());
     std::replace(log_file_name.begin(), log_file_name.end(), '/', '_');
     log_file_name.append(kTraceLogExtension);
-    log_file_ = log_temp_dir_.path().AppendASCII(log_file_name);
+    log_file_ = log_temp_dir_.GetPath().AppendASCII(log_file_name);
 
     file_logger_->StartLogging(log_file_);
   }

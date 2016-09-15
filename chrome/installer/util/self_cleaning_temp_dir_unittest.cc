@@ -71,7 +71,8 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(
+      work_dir.GetPath().Append(L"One").Append(L"Two"));
   SelfCleaningTempDir temp_dir;
   EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
   EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
@@ -92,7 +93,8 @@ TEST_F(SelfCleaningTempDirTest, TwoClients) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(
+      work_dir.GetPath().Append(L"One").Append(L"Two"));
   SelfCleaningTempDir temp_dir1;
   SelfCleaningTempDir temp_dir2;
   // First client is created.
@@ -129,7 +131,8 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(
+      work_dir.GetPath().Append(L"One").Append(L"Two"));
   {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
@@ -154,7 +157,8 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(
+      work_dir.GetPath().Append(L"One").Append(L"Two"));
   {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));

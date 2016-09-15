@@ -23,7 +23,7 @@ TEST(UnzipSoleFile, Entry) {
       "cCAFBLBwi/wAzGBgAAAAQAAAA=";
   ASSERT_TRUE(base::Base64Decode(kBase64ZipEntry, &data));
   base::FilePath file;
-  Status status = UnzipSoleFile(temp_dir.path(), data, &file);
+  Status status = UnzipSoleFile(temp_dir.GetPath(), data, &file);
   ASSERT_EQ(kOk, status.code()) << status.message();
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(file, &contents));
@@ -42,7 +42,7 @@ TEST(UnzipSoleFile, Archive) {
       "A";
   ASSERT_TRUE(base::Base64Decode(kBase64ZipArchive, &data));
   base::FilePath file;
-  Status status = UnzipSoleFile(temp_dir.path(), data, &file);
+  Status status = UnzipSoleFile(temp_dir.GetPath(), data, &file);
   ASSERT_EQ(kOk, status.code()) << status.message();
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(file, &contents));

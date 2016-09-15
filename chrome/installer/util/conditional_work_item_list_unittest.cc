@@ -122,8 +122,8 @@ TEST(ConditionalWorkItemListTest, ConditionRunIfFileExists) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  EXPECT_TRUE(ConditionRunIfFileExists(temp_dir.path()).ShouldRun());
+  EXPECT_TRUE(ConditionRunIfFileExists(temp_dir.GetPath()).ShouldRun());
   EXPECT_FALSE(ConditionRunIfFileExists(
-                   temp_dir.path().Append(FILE_PATH_LITERAL("DoesNotExist")))
+                   temp_dir.GetPath().Append(FILE_PATH_LITERAL("DoesNotExist")))
                    .ShouldRun());
 }

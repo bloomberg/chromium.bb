@@ -151,8 +151,8 @@ Status PrepareCommandLine(uint16_t port,
     command.AppendArg("data:,");
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
-    switches.SetSwitch("user-data-dir", user_data_dir->path().value());
-    user_data_dir_path = user_data_dir->path();
+    switches.SetSwitch("user-data-dir", user_data_dir->GetPath().value());
+    user_data_dir_path = user_data_dir->GetPath();
   }
 
   Status status = internal::PrepareUserDataDir(user_data_dir_path,
@@ -166,10 +166,8 @@ Status PrepareCommandLine(uint16_t port,
                   "cannot create temp dir for unpacking extensions");
   }
   status = internal::ProcessExtensions(capabilities.extensions,
-                                       extension_dir->path(),
-                                       true,
-                                       &switches,
-                                       extension_bg_pages);
+                                       extension_dir->GetPath(), true,
+                                       &switches, extension_bg_pages);
   if (status.IsError())
     return status;
   switches.AppendToCommandLine(&command);
@@ -675,7 +673,7 @@ Status ProcessExtension(const std::string& extension,
   base::ScopedTempDir temp_crx_dir;
   if (!temp_crx_dir.CreateUniqueTempDir())
     return Status(kUnknownError, "cannot create temp dir");
-  base::FilePath extension_crx = temp_crx_dir.path().AppendASCII("temp.crx");
+  base::FilePath extension_crx = temp_crx_dir.GetPath().AppendASCII("temp.crx");
   int size = static_cast<int>(decoded_extension.length());
   if (base::WriteFile(extension_crx, decoded_extension.c_str(), size) !=
       size) {

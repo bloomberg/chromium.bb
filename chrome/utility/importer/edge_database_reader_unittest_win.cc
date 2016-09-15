@@ -31,7 +31,7 @@ class EdgeDatabaseReaderTest : public ::testing::Test {
     input_path = test_data_path_.AppendASCII("edge_database_reader")
                      .Append(database_name)
                      .AddExtension(L".gz");
-    base::FilePath output_path = temp_dir_.path().Append(database_name);
+    base::FilePath output_path = temp_dir_.GetPath().Append(database_name);
 
     if (DecompressDatabase(input_path, output_path)) {
       *copied_path = output_path;
@@ -43,7 +43,7 @@ class EdgeDatabaseReaderTest : public ::testing::Test {
   bool WriteFile(const base::string16& name,
                  const std::string& contents,
                  base::FilePath* output_path) {
-    *output_path = temp_dir_.path().Append(name);
+    *output_path = temp_dir_.GetPath().Append(name);
     return base::WriteFile(*output_path, contents.c_str(), contents.size()) >=
            0;
   }

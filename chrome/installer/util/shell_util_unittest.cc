@@ -61,16 +61,16 @@ class ShellUtilShortcutTest : public testing::Test {
     product_.reset(new installer::Product(dist_));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    chrome_exe_ = temp_dir_.path().Append(installer::kChromeExe);
+    chrome_exe_ = temp_dir_.GetPath().Append(installer::kChromeExe);
     EXPECT_EQ(0, base::WriteFile(chrome_exe_, "", 0));
 
-    manganese_exe_ = temp_dir_.path().Append(kManganeseExe);
+    manganese_exe_ = temp_dir_.GetPath().Append(kManganeseExe);
     EXPECT_EQ(0, base::WriteFile(manganese_exe_, "", 0));
 
-    iron_exe_ = temp_dir_.path().Append(kIronExe);
+    iron_exe_ = temp_dir_.GetPath().Append(kIronExe);
     EXPECT_EQ(0, base::WriteFile(iron_exe_, "", 0));
 
-    other_ico_ = temp_dir_.path().Append(kOtherIco);
+    other_ico_ = temp_dir_.GetPath().Append(kOtherIco);
     EXPECT_EQ(0, base::WriteFile(other_ico_, "", 0));
 
     ASSERT_TRUE(fake_user_desktop_.CreateUniqueTempDir());
@@ -96,7 +96,7 @@ class ShellUtilShortcutTest : public testing::Test {
                                      fake_common_start_menu_.path()));
 
     base::FilePath icon_path;
-    base::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path);
+    base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &icon_path);
     test_properties_.set_target(chrome_exe_);
     test_properties_.set_arguments(L"--test --chrome");
     test_properties_.set_description(L"Makes polar bears dance.");
@@ -792,7 +792,7 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
   base::ScopedTempDir other_exe_dir;
   ASSERT_TRUE(other_exe_dir.CreateUniqueTempDir());
   base::FilePath other_chrome_exe =
-      other_exe_dir.path().Append(installer::kChromeExe);
+      other_exe_dir.GetPath().Append(installer::kChromeExe);
   EXPECT_EQ(0, base::WriteFile(other_chrome_exe, "", 0));
 
   test_properties_.set_target(other_chrome_exe);

@@ -68,7 +68,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
-  base::FilePath profile_path(profiles_dir_.path());
+  base::FilePath profile_path(profiles_dir_.GetPath());
 #if defined(OS_CHROMEOS)
   if (profile_name != chrome::kInitialProfile) {
     profile_path =
@@ -223,7 +223,7 @@ void TestingProfileManager::UpdateLastUser(Profile* last_active) {
 
 const base::FilePath& TestingProfileManager::profiles_dir() {
   DCHECK(called_set_up_);
-  return profiles_dir_.path();
+  return profiles_dir_.GetPath();
 }
 
 ProfileManager* TestingProfileManager::profile_manager() {
@@ -247,7 +247,7 @@ void TestingProfileManager::SetUpInternal() {
   // Set up the directory for profiles.
   ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
 
-  profile_manager_ = new testing::ProfileManager(profiles_dir_.path());
+  profile_manager_ = new testing::ProfileManager(profiles_dir_.GetPath());
   browser_process_->SetProfileManager(profile_manager_);  // Takes ownership.
 
   profile_manager_->GetProfileInfoCache().

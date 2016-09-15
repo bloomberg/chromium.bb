@@ -273,5 +273,5 @@ TEST_F(SafariImporterTest, CanImport) {
   // Check that we don't import anything from a bogus library directory.
   base::ScopedTempDir fake_library_dir;
   ASSERT_TRUE(fake_library_dir.CreateUniqueTempDir());
-  EXPECT_FALSE(SafariImporterCanImport(fake_library_dir.path(), &items));
+  EXPECT_FALSE(SafariImporterCanImport(fake_library_dir.GetPath(), &items));
 }

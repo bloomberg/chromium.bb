@@ -58,7 +58,7 @@ TEST_F(LzmaUtilTest, OpenArchiveTest) {
 
 // Test that we can extract archives successfully.
 TEST_F(LzmaUtilTest, UnPackTest) {
-  base::FilePath extract_dir(temp_dir_.path());
+  base::FilePath extract_dir(temp_dir_.GetPath());
   extract_dir = extract_dir.AppendASCII("UnPackTest");
   ASSERT_FALSE(base::PathExists(extract_dir));
   EXPECT_TRUE(base::CreateDirectory(extract_dir));
@@ -103,7 +103,7 @@ TEST_F(LzmaUtilTest, UnPackTest) {
 
 // Test the static method that can be used to unpack archives.
 TEST_F(LzmaUtilTest, UnPackArchiveTest) {
-  base::FilePath extract_dir(temp_dir_.path());
+  base::FilePath extract_dir(temp_dir_.GetPath());
   extract_dir = extract_dir.AppendASCII("UnPackArchiveTest");
   ASSERT_FALSE(base::PathExists(extract_dir));
   EXPECT_TRUE(base::CreateDirectory(extract_dir));

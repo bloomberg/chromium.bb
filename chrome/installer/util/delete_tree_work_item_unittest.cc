@@ -24,7 +24,7 @@ class DeleteTreeWorkItemTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    dir_name_ = temp_dir_.path().Append(FILE_PATH_LITERAL("to_be_deleted"));
+    dir_name_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("to_be_deleted"));
     ASSERT_TRUE(base::CreateDirectory(dir_name_));
     ASSERT_TRUE(base::PathExists(dir_name_));
 
@@ -84,7 +84,7 @@ TEST_F(DeleteTreeWorkItemTest, Delete) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::unique_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_, temp_dir.path()));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_, temp_dir.GetPath()));
 
   EXPECT_TRUE(work_item->Do());
   ExpectAllFilesDeleted();
@@ -100,7 +100,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteRollbackDisabled) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::unique_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_, temp_dir.path()));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_, temp_dir.GetPath()));
   work_item->set_rollback_enabled(false);
 
   EXPECT_TRUE(work_item->Do());

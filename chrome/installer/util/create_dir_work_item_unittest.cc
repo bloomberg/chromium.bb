@@ -25,7 +25,7 @@ namespace {
 };
 
 TEST_F(CreateDirWorkItemTest, CreatePath) {
-  base::FilePath parent_dir(temp_dir_.path());
+  base::FilePath parent_dir(temp_dir_.GetPath());
   parent_dir = parent_dir.AppendASCII("a");
   base::CreateDirectory(parent_dir);
   ASSERT_TRUE(base::PathExists(parent_dir));
@@ -52,7 +52,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
-  base::FilePath dir_to_create(temp_dir_.path());
+  base::FilePath dir_to_create(temp_dir_.GetPath());
   dir_to_create = dir_to_create.AppendASCII("aa");
   base::CreateDirectory(dir_to_create);
   ASSERT_TRUE(base::PathExists(dir_to_create));
@@ -72,7 +72,7 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
-  base::FilePath dir_to_create_1(temp_dir_.path());
+  base::FilePath dir_to_create_1(temp_dir_.GetPath());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaa");
 
   base::FilePath dir_to_create_2(dir_to_create_1);
@@ -105,7 +105,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
-  base::FilePath dir_to_create_1(temp_dir_.path());
+  base::FilePath dir_to_create_1(temp_dir_.GetPath());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaaa");
 
   base::FilePath dir_to_create_2(dir_to_create_1);

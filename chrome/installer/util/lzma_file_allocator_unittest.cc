@@ -41,7 +41,7 @@ TEST_F(LzmaFileAllocatorTest, ReadAndWriteWithMultipleSizeTest) {
                         sysinfo.dwPageSize + 1};
 
   for (size_t size : size_list) {
-    LzmaFileAllocator allocator(temp_dir_.path());
+    LzmaFileAllocator allocator(temp_dir_.GetPath());
     char* s = reinterpret_cast<char*>(IAlloc_Alloc(&allocator, size));
     std::fill_n(s, size, kSampleExpectedCharacter);
     char* ret = std::find_if(s, s + size, [&kSampleExpectedCharacter](char c) {
@@ -55,7 +55,7 @@ TEST_F(LzmaFileAllocatorTest, ReadAndWriteWithMultipleSizeTest) {
 }
 
 TEST_F(LzmaFileAllocatorTest, SizeIsZeroTest) {
-  LzmaFileAllocator allocator(temp_dir_.path());
+  LzmaFileAllocator allocator(temp_dir_.GetPath());
   char* s = reinterpret_cast<char*>(IAlloc_Alloc(&allocator, 0));
   EXPECT_EQ(s, nullptr);
 
@@ -64,7 +64,7 @@ TEST_F(LzmaFileAllocatorTest, SizeIsZeroTest) {
 
 TEST_F(LzmaFileAllocatorTest, DeleteAfterCloseTest) {
   std::unique_ptr<LzmaFileAllocator> allocator =
-      base::MakeUnique<LzmaFileAllocator>(temp_dir_.path());
+      base::MakeUnique<LzmaFileAllocator>(temp_dir_.GetPath());
   base::FilePath file_path = allocator->mapped_file_path_;
   ASSERT_TRUE(base::PathExists(file_path));
   allocator.reset();
@@ -72,7 +72,7 @@ TEST_F(LzmaFileAllocatorTest, DeleteAfterCloseTest) {
 }
 
 TEST_F(LzmaFileAllocatorTest, ErrorAndFallbackTest) {
-  LzmaFileAllocator allocator(temp_dir_.path());
+  LzmaFileAllocator allocator(temp_dir_.GetPath());
   allocator.mapped_file_.Close();
   char* s = reinterpret_cast<char*>(IAlloc_Alloc(&allocator, 10));
   EXPECT_NE(nullptr, s);

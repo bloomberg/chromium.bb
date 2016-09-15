@@ -95,7 +95,7 @@ class DeleteOldVersionsTest : public testing::Test {
         base::FilePath(version).Append(L"Installer\\setup.exe"));
   }
 
-  base::FilePath install_dir() const { return install_dir_.path(); }
+  base::FilePath install_dir() const { return install_dir_.GetPath(); }
 
  private:
   base::ScopedTempDir install_dir_;

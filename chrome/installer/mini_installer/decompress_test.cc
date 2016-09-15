@@ -24,7 +24,7 @@ TEST(MiniDecompressTest, ExpandTest) {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath dest_path(
-      temp_dir.path().Append(FILE_PATH_LITERAL("setup.exe")));
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("setup.exe")));
 
   // Decompress our test file.
   EXPECT_TRUE(mini_installer::Expand(source_path.value().c_str(),

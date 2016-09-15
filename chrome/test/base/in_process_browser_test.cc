@@ -339,10 +339,10 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
   if (user_data_dir.empty()) {
     if (temp_user_data_dir_.CreateUniqueTempDir() &&
         temp_user_data_dir_.IsValid()) {
-      user_data_dir = temp_user_data_dir_.path();
+      user_data_dir = temp_user_data_dir_.GetPath();
     } else {
       LOG(ERROR) << "Could not create temporary user data directory \""
-                 << temp_user_data_dir_.path().value() << "\".";
+                 << temp_user_data_dir_.GetPath().value() << "\".";
       return false;
     }
   }

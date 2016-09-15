@@ -62,7 +62,8 @@ TEST(FirefoxImporterTest, MAYBE_NSS(Firefox3NSS3Decryptor)) {
 TEST(FirefoxImporterTest, MAYBE_NSS(FirefoxNSSDecryptorDeduceAuthScheme)) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath signons_path = temp_dir.path().AppendASCII("signons.sqlite");
+  base::FilePath signons_path =
+      temp_dir.GetPath().AppendASCII("signons.sqlite");
   sql::Connection db_conn;
 
   ASSERT_TRUE(db_conn.Open(signons_path));
