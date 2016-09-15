@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -636,6 +637,11 @@ bool MessagePumpForGpu::ProcessNextMessage() {
     return false;
 
   if (msg.message == WM_QUIT) {
+    // Try to figure out if we've received a WM_QUIT targeted towards a
+    // window. http://crbug.com/647068
+    // TODO(jbauman): Remove once we've got some data about this.
+    base::debug::SetCrashKeyValue("received_quit_message",
+                                  base::StringPrintf("%d", !!msg.hwnd));
     // Repost the QUIT message so that it will be retrieved by the primary
     // GetMessage() loop.
     state_->should_quit = true;
