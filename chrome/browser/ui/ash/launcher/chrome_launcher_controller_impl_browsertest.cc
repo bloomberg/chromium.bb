@@ -16,7 +16,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_util.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_state_aura.h"
@@ -2125,34 +2125,36 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_FALSE(window_state->IsMinimized());
 }
 
-// Check that GetShelfIDForWindow() returns |ShelfID| of the active tab.
+// Check that the window's ShelfID property matches that of the active tab.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(2, model_->item_count());
 
-  aura::Window* window = browser()->window()->GetNativeWindow();
+  ash::WmWindow* window =
+      ash::WmWindowAura::Get(browser()->window()->GetNativeWindow());
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = model_->items()[browser_index].id;
-  EXPECT_EQ(browser_id, ash::GetShelfIDForWindow(window));
+  ash::ShelfID id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  EXPECT_EQ(browser_id, id);
 
   ash::ShelfID app_id = CreateShortcut("app1");
   EXPECT_EQ(3, model_->item_count());
 
-  // Creates a new tab for "app1" and checks that GetShelfIDForWindow()
-  // returns |ShelfID| of "app1".
+  // Create and activate a new tab for "app1" and expect an application ShelfID.
   WmShelf::ActivateShelfItem(model_->ItemIndexByID(app_id));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(app_id, ash::GetShelfIDForWindow(window));
+  id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  EXPECT_EQ(app_id, id);
 
-  // Makes tab at index 0(NTP) as an active tab and checks that
-  // GetShelfIDForWindow() returns |ShelfID| of browser shortcut.
+  // Activate the tab at index 0 (NTP) and expect a browser ShelfID.
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(browser_id, ash::GetShelfIDForWindow(window));
+  id = window->GetIntProperty(ash::WmWindowProperty::SHELF_ID);
+  EXPECT_EQ(browser_id, id);
 }
 
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {

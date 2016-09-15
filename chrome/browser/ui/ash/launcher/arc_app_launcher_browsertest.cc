@@ -4,7 +4,6 @@
 
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

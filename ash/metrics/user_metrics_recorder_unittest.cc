@@ -9,7 +9,6 @@
 #include "ash/common/login_status.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"

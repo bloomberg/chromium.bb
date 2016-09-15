@@ -29,7 +29,7 @@ enum ShelfConstant {
 };
 
 // Invalid image resource id used for ShelfItemDetails.
-extern const int kInvalidImageResourceID;
+const int kInvalidImageResourceID = -1;
 
 // We reserve a small area on the edge of the workspace area to ensure that
 // the resize handle at the edge of the window can be hit.

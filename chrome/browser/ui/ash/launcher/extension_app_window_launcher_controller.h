@@ -9,14 +9,12 @@
 #include <map>
 #include <string>
 
-#include "ash/shelf/shelf_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-
 class Window;
 }
 

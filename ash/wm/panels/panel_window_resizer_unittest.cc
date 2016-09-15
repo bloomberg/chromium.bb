@@ -14,8 +14,8 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
@@ -134,7 +134,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
     for (std::vector<aura::Window *>::const_iterator
              iter = window_order.begin();
          iter != window_order.end(); ++iter, ++panel_index) {
-      ShelfID id = GetShelfIDForWindow(*iter);
+      ShelfID id =
+          WmWindowAura::Get(*iter)->GetIntProperty(WmWindowProperty::SHELF_ID);
       EXPECT_EQ(id, model_->items()[panel_index].id);
     }
   }

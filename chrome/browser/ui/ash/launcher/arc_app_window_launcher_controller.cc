@@ -5,14 +5,15 @@
 
 #include <string>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -373,7 +374,8 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
   RegisterApp(app_window.get());
   DCHECK(app_window->controller());
-  ash::SetShelfIDForWindow(app_window->shelf_id(), window);
+  ash::WmWindowAura::Get(window)->SetIntProperty(
+      ash::WmWindowProperty::SHELF_ID, app_window->shelf_id());
   chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
       window,
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());

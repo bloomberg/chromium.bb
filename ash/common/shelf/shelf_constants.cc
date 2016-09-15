@@ -10,7 +10,6 @@
 
 namespace ash {
 
-const int kInvalidImageResourceID = -1;
 const int kTimeToSwitchBackgroundMs = 1000;
 const int kWorkspaceAreaVisibleInset = 2;
 const int kWorkspaceAreaAutoHideInset = 5;

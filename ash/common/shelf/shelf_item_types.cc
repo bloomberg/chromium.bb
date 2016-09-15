@@ -4,18 +4,12 @@
 
 #include "ash/common/shelf/shelf_item_types.h"
 
-#include "ash/common/shelf/shelf_constants.h"
-
 namespace ash {
 
-ShelfItem::ShelfItem()
-    : type(TYPE_UNDEFINED), id(kInvalidShelfID), status(STATUS_CLOSED) {}
-
+ShelfItem::ShelfItem() {}
 ShelfItem::~ShelfItem() {}
 
-ShelfItemDetails::ShelfItemDetails()
-    : type(TYPE_UNDEFINED), image_resource_id(kInvalidImageResourceID) {}
-
+ShelfItemDetails::ShelfItemDetails() {}
 ShelfItemDetails::~ShelfItemDetails() {}
 
 }  // namespace ash

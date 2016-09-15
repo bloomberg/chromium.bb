@@ -8,6 +8,7 @@
 #include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
@@ -15,7 +16,6 @@
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -44,11 +44,17 @@
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindowAura*);
 
 namespace ash {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::WmWindowAura, kWmWindowKey, nullptr);
+DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
+
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ShelfItemDetails,
+                                 kShelfItemDetailsKey,
+                                 nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(WmWindowAura, kWmWindowKey, nullptr);
 
 static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
               "ids must match");
@@ -310,7 +316,7 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
     return window_->GetProperty(aura::client::kModalKey);
 
   if (key == WmWindowProperty::SHELF_ID)
-    return GetShelfIDForWindow(window_);
+    return window_->GetProperty(kShelfIDKey);
 
   if (key == WmWindowProperty::TOP_VIEW_INSET)
     return window_->GetProperty(aura::client::kTopViewInset);
@@ -321,7 +327,7 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
 
 void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
   if (key == WmWindowProperty::SHELF_ID) {
-    SetShelfIDForWindow(value, window_);
+    window_->SetProperty(kShelfIDKey, value);
     return;
   }
   if (key == WmWindowProperty::TOP_VIEW_INSET) {
@@ -807,7 +813,7 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else if (key == aura::client::kModalKey) {
     wm_property = WmWindowProperty::MODAL_TYPE;
-  } else if (key == kShelfID) {
+  } else if (key == kShelfIDKey) {
     wm_property = WmWindowProperty::SHELF_ID;
   } else if (key == kShelfItemDetailsKey) {
     wm_property = WmWindowProperty::SHELF_ITEM_DETAILS;

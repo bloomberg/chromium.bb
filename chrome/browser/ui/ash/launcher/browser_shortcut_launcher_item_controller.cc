@@ -6,11 +6,12 @@
 
 #include <vector>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -117,15 +118,16 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
 void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
     Browser* browser,
     content::WebContents* web_contents) {
-  // We need to call SetShelfIDForWindow for V1 applications since they are
+  // We need to set the window ShelfID for V1 applications since they are
   // content which might change and as such change the application type.
   if (!browser || !IsBrowserFromActiveUser(browser) ||
       IsSettingsBrowser(browser))
     return;
 
-  ash::SetShelfIDForWindow(
-      launcher_controller()->GetShelfIDForWebContents(web_contents),
-      browser->window()->GetNativeWindow());
+  ash::WmWindowAura::Get(browser->window()->GetNativeWindow())
+      ->SetIntProperty(
+          ash::WmWindowProperty::SHELF_ID,
+          launcher_controller()->GetShelfIDForWebContents(web_contents));
 }
 
 bool BrowserShortcutLauncherItemController::IsOpen() const {

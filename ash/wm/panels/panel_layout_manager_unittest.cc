@@ -18,9 +18,9 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -228,7 +228,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
     int index = WmShell::Get()->shelf_model()->ItemIndexByID(
-        GetShelfIDForWindow(window));
+        WmWindowAura::Get(window)->GetIntProperty(WmWindowProperty::SHELF_ID));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     ui::test::EventGenerator& event_generator = GetEventGenerator();

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -61,31 +62,30 @@ struct ASH_EXPORT ShelfItem {
   ShelfItem();
   ~ShelfItem();
 
-  ShelfItemType type;
+  ShelfItemType type = TYPE_UNDEFINED;
 
   // Image to display in the shelf.
   gfx::ImageSkia image;
 
   // Assigned by the model when the item is added.
-  ShelfID id;
+  ShelfID id = kInvalidShelfID;
 
   // Running status.
-  ShelfItemStatus status;
+  ShelfItemStatus status = STATUS_CLOSED;
 };
 
 typedef std::vector<ShelfItem> ShelfItems;
 
-// ShelfItemDetails may be set on Window (by way of
-// SetShelfItemDetailsForWindow) to make the window appear in the shelf. See
-// ShelfWindowWatcher for details.
+// Windows with ShelfItemDetails appear in the shelf.
+// See ShelfWindowWatcher for details.
 struct ASH_EXPORT ShelfItemDetails {
   ShelfItemDetails();
   ~ShelfItemDetails();
 
-  ShelfItemType type;
+  ShelfItemType type = TYPE_UNDEFINED;
 
   // Resource id of the image to display on the shelf.
-  int image_resource_id;
+  int image_resource_id = kInvalidImageResourceID;
 
   // Title of the item.
   base::string16 title;

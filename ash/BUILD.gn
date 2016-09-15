@@ -686,8 +686,6 @@ component("ash") {
     "shelf/dimmer_view.h",
     "shelf/shelf_bezel_event_handler.cc",
     "shelf/shelf_bezel_event_handler.h",
-    "shelf/shelf_util.cc",
-    "shelf/shelf_util.h",
     "shelf/shelf_window_targeter.cc",
     "shelf/shelf_window_targeter.h",
     "shell.cc",

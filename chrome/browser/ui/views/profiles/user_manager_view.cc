@@ -45,12 +45,6 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/resources/grit/ash_resources.h"  // nogncheck
-#include "ash/shelf/shelf_util.h"  // nogncheck
-#include "ash/wm/window_util.h"  // nogncheck
-#endif
-
 namespace {
 
 // An open User Manager window. There can only be one open at a time. This
@@ -242,10 +236,8 @@ UserManagerView::UserManagerView()
     : web_view_(nullptr),
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
-#if !defined(USE_ASH)
   keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW,
                                         KeepAliveRestartOption::DISABLED));
-#endif  // !defined(USE_ASH)
 }
 
 UserManagerView::~UserManagerView() {
@@ -351,12 +343,6 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
       shell_integration::win::GetChromiumModelIdForProfile(
           system_profile->GetPath()),
       views::HWNDForWidget(GetWidget()));
-#endif
-
-#if defined(USE_ASH)
-  gfx::NativeWindow native_window = GetWidget()->GetNativeWindow();
-  ash::SetShelfItemDetailsForDialogWindow(
-      native_window, IDR_ASH_SHELF_LIST_BROWSER, native_window->title());
 #endif
 
   web_view_->LoadInitialURL(url);

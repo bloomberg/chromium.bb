@@ -34,9 +34,12 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(USE_ASH)
-#include "ash/resources/grit/ash_resources.h"  // nogncheck
-#include "ash/shelf/shelf_util.h"  // nogncheck
-#include "ash/wm/window_util.h"  // nogncheck
+#include "ash/common/shelf/shelf_item_types.h"  // nogncheck
+#include "ash/common/wm_lookup.h"               // nogncheck
+#include "ash/common/wm_window.h"               // nogncheck
+#include "ash/common/wm_window_property.h"      // nogncheck
+#include "ash/resources/grit/ash_resources.h"   // nogncheck
+#include "ash/wm/window_util.h"                 // nogncheck
 #endif  // defined(USE_ASH)
 
 #if defined(OS_WIN)
@@ -100,10 +103,13 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
     focus_manager->SetFocusedView(g_task_manager_view->tab_table_);
 
 #if defined(USE_ASH)
-  gfx::NativeWindow native_window =
-      g_task_manager_view->GetWidget()->GetNativeWindow();
-  ash::SetShelfItemDetailsForDialogWindow(
-      native_window, IDR_ASH_SHELF_ICON_TASK_MANAGER, native_window->title());
+  ash::WmWindow* wm_window = ash::WmLookup::Get()->GetWindowForWidget(
+      g_task_manager_view->GetWidget());
+  ash::ShelfItemDetails item_details;
+  item_details.type = ash::TYPE_DIALOG;
+  item_details.image_resource_id = IDR_ASH_SHELF_ICON_TASK_MANAGER;
+  item_details.title = wm_window->GetTitle();
+  wm_window->SetShelfItemDetails(item_details);
 #endif
   return g_task_manager_view->table_model_.get();
 }

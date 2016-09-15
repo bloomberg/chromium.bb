@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf_util.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -17,6 +18,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 
 using extensions::AppWindow;
@@ -180,7 +182,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     app_controller_map_[app_shelf_id] = controller;
   }
   owner()->SetItemStatus(shelf_id, status);
-  ash::SetShelfIDForWindow(shelf_id, window);
+  ash::WmWindowAura::Get(window)->SetIntProperty(
+      ash::WmWindowProperty::SHELF_ID, shelf_id);
 }
 
 void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
