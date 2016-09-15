@@ -100,11 +100,8 @@ void shutdown()
     ThreadState::current()->cleanupMainThread();
 
     // currentThread() is null if we are running on a thread without a message loop.
-    if (Platform::current()->currentThread()) {
-        // We don't need to (cannot) remove s_endOfTaskRunner from the current
-        // message loop, because the message loop is already destructed before
-        // the shutdown() is called.
-        delete s_endOfTaskRunner;
+    if (WebThread* currentThread = Platform::current()->currentThread()) {
+        currentThread->removeTaskObserver(s_endOfTaskRunner);
         s_endOfTaskRunner = nullptr;
     }
 
