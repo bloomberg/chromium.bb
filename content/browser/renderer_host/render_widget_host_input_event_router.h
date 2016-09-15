@@ -145,6 +145,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetData touchpad_gesture_target_;
   TargetData bubbling_gesture_scroll_target_;
   TargetData first_bubbling_scroll_target_;
+  // Maintains the same target between mouse down and mouse up.
+  TargetData mouse_capture_target_;
 
   // Tracked for the purpose of generating MouseEnter and MouseLeave events.
   RenderWidgetHostViewBase* last_mouse_move_target_;

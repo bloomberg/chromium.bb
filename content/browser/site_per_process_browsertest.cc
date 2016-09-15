@@ -1411,6 +1411,137 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(d_frame_monitor.EventWasReceived());
 }
 
+// Verify that mouse capture works on a RenderWidgetHostView level, so that
+// dragging scroll bars and selecting text continues even when the mouse
+// cursor crosses over cross-process frame boundaries.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_CrossProcessMouseCapture DISABLED_CrossProcessMouseCapture
+#else
+#define MAYBE_CrossProcessMouseCapture CrossProcessMouseCapture
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_CrossProcessMouseCapture) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
+
+  // Target MouseDown to child frame.
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebPointerProperties::Button::Left;
+  mouse_event.x = 75;
+  mouse_event.y = 75;
+  mouse_event.clickCount = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+
+  // Target MouseMove to main frame. This should still be routed to the
+  // child frame because it is now capturing mouse input.
+  mouse_event.type = blink::WebInputEvent::MouseMove;
+  mouse_event.modifiers = blink::WebInputEvent::LeftButtonDown;
+  mouse_event.x = 1;
+  mouse_event.y = 1;
+  // Note that this event is sent twice, with the monitors cleared after
+  // the first time, because the first MouseMove to the child frame
+  // causes a MouseMove to be sent to the main frame also, which we
+  // need to ignore.
+  router->RouteMouseEvent(root_view, &mouse_event);
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  mouse_event.x = 1;
+  mouse_event.y = 2;
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+
+  // A MouseUp to the child frame should cancel the mouse capture.
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  mouse_event.modifiers = 0;
+  mouse_event.x = 75;
+  mouse_event.y = 75;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+
+  // Subsequent MouseMove events targeted to the main frame should be routed
+  // to that frame.
+  mouse_event.type = blink::WebInputEvent::MouseMove;
+  mouse_event.x = 1;
+  mouse_event.y = 3;
+  // Sending the MouseMove twice for the same reason as above.
+  router->RouteMouseEvent(root_view, &mouse_event);
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  mouse_event.x = 1;
+  mouse_event.y = 4;
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+
+  // Target MouseDown to the main frame to cause it to capture input.
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.x = 1;
+  mouse_event.y = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+
+  // Sending a MouseMove to the child frame should still result in the main
+  // frame receiving the event.
+  mouse_event.type = blink::WebInputEvent::MouseMove;
+  mouse_event.modifiers = blink::WebInputEvent::LeftButtonDown;
+  mouse_event.x = 75;
+  mouse_event.y = 75;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  router->RouteMouseEvent(root_view, &mouse_event);
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
 #if defined(OS_ANDROID)

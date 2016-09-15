@@ -63,6 +63,9 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
       touchscreen_gesture_target_queue_[i].target = nullptr;
   }
 
+  if (view == mouse_capture_target_.target)
+    mouse_capture_target_.target = nullptr;
+
   if (view == touchscreen_gesture_target_.target)
     touchscreen_gesture_target_.target = nullptr;
 
@@ -168,9 +171,28 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseEvent* event) {
+  RenderWidgetHostViewBase* target;
   gfx::Point transformed_point;
-  RenderWidgetHostViewBase* target = FindEventTarget(
-      root_view, gfx::Point(event->x, event->y), &transformed_point);
+  const int mouse_button_modifiers = blink::WebInputEvent::LeftButtonDown |
+                                     blink::WebInputEvent::MiddleButtonDown |
+                                     blink::WebInputEvent::RightButtonDown;
+  if (mouse_capture_target_.target &&
+      event->type != blink::WebInputEvent::MouseDown &&
+      (event->type == blink::WebInputEvent::MouseUp ||
+       event->modifiers & mouse_button_modifiers)) {
+    target = mouse_capture_target_.target;
+    transformed_point = root_view->TransformPointToCoordSpaceForView(
+        gfx::Point(event->x, event->y), target);
+    if (event->type == blink::WebInputEvent::MouseUp)
+      mouse_capture_target_.target = nullptr;
+  } else {
+    target = FindEventTarget(root_view, gfx::Point(event->x, event->y),
+                             &transformed_point);
+  }
+
+  if (event->type == blink::WebInputEvent::MouseDown)
+    mouse_capture_target_.target = target;
+
   if (!target)
     return;
 
