@@ -8,6 +8,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//chrome/chrome_repack_locales.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
 import("//services/shell/public/service_manifest.gni")
@@ -1191,6 +1192,19 @@ static_library("browser_tests_runner") {
   }
 }
 
+# Used only by chrome/browser/ui/webui/bidi_checker_web_ui_test.cc
+chrome_repack_locales("repack_pseudo_locales") {
+  visibility = [ ":*" ]
+
+  input_locales = [ "fake-bidi" ]
+
+  if (is_mac) {
+    output_locales = [ "fake_bidi" ]  # Mac uses underscores.
+  } else {
+    output_locales = [ "fake-bidi" ]
+  }
+}
+
 test("browser_tests") {
   sources = [
     # TODO(jbudorick): Move tests here from other lists as Android support is
@@ -1204,6 +1218,7 @@ test("browser_tests") {
 
   deps = [
     ":browser_tests_runner",
+    ":repack_pseudo_locales",
     ":test_support",
     "//base",
     "//components/sync:test_support_sync_api",

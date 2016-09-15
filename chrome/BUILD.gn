@@ -1364,7 +1364,6 @@ group("packed_resources") {
   public_deps = [
     ":repack_chrome_100_percent",
     ":repack_locales_pack",
-    ":repack_pseudo_locales_pack",
   ]
 
   if (is_chrome_branded && !is_mac && !is_android) {
@@ -1480,25 +1479,6 @@ chrome_repack_locales("repack_locales_pack") {
     output_locales = locales_as_mac_outputs
   } else {
     output_locales = locales
-  }
-
-  if (enable_resource_whitelist_generation) {
-    repack_whitelist = android_resource_whitelist
-    deps = [
-      ":resource_whitelist",
-    ]
-  }
-}
-
-chrome_repack_locales("repack_pseudo_locales_pack") {
-  visibility = [ ":*" ]
-
-  input_locales = [ "fake-bidi" ]
-
-  if (is_mac) {
-    output_locales = [ "fake_bidi" ]  # Mac uses underscores.
-  } else {
-    output_locales = [ "fake-bidi" ]
   }
 
   if (enable_resource_whitelist_generation) {
