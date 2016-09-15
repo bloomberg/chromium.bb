@@ -2,10 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//build/config/chrome_build.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
+
+declare_args() {
+  enable_swiftshader = false
+}
 
 use_egl = is_win || is_android || is_linux
 use_glx = use_x11 || ozone_platform_x11
@@ -13,6 +19,11 @@ use_glx = use_x11 || ozone_platform_x11
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+}
+
+buildflag_header("gl_features") {
+  header = "gl_features.h"
+  flags = [ "ENABLE_SWIFTSHADER=$enable_swiftshader" ]
 }
 
 config("gl_config") {

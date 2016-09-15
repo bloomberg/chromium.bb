@@ -40,6 +40,7 @@ component("init") {
 
     libs = [ "dwmapi.lib" ]
     ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
+    deps += [ "//ui/gl:gl_features" ]
   } else if (is_mac) {
     sources += [
       "gl_factory_mac.cc",

@@ -1443,6 +1443,7 @@ split_static_library("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl:gl_features",
     "//ui/message_center",
     "//ui/resources",
     "//ui/resources",

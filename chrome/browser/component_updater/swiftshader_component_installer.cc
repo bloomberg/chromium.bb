@@ -25,6 +25,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "ui/gl/gl_features.h"
 
 using content::BrowserThread;
 using content::GpuDataManager;
@@ -218,7 +219,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   }
 }
 
-#if defined(ENABLE_SWIFTSHADER)
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
 
 // Check if there already is a version of swiftshader installed,
 // and if so register it.
@@ -258,7 +259,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
-#if defined(ENABLE_SWIFTSHADER) && defined(ARCH_CPU_X86)
+#if BUILDFLAG(ENABLE_SWIFTSHADER) && defined(ARCH_CPU_X86)
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&RegisterSwiftShaderPath, cus));

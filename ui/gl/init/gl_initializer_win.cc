@@ -23,6 +23,7 @@
 #include "ui/gl/angle_platform_impl.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -139,7 +140,7 @@ bool InitializeStaticEGLInternal() {
     return false;
   }
 
-#if defined(ENABLE_SWIFTSHADER)
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
   if (using_swift_shader) {
     // Register key so that SwiftShader doesn't display watermark logo.
     typedef void (__stdcall *RegisterFunc)(const char* key);
