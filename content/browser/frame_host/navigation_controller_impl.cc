@@ -1212,7 +1212,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
   // The redirected to page should not inherit the favicon from the previous
   // page.
-  if (ui::PageTransitionIsRedirect(params.transition))
+  if (ui::PageTransitionIsRedirect(params.transition) && !is_in_page)
     entry->GetFavicon() = FaviconStatus();
 
   // The entry we found in the list might be pending if the user hit

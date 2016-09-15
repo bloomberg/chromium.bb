@@ -6016,4 +6016,26 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                   "Referer: http://a.com:.*/form_that_posts_cross_site.html"));
 }
 
+// Check that the favicon is not cleared for navigating in-page.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       InPageNavigationDoesNotClearFavicon) {
+  // Load a page and fake a favicon for it.
+  NavigationController& controller = shell()->web_contents()->GetController();
+  ASSERT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  favicon_status.valid = true;
+
+  ASSERT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1#")));
+  entry = controller.GetLastCommittedEntry();
+  content::FaviconStatus& favicon_status2 = entry->GetFavicon();
+  EXPECT_TRUE(favicon_status2.valid);
+
+  ASSERT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page2")));
+  entry = controller.GetLastCommittedEntry();
+  content::FaviconStatus& favicon_status3 = entry->GetFavicon();
+  EXPECT_FALSE(favicon_status3.valid);
+}
+
 }  // namespace content
