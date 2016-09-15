@@ -759,20 +759,6 @@ void LayerTreeHost::RecordGpuRasterizationHistogram() {
   gpu_rasterization_histogram_recorded_ = true;
 }
 
-void LayerTreeHost::BuildPropertyTreesForTesting() {
-  PropertyTreeBuilder::PreCalculateMetaInformation(layer_tree_->root_layer());
-  gfx::Transform identity_transform;
-  PropertyTreeBuilder::BuildPropertyTrees(
-      layer_tree_->root_layer(), layer_tree_->page_scale_layer(),
-      layer_tree_->inner_viewport_scroll_layer(),
-      layer_tree_->outer_viewport_scroll_layer(),
-      layer_tree_->overscroll_elasticity_layer(),
-      layer_tree_->elastic_overscroll(), layer_tree_->page_scale_factor(),
-      layer_tree_->device_scale_factor(),
-      gfx::Rect(layer_tree_->device_viewport_size()), identity_transform,
-      layer_tree_->property_trees());
-}
-
 bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
                SourceFrameNumber());

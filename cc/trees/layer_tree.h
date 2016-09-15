@@ -124,6 +124,10 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void SetNeedsDisplayOnAllLayers();
 
+  void SetNeedsCommit();
+
+  const LayerTreeSettings& GetSettings() const;
+
   // Methods which should only be used internally in cc ------------------
   void RegisterLayer(Layer* layer);
   void UnregisterLayer(Layer* layer);
@@ -154,7 +158,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   virtual void SetNeedsFullTreeSync();
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
-  void SetNeedsCommit();
   void SetPropertyTreesNeedRebuild();
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
@@ -172,6 +175,8 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
                          ElementListType list_type,
                          Layer* layer);
   void SetElementIdsForTesting();
+
+  void BuildPropertyTreesForTesting();
 
   // Layer iterators.
   LayerListIterator<Layer> begin() const;

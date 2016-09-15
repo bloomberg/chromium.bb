@@ -391,8 +391,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // of |proto| is only read if |needs_push_properties_| is set.
   void FromLayerPropertiesProto(const proto::LayerProperties& proto);
 
-  LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
-  const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
+  LayerTreeHost* GetLayerTreeHostForTesting() const { return layer_tree_host_; }
   LayerTree* GetLayerTree() const;
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
@@ -500,6 +499,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class TreeSynchronizer;
   virtual ~Layer();
   Layer();
+
+  LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
+  const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // These SetNeeds functions are in order of severity of update:
   //

@@ -781,7 +781,8 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-    EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+    EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
+              layer_tree_host_.get());
 
     scrollbar_layer->SavePaintProperties();
     for (int update_counter = 0; update_counter < num_updates; update_counter++)
@@ -839,7 +840,8 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
 
   testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-  EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+  EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
+            layer_tree_host_.get());
 
   size_t resource_count;
   int expected_created, expected_deleted;
@@ -998,7 +1000,8 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     scrollbar_layer->set_visible_layer_rect(
         gfx::Rect(scrollbar_location, scrollbar_layer->bounds()));
 
-    EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+    EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
+              layer_tree_host_.get());
 
     layer_tree_->SetDeviceScaleFactor(test_scale);
 

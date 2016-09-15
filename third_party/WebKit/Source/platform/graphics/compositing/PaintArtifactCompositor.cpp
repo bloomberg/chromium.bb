@@ -494,17 +494,17 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
     DCHECK(m_rootLayer);
 
-    cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
+    cc::LayerTree* layerTree = m_rootLayer->GetLayerTree();
 
-    // The host will be null after detaching and this update can be ignored.
+    // The tree will be null after detaching and this update can be ignored.
     // See: WebViewImpl::detachPaintArtifactCompositor().
-    if (!host)
+    if (!layerTree)
         return;
 
     if (m_extraDataForTestingEnabled)
         m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
 
-    setMinimalPropertyTrees(host->GetLayerTree()->property_trees(), m_rootLayer->id());
+    setMinimalPropertyTrees(layerTree->property_trees(), m_rootLayer->id());
 
     m_rootLayer->RemoveAllChildren();
     m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
@@ -513,8 +513,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
     m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
-    PropertyTreeManager propertyTreeManager(*host->GetLayerTree()->property_trees(), m_rootLayer.get());
-    propertyTreeManager.setDeviceScaleFactor(host->GetLayerTree()->device_scale_factor());
+    PropertyTreeManager propertyTreeManager(*layerTree->property_trees(), m_rootLayer.get());
+    propertyTreeManager.setDeviceScaleFactor(layerTree->device_scale_factor());
 
     m_contentLayerClients.clear();
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
@@ -540,7 +540,7 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 
         // TODO(jbroman): This probably shouldn't be necessary, but it is still
         // queried by RenderSurfaceImpl.
-        layer->Set3dSortingContextId(host->GetLayerTree()->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
+        layer->Set3dSortingContextId(layerTree->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
 
         layer->SetShouldCheckBackfaceVisibility(paintChunk.properties.backfaceHidden);
 
@@ -549,8 +549,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     }
 
     // Mark the property trees as having been rebuilt.
-    host->GetLayerTree()->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
-    host->GetLayerTree()->property_trees()->needs_rebuild = false;
+    layerTree->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
+    layerTree->property_trees()->needs_rebuild = false;
 }
 
 } // namespace blink

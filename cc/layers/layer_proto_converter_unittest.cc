@@ -196,7 +196,7 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
 
   proto::LayerUpdate layer_update;
   LayerProtoConverter::SerializeLayerProperties(
-      layer_src_root->layer_tree_host(), &layer_update);
+      layer_src_root->GetLayerTreeHostForTesting(), &layer_update);
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(
@@ -232,7 +232,7 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
   dirty_layer_ids.insert(layer_src_d->id());
 
   LayerProtoConverter::SerializeLayerProperties(
-      layer_src_root->layer_tree_host(), &layer_update);
+      layer_src_root->GetLayerTreeHostForTesting(), &layer_update);
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(
@@ -283,7 +283,7 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerializationSingleChild) {
 
   proto::LayerUpdate layer_update;
   LayerProtoConverter::SerializeLayerProperties(
-      layer_src_root->layer_tree_host(), &layer_update);
+      layer_src_root->GetLayerTreeHostForTesting(), &layer_update);
   // All layers need to push properties as their layer tree host changed.
   ASSERT_EQ(4, layer_update.layers_size());
   layer_update.Clear();
@@ -295,7 +295,7 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerializationSingleChild) {
   dirty_layer_ids.insert(layer_src_b_mask->id());
 
   LayerProtoConverter::SerializeLayerProperties(
-      layer_src_root->layer_tree_host(), &layer_update);
+      layer_src_root->GetLayerTreeHostForTesting(), &layer_update);
 
   // All flags for pushing properties should have been cleared.
   EXPECT_FALSE(

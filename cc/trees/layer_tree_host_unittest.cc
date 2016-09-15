@@ -3222,32 +3222,32 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     ++num_commits_;
 
     // The scrollbar layer always needs to be pushed.
-    if (root_->layer_tree_host()) {
+    if (root_->GetLayerTree()) {
       EXPECT_FALSE(root_->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           root_.get()));
     }
-    if (child2_->layer_tree_host()) {
+    if (child2_->GetLayerTree()) {
       EXPECT_FALSE(child2_->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           child2_.get()));
     }
-    if (leaf_always_pushing_layer_->layer_tree_host()) {
+    if (leaf_always_pushing_layer_->GetLayerTree()) {
       EXPECT_TRUE(leaf_always_pushing_layer_->GetLayerTree()
                       ->LayerNeedsPushPropertiesForTesting(
                           leaf_always_pushing_layer_.get()));
     }
 
     // child_ and grandchild_ don't persist their need to push properties.
-    if (child_->layer_tree_host()) {
+    if (child_->GetLayerTree()) {
       EXPECT_FALSE(child_->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           child_.get()));
     }
-    if (grandchild_->layer_tree_host()) {
+    if (grandchild_->GetLayerTree()) {
       EXPECT_FALSE(
           grandchild_->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
               grandchild_.get()));
     }
 
-    if (other_root_->layer_tree_host()) {
+    if (other_root_->GetLayerTree()) {
       EXPECT_FALSE(
           other_root_->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
               other_root_.get()));
@@ -3346,7 +3346,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     }
 
     // The leaf layer always pushes.
-    if (leaf_always_pushing_layer_->layer_tree_host())
+    if (leaf_always_pushing_layer_->GetLayerTree())
       ++expected_push_properties_leaf_layer_;
   }
 

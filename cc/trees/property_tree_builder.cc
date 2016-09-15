@@ -1437,7 +1437,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   property_trees->is_main_thread = true;
   property_trees->is_active = false;
   property_trees->verify_transform_tree_calculations =
-      root_layer->layer_tree_host()
+      root_layer->GetLayerTree()
           ->GetSettings()
           .verify_transform_tree_calculations;
   SkColor color = root_layer->GetLayerTree()->background_color();

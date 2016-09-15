@@ -50,7 +50,7 @@ cc::LayerTreeSettings WebLayerTreeViewImplForTesting::defaultLayerTreeSettings()
 
 bool WebLayerTreeViewImplForTesting::hasLayer(const WebLayer& layer)
 {
-    return layer.ccLayer()->layer_tree_host() == m_layerTreeHost.get();
+    return layer.ccLayer()->GetLayerTreeHostForTesting() == m_layerTreeHost.get();
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(const blink::WebLayer& root)

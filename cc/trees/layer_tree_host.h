@@ -246,7 +246,6 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   bool IsThreaded() const;
   bool IsRemoteServer() const;
   bool IsRemoteClient() const;
-  void BuildPropertyTreesForTesting();
 
   ImageSerializationProcessor* image_serialization_processor() const {
     return image_serialization_processor_;

@@ -17,6 +17,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/property_tree_builder.h"
 
 namespace cc {
 
@@ -325,6 +326,10 @@ void LayerTree::SetNeedsCommit() {
   layer_tree_host_->SetNeedsCommit();
 }
 
+const LayerTreeSettings& LayerTree::GetSettings() const {
+  return layer_tree_host_->GetSettings();
+}
+
 void LayerTree::SetPropertyTreesNeedRebuild() {
   property_trees_.needs_rebuild = true;
   layer_tree_host_->SetNeedsUpdateLayers();
@@ -579,6 +584,16 @@ static void SetElementIdForTesting(Layer* layer) {
 
 void LayerTree::SetElementIdsForTesting() {
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
+}
+
+void LayerTree::BuildPropertyTreesForTesting() {
+  PropertyTreeBuilder::PreCalculateMetaInformation(root_layer());
+  gfx::Transform identity_transform;
+  PropertyTreeBuilder::BuildPropertyTrees(
+      root_layer(), page_scale_layer(), inner_viewport_scroll_layer(),
+      outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
+      elastic_overscroll(), page_scale_factor(), device_scale_factor(),
+      gfx::Rect(device_viewport_size()), identity_transform, property_trees());
 }
 
 bool LayerTree::IsElementInList(ElementId element_id,

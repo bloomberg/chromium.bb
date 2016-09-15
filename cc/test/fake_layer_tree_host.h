@@ -56,6 +56,9 @@ class FakeLayerTreeHost : public LayerTreeHost {
   PropertyTrees* property_trees() const {
     return layer_tree_->property_trees();
   }
+  void BuildPropertyTreesForTesting() {
+    layer_tree_->BuildPropertyTreesForTesting();
+  }
 
   LayerImpl* CommitAndCreateLayerImplTree();
   LayerImpl* CommitAndCreatePendingTree();
