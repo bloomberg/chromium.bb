@@ -269,6 +269,62 @@ fuzzer_test("v8_wasm_asmjs_fuzzer") {
   libfuzzer_options = [ "max_len=500" ]
 }
 
+fuzzer_test("v8_wasm_data_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_data_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_function_sigs_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_function_sigs_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_globals_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_globals_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_imports_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_imports_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_memory_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_memory_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_names_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_names_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
+fuzzer_test("v8_wasm_types_section_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_types_section_fuzzer",
+  ]
+  libfuzzer_options = [ "max_len=500" ]
+}
+
 fuzzer_test("third_party_re2_fuzzer") {
   sources = [
     "re2_fuzzer.cc",
