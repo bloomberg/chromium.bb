@@ -286,8 +286,27 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
     RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
                       kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
                       kClearKeyCdmPepperMimeType);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    media::kExternalClearKeyForTesting.name);
   }
 #endif  // defined(ENABLE_PEPPER_CDMS)
+};
+
+// By default, the External Clear Key (ECK) key system is not supported even if
+// present. This test case tests this behavior by not enabling
+// kExternalClearKeyForTesting.
+// Even registering the Pepper CDM where applicable does not enable the CDM.
+class EncryptedMediaSupportedTypesExternalClearKeyNotEnabledTest
+    : public EncryptedMediaSupportedTypesTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
+#if defined(ENABLE_PEPPER_CDMS)
+    RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
+                      kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
+                      kClearKeyCdmPepperMimeType);
+#endif  // defined(ENABLE_PEPPER_CDMS)
+  }
 };
 
 class EncryptedMediaSupportedTypesWidevineTest
@@ -305,6 +324,8 @@ class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
                       "clearkeycdmadapterwrongname.dll",
                       kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType,
                       false);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    media::kExternalClearKeyForTesting.name);
   }
 };
 
@@ -320,6 +341,7 @@ class EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest
                       "application/x-ppapi-widevine-cdm", false);
   }
 };
+
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Basic) {
@@ -572,6 +594,18 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
       kAudioMP4MimeType, audio_webm_codecs(), kExternalClearKey));
   EXPECT_ECK_NO_MATCH(AreCodecsSupportedByKeySystem(
       kAudioMP4MimeType, video_webm_codecs(), kExternalClearKey));
+}
+
+// External Clear Key is disabled by default.
+IN_PROC_BROWSER_TEST_F(
+    EncryptedMediaSupportedTypesExternalClearKeyNotEnabledTest,
+    Basic) {
+  EXPECT_UNKNOWN_KEYSYSTEM(AreCodecsSupportedByKeySystem(
+      kVideoWebMMimeType, no_codecs(), kExternalClearKey));
+
+  // Clear Key should still be registered.
+  EXPECT_SUCCESS(AreCodecsSupportedByKeySystem(kVideoWebMMimeType, no_codecs(),
+                                               kClearKey));
 }
 
 //

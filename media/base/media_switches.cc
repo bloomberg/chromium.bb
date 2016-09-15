@@ -167,4 +167,10 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 const base::Feature kVideoColorManagement{"video-color-management",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support for External Clear Key (ECK) key system for testing on
+// supported platforms. On platforms that do not support ECK, this feature has
+// no effect.
+const base::Feature kExternalClearKeyForTesting{
+    "external-clear-key-for-testing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace media

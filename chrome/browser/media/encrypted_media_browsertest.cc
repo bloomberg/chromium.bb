@@ -27,6 +27,7 @@
 #if defined(ENABLE_PEPPER_CDMS)
 #include "chrome/browser/media/pepper_cdm_test_constants.h"
 #include "chrome/browser/media/pepper_cdm_test_helper.h"
+#include "media/base/media_switches.h"
 #endif
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
@@ -275,6 +276,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
                         kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
                         kClearKeyCdmPepperMimeType);
+      command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                      media::kExternalClearKeyForTesting.name);
     }
 #endif  // defined(ENABLE_PEPPER_CDMS)
   }

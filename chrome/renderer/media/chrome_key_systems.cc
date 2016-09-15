@@ -24,6 +24,11 @@
 #include "components/cdm/renderer/android_key_systems.h"
 #endif
 
+#if defined(ENABLE_PEPPER_CDMS)
+#include "base/feature_list.h"
+#include "media/base/media_switches.h"
+#endif
+
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
 // The following must be after widevine_cdm_version.h.
@@ -285,7 +290,8 @@ static void AddPepperBasedWidevine(
 void AddChromeKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* key_systems_properties) {
 #if defined(ENABLE_PEPPER_CDMS)
-  AddExternalClearKey(key_systems_properties);
+  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
+    AddExternalClearKey(key_systems_properties);
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   AddPepperBasedWidevine(key_systems_properties);
