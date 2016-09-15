@@ -25,19 +25,32 @@ typedef base::Callback<void(std::unique_ptr<V4Database>)>
 // requests.
 typedef base::Callback<void()> DatabaseUpdatedCallback;
 
-// The set of interesting lists and ASCII filenames for their hash prefix
-// stores. The stores are created inside the user-data directory.
-// For instance, the UpdateListIdentifier could be for URL expressions for UwS
-// on Windows platform, and the corresponding file on disk could be named:
-// "uws_win_url.store"
+// Maps the UpdateListIdentifiers to their corresponding in-memory stores, which
+// contain the hash prefixes for that UpdateListIdentifier as well as manage
+// their storage on disk.
+typedef base::hash_map<UpdateListIdentifier, std::unique_ptr<V4Store>> StoreMap;
+
 // TODO(vakh): Find the canonical place where these are defined and update the
 // comment to point to that place.
-typedef base::hash_map<UpdateListIdentifier, std::string> StoreFileNameMap;
+struct StoreIdAndFileName {
+  // The list being read from/written to the disk.
+  UpdateListIdentifier list_id;
 
-// This hash_map maps the UpdateListIdentifiers to their corresponding in-memory
-// stores, which contain the hash prefixes for that UpdateListIdentifier as well
-// as manage their storage on disk.
-typedef base::hash_map<UpdateListIdentifier, std::unique_ptr<V4Store>> StoreMap;
+  // The ASCII name of the file on disk. This file is created inside the
+  // user-data directory. For instance, the UpdateListIdentifier could be for
+  // URL expressions for UwS on Windows platform, and the corresponding file on
+  // disk could be named: "UrlUws.store"
+  std::string filename;
+
+  StoreIdAndFileName(const UpdateListIdentifier& list_id,
+                     const std::string& filename);
+  ~StoreIdAndFileName();
+
+ private:
+  StoreIdAndFileName();
+};
+
+using StoreIdAndFileNames = std::vector<StoreIdAndFileName>;
 
 // Factory for creating V4Database. Tests implement this factory to create fake
 // databases for testing.
@@ -47,7 +60,7 @@ class V4DatabaseFactory {
   virtual V4Database* CreateV4Database(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_dir_path,
-      const StoreFileNameMap& store_file_name_map) = 0;
+      const StoreIdAndFileNames& store_id_file_names) = 0;
 };
 
 // The on-disk databases are shared among all profiles, as it doesn't contain
@@ -66,7 +79,7 @@ class V4Database {
   static void Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const StoreFileNameMap& store_file_name_map,
+      const StoreIdAndFileNames& store_id_file_names,
       NewDatabaseReadyCallback callback);
 
   // Destroys the provided v4_database on its task_runner since this may be a
@@ -88,7 +101,7 @@ class V4Database {
   // store along with the matching hash prefix in |matched_hash_prefix_map|.
   virtual void GetStoresMatchingFullHash(
       const FullHash& full_hash,
-      const base::hash_set<UpdateListIdentifier>& stores_to_look,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_look,
       StoreAndHashPrefixes* matched_store_and_full_hashes);
 
   // Deletes the current database and creates a new one.
@@ -120,7 +133,7 @@ class V4Database {
   static void CreateOnTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const StoreFileNameMap& store_file_name_map,
+      const StoreIdAndFileNames& store_id_file_names,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       NewDatabaseReadyCallback callback);
 

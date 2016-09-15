@@ -207,7 +207,7 @@ class V4ProtocolManagerUtil {
 
   // Generate the set of FullHashes to check for |url|.
   static void UrlToFullHashes(const GURL& url,
-                              base::hash_set<FullHash>* full_hashes);
+                              std::unordered_set<FullHash>* full_hashes);
 
   static bool FullHashToHashPrefix(const FullHash& full_hash,
                                    PrefixSize prefix_size,

@@ -18,18 +18,23 @@ namespace safe_browsing {
 
 namespace {
 
-// TODO(vakh): Implement this to populate the map appopriately.
+// TODO(vakh): Implement this to populate the vector appopriately.
 // Filed as http://crbug.com/608075
-StoreFileNameMap GetStoreFileNameMap() {
-  return StoreFileNameMap({{GetUrlMalwareId(), "UrlMalware.store"},
-                           {GetUrlSocEngId(), "UrlSoceng.store"}});
+StoreIdAndFileNames GetStoreIdAndFileNames() {
+  return StoreIdAndFileNames(
+      {StoreIdAndFileName(GetUrlMalwareId(), "UrlMalware.store"),
+       StoreIdAndFileName(GetUrlSocEngId(), "UrlSoceng.store")});
 }
 
 }  // namespace
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(const base::FilePath& base_path)
-    : base_path_(base_path), enabled_(false) {
+    : base_path_(base_path),
+      enabled_(false),
+      store_id_file_names_(GetStoreIdAndFileNames()) {
   DCHECK(!base_path_.empty());
+  DCHECK(!store_id_file_names_.empty());
+
   DVLOG(1) << "V4LocalDatabaseManager::V4LocalDatabaseManager: "
            << "base_path_: " << base_path_.AsUTF8Unsafe();
 }
@@ -140,13 +145,13 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
   }
 
   if (v4_database_) {
-    base::hash_set<FullHash> full_hashes;
+    std::unordered_set<FullHash> full_hashes;
     V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
 
-    base::hash_set<UpdateListIdentifier> stores_to_look(
+    std::unordered_set<UpdateListIdentifier> stores_to_look(
         {GetUrlMalwareId(), GetUrlSocEngId()});
-    base::hash_set<HashPrefix> matched_hash_prefixes;
-    base::hash_set<UpdateListIdentifier> matched_stores;
+    std::unordered_set<HashPrefix> matched_hash_prefixes;
+    std::unordered_set<UpdateListIdentifier> matched_stores;
     StoreAndHashPrefixes matched_store_and_full_hashes;
     FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
     for (const auto& full_hash : full_hashes) {
@@ -197,7 +202,6 @@ void V4LocalDatabaseManager::StartOnIOThread(
                                     base::Unretained(this));
 
   SetupUpdateProtocolManager(request_context_getter, config);
-
   SetupDatabase();
 
   enabled_ = true;
@@ -215,6 +219,7 @@ void V4LocalDatabaseManager::SetupUpdateProtocolManager(
 
 void V4LocalDatabaseManager::SetupDatabase() {
   DCHECK(!base_path_.empty());
+  DCHECK(!store_id_file_names_.empty());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Only get a new task runner if there isn't one already. If the service has
@@ -228,11 +233,9 @@ void V4LocalDatabaseManager::SetupDatabase() {
   // Do not create the database on the IO thread since this may be an expensive
   // operation. Instead, do that on the task_runner and when the new database
   // has been created, swap it out on the IO thread.
-  StoreFileNameMap store_file_name_map = GetStoreFileNameMap();
-  DCHECK(!store_file_name_map.empty());
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
       &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
-  V4Database::Create(task_runner_, base_path_, store_file_name_map,
+  V4Database::Create(task_runner_, base_path_, store_id_file_names_,
                      db_ready_callback);
 }
 
@@ -285,6 +288,15 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     v4_update_protocol_manager_->ScheduleNextUpdate(
         v4_database_->GetStoreStateMap());
   }
+}
+
+std::unordered_set<UpdateListIdentifier>
+V4LocalDatabaseManager::GetStoresForFullHashRequests() {
+  std::unordered_set<UpdateListIdentifier> stores_for_full_hash;
+  for (auto it : store_id_file_names_) {
+    stores_for_full_hash.insert(it.list_id);
+  }
+  return stores_for_full_hash;
 }
 
 }  // namespace safe_browsing

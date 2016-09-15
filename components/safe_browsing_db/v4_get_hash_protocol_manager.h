@@ -147,7 +147,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Create an instance of the safe browsing v4 protocol manager.
   static std::unique_ptr<V4GetHashProtocolManager> Create(
       net::URLRequestContextGetter* request_context_getter,
-      const base::hash_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config);
 
   // Makes the passed |factory| the factory used to instantiate
@@ -187,7 +187,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // network requests using |request_context_getter|.
   V4GetHashProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const base::hash_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config);
 
  private:
@@ -255,7 +255,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // permission API metadata for full hashes in those |full_hash_infos| that
   // have a full hash in |full_hashes|.
   void OnFullHashForApi(const ThreatMetadataForApiCallback& api_callback,
-                        const base::hash_set<FullHash>& full_hashes,
+                        const std::unordered_set<FullHash>& full_hashes,
                         const std::vector<FullHashInfo>& full_hash_infos);
 
   // Parses a FindFullHashesResponse protocol buffer and fills the results in
@@ -331,9 +331,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // The following sets represent the combination of lists that we would always
   // request from the server, irrespective of which list we found the hash
   // prefix match in.
-  base::hash_set<PlatformType> platform_types_;
-  base::hash_set<ThreatEntryType> threat_entry_types_;
-  base::hash_set<ThreatType> threat_types_;
+  std::unordered_set<PlatformType> platform_types_;
+  std::unordered_set<ThreatEntryType> threat_entry_types_;
+  std::unordered_set<ThreatType> threat_types_;
 
   DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManager);
 };
@@ -345,7 +345,7 @@ class V4GetHashProtocolManagerFactory {
   virtual ~V4GetHashProtocolManagerFactory() {}
   virtual std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const base::hash_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config) = 0;
 
  private:

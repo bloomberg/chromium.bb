@@ -23,24 +23,24 @@ V4StoreFactory* V4Database::factory_ = NULL;
 void V4Database::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const StoreFileNameMap& store_file_name_map,
+    const StoreIdAndFileNames& store_id_file_names,
     NewDatabaseReadyCallback new_db_callback) {
   DCHECK(base_path.IsAbsolute());
-  DCHECK(!store_file_name_map.empty());
+  DCHECK(!store_id_file_names.empty());
 
   const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
       base::MessageLoop::current()->task_runner();
   db_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
-                 store_file_name_map, callback_task_runner, new_db_callback));
+                 store_id_file_names, callback_task_runner, new_db_callback));
 }
 
 // static
 void V4Database::CreateOnTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const StoreFileNameMap& store_file_name_map,
+    const StoreIdAndFileNames& store_id_file_names,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     NewDatabaseReadyCallback new_db_callback) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
@@ -55,10 +55,9 @@ void V4Database::CreateOnTaskRunner(
   }
 
   std::unique_ptr<StoreMap> store_map = base::MakeUnique<StoreMap>();
-  for (const auto& store_info : store_file_name_map) {
-    const UpdateListIdentifier& update_list_identifier = store_info.first;
-    const base::FilePath store_path = base_path.AppendASCII(store_info.second);
-    (*store_map)[update_list_identifier].reset(
+  for (const auto& it : store_id_file_names) {
+    const base::FilePath store_path = base_path.AppendASCII(it.filename);
+    (*store_map)[it.list_id].reset(
         factory_->CreateV4Store(db_task_runner, store_path));
   }
   std::unique_ptr<V4Database> v4_database(
@@ -170,7 +169,7 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
 
 void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
-    const base::hash_set<UpdateListIdentifier>& stores_to_look,
+    const std::unordered_set<UpdateListIdentifier>& stores_to_look,
     StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
   matched_store_and_hash_prefixes->clear();
   for (const UpdateListIdentifier& identifier : stores_to_look) {
@@ -183,5 +182,13 @@ void V4Database::GetStoresMatchingFullHash(
     }
   }
 }
+
+StoreIdAndFileName::StoreIdAndFileName(const UpdateListIdentifier& list_id,
+                                       const std::string& filename)
+    : list_id(list_id), filename(filename) {
+  DCHECK(!filename.empty());
+}
+
+StoreIdAndFileName::~StoreIdAndFileName() {}
 
 }  // namespace safe_browsing

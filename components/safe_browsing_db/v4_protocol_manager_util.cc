@@ -237,7 +237,7 @@ void V4ProtocolManagerUtil::UpdateHeaders(net::HttpRequestHeaders* headers) {
 // static
 void V4ProtocolManagerUtil::UrlToFullHashes(
     const GURL& url,
-    base::hash_set<FullHash>* full_hashes) {
+    std::unordered_set<FullHash>* full_hashes) {
   std::string canon_host, canon_path, canon_query;
   CanonicalizeUrl(url, &canon_host, &canon_path, &canon_query);
 

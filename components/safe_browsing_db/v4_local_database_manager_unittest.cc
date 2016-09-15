@@ -25,7 +25,7 @@ class FakeV4Database : public V4Database {
 
   void GetStoresMatchingFullHash(
       const FullHash& full_hash,
-      const base::hash_set<UpdateListIdentifier>& stores_to_look,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_look,
       StoreAndHashPrefixes* store_and_hash_prefixes) override {
     *store_and_hash_prefixes = store_and_hash_prefixes_;
   }

@@ -79,7 +79,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    base::hash_set<UpdateListIdentifier> stores_to_look(
+    std::unordered_set<UpdateListIdentifier> stores_to_look(
         {GetUrlMalwareId(), GetChromeUrlApiId()});
     return V4GetHashProtocolManager::Create(NULL, stores_to_look, config);
   }

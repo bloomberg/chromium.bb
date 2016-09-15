@@ -65,6 +65,7 @@ static_library("database_manager") {
     ":hit_report",
     ":util",
     ":v4_get_hash_protocol_manager",
+    ":v4_protocol_manager_util",
     "//base",
     "//content/public/browser",
     "//content/public/common",

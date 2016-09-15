@@ -58,6 +58,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool IsMalwareKillSwitchOn() override;
   bool IsCsdWhitelistKillSwitchOn() override;
 
+ protected:
+  std::unordered_set<UpdateListIdentifier> GetStoresForFullHashRequests()
+      override;
+
  private:
   friend class V4LocalDatabaseManagerTest;
   void SetTaskRunnerForTest(
@@ -96,6 +100,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // TODO(vakh): current_list_states_ doesn't really belong here.
   // It should come through the database, from the various V4Stores.
   base::hash_map<UpdateListIdentifier, std::string> current_list_states_;
+
+  // The list of stores to manage (for hash prefixes and full hashes), along
+  // with the corresponding filename on disk for each of them.
+  StoreIdAndFileNames store_id_file_names_;
 
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;

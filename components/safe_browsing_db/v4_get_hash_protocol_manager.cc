@@ -140,7 +140,7 @@ class V4GetHashProtocolManagerFactoryImpl
   ~V4GetHashProtocolManagerFactoryImpl() override {}
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const base::hash_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config) override {
     return base::WrapUnique(new V4GetHashProtocolManager(
         request_context_getter, stores_to_request, config));
@@ -209,7 +209,7 @@ V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
 // static
 std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const base::hash_set<UpdateListIdentifier>& stores_to_request,
+    const std::unordered_set<UpdateListIdentifier>& stores_to_request,
     const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4GetHashProtocolManagerFactoryImpl();
@@ -227,7 +227,7 @@ void V4GetHashProtocolManager::RegisterFactory(
 
 V4GetHashProtocolManager::V4GetHashProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const base::hash_set<UpdateListIdentifier>& stores_to_request,
+    const std::unordered_set<UpdateListIdentifier>& stores_to_request,
     const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
@@ -308,7 +308,7 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
     ThreatMetadataForApiCallback api_callback) {
   DCHECK(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme));
 
-  base::hash_set<FullHash> full_hashes;
+  std::unordered_set<FullHash> full_hashes;
   V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
 
   FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
@@ -365,7 +365,7 @@ void V4GetHashProtocolManager::GetFullHashCachedResults(
   //   cache entry if they expire AND their expire time is after the negative
   //   cache expire time.
 
-  base::hash_set<HashPrefix> unique_prefixes_to_request;
+  std::unordered_set<HashPrefix> unique_prefixes_to_request;
   for (const auto& it : full_hash_to_store_and_hash_prefixes) {
     const FullHash& full_hash = it.first;
     const StoreAndHashPrefixes& matched = it.second;
@@ -464,7 +464,7 @@ void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
 
 void V4GetHashProtocolManager::OnFullHashForApi(
     const ThreatMetadataForApiCallback& api_callback,
-    const base::hash_set<FullHash>& full_hashes,
+    const std::unordered_set<FullHash>& full_hashes,
     const std::vector<FullHashInfo>& full_hash_infos) {
   ThreatMetadata md;
   for (const FullHashInfo& full_hash_info : full_hash_infos) {

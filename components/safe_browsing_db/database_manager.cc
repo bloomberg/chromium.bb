@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -25,9 +26,8 @@ void SafeBrowsingDatabaseManager::StartOnIOThread(
     const V4ProtocolConfig& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::hash_set<UpdateListIdentifier> stores_to_look({GetChromeUrlApiId()});
   v4_get_hash_protocol_manager_ = V4GetHashProtocolManager::Create(
-      request_context_getter, stores_to_look, config);
+      request_context_getter, GetStoresForFullHashRequests(), config);
 }
 
 // |shutdown| not used. Destroys the v4 protocol managers. This may be called
@@ -69,6 +69,11 @@ bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   }
   NOTREACHED();
   return false;
+}
+
+std::unordered_set<UpdateListIdentifier>
+SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
+  return std::unordered_set<UpdateListIdentifier>({GetChromeUrlApiId()});
 }
 
 bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,

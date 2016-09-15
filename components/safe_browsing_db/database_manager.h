@@ -8,10 +8,9 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_DATABASE_MANAGER_H_
 #define COMPONENTS_SAFE_BROWSING_DB_DATABASE_MANAGER_H_
 
-#include <deque>
-#include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -28,6 +27,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
+struct UpdateListIdentifier;
 struct V4ProtocolConfig;
 class V4GetHashProtocolManager;
 
@@ -220,6 +220,10 @@ class SafeBrowsingDatabaseManager
                            CachedResultsAreEvicted);
 
   typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
+
+  // Returns the lists that this DatabaseManager should get full hashes for.
+  virtual std::unordered_set<UpdateListIdentifier>
+  GetStoresForFullHashRequests();
 
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in
