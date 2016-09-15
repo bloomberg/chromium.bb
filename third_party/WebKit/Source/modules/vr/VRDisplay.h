@@ -84,7 +84,13 @@ protected:
     VRDisplay(NavigatorVR*);
 
     void update(const device::blink::VRDisplayPtr&);
+
     void updatePose();
+
+    void beginPresent(ScriptPromiseResolver*);
+    void forceExitPresent();
+
+    void updateLayerBounds();
 
     VRController* controller();
 

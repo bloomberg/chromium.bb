@@ -160,11 +160,13 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
         return promise;
     }
 
+    bool firstPresent = !m_isPresenting;
+
     // Initiating VR presentation is only allowed in response to a user gesture.
     // If the VRDisplay is already presenting, however, repeated calls are
     // allowed outside a user gesture so that the presented content may be
     // updated.
-    if (!m_isPresenting && !UserGestureIndicator::utilizeUserGesture()) {
+    if (firstPresent && !UserGestureIndicator::utilizeUserGesture()) {
         DOMException* exception = DOMException::create(InvalidStateError, "API can only be initiated by a user gesture.");
         resolver->reject(exception);
         return promise;
@@ -174,73 +176,46 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
 
     // A valid number of layers must be provided in order to present.
     if (layers.size() == 0 || layers.size() > m_capabilities->maxLayers()) {
+        forceExitPresent();
         DOMException* exception = DOMException::create(InvalidStateError, "Invalid number of layers.");
-        if (m_isPresenting) {
-            exitPresent(scriptState);
-        }
         resolver->reject(exception);
         return promise;
     }
 
     m_layer = layers[0];
 
-    if (m_layer.source()) {
-        if (!m_capabilities->hasExternalDisplay()) {
-            // TODO: Need a proper VR compositor, but for the moment on mobile
-            // we'll just make the canvas fullscreen so that VrShell can pick it
-            // up through the standard (high latency) compositing path.
-            Fullscreen::requestFullscreen(*m_layer.source(), Fullscreen::UnprefixedRequest);
-
-            m_isPresenting = true;
-
-            resolver->resolve();
-
-            m_navigatorVR->fireVRDisplayPresentChange(this);
-
-            // Check to see if the canvas is still the current fullscreen
-            // element once per second.
-            m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
-
-            controller()->requestPresent(m_displayId);
-        } else {
-            DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay.");
-            resolver->reject(exception);
-        }
-
-        // Set up the texture bounds for the provided layer
-        device::blink::VRLayerBoundsPtr leftBounds = device::blink::VRLayerBounds::New();
-        device::blink::VRLayerBoundsPtr rightBounds = device::blink::VRLayerBounds::New();
-
-        if (m_layer.hasLeftBounds()) {
-            leftBounds->left = m_layer.leftBounds()[0];
-            leftBounds->top = m_layer.leftBounds()[1];
-            leftBounds->width = m_layer.leftBounds()[2];
-            leftBounds->height = m_layer.leftBounds()[3];
-        } else {
-            // Left eye defaults
-            leftBounds->left = 0.0f;
-            leftBounds->top = 0.0f;
-            leftBounds->width = 0.5f;
-            leftBounds->height = 1.0f;
-        }
-
-        if (m_layer.hasRightBounds()) {
-            rightBounds->left = m_layer.rightBounds()[0];
-            rightBounds->top = m_layer.rightBounds()[1];
-            rightBounds->width = m_layer.rightBounds()[2];
-            rightBounds->height = m_layer.rightBounds()[3];
-        } else {
-            // Right eye defaults
-            rightBounds->left = 0.5f;
-            rightBounds->top = 0.0f;
-            rightBounds->width = 0.5f;
-            rightBounds->height = 1.0f;
-        }
-
-        controller()->updateLayerBounds(m_displayId, std::move(leftBounds), std::move(rightBounds));
-    } else {
+    if (!m_layer.source()) {
+        forceExitPresent();
         DOMException* exception = DOMException::create(InvalidStateError, "Invalid layer source.");
         resolver->reject(exception);
+        return promise;
+    }
+
+    CanvasRenderingContext* renderingContext = m_layer.source()->renderingContext();
+
+    if (!renderingContext || !renderingContext->is3d()) {
+        forceExitPresent();
+        DOMException* exception = DOMException::create(InvalidStateError, "Layer source must have a WebGLRenderingContext");
+        resolver->reject(exception);
+        return promise;
+    }
+
+    if (!m_capabilities->hasExternalDisplay()) {
+        // TODO: Need a proper VR compositor, but for the moment on mobile
+        // we'll just make the canvas fullscreen so that VrShell can pick it
+        // up through the standard (high latency) compositing path.
+        Fullscreen::requestFullscreen(*m_layer.source(), Fullscreen::UnprefixedRequest);
+
+        // Check to see if the canvas is still the current fullscreen
+        // element once per second.
+        m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
+    }
+
+    if (firstPresent) {
+        controller()->requestPresent(resolver, m_displayId);
+    } else {
+        updateLayerBounds();
+        resolver->resolve();
     }
 
     return promise;
@@ -258,22 +233,80 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState)
         return promise;
     }
 
-    if (!m_capabilities->hasExternalDisplay()) {
-        Fullscreen::fullyExitFullscreen(m_layer.source()->document());
-        m_fullscreenCheckTimer.stop();
-        controller()->exitPresent(m_displayId);
-    } else {
-        // Can't get into this presentation mode, so nothing to do here.
+    controller()->exitPresent(m_displayId);
+
+    resolver->resolve();
+
+    forceExitPresent();
+
+    return promise;
+}
+
+void VRDisplay::beginPresent(ScriptPromiseResolver* resolver)
+{
+    if (m_capabilities->hasExternalDisplay()) {
+        forceExitPresent();
+        DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay.");
+        resolver->reject(exception);
+        return;
+    }
+
+    m_isPresenting = true;
+
+    updateLayerBounds();
+
+    resolver->resolve();
+    m_navigatorVR->fireVRDisplayPresentChange(this);
+}
+
+void VRDisplay::forceExitPresent()
+{
+    if (m_isPresenting) {
+        if (!m_capabilities->hasExternalDisplay()) {
+            Fullscreen::fullyExitFullscreen(m_layer.source()->document());
+            m_fullscreenCheckTimer.stop();
+        } else {
+            // Can't get into this presentation mode, so nothing to do here.
+        }
+        m_navigatorVR->fireVRDisplayPresentChange(this);
     }
 
     m_isPresenting = false;
+}
 
-    // TODO: Resolve when exit is confirmed
-    resolver->resolve();
+void VRDisplay::updateLayerBounds()
+{
+    // Set up the texture bounds for the provided layer
+    device::blink::VRLayerBoundsPtr leftBounds = device::blink::VRLayerBounds::New();
+    device::blink::VRLayerBoundsPtr rightBounds = device::blink::VRLayerBounds::New();
 
-    m_navigatorVR->fireVRDisplayPresentChange(this);
+    if (m_layer.hasLeftBounds()) {
+        leftBounds->left = m_layer.leftBounds()[0];
+        leftBounds->top = m_layer.leftBounds()[1];
+        leftBounds->width = m_layer.leftBounds()[2];
+        leftBounds->height = m_layer.leftBounds()[3];
+    } else {
+        // Left eye defaults
+        leftBounds->left = 0.0f;
+        leftBounds->top = 0.0f;
+        leftBounds->width = 0.5f;
+        leftBounds->height = 1.0f;
+    }
 
-    return promise;
+    if (m_layer.hasRightBounds()) {
+        rightBounds->left = m_layer.rightBounds()[0];
+        rightBounds->top = m_layer.rightBounds()[1];
+        rightBounds->width = m_layer.rightBounds()[2];
+        rightBounds->height = m_layer.rightBounds()[3];
+    } else {
+        // Right eye defaults
+        rightBounds->left = 0.5f;
+        rightBounds->top = 0.0f;
+        rightBounds->width = 0.5f;
+        rightBounds->height = 1.0f;
+    }
+
+    controller()->updateLayerBounds(m_displayId, std::move(leftBounds), std::move(rightBounds));
 }
 
 HeapVector<VRLayer> VRDisplay::getLayers()
@@ -289,7 +322,7 @@ HeapVector<VRLayer> VRDisplay::getLayers()
 
 void VRDisplay::submitFrame()
 {
-    controller()->submitFrame(m_displayId);
+    controller()->submitFrame(m_displayId, m_framePose.Clone());
     m_canUpdateFramePose = true;
 }
 

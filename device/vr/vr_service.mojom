@@ -66,15 +66,16 @@ interface VRService {
 
   GetDisplays() => (array<VRDisplay> displays);
   [Sync]
-  GetPose(uint32 index) => (VRPose pose);
+  GetPose(uint32 index) => (VRPose? pose);
   ResetPose(uint32 index);
 
-  RequestPresent(uint32 index);
+  RequestPresent(uint32 index) => (bool success);
   ExitPresent(uint32 index);
-  SubmitFrame(uint32 index);
+  SubmitFrame(uint32 index, VRPose pose);
   UpdateLayerBounds(uint32 index, VRLayerBounds leftBounds, VRLayerBounds rightBounds);
 };
 
 interface VRServiceClient {
   OnDisplayChanged(VRDisplay display);
+  OnExitPresent(uint32 index);
 };

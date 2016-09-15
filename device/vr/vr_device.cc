@@ -18,4 +18,8 @@ VRDevice::VRDevice(VRDeviceProvider* provider)
 
 VRDevice::~VRDevice() {}
 
+bool VRDevice::RequestPresent() {
+  return true;
+};
+
 }  // namespace device

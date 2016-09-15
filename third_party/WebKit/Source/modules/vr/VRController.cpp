@@ -58,12 +58,15 @@ void VRController::resetPose(unsigned index)
     m_service->ResetPose(index);
 }
 
-void VRController::requestPresent(unsigned index)
+void VRController::requestPresent(ScriptPromiseResolver* resolver, unsigned index)
 {
-    if (!m_service)
+    if (!m_service) {
+        DOMException* exception = DOMException::create(InvalidStateError, "The service is no longer active.");
+        resolver->reject(exception);
         return;
+    }
 
-    m_service->RequestPresent(index);
+    m_service->RequestPresent(index, convertToBaseCallback(WTF::bind(&VRController::onPresentComplete, wrapPersistent(this), wrapPersistent(resolver), index)));
 }
 
 void VRController::exitPresent(unsigned index)
@@ -74,12 +77,12 @@ void VRController::exitPresent(unsigned index)
     m_service->ExitPresent(index);
 }
 
-void VRController::submitFrame(unsigned index)
+void VRController::submitFrame(unsigned index, device::blink::VRPosePtr pose)
 {
     if (!m_service)
         return;
 
-    m_service->SubmitFrame(index);
+    m_service->SubmitFrame(index, std::move(pose));
 }
 
 void VRController::updateLayerBounds(unsigned index,
@@ -140,6 +143,24 @@ void VRController::onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> dis
     callback->onSuccess(outDisplays);
 }
 
+void VRController::onPresentComplete(ScriptPromiseResolver* resolver, unsigned index, bool success)
+{
+    VRDisplay* vrDisplay = getDisplayForIndex(index);
+    if (!vrDisplay) {
+        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay not found.");
+        resolver->reject(exception);
+        return;
+    }
+
+    if (success) {
+        vrDisplay->beginPresent(resolver);
+    } else {
+        vrDisplay->forceExitPresent();
+        DOMException* exception = DOMException::create(NotAllowedError, "Presentation request was denied.");
+        resolver->reject(exception);
+    }
+}
+
 void VRController::OnDisplayChanged(device::blink::VRDisplayPtr display)
 {
     VRDisplay* vrDisplay = getDisplayForIndex(display->index);
@@ -147,6 +168,13 @@ void VRController::OnDisplayChanged(device::blink::VRDisplayPtr display)
         return;
 
     vrDisplay->update(display);
+}
+
+void VRController::OnExitPresent(unsigned index)
+{
+    VRDisplay* vrDisplay = getDisplayForIndex(index);
+    if (vrDisplay)
+        vrDisplay->forceExitPresent();
 }
 
 void VRController::contextDestroyed()

@@ -34,9 +34,9 @@ public:
     void getDisplays(ScriptPromiseResolver*);
     device::blink::VRPosePtr getPose(unsigned index);
     void resetPose(unsigned index);
-    void requestPresent(unsigned index);
+    void requestPresent(ScriptPromiseResolver*, unsigned index);
     void exitPresent(unsigned index);
-    void submitFrame(unsigned index);
+    void submitFrame(unsigned index, device::blink::VRPosePtr);
     void updateLayerBounds(unsigned index,
         device::blink::VRLayerBoundsPtr leftBounds,
         device::blink::VRLayerBoundsPtr rightBounds);
@@ -50,9 +50,11 @@ public:
 private:
     // Binding callbacks.
     void onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr>);
+    void onPresentComplete(ScriptPromiseResolver*, unsigned index, bool success);
 
     // VRServiceClient.
     void OnDisplayChanged(device::blink::VRDisplayPtr) override;
+    void OnExitPresent(unsigned index) override;
 
     // ContextLifecycleObserver.
     void contextDestroyed() override;

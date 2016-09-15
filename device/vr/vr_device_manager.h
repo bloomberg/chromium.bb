@@ -32,14 +32,24 @@ class VRDeviceManager : public VRClientDispatcher {
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
 
+  // Gets a VRDevice instance if the specified service is allowed to access it.
+  DEVICE_VR_EXPORT static VRDevice* GetAllowedDevice(VRServiceImpl* service,
+                                                     unsigned int index);
+
   // Adds a listener for device manager events. VRDeviceManager does not own
   // this object.
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
   DEVICE_VR_EXPORT mojo::Array<VRDisplayPtr> GetVRDevices();
-  DEVICE_VR_EXPORT VRDevice* GetDevice(unsigned int index);
 
+  // Manage presentation to only allow a single service and device at a time.
+  DEVICE_VR_EXPORT bool RequestPresent(VRServiceImpl* service,
+                                       unsigned int index);
+  DEVICE_VR_EXPORT void ExitPresent(VRServiceImpl* service, unsigned int index);
+  void SubmitFrame(VRServiceImpl* service, unsigned int index, VRPosePtr pose);
+
+  // VRClientDispatcher implementation
   void OnDeviceChanged(VRDisplayPtr device) override;
 
  private:
@@ -50,6 +60,8 @@ class VRDeviceManager : public VRClientDispatcher {
   // Constructor for testing.
   DEVICE_VR_EXPORT explicit VRDeviceManager(
       std::unique_ptr<VRDeviceProvider> provider);
+
+  DEVICE_VR_EXPORT VRDevice* GetDevice(unsigned int index);
 
   static void SetInstance(VRDeviceManager* service);
   static bool HasInstance();
@@ -72,6 +84,10 @@ class VRDeviceManager : public VRClientDispatcher {
 
   using ServiceList = std::vector<VRServiceImpl*>;
   ServiceList services_;
+
+  // Only one service and device is allowed to present at a time.
+  VRServiceImpl* presenting_service_;
+  VRDevice* presenting_device_;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;

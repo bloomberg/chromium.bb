@@ -48,8 +48,7 @@ void VRServiceImpl::GetDisplays(const GetDisplaysCallback& callback) {
 }
 
 void VRServiceImpl::GetPose(uint32_t index, const GetPoseCallback& callback) {
-  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
+  VRDevice* device = VRDeviceManager::GetAllowedDevice(this, index);
 
   if (device) {
     callback.Run(device->GetPose());
@@ -59,38 +58,31 @@ void VRServiceImpl::GetPose(uint32_t index, const GetPoseCallback& callback) {
 }
 
 void VRServiceImpl::ResetPose(uint32_t index) {
-  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
+  VRDevice* device = VRDeviceManager::GetAllowedDevice(this, index);
   if (device)
     device->ResetPose();
 }
 
-void VRServiceImpl::RequestPresent(uint32_t index) {
+void VRServiceImpl::RequestPresent(uint32_t index,
+                                   const RequestPresentCallback& callback) {
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
-  if (device)
-    device->RequestPresent();
+  callback.Run(device_manager->RequestPresent(this, index));
 }
 
 void VRServiceImpl::ExitPresent(uint32_t index) {
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
-  if (device)
-    device->ExitPresent();
+  device_manager->ExitPresent(this, index);
 }
 
-void VRServiceImpl::SubmitFrame(uint32_t index) {
+void VRServiceImpl::SubmitFrame(uint32_t index, VRPosePtr pose) {
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
-  if (device)
-    device->SubmitFrame();
+  device_manager->SubmitFrame(this, index, std::move(pose));
 }
 
 void VRServiceImpl::UpdateLayerBounds(uint32_t index,
                                       VRLayerBoundsPtr leftBounds,
                                       VRLayerBoundsPtr rightBounds) {
-  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  VRDevice* device = device_manager->GetDevice(index);
+  VRDevice* device = VRDeviceManager::GetAllowedDevice(this, index);
   if (device)
     device->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));
 }

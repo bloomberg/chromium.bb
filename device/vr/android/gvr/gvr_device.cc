@@ -141,15 +141,16 @@ void GvrDevice::ResetPose() {
   delegate_->gvr_api()->ResetTracking();
 }
 
-void GvrDevice::RequestPresent() {
+bool GvrDevice::RequestPresent() {
   delegate_->RequestWebVRPresent();
+  return true;
 }
 
 void GvrDevice::ExitPresent() {
   delegate_->ExitWebVRPresent();
 }
 
-void GvrDevice::SubmitFrame() {
+void GvrDevice::SubmitFrame(VRPosePtr pose) {
   delegate_->SubmitWebVRFrame();
 }
 

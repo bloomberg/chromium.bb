@@ -22,10 +22,10 @@ class GvrDevice : public VRDevice {
   VRPosePtr GetPose() override;
   void ResetPose() override;
 
-  void RequestPresent() override;
+  bool RequestPresent() override;
   void ExitPresent() override;
 
-  void SubmitFrame() override;
+  void SubmitFrame(VRPosePtr pose) override;
   void UpdateLayerBounds(VRLayerBoundsPtr leftBounds,
                          VRLayerBoundsPtr rightBounds) override;
 

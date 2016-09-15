@@ -22,7 +22,11 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 }
 
 VRDeviceManager::VRDeviceManager()
-    : vr_initialized_(false), keep_alive_(false), has_scheduled_poll_(false) {
+    : vr_initialized_(false),
+      presenting_service_(nullptr),
+      presenting_device_(nullptr),
+      keep_alive_(false),
+      has_scheduled_poll_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   RegisterProvider(base::WrapUnique(new GvrDeviceProvider()));
@@ -30,7 +34,11 @@ VRDeviceManager::VRDeviceManager()
 }
 
 VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
-    : vr_initialized_(false), keep_alive_(true), has_scheduled_poll_(false) {
+    : vr_initialized_(false),
+      presenting_service_(nullptr),
+      presenting_device_(nullptr),
+      keep_alive_(true),
+      has_scheduled_poll_(false) {
   thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
   SetInstance(this);
@@ -46,6 +54,26 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
   if (!g_vr_device_manager)
     g_vr_device_manager = new VRDeviceManager();
   return g_vr_device_manager;
+}
+
+// Returns the requested device with the requested id if the specified service
+// is allowed to access it.
+VRDevice* VRDeviceManager::GetAllowedDevice(VRServiceImpl* service,
+                                            unsigned int index) {
+  VRDeviceManager* device_manager = GetInstance();
+
+  // If another service is presenting to the requested device don't allow other
+  // services to access it. That could potentially allow them to spy on
+  // where the user is looking on another page, spam another application with
+  // pose resets, etc.
+  if (device_manager->presenting_service_ &&
+      device_manager->presenting_service_ != service) {
+    if (device_manager->presenting_device_ &&
+        device_manager->presenting_device_->id() == index)
+      return nullptr;
+  }
+
+  return device_manager->GetDevice(index);
 }
 
 void VRDeviceManager::SetInstance(VRDeviceManager* instance) {
@@ -71,6 +99,13 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
 void VRDeviceManager::RemoveService(VRServiceImpl* service) {
   services_.erase(std::remove(services_.begin(), services_.end(), service),
                   services_.end());
+
+  if (service == presenting_service_) {
+    presenting_device_->ExitPresent();
+
+    presenting_service_ = nullptr;
+    presenting_device_ = nullptr;
+  }
 
   if (services_.empty() && !keep_alive_) {
     // Delete the device manager when it has no active connections.
@@ -125,6 +160,90 @@ VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
 void VRDeviceManager::OnDeviceChanged(VRDisplayPtr device) {
   for (const auto& service : services_)
     service->client()->OnDisplayChanged(device.Clone());
+}
+
+bool VRDeviceManager::RequestPresent(VRServiceImpl* service,
+                                     unsigned int index) {
+  // Is anything presenting currently?
+  if (presenting_service_) {
+    // Should never have a presenting service without a presenting device.
+    DCHECK(presenting_device_);
+
+    // Fail if the currently presenting service is not the one making the
+    // request.
+    if (presenting_service_ != service)
+      return false;
+
+    // If we are switching presentation from the currently presenting service to
+    // a new device stop presening to the previous one.
+    if (presenting_device_->id() != index) {
+      // Tell the device to stop presenting.
+      presenting_device_->ExitPresent();
+
+      // Only the presenting service needs to be notified that presentation is
+      // ending on the previous device.
+      presenting_service_->client()->OnExitPresent(presenting_device_->id());
+      presenting_device_ = nullptr;
+    }
+
+    presenting_service_ = nullptr;
+  }
+
+  VRDevice* requested_device = GetDevice(index);
+  // Can't present to a device that doesn't exist.
+  if (!requested_device)
+    return false;
+
+  // Attempt to begin presenting to this device. This could fail for any number
+  // of device-specific reasons.
+  if (!requested_device->RequestPresent())
+    return false;
+
+  // Successfully began presenting!
+  presenting_service_ = service;
+  presenting_device_ = requested_device;
+
+  return true;
+}
+
+void VRDeviceManager::ExitPresent(VRServiceImpl* service, unsigned int index) {
+  // Don't allow services other than the currently presenting one to exit
+  // presentation.
+  if (presenting_service_ != service)
+    return;
+
+  // Should never have a presenting service without a presenting device.
+  DCHECK(presenting_device_);
+
+  // Fail if the specified device is not currently presenting.
+  if (presenting_device_->id() != index)
+    return;
+
+  // Tell the device to stop presenting.
+  presenting_device_->ExitPresent();
+  presenting_service_->client()->OnExitPresent(index);
+
+  // Clear the presenting service and device.
+  presenting_service_ = nullptr;
+  presenting_device_ = nullptr;
+}
+
+void VRDeviceManager::SubmitFrame(VRServiceImpl* service,
+                                  unsigned int index,
+                                  VRPosePtr pose) {
+  // Don't allow services other than the currently presenting one to submit any
+  // frames.
+  if (presenting_service_ != service)
+    return;
+
+  // Should never have a presenting service without a presenting device.
+  DCHECK(presenting_device_);
+
+  // Don't submit frames to devices other than the currently presenting one.
+  if (presenting_device_->id() != index)
+    return;
+
+  presenting_device_->SubmitFrame(std::move(pose));
 }
 
 void VRDeviceManager::InitializeProviders() {

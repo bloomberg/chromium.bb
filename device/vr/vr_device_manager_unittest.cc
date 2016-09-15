@@ -25,6 +25,10 @@ class VRDeviceManagerTest : public testing::Test {
 
   bool HasServiceInstance() { return VRDeviceManager::HasInstance(); }
 
+  VRDevice* GetDevice(unsigned int index) {
+    return device_manager_->GetDevice(index);
+  }
+
  protected:
   FakeVRDeviceProvider* provider_;
   std::unique_ptr<VRDeviceManager> device_manager_;
@@ -63,7 +67,7 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
   EXPECT_EQ(0u, webvr_devices.size());
 
   // GetDeviceByIndex should return nullptr if an invalid index in queried.
-  VRDevice* queried_device = device_manager_->GetDevice(1);
+  VRDevice* queried_device = GetDevice(1);
   EXPECT_EQ(nullptr, queried_device);
 
   std::unique_ptr<FakeVRDevice> device1(new FakeVRDevice(provider_));
@@ -82,9 +86,9 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
   // NOTE: Returned WebVRDevices are not required to be in any particular order.
 
   // Querying the WebVRDevice index should return the correct device.
-  queried_device = device_manager_->GetDevice(device1->id());
+  queried_device = GetDevice(device1->id());
   EXPECT_EQ(device1.get(), queried_device);
-  queried_device = device_manager_->GetDevice(device2->id());
+  queried_device = GetDevice(device2->id());
   EXPECT_EQ(device2.get(), queried_device);
 
   provider_->RemoveDevice(device1.get());
