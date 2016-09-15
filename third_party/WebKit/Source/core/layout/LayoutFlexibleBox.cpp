@@ -521,9 +521,9 @@ LayoutUnit LayoutFlexibleBox::mainAxisExtentForChild(const LayoutBox& child) con
     return isHorizontalFlow() ? child.size().width() : child.size().height();
 }
 
-LayoutUnit LayoutFlexibleBox::mainAxisContentExtentForChild(const LayoutBox& child) const
+LayoutUnit LayoutFlexibleBox::mainAxisContentExtentForChildIncludingScrollbar(const LayoutBox& child) const
 {
-    return isHorizontalFlow() ? child.contentWidth() : child.contentHeight();
+    return isHorizontalFlow() ? child.contentWidth() + child.verticalScrollbarWidth() : child.contentHeight() + child.horizontalScrollbarHeight();
 }
 
 LayoutUnit LayoutFlexibleBox::crossAxisExtent() const
@@ -1662,7 +1662,10 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         child->setMayNeedPaintInvalidation();
 
         setOverrideMainAxisContentSizeForChild(*child, flexItem.flexedContentSize);
-        if (flexItem.flexedContentSize != mainAxisContentExtentForChild(*child)) {
+        // The flexed content size and the override size include the scrollbar
+        // width, so we need to compare to the size including the scrollbar.
+        // TODO(cbiesinger): Should it include the scrollbar?
+        if (flexItem.flexedContentSize != mainAxisContentExtentForChildIncludingScrollbar(*child)) {
             child->setChildNeedsLayout(MarkOnlyThis);
         } else {
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.

@@ -121,7 +121,7 @@ private:
     LayoutUnit childIntrinsicLogicalHeight(const LayoutBox& child) const;
     LayoutUnit childIntrinsicLogicalWidth(const LayoutBox& child) const;
     LayoutUnit mainAxisExtentForChild(const LayoutBox& child) const;
-    LayoutUnit mainAxisContentExtentForChild(const LayoutBox& child) const;
+    LayoutUnit mainAxisContentExtentForChildIncludingScrollbar(const LayoutBox& child) const;
     LayoutUnit crossAxisExtent() const;
     LayoutUnit mainAxisExtent() const;
     LayoutUnit crossAxisContentExtent() const;
