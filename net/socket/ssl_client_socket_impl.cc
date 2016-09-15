@@ -581,17 +581,14 @@ int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  int rv = SSL_export_keying_material(
-      ssl_, out, outlen, label.data(), label.size(),
-      reinterpret_cast<const unsigned char*>(context.data()), context.length(),
-      has_context ? 1 : 0);
-
-  if (rv != 1) {
-    int ssl_error = SSL_get_error(ssl_, rv);
-    LOG(ERROR) << "Failed to export keying material;"
-               << " returned " << rv << ", SSL error code " << ssl_error;
-    return MapOpenSSLError(ssl_error, err_tracer);
+  if (!SSL_export_keying_material(
+          ssl_, out, outlen, label.data(), label.size(),
+          reinterpret_cast<const unsigned char*>(context.data()),
+          context.length(), has_context ? 1 : 0)) {
+    LOG(ERROR) << "Failed to export keying material.";
+    return ERR_FAILED;
   }
+
   return OK;
 }
 
@@ -1247,11 +1244,9 @@ int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
   // type.
   DCHECK(channel_id_key_);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = SSL_set1_tls_channel_id(ssl_, channel_id_key_->key());
-  if (!rv) {
+  if (!SSL_set1_tls_channel_id(ssl_, channel_id_key_->key())) {
     LOG(ERROR) << "Failed to set Channel ID.";
-    int err = SSL_get_error(ssl_, rv);
-    return MapOpenSSLError(err, err_tracer);
+    return ERR_FAILED;
   }
 
   // Return to the handshake.
