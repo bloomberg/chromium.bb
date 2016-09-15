@@ -136,10 +136,12 @@ TEST_F(FileFlusherTest, Exclude) {
 TEST_F(FileFlusherTest, DuplicateRequests) {
   std::unique_ptr<FileFlusher> flusher(CreateFileFlusher());
   base::RunLoop run_loop;
+  flusher->PauseForTest();
   flusher->RequestFlush(GetTestFilePath("dir1"), std::vector<base::FilePath>(),
                         base::Closure());
   flusher->RequestFlush(GetTestFilePath("dir1"), std::vector<base::FilePath>(),
                         run_loop.QuitClosure());
+  flusher->ResumeForTest();
   run_loop.Run();
 
   EXPECT_EQ(1, GetFlushCount("dir1/file1"));

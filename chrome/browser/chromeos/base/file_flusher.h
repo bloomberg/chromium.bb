@@ -38,6 +38,9 @@ class FileFlusher {
     on_flush_callback_for_test_ = on_flush_callback;
   }
 
+  void PauseForTest();
+  void ResumeForTest();
+
  private:
   // Job for the flushing requests.
   class Job;
@@ -53,6 +56,8 @@ class FileFlusher {
 
   // A callback for testing to be invoked when a file is flushed.
   OnFlushCallback on_flush_callback_for_test_;
+
+  bool paused_for_test_ = false;
 
   base::WeakPtrFactory<FileFlusher> weak_factory_;
 
