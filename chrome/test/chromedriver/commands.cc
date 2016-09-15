@@ -329,7 +329,7 @@ void ExecuteSessionCommand(
 namespace internal {
 
 void CreateSessionOnSessionThreadForTesting(const std::string& id) {
-  SetThreadLocalSession(base::WrapUnique(new Session(id)));
+  SetThreadLocalSession(base::MakeUnique<Session>(id));
 }
 
 }  // namespace internal

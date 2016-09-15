@@ -20,7 +20,7 @@ std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
   TestBrowserWindow* window = new TestBrowserWindow;
   new TestBrowserWindowOwner(window);
   params->window = window;
-  return base::WrapUnique(new Browser(*params));
+  return base::MakeUnique<Browser>(*params);
 }
 
 }  // namespace chrome

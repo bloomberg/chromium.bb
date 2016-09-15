@@ -167,8 +167,9 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
       new ChromeExtensionsDispatcherDelegate());
   ChromeExtensionsRendererClient* ext_client =
       ChromeExtensionsRendererClient::GetInstance();
-  ext_client->SetExtensionDispatcherForTest(base::WrapUnique(
-      new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
+  ext_client->SetExtensionDispatcherForTest(
+      base::MakeUnique<extensions::Dispatcher>(
+          extension_dispatcher_delegate_.get()));
 #endif
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());

@@ -137,13 +137,13 @@ TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
   EXPECT_TRUE(GetData().empty());
 
   const std::string data_chunk("12345");
-  filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1, 0)));
+  filter_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
+      data_chunk.data(), data_chunk.length(), -1, 0));
 
   EXPECT_EQ(data_chunk, GetData());
 
-  filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1, 0)));
+  filter_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
+      data_chunk.data(), data_chunk.length(), -1, 0));
   EXPECT_EQ(data_chunk + data_chunk, GetData());
 }
 

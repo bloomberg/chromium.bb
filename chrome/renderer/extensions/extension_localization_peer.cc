@@ -109,7 +109,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
-    original_peer_->OnReceivedData(base::WrapUnique(new StringData(data_)));
+    original_peer_->OnReceivedData(base::MakeUnique<StringData>(data_));
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache, completion_time,
                                      total_transfer_size);

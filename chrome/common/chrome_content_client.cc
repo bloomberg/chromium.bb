@@ -720,9 +720,8 @@ bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
 }
 
 content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
-  if (!origin_trial_policy_) {
-    origin_trial_policy_ = base::WrapUnique(new ChromeOriginTrialPolicy());
-  }
+  if (!origin_trial_policy_)
+    origin_trial_policy_ = base::MakeUnique<ChromeOriginTrialPolicy>();
   return origin_trial_policy_.get();
 }
 

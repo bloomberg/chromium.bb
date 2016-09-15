@@ -998,7 +998,7 @@ class MockDevToolsEventListener : public DevToolsEventListener {
 
 std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
     std::list<std::string>* messages) {
-  return base::WrapUnique(new MockSyncWebSocket6(messages));
+  return base::MakeUnique<MockSyncWebSocket6>(messages);
 }
 
 }  // namespace

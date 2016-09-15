@@ -48,8 +48,8 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
       if (content::IsResourceTypeFrame(resource_type))
         return CreateSecurityFilterPeerForFrame(std::move(peer), os_error);
       // Any other content is entirely filtered-out.
-      return base::WrapUnique(new ReplaceContentPeer(
-          std::move(peer), std::string(), std::string()));
+      return base::MakeUnique<ReplaceContentPeer>(std::move(peer),
+                                                  std::string(), std::string());
     default:
       // For other errors, we use our normal error handling.
       return peer;
@@ -68,8 +68,8 @@ SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
       "<body style='background-color:#990000;color:white;'>"
       "%s</body></html>",
       l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
-  return base::WrapUnique(
-      new ReplaceContentPeer(std::move(peer), "text/html", html));
+  return base::MakeUnique<ReplaceContentPeer>(std::move(peer), "text/html",
+                                              html);
 }
 
 void SecurityFilterPeer::OnUploadProgress(uint64_t position, uint64_t size) {
@@ -147,8 +147,8 @@ void BufferedPeer::OnCompletedRequest(int error_code,
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty()) {
-    original_peer_->OnReceivedData(base::WrapUnique(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1, 0)));
+    original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
+        data_.data(), data_.size(), -1, 0));
   }
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache, completion_time,
@@ -187,8 +187,8 @@ void ReplaceContentPeer::OnCompletedRequest(
   info.content_length = static_cast<int>(data_.size());
   original_peer_->OnReceivedResponse(info);
   if (!data_.empty()) {
-    original_peer_->OnReceivedData(base::WrapUnique(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1, 0)));
+    original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
+        data_.data(), data_.size(), -1, 0));
   }
   original_peer_->OnCompletedRequest(net::OK, false, stale_copy_in_cache,
                                      completion_time, total_transfer_size);

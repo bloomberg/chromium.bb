@@ -54,25 +54,25 @@ namespace installer_util {
 std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon(
     bool system_install,
     const AppRegistrationData& registration_data) {
-  return base::WrapUnique(new Beacon(L"LastOsUpgrade", Beacon::BeaconType::LAST,
-                                     Beacon::BeaconScope::PER_INSTALL,
-                                     system_install, registration_data));
+  return base::MakeUnique<Beacon>(L"LastOsUpgrade", Beacon::BeaconType::LAST,
+                                  Beacon::BeaconScope::PER_INSTALL,
+                                  system_install, registration_data);
 }
 
 std::unique_ptr<Beacon> MakeLastWasDefaultBeacon(
     bool system_install,
     const AppRegistrationData& registration_data) {
-  return base::WrapUnique(new Beacon(
-      L"LastWasDefault", Beacon::BeaconType::LAST,
-      Beacon::BeaconScope::PER_USER, system_install, registration_data));
+  return base::MakeUnique<Beacon>(L"LastWasDefault", Beacon::BeaconType::LAST,
+                                  Beacon::BeaconScope::PER_USER, system_install,
+                                  registration_data);
 }
 
 std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon(
     bool system_install,
     const AppRegistrationData& registration_data) {
-  return base::WrapUnique(new Beacon(
-      L"FirstNotDefault", Beacon::BeaconType::FIRST,
-      Beacon::BeaconScope::PER_USER, system_install, registration_data));
+  return base::MakeUnique<Beacon>(L"FirstNotDefault", Beacon::BeaconType::FIRST,
+                                  Beacon::BeaconScope::PER_USER, system_install,
+                                  registration_data);
 }
 
 // Beacon ----------------------------------------------------------------------

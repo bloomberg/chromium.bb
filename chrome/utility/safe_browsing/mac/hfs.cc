@@ -310,8 +310,8 @@ std::unique_ptr<ReadStream> HFSIterator::GetReadStream() {
     return nullptr;
 
   DCHECK_EQ(kHFSPlusFileRecord, catalog_->current_record()->record_type);
-  return base::WrapUnique(
-      new HFSForkReadStream(this, catalog_->current_record()->file->dataFork));
+  return base::MakeUnique<HFSForkReadStream>(
+      this, catalog_->current_record()->file->dataFork);
 }
 
 bool HFSIterator::SeekToBlock(uint64_t block) {

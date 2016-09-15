@@ -64,7 +64,7 @@ TEST_F(LzmaFileAllocatorTest, SizeIsZeroTest) {
 
 TEST_F(LzmaFileAllocatorTest, DeleteAfterCloseTest) {
   std::unique_ptr<LzmaFileAllocator> allocator =
-      base::WrapUnique(new LzmaFileAllocator(temp_dir_.path()));
+      base::MakeUnique<LzmaFileAllocator>(temp_dir_.path());
   base::FilePath file_path = allocator->mapped_file_path_;
   ASSERT_TRUE(base::PathExists(file_path));
   allocator.reset();

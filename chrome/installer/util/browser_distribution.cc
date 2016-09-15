@@ -55,8 +55,8 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 
 BrowserDistribution::BrowserDistribution()
     : type_(CHROME_BROWSER),
-      app_reg_data_(base::WrapUnique(
-          new NonUpdatingAppRegistrationData(L"Software\\Chromium"))) {}
+      app_reg_data_(base::MakeUnique<NonUpdatingAppRegistrationData>(
+          L"Software\\Chromium")) {}
 
 BrowserDistribution::BrowserDistribution(
     Type type,

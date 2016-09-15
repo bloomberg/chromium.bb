@@ -256,6 +256,6 @@ EdgeDatabaseReader::OpenTableEnumerator(const base::string16& table_name) {
                                  nullptr, 0, JET_bitTableReadOnly, &table_id)))
     return nullptr;
 
-  return base::WrapUnique(
-      new EdgeDatabaseTableEnumerator(table_name, session_id_, table_id));
+  return base::MakeUnique<EdgeDatabaseTableEnumerator>(table_name, session_id_,
+                                                       table_id);
 }

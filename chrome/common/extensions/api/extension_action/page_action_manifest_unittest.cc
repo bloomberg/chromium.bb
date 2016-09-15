@@ -38,12 +38,11 @@ std::unique_ptr<ActionInfo> PageActionManifestTest::LoadAction(
   const ActionInfo* page_action_info =
       ActionInfo::GetPageActionInfo(extension.get());
   EXPECT_TRUE(page_action_info);
-  if (page_action_info) {
-    return base::WrapUnique(new ActionInfo(*page_action_info));
-  }
+  if (page_action_info)
+    return base::MakeUnique<ActionInfo>(*page_action_info);
   ADD_FAILURE() << "Expected manifest in " << manifest_filename
                 << " to include a page_action section.";
-  return std::unique_ptr<ActionInfo>();
+  return nullptr;
 }
 
 TEST_F(PageActionManifestTest, ManifestVersion2) {

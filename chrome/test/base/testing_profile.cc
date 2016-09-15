@@ -199,10 +199,10 @@ class TestExtensionURLRequestContextGetter
 
 std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
-  return base::WrapUnique(new history::HistoryService(
-      base::WrapUnique(new ChromeHistoryClient(
-          BookmarkModelFactory::GetForBrowserContext(context))),
-      base::WrapUnique(new history::ContentVisitDelegate(context))));
+  return base::MakeUnique<history::HistoryService>(
+      base::MakeUnique<ChromeHistoryClient>(
+          BookmarkModelFactory::GetForBrowserContext(context)),
+      base::MakeUnique<history::ContentVisitDelegate>(context));
 }
 
 std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
@@ -223,8 +223,8 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<BookmarkModel> bookmark_model(
-      new BookmarkModel(base::WrapUnique(new ChromeBookmarkClient(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
+      new BookmarkModel(base::MakeUnique<ChromeBookmarkClient>(
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
                        content::BrowserThread::GetTaskRunnerForThread(
@@ -241,12 +241,12 @@ void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
 std::unique_ptr<KeyedService> BuildWebDataService(
     content::BrowserContext* context) {
   const base::FilePath& context_path = context->GetPath();
-  return base::WrapUnique(new WebDataServiceWrapper(
+  return base::MakeUnique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
       sync_start_util::GetFlareForSyncableService(context_path),
-      &TestProfileErrorCallback));
+      &TestProfileErrorCallback);
 }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -666,9 +666,9 @@ base::FilePath TestingProfile::GetPath() const {
 
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
-  return base::WrapUnique(new ChromeZoomLevelPrefs(
+  return base::MakeUnique<ChromeZoomLevelPrefs>(
       GetPrefs(), GetPath(), partition_path,
-      zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
+      zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {

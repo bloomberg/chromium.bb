@@ -402,8 +402,8 @@ size_t UDIFParser::GetPartitionSize(size_t part_number) {
 std::unique_ptr<ReadStream> UDIFParser::GetPartitionReadStream(
     size_t part_number) {
   DCHECK_LT(part_number, blocks_.size());
-  return base::WrapUnique(
-      new UDIFPartitionReadStream(stream_, block_size_, blocks_[part_number]));
+  return base::MakeUnique<UDIFPartitionReadStream>(stream_, block_size_,
+                                                   blocks_[part_number]);
 }
 
 bool UDIFParser::ParseBlkx() {
