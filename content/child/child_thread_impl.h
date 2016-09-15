@@ -18,12 +18,15 @@
 #include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
+#include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 namespace base {
 class MessageLoop;
@@ -70,7 +73,9 @@ struct RequestInfo;
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
-      virtual public ChildThread {
+      virtual public ChildThread,
+      NON_EXPORTED_BASE(public mojom::RouteProvider),
+      NON_EXPORTED_BASE(public mojom::AssociatedInterfaceProvider) {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -105,6 +110,8 @@ class CONTENT_EXPORT ChildThreadImpl
   IPC::SyncChannel* channel() { return channel_.get(); }
 
   IPC::MessageRouter* GetRouter();
+
+  mojom::RouteProvider* GetRemoteRouteProvider();
 
   // Allocates a block of shared memory of the given size. Returns NULL on
   // failure.
@@ -246,11 +253,28 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void EnsureConnected();
 
+  void OnRouteProviderRequest(mojom::RouteProviderAssociatedRequest request);
+
+  // mojom::RouteProvider:
+  void GetRoute(
+      int32_t routing_id,
+      mojom::AssociatedInterfaceProviderAssociatedRequest request) override;
+
+  // mojom::AssociatedInterfaceProvider:
+  void GetAssociatedInterface(
+      const std::string& name,
+      mojom::AssociatedInterfaceAssociatedRequest request) override;
+
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
   std::unique_ptr<shell::Connection> browser_connection_;
+
+  mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
+  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>
+      associated_interface_provider_bindings_;
+  mojom::RouteProviderAssociatedPtr remote_route_provider_;
 
   std::string channel_name_;
   std::unique_ptr<IPC::SyncChannel> channel_;

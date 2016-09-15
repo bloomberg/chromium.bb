@@ -44,6 +44,10 @@ source_set("common") {
     "appcache_interfaces.cc",
     "appcache_interfaces.h",
     "appcache_messages.h",
+    "associated_interface_provider_impl.cc",
+    "associated_interface_provider_impl.h",
+    "associated_interface_registry_impl.cc",
+    "associated_interface_registry_impl.h",
     "ax_content_node_data.cc",
     "ax_content_node_data.h",
     "bluetooth/web_bluetooth_device_id.cc",
@@ -551,6 +555,7 @@ mojom("mojo_bindings") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "associated_interfaces.mojom",
     "frame.mojom",
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",

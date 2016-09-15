@@ -50,6 +50,8 @@ class Isolate;
 }
 
 namespace content {
+class AssociatedInterfaceProvider;
+class AssociatedInterfaceRegistry;
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
@@ -154,6 +156,15 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
+
+  // Returns the AssociatedInterfaceRegistry this frame can use to expose
+  // frame-specific Channel-associated interfaces to the remote RenderFrameHost.
+  virtual AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() = 0;
+
+  // Returns the AssociatedInterfaceProvider this frame can use to access
+  // frame-specific Channel-assocaited interfaces from the remote
+  // RenderFrameHost.
+  virtual AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() = 0;
 
 #if defined(ENABLE_PLUGINS)
   // Registers a plugin that has been marked peripheral. If the origin

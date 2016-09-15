@@ -602,8 +602,7 @@ class ChannelAssociatedGroupController
     DCHECK(mojo::IsValidInterfaceId(id));
 
     base::AutoLock locker(lock_);
-    Endpoint* endpoint =
-        GetEndpointForDispatch(id, false /* close_on_insert */);
+    Endpoint* endpoint = GetEndpointForDispatch(id, true /* create */);
     mojo::InterfaceEndpointClient* client =
         endpoint ? endpoint->client() : nullptr;
     if (!client || !endpoint->task_runner()->BelongsToCurrentThread()) {
@@ -652,7 +651,7 @@ class ChannelAssociatedGroupController
     DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsMasterInterfaceId(id));
 
     base::AutoLock locker(lock_);
-    Endpoint* endpoint = GetEndpointForDispatch(id, true /* close_on_insert */);
+    Endpoint* endpoint = GetEndpointForDispatch(id, false /* create */);
     if (!endpoint)
       return;
 
@@ -680,7 +679,7 @@ class ChannelAssociatedGroupController
 
     base::AutoLock locker(lock_);
     Endpoint* endpoint =
-        GetEndpointForDispatch(interface_id, true /* close_on_insert */);
+        GetEndpointForDispatch(interface_id, false /* create */);
     if (!endpoint)
       return;
 
@@ -706,20 +705,16 @@ class ChannelAssociatedGroupController
       RaiseError();
   }
 
-  Endpoint* GetEndpointForDispatch(mojo::InterfaceId id, bool close_on_insert) {
+  Endpoint* GetEndpointForDispatch(mojo::InterfaceId id, bool create) {
     lock_.AssertAcquired();
+    auto iter = endpoints_.find(id);
+    if (iter != endpoints_.end())
+      return iter->second.get();
+    if (!create)
+      return nullptr;
     bool inserted = false;
     Endpoint* endpoint = FindOrInsertEndpoint(id, &inserted);
-    if (inserted && close_on_insert) {
-      MarkClosedAndMaybeRemove(endpoint);
-      if (!mojo::IsMasterInterfaceId(id))
-        control_message_proxy_.NotifyPeerEndpointClosed(id);
-      return nullptr;
-    }
-
-    if (endpoint->closed())
-      return nullptr;
-
+    DCHECK(inserted);
     return endpoint;
   }
 

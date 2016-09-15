@@ -809,10 +809,13 @@ class ListenerWithSimpleProxyAssociatedInterface
     DCHECK(received_quit_);
   }
 
-  void RegisterInterfaceFactory(IPC::ChannelProxy* proxy) {
-    proxy->AddAssociatedInterface(
-        base::Bind(&ListenerWithSimpleProxyAssociatedInterface::BindRequest,
-                   base::Unretained(this)));
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override {
+    DCHECK_EQ(interface_name, IPC::mojom::SimpleTestDriver::Name_);
+    IPC::mojom::SimpleTestDriverAssociatedRequest request;
+    request.Bind(std::move(handle));
+    binding_.Bind(std::move(request));
   }
 
   bool received_all_messages() const {
@@ -859,7 +862,6 @@ TEST_F(IPCChannelProxyMojoTest, ProxyThreadAssociatedInterface) {
 
   ListenerWithSimpleProxyAssociatedInterface listener;
   CreateProxy(&listener);
-  listener.RegisterInterfaceFactory(proxy());
   RunProxy();
 
   base::RunLoop().Run();

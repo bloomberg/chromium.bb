@@ -281,6 +281,9 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     bool OnMessageReceived(const Message& message) override;
     void OnChannelConnected(int32_t peer_pid) override;
     void OnChannelError() override;
+    void OnAssociatedInterfaceRequest(
+        const std::string& interface_name,
+        mojo::ScopedInterfaceEndpointHandle handle) override;
 
     // Like OnMessageReceived but doesn't try the filters.
     bool OnMessageReceivedNoFilter(const Message& message);
@@ -325,6 +328,9 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     void OnDispatchConnected();
     void OnDispatchError();
     void OnDispatchBadMessage(const Message& message);
+    void OnDispatchAssociatedInterfaceRequest(
+        const std::string& interface_name,
+        mojo::ScopedInterfaceEndpointHandle handle);
 
     void SendFromThisThread(Message* message);
     void ClearChannel();

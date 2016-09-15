@@ -37,6 +37,10 @@ void MessageRouter::RemoveRoute(int32_t routing_id) {
   routes_.Remove(routing_id);
 }
 
+Listener* MessageRouter::GetRoute(int32_t routing_id) {
+  return routes_.Lookup(routing_id);
+}
+
 bool MessageRouter::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL)
     return OnControlMessageReceived(msg);

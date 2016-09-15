@@ -91,6 +91,8 @@ source_set("common_sources") {
 
   sources = [
     "appcache_info.h",
+    "associated_interface_provider.h",
+    "associated_interface_registry.h",
     "bindings_policy.h",
     "browser_plugin_guest_mode.cc",
     "browser_plugin_guest_mode.h",

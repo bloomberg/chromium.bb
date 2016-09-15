@@ -104,6 +104,7 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
@@ -458,6 +459,9 @@ WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
 
   rwh_input_event_router_.reset();
+
+  for (auto& entry : binding_sets_)
+    entry.second->CloseAllBindings();
 
   WebContentsImpl* outermost = GetOutermostWebContents();
   if (GetFocusedWebContents() == this && this != outermost) {
@@ -984,6 +988,16 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
   }
 
   UpdateZoom(level);
+}
+
+base::Closure WebContentsImpl::AddBindingSet(
+    const std::string& interface_name,
+    WebContentsBindingSet* binding_set) {
+  auto result =
+      binding_sets_.insert(std::make_pair(interface_name, binding_set));
+  DCHECK(result.second);
+  return base::Bind(&WebContentsImpl::RemoveBindingSet,
+                    weak_factory_.GetWeakPtr(), interface_name);
 }
 
 void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
@@ -4040,6 +4054,15 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
   return OnMessageReceived(NULL, render_frame_host, message);
 }
 
+void WebContentsImpl::OnAssociatedInterfaceRequest(
+    RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  auto it = binding_sets_.find(interface_name);
+  if (it != binding_sets_.end())
+    it->second->OnRequestForFrame(render_frame_host, std::move(handle));
+}
+
 const GURL& WebContentsImpl::GetMainFrameLastCommittedURL() const {
   return GetLastCommittedURL();
 }
@@ -5207,6 +5230,12 @@ void WebContentsImpl::UpdateOverridingUserAgent() {
 void WebContentsImpl::SetJavaScriptDialogManagerForTesting(
     JavaScriptDialogManager* dialog_manager) {
   dialog_manager_ = dialog_manager;
+}
+
+void WebContentsImpl::RemoveBindingSet(const std::string& interface_name) {
+  auto it = binding_sets_.find(interface_name);
+  if (it != binding_sets_.end())
+    binding_sets_.erase(it);
 }
 
 }  // namespace content

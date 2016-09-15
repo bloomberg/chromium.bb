@@ -59,6 +59,9 @@ class IPC_EXPORT MessageRouter : public Listener, public Sender {
   // Called to remove a listener for a particular message routing ID.
   void RemoveRoute(int32_t routing_id);
 
+  // Returns the Listener associated with |routing_id|.
+  Listener* GetRoute(int32_t routing_id);
+
  private:
   // A list of all listeners with assigned routing IDs.
   IDMap<Listener> routes_;

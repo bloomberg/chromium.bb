@@ -46,6 +46,8 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/accessibility_messages.h"
+#include "content/common/associated_interface_provider_impl.h"
+#include "content/common/associated_interfaces.mojom.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy_header.h"
@@ -2428,6 +2430,26 @@ shell::InterfaceRegistry* RenderFrameImpl::GetInterfaceRegistry() {
 
 shell::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
+}
+
+AssociatedInterfaceRegistry*
+RenderFrameImpl::GetAssociatedInterfaceRegistry() {
+  return &associated_interfaces_;
+}
+
+AssociatedInterfaceProvider*
+RenderFrameImpl::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    ChildThreadImpl* thread = ChildThreadImpl::current();
+    mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    thread->GetRemoteRouteProvider()->GetRoute(
+        routing_id_,
+        mojo::GetProxy(&remote_interfaces,
+                       thread->channel()->GetAssociatedGroup()));
+    remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
+        std::move(remote_interfaces)));
+  }
+  return remote_associated_interfaces_.get();
 }
 
 #if defined(ENABLE_PLUGINS)

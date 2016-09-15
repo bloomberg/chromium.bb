@@ -53,6 +53,8 @@
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
+#include "content/common/associated_interface_provider_impl.h"
+#include "content/common/associated_interfaces.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
@@ -87,6 +89,7 @@
 #include "device/vibration/vibration_manager_impl.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "ui/accessibility/ax_tree.h"
@@ -500,6 +503,28 @@ shell::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
+AssociatedInterfaceProvider*
+RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    IPC::ChannelProxy* channel = GetProcess()->GetChannel();
+    if (channel) {
+      RenderProcessHostImpl* process =
+          static_cast<RenderProcessHostImpl*>(GetProcess());
+      process->GetRemoteRouteProvider()->GetRoute(
+          GetRoutingID(),
+          mojo::GetProxy(&remote_interfaces, channel->GetAssociatedGroup()));
+    } else {
+      // The channel may not be initialized in some tests environments. In this
+      // case we set up a dummy interface provider.
+      mojo::GetDummyProxyForTesting(&remote_interfaces);
+    }
+    remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
+        std::move(remote_interfaces)));
+  }
+  return remote_associated_interfaces_.get();
+}
+
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // Works around the crashes seen in https://crbug.com/501863, where the
   // active WebContents from a browser iterator may contain a render frame
@@ -641,6 +666,13 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   // No further actions here, since we may have been deleted.
   return handled;
+}
+
+void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  delegate_->OnAssociatedInterfaceRequest(
+      this, interface_name, std::move(handle));
 }
 
 void RenderFrameHostImpl::AccessibilitySetFocus(int object_id) {
@@ -1462,6 +1494,10 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   for (const auto& iter : ax_tree_snapshot_callbacks_)
     iter.second.Run(ui::AXTreeUpdate());
   ax_tree_snapshot_callbacks_.clear();
+
+  // Ensure that future remote interface requests are associated with the new
+  // process's channel.
+  remote_associated_interfaces_.reset();
 
   if (!is_active()) {
     // If the process has died, we don't need to wait for the swap out ack from

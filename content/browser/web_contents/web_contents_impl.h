@@ -75,6 +75,7 @@ class TestWebContents;
 class TextInputManager;
 class WakeLockServiceContext;
 class WebContentsAudioMuter;
+class WebContentsBindingSet;
 class WebContentsDelegate;
 class WebContentsImpl;
 class WebContentsView;
@@ -245,6 +246,15 @@ class CONTENT_EXPORT WebContentsImpl
   void UpdateZoomIfNecessary(const std::string& scheme,
                              const std::string& host,
                              double level);
+
+  // Adds a new binding set to the WebContents. Returns a closure which may be
+  // used to remove the binding set at any time. The closure is safe to call
+  // even after WebContents destruction.
+  //
+  // |binding_set| is not owned and must either outlive this WebContents or be
+  // explicitly removed before being destroyed.
+  base::Closure AddBindingSet(const std::string& interface_name,
+                              WebContentsBindingSet* binding_set);
 
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
@@ -427,6 +437,10 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHost* render_frame_host,
                          const IPC::Message& message) override;
+  void OnAssociatedInterfaceRequest(
+      RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
   const GURL& GetMainFrameLastCommittedURL() const override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -1105,6 +1119,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns the FindRequestManager, or creates one if it doesn't already exist.
   FindRequestManager* GetOrCreateFindRequestManager();
 
+  // Removes a registered WebContentsBindingSet by interface name.
+  void RemoveBindingSet(const std::string& interface_name);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1138,6 +1155,9 @@ class CONTENT_EXPORT WebContentsImpl
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
   base::ObserverList<WebContentsObserver> observers_;
+
+  // Associated interface binding sets attached to this WebContents.
+  std::map<std::string, WebContentsBindingSet*> binding_sets_;
 
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.

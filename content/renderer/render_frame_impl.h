@@ -23,6 +23,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_mode_enums.h"
+#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/common/console_message_level.h"
@@ -120,6 +121,7 @@ class Origin;
 
 namespace content {
 
+class AssociatedInterfaceProviderImpl;
 class ChildFrameCompositingHelper;
 class CompositorDependencies;
 class DevToolsAgent;
@@ -410,6 +412,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsHidden() override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
+  AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() override;
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 #if defined(ENABLE_PLUGINS)
   void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
@@ -1278,6 +1282,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Indicates whether |didAccessInitialDocument| was called.
   bool has_accessed_initial_document_;
+
+  AssociatedInterfaceRegistryImpl associated_interfaces_;
+  std::unique_ptr<AssociatedInterfaceProviderImpl>
+      remote_associated_interfaces_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

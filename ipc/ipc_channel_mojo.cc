@@ -349,6 +349,8 @@ void ChannelMojo::OnAssociatedInterfaceRequest(
 
   if (!factory.is_null())
     factory.Run(std::move(handle));
+  else
+    listener_->OnAssociatedInterfaceRequest(name, std::move(handle));
 }
 
 bool ChannelMojo::Send(Message* message) {

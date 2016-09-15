@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/http/http_response_headers.h"
 
 #if defined(OS_WIN)
@@ -53,6 +55,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message);
+
+  // Allows the delegate to filter incoming associated inteface requests.
+  virtual void OnAssociatedInterfaceRequest(
+      RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) {}
 
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.

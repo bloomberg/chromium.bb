@@ -247,6 +247,8 @@ source_set("browser_sources") {
     "vpn_service_proxy.h",
     "web_contents.cc",
     "web_contents.h",
+    "web_contents_binding_set.cc",
+    "web_contents_binding_set.h",
     "web_contents_delegate.cc",
     "web_contents_delegate.h",
     "web_contents_media_capture_id.cc",

@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "build/build_config.h"
 #include "ipc/ipc_export.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace IPC {
 
@@ -31,6 +34,12 @@ class IPC_EXPORT Listener {
 
   // Called when a message's deserialization failed.
   virtual void OnBadMessageReceived(const Message& message) {}
+
+  // Called when an associated interface request is received on a Channel and
+  // the Channel has no registered handler for it.
+  virtual void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) {}
 
 #if defined(OS_POSIX)
   // Called on the server side when a channel that listens for connections

@@ -24,11 +24,14 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
+#include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/interfaces/service.mojom.h"
@@ -106,7 +109,9 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
-      public ui::GpuSwitchingObserver {
+      public ui::GpuSwitchingObserver,
+      public NON_EXPORTED_BASE(mojom::RouteProvider),
+      public NON_EXPORTED_BASE(mojom::AssociatedInterfaceProvider) {
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
@@ -178,6 +183,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void IncrementSharedWorkerRefCount() override;
   void DecrementSharedWorkerRefCount() override;
   void PurgeAndSuspend() override;
+
+  mojom::RouteProvider* GetRemoteRouteProvider();
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -321,6 +328,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Registers Mojo interfaces to be exposed to the renderer.
   void RegisterMojoInterfaces();
 
+  // mojom::RouteProvider:
+  void GetRoute(
+      int32_t routing_id,
+      mojom::AssociatedInterfaceProviderAssociatedRequest request) override;
+
+  // mojom::AssociatedInterfaceProvider:
+  void GetAssociatedInterface(
+      const std::string& name,
+      mojom::AssociatedInterfaceAssociatedRequest request) override;
+
   void CreateStoragePartitionService(
       mojo::InterfaceRequest<mojom::StoragePartitionService> request);
 
@@ -354,6 +371,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Handle termination of our process.
   void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
+
+  void OnRouteProviderRequest(mojom::RouteProviderAssociatedRequest request);
 
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
@@ -424,6 +443,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // delete ourselves.
   IDMap<IPC::Listener> listeners_;
 
+  mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
+  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>
+      associated_interface_provider_bindings_;
+
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.
@@ -460,11 +483,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Used to launch and terminate the process without blocking the UI thread.
   std::unique_ptr<ChildProcessLauncher> child_process_launcher_;
 
-  // Messages we queue while waiting for the process handle.  We queue them here
-  // instead of in the channel so that we ensure they're sent after init related
-  // messages that are sent once the process handle is available.  This is
-  // because the queued messages may have dependencies on the init messages.
-  std::queue<IPC::Message*> queued_messages_;
+  // Messages we queue before the ChannelProxy is created.
+  using MessageQueue = std::queue<std::unique_ptr<IPC::Message>>;
+  MessageQueue queued_messages_;
 
   // The globally-unique identifier for this RPH.
   const int id_;
@@ -568,6 +589,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+
+  mojom::RouteProviderAssociatedPtr remote_route_provider_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.

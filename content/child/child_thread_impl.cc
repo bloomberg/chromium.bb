@@ -378,7 +378,10 @@ bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
 }
 
 ChildThreadImpl::ChildThreadImpl()
-    : router_(this),
+    : route_provider_binding_(this),
+      associated_interface_provider_bindings_(
+          mojo::BindingSetDispatchMode::WITH_CONTEXT),
+      router_(this),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
       weak_factory_(this) {
@@ -386,7 +389,10 @@ ChildThreadImpl::ChildThreadImpl()
 }
 
 ChildThreadImpl::ChildThreadImpl(const Options& options)
-    : router_(this),
+    : route_provider_binding_(this),
+      associated_interface_provider_bindings_(
+          mojo::BindingSetDispatchMode::WITH_CONTEXT),
+      router_(this),
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
@@ -566,6 +572,10 @@ void ChildThreadImpl::Init(const Options& options) {
 
   ConnectChannel(options.use_mojo_channel);
 
+  channel_->AddAssociatedInterface(
+      base::Bind(&ChildThreadImpl::OnRouteProviderRequest,
+                 base::Unretained(this)));
+
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.
   if (options.auto_start_mojo_shell_connection && mojo_shell_connection_)
@@ -695,6 +705,14 @@ shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
   return &router_;
+}
+
+mojom::RouteProvider* ChildThreadImpl::GetRemoteRouteProvider() {
+  if (!remote_route_provider_) {
+    DCHECK(channel_);
+    channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
+  }
+  return remote_route_provider_.get();
 }
 
 std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
@@ -847,6 +865,29 @@ void ChildThreadImpl::OnProcessFinalRelease() {
 void ChildThreadImpl::EnsureConnected() {
   VLOG(0) << "ChildThreadImpl::EnsureConnected()";
   base::Process::Current().Terminate(0, false);
+}
+
+void ChildThreadImpl::OnRouteProviderRequest(
+    mojom::RouteProviderAssociatedRequest request) {
+  DCHECK(!route_provider_binding_.is_bound());
+  route_provider_binding_.Bind(std::move(request));
+}
+
+void ChildThreadImpl::GetRoute(
+    int32_t routing_id,
+    mojom::AssociatedInterfaceProviderAssociatedRequest request) {
+  associated_interface_provider_bindings_.AddBinding(
+      this, std::move(request),
+      reinterpret_cast<void*>(static_cast<uintptr_t>(routing_id)));
+}
+
+void ChildThreadImpl::GetAssociatedInterface(
+    const std::string& name,
+    mojom::AssociatedInterfaceAssociatedRequest request) {
+  int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
+      associated_interface_provider_bindings_.dispatch_context()));
+  router_.GetRoute(routing_id)->OnAssociatedInterfaceRequest(
+      name, request.PassHandle());
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {

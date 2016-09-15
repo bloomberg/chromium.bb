@@ -675,6 +675,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       child_token_(mojo::edk::GenerateRandomToken()),
       service_worker_ref_count_(0),
       shared_worker_ref_count_(0),
+      route_provider_binding_(this),
+      associated_interface_provider_bindings_(
+          mojo::BindingSetDispatchMode::WITH_CONTEXT),
       visible_widgets_(0),
       is_process_backgrounded_(false),
       is_initialized_(false),
@@ -815,10 +818,7 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 #endif
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
-    queued_messages_.pop();
-  }
+  queued_messages_ = MessageQueue{};
 
   UnregisterHost(GetID());
 
@@ -941,8 +941,17 @@ bool RenderProcessHostImpl::Init() {
         base::Bind(&RenderProcessHostImpl::OnMojoError,
                    weak_factory_.GetWeakPtr(),
                    base::ThreadTaskRunnerHandle::Get())));
+    channel_->Pause();
 
     fast_shutdown_started_ = false;
+  }
+
+  // Push any pending messages to the channel now. Note that if the child
+  // process is still launching, the channel will be paused and outgoing
+  // messages will be queued internally by the channel.
+  while (!queued_messages_.empty()) {
+    channel_->Send(queued_messages_.front().release());
+    queued_messages_.pop();
   }
 
   if (!gpu_observer_registered_) {
@@ -967,24 +976,23 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       IPC::ChannelMojo::CreateServerFactory(
           bootstrap.PassInterface().PassHandle(), runner);
 
+  std::unique_ptr<IPC::ChannelProxy> channel;
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
   // for Android WebView to maintain backward compatibility.
   // See crbug.com/526842 for details.
 #if defined(OS_ANDROID)
-  if (GetContentClient()->UsingSynchronousCompositing()) {
-    return IPC::SyncChannel::Create(
-        std::move(channel_factory), this, runner.get(), true, &never_signaled_);
-  }
+  if (GetContentClient()->UsingSynchronousCompositing())
+    channel = IPC::SyncChannel::Create(this, runner.get(), &never_signaled_);
 #endif  // OS_ANDROID
-
-  std::unique_ptr<IPC::ChannelProxy> channel(
-      new IPC::ChannelProxy(this, runner.get()));
+  if (!channel)
+    channel.reset(new IPC::ChannelProxy(this, runner.get()));
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
       channel.get(), runner);
 #endif
-  channel->Init(std::move(channel_factory), true);
+  channel->Init(std::move(channel_factory), true /* create_pipe_now */);
+
   return channel;
 }
 
@@ -1186,6 +1194,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       interface_registry_android_.get());
 #endif
 
+  channel_->AddAssociatedInterface(
+      base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,
+                 base::Unretained(this)));
+
 #if !defined(OS_ANDROID)
   AddUIThreadInterface(
       registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));
@@ -1259,6 +1271,25 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   connection_filter_controller_ = connection_filter->controller();
   connection_filter_id_ =
       mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
+}
+
+void RenderProcessHostImpl::GetRoute(
+    int32_t routing_id,
+    mojom::AssociatedInterfaceProviderAssociatedRequest request) {
+  DCHECK(request.is_pending());
+  associated_interface_provider_bindings_.AddBinding(
+      this, std::move(request),
+      reinterpret_cast<void*>(static_cast<uintptr_t>(routing_id)));
+}
+
+void RenderProcessHostImpl::GetAssociatedInterface(
+    const std::string& name,
+    mojom::AssociatedInterfaceAssociatedRequest request) {
+  int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
+      associated_interface_provider_bindings_.dispatch_context()));
+  IPC::Listener* listener = listeners_.Lookup(routing_id);
+  if (listener)
+    listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -1347,6 +1378,14 @@ void RenderProcessHostImpl::PurgeAndSuspend() {
   Send(new ChildProcessMsg_PurgeAndSuspend());
 }
 
+mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
+  if (!remote_route_provider_) {
+    DCHECK(channel_);
+    channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
+  }
+  return remote_route_provider_.get();
+}
+
 void RenderProcessHostImpl::AddRoute(int32_t routing_id,
                                      IPC::Listener* listener) {
   CHECK(!listeners_.Lookup(routing_id)) << "Found Routing ID Conflict: "
@@ -1355,7 +1394,7 @@ void RenderProcessHostImpl::AddRoute(int32_t routing_id,
 }
 
 void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
-  DCHECK(listeners_.Lookup(routing_id) != NULL);
+  DCHECK(listeners_.Lookup(routing_id) != nullptr);
   listeners_.Remove(routing_id);
   Cleanup();
 }
@@ -1861,38 +1900,33 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
+
+  std::unique_ptr<IPC::Message> message(msg);
+
 #if !defined(OS_ANDROID)
-  DCHECK(!msg->is_sync());
+  DCHECK(!message->is_sync());
 #endif
 
   if (!channel_) {
 #if defined(OS_ANDROID)
-    if (msg->is_sync()) {
-      delete msg;
+    if (message->is_sync())
       return false;
-    }
 #endif
     if (!is_initialized_) {
-      queued_messages_.push(msg);
+      queued_messages_.emplace(std::move(message));
       return true;
-    } else {
-      delete msg;
-      return false;
     }
+    return false;
   }
 
-  if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
 #if defined(OS_ANDROID)
-    if (msg->is_sync()) {
-      delete msg;
-      return false;
-    }
-#endif
-    queued_messages_.push(msg);
-    return true;
+  if (child_process_launcher_.get() && child_process_launcher_->IsStarting() &&
+      message->is_sync()) {
+    return false;
   }
+#endif
 
-  return channel_->Send(msg);
+  return channel_->Send(message.release());
 }
 
 bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
@@ -2548,6 +2582,13 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
       shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
 }
 
+void RenderProcessHostImpl::OnRouteProviderRequest(
+    mojom::RouteProviderAssociatedRequest request) {
+  if (route_provider_binding_.is_bound())
+    return;
+  route_provider_binding_.Bind(std::move(request));
+}
+
 void RenderProcessHostImpl::ProcessDied(bool already_dead,
                                         RendererClosedDetails* known_details) {
   // Our child process has died.  If we didn't expect it, it's a crash.
@@ -2592,10 +2633,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
       channel_.get());
 #endif
   channel_.reset();
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
-    queued_messages_.pop();
-  }
+  queued_messages_ = MessageQueue{};
+
   UpdateProcessPriority();
   DCHECK(!is_process_backgrounded_);
 
@@ -2746,6 +2785,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     DCHECK(child_process_launcher_->GetProcess().IsValid());
     DCHECK(!is_process_backgrounded_);
 
+    // Unpause the channel now that the process is launched. We don't flush it
+    // yet to ensure that any initialization messages sent here (e.g., things
+    // done in response to NOTIFICATION_RENDER_PROCESS_CREATED; see below)
+    // preempt already queued messages.
+    channel_->Unpause(false /* flush */);
+
     if (mojo_child_connection_) {
       mojo_child_connection_->SetProcessHandle(
           child_process_launcher_->GetProcess().Handle());
@@ -2770,7 +2815,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     CreateSharedRendererHistogramAllocator();
   }
 
-  // NOTE: This needs to be before sending queued messages because
+  // NOTE: This needs to be before flushing queued messages, because
   // ExtensionService uses this notification to initialize the renderer process
   // with state that must be there before any JavaScript executes.
   //
@@ -2781,10 +2826,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
 
-  while (!queued_messages_.empty()) {
-    Send(queued_messages_.front());
-    queued_messages_.pop();
-  }
+  if (child_process_launcher_)
+    channel_->Flush();
 
   if (IsReady()) {
     DCHECK(!sent_render_process_ready_);

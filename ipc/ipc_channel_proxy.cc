@@ -177,6 +177,15 @@ void ChannelProxy::Context::OnChannelError() {
 }
 
 // Called on the IPC::Channel thread
+void ChannelProxy::Context::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  listener_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Context::OnDispatchAssociatedInterfaceRequest,
+                            this, interface_name, base::Passed(&handle)));
+}
+
+// Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelOpened() {
   DCHECK(channel_ != NULL);
 
@@ -364,6 +373,14 @@ void ChannelProxy::Context::OnDispatchError() {
 void ChannelProxy::Context::OnDispatchBadMessage(const Message& message) {
   if (listener_)
     listener_->OnBadMessageReceived(message);
+}
+
+// Called on the listener's thread
+void ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (listener_)
+    listener_->OnAssociatedInterfaceRequest(interface_name, std::move(handle));
 }
 
 void ChannelProxy::Context::ClearChannel() {

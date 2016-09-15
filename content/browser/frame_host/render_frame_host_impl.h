@@ -74,6 +74,7 @@ class WebBluetoothService;
 
 namespace content {
 
+class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
 class FrameTree;
@@ -159,6 +160,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHost* GetRenderViewHost() override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
   int GetProxyCount() override;
@@ -177,6 +179,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // BrowserAccessibilityDelegate
   void AccessibilitySetFocus(int acc_obj_id) override;
@@ -1054,6 +1059,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
   std::vector<std::unique_ptr<shell::InterfaceRegistry>> media_registries_;
+
+  std::unique_ptr<AssociatedInterfaceProviderImpl>
+      remote_associated_interfaces_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
