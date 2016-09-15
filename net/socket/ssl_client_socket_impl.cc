@@ -70,10 +70,6 @@ namespace {
 // overlap with any value of the net::Error range, including net::OK).
 const int kNoPendingResult = 1;
 
-// If a client doesn't have a list of protocols that it supports, but
-// the server supports NPN, choosing "http/1.1" is the best answer.
-const char kDefaultSupportedNPNProtocol[] = "http/1.1";
-
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
@@ -248,10 +244,6 @@ class SSLClientSocketImpl::SSLContext {
     // is currently not sent on the network.
     // TODO(haavardm): Remove setting quiet shutdown once 118366 is fixed.
     SSL_CTX_set_quiet_shutdown(ssl_ctx_.get(), 1);
-    // Note that SSL_OP_DISABLE_NPN is used to disable NPN if
-    // ssl_config_.next_proto is empty.
-    SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
-                                     NULL);
 
     // Disable the internal session cache. Session caching is handled
     // externally (i.e. by SSLClientSessionCache).
@@ -314,16 +306,6 @@ class SSLClientSocketImpl::SSLContext {
     CHECK(socket);
 
     return socket->CertVerifyCallback(store_ctx);
-  }
-
-  static int SelectNextProtoCallback(SSL* ssl,
-                                     unsigned char** out,
-                                     unsigned char* outlen,
-                                     const unsigned char* in,
-                                     unsigned int inlen,
-                                     void* arg) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    return socket->SelectNextProtoCallback(out, outlen, in, inlen);
   }
 
   static int NewSessionCallback(SSL* ssl, SSL_SESSION* session) {
@@ -514,9 +496,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
       disconnected_(false),
-      npn_status_(kNextProtoUnsupported),
       negotiated_protocol_(kProtoUnknown),
-      negotiation_extension_(kExtensionUnknown),
       channel_id_sent_(false),
       certificate_verified_(false),
       signature_result_(kNoPendingResult),
@@ -697,7 +677,6 @@ void SSLClientSocketImpl::Disconnect() {
 
   start_cert_verification_time_ = base::TimeTicks();
 
-  npn_status_ = kNextProtoUnsupported;
   negotiated_protocol_ = kProtoUnknown;
 
   channel_id_sent_ = false;
@@ -1065,9 +1044,6 @@ int SSLClientSocketImpl::Init() {
                         wire_protos.size());
   }
 
-  if (ssl_config_.npn_protos.empty())
-    SSL_set_options(ssl_, SSL_OP_DISABLE_NPN);
-
   if (ssl_config_.signed_cert_timestamps_enabled) {
     SSL_enable_signed_cert_timestamps(ssl_);
     SSL_enable_ocsp_stapling(ssl_);
@@ -1205,18 +1181,13 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   if (tb_was_negotiated_ && !SSL_get_extms_support(ssl_))
     return ERR_SSL_PROTOCOL_ERROR;
 
-  // SSL handshake is completed. If NPN wasn't negotiated, see if ALPN was.
-  if (npn_status_ == kNextProtoUnsupported) {
-    const uint8_t* alpn_proto = NULL;
-    unsigned alpn_len = 0;
-    SSL_get0_alpn_selected(ssl_, &alpn_proto, &alpn_len);
-    if (alpn_len > 0) {
-      base::StringPiece proto(reinterpret_cast<const char*>(alpn_proto),
-                              alpn_len);
-      negotiated_protocol_ = NextProtoFromString(proto);
-      npn_status_ = kNextProtoNegotiated;
-      negotiation_extension_ = kExtensionALPN;
-    }
+  const uint8_t* alpn_proto = NULL;
+  unsigned alpn_len = 0;
+  SSL_get0_alpn_selected(ssl_, &alpn_proto, &alpn_len);
+  if (alpn_len > 0) {
+    base::StringPiece proto(reinterpret_cast<const char*>(alpn_proto),
+                            alpn_len);
+    negotiated_protocol_ = NextProtoFromString(proto);
   }
 
   RecordNegotiatedProtocol();
@@ -1987,56 +1958,6 @@ int SSLClientSocketImpl::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
   return 1;
 }
 
-// SelectNextProtoCallback is called by OpenSSL during the handshake. If the
-// server supports NPN, selects a protocol from the list that the server
-// provides. According to third_party/boringssl/src/ssl/ssl_lib.c, the
-// callback can assume that |in| is syntactically valid.
-int SSLClientSocketImpl::SelectNextProtoCallback(unsigned char** out,
-                                                 unsigned char* outlen,
-                                                 const unsigned char* in,
-                                                 unsigned int inlen) {
-  if (ssl_config_.npn_protos.empty()) {
-    *out = reinterpret_cast<uint8_t*>(
-        const_cast<char*>(kDefaultSupportedNPNProtocol));
-    *outlen = arraysize(kDefaultSupportedNPNProtocol) - 1;
-    npn_status_ = kNextProtoUnsupported;
-    return SSL_TLSEXT_ERR_OK;
-  }
-
-  // Assume there's no overlap between our protocols and the server's list.
-  npn_status_ = kNextProtoNoOverlap;
-
-  // For each protocol in server preference order, see if we support it.
-  for (unsigned int i = 0; i < inlen; i += in[i] + 1) {
-    for (NextProto next_proto : ssl_config_.npn_protos) {
-      const std::string proto = NextProtoToString(next_proto);
-      if (in[i] == proto.size() &&
-          memcmp(&in[i + 1], proto.data(), in[i]) == 0) {
-        // We found a match.
-        negotiated_protocol_ = next_proto;
-        *out = const_cast<unsigned char*>(in) + i + 1;
-        *outlen = in[i];
-        npn_status_ = kNextProtoNegotiated;
-        break;
-      }
-    }
-    if (npn_status_ == kNextProtoNegotiated)
-      break;
-  }
-
-  // If we didn't find a protocol, we select the last one from our list.
-  if (npn_status_ == kNextProtoNoOverlap) {
-    negotiated_protocol_ = ssl_config_.npn_protos.back();
-    // NextProtoToString returns a pointer to a static string.
-    const char* proto = NextProtoToString(negotiated_protocol_);
-    *out = reinterpret_cast<unsigned char*>(const_cast<char*>(proto));
-    *outlen = strlen(proto);
-  }
-
-  negotiation_extension_ = kExtensionNPN;
-  return SSL_TLSEXT_ERR_OK;
-}
-
 long SSLClientSocketImpl::MaybeReplayTransportError(BIO* bio,
                                                     int cmd,
                                                     const char* argp,
@@ -2147,7 +2068,7 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
   if (tb_was_negotiated_)
     return false;
 
-  if (npn_status_ == kNextProtoUnsupported)
+  if (negotiated_protocol_ == kProtoUnknown)
     return ssl_config_.renego_allowed_default;
 
   for (NextProto allowed : ssl_config_.renego_allowed_for_protos) {

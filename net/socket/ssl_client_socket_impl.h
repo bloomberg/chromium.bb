@@ -166,12 +166,6 @@ class SSLClientSocketImpl : public SSLClientSocket {
   // certificates don't change during renegotiation.
   int CertVerifyCallback(X509_STORE_CTX* store_ctx);
 
-  // Callback from the SSL layer to check which NPN protocol we are supporting
-  int SelectNextProtoCallback(unsigned char** out,
-                              unsigned char* outlen,
-                              const unsigned char* in,
-                              unsigned int inlen);
-
   // Called during an operation on |transport_bio_|'s peer. Checks saved
   // transport error state and, if appropriate, returns an error through
   // OpenSSL's error system.
@@ -353,10 +347,7 @@ class SSLClientSocketImpl : public SSLClientSocket {
   // True if the socket has been disconnected.
   bool disconnected_;
 
-  NextProtoStatus npn_status_;
   NextProto negotiated_protocol_;
-  // Protocol negotiation extension used.
-  SSLNegotiationExtension negotiation_extension_;
   // Written by the |channel_id_service_|.
   std::unique_ptr<crypto::ECPrivateKey> channel_id_key_;
   // True if a channel ID was sent.

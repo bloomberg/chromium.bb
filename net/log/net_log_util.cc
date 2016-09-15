@@ -447,18 +447,6 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
       status_dict->SetString("alpn_protos", next_protos_string);
     }
 
-    NextProtoVector npn_protos;
-    http_network_session->GetNpnProtos(&npn_protos);
-    if (!npn_protos.empty()) {
-      std::string next_protos_string;
-      for (NextProto proto : npn_protos) {
-        if (!next_protos_string.empty())
-          next_protos_string.append(",");
-        next_protos_string.append(SSLClientSocket::NextProtoToString(proto));
-      }
-      status_dict->SetString("npn_protos", next_protos_string);
-    }
-
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_STATUS),
                        status_dict);
   }

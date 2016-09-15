@@ -943,7 +943,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     // TODO(ricea): Re-enable NPN when WebSockets over SPDY is supported.
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
     websocket_server_ssl_config.alpn_protos.clear();
-    websocket_server_ssl_config.npn_protos.clear();
     return InitSocketHandleForWebSocketRequest(
         GetSocketGroup(), destination_, request_info_.extra_headers,
         request_info_.load_flags, priority_, session_, proxy_info_, expect_spdy,

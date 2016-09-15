@@ -102,7 +102,6 @@ BidirectionalStream::BidirectionalStream(
   SSLConfig server_ssl_config;
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config);
   session->GetAlpnProtos(&server_ssl_config.alpn_protos);
-  session->GetNpnProtos(&server_ssl_config.npn_protos);
 
   if (!request_info_->url.SchemeIs(url::kHttpsScheme)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

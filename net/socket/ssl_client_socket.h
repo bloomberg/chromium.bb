@@ -76,25 +76,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
  public:
   SSLClientSocket();
 
-  // Next Protocol Negotiation (NPN) allows a TLS client and server to come to
-  // an agreement about the application level protocol to speak over a
-  // connection.
-  enum NextProtoStatus {
-    // WARNING: These values are serialized to disk. Don't change them.
-
-    kNextProtoUnsupported = 0,  // The server doesn't support NPN.
-    kNextProtoNegotiated = 1,   // We agreed on a protocol.
-    kNextProtoNoOverlap = 2,    // No protocols in common. We requested
-                                // the first protocol in our list.
-  };
-
-  // TLS extension used to negotiate protocol.
-  enum SSLNegotiationExtension {
-    kExtensionUnknown,
-    kExtensionALPN,
-    kExtensionNPN,
-  };
-
   // Gets the SSL CertificateRequest info of the socket after Connect failed
   // with ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
   virtual void GetSSLCertRequestInfo(
@@ -103,8 +84,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   static NextProto NextProtoFromString(base::StringPiece proto_string);
 
   static const char* NextProtoToString(NextProto next_proto);
-
-  static const char* NextProtoStatusToString(const NextProtoStatus status);
 
   // Log SSL key material to |path| on |task_runner|. Must be called before any
   // SSLClientSockets are created.

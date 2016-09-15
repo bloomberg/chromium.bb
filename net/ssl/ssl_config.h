@@ -171,16 +171,6 @@ struct NET_EXPORT SSLConfig {
   // will be advertised in this order during TLS handshake.
   NextProtoVector alpn_protos;
 
-  // The list of application level protocols supported with NPN (Next Protocol
-  // Negotiation).  The last item on the list is selected if there is no overlap
-  // between |npn_protos| and the protocols supported by the server, otherwise
-  // server preference is observed and the order of |npn_protos| is irrelevant.
-  // Note that due to NSS limitations, ports which use NSS will use
-  // |alpn_protos| for both ALPN and NPN. However, if |npn_protos| is empty, NPN
-  // will still be disabled.
-  // TODO(bnc): Deprecate NPN, see https://crbug.com/526713.
-  NextProtoVector npn_protos;
-
   // True if renegotiation should be allowed for the default application-level
   // protocol when the peer negotiates neither ALPN nor NPN.
   bool renego_allowed_default;
