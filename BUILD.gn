@@ -500,6 +500,10 @@ group("both_gn_and_gyp") {
     ]
   }
 
+  if (is_linux || is_win) {
+    deps += [ "//third_party/swiftshader" ]
+  }
+
   # TODO(GYP): Figure out which of these should (and can) build
   # for chromeos/ios.
   if (!is_chromeos && !is_ios) {
