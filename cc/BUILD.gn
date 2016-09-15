@@ -1055,4 +1055,8 @@ test("cc_perftests") {
 
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
+
+  data = [
+    "test/data/",
+  ]
 }
