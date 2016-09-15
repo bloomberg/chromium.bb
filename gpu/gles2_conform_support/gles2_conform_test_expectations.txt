@@ -28,7 +28,7 @@
 
 517966 WIN OPENGL : GL2FixedTests_blend_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_buffer_clear_input_run = FAIL
-517966 WIN OPENGL : GL2FixedTests_buffer_color_input_run = FAIL
+517966 WIN OPENGL RELEASE : GL2FixedTests_buffer_color_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_copy_texture_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_depth_buffer_clear_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_stencil_plane_clear_input_run = FAIL
@@ -77,7 +77,7 @@
 253674 MAC : GL2Tests_three_uniforms_input_run = FAIL
 
 630452 MAC NVIDIA : GL2FixedTests_color_ramp_input_run = SKIP
-630452 MAC NVIDIA : GL2FixedTests_buffer_color_input_run = SKIP
+630452 MAC NVIDIA RELEASE : GL2FixedTests_buffer_color_input_run = SKIP
 
 393677 CHROMEOS INTEL 0xa011 : GL_acos_input_run = FAIL
 393677 CHROMEOS INTEL 0xa011 : GL_asin_input_run = FAIL
@@ -101,6 +101,9 @@
 598902 LINUX OPENGL INTEL : GL2Tests_fixed_data_type_input_run = FAIL
 598902 LINUX OPENGL INTEL : GLCoverage_input_run = FAIL
 598902 LINUX OPENGL INTEL : GL2FixedTests_copy_texture_input_run = FAIL
+
+// Test takes too long to run in debug configurations
+646442 DEBUG : GL2FixedTests_buffer_color_input_run = SKIP
 
 ////////////////////////////////////////////////////////////////////////////////
 //
