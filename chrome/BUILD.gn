@@ -177,7 +177,6 @@ if (!is_android && !is_mac) {
         "//content/public/common:static_switches",
         "//crypto",
         "//sandbox",
-        "//ui/gfx",
       ]
       data_deps = [
         "//chrome/app/version_assembly:version_assembly_manifest",
