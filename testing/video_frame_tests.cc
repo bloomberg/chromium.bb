@@ -20,7 +20,7 @@ TEST(VideoFrameTests, DefaultsTest) {
   EXPECT_EQ(kEmptySize, frame.buffer().capacity);
   EXPECT_EQ(kEmptySize, frame.buffer().length);
   EXPECT_EQ(nullptr, frame.buffer().data.get());
-  EXPECT_EQ(false, frame.keyframe());
+  EXPECT_FALSE(frame.keyframe());
   EXPECT_EQ(0, frame.nanosecond_pts());
   EXPECT_EQ(libwebm::VideoFrame::kVP9, frame.codec());
 }
