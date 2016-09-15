@@ -15113,6 +15113,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_CHOOSER_PAIRED_STATUS_TEXT" desc="The label that is used to inform the user that the device is paired.">
         Paired
       </message>
+      <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_AND_PAIRED_STATUS_TEXT" desc="Text of the device name and paired status.">
+        <ph name="DEVICE_NAME">$1<ex>device name</ex></ph> - Paired
+      </message>
     </if>
 
     <if expr="is_android">

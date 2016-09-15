@@ -8,7 +8,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
@@ -88,7 +91,12 @@ base::string16 ChooserContentView::GetText(int row, int column_id) {
 
   DCHECK_GE(row, 0);
   DCHECK_LT(row, num_options);
-  return chooser_controller_->GetOption(static_cast<size_t>(row));
+  base::string16 text =
+      chooser_controller_->GetOption(static_cast<size_t>(row));
+  return chooser_controller_->IsPaired(row)
+             ? l10n_util::GetStringFUTF16(
+                   IDS_DEVICE_CHOOSER_DEVICE_NAME_AND_PAIRED_STATUS_TEXT, text)
+             : text;
 }
 
 void ChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
@@ -104,6 +112,11 @@ gfx::ImageSkia ChooserContentView::GetIcon(int row) {
 
   DCHECK_GE(row, 0);
   DCHECK_LT(row, base::checked_cast<int>(num_options));
+
+  if (chooser_controller_->IsConnected(row)) {
+    return gfx::CreateVectorIcon(gfx::VectorIconId::BLUETOOTH_CONNECTED,
+                                 gfx::kChromeIconGrey);
+  }
 
   int level = chooser_controller_->GetSignalStrengthLevel(row);
 

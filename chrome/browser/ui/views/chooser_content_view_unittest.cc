@@ -28,6 +28,12 @@ class MockTableViewObserver : public views::TableViewObserver {
   MOCK_METHOD0(OnSelectionChanged, void());
 };
 
+base::string16 GetPairedText(const std::string& device_name) {
+  return l10n_util::GetStringFUTF16(
+      IDS_DEVICE_CHOOSER_DEVICE_NAME_AND_PAIRED_STATUS_TEXT,
+      base::ASCIIToUTF16(device_name));
+}
+
 }  // namespace
 
 class ChooserContentViewTest : public views::ViewsTestBase {
@@ -100,7 +106,7 @@ TEST_F(ChooserContentViewTest, AddOption) {
       MockChooserController::ConnectedPairedStatus::CONNECTED |
           MockChooserController::ConnectedPairedStatus::PAIRED);
   EXPECT_EQ(1, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
   // |table_view_| should be enabled since there is an option.
   EXPECT_TRUE(table_view_->enabled());
   // No option selected.
@@ -144,7 +150,7 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
 
   mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("b"));
   EXPECT_EQ(2, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(1, 0));
   EXPECT_TRUE(table_view_->enabled());
   EXPECT_EQ(0, table_view_->SelectedRowCount());
@@ -153,7 +159,7 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
   // Remove a non-existent option, the number of rows should not change.
   mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("non-existent"));
   EXPECT_EQ(2, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(1, 0));
   EXPECT_TRUE(table_view_->enabled());
   EXPECT_EQ(0, table_view_->SelectedRowCount());
@@ -161,7 +167,7 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
 
   mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
   EXPECT_EQ(1, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
   EXPECT_TRUE(table_view_->enabled());
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
@@ -200,8 +206,8 @@ TEST_F(ChooserContentViewTest, UpdateOption) {
       MockChooserController::ConnectedPairedStatus::CONNECTED |
           MockChooserController::ConnectedPairedStatus::PAIRED);
   EXPECT_EQ(3, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(1, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("d"), table_model_->GetText(1, 0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(2, 0));
   EXPECT_TRUE(table_view_->enabled());
   EXPECT_EQ(0, table_view_->SelectedRowCount());
@@ -263,7 +269,7 @@ TEST_F(ChooserContentViewTest, UpdateAndRemoveTheUpdatedOption) {
   mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
 
   EXPECT_EQ(2, table_view_->RowCount());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(1, 0));
   EXPECT_TRUE(table_view_->enabled());
   EXPECT_EQ(0, table_view_->SelectedRowCount());
@@ -429,8 +435,8 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
 
   EXPECT_EQ(1, table_view_->SelectedRowCount());
   EXPECT_EQ(1, table_view_->FirstSelectedRow());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(1, 0));
+  EXPECT_EQ(GetPairedText("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(GetPairedText("d"), table_model_->GetText(1, 0));
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(2, 0));
 }
 
