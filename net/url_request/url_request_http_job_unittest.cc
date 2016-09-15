@@ -163,7 +163,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   base::RunLoop().Run();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -192,7 +192,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   base::RunLoop().Run();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -223,7 +223,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
   ASSERT_TRUE(request->is_pending());
   base::RunLoop().Run();
 
-  EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_FAILED));
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -255,7 +255,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_ABORTED));
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -428,7 +428,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   ASSERT_TRUE(request->is_pending());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(OK, request->status().error());
+  EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(12, request->received_response_content_length());
   // Should not include the redirect.
   EXPECT_EQ(CountWriteBytes(final_writes, arraysize(final_writes)),
@@ -460,7 +460,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_ABORTED));
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -485,7 +485,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   request->Cancel();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_ABORTED));
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(0, request->GetTotalSentBytes());
   EXPECT_EQ(0, request->GetTotalReceivedBytes());
@@ -506,7 +506,7 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
   request->Cancel();
   base::RunLoop().Run();
 
-  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_ABORTED));
 }
 
 // Make sure that SetPriority actually sets the URLRequestHttpJob's
@@ -693,7 +693,7 @@ TEST_F(URLRequestHttpJobWithSdchSupportTest, GetDictionary) {
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate.request_status(), IsOk());
 
   // Second response should be from cache without notification of SdchObserver
   TestDelegate delegate2;
@@ -702,7 +702,7 @@ TEST_F(URLRequestHttpJobWithSdchSupportTest, GetDictionary) {
   request2->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate2.request_status(), IsOk());
 
   // Cleanup manager.
   sdch_manager.RemoveObserver(&sdch_observer);
@@ -739,7 +739,7 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -774,7 +774,7 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(request->status().is_success());
+  EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             request->GetTotalSentBytes());
@@ -924,8 +924,7 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 TEST_F(URLRequestHttpJobWebSocketTest, RejectedWithoutCreateHelper) {
   req_->Start();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(URLRequestStatus::FAILED, req_->status().status());
-  EXPECT_THAT(req_->status().error(), IsError(ERR_DISALLOWED_URL_SCHEME));
+  EXPECT_THAT(delegate_.request_status(), IsError(ERR_DISALLOWED_URL_SCHEME));
 }
 
 TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
@@ -942,7 +941,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
   req_->SetLoadFlags(LOAD_DISABLE_CACHE);
   req_->Start();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(URLRequestStatus::IO_PENDING, req_->status().status());
+  EXPECT_THAT(delegate_.request_status(), IsError(ERR_IO_PENDING));
   EXPECT_TRUE(fake_handshake_stream->initialize_stream_was_called());
 }
 
