@@ -12,6 +12,18 @@
 namespace chromecast {
 namespace media {
 
+MediaResourceTracker::ScopedUsage::ScopedUsage(MediaResourceTracker* tracker)
+    : tracker_(tracker) {
+  DCHECK(tracker_);
+  DCHECK(tracker_->media_task_runner_->BelongsToCurrentThread());
+  tracker_->IncrementUsageCount();
+}
+
+MediaResourceTracker::ScopedUsage::~ScopedUsage() {
+  DCHECK(tracker_->media_task_runner_->BelongsToCurrentThread());
+  tracker_->DecrementUsageCount();
+}
+
 MediaResourceTracker::MediaResourceTracker(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner)

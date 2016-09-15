@@ -32,6 +32,21 @@ namespace media {
 //   thread.
 class MediaResourceTracker {
  public:
+  // Helper class to manage media resource usage count.
+  // Create an instance of this class when a media resource is created.
+  // Delete the instance *after* the media resource is deleted.
+  // This class is not thread-safe. It must be created and deleted on
+  // |MediaResourceTracker::media_task_runner_|.
+  class ScopedUsage {
+   public:
+    ScopedUsage(MediaResourceTracker* tracker);
+    ~ScopedUsage();
+
+   private:
+    MediaResourceTracker* tracker_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedUsage);
+  };
+
   MediaResourceTracker(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);

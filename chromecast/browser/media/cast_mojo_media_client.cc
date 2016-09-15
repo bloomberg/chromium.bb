@@ -55,10 +55,12 @@ class CastRendererFactory : public ::media::RendererFactory {
  public:
   CastRendererFactory(const CreateMediaPipelineBackendCB& create_backend_cb,
                       const scoped_refptr<::media::MediaLog>& media_log,
-                      VideoResolutionPolicy* video_resolution_policy)
+                      VideoResolutionPolicy* video_resolution_policy,
+                      MediaResourceTracker* media_resource_tracker)
       : create_backend_cb_(create_backend_cb),
         media_log_(media_log),
-        video_resolution_policy_(video_resolution_policy) {}
+        video_resolution_policy_(video_resolution_policy),
+        media_resource_tracker_(media_resource_tracker) {}
   ~CastRendererFactory() final {}
 
   std::unique_ptr<::media::Renderer> CreateRenderer(
@@ -72,13 +74,14 @@ class CastRendererFactory : public ::media::RendererFactory {
     return base::MakeUnique<CastRenderer>(
         create_backend_cb_, media_task_runner,
         audio_renderer_sink->GetOutputDeviceInfo().device_id(),
-        video_resolution_policy_);
+        video_resolution_policy_, media_resource_tracker_);
   }
 
  private:
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<::media::MediaLog> media_log_;
   VideoResolutionPolicy* video_resolution_policy_;
+  MediaResourceTracker* media_resource_tracker_;
   DISALLOW_COPY_AND_ASSIGN(CastRendererFactory);
 };
 }  // namespace
@@ -86,10 +89,12 @@ class CastRendererFactory : public ::media::RendererFactory {
 CastMojoMediaClient::CastMojoMediaClient(
     const CreateMediaPipelineBackendCB& create_backend_cb,
     const CreateCdmFactoryCB& create_cdm_factory_cb,
-    VideoResolutionPolicy* video_resolution_policy)
+    VideoResolutionPolicy* video_resolution_policy,
+    MediaResourceTracker* media_resource_tracker)
     : create_backend_cb_(create_backend_cb),
       create_cdm_factory_cb_(create_cdm_factory_cb),
-      video_resolution_policy_(video_resolution_policy) {}
+      video_resolution_policy_(video_resolution_policy),
+      media_resource_tracker_(media_resource_tracker) {}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
@@ -103,7 +108,8 @@ std::unique_ptr<::media::RendererFactory>
 CastMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<::media::MediaLog>& media_log) {
   return base::MakeUnique<CastRendererFactory>(create_backend_cb_, media_log,
-                                               video_resolution_policy_);
+                                               video_resolution_policy_,
+                                               media_resource_tracker_);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(

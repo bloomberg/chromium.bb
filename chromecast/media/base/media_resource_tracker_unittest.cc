@@ -7,27 +7,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/task_runner.h"
-#include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
 namespace media {
-
-void RunUntilIdle(base::TaskRunner* task_runner) {
-  base::WaitableEvent completion_event(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&base::WaitableEvent::Signal,
-                                   base::Unretained(&completion_event)));
-  completion_event.Wait();
-}
 
 // Collection of mocks to verify MediaResourceTracker takes the correct actions.
 class MediaResourceTrackerTestMocks {
@@ -60,6 +46,8 @@ class TestMediaResourceTracker : public MediaResourceTracker {
     test_mocks_->Finalize();
   }
 
+  size_t media_use_count() const { return media_use_count_; }
+
  private:
   MediaResourceTrackerTestMocks* test_mocks_;
 };
@@ -71,36 +59,22 @@ class MediaResourceTrackerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
-    media_thread_.reset(new base::Thread("MediaThread"));
-    media_thread_->Start();
-    media_task_runner_ = media_thread_->task_runner();
-
     test_mocks_.reset(new MediaResourceTrackerTestMocks());
 
     resource_tracker_ = new TestMediaResourceTracker(
-        test_mocks_.get(), message_loop_->task_runner(),
-        media_task_runner_);
+        test_mocks_.get(), message_loop_.task_runner(),
+        message_loop_.task_runner());
   }
 
-  void TearDown() override { media_thread_.reset(); }
-
-  void IncrementMediaUsageCount() {
-    media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MediaResourceTracker::IncrementUsageCount,
-                              base::Unretained(resource_tracker_)));
-  }
-  void DecrementMediaUsageCount() {
-    media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MediaResourceTracker::DecrementUsageCount,
-                              base::Unretained(resource_tracker_)));
+  void InitializeMediaLib() {
+    EXPECT_CALL(*test_mocks_, Initialize()).Times(1);
+    resource_tracker_->InitializeMediaLib();
+    base::RunLoop().RunUntilIdle();
   }
 
-  MediaResourceTracker* resource_tracker_;
+  base::MessageLoop message_loop_;
+  TestMediaResourceTracker* resource_tracker_;
   std::unique_ptr<MediaResourceTrackerTestMocks> test_mocks_;
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<base::Thread> media_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaResourceTrackerTest);
 };
@@ -113,8 +87,6 @@ TEST_F(MediaResourceTrackerTest, BasicLifecycle) {
 
   resource_tracker_->InitializeMediaLib();
   resource_tracker_->FinalizeAndDestroy();
-
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -126,8 +98,6 @@ TEST_F(MediaResourceTrackerTest, InitializeTwice) {
   resource_tracker_->InitializeMediaLib();
   resource_tracker_->InitializeMediaLib();
   resource_tracker_->FinalizeAndDestroy();
-
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -137,16 +107,13 @@ TEST_F(MediaResourceTrackerTest, FinalizeWithoutInitialize) {
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
 
   resource_tracker_->FinalizeAndDestroy();
-
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 }
 
+// Check FinalizeCastMediaShlib works correctly with no users of
+// media resource.
 TEST_F(MediaResourceTrackerTest, FinalizeResourceNotInUse) {
-  // Check FinalizeCastMediaShlib works correctly with no users of
-  // media resource.
-  EXPECT_CALL(*test_mocks_, Initialize()).Times(1);
-  resource_tracker_->InitializeMediaLib();
+  InitializeMediaLib();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(0);
@@ -154,23 +121,18 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceNotInUse) {
   resource_tracker_->FinalizeMediaLib(
       base::Bind(&MediaResourceTrackerTestMocks::FinalizeCallback,
                  base::Unretained(test_mocks_.get())));
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   resource_tracker_->FinalizeAndDestroy();
-
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 }
 
+// Check FinalizeCastMediaShlib waits for resource to not be in use.
 TEST_F(MediaResourceTrackerTest, FinalizeResourceInUse) {
-  // Check FinalizeCastMediaShlib waits for resource to not be in use.
-  EXPECT_CALL(*test_mocks_, Initialize()).Times(1);
-  resource_tracker_->InitializeMediaLib();
+  InitializeMediaLib();
 
-  IncrementMediaUsageCount();
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->IncrementUsageCount();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(0);
@@ -178,52 +140,42 @@ TEST_F(MediaResourceTrackerTest, FinalizeResourceInUse) {
   resource_tracker_->FinalizeMediaLib(
       base::Bind(&MediaResourceTrackerTestMocks::FinalizeCallback,
                  base::Unretained(test_mocks_.get())));
-  RunUntilIdle(media_task_runner_.get());
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
-  DecrementMediaUsageCount();
-
   EXPECT_CALL(*test_mocks_, FinalizeCallback()).Times(1);
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->DecrementUsageCount();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   resource_tracker_->FinalizeAndDestroy();
-
-  RunUntilIdle(media_task_runner_.get());
   base::RunLoop().RunUntilIdle();
 }
 
+// Check FinalizeAndDestroy waits for resource to not be in use.
 TEST_F(MediaResourceTrackerTest, DestroyWaitForNoUsers) {
-  // Check FinalizeAndDestroy waits for resource to not be in use.
-  EXPECT_CALL(*test_mocks_, Initialize()).Times(1);
-  resource_tracker_->InitializeMediaLib();
+  InitializeMediaLib();
 
-  IncrementMediaUsageCount();
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->IncrementUsageCount();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(0);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(0);
   resource_tracker_->FinalizeAndDestroy();
-  RunUntilIdle(media_task_runner_.get());
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
-  DecrementMediaUsageCount();
-
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->DecrementUsageCount();
   base::RunLoop().RunUntilIdle();
 }
 
+// Check finalize callback still made if FinalizeAndDestroy called
+// while waiting for resource usage to end.
 TEST_F(MediaResourceTrackerTest, DestroyWithPendingFinalize) {
-  // Check finalize callback still made if FinalizeAndDestroy called
-  // while waiting for resource usage to end.
-  EXPECT_CALL(*test_mocks_, Initialize()).Times(1);
-  resource_tracker_->InitializeMediaLib();
+  InitializeMediaLib();
 
-  IncrementMediaUsageCount();
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->IncrementUsageCount();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(0);
@@ -232,16 +184,25 @@ TEST_F(MediaResourceTrackerTest, DestroyWithPendingFinalize) {
       base::Bind(&MediaResourceTrackerTestMocks::FinalizeCallback,
                  base::Unretained(test_mocks_.get())));
   resource_tracker_->FinalizeAndDestroy();
-  RunUntilIdle(media_task_runner_.get());
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*test_mocks_, Finalize()).Times(1);
   EXPECT_CALL(*test_mocks_, Destroyed()).Times(1);
   EXPECT_CALL(*test_mocks_, FinalizeCallback()).Times(1);
-
-  DecrementMediaUsageCount();
-
-  RunUntilIdle(media_task_runner_.get());
+  resource_tracker_->DecrementUsageCount();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MediaResourceTrackerTest, ScopedUsage) {
+  InitializeMediaLib();
+
+  EXPECT_EQ(0u, resource_tracker_->media_use_count());
+  {
+    std::unique_ptr<MediaResourceTracker::ScopedUsage> scoped_usage(
+        new MediaResourceTracker::ScopedUsage(resource_tracker_));
+    EXPECT_EQ(1u, resource_tracker_->media_use_count());
+  }
+  EXPECT_EQ(0u, resource_tracker_->media_use_count());
 }
 
 }  // namespace media

@@ -35,11 +35,13 @@ CastRenderer::CastRenderer(
     const CreateMediaPipelineBackendCB& create_backend_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const std::string& audio_device_id,
-    VideoResolutionPolicy* video_resolution_policy)
+    VideoResolutionPolicy* video_resolution_policy,
+    MediaResourceTracker* media_resource_tracker)
     : create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
       audio_device_id_(audio_device_id),
       video_resolution_policy_(video_resolution_policy),
+      media_resource_tracker_(media_resource_tracker),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -67,6 +69,8 @@ void CastRenderer::Initialize(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Create pipeline backend.
+  media_resource_usage_.reset(
+      new MediaResourceTracker::ScopedUsage(media_resource_tracker_));
   backend_task_runner_.reset(new TaskRunnerImpl());
   // TODO(erickung): crbug.com/443956. Need to provide right LoadType.
   LoadType load_type = kLoadTypeMediaSource;

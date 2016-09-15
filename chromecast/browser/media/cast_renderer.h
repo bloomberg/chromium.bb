@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromecast/browser/media/media_pipeline_backend_factory.h"
 #include "chromecast/browser/media/video_resolution_policy.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/renderer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,7 +34,8 @@ class CastRenderer : public ::media::Renderer,
   CastRenderer(const CreateMediaPipelineBackendCB& create_backend_cb,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                const std::string& audio_device_id,
-               VideoResolutionPolicy* video_resolution_policy);
+               VideoResolutionPolicy* video_resolution_policy,
+               MediaResourceTracker* media_resource_tracker);
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
@@ -68,6 +70,10 @@ class CastRenderer : public ::media::Renderer,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::string audio_device_id_;
   VideoResolutionPolicy* video_resolution_policy_;
+  MediaResourceTracker* media_resource_tracker_;
+  // Must outlive |pipeline_| to properly count resource usage.
+  std::unique_ptr<MediaResourceTracker::ScopedUsage> media_resource_usage_;
+
   ::media::RendererClient* client_;
   CastCdmContext* cast_cdm_context_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
@@ -75,8 +81,8 @@ class CastRenderer : public ::media::Renderer,
   std::unique_ptr<MediaPipelineImpl> pipeline_;
   bool eos_[2];
   gfx::Size video_res_;
-  base::WeakPtrFactory<CastRenderer> weak_factory_;
 
+  base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);
 };
 

@@ -83,7 +83,8 @@ static std::unique_ptr<::shell::Service> CreateMojoMediaApplication(
                      base::Unretained(browser_client)),
           base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                      base::Unretained(browser_client)),
-          browser_client->GetVideoResolutionPolicy()));
+          browser_client->GetVideoResolutionPolicy(),
+          browser_client->media_resource_tracker()));
   return std::unique_ptr<::shell::Service>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client),
                                         quit_closure));
