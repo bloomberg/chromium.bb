@@ -343,6 +343,7 @@ class QuicStreamFactory::Job {
   QuicChromiumClientSession* session_;
   CompletionCallback callback_;
   AddressList address_list_;
+  base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
   base::WeakPtrFactory<Job> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Job);
@@ -469,6 +470,7 @@ void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
+  dns_resolution_start_time_ = base::TimeTicks::Now();
   // Start loading the data now, and wait for it after we resolve the host.
   if (server_info_)
     server_info_->Start();
@@ -561,9 +563,10 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  int rv = factory_->CreateSession(
-      key_, cert_verify_flags_, std::move(server_info_), address_list_,
-      dns_resolution_end_time_, net_log_, &session_);
+  int rv =
+      factory_->CreateSession(key_, cert_verify_flags_, std::move(server_info_),
+                              address_list_, dns_resolution_start_time_,
+                              dns_resolution_end_time_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -1592,6 +1595,7 @@ int QuicStreamFactory::CreateSession(
     int cert_verify_flags,
     std::unique_ptr<QuicServerInfo> server_info,
     const AddressList& address_list,
+    base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     const BoundNetLog& net_log,
     QuicChromiumClientSession** session) {
@@ -1693,8 +1697,8 @@ int QuicStreamFactory::CreateSession(
       clock_.get(), transport_security_state_, std::move(server_info),
       server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
       config, &crypto_config_, network_connection_.GetDescription(),
-      dns_resolution_end_time, &push_promise_index_, task_runner_,
-      std::move(socket_performance_watcher), net_log.net_log());
+      dns_resolution_start_time, dns_resolution_end_time, &push_promise_index_,
+      task_runner_, std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);
