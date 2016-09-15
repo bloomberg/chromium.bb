@@ -3,6 +3,6 @@ PASS Caching of Node.childNodes
 PASS Node.childNodes on an Element. 
 PASS Node.childNodes on a DocumentFragment. 
 FAIL Node.childNodes on a Document. Illegal constructor
-FAIL Iterator behavior of Node.childNodes assert_equals: expected function "function values() { [native code] }" but got function "function () { [native code] }"
+FAIL Iterator behavior of Node.childNodes assert_equals: expected function "function keys() { [native code] }" but got function "function keys() { [native code] }"
 Harness: the test ran to completion.
 

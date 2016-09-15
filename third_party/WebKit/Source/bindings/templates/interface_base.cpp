@@ -319,11 +319,6 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
 
-    {%- if has_array_iterator and not is_partial and not is_global %}{{newline}}
-    // Array iterator
-    prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
-    {% endif %}
-
     {%- for group in attributes | purely_runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
     if ({{group.list[0].runtime_enabled_function}}()) {
         {% for attribute in group.list | unique_by('name') | sort %}
@@ -349,11 +344,16 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     {{install_named_property_handler('instanceTemplate') | indent}}
     {% endif %}
 
-    {%- if iterator_method %}{{newline}}
+    {% if has_array_iterator and not is_partial %}
+    // Array iterator (@@iterator)
+    {%+ if is_global %}instanceTemplate{% else %}prototypeTemplate{% endif %}->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
+    {% endif %}
+
+    {% if iterator_method %}
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
     // Iterator (@@iterator)
-    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
     V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
     {% endfilter %}
     {% endfilter %}

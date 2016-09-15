@@ -186,6 +186,9 @@ static void installV8TestIntegerIndexedPrimaryGlobalTemplate(v8::Isolate* isolat
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedPrimaryGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+
+    // Array iterator (@@iterator)
+    instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedPrimaryGlobal::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)

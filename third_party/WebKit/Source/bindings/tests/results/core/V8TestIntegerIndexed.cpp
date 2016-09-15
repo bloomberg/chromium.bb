@@ -183,15 +183,15 @@ static void installV8TestIntegerIndexedTemplate(v8::Isolate* isolate, const DOMW
     V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedAccessors));
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedMethods));
 
-    // Array iterator
-    prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
-
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexed>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
     // Named properties
     v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestIntegerIndexedV8Internal::namedPropertyGetterCallback, TestIntegerIndexedV8Internal::namedPropertySetterCallback, TestIntegerIndexedV8Internal::namedPropertyQueryCallback, TestIntegerIndexedV8Internal::namedPropertyDeleterCallback, TestIntegerIndexedV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
     instanceTemplate->SetHandler(namedPropertyHandlerConfig);
+
+    // Array iterator (@@iterator)
+    prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
 }
 
 v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)

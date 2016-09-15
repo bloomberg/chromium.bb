@@ -426,10 +426,14 @@ def interface_context(interface):
                 extended_attributes=used_extended_attributes,
                 implemented_as=implemented_as)
 
-        if interface.iterable or interface.maplike or interface.setlike or 'Iterable' in extended_attributes:
+        if interface.has_indexed_elements:
+            # Window.idl in Blink has indexed properties, but the spec says
+            # Window interface doesn't have indexed properties, instead
+            # the WindowProxy exotic object has indexed properties.  Thus,
+            # Window interface must not support iterators.
+            has_array_iterator = (interface.name != 'Window')
+        elif interface.iterable or interface.maplike or interface.setlike or 'Iterable' in extended_attributes:
             iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
-        elif interface.has_indexed_elements:
-            has_array_iterator = True
 
         if interface.iterable or interface.maplike or interface.setlike:
             implicit_methods = [

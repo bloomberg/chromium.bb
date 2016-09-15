@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL DOMTokenList iteration: keys, values, etc. assert_equals: expected function "function values() { [native code] }" but got function "function () { [native code] }"
+FAIL DOMTokenList iteration: keys, values, etc. assert_equals: expected function "function keys() { [native code] }" but got function "function keys() { [native code] }"
 Harness: the test ran to completion.
 
