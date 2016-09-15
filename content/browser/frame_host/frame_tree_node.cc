@@ -232,6 +232,15 @@ void FrameTreeNode::SetFrameName(const std::string& name,
     DCHECK_EQ(unique_name, replication_state_.unique_name);
     return;
   }
+
+  if (parent()) {
+    // Non-main frames should have a non-empty unique name.
+    DCHECK(!unique_name.empty());
+  } else {
+    // Unique name of main frames should always stay empty.
+    DCHECK(unique_name.empty());
+  }
+
   RecordUniqueNameLength(unique_name.size());
   render_manager_.OnDidUpdateName(name, unique_name);
   replication_state_.name = name;

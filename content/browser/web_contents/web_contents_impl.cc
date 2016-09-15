@@ -1552,9 +1552,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                            params.main_frame_routing_id,
                            main_frame_widget_routing_id);
 
-  // blink::FrameTree::setName uses |name| as the |unique_name| for the main
-  // frame - let's do the same thing here.
-  std::string unique_name = params.main_frame_name;
+  // blink::FrameTree::setName always keeps |unique_name| empty in case of a
+  // main frame - let's do the same thing here.
+  std::string unique_name;
   frame_tree_.root()->SetFrameName(params.main_frame_name, unique_name);
 
   WebContentsViewDelegate* delegate =
