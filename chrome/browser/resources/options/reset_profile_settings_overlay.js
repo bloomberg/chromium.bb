@@ -9,39 +9,58 @@ cr.define('options', function() {
 
   /**
    * ResetProfileSettingsOverlay class
-   * Encapsulated handling of the 'Reset Profile Settings' overlay page.
+   *
+   * Encapsulated handling of the 'Reset Profile Settings' and the 'Triggered
+   * Reset Profile Settings' overlay pages. See triggered_profile_resetter.h for
+   * when the triggered variant will be used.
+   *
    * @constructor
+   * @param {boolean} isTriggered Whether the overlay is the triggered variant.
    * @extends {cr.ui.pageManager.Page}
    */
-  function ResetProfileSettingsOverlay() {
-    Page.call(this, 'resetProfileSettings',
-              loadTimeData.getString('resetProfileSettingsOverlayTabTitle'),
-              'reset-profile-settings-overlay');
+  function ResetProfileSettingsOverlay(isTriggered) {
+    this.isTriggered_ = isTriggered;
+    Page.call(
+        this,
+        isTriggered ? 'triggeredResetProfileSettings' : 'resetProfileSettings',
+        loadTimeData.getString(isTriggered ?
+            'triggeredResetProfileSettingsOverlay' :
+            'resetProfileSettingsOverlayTabTitle'),
+        'reset-profile-settings-overlay');
   }
-
-  cr.addSingletonGetter(ResetProfileSettingsOverlay);
 
   ResetProfileSettingsOverlay.prototype = {
     // Inherit ResetProfileSettingsOverlay from Page.
     __proto__: Page.prototype,
 
+    /**
+     * Indicates whether the overlay is a triggered reset overlay.
+     * @type {boolean}
+     * @private
+     */
+    isTriggered_: false,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      $('reset-profile-settings-dismiss').onclick = function(e) {
-        ResetProfileSettingsOverlay.dismiss();
-      };
-      $('reset-profile-settings-commit').onclick = function(e) {
-        ResetProfileSettingsOverlay.setResettingState(true);
-        chrome.send('performResetProfileSettings',
-                    [$('send-settings').checked]);
-      };
-      $('expand-feedback').onclick = function(e) {
-        var feedbackTemplate = $('feedback-template');
-        feedbackTemplate.hidden = !feedbackTemplate.hidden;
-        e.preventDefault();
-      };
+      // Set the onclick handlers only once when initializing the regular reset
+      // profile settings overlay.
+      if (!this.isTriggered_) {
+        $('reset-profile-settings-dismiss').onclick = function(e) {
+          ResetProfileSettingsOverlay.dismiss();
+        };
+        $('reset-profile-settings-commit').onclick = function(e) {
+          ResetProfileSettingsOverlay.setResettingState(true);
+          chrome.send('performResetProfileSettings',
+                      [$('send-settings').checked]);
+        };
+        $('expand-feedback').onclick = function(e) {
+          var feedbackTemplate = $('feedback-template');
+          feedbackTemplate.hidden = !feedbackTemplate.hidden;
+          e.preventDefault();
+        };
+      }
     },
 
     /**
@@ -52,9 +71,13 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       $('reset-profile-settings-title').textContent =
-          loadTimeData.getString('resetProfileSettingsOverlay');
+          loadTimeData.getString(this.isTriggered_ ?
+              'triggeredResetProfileSettingsOverlay' :
+              'resetProfileSettingsOverlay');
       $('reset-profile-settings-explanation').textContent =
-          loadTimeData.getString('resetProfileSettingsExplanation');
+          loadTimeData.getString(this.isTriggered_ ?
+              'triggeredResetProfileSettingsExplanation' :
+              'resetProfileSettingsExplanation');
 
       chrome.send('onShowResetProfileDialog');
     },

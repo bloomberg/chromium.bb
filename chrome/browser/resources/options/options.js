@@ -47,8 +47,6 @@ var SupervisedUserImportOverlay = options.SupervisedUserImportOverlay;
 var SupervisedUserLearnMoreOverlay = options.SupervisedUserLearnMoreOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
-var TriggeredResetProfileSettingsOverlay =
-    options.TriggeredResetProfileSettingsOverlay;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -165,9 +163,10 @@ function load() {
   PageManager.registerOverlay(PasswordManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('manage-passwords')]);
-  PageManager.registerOverlay(ResetProfileSettingsOverlay.getInstance(),
-                              BrowserOptions.getInstance(),
-                              [$('reset-profile-settings')]);
+  PageManager.registerOverlay(
+      new ResetProfileSettingsOverlay(false /* isTriggered */),
+      BrowserOptions.getInstance(),
+      [$('reset-profile-settings')]);
   PageManager.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('manage-default-search-engines')]);
@@ -179,7 +178,7 @@ function load() {
 
 <if expr="is_win">
   PageManager.registerOverlay(
-      TriggeredResetProfileSettingsOverlay.getInstance(),
+      new ResetProfileSettingsOverlay(true /* isTriggered */),
       BrowserOptions.getInstance());
 </if>
 
