@@ -309,8 +309,9 @@ void LayoutPart::updateWidgetGeometry()
 
     // If frame bounds are changing mark the view for layout. Also check the
     // frame's page to make sure that the frame isn't in the process of being
-    // destroyed.
-    if (frameView && boundsWillChange && frameView->frame().page())
+    // destroyed. If iframe scrollbars needs reconstruction from native to custom
+    // scrollbar, then also we need to layout the frameview.
+    if (frameView && frameView->frame().page() && (boundsWillChange || frameView->needsScrollbarReconstruction()))
         frameView->setNeedsLayout();
 
     updateWidgetGeometryInternal();

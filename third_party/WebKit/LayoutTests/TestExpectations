@@ -1260,3 +1260,5 @@ crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-ce
 crbug.com/646598 [ Mac ] virtual/display_list_2d_canvas/fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
 crbug.com/646598 virtual/gpu/fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
 crbug.com/646598 fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
+
+crbug.com/492785 [ Linux Mac Win7 ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruction-on-inserting-style-sheet.html [ Failure ]
