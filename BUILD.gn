@@ -935,7 +935,7 @@ group("chromium_builder_perf") {
   testonly = true
 
   if (!is_ios && !is_android && !is_chromecast) {
-    deps = [
+    data_deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
       "//chrome/test:telemetry_perf_tests",
@@ -945,28 +945,28 @@ group("chromium_builder_perf") {
     ]
 
     if (!is_chromeos) {
-      deps += [ "//chrome/test:performance_browser_tests" ]
+      data_deps += [ "//chrome/test:performance_browser_tests" ]
     }
     if (is_linux && !is_chromeos) {
       if (is_official_build) {
         # In GN builds, this is controlled by the 'linux_dump_symbols'
         # flag, which defaults to 1 for official builds. For now,
         # we skip the separate flag and just key off of is_official_build.
-        deps += [ "//chrome:linux_symbols" ]
+        data_deps += [ "//chrome:linux_symbols" ]
       }
 
       if (!is_chromeos) {
-        deps += [ "//tools/perf/clear_system_cache" ]
+        data_deps += [ "//tools/perf/clear_system_cache" ]
       }
     }
 
     if (is_win) {
-      deps += [
+      data_deps += [
         "//chrome/installer/mini_installer:mini_installer",
         "//third_party/angle/src/tests:angle_perftests",
       ]
     } else {
-      deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
+      data_deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
     }
   }
 }
