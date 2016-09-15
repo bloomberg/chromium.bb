@@ -350,6 +350,36 @@ test_with_window((w) => {
 //        to the result of converting observedAttributesIterable to a sequence<DOMString>.
 //        Rethrow any exceptions.
 test_with_window((w) => {
+  let invocations = [];
+  let element = w.document.createElement('a-a');
+  element.setAttribute('a', '1');
+  element.setAttribute('b', '2');
+  element.setAttribute('c', '3');
+  let constructor = function () {};
+  constructor.prototype.attributeChangedCallback = function () { 
+    invocations.push(arguments[0]); 
+  };
+  constructor.observedAttributes = {[Symbol.iterator]:
+    function* () { 
+      yield 'a';
+      yield 'c'; 
+    }
+  };
+  w.customElements.define('a-a', constructor);
+  w.document.body.appendChild(element);
+  assert_array_equals(invocations, ['a', 'c'], 'attributeChangedCallback should be invoked twice for "a" and "c"'); 
+}, 'ObservedAttributes are retrieved from iterators');
+
+test_with_window((w) => {
+  let constructor = function () {};
+  constructor.prototype.attributeChangedCallback = function () { };
+  constructor.observedAttributes = {[Symbol.iterator]: 1};
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', constructor);
+  }, 'converting value that is not an object should throw TypeError');
+}, 'Converting non-object observedAttributes to sequence<DOMString>');
+
+test_with_window((w) => {
   class X extends w.HTMLElement{
     constructor() { super(); }
     attributeChangedCallback() {}
@@ -357,9 +387,17 @@ test_with_window((w) => {
   }
   assert_throws(TypeError.prototype, () => {
     w.customElements.define('a-a', X);
-  }, 'converting RegExp to sequence<DOMString> should throw TypeError');
-}, 'exception thrown while converting observedAttributes to ' +
-   'sequence<DOMString> should be rethrown');
+  }, 'converting RegExp should throw TypeError');
+}, 'Converting regular expression observedAttributes to sequence<DOMString>');
+
+test_with_window((w) => {
+  let constructor = function () {};
+  constructor.prototype.attributeChangedCallback = function () { };
+  constructor.observedAttributes = {};
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', constructor);
+  }, 'If iterator method is undefined, it should throw TypeError');
+}, 'Converting observedAttributes without iterator method to sequence<DOMString>');
 
 // 14.9.2 test Get(constructor, observedAttributes) does not throw if
 // attributeChangedCallback is undefined.
