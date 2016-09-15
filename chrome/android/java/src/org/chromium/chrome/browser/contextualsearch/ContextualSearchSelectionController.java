@@ -10,15 +10,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
-import org.chromium.chrome.browser.contextualsearch.action.ResolvedSearchAction;
-import org.chromium.chrome.browser.contextualsearch.action.SearchAction;
-import org.chromium.chrome.browser.contextualsearch.action.SearchActionListener;
-import org.chromium.chrome.browser.contextualsearch.gesture.SearchGestureHost;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.util.regex.Matcher;
@@ -27,7 +22,8 @@ import java.util.regex.Pattern;
 /**
  * Controls selection gesture interaction for Contextual Search.
  */
-public class ContextualSearchSelectionController implements SearchGestureHost {
+public class ContextualSearchSelectionController {
+
     /**
      * The type of selection made by the user.
      */
@@ -83,18 +79,9 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
     // The time of the most last scroll activity, or 0 if none.
     private long mLastScrollTimeNs;
 
-    // When the last tap gesture happened.
-    private long mTapTimeNanoseconds;
-
     // Tracks whether a Context Menu has just been shown and the UX has been dismissed.
     // The selection may be unreliable until the next reset.  See crbug.com/628436.
     private boolean mIsContextMenuShown;
-
-    // Set to true when we have identified that a pending tap has not been handled by Blink.
-    private boolean mHasIdentifiedUnhandledTap;
-
-    // The current Search action.
-    private SearchAction mSearchAction;
 
     private class ContextualSearchGestureStateListener extends GestureStateListener {
         @Override
@@ -126,8 +113,6 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
             // handles (have a long-press selection) and the tap was consumed.
             if (!(consumed && mSelectionType == SelectionType.LONG_PRESS)) {
                 scheduleInvalidTapNotification();
-
-                if (mHasIdentifiedUnhandledTap) createSearchAction();
             }
         }
     }
@@ -341,7 +326,6 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
      */
     private void handleSelection(String selection, SelectionType type) {
         mShouldHandleSelectionModification = true;
-        destroySearchAction();
         boolean isValidSelection = validateSelectionSuppression(selection);
         mHandler.handleSelection(selection, isValidSelection, type, mX, mY);
     }
@@ -354,8 +338,6 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
         mLastTapState = null;
         mLastScrollTimeNs = 0;
         mIsContextMenuShown = false;
-        mHasIdentifiedUnhandledTap = false;
-        mTapTimeNanoseconds = 0;
     }
 
     /**
@@ -378,8 +360,6 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
 
     /**
      * Handles an unhandled tap gesture.
-     * @param x The x coordinate.
-     * @param y The y coordinate.
      */
     void handleShowUnhandledTapUIIfNeeded(int x, int y) {
         mWasTapGestureDetected = false;
@@ -387,16 +367,37 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS) {
             mWasTapGestureDetected = true;
-            mTapTimeNanoseconds = System.nanoTime();
-
-            // NOTE(donnd): We first acknowledge that a unhandled tap was identified, but
-            // we don't do anything now. Instead we'll wait for the onSingleTap() event to fire,
-            // and only do something when an unhandled tap was identified. onSingleTap() will
-            // always get fired, as opposed to showUnhandledTapUIIfNeeded().
-            mHasIdentifiedUnhandledTap = true;
-
+            long tapTimeNanoseconds = System.nanoTime();
+            // TODO(donnd): add a policy method to get adjusted tap count.
+            ChromePreferenceManager prefs = ChromePreferenceManager.getInstance(mActivity);
+            int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
+                    - prefs.getContextualSearchTapQuickAnswerCount();
+            TapSuppressionHeuristics tapHeuristics =
+                    new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen);
+            // TODO(donnd): Move to be called when the panel closes to work with states that change.
+            tapHeuristics.logConditionState();
+            // Tell the manager what it needs in order to log metrics on whether the tap would have
+            // been suppressed if each of the heuristics were satisfied.
+            mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
             mX = x;
             mY = y;
+            boolean shouldSuppressTap = tapHeuristics.shouldSuppressTap();
+            if (shouldSuppressTap) {
+                mHandler.handleSuppressedTap();
+            } else {
+                // TODO(donnd): Find a better way to determine that a navigation will be triggered
+                // by the tap, or merge with other time-consuming actions like gathering surrounding
+                // text or detecting page mutations.
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mHandler.handleValidTap();
+                    }
+                }, TAP_NAVIGATION_DETECTION_DELAY);
+            }
+            // Remember the tap state for subsequent tap evaluation.
+            mLastTapState =
+                    new ContextualSearchTapState(x, y, tapTimeNanoseconds, shouldSuppressTap);
         } else {
             // Long press; reset last tap state.
             mLastTapState = null;
@@ -405,96 +406,9 @@ public class ContextualSearchSelectionController implements SearchGestureHost {
     }
 
     /**
-     * Processes a {@link SearchAction}.
-     * This should be called when the associated {@code SearchAction} has built its context (by
-     * gathering surrounding text if needed, etc) but before showing any UX.
-     * @param searchAction The {@link SearchAction} for this Tap gesture.
-     * @param x The x coordinate.
-     * @param y The y coordinate.
-     */
-    void processSearchAction(SearchAction searchAction, int x, int y) {
-        // TODO(donnd): consider using the supplied searchAction, or remove if used from native!
-        // TODO(donnd): add a policy method to get adjusted tap count.
-        ChromePreferenceManager prefs = ChromePreferenceManager.getInstance(mActivity);
-        int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
-                - prefs.getContextualSearchTapQuickAnswerCount();
-        TapSuppressionHeuristics tapHeuristics =
-                new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen);
-        // TODO(donnd): Move to be called when the panel closes to work with states that change.
-        tapHeuristics.logConditionState();
-        // Tell the manager what it needs in order to log metrics on whether the tap would have
-        // been suppressed if each of the heuristics were satisfied.
-        mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
-
-        boolean shouldSuppressTap = tapHeuristics.shouldSuppressTap();
-        if (shouldSuppressTap) {
-            mHandler.handleSuppressedTap();
-        } else {
-            // TODO(donnd): Find a better way to determine that a navigation will be triggered
-            // by the tap, or merge with other time-consuming actions like gathering surrounding
-            // text or detecting page mutations.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mHandler.handleValidTap();
-                }
-            }, TAP_NAVIGATION_DETECTION_DELAY);
-        }
-        if (mTapTimeNanoseconds == 0) throw new RuntimeException("Tap time not set!");
-        // Remember the tap state for subsequent tap evaluation.
-        mLastTapState = new ContextualSearchTapState(x, y, mTapTimeNanoseconds, shouldSuppressTap);
-    }
-
-    /**
-     * Creates the current {@link SearchAction}.
-     */
-    void createSearchAction() {
-        destroySearchAction();
-        mSearchAction = new ResolvedSearchAction(new SearchActionListener() {
-
-            @Override
-            protected void onContextReady(SearchAction action) {
-                processSearchAction(action, (int) mX, (int) mY);
-            }
-        }, this);
-
-        mSearchAction.extractContext();
-    }
-
-    /**
-     * Destroys the current {@link SearchAction}.
-     */
-    private void destroySearchAction() {
-        if (mSearchAction == null) return;
-
-        mSearchAction.destroyAction();
-        mSearchAction = null;
-    }
-
-    // ============================================================================================
-    // SearchGestureHost
-    // ============================================================================================
-
-    @Override
-    public WebContents getTabWebContents() {
-        Tab currentTab = mActivity.getActivityTab();
-        return currentTab != null ? currentTab.getWebContents() : null;
-    }
-
-    @Override
-    public void dismissGesture() {
-        destroySearchAction();
-    }
-
-    // ============================================================================================
-    // Utilities
-    // ============================================================================================
-
-    /**
      * @return The Base Page's {@link ContentViewCore}, or {@code null} if there is no current tab.
      */
     ContentViewCore getBaseContentView() {
-        // TODO(donnd): switch to using WebContents over ContentViewCore.
         Tab currentTab = mActivity.getActivityTab();
         return currentTab != null ? currentTab.getContentViewCore() : null;
     }

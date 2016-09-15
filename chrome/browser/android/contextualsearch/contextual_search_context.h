@@ -18,16 +18,13 @@ struct ContextualSearchContext {
                           const bool use_resolved_search_term,
                           const GURL& page_url,
                           const std::string& encoding);
-  ContextualSearchContext(const bool use_resolved_search_term,
-                          const GURL& page_url,
-                          const std::string& encoding);
   ~ContextualSearchContext();
 
+  const std::string selected_text;
   const bool use_resolved_search_term;
   const GURL page_url;
   const std::string encoding;
 
-  std::string selected_text;
   base::string16 surrounding_text;
   int start_offset;
   int end_offset;

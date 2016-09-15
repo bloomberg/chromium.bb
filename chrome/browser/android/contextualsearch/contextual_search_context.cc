@@ -9,18 +9,11 @@ ContextualSearchContext::ContextualSearchContext(
     const bool use_resolved_search_term,
     const GURL& page_url,
     const std::string& encoding)
-    : use_resolved_search_term(use_resolved_search_term),
+    : selected_text(selected_text),
+      use_resolved_search_term(use_resolved_search_term),
       page_url(page_url),
-      encoding(encoding),
-      selected_text(selected_text) {}
-
-ContextualSearchContext::ContextualSearchContext(
-    const bool use_resolved_search_term,
-    const GURL& page_url,
-    const std::string& encoding)
-    : use_resolved_search_term(use_resolved_search_term),
-      page_url(page_url),
-      encoding(encoding) {}
+      encoding(encoding) {
+}
 
 ContextualSearchContext::~ContextualSearchContext() {
 }
