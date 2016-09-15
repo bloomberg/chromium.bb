@@ -269,8 +269,15 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
 // Tests that clicking on the toolbar action a second time when the action is
 // already open results in closing the popup, and doesn't re-open it.
+#if defined(OS_WIN)
+// Flaky on Windows; see https://crbug.com/617056.
+#define MAYBE_DoubleClickToolbarActionToClose \
+    DISABLED_DoubleClickToolbarActionToClose
+#else
+#define MAYBE_DoubleClickToolbarActionToClose DoubleClickToolbarActionToClose
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
-                       DoubleClickToolbarActionToClose) {
+                       MAYBE_DoubleClickToolbarActionToClose) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
   base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
