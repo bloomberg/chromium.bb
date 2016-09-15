@@ -470,6 +470,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'opengl'], bug=483282)
+    self.Flaky('deqp/functional/gles3/texturespecification/' +
+        'random_teximage2d_2d.html',
+        ['linux', 'opengl', 'nvidia'], bug=618447)
 
     # Linux Intel
     self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
