@@ -2303,11 +2303,11 @@ void FrameView::scrollbarVisibilityChanged()
 
 IntRect FrameView::scrollableAreaBoundingBox() const
 {
-    LayoutPart* ownerLayoutObject = frame().ownerLayoutObject();
-    if (!ownerLayoutObject)
+    LayoutPartItem ownerLayoutItem = frame().ownerLayoutItem();
+    if (ownerLayoutItem.isNull())
         return frameRect();
 
-    return ownerLayoutObject->absoluteContentQuad().enclosingBoundingBox();
+    return ownerLayoutItem.absoluteContentQuad().enclosingBoundingBox();
 }
 
 

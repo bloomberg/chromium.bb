@@ -82,6 +82,11 @@ public:
         toBox()->mapLocalToAncestor(ancestor, state, flags);
     }
 
+    FloatQuad absoluteContentQuad() const
+    {
+        return toBox()->absoluteContentQuad();
+    }
+
 private:
     LayoutBox* toBox()
     {
