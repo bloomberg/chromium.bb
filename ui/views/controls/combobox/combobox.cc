@@ -114,9 +114,11 @@ gfx::Rect PositionArrowWithinContainer(const gfx::Rect& container_bounds,
 // The transparent button which holds a button state but is not rendered.
 class TransparentButton : public CustomButton {
  public:
-  TransparentButton(ButtonListener* listener)
+  TransparentButton(ButtonListener* listener, bool animate_state_change)
       : CustomButton(listener) {
-    SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
+    set_animate_on_state_change(animate_state_change);
+    if (animate_state_change)
+      SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
     SetFocusBehavior(FocusBehavior::NEVER);
     set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
 
@@ -394,8 +396,8 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
       selected_index_(style == STYLE_ACTION ? 0 : model_->GetDefaultIndex()),
       invalid_(false),
       menu_model_(new ComboboxMenuModel(this, model)),
-      text_button_(new TransparentButton(this)),
-      arrow_button_(new TransparentButton(this)),
+      text_button_(new TransparentButton(this, style_ == STYLE_ACTION)),
+      arrow_button_(new TransparentButton(this, style_ == STYLE_ACTION)),
       size_to_largest_label_(style_ == STYLE_NORMAL),
       weak_ptr_factory_(this) {
   ModelChanged();
