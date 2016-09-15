@@ -95,7 +95,6 @@ blink::WebRTCStatsMemberType RTCStatsMember::type() const {
       return blink::WebRTCStatsMemberTypeUint64;
     case webrtc::RTCStatsMemberInterface::kDouble:
       return blink::WebRTCStatsMemberTypeDouble;
-    case webrtc::RTCStatsMemberInterface::kStaticString:
     case webrtc::RTCStatsMemberInterface::kString:
       return blink::WebRTCStatsMemberTypeString;
     case webrtc::RTCStatsMemberInterface::kSequenceInt32:
@@ -108,7 +107,6 @@ blink::WebRTCStatsMemberType RTCStatsMember::type() const {
       return blink::WebRTCStatsMemberTypeSequenceUint64;
     case webrtc::RTCStatsMemberInterface::kSequenceDouble:
       return blink::WebRTCStatsMemberTypeSequenceDouble;
-    case webrtc::RTCStatsMemberInterface::kSequenceStaticString:
     case webrtc::RTCStatsMemberInterface::kSequenceString:
       return blink::WebRTCStatsMemberTypeSequenceString;
     default:
@@ -138,17 +136,8 @@ double RTCStatsMember::valueDouble() const {
 }
 
 blink::WebString RTCStatsMember::valueString() const {
-  switch (member_->type()) {
-    case webrtc::RTCStatsMemberInterface::kStaticString:
-      return blink::WebString::fromUTF8(
-          *member_->cast_to<webrtc::RTCStatsMember<const char*>>());
-    case webrtc::RTCStatsMemberInterface::kString:
-      return blink::WebString::fromUTF8(
-          *member_->cast_to<webrtc::RTCStatsMember<std::string>>());
-    default:
-      NOTREACHED();
-      return blink::WebString();
-  }
+  return blink::WebString::fromUTF8(
+      *member_->cast_to<webrtc::RTCStatsMember<std::string>>());
 }
 
 blink::WebVector<int32_t> RTCStatsMember::valueSequenceInt32() const {
@@ -177,31 +166,12 @@ blink::WebVector<double> RTCStatsMember::valueSequenceDouble() const {
 }
 
 blink::WebVector<blink::WebString> RTCStatsMember::valueSequenceString() const {
-  switch (member_->type()) {
-    case webrtc::RTCStatsMemberInterface::kStaticString:
-      {
-        const std::vector<const char*>& sequence =
-            *member_->cast_to<
-                webrtc::RTCStatsMember<std::vector<const char*>>>();
-        blink::WebVector<blink::WebString> web_sequence(sequence.size());
-        for (size_t i = 0; i < sequence.size(); ++i)
-          web_sequence[i] = blink::WebString::fromUTF8(sequence[i]);
-        return web_sequence;
-      }
-    case webrtc::RTCStatsMemberInterface::kString:
-      {
-        const std::vector<std::string>& sequence =
-            *member_->cast_to<
-                webrtc::RTCStatsMember<std::vector<std::string>>>();
-        blink::WebVector<blink::WebString> web_sequence(sequence.size());
-        for (size_t i = 0; i < sequence.size(); ++i)
-          web_sequence[i] = blink::WebString::fromUTF8(sequence[i]);
-        return web_sequence;
-      }
-    default:
-      NOTREACHED();
-      return blink::WebVector<blink::WebString>();
-  }
+  const std::vector<std::string>& sequence =
+      *member_->cast_to<webrtc::RTCStatsMember<std::vector<std::string>>>();
+  blink::WebVector<blink::WebString> web_sequence(sequence.size());
+  for (size_t i = 0; i < sequence.size(); ++i)
+    web_sequence[i] = blink::WebString::fromUTF8(sequence[i]);
+  return web_sequence;
 }
 
 }  // namespace content
