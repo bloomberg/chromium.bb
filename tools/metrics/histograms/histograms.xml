@@ -44398,6 +44398,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.UserTiming_Mark" units="ms">
+  <obsolete>
+    Deprecated as of 09/2016.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the User Timing spec and measures the time from
@@ -44407,6 +44410,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.UserTiming_MeasureDuration" units="ms">
+  <obsolete>
+    Deprecated as of 09/2016.
+  </obsolete>
   <owner>pmeenan@chromium.org</owner>
   <summary>
     This time is based on the User Timing spec and reports the time between two
