@@ -147,7 +147,7 @@ void UpdateSiteEngagementToTrigger() {
     double total_engagement = -1;
 
     if (base::StringToDouble(total_param, &total_engagement) &&
-        total_engagement > 0) {
+        total_engagement >= 0) {
       AppBannerSettingsHelper::SetTotalEngagementToTrigger(total_engagement);
     }
   }

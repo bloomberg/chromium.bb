@@ -363,8 +363,12 @@ void AppBannerManager::DidFinishLoad(
 
   load_finished_ = true;
   validated_url_ = validated_url;
+  // Start the pipeline immediately if we aren't using engagement, or if 0
+  // engagement is required.
   if (!AppBannerSettingsHelper::ShouldUseSiteEngagementScore() ||
-      banner_request_queued_) {
+      banner_request_queued_ ||
+      AppBannerSettingsHelper::HasSufficientEngagement(0)) {
+    SiteEngagementObserver::Observe(nullptr);
     banner_request_queued_ = false;
 
     RequestAppBanner(validated_url, false /* is_debug_mode */);
