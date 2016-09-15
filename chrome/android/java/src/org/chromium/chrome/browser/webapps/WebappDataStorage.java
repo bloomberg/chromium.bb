@@ -389,23 +389,6 @@ public class WebappDataStorage {
     }
 
     /**
-     * Returns the theme color stored in this object, or
-     * ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING if it is not stored.
-     */
-    long getThemeColor() {
-        return mPreferences.getLong(KEY_THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-    }
-
-    /**
-     * Returns the orientation stored in this object, or ScreenOrientationValues.DEFAULT if it is
-     * not stored.
-     */
-    int getOrientation() {
-        return mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT);
-    }
-
-    /**
      * Updates the last used time of this object.
      */
     void updateLastUsedTime() {
@@ -477,6 +460,7 @@ public class WebappDataStorage {
     boolean getDidLastWebApkUpdateRequestSucceed() {
         return mPreferences.getBoolean(KEY_DID_LAST_WEBAPK_UPDATE_REQUEST_SUCCEED, false);
     }
+
     /**
      * Returns true if this web app has been launched from home screen recently (within
      * WEBAPP_LAST_OPEN_MAX_TIME milliseconds).
