@@ -12,8 +12,8 @@
 namespace blink {
 
 FloatRect GeometryMapper::mapToVisualRectInDestinationSpace(const FloatRect& rect,
-    const PropertyTreeState& sourceState,
-    const PropertyTreeState& destinationState,
+    const GeometryPropertyTreeState& sourceState,
+    const GeometryPropertyTreeState& destinationState,
     bool& success)
 {
     FloatRect result = localToVisualRectInAncestorSpace(rect, sourceState, destinationState, success);
@@ -23,8 +23,8 @@ FloatRect GeometryMapper::mapToVisualRectInDestinationSpace(const FloatRect& rec
 }
 
 FloatRect GeometryMapper::mapRectToDestinationSpace(const FloatRect& rect,
-    const PropertyTreeState& sourceState,
-    const PropertyTreeState& destinationState,
+    const GeometryPropertyTreeState& sourceState,
+    const GeometryPropertyTreeState& destinationState,
     bool& success)
 {
     FloatRect result = localToAncestorRect(rect, sourceState, destinationState, success);
@@ -34,8 +34,8 @@ FloatRect GeometryMapper::mapRectToDestinationSpace(const FloatRect& rect,
 }
 
 FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(const FloatRect& rect,
-    const PropertyTreeState& sourceState,
-    const PropertyTreeState& destinationState,
+    const GeometryPropertyTreeState& sourceState,
+    const GeometryPropertyTreeState& destinationState,
     bool& success)
 {
     const TransformPaintPropertyNode* lcaTransform = propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(sourceState.transform.get(), destinationState.transform.get());
@@ -43,7 +43,7 @@ FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(const FloatRect&
 
     // Assume that the clip of destinationState is an ancestor of the clip of sourceState
     // and is under the space of lcaTransform. Otherwise localToAncestorClipRect() will fail.
-    PropertyTreeState lcaState = destinationState;
+    GeometryPropertyTreeState lcaState = destinationState;
     lcaState.transform = lcaTransform;
 
     const auto clipRect = localToAncestorClipRect(sourceState, lcaState, success);
@@ -65,13 +65,13 @@ FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(const FloatRect&
 }
 
 FloatRect GeometryMapper::slowMapRectToDestinationSpace(const FloatRect& rect,
-    const PropertyTreeState& sourceState,
-    const PropertyTreeState& destinationState,
+    const GeometryPropertyTreeState& sourceState,
+    const GeometryPropertyTreeState& destinationState,
     bool& success)
 {
     const TransformPaintPropertyNode* lcaTransform = propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(sourceState.transform.get(), destinationState.transform.get());
     DCHECK(lcaTransform);
-    PropertyTreeState lcaState = sourceState;
+    GeometryPropertyTreeState lcaState = sourceState;
     lcaState.transform = lcaTransform;
 
     FloatRect result = localToAncestorRect(rect, sourceState, lcaState, success);
@@ -89,8 +89,8 @@ FloatRect GeometryMapper::slowMapRectToDestinationSpace(const FloatRect& rect,
 
 FloatRect GeometryMapper::localToVisualRectInAncestorSpace(
     const FloatRect& rect,
-    const PropertyTreeState& localState,
-    const PropertyTreeState& ancestorState, bool& success)
+    const GeometryPropertyTreeState& localState,
+    const GeometryPropertyTreeState& ancestorState, bool& success)
 {
     const auto& transformMatrix = localToAncestorMatrix(localState.transform.get(), ancestorState, success);
     if (!success)
@@ -107,8 +107,8 @@ FloatRect GeometryMapper::localToVisualRectInAncestorSpace(
 
 FloatRect GeometryMapper::localToAncestorRect(
     const FloatRect& rect,
-    const PropertyTreeState& localState,
-    const PropertyTreeState& ancestorState,
+    const GeometryPropertyTreeState& localState,
+    const GeometryPropertyTreeState& ancestorState,
     bool& success)
 {
     const auto& transformMatrix = localToAncestorMatrix(localState.transform.get(), ancestorState, success);
@@ -119,8 +119,8 @@ FloatRect GeometryMapper::localToAncestorRect(
 
 FloatRect GeometryMapper::ancestorToLocalRect(
     const FloatRect& rect,
-    const PropertyTreeState& localState,
-    const PropertyTreeState& ancestorState, bool& success)
+    const GeometryPropertyTreeState& localState,
+    const GeometryPropertyTreeState& ancestorState, bool& success)
 {
     const auto& transformMatrix = localToAncestorMatrix(localState.transform.get(), ancestorState, success);
     if (!success)
@@ -136,7 +136,7 @@ FloatRect GeometryMapper::ancestorToLocalRect(
     return transformMatrix.inverse().mapRect(rect);
 }
 
-PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(const PropertyTreeState& ancestorState)
+PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(const GeometryPropertyTreeState& ancestorState)
 {
     auto addResult = m_data.add(ancestorState.transform.get(), nullptr);
     if (addResult.isNewEntry)
@@ -145,8 +145,8 @@ PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(const 
 }
 
 FloatRect GeometryMapper::localToAncestorClipRect(
-    const PropertyTreeState& localState,
-    const PropertyTreeState& ancestorState,
+    const GeometryPropertyTreeState& localState,
+    const GeometryPropertyTreeState& ancestorState,
     bool& success)
 {
     PrecomputedDataForAncestor& precomputedData = getPrecomputedDataForAncestor(ancestorState);
@@ -196,7 +196,7 @@ FloatRect GeometryMapper::localToAncestorClipRect(
 
 const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
     const TransformPaintPropertyNode* localTransformNode,
-    const PropertyTreeState& ancestorState, bool& success) {
+    const GeometryPropertyTreeState& ancestorState, bool& success) {
     PrecomputedDataForAncestor& precomputedData = getPrecomputedDataForAncestor(ancestorState);
 
     const TransformPaintPropertyNode* transformNode = localTransformNode;

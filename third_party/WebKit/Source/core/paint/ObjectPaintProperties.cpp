@@ -6,9 +6,9 @@
 
 namespace blink {
 
-void ObjectPaintProperties::getContentsProperties(PropertyTreeState& properties) const
+void ObjectPaintProperties::getContentsProperties(GeometryPropertyTreeState& properties) const
 {
-    properties = localBorderBoxProperties()->propertyTreeState;
+    properties = localBorderBoxProperties()->geometryPropertyTreeState;
     if (scrollTranslation())
         properties.transform = scrollTranslation();
     else if (svgLocalToBorderBoxTransform())

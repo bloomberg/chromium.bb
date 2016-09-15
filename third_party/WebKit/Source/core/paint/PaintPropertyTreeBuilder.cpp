@@ -296,15 +296,15 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
     std::unique_ptr<ObjectPaintProperties::LocalBorderBoxProperties> borderBoxContext =
         wrapUnique(new ObjectPaintProperties::LocalBorderBoxProperties);
     borderBoxContext->paintOffset = context.current.paintOffset;
-    borderBoxContext->propertyTreeState = PropertyTreeState(context.current.transform, context.current.clip, context.currentEffect);
+    borderBoxContext->geometryPropertyTreeState = GeometryPropertyTreeState(context.current.transform, context.current.clip, context.currentEffect);
     borderBoxContext->scroll = context.current.scroll;
 
     if (!context.current.clip) {
         DCHECK(object.isLayoutView());
         DCHECK(toLayoutView(object).frameView()->frame().isMainFrame());
         DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
-        borderBoxContext->propertyTreeState.clip = ClipPaintPropertyNode::create(nullptr, context.current.transform, FloatRoundedRect(LayoutRect::infiniteIntRect()));
-        context.current.clip = borderBoxContext->propertyTreeState.clip.get();
+        borderBoxContext->geometryPropertyTreeState.clip = ClipPaintPropertyNode::create(nullptr, context.current.transform, FloatRoundedRect(LayoutRect::infiniteIntRect()));
+        context.current.clip = borderBoxContext->geometryPropertyTreeState.clip.get();
     }
 
     object.getMutableForPainting().ensureObjectPaintProperties().setLocalBorderBoxProperties(std::move(borderBoxContext));

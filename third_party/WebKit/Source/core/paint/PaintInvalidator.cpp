@@ -46,8 +46,8 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometr
     } else if (object == context.paintInvalidationContainer) {
         result = LayoutRect(rect);
     } else {
-        PropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
-        PropertyTreeState containerTreeState;
+        GeometryPropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
+        GeometryPropertyTreeState containerTreeState;
         const ObjectPaintProperties* containerPaintProperties = context.paintInvalidationContainer->objectPaintProperties();
         containerPaintProperties->getContentsProperties(containerTreeState);
 
@@ -92,8 +92,8 @@ LayoutPoint PaintInvalidator::computeLocationFromPaintInvalidationBacking(const 
         point.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
         bool success = false;
-        PropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
-        PropertyTreeState containerTreeState;
+        GeometryPropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
+        GeometryPropertyTreeState containerTreeState;
         context.paintInvalidationContainer->objectPaintProperties()->getContentsProperties(containerTreeState);
         point = m_geometryMapper.mapRectToDestinationSpace(FloatRect(point, FloatSize()), currentTreeState, containerTreeState, success).location();
         DCHECK(success);

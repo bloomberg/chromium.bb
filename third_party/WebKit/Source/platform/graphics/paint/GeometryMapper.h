@@ -6,7 +6,7 @@
 #define GeometryMapper_h
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/GeometryPropertyTreeState.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/HashMap.h"
 
@@ -29,16 +29,16 @@ struct PrecomputedDataForAncestor {
     }
 };
 
-// GeometryMapper is a helper class for fast computations of transformed and visual rects in different
-// PropertyTreeStates. The design document has a number of details on use cases, algorithmic definitions,
-// and running times.
+// GeometryMapper is a helper class for fast computations of transformed and visual rects in
+// different GeometryPropertyTreeStates. The design document has a number of details on use cases,
+// algorithmic definitions, and running times.
 //
-// NOTE: a GeometryMapper object is only valid for property trees that do not change. If any mutation occurs,
-// a new GeometryMapper object must be allocated corresponding to the new state.
+// NOTE: A GeometryMapper object is only valid for property trees that do not change. If any
+// mutation occurs, a new GeometryMapper object must be allocated corresponding to the new state.
 //
 // Design document: http://bit.ly/28P4FDA
 //
-// TODO(chrishtr): take effect and scroll trees into account.
+// TODO(chrishtr): take effect tree into account.
 class PLATFORM_EXPORT GeometryMapper {
 public:
     GeometryMapper() {}
@@ -54,14 +54,14 @@ public:
     // If that inverse transform is not invertible, sets |success| to false and returns the input rect. Otherwise, sets
     // |success| to true.
     FloatRect mapToVisualRectInDestinationSpace(const FloatRect&,
-        const PropertyTreeState& sourceState,
-        const PropertyTreeState& destinationState,
+        const GeometryPropertyTreeState& sourceState,
+        const GeometryPropertyTreeState& destinationState,
         bool& success);
 
     // Same as mapToVisualRectInDestinationSpace() except that *no* clip is applied.
     FloatRect mapRectToDestinationSpace(const FloatRect&,
-        const PropertyTreeState& sourceState,
-        const PropertyTreeState& destinationState,
+        const GeometryPropertyTreeState& sourceState,
+        const GeometryPropertyTreeState& destinationState,
         bool& success);
 
     // Maps from a rect in |localTransformSpace| to its visual rect in |ancestorState|. This is computed
@@ -75,8 +75,8 @@ public:
     // to or a descendant of that in |ancestorState|, returns the passed-in rect and sets |success| to false. Otherwise,
     // sets |success| to true.
     FloatRect localToVisualRectInAncestorSpace(const FloatRect&,
-        const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState,
+        const GeometryPropertyTreeState& localTransformState,
+        const GeometryPropertyTreeState& ancestorState,
         bool& success);
 
     // Maps from a rect in |localTransformSpace| to its transformed rect in |ancestorSpace|. This is computed
@@ -91,8 +91,8 @@ public:
     // to or a descendant of that in |ancestorState|, returns the passed-in rect and sets |success| to false. Otherwise,
     // sets |success| to true.
     FloatRect localToAncestorRect(const FloatRect&,
-        const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState,
+        const GeometryPropertyTreeState& localTransformState,
+        const GeometryPropertyTreeState& ancestorState,
         bool& success);
 
     // Maps from a rect in |ancestorSpace| to its transformed rect in |localTransformSpace|. This is computed
@@ -103,39 +103,39 @@ public:
     // to or a descendant of that in |ancestorState|, returns the passed-in rect and sets |success| to false. Otherwise,
     // sets |success| to true.
     FloatRect ancestorToLocalRect(const FloatRect&,
-        const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState,
+        const GeometryPropertyTreeState& localTransformState,
+        const GeometryPropertyTreeState& ancestorState,
         bool& success);
 
 private:
     // Used by mapToVisualRectInDestinationSpace() after fast mapping (assuming destination is an ancestor of source) failed.
     FloatRect slowMapToVisualRectInDestinationSpace(const FloatRect&,
-        const PropertyTreeState& sourceState,
-        const PropertyTreeState& destinationState,
+        const GeometryPropertyTreeState& sourceState,
+        const GeometryPropertyTreeState& destinationState,
         bool& success);
 
     // Used by mapRectToDestinationSpace() after fast mapping (assuming destination is an ancestor of source) failed.
     FloatRect slowMapRectToDestinationSpace(const FloatRect&,
-        const PropertyTreeState& sourceState,
-        const PropertyTreeState& destinationState,
+        const GeometryPropertyTreeState& sourceState,
+        const GeometryPropertyTreeState& destinationState,
         bool& success);
 
     // Returns the matrix used in |LocalToAncestorRect|. Sets |success| to failse iff |localTransformNode| is not
     // equal to or a descendant of |ancestorState.transform|.
     const TransformationMatrix& localToAncestorMatrix(
         const TransformPaintPropertyNode* localTransformNode,
-        const PropertyTreeState& ancestorState,
+        const GeometryPropertyTreeState& ancestorState,
         bool& success);
 
     // Returns the "clip visual rect" between |localTransformState| and |ancestorState|. See above for the definition
     // of "clip visual rect".
     FloatRect localToAncestorClipRect(
-        const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState,
+        const GeometryPropertyTreeState& localTransformState,
+        const GeometryPropertyTreeState& ancestorState,
         bool& success);
 
     // Returns the precomputed data if already set, or adds and memoizes a new PrecomputedDataForAncestor otherwise.
-    PrecomputedDataForAncestor& getPrecomputedDataForAncestor(const PropertyTreeState&);
+    PrecomputedDataForAncestor& getPrecomputedDataForAncestor(const GeometryPropertyTreeState&);
 
     // Returns the least common ancestor in the transform tree.
     PassRefPtr<TransformPaintPropertyNode> leastCommonAncestor(PassRefPtr<TransformPaintPropertyNode>, PassRefPtr<TransformPaintPropertyNode>);

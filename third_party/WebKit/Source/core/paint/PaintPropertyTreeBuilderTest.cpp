@@ -51,7 +51,7 @@ public:
     const ClipPaintPropertyNode* rootClip()
     {
         if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-            return document().view()->layoutView()->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState.clip.get();
+            return document().view()->layoutView()->objectPaintProperties()->localBorderBoxProperties()->geometryPropertyTreeState.clip.get();
         return document().view()->rootClip();
     }
 
@@ -118,11 +118,11 @@ do { \
     LayoutRect source((sourceLayoutObject)->localOverflowRectForPaintInvalidation()); \
     source.moveBy((sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->paintOffset); \
     bool success = false; \
-    PropertyTreeState contentsProperties; \
+    GeometryPropertyTreeState contentsProperties; \
     (ancestorLayoutObject)->objectPaintProperties()->getContentsProperties(contentsProperties); \
     FloatRect actual = geometryMapper.mapToVisualRectInDestinationSpace( \
         FloatRect(source), \
-        (sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState, \
+        (sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->geometryPropertyTreeState, \
         contentsProperties, success); \
     ASSERT_TRUE(success); \
     EXPECT_EQ(expected, LayoutRect(actual)) << "GeometryMapper: expected: " << expected.toString() << ", actual: " << actual.toString(); \
@@ -876,9 +876,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
     LayoutObject* child = document().getElementById("child")->layoutObject();
     const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
-    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
-    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->geometryPropertyTreeState.effect);
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 300), scroller, frameView->layoutView());
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), child, frameView->layoutView());
 }
@@ -902,9 +902,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     LayoutObject& child = *document().getElementById("child")->layoutObject();
     const ObjectPaintProperties* childProperties = child.objectPaintProperties();
 
-    EXPECT_EQ(frameContentClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
-    EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    EXPECT_EQ(frameContentClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+    EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.effect);
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller, document().view()->layoutView());
     }
@@ -947,7 +947,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
     const ObjectPaintProperties* targetProperties = target.objectPaintProperties();
 
     EXPECT_EQ(LayoutPoint(170, 170), targetProperties->localBorderBoxProperties()->paintOffset);
-    EXPECT_EQ(frameScrollTranslation(), targetProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(frameScrollTranslation(), targetProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     CHECK_EXACT_VISUAL_RECT(LayoutRect(170, 170, 100, 100), &target, document().view()->layoutView());
 }
 
@@ -990,9 +990,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
 
     LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
     const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
-    EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
-    EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
-    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
+    EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+    EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
     CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
         // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in mapToVisualRectInAncestorSpace().
@@ -1038,8 +1038,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant)
 
     LayoutObject* absolute = document().getElementById("absolute")->layoutObject();
     const ObjectPaintProperties* absPosProperties = absolute->objectPaintProperties();
-    EXPECT_EQ(clipProperties->cssClip(), absPosProperties->localBorderBoxProperties()->propertyTreeState.clip);
-    EXPECT_EQ(framePreTranslation(), absPosProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
+    EXPECT_EQ(clipProperties->cssClip(), absPosProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+    EXPECT_EQ(framePreTranslation(), absPosProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform->parent());
     EXPECT_EQ(LayoutPoint(123, 456), absPosProperties->localBorderBoxProperties()->paintOffset);
     CHECK_VISUAL_RECT(LayoutRect(), absolute, document().view()->layoutView(),
         // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in mapToVisualRectInAncestorSpace().
@@ -1099,9 +1099,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
 
     LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
     const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
-    EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->propertyTreeState.clip);
-    EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
-    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
+    EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+    EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
     CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
         // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in geometry mapping.
@@ -1648,18 +1648,18 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
     LayoutObject* child = document().getElementById("child")->layoutObject();
     const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
-    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    PropertyTreeState contentsProperties;
+    GeometryPropertyTreeState contentsProperties;
     clipProperties->getContentsProperties(contentsProperties);
     EXPECT_EQ(frameScrollTranslation(), contentsProperties.transform);
     EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
 
-    EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->geometryPropertyTreeState.effect);
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
@@ -1684,16 +1684,16 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
     LayoutObject* child = document().getElementById("child")->layoutObject();
     const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
-    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    PropertyTreeState contentsProperties;
+    GeometryPropertyTreeState contentsProperties;
     clipProperties->getContentsProperties(contentsProperties);
     EXPECT_EQ(clipProperties->scrollTranslation(), contentsProperties.transform);
     EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
 
-    EXPECT_EQ(clipProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
-    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(clipProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
@@ -1714,11 +1714,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsProperties)
     const ObjectPaintProperties* clipProperties = clipper->objectPaintProperties();
     LayoutObject* child = document().getElementById("child")->layoutObject();
 
-    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     // CSS clip on an element causes it to clip itself, not just descendants.
-    EXPECT_EQ(clipProperties->cssClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(clipProperties->cssClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    PropertyTreeState contentsProperties;
+    GeometryPropertyTreeState contentsProperties;
     clipProperties->getContentsProperties(contentsProperties);
     EXPECT_EQ(frameScrollTranslation(), contentsProperties.transform);
     EXPECT_EQ(clipProperties->cssClip(), contentsProperties.clip);
@@ -1747,9 +1747,9 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsPropert
     LayoutObject& svgWithViewBox = *document().getElementById("svgWithViewBox")->layoutObject();
     const ObjectPaintProperties* svgWithViewBoxProperties = svgWithViewBox.objectPaintProperties();
 
-    EXPECT_EQ(frameScrollTranslation(), svgWithViewBoxProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(frameScrollTranslation(), svgWithViewBoxProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
 
-    PropertyTreeState contentsProperties;
+    GeometryPropertyTreeState contentsProperties;
     svgWithViewBoxProperties->getContentsProperties(contentsProperties);
     EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), contentsProperties.transform);
 }

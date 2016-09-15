@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PropertyTreeState_h
-#define PropertyTreeState_h
+#ifndef GeometryPropertyTreeState_h
+#define GeometryPropertyTreeState_h
 
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
@@ -14,14 +14,12 @@
 namespace blink {
 
 // Represents the combination of transform, clip and effect nodes for a particular coordinate space.
-// See GeometryMapper.
-// Scroll nodes (ScrollPaintPropertyNode) are not needed for mapping geometry and have been left off
-// of this structure.
-// TODO(pdr): Rename this GeometryPropertyTreeState.
-struct PropertyTreeState {
-    PropertyTreeState() : PropertyTreeState(nullptr, nullptr, nullptr) {}
+// See GeometryMapper. Scroll nodes (ScrollPaintPropertyNode) are not needed for mapping geometry
+// and have been left off of this structure.
+struct GeometryPropertyTreeState {
+    GeometryPropertyTreeState() : GeometryPropertyTreeState(nullptr, nullptr, nullptr) {}
 
-    PropertyTreeState(
+    GeometryPropertyTreeState(
         const TransformPaintPropertyNode* transform,
         const ClipPaintPropertyNode* clip,
         const EffectPaintPropertyNode* effect)
@@ -72,4 +70,4 @@ const A* propertyTreeNearestCommonAncestor(const A* a, const A* b)
 
 } // namespace blink
 
-#endif // PropertyTreeState_h
+#endif // GeometryPropertyTreeState_h
