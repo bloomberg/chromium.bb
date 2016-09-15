@@ -18,6 +18,7 @@
 #include "base/test/gtest_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -434,6 +435,39 @@ TEST_F(ThreadTest, MultipleWaitUntilThreadStarted) {
   // It's OK to call WaitUntilThreadStarted() multiple times.
   EXPECT_TRUE(a.WaitUntilThreadStarted());
   EXPECT_TRUE(a.WaitUntilThreadStarted());
+}
+
+TEST_F(ThreadTest, FlushForTesting) {
+  Thread a("FlushForTesting");
+
+  // Flushing a non-running thread should be a no-op.
+  a.FlushForTesting();
+
+  ASSERT_TRUE(a.Start());
+
+  // Flushing a thread with no tasks shouldn't block.
+  a.FlushForTesting();
+
+  constexpr base::TimeDelta kSleepPerTestTask =
+      base::TimeDelta::FromMilliseconds(50);
+  constexpr size_t kNumSleepTasks = 5;
+
+  const base::TimeTicks ticks_before_post = base::TimeTicks::Now();
+
+  for (size_t i = 0; i < kNumSleepTasks; ++i) {
+    a.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&base::PlatformThread::Sleep, kSleepPerTestTask));
+  }
+
+  // All tasks should have executed, as reflected by the elapsed time.
+  a.FlushForTesting();
+  EXPECT_GE(base::TimeTicks::Now() - ticks_before_post,
+            kNumSleepTasks * kSleepPerTestTask);
+
+  a.Stop();
+
+  // Flushing a stopped thread should be a no-op.
+  a.FlushForTesting();
 }
 
 namespace {
