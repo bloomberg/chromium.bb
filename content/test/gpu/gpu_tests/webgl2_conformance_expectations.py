@@ -462,6 +462,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['linux', 'amd', 'intel'], bug=483282)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'amd', 'intel'], bug=634525)
 
     # Linux with ANGLE only
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
