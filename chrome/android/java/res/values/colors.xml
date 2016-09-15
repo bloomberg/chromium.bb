@@ -39,7 +39,7 @@
     <color name="tab_back_incognito">#4F4F4F</color>
 
     <!-- App banner colors -->
-    <color name="app_banner_install_button_bg">#689f38</color>
+    <color name="app_banner_install_button_bg">#0F9D58</color>
 
     <!-- Connection Info Popup colors -->
     <color name="connection_info_popup_reset_cert_decisions_button">#000000</color>
