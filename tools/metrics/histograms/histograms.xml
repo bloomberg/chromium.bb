@@ -19384,6 +19384,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The time it takes to open a hyphenation dictionary.</summary>
 </histogram>
 
+<histogram name="Hyphenation.Open.File" units="ms">
+  <owner>kojii@chromium.org</owner>
+  <summary>The time it takes to open a hyphenation dictionary file.</summary>
+</histogram>
+
 <histogram name="Import.ImportedHistorySize.AutoImportFromIE" units="urls">
   <owner>gcomanici@chromium.org</owner>
   <summary>
