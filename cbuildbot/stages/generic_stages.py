@@ -344,7 +344,7 @@ class BuilderStage(object):
         self._run.config, self._run.options)
 
   def _Begin(self):
-    """Can be overridden.  Called before a stage is performed."""
+    """Called before a stage is performed. May be overriden."""
 
     # Tell the buildbot we are starting a new step for the waterfall
     logging.PrintBuildbotStepName(self.name)
@@ -353,7 +353,8 @@ class BuilderStage(object):
         self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
 
   def _Finish(self):
-    """Can be overridden.  Called after a stage has been performed."""
+    """Called after a stage has been performed. May be overriden."""
+
     self._PrintLoudly('Finished Stage %s - %s' %
                       (self.name, cros_build_lib.UserDateTimeFormat()))
 
@@ -468,66 +469,66 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
-
-    # See if this stage should be skipped.
-    if (self.option_name and not getattr(self._run.options, self.option_name) or
-        self.config_name and not getattr(self._run.config, self.config_name)):
-      self._StartBuildStageInCIDB()
-      self._PrintLoudly('Not running Stage %s' % self.name)
-      self.HandleSkip()
-      self._RecordResult(self.name, results_lib.Results.SKIPPED,
-                         prefix=self._prefix)
-      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
-      return
-
-    record = results_lib.Results.PreviouslyCompletedRecord(self.name)
-    if record:
-      self._StartBuildStageInCIDB()
-      # Success is stored in the results log for a stage that completed
-      # successfully in a previous run.
-      self._PrintLoudly('Stage %s processed previously' % self.name)
-      self.HandleSkip()
-      self._RecordResult(self.name, results_lib.Results.SUCCESS,
-                         prefix=self._prefix, board=record.board,
-                         time=float(record.time))
-      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
-      return
-
-    self._WaitBuildStageInCIDB()
-    ready = self.WaitUntilReady()
-
-    if not ready:
-      self._PrintLoudly('Stage %s precondition failed while waiting to start.'
-                        % self.name)
-      # TODO(nxia):The catch block for PerformStage can use a refactor actually
-      # (see crbug.com/425249, which would be a similar concern)
-
-      # If WaitUntilReady is false, mark stage as skipped in Results and CIDB
-      self._RecordResult(self.name,
-                         results_lib.Results.SKIPPED,
-                         prefix=self._prefix)
-      self._FinishBuildStageInCIDBAndMonarch(constants.BUILDER_STATUS_SKIPPED)
-      return
-
-    #  Ready to start, mark buildStage as inflight in CIDB
-    self._StartBuildStageInCIDB()
-
-    start_time = time.time()
-
-    # Set default values
-    result = results_lib.Results.SUCCESS
-    description = None
-
-    sys.stdout.flush()
-    sys.stderr.flush()
     self._Begin()
     try:
+      # Set default values
+      result = None
+      cidb_result = None
+      description = None
+      previous_record = None
+      board = ''
+      elapsed_time = None
+      start_time = time.time()
+
+      # See if this stage should be skipped.
+      if (self.option_name and
+          not getattr(self._run.options, self.option_name) or
+          self.config_name and not getattr(self._run.config, self.config_name)):
+        self._StartBuildStageInCIDB()
+        self._PrintLoudly('Not running Stage %s' % self.name)
+        self.HandleSkip()
+        result = results_lib.Results.SKIPPED
+        return
+
+      previous_record = results_lib.Results.PreviouslyCompletedRecord(self.name)
+      if previous_record:
+        self._StartBuildStageInCIDB()
+        self._PrintLoudly('Stage %s processed previously' % self.name)
+        self.HandleSkip()
+        # Success is stored in the results log for a stage that completed
+        # successfully in a previous run. But, we report the truth to CIDB.
+        result = results_lib.Results.SUCCESS
+        cidb_result = constants.BUILDER_STATUS_SKIPPED
+        # Copy over metadata from the previous record. instead of returning
+        # metadata about the current run.
+        board = previous_record.board
+        elapsed_time = float(previous_record.time)
+        return
+
+      self._WaitBuildStageInCIDB()
+      ready = self.WaitUntilReady()
+      if not ready:
+        self._PrintLoudly('Stage %s precondition failed while waiting to start.'
+                          % self.name)
+        # If WaitUntilReady is false, mark stage as skipped in Results and CIDB
+        result = results_lib.Results.SKIPPED
+        return
+
+      #  Ready to start, mark buildStage as inflight in CIDB
+      self._Print('Preconditions for the stage successfully met. '
+                  'Beginning to execute stage...')
+      self._StartBuildStageInCIDB()
+
+      start_time = time.time()
+      sys.stdout.flush()
+      sys.stderr.flush()
       # TODO(davidjames): Verify that PerformStage always returns None. See
       # crbug.com/264781
       self.PerformStage()
+      result = results_lib.Results.SUCCESS
     except SystemExit as e:
       if e.code != 0:
-        result, description, retrying = self._TopHandleStageException()
+        result, description, _ = self._TopHandleStageException()
 
       raise
     except Exception as e:
@@ -546,20 +547,25 @@ class BuilderStage(object):
       elif retrying:
         raise failures_lib.RetriableStepFailure()
     except BaseException:
-      result, description, retrying = self._TopHandleStageException()
+      result, description, _ = self._TopHandleStageException()
       raise
     finally:
-      elapsed_time = time.time() - start_time
+      # Some cases explicitly set a cidb status. For others, infer.
+      if cidb_result is None:
+        cidb_result = self._TranslateResultToCIDBStatus(result)
+      if elapsed_time is None:
+        elapsed_time = time.time() - start_time
+
       self._RecordResult(self.name, result, description, prefix=self._prefix,
-                         time=elapsed_time)
-      self._FinishBuildStageInCIDBAndMonarch(
-          self._TranslateResultToCIDBStatus(result), elapsed_time)
+                         board=board, time=elapsed_time)
+      self._FinishBuildStageInCIDBAndMonarch(cidb_result, elapsed_time)
       if isinstance(result, BaseException) and self._build_stage_id is not None:
         _, db = self._run.GetCIDBHandle()
         if db:
           failures_lib.ReportStageFailureToCIDB(db,
                                                 self._build_stage_id,
                                                 result)
+
       self._Finish()
       sys.stdout.flush()
       sys.stderr.flush()
