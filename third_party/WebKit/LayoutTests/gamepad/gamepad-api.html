@@ -9,7 +9,7 @@
 
     gamepads = navigator.getGamepads();
     shouldBe("gamepads.length", "4");
-    shouldBeUndefined("gamepads[0]");
+    shouldBeNull("gamepads[0]");
     shouldBe("gamepads.item.__proto__", "Function.prototype")
     shouldBeNull("gamepads.item(0)");
 

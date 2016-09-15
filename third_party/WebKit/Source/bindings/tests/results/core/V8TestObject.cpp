@@ -11602,10 +11602,15 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
 
+    // We assume that all the implementations support length() method, although
+    // the spec doesn't require that length() must exist.  It's okay that
+    // the interface does not have length attribute as long as the
+    // implementation supports length() member function.
+    if (index >= impl->length())
+        return;  // Returns undefined due to out-of-range.
+
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ScriptValue result = impl->item(scriptState, index);
-    if (result.isEmpty())
-        return;
     v8SetReturnValue(info, result.v8Value());
 }
 

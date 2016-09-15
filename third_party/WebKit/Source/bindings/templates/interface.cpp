@@ -21,6 +21,13 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
 
+    // We assume that all the implementations support length() method, although
+    // the spec doesn't require that length() must exist.  It's okay that
+    // the interface does not have length attribute as long as the
+    // implementation supports length() member function.
+    if (index >= impl->length())
+        return;  // Returns undefined due to out-of-range.
+
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index'] %}
     {% if getter.is_call_with_script_state %}
@@ -31,8 +38,6 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {% set getter_arguments = getter_arguments + ['exceptionState'] %}
     {% endif %}
     {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments | join(', ')}});
-    if ({{getter.is_null_expression}})
-        return;
     {{getter.v8_set_return_value}};
 }
 

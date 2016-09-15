@@ -14,17 +14,17 @@
         shouldBeNull("navigator.getGamepads().item(1)");
         shouldBeNull("navigator.getGamepads().item(2)");
         shouldBeNull("navigator.getGamepads().item(3)");
-        shouldBeUndefined("navigator.getGamepads()[0]");
-        shouldBeUndefined("navigator.getGamepads()[1]");
-        shouldBeUndefined("navigator.getGamepads()[2]");
-        shouldBeUndefined("navigator.getGamepads()[3]");
+        shouldBeNull("navigator.getGamepads()[0]");
+        shouldBeNull("navigator.getGamepads()[1]");
+        shouldBeNull("navigator.getGamepads()[2]");
+        shouldBeNull("navigator.getGamepads()[3]");
 
         // connect and disconnect
         gamepadController.connect(0);
         shouldBeNonNull("navigator.getGamepads()[0]");
         gamepadController.disconnect(0);
         shouldBeNull("navigator.getGamepads().item(0)");
-        shouldBeUndefined("navigator.getGamepads()[0]");
+        shouldBeNull("navigator.getGamepads()[0]");
 
         // connect again, and check standard access
         gamepadController.connect(0);
