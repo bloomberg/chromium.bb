@@ -74,14 +74,23 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionSta
     return image;
 }
 
-PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint hint, SnapshotReason reason, const FloatSize&) const
+PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint hint, SnapshotReason reason, const FloatSize& size) const
 {
     if (!m_context) {
         *status = InvalidSourceImageStatus;
         return nullptr;
     }
-    *status = NormalSourceImageStatus;
-    return m_context->getImage(hint, reason);
+    if (!size.width() || !size.height()) {
+        *status = ZeroSizeCanvasSourceImageStatus;
+        return nullptr;
+    }
+    RefPtr<Image> image = m_context->getImage(hint, reason);
+    if (!image) {
+        *status = InvalidSourceImageStatus;
+    } else {
+        *status = NormalSourceImageStatus;
+    }
+    return image.release();
 }
 
 bool OffscreenCanvas::isOpaque() const
