@@ -799,7 +799,7 @@ TEST_F(DataPipeTest, AllOrNone) {
   ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
   MojoHandleSignalsState hss;
 
-  // Try writing way too much.
+  // Try writing more than the total capacity of the pipe.
   uint32_t num_bytes = 20u * sizeof(int32_t);
   int32_t buffer[100];
   Seq(0, arraysize(buffer), buffer);
@@ -834,12 +834,11 @@ TEST_F(DataPipeTest, AllOrNone) {
   ASSERT_EQ(MOJO_RESULT_OK, QueryData(&num_bytes));
   ASSERT_EQ(5u * sizeof(int32_t), num_bytes);
 
-  /* TODO(jam): enable if we end up observing max capacity
-  // Too much.
+  // Try writing more than the available capacity of the pipe, but less than the
+  // total capacity.
   num_bytes = 6u * sizeof(int32_t);
   Seq(200, arraysize(buffer), buffer);
   ASSERT_EQ(MOJO_RESULT_OUT_OF_RANGE, WriteData(buffer, &num_bytes, true));
-  */
 
   // Try reading too much.
   num_bytes = 11u * sizeof(int32_t);

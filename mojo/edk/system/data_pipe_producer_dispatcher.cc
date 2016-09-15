@@ -137,9 +137,8 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
   if (*num_bytes == 0)
     return MOJO_RESULT_OK;  // Nothing to do.
 
-  bool all_or_none = flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
-  uint32_t min_num_bytes_to_write = all_or_none ? *num_bytes : 0;
-  if (min_num_bytes_to_write > options_.capacity_num_bytes) {
+  if ((flags & MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) &&
+      (*num_bytes > available_capacity_)) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
     return MOJO_RESULT_OUT_OF_RANGE;
