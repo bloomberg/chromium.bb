@@ -23,16 +23,6 @@ namespace {
 
 class Static {
  public:
-  FeatureProvider* GetFeatures(const std::string& name) const {
-    auto it = feature_providers_.find(name);
-    if (it == feature_providers_.end())
-      CRASH_WITH_MINIDUMP("FeatureProvider \"" + name + "\" not found");
-    return it->second.get();
-  }
-
- private:
-  friend struct base::DefaultLazyInstanceTraits<Static>;
-
   Static() {
     TRACE_EVENT0("startup", "extensions::FeatureProvider::Static");
     base::Time begin_time = base::Time::Now();
@@ -59,10 +49,20 @@ class Static {
     }
   }
 
+  FeatureProvider* GetFeatures(const std::string& name) const {
+    auto it = feature_providers_.find(name);
+    if (it == feature_providers_.end())
+      CRASH_WITH_MINIDUMP("FeatureProvider \"" + name + "\" not found");
+    return it->second.get();
+  }
+
+ private:
   std::map<std::string, std::unique_ptr<FeatureProvider>> feature_providers_;
+
+  DISALLOW_COPY_AND_ASSIGN(Static);
 };
 
-base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Static>::Leaky g_static = LAZY_INSTANCE_INITIALIZER;
 
 const Feature* GetFeatureFromProviderByName(const std::string& provider_name,
                                             const std::string& feature_name) {

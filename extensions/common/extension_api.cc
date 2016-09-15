@@ -99,7 +99,7 @@ struct Static {
   std::unique_ptr<ExtensionAPI> api;
 };
 
-base::LazyInstance<Static> g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Static>::Leaky g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
 
 // May override |g_lazy_instance| for a test.
 ExtensionAPI* g_shared_instance_for_test = NULL;
