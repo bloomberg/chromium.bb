@@ -2434,10 +2434,12 @@ void CompositedLayerMapping::adjustForCompositedScrolling(const GraphicsLayer* g
 {
     if (graphicsLayer == m_scrollingContentsLayer.get() || graphicsLayer == m_foregroundLayer.get()) {
         if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea()) {
-            // Note: this is just the scroll offset, *not* the "adjusted scroll offset". Scroll offset
-            // does not include the origin adjustment. That is instead baked already into offsetFromLayoutObject.
-            DoubleSize scrollOffset = scrollableArea->scrollOffset();
-            offset.expand(-scrollOffset.width(), -scrollOffset.height());
+            if (scrollableArea->usesCompositedScrolling()) {
+                // Note: this is just the scroll offset, *not* the "adjusted scroll offset". Scroll offset
+                // does not include the origin adjustment. That is instead baked already into offsetFromLayoutObject.
+                DoubleSize scrollOffset = scrollableArea->scrollOffset();
+                offset.expand(-scrollOffset.width(), -scrollOffset.height());
+            }
         }
     }
 }
