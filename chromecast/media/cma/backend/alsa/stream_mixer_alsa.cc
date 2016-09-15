@@ -764,6 +764,8 @@ bool StreamMixerAlsa::TryWriteFrames() {
     return false;
   }
 
+  const int min_frames_in_buffer =
+      output_samples_per_second_ * kMinBufferedDataMs / 1000;
   int chunk_size = output_samples_per_second_ * kMaxWriteSizeMs / 1000;
   std::vector<InputQueue*> active_inputs;
   for (auto&& input : inputs_) {
@@ -777,11 +779,8 @@ bool StreamMixerAlsa::TryWriteFrames() {
         return false;
       }
 
-      const int min_frames_in_buffer =
-          output_samples_per_second_ * kMinBufferedDataMs / 1000;
       int frames_in_buffer =
           alsa_buffer_size_ - alsa_->PcmStatusGetAvail(pcm_status_);
-      DCHECK_GE(frames_in_buffer, 0);
       if (alsa_->PcmStatusGetState(pcm_status_) == SND_PCM_STATE_XRUN ||
           frames_in_buffer < min_frames_in_buffer) {
         // If there has been (or soon will be) an underrun, continue without the
