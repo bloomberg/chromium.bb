@@ -47,10 +47,6 @@ crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-re
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-# TODO(schenney) Move to NeverFixTests
-crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
-crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
-
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
@@ -64,8 +60,6 @@ crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure 
 # Some SVG tests fail due to incorrect visual rects.
 crbug.com/598051 paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ Skip ]
 crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
-
-crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
