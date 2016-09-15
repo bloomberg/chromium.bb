@@ -115,6 +115,7 @@ public:
     }
 
 private:
+    void setCurrentCharacterIsSpace(UChar);
     void skipTrailingWhitespace(InlineIterator&, const LineInfo&);
     bool shouldMidWordBreak(UChar, LineLayoutText, const Font&,
         float& charWidth, float& widthFromLastBreakingOpportunity,
@@ -527,6 +528,11 @@ inline void nextCharacter(UChar& currentCharacter, UChar& lastCharacter, UChar& 
     lastCharacter = currentCharacter;
 }
 
+ALWAYS_INLINE void BreakingContext::setCurrentCharacterIsSpace(UChar c)
+{
+    m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
+}
+
 inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
 {
     for (size_t i = 0; i < wordMeasurements.size(); ++i) {
@@ -605,6 +611,7 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(
     wordMeasurement.width = width;
 
     m_current.moveTo(m_current.getLineLayoutItem(), end, m_current.nextBreakablePosition());
+    setCurrentCharacterIsSpace(m_current.current());
     m_lineBreak.moveTo(m_current.getLineLayoutItem(), end, m_current.nextBreakablePosition());
     return true;
 }
@@ -789,7 +796,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     for (; m_current.offset() < layoutText.textLength(); m_current.fastIncrementInTextNode()) {
         bool previousCharacterIsSpace = m_currentCharacterIsSpace;
         UChar c = m_current.current();
-        m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
+        setCurrentCharacterIsSpace(c);
 
         if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace) {
             m_lineInfo.setEmpty(false);
