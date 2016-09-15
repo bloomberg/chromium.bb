@@ -379,6 +379,10 @@ fuzzer_test("skia_path_fuzzer") {
     "//skia",
   ]
   libfuzzer_options = [ "max_len=256" ]
+  if (is_debug) {
+    # Disabled due to crashing on SkASSERT (crbug.com/642750, crbug.com/643275).
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+  }
 }
 
 fuzzer_test("skia_pathop_fuzzer") {
@@ -391,4 +395,8 @@ fuzzer_test("skia_pathop_fuzzer") {
     "//skia",
   ]
   libfuzzer_options = [ "max_len=512" ]
+  if (is_debug) {
+    # Disabled due to crashing on SkASSERT (crbug.com/642750, crbug.com/643275).
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+  }
 }
