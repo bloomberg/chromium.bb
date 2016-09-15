@@ -135,7 +135,7 @@ TEST_P(HpackDecoderTest, AddHeaderDataWithHandleControlFrameHeadersData) {
                                                      second_input.size()));
   // A string which would push the buffer over the threshold is refused.
   const int kThirdInputSize =
-      (kMaxBufferSizeBytes - (first_input.size() + second_input.size())) + 1;
+      kMaxBufferSizeBytes - (first_input.size() + second_input.size()) + 1;
   string third_input = string(kThirdInputSize, 'y');
   ASSERT_GT(first_input.size() + second_input.size() + third_input.size(),
             kMaxBufferSizeBytes);
