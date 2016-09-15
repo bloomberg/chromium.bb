@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/files/file_enumerator.h"
@@ -19,9 +21,7 @@
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/version.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
@@ -258,8 +258,9 @@ void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
 static int WriteFileHelper(const base::FilePath& path,
                            std::unique_ptr<std::string> content) {
   base::FilePath dir = path.DirName();
-  return (base::CreateDirectoryAndGetError(dir, NULL) &&
-          base::WriteFile(path, content->data(), content->size()));
+  if (!base::CreateDirectoryAndGetError(dir, nullptr))
+    return -1;
+  return base::WriteFile(path, content->data(), content->size());
 }
 
 void ContentHashFetcherJob::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -352,9 +353,10 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     base::FilePath verified_contents_path =
         file_util::GetVerifiedContentsPath(extension_path_);
     verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
-    if (!verified_contents_->InitFrom(verified_contents_path, false))
+    if (!verified_contents_->InitFrom(verified_contents_path, false)) {
+      verified_contents_.reset();
       return false;
-    verified_contents_.reset();
+    }
   }
 
   base::FileEnumerator enumerator(extension_path_,
@@ -423,14 +425,14 @@ void ContentHashFetcherJob::DispatchCallback() {
 
 // ----
 
-ContentHashFetcher::ContentHashFetcher(content::BrowserContext* context,
-                                       ContentVerifierDelegate* delegate,
-                                       const FetchCallback& callback)
-    : context_(context),
+ContentHashFetcher::ContentHashFetcher(
+    net::URLRequestContextGetter* context_getter,
+    ContentVerifierDelegate* delegate,
+    const FetchCallback& callback)
+    : context_getter_(context_getter),
       delegate_(delegate),
       fetch_callback_(callback),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ContentHashFetcher::~ContentHashFetcher() {
   for (JobMap::iterator i = jobs_.begin(); i != jobs_.end(); ++i) {
@@ -462,13 +464,11 @@ void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   DCHECK(extension->version());
   GURL url =
       delegate_->GetSignatureFetchUrl(extension->id(), *extension->version());
-  ContentHashFetcherJob* job = new ContentHashFetcherJob(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext(),
-      delegate_->GetPublicKey(), extension->id(),
-      extension->path(), url, force,
-      base::Bind(&ContentHashFetcher::JobFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+  ContentHashFetcherJob* job =
+      new ContentHashFetcherJob(context_getter_, delegate_->GetPublicKey(),
+                                extension->id(), extension->path(), url, force,
+                                base::Bind(&ContentHashFetcher::JobFinished,
+                                           weak_ptr_factory_.GetWeakPtr()));
   jobs_.insert(std::make_pair(key, job));
   job->Start();
 }

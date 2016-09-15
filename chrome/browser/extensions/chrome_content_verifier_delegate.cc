@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
@@ -131,8 +133,8 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::ShouldBeVerified(
 }
 
 ContentVerifierKey ChromeContentVerifierDelegate::GetPublicKey() {
-  return ContentVerifierKey(extension_misc::kWebstoreSignaturesPublicKey,
-                            extension_misc::kWebstoreSignaturesPublicKeySize);
+  return ContentVerifierKey(kWebstoreSignaturesPublicKey,
+                            kWebstoreSignaturesPublicKeySize);
 }
 
 GURL ChromeContentVerifierDelegate::GetSignatureFetchUrl(

@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -1765,6 +1767,10 @@ void ExtensionService::OnExtensionInstalled(
       disable_reasons = Extension::DISABLE_NONE;
     }
   }
+
+  // If the old version of the extension was disabled due to corruption, this
+  // new install may correct the problem.
+  disable_reasons &= ~Extension::DISABLE_CORRUPTED;
 
   // Unsupported requirements overrides the management policy.
   if (install_flags & extensions::kInstallFlagHasRequirementErrors) {

@@ -246,10 +246,6 @@ extern const char kAppStateReadyToRun[];
 // The path part of the file system url used for media file systems.
 extern const char kMediaFileSystemPathPart[];
 
-// The key used for signing some pieces of data from the webstore.
-extern const uint8_t kWebstoreSignaturesPublicKey[];
-extern const int kWebstoreSignaturesPublicKeySize;
-
 #if defined(OS_CHROMEOS)
 // Returns true if |extension_id| is one of the IME extensions that will create
 // IME menu.

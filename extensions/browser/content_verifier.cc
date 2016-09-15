@@ -6,11 +6,14 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_hash_reader.h"
 #include "extensions/browser/content_verifier_delegate.h"
@@ -63,12 +66,12 @@ ContentVerifier::ContentVerifier(content::BrowserContext* context,
       context_(context),
       delegate_(delegate),
       fetcher_(new ContentHashFetcher(
-          context,
+          content::BrowserContext::GetDefaultStoragePartition(context)
+              ->GetURLRequestContext(),
           delegate,
           base::Bind(&ContentVerifier::OnFetchComplete, this))),
       observer_(this),
-      io_data_(new ContentVerifierIOData) {
-}
+      io_data_(new ContentVerifierIOData) {}
 
 ContentVerifier::~ContentVerifier() {
 }

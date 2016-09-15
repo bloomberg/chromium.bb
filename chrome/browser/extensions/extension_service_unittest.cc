@@ -6924,3 +6924,25 @@ TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   EXPECT_EQ(0u, registry()->terminated_extensions().size());
   EXPECT_EQ(0u, registry()->blacklisted_extensions().size());
 }
+
+// Test that updating a corrupt extension removes the DISABLE_CORRUPTED disable
+// reason.
+TEST_F(ExtensionServiceTest, CorruptExtensionUpdate) {
+  InitializeEmptyExtensionService();
+
+  base::FilePath v1_path = data_dir().AppendASCII("good.crx");
+  const Extension* v1 = InstallCRX(v1_path, INSTALL_NEW);
+  std::string id = v1->id();
+
+  service()->DisableExtension(id, Extension::DISABLE_CORRUPTED);
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+  EXPECT_TRUE(prefs->HasDisableReason(id, Extension::DISABLE_CORRUPTED));
+
+  base::FilePath v2_path = data_dir().AppendASCII("good2.crx");
+  UpdateExtension(id, v2_path, ENABLED);
+
+  EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  EXPECT_FALSE(prefs->HasDisableReason(id, Extension::DISABLE_CORRUPTED));
+}
