@@ -121,6 +121,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(disable_multisampling_color_mask_usage)
   IPC_STRUCT_TRAITS_MEMBER(disable_webgl_rgb_multisampling_usage)
   IPC_STRUCT_TRAITS_MEMBER(msaa_is_slow)
+  IPC_STRUCT_TRAITS_MEMBER(disable_one_component_textures)
   IPC_STRUCT_TRAITS_MEMBER(chromium_image_rgb_emulation)
   IPC_STRUCT_TRAITS_MEMBER(emulate_rgb_buffer_with_rgba)
 

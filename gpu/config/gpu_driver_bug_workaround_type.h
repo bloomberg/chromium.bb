@@ -15,10 +15,10 @@
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)                   \
   GPU_OP(AVDA_DONT_COPY_PICTURES,                            \
          avda_dont_copy_pictures)                            \
-  GPU_OP(AVDA_NO_EGLIMAGE_FOR_LUMINANCE_TEX,                 \
-         avda_no_eglimage_for_luminance_tex)                 \
   GPU_OP(AVOID_EGL_IMAGE_TARGET_TEXTURE_REUSE,               \
          avoid_egl_image_target_texture_reuse)               \
+  GPU_OP(AVOID_ONE_COMPONENT_EGL_IMAGES,                     \
+         avoid_one_component_egl_images)                     \
   GPU_OP(BROKEN_EGL_IMAGE_REF_COUNTING,                      \
          broken_egl_image_ref_counting)                      \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \

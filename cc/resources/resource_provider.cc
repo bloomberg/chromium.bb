@@ -448,10 +448,15 @@ ResourceProvider::ResourceProvider(
   use_texture_format_bgra_ = caps.texture_format_bgra8888;
   use_texture_usage_hint_ = caps.texture_usage;
   use_compressed_texture_etc1_ = caps.texture_format_etc1;
-  yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
-  yuv_highbit_resource_format_ = yuv_resource_format_;
-  if (caps.texture_half_float_linear)
-    yuv_highbit_resource_format_ = LUMINANCE_F16;
+
+  if (caps.disable_one_component_textures) {
+    yuv_resource_format_ = yuv_highbit_resource_format_ = RGBA_8888;
+  } else {
+    yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
+    yuv_highbit_resource_format_ =
+        caps.texture_half_float_linear ? LUMINANCE_F16 : yuv_resource_format_;
+  }
+
   use_sync_query_ = caps.sync_query;
 
   GLES2Interface* gl = ContextGL();
@@ -817,6 +822,16 @@ ResourceProvider::ResourceType ResourceProvider::GetResourceType(
 
 GLenum ResourceProvider::GetResourceTextureTarget(ResourceId id) {
   return GetResource(id)->target;
+}
+
+bool ResourceProvider::IsImmutable(ResourceId id) {
+  if (IsGpuResourceType(default_resource_type_)) {
+    return GetTextureHint(id) == TEXTURE_HINT_IMMUTABLE;
+  } else {
+    // Software resources are immutable; they cannot change format or be
+    // resized.
+    return true;
+  }
 }
 
 ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {

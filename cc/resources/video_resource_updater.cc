@@ -173,6 +173,56 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 }
 
 VideoResourceUpdater::ResourceList::iterator
+VideoResourceUpdater::RecycleOrAllocateResource(
+    const gfx::Size& resource_size,
+    ResourceFormat resource_format,
+    const gfx::ColorSpace& color_space,
+    bool software_resource,
+    bool immutable_hint,
+    int unique_id,
+    int plane_index) {
+  ResourceList::iterator recyclable_resource = all_resources_.end();
+  for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
+    // If the plane index is valid (positive, or 0, meaning all planes)
+    // then we are allowed to return a referenced resource that already
+    // contains the right frame data. It's safe to reuse it even if
+    // resource_provider_ holds some references to it, because those
+    // references are read-only.
+    if (plane_index != -1 && it->Matches(unique_id, plane_index)) {
+      DCHECK(it->resource_size() == resource_size);
+      DCHECK(it->resource_format() == resource_format);
+      DCHECK(it->mailbox().IsZero() == software_resource);
+      return it;
+    }
+
+    // Otherwise check whether this is an unreferenced resource of the right
+    // format that we can recycle. Remember it, but don't return immediately,
+    // because we still want to find any reusable resources.
+    // Resources backed by SharedMemory are not ref-counted, unlike mailboxes,
+    // so the definition of |in_use| must take this into account. Full
+    // discussion in codereview.chromium.org/145273021.
+    const bool in_use =
+        it->has_refs() ||
+        (software_resource &&
+         resource_provider_->InUseByConsumer(it->resource_id()));
+
+    if (!in_use && it->resource_size() == resource_size &&
+        it->resource_format() == resource_format &&
+        it->mailbox().IsZero() == software_resource &&
+        resource_provider_->IsImmutable(it->resource_id()) == immutable_hint) {
+      recyclable_resource = it;
+    }
+  }
+
+  if (recyclable_resource != all_resources_.end())
+    return recyclable_resource;
+
+  // There was nothing available to reuse or recycle. Allocate a new resource.
+  return AllocateResource(resource_size, resource_format, color_space,
+                          !software_resource, immutable_hint);
+}
+
+VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        ResourceFormat format,
                                        const gfx::ColorSpace& color_space,
@@ -184,8 +234,7 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
       plane_size, immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
                                  : ResourceProvider::TEXTURE_HINT_DEFAULT,
       format, color_space);
-  if (resource_id == 0)
-    return all_resources_.end();
+  DCHECK_NE(resource_id, 0u);
 
   gpu::Mailbox mailbox;
   if (has_mailbox) {
@@ -298,15 +347,23 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   ResourceFormat output_resource_format =
       resource_provider_->YuvResourceFormat(bits_per_channel);
 
+  // If GPU compositing is enabled, but the output resource format
+  // returned by the resource provider is RGBA_8888, then a GPU driver
+  // bug workaround requires that YUV frames must be converted to RGB
+  // before texture upload.
+  bool texture_needs_rgb_conversion =
+      !software_compositor &&
+      output_resource_format == ResourceFormat::RGBA_8888;
   size_t output_plane_count = media::VideoFrame::NumPlanes(input_frame_format);
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
   // conversion here. That involves an extra copy of each frame to a bitmap.
   // Obviously, this is suboptimal and should be addressed once ubercompositor
   // starts shaping up.
-  if (software_compositor) {
+  if (software_compositor || texture_needs_rgb_conversion) {
     output_resource_format = kRGBResourceFormat;
     output_plane_count = 1;
+    bits_per_channel = 8;
   }
 
   // Drop recycled resources that are the wrong format.
@@ -328,83 +385,73 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       break;
     }
 
-    // Try recycle a previously-allocated resource.
-    ResourceList::iterator resource_it = all_resources_.end();
-    for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
-      if (it->resource_size() == output_plane_resource_size &&
-          it->resource_format() == output_resource_format) {
-        if (it->Matches(video_frame->unique_id(), i)) {
-          // Bingo, we found a resource that already contains the data we are
-          // planning to put in it. It's safe to reuse it even if
-          // resource_provider_ holds some references to it, because those
-          // references are read-only.
-          resource_it = it;
-          break;
-        }
-
-        // This extra check is needed because resources backed by SharedMemory
-        // are not ref-counted, unlike mailboxes. Full discussion in
-        // codereview.chromium.org/145273021.
-        const bool in_use =
-            software_compositor &&
-            resource_provider_->InUseByConsumer(it->resource_id());
-        if (!it->has_refs() && !in_use) {
-          // We found a resource with the correct size that we can overwrite.
-          resource_it = it;
-        }
-      }
-    }
-
-    // Check if we need to allocate a new resource.
-    if (resource_it == all_resources_.end()) {
-      const bool is_immutable = true;
-      resource_it = AllocateResource(
-          output_plane_resource_size, output_resource_format,
-          video_frame->ColorSpace(), !software_compositor, is_immutable);
-    }
-    if (resource_it == all_resources_.end())
-      break;
+    const bool is_immutable = true;
+    ResourceList::iterator resource_it = RecycleOrAllocateResource(
+        output_plane_resource_size, output_resource_format,
+        video_frame->ColorSpace(), software_compositor, is_immutable,
+        video_frame->unique_id(), i);
 
     resource_it->add_ref();
     plane_resources.push_back(resource_it);
-  }
-
-  if (plane_resources.size() != output_plane_count) {
-    // Allocation failed, nothing will be returned so restore reference counts.
-    for (ResourceList::iterator resource_it : plane_resources)
-      resource_it->remove_ref();
-    return VideoFrameExternalResources();
   }
 
   VideoFrameExternalResources external_resources;
 
   external_resources.bits_per_channel = bits_per_channel;
 
-  if (software_compositor) {
+  if (software_compositor || texture_needs_rgb_conversion) {
     DCHECK_EQ(plane_resources.size(), 1u);
     PlaneResource& plane_resource = *plane_resources[0];
     DCHECK_EQ(plane_resource.resource_format(), kRGBResourceFormat);
-    DCHECK(plane_resource.mailbox().IsZero());
+    DCHECK_EQ(software_compositor, plane_resource.mailbox().IsZero());
 
     if (!plane_resource.Matches(video_frame->unique_id(), 0)) {
       // We need to transfer data from |video_frame| to the plane resource.
-      if (!video_renderer_)
-        video_renderer_.reset(new media::SkCanvasVideoRenderer);
+      if (software_compositor) {
+        if (!video_renderer_)
+          video_renderer_.reset(new media::SkCanvasVideoRenderer);
 
-      ResourceProvider::ScopedWriteLockSoftware lock(
-          resource_provider_, plane_resource.resource_id());
-      SkCanvas canvas(lock.sk_bitmap());
-      // This is software path, so canvas and video_frame are always backed
-      // by software.
-      video_renderer_->Copy(video_frame, &canvas, media::Context3D());
+        ResourceProvider::ScopedWriteLockSoftware lock(
+            resource_provider_, plane_resource.resource_id());
+        SkCanvas canvas(lock.sk_bitmap());
+        // This is software path, so canvas and video_frame are always backed
+        // by software.
+        video_renderer_->Copy(video_frame, &canvas, media::Context3D());
+      } else {
+        size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
+            video_frame->coded_size().width(), ResourceFormat::RGBA_8888);
+        size_t needed_size = bytes_per_row * video_frame->coded_size().height();
+        if (upload_pixels_.size() < needed_size)
+          upload_pixels_.resize(needed_size);
+
+        media::SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+            video_frame.get(), &upload_pixels_[0], bytes_per_row);
+
+        resource_provider_->CopyToResource(plane_resource.resource_id(),
+                                           &upload_pixels_[0],
+                                           plane_resource.resource_size());
+      }
       plane_resource.SetUniqueId(video_frame->unique_id(), 0);
     }
 
-    external_resources.software_resources.push_back(
-        plane_resource.resource_id());
-    external_resources.software_release_callback =
-        base::Bind(&RecycleResource, AsWeakPtr(), plane_resource.resource_id());
-    external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
+    if (software_compositor) {
+      external_resources.software_resources.push_back(
+          plane_resource.resource_id());
+      external_resources.software_release_callback = base::Bind(
+          &RecycleResource, AsWeakPtr(), plane_resource.resource_id());
+      external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
+    } else {
+      // VideoResourceUpdater shares a context with the compositor so
+      // a sync token is not required.
+      TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
+                             resource_provider_->GetResourceTextureTarget(
+                                 plane_resource.resource_id()));
+      mailbox.set_color_space(video_frame->ColorSpace());
+      external_resources.mailboxes.push_back(mailbox);
+      external_resources.release_callbacks.push_back(base::Bind(
+          &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
+      external_resources.type = VideoFrameExternalResources::RGBA_RESOURCE;
+    }
     return external_resources;
   }
 
@@ -425,12 +472,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // uploading (including non-frame data to fill in the stride).
       int video_stride_bytes = video_frame->stride(i);
 
-      size_t bytes_per_row = ResourceUtil::UncheckedWidthInBytes<size_t>(
+      size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
           resource_size_pixels.width(), plane_resource.resource_format());
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
       size_t upload_image_stride =
-          MathUtil::UncheckedRoundUp<size_t>(bytes_per_row, 4u);
+          MathUtil::CheckedRoundUp<size_t>(bytes_per_row, 4u);
 
       bool needs_conversion = false;
       int shift = 0;
@@ -519,6 +566,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       external_resources.multiplier = 2048.0 / max_input_value;
     }
 
+    // VideoResourceUpdater shares a context with the compositor so a
+    // sync token is not required.
     TextureMailbox mailbox(plane_resource.mailbox(), gpu::SyncToken(),
                            resource_provider_->GetResourceTextureTarget(
                                plane_resource.resource_id()));
@@ -565,29 +614,13 @@ void VideoResourceUpdater::CopyPlaneTexture(
   // target to avoid loss of precision or dropping any alpha component.
   const ResourceFormat copy_target_format = ResourceFormat::RGBA_8888;
 
-  // Search for an existing resource to reuse.
-  VideoResourceUpdater::ResourceList::iterator resource = all_resources_.end();
-
-  for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
-    // Reuse resource if attributes match and the resource is a currently
-    // unreferenced texture.
-    if (it->resource_size() == output_plane_resource_size &&
-        it->resource_format() == copy_target_format &&
-        !it->mailbox().IsZero() && !it->has_refs() &&
-        resource_provider_->GetTextureHint(it->resource_id()) !=
-            ResourceProvider::TEXTURE_HINT_IMMUTABLE) {
-      resource = it;
-      break;
-    }
-  }
-
-  // Otherwise allocate a new resource.
-  if (resource == all_resources_.end()) {
-    const bool is_immutable = false;
-    resource = AllocateResource(output_plane_resource_size, copy_target_format,
-                                video_frame->ColorSpace(), true, is_immutable);
-  }
-
+  const bool is_immutable = false;
+  const int no_unique_id = 0;
+  const int no_plane_index = -1;  // Do not recycle referenced textures.
+  VideoResourceUpdater::ResourceList::iterator resource =
+      RecycleOrAllocateResource(output_plane_resource_size, copy_target_format,
+                                video_frame->ColorSpace(), false, is_immutable,
+                                no_unique_id, no_plane_index);
   resource->add_ref();
 
   ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
@@ -679,7 +712,6 @@ void VideoResourceUpdater::RecycleResource(
     // Resource was already deleted.
     return;
   }
-
   const ResourceList::iterator resource_it = std::find_if(
       updater->all_resources_.begin(), updater->all_resources_.end(),
       [resource_id](const PlaneResource& plane_resource) {

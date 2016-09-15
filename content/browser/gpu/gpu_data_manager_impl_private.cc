@@ -49,9 +49,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
-#if defined(OS_ANDROID)
-#include "media/base/media_switches.h"
-#endif
 
 namespace content {
 
@@ -744,13 +741,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     }
   }
-
-#if defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes) &&
-      IsDriverBugWorkaroundActive(gpu::AVDA_NO_EGLIMAGE_FOR_LUMINANCE_TEX)) {
-    command_line->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
-  }
-#endif
 
 #if defined(OS_WIN)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) &&

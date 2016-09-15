@@ -1902,15 +1902,15 @@ LONG_STRING_CONST(
     },
     {
       "id": 180,
-      "cr_bugs": [632461],
-      "description": "eglCreateImageKHR fails for L8 textures on PowerVR",
+      "cr_bugs": [579060,632461],
+      "description": "eglCreateImageKHR fails for one component textures on PowerVR",
       "os": {
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX.*",
+      "gl_renderer": "PowerVR .*",
       "features": [
-        "avda_no_eglimage_for_luminance_tex"
+        "avoid_one_component_egl_images"
       ]
     },
     {

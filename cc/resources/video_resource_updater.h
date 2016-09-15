@@ -136,6 +136,23 @@ class CC_EXPORT VideoResourceUpdater
   // This needs to be a container where iterators can be erased without
   // invalidating other iterators.
   typedef std::list<PlaneResource> ResourceList;
+
+  // Obtain a resource of the right format by either recycling an
+  // unreferenced but appropriately formatted resource, or by
+  // allocating a new resource.
+  // Additionally, if the |unique_id| and |plane_index| match, then
+  // it is assumed that the resource has the right data already and will only be
+  // used for reading, and so is returned even if it is still referenced.
+  // Passing -1 for |plane_index| avoids returning referenced
+  // resources.
+  ResourceList::iterator RecycleOrAllocateResource(
+      const gfx::Size& resource_size,
+      ResourceFormat resource_format,
+      const gfx::ColorSpace& color_space,
+      bool software_resource,
+      bool immutable_hint,
+      int unique_id,
+      int plane_index);
   ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
                                           ResourceFormat format,
                                           const gfx::ColorSpace& color_space,
