@@ -7956,6 +7956,24 @@
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the profile manager.''',
     },
     {
+      'name': 'ForceBrowserSignin',
+      'type': 'main',
+      'future': True,
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:55-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 346,
+      'caption': '''Enables force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'tags': [],
+      'desc': '''If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with his or her profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false.
+
+      If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
       'name': 'SSLVersionMin',
       'type': 'string-enum',
       'schema': {

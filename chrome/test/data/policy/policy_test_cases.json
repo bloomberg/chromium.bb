@@ -1874,6 +1874,16 @@
     ]
   },
 
+  "ForceBrowserSignin": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ForceBrowserSignin": false },
+    "pref_mappings": [
+      { "pref": "profile.force_browser_signin",
+        "local_state": true
+      }
+    ]
+  },
+
   "SSLVersionMin": {
   },
 
