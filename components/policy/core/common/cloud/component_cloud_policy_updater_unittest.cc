@@ -87,7 +87,7 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   task_runner_ = new base::TestSimpleTaskRunner();
-  cache_.reset(new ResourceCache(temp_dir_.path(), task_runner_));
+  cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
   store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
                          ComponentPolicyBuilder::kFakeToken);

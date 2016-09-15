@@ -127,12 +127,9 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   }
 
   void ReloadConfiguration() {
-    manager_.reset(new ProfilePrefStoreManager(profile_dir_.path(),
-                                               configuration_,
-                                               kReportingIdCount,
-                                               seed_,
-                                               "device_id",
-                                               &local_state_));
+    manager_.reset(new ProfilePrefStoreManager(
+        profile_dir_.GetPath(), configuration_, kReportingIdCount, seed_,
+        "device_id", &local_state_));
   }
 
   void TearDown() override { DestroyPrefStore(); }
@@ -227,8 +224,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
 
   void ReplaceStringInPrefs(const std::string& find,
                             const std::string& replace) {
-    base::FileEnumerator file_enum(
-        profile_dir_.path(), true, base::FileEnumerator::FILES);
+    base::FileEnumerator file_enum(profile_dir_.GetPath(), true,
+                                   base::FileEnumerator::FILES);
 
     for (base::FilePath path = file_enum.Next(); !path.empty();
          path = file_enum.Next()) {

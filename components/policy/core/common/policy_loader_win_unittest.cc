@@ -473,13 +473,14 @@ PRegTestHarness::~PRegTestHarness() {}
 void PRegTestHarness::SetUp() {
   base::win::SetDomainStateForTesting(false);
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  preg_file_path_ = temp_dir_.path().Append(PolicyLoaderWin::kPRegFileName);
+  preg_file_path_ = temp_dir_.GetPath().Append(PolicyLoaderWin::kPRegFileName);
   ASSERT_TRUE(base::WriteFile(preg_file_path_,
                                    preg_parser::kPRegFileHeader,
                                    arraysize(preg_parser::kPRegFileHeader)));
 
   memset(&gpo_, 0, sizeof(GROUP_POLICY_OBJECT));
-  gpo_.lpFileSysPath = const_cast<wchar_t*>(temp_dir_.path().value().c_str());
+  gpo_.lpFileSysPath =
+      const_cast<wchar_t*>(temp_dir_.GetPath().value().c_str());
 }
 
 ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(

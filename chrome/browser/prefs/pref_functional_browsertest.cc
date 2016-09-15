@@ -56,11 +56,11 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   ASSERT_TRUE(new_download_dir.CreateUniqueTempDir());
 
   base::FilePath downloaded_pkg =
-      new_download_dir.path().AppendASCII("a_zip_file.zip");
+      new_download_dir.GetPath().AppendASCII("a_zip_file.zip");
 
   // Set pref to download in new_download_dir.
   browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, new_download_dir.path());
+      prefs::kDownloadDefaultDirectory, new_download_dir.GetPath());
 
   // Create a downloads observer.
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(

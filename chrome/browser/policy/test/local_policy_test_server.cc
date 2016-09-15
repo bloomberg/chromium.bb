@@ -61,7 +61,7 @@ LocalPolicyTestServer::LocalPolicyTestServer()
                            net::BaseTestServer::kLocalhost,
                            base::FilePath()) {
   CHECK(server_data_dir_.CreateUniqueTempDir());
-  config_file_ = server_data_dir_.path().Append(kPolicyFileName);
+  config_file_ = server_data_dir_.GetPath().Append(kPolicyFileName);
 }
 
 LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
@@ -95,7 +95,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
   if (!key->ExportPrivateKey(&signing_key_bits))
     return false;
 
-  policy_key_ = server_data_dir_.path().Append(kSigningKeyFileName);
+  policy_key_ = server_data_dir_.GetPath().Append(kSigningKeyFileName);
   int bytes_written = base::WriteFile(
       policy_key_, reinterpret_cast<const char*>(signing_key_bits.data()),
       signing_key_bits.size());
@@ -104,8 +104,8 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
     return false;
 
   // Write the signature data.
-  base::FilePath signature_file = server_data_dir_.path().Append(
-      kSigningKeySignatureFileName);
+  base::FilePath signature_file =
+      server_data_dir_.GetPath().Append(kSigningKeySignatureFileName);
   bytes_written = base::WriteFile(
       signature_file,
       signature.c_str(),
@@ -142,7 +142,7 @@ bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
   CHECK(server_data_dir_.IsValid());
 
   std::string selector = GetSelector(type, entity_id);
-  base::FilePath policy_file = server_data_dir_.path().AppendASCII(
+  base::FilePath policy_file = server_data_dir_.GetPath().AppendASCII(
       base::StringPrintf("policy_%s.bin", selector.c_str()));
 
   return base::WriteFile(policy_file, policy.c_str(), policy.size()) ==
@@ -155,7 +155,7 @@ bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
   CHECK(server_data_dir_.IsValid());
 
   std::string selector = GetSelector(type, entity_id);
-  base::FilePath data_file = server_data_dir_.path().AppendASCII(
+  base::FilePath data_file = server_data_dir_.GetPath().AppendASCII(
       base::StringPrintf("policy_%s.data", selector.c_str()));
 
   return base::WriteFile(data_file, data.c_str(), data.size()) ==
@@ -237,13 +237,13 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
   if (!policy_key_.empty())
     arguments->SetString("policy-key", policy_key_.AsUTF8Unsafe());
   if (server_data_dir_.IsValid()) {
-    arguments->SetString("data-dir", server_data_dir_.path().AsUTF8Unsafe());
+    arguments->SetString("data-dir", server_data_dir_.GetPath().AsUTF8Unsafe());
 
     if (!clients_.empty()) {
       std::string json;
       base::JSONWriter::Write(clients_, &json);
       base::FilePath client_state_file =
-          server_data_dir_.path().Append(kClientStateFileName);
+          server_data_dir_.GetPath().Append(kClientStateFileName);
       if (base::WriteFile(client_state_file, json.c_str(), json.size()) !=
           static_cast<int>(json.size())) {
         return false;

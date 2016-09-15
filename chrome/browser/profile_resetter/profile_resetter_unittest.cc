@@ -559,12 +559,9 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<Extension> theme =
-      CreateExtension(base::ASCIIToUTF16("example1"),
-                      temp_dir.path(),
-                      Manifest::INVALID_LOCATION,
-                      extensions::Manifest::TYPE_THEME,
-                      false);
+  scoped_refptr<Extension> theme = CreateExtension(
+      base::ASCIIToUTF16("example1"), temp_dir.GetPath(),
+      Manifest::INVALID_LOCATION, extensions::Manifest::TYPE_THEME, false);
   service_->FinishInstallationForTest(theme.get());
   // Let ThemeService finish creating the theme pack.
   base::RunLoop().RunUntilIdle();
@@ -655,12 +652,9 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<Extension> ext1 =
-      CreateExtension(base::ASCIIToUTF16("example1"),
-                      temp_dir.path(),
-                      Manifest::INVALID_LOCATION,
-                      extensions::Manifest::TYPE_THEME,
-                      false);
+  scoped_refptr<Extension> ext1 = CreateExtension(
+      base::ASCIIToUTF16("example1"), temp_dir.GetPath(),
+      Manifest::INVALID_LOCATION, extensions::Manifest::TYPE_THEME, false);
   service_->FinishInstallationForTest(ext1.get());
   // Let ThemeService finish creating the theme pack.
   base::RunLoop().RunUntilIdle();

@@ -133,7 +133,7 @@ class ProfileManagerTest : public testing::Test {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.path()));
+        new UnittestProfileManager(temp_dir_.GetPath()));
 
 #if defined(OS_CHROMEOS)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
@@ -155,13 +155,12 @@ class ProfileManagerTest : public testing::Test {
                           const std::string& name,
                           bool is_supervised,
                           MockObserver* mock_observer) {
-    manager->CreateProfileAsync(
-        temp_dir_.path().AppendASCII(name),
-        base::Bind(&MockObserver::OnProfileCreated,
-                   base::Unretained(mock_observer)),
-        base::UTF8ToUTF16(name),
-        profiles::GetDefaultAvatarIconUrl(0),
-        is_supervised ? "Dummy ID" : std::string());
+    manager->CreateProfileAsync(temp_dir_.GetPath().AppendASCII(name),
+                                base::Bind(&MockObserver::OnProfileCreated,
+                                           base::Unretained(mock_observer)),
+                                base::UTF8ToUTF16(name),
+                                profiles::GetDefaultAvatarIconUrl(0),
+                                is_supervised ? "Dummy ID" : std::string());
   }
 
   // Helper function to add a profile with |profile_name| to |profile_manager|'s
@@ -172,7 +171,7 @@ class ProfileManagerTest : public testing::Test {
     ProfileAttributesStorage& storage =
         profile_manager->GetProfileAttributesStorage();
     size_t num_profiles = storage.GetNumberOfProfiles();
-    base::FilePath path = temp_dir_.path().AppendASCII(path_suffix);
+    base::FilePath path = temp_dir_.GetPath().AppendASCII(path_suffix);
     storage.AddProfile(path, profile_name, std::string(), base::string16(), 0,
                        std::string());
     EXPECT_EQ(num_profiles + 1u, storage.GetNumberOfProfiles());
@@ -210,7 +209,7 @@ class ProfileManagerTest : public testing::Test {
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {
-  base::FilePath dest_path = temp_dir_.path();
+  base::FilePath dest_path = temp_dir_.GetPath();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -271,17 +270,18 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
       chromeos::ProfileHelper::GetUserProfileDir(active_user->username_hash()));
   EXPECT_EQ(expected_logged_in.value(),
             profile_manager->GetInitialProfileDir().value());
-  VLOG(1) << temp_dir_.path().Append(
-      profile_manager->GetInitialProfileDir()).value();
+  VLOG(1) << temp_dir_.GetPath()
+                 .Append(profile_manager->GetInitialProfileDir())
+                 .value();
 }
 
 #endif
 
 TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
-  base::FilePath dest_path1 = temp_dir_.path();
+  base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
-  base::FilePath dest_path2 = temp_dir_.path();
+  base::FilePath dest_path2 = temp_dir_.GetPath();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -443,7 +443,7 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 
   const base::FilePath supervised_path =
-      temp_dir_.path().AppendASCII("Supervised");
+      temp_dir_.GetPath().AppendASCII("Supervised");
   TestingProfile* supervised_profile =
       new TestingProfile(supervised_path, NULL);
   supervised_profile->GetPrefs()->SetString(prefs::kSupervisedUserId, "An ID");
@@ -453,8 +453,8 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
   EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0u]->IsOmitted());
 
-  const base::FilePath nonsupervised_path = temp_dir_.path().AppendASCII(
-      "Non-Supervised");
+  const base::FilePath nonsupervised_path =
+      temp_dir_.GetPath().AppendASCII("Non-Supervised");
   TestingProfile* nonsupervised_profile = new TestingProfile(nonsupervised_path,
                                                              NULL);
   profile_manager->RegisterTestingProfile(nonsupervised_profile, true, false);
@@ -470,14 +470,14 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
 
 TEST_F(ProfileManagerTest, GetGuestProfilePath) {
   base::FilePath guest_path = ProfileManager::GetGuestProfilePath();
-  base::FilePath expected_path = temp_dir_.path();
+  base::FilePath expected_path = temp_dir_.GetPath();
   expected_path = expected_path.Append(chrome::kGuestProfileDir);
   EXPECT_EQ(expected_path, guest_path);
 }
 
 TEST_F(ProfileManagerTest, GetSystemProfilePath) {
   base::FilePath system_profile_path = ProfileManager::GetSystemProfilePath();
-  base::FilePath expected_path = temp_dir_.path();
+  base::FilePath expected_path = temp_dir_.GetPath();
   expected_path = expected_path.Append(chrome::kSystemProfileDir);
   EXPECT_EQ(expected_path, system_profile_path);
 }
@@ -503,7 +503,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestGuestProfileManager(temp_dir_.path()));
+        new UnittestGuestProfileManager(temp_dir_.GetPath()));
 
 #if defined(OS_CHROMEOS)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
@@ -608,7 +608,7 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
 }
 
 TEST_F(ProfileManagerTest, InitProfileUserPrefs) {
-  base::FilePath dest_path = temp_dir_.path();
+  base::FilePath dest_path = temp_dir_.GetPath();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -634,7 +634,7 @@ TEST_F(ProfileManagerTest, InitProfileUserPrefs) {
 // Tests that a new profile's entry in the profile info cache is setup with the
 // same values that are in the profile prefs.
 TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
-  base::FilePath dest_path = temp_dir_.path();
+  base::FilePath dest_path = temp_dir_.GetPath();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -691,10 +691,10 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
 #if !defined(OS_ANDROID)
 // There's no Browser object on Android.
 TEST_F(ProfileManagerTest, LastOpenedProfiles) {
-  base::FilePath dest_path1 = temp_dir_.path();
+  base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
-  base::FilePath dest_path2 = temp_dir_.path();
+  base::FilePath dest_path2 = temp_dir_.GetPath();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -757,10 +757,10 @@ TEST_F(ProfileManagerTest, LastOpenedProfiles) {
 }
 
 TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
-  base::FilePath dest_path1 = temp_dir_.path();
+  base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
-  base::FilePath dest_path2 = temp_dir_.path();
+  base::FilePath dest_path2 = temp_dir_.GetPath();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -808,9 +808,9 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
 }
 
 TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
-  base::FilePath dest_path1 = temp_dir_.path();
+  base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
-  base::FilePath dest_path2 = temp_dir_.path();
+  base::FilePath dest_path2 = temp_dir_.GetPath();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -869,7 +869,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 // There's no Browser object on Android and there's no multi-profiles on Chrome.
 TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
-  base::FilePath dest_path = temp_dir_.path();
+  base::FilePath dest_path = temp_dir_.GetPath();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("Ephemeral Profile"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -897,13 +897,13 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
 }
 
 TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
-  base::FilePath dest_path1 = temp_dir_.path();
+  base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("Normal Profile"));
 
-  base::FilePath dest_path2 = temp_dir_.path();
+  base::FilePath dest_path2 = temp_dir_.GetPath();
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("Ephemeral Profile 1"));
 
-  base::FilePath dest_path3 = temp_dir_.path();
+  base::FilePath dest_path3 = temp_dir_.GetPath();
   dest_path3 = dest_path3.Append(FILE_PATH_LITERAL("Ephemeral Profile 2"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1018,8 +1018,8 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   // Create and load two profiles.
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path1 = temp_dir_.GetPath().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.GetPath().AppendASCII(profile_name2);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -1055,7 +1055,7 @@ TEST_F(ProfileManagerTest, LastProfileDeleted) {
 
   // Create and load a profile.
   const std::string profile_name1 = "New Profile 1";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path1 = temp_dir_.GetPath().AppendASCII(profile_name1);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -1079,7 +1079,7 @@ TEST_F(ProfileManagerTest, LastProfileDeleted) {
 
   // A new profile should have been created
   const std::string profile_name2 = "Profile 1";
-  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path2 = temp_dir_.GetPath().AppendASCII(profile_name2);
 
   EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
@@ -1094,7 +1094,7 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
 
   // Create and load a profile.
   const std::string profile_name1 = "New Profile 1";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path1 = temp_dir_.GetPath().AppendASCII(profile_name1);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -1134,7 +1134,7 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
 
   // A new profile should have been created.
   const std::string profile_name2 = "Profile 1";
-  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path2 = temp_dir_.GetPath().AppendASCII(profile_name2);
 
   EXPECT_EQ(3u, profile_manager->GetLoadedProfiles().size());
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
@@ -1351,8 +1351,8 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   // Create and load one profile, and just create a second profile.
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path1 = temp_dir_.GetPath().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.GetPath().AppendASCII(profile_name2);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -1399,9 +1399,9 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
   const std::string profile_name3 = "New Profile 3";
-  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
-  base::FilePath dest_path3 = temp_dir_.path().AppendASCII(profile_name3);
+  base::FilePath dest_path1 = temp_dir_.GetPath().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.GetPath().AppendASCII(profile_name2);
+  base::FilePath dest_path3 = temp_dir_.GetPath().AppendASCII(profile_name3);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(

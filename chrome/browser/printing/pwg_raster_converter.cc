@@ -52,11 +52,11 @@ class FileHandlers {
   bool IsValid();
 
   base::FilePath GetPwgPath() const {
-    return temp_dir_.path().AppendASCII("output.pwg");
+    return temp_dir_.GetPath().AppendASCII("output.pwg");
   }
 
   base::FilePath GetPdfPath() const {
-    return temp_dir_.path().AppendASCII("input.pdf");
+    return temp_dir_.GetPath().AppendASCII("input.pdf");
   }
 
   IPC::PlatformFileForTransit GetPdfForProcess() {

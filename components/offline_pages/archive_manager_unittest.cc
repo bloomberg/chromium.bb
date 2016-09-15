@@ -45,7 +45,7 @@ class ArchiveManagerTest : public testing::Test {
       const ArchiveManager::StorageStats& storage_sizes);
 
   ArchiveManager* manager() { return manager_.get(); }
-  const base::FilePath& temp_path() const { return temp_dir_.path(); }
+  const base::FilePath& temp_path() const { return temp_dir_.GetPath(); }
   CallbackStatus callback_status() const { return callback_status_; }
   const std::set<base::FilePath>& last_archive_paths() const {
     return last_archvie_paths_;
@@ -73,7 +73,7 @@ ArchiveManagerTest::ArchiveManagerTest()
 
 void ArchiveManagerTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  ResetManager(temp_dir_.path());
+  ResetManager(temp_dir_.GetPath());
 }
 
 void ArchiveManagerTest::PumpLoop() {

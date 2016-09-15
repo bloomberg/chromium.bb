@@ -119,7 +119,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     owned_cache_.reset(
-        new ResourceCache(temp_dir_.path(), loop_.task_runner()));
+        new ResourceCache(temp_dir_.GetPath(), loop_.task_runner()));
     cache_ = owned_cache_.get();
 
     builder_.policy_data().set_policy_type(

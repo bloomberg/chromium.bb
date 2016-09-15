@@ -183,13 +183,13 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   FakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
     bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
     if (history_dir_.CreateUniqueTempDir()) {
-      history_service_ = history::CreateHistoryService(
-          history_dir_.path(), true);
+      history_service_ =
+          history::CreateHistoryService(history_dir_.GetPath(), true);
     }
 
     in_memory_url_index_.reset(new InMemoryURLIndex(
         bookmark_model_.get(), history_service_.get(), nullptr,
-        pool_owner_.pool().get(), history_dir_.path(), SchemeSet()));
+        pool_owner_.pool().get(), history_dir_.GetPath(), SchemeSet()));
     in_memory_url_index_->Init();
   }
 

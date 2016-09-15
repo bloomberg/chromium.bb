@@ -206,7 +206,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
   base::CommandLine MakeCmdLine(const std::string& procname) override {
     base::CommandLine cmd_line = base::MultiProcessTest::MakeCmdLine(procname);
 
-    cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_.path());
+    cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_.GetPath());
     cmd_line.AppendSwitchNative(kReadyEventNameFlag, ready_event_name_);
     cmd_line.AppendSwitchNative(kContinueEventNameFlag, continue_event_name_);
     if (window_option_ == WITH_WINDOW)
@@ -229,7 +229,9 @@ class ProcessSingletonTest : public base::MultiProcessTest {
   }
 
   base::Process* browser_victim() { return &browser_victim_; }
-  const base::FilePath& user_data_dir() const { return user_data_dir_.path(); }
+  const base::FilePath& user_data_dir() const {
+    return user_data_dir_.GetPath();
+  }
   ProcessSingleton* test_singleton() const { return test_singleton_.get(); }
   bool should_kill_called() const { return should_kill_called_; }
 

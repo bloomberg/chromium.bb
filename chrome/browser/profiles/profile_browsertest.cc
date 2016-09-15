@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
 
   {
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), true);
   }
 
@@ -294,14 +294,14 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  CreatePrefsFileInDirectory(temp_dir.path());
+  CreatePrefsFileInDirectory(temp_dir.GetPath());
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
 
   {
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), false);
   }
 
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
         content::NotificationService::AllSources());
 
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
     observer.Wait();
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateOldProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  CreatePrefsFileInDirectory(temp_dir.path());
+  CreatePrefsFileInDirectory(temp_dir.GetPath());
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
         content::NotificationService::AllSources());
 
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
     observer.Wait();
@@ -379,14 +379,14 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
         content::NotificationService::AllSources());
 
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
 
     // Wait for the profile to be created.
     observer.Wait();
 
     // Verify that README exists.
-    EXPECT_TRUE(base::PathExists(
-        temp_dir.path().Append(chrome::kReadmeFilename)));
+    EXPECT_TRUE(
+        base::PathExists(temp_dir.GetPath().Append(chrome::kReadmeFilename)));
   }
 
   FlushIoTaskRunnerAndSpinThreads();
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
   {
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
 
     PrefService* prefs = profile->GetPrefs();
     // The initial state is crashed; store for later reference.
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
 
   {
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
 
     scoped_refptr<const extensions::Extension> app =
         BuildTestApp(profile.get());
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 
   {
     std::unique_ptr<Profile> profile(CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+        temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     Profile* otr_profile = profile->GetOffTheRecordProfile();
 
     scoped_refptr<const extensions::Extension> app = BuildTestApp(otr_profile);
@@ -696,7 +696,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
       FILE_PATH_LITERAL("Profile 1");
   base::ScopedTempDir mock_user_data_dir;
   ASSERT_TRUE(mock_user_data_dir.CreateUniqueTempDir());
-  base::FilePath profile_path = mock_user_data_dir.path().Append(profile_name);
+  base::FilePath profile_path =
+      mock_user_data_dir.GetPath().Append(profile_name);
   ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
 
   {
@@ -712,10 +713,10 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
     base::ScopedTempDir temp_disk_cache_dir;
     ASSERT_TRUE(temp_disk_cache_dir.CreateUniqueTempDir());
     profile_impl->GetPrefs()->SetFilePath(prefs::kDiskCacheDir,
-                                          temp_disk_cache_dir.path());
+                                          temp_disk_cache_dir.GetPath());
 
     base::FilePath cache_path = profile_path;
     profile_impl->GetCacheParameters(false, &cache_path, &size);
-    EXPECT_EQ(temp_disk_cache_dir.path().Append(profile_name), cache_path);
+    EXPECT_EQ(temp_disk_cache_dir.GetPath().Append(profile_name), cache_path);
   }
 }

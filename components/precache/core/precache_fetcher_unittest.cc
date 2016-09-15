@@ -371,7 +371,7 @@ class PrecacheFetcherTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    base::FilePath db_path = scoped_temp_dir_.path().Append(
+    base::FilePath db_path = scoped_temp_dir_.GetPath().Append(
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
     precache_database_.Init(db_path);
   }

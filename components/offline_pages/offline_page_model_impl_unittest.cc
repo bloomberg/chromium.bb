@@ -270,8 +270,9 @@ OfflinePageModelImplTest::BuildStore() {
 
 std::unique_ptr<OfflinePageModelImpl> OfflinePageModelImplTest::BuildModel(
     std::unique_ptr<OfflinePageMetadataStore> store) {
-  return std::unique_ptr<OfflinePageModelImpl>(new OfflinePageModelImpl(
-      std::move(store), temp_dir_.path(), base::ThreadTaskRunnerHandle::Get()));
+  return std::unique_ptr<OfflinePageModelImpl>(
+      new OfflinePageModelImpl(std::move(store), temp_dir_.GetPath(),
+                               base::ThreadTaskRunnerHandle::Get()));
 }
 
 void OfflinePageModelImplTest::ResetModel() {

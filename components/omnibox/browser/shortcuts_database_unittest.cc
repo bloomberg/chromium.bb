@@ -102,7 +102,7 @@ class ShortcutsDatabaseTest : public testing::Test {
 
 void ShortcutsDatabaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir_.path().Append(kShortcutsDatabaseName));
+  base::FilePath db_path(temp_dir_.GetPath().Append(kShortcutsDatabaseName));
   db_ = new ShortcutsDatabase(db_path);
   ASSERT_TRUE(db_->Init());
   ClearDB();
@@ -234,7 +234,7 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
 #endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
+  base::FilePath db_path(temp_dir.GetPath().AppendASCII("TestShortcuts.db"));
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
 
   CheckV2ColumnExistence(db_path, false);
@@ -278,7 +278,7 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateV0ToV1) {
   base::FilePath sql_path = GetTestDataDir().AppendASCII("Shortcuts.v0.sql");
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
+  base::FilePath db_path(temp_dir.GetPath().AppendASCII("TestShortcuts.db"));
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
 
   // Create a ShortcutsDatabase from the test database, which will migrate the
@@ -312,7 +312,7 @@ TEST(ShortcutsDatabaseMigrationTest, Recovery1) {
   base::FilePath sql_path = GetTestDataDir().AppendASCII(kBasename);
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
+  base::FilePath db_path(temp_dir.GetPath().AppendASCII("TestShortcuts.db"));
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
 
   // Capture the row count from the golden file before corrupting the database.

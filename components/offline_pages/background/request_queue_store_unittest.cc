@@ -195,7 +195,7 @@ class RequestQueueStoreTest : public RequestQueueStoreTestBase {
 template <typename T>
 std::unique_ptr<RequestQueueStore> RequestQueueStoreTest<T>::BuildStore() {
   std::unique_ptr<RequestQueueStore> store(
-      factory_.BuildStore(temp_directory_.path()));
+      factory_.BuildStore(temp_directory_.GetPath()));
   return store;
 }
 

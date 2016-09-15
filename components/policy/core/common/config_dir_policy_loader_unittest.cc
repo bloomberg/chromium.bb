@@ -158,7 +158,7 @@ class TestHarness : public PolicyProviderTestHarness {
       const base::DictionaryValue* policy_value) override;
   void Install3rdPartyPolicy(const base::DictionaryValue* policies) override;
 
-  const base::FilePath& test_dir() { return test_dir_.path(); }
+  const base::FilePath& test_dir() { return test_dir_.GetPath(); }
 
   // JSON-encode a dictionary and write it to a file.
   void WriteConfigFile(const base::DictionaryValue& dict,

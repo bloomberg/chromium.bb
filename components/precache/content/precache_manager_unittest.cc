@@ -178,7 +178,7 @@ class PrecacheManagerTest : public testing::Test {
     precache_database_ = precache_database.get();
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    base::FilePath db_path = scoped_temp_dir_.path().Append(
+    base::FilePath db_path = scoped_temp_dir_.GetPath().Append(
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
 
     // Make the fetch of the precache configuration settings fail. Precaching

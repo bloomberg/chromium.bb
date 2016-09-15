@@ -140,7 +140,7 @@ class JsonPrefStoreTest : public testing::Test {
 
 // Test fallback behavior for a nonexistent file.
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
-  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.GetPath().AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(bogus_input_file, message_loop_.task_runner(),
@@ -152,9 +152,9 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
 
 // Test fallback behavior for a nonexistent file and alternate file.
 TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
-  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.GetPath().AppendASCII("read.txt");
   base::FilePath bogus_alternate_input_file =
-      temp_dir_.path().AppendASCII("read_alternate.txt");
+      temp_dir_.GetPath().AppendASCII("read_alternate.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   ASSERT_FALSE(PathExists(bogus_alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
@@ -167,7 +167,7 @@ TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
 
 // Test fallback behavior for an invalid file.
 TEST_F(JsonPrefStoreTest, InvalidFile) {
-  base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
+  base::FilePath invalid_file = temp_dir_.GetPath().AppendASCII("invalid.json");
   ASSERT_LT(0, base::WriteFile(invalid_file,
                                kInvalidJson, arraysize(kInvalidJson) - 1));
 
@@ -179,7 +179,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
 
   // The file should have been moved aside.
   EXPECT_FALSE(PathExists(invalid_file));
-  base::FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
+  base::FilePath moved_aside = temp_dir_.GetPath().AppendASCII("invalid.bad");
   EXPECT_TRUE(PathExists(moved_aside));
 
   std::string moved_aside_contents;
@@ -262,7 +262,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
 }
 
 TEST_F(JsonPrefStoreTest, Basic) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
@@ -288,7 +288,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
 }
 
 TEST_F(JsonPrefStoreTest, BasicAsync) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
@@ -327,7 +327,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
 }
 
 TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
-  FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
+  FilePath pref_file = temp_dir_.GetPath().AppendASCII("empty_values.json");
 
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       pref_file, message_loop_.task_runner(), std::unique_ptr<PrefFilter>());
@@ -359,7 +359,7 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
 // This test is just documenting some potentially non-obvious behavior. It
 // shouldn't be taken as normative.
 TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
-  FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
+  FilePath pref_file = temp_dir_.GetPath().AppendASCII("empty_values.json");
 
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       pref_file, message_loop_.task_runner(), std::unique_ptr<PrefFilter>());
@@ -379,7 +379,7 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
 
 // Tests asynchronous reading of the file when there is no file.
 TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
-  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.GetPath().AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(bogus_input_file, message_loop_.task_runner(),
@@ -400,7 +400,7 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
 }
 
 TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
@@ -442,7 +442,7 @@ TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
 }
 
 TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
@@ -504,13 +504,13 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
 
 TEST_F(JsonPrefStoreTest, AlternateFile) {
   base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
+      temp_dir_.GetPath().AppendASCII("alternate.json");
   ASSERT_LT(0, base::WriteFile(alternate_input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the alternate file is moved to the main file and read as-is from
   // there.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
@@ -541,12 +541,12 @@ TEST_F(JsonPrefStoreTest, AlternateFile) {
 }
 
 TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
   base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
+      temp_dir_.GetPath().AppendASCII("alternate.json");
   ASSERT_LT(0, base::WriteFile(alternate_input_file,
                                kInvalidJson, arraysize(kInvalidJson) - 1));
 
@@ -581,14 +581,14 @@ TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
 }
 
 TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0, base::WriteFile(input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the basic read works fine when an alternate file is specified but
   // does not exist.
   base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
+      temp_dir_.GetPath().AppendASCII("alternate.json");
   ASSERT_TRUE(PathExists(input_file));
   ASSERT_FALSE(PathExists(alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
@@ -620,13 +620,13 @@ TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
 
 TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
   base::FilePath alternate_input_file =
-      temp_dir_.path().AppendASCII("alternate.json");
+      temp_dir_.GetPath().AppendASCII("alternate.json");
   ASSERT_LT(0, base::WriteFile(alternate_input_file,
                                kReadJson, arraysize(kReadJson) - 1));
 
   // Test that the alternate file is moved to the main file and read as-is from
   // there even when the read is made asynchronously.
-  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       input_file, alternate_input_file, message_loop_.task_runner(),
       std::unique_ptr<PrefFilter>());
@@ -820,7 +820,7 @@ class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
  protected:
   void SetUp() override {
     JsonPrefStoreTest::SetUp();
-    test_file_ = temp_dir_.path().AppendASCII("test.json");
+    test_file_ = temp_dir_.GetPath().AppendASCII("test.json");
   }
 
   // Creates a JsonPrefStore with the given |file_writer|.

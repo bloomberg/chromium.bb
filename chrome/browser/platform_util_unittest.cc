@@ -157,19 +157,19 @@ class PlatformUtilTest : public PlatformUtilTestBase {
     ASSERT_TRUE(directory_.CreateUniqueTempDir());
 
     // A valid file.
-    existing_file_ = directory_.path().AppendASCII("test_file.txt");
+    existing_file_ = directory_.GetPath().AppendASCII("test_file.txt");
     ASSERT_EQ(
         kTestFileDataLength,
         base::WriteFile(existing_file_, kTestFileData, kTestFileDataLength));
 
     // A valid folder.
-    existing_folder_ = directory_.path().AppendASCII("test_folder");
+    existing_folder_ = directory_.GetPath().AppendASCII("test_folder");
     ASSERT_TRUE(base::CreateDirectory(existing_folder_));
 
     // A non-existent path.
-    nowhere_ = directory_.path().AppendASCII("nowhere");
+    nowhere_ = directory_.GetPath().AppendASCII("nowhere");
 
-    SetUpPlatformFixture(directory_.path());
+    SetUpPlatformFixture(directory_.GetPath());
   }
 
   OpenOperationResult CallOpenItem(const base::FilePath& path,
@@ -225,11 +225,11 @@ class PlatformUtilPosixTest : public PlatformUtilTest {
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(PlatformUtilTest::SetUp());
 
-    symlink_to_file_ = directory_.path().AppendASCII("l_file.txt");
+    symlink_to_file_ = directory_.GetPath().AppendASCII("l_file.txt");
     ASSERT_TRUE(base::CreateSymbolicLink(existing_file_, symlink_to_file_));
-    symlink_to_folder_ = directory_.path().AppendASCII("l_folder");
+    symlink_to_folder_ = directory_.GetPath().AppendASCII("l_folder");
     ASSERT_TRUE(base::CreateSymbolicLink(existing_folder_, symlink_to_folder_));
-    symlink_to_nowhere_ = directory_.path().AppendASCII("l_nowhere");
+    symlink_to_nowhere_ = directory_.GetPath().AppendASCII("l_nowhere");
     ASSERT_TRUE(base::CreateSymbolicLink(nowhere_, symlink_to_nowhere_));
   }
 
@@ -264,7 +264,7 @@ TEST_F(PlatformUtilPosixTest, OpenFolderWithPosixSymlinksChromeOS) {
 
 TEST_F(PlatformUtilTest, OpenFileWithUnhandledFileType) {
   base::FilePath unhandled_file =
-      directory_.path().AppendASCII("myfile.filetype");
+      directory_.GetPath().AppendASCII("myfile.filetype");
   ASSERT_EQ(3, base::WriteFile(unhandled_file, "cat", 3));
   EXPECT_EQ(OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE,
             CallOpenItem(unhandled_file, OPEN_FILE));

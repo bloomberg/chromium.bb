@@ -86,7 +86,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Use a long directory name to ensure that the socket isn't opened through
     // the symlink.
-    user_data_path_ = temp_dir_.path().Append(
+    user_data_path_ = temp_dir_.GetPath().Append(
         std::string(sizeof(sockaddr_un::sun_path), 'a'));
     ASSERT_TRUE(CreateDirectory(user_data_path_));
 

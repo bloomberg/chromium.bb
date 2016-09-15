@@ -314,7 +314,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
   }
 
   base::FilePath policy_file_path() const {
-    return temp_dir_.path().AppendASCII("policy.json");
+    return temp_dir_.GetPath().AppendASCII("policy.json");
   }
 
   void OnPolicyUpdated(const PolicyNamespace& ns,

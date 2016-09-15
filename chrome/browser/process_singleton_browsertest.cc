@@ -152,7 +152,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
       ASSERT_TRUE(chrome_starter_threads_[i]->Start());
       chrome_starters_[i] = new ChromeStarter(
-          TestTimeouts::action_max_timeout(), temp_profile_dir_.path());
+          TestTimeouts::action_max_timeout(), temp_profile_dir_.GetPath());
     }
   }
 

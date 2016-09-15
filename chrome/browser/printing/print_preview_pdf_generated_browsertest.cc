@@ -505,7 +505,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     std::cout.flush();
 
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(tmp_dir_.path(), &stdin_path));
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(tmp_dir_.GetPath(), &stdin_path));
 
     // Redirects |std::cin| to the file |stdin_path|. |in| is not freed because
     // if it goes out of scope, |std::cin.rdbuf| will be freed, causing an
@@ -515,7 +516,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
     std::cin.rdbuf(in->rdbuf());
 
     pdf_file_save_path_ =
-        tmp_dir_.path().Append(FILE_PATH_LITERAL("dummy.pdf"));
+        tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("dummy.pdf"));
 
     // Send the file path to the layout test framework so that it can
     // communicate with this browser test.

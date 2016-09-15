@@ -71,9 +71,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_.reset(new ResourceCache(
-        temp_dir_.path(),
-        make_scoped_refptr(new base::TestSimpleTaskRunner)));
+    cache_.reset(
+        new ResourceCache(temp_dir_.GetPath(),
+                          make_scoped_refptr(new base::TestSimpleTaskRunner)));
     store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
     store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
                            ComponentPolicyBuilder::kFakeToken);

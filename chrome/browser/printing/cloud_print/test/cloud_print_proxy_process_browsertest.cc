@@ -429,18 +429,17 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
     ASSERT_TRUE(temp_user_data_dir_.CreateUniqueTempDir() &&
                 temp_user_data_dir_.IsValid())
         << "Could not create temporary user data directory \""
-        << temp_user_data_dir_.path().value() << "\".";
+        << temp_user_data_dir_.GetPath().value() << "\".";
 
-    user_data_dir = temp_user_data_dir_.path();
+    user_data_dir = temp_user_data_dir_.GetPath();
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
   ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 
 #if defined(OS_MACOSX)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
-                                       "CloudPrintProxyTest",
-                                       &bundle_path_,
+  EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.GetPath(),
+                                       "CloudPrintProxyTest", &bundle_path_,
                                        &executable_path_));
   mock_launchd_.reset(new MockLaunchd(executable_path_,
                                       base::MessageLoopForUI::current(),

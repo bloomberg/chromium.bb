@@ -218,7 +218,8 @@ bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
 void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
   if (history_dir_.CreateUniqueTempDir())
-    history_service_ = history::CreateHistoryService(history_dir_.path(), true);
+    history_service_ =
+        history::CreateHistoryService(history_dir_.GetPath(), true);
   ASSERT_TRUE(history_service_);
   BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
 
@@ -1035,7 +1036,7 @@ TEST_F(InMemoryURLIndexTest, ReadVisitsFromHistory) {
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  set_history_dir(temp_directory.path());
+  set_history_dir(temp_directory.GetPath());
 
   URLIndexPrivateData& private_data(*GetPrivateData());
 
@@ -1104,7 +1105,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
 TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  set_history_dir(temp_directory.path());
+  set_history_dir(temp_directory.GetPath());
 
   URLIndexPrivateData& private_data(*GetPrivateData());
 
@@ -1279,7 +1280,7 @@ InMemoryURLIndexCacheTest::InMemoryURLIndexCacheTest()
 
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.GetPath());
   url_index_.reset(new InMemoryURLIndex(nullptr, nullptr, nullptr,
                                         pool_owner_.pool().get(), path,
                                         SchemeSet()));
@@ -1303,7 +1304,7 @@ bool InMemoryURLIndexCacheTest::GetCacheFilePath(
 
 TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
   base::FilePath expectedPath =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("History Provider Cache"));
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("History Provider Cache"));
   std::vector<base::FilePath::StringType> expected_parts;
   expectedPath.GetComponents(&expected_parts);
   base::FilePath full_file_path;

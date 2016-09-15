@@ -94,7 +94,7 @@ class PrecacheDatabaseTest : public testing::Test {
     precache_database_.reset(new PrecacheDatabase());
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    base::FilePath db_path = scoped_temp_dir_.path().Append(
+    base::FilePath db_path = scoped_temp_dir_.GetPath().Append(
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
     ASSERT_TRUE(precache_database_->Init(db_path));
   }

@@ -350,7 +350,7 @@ void OfflinePageMetadataStoreTest::CheckThatOfflinePageCanBeSaved(
 std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStore() {
   std::unique_ptr<OfflinePageMetadataStore> store(
-      factory_.BuildStore(temp_directory_.path()));
+      factory_.BuildStore(temp_directory_.GetPath()));
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -361,7 +361,7 @@ OfflinePageMetadataStoreTest::BuildStore() {
 std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM52() {
   std::unique_ptr<OfflinePageMetadataStore> store(
-      factory_.BuildStoreM52(temp_directory_.path()));
+      factory_.BuildStoreM52(temp_directory_.GetPath()));
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -372,7 +372,7 @@ OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM52() {
 std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM53() {
   std::unique_ptr<OfflinePageMetadataStore> store(
-      factory_.BuildStoreM53(temp_directory_.path()));
+      factory_.BuildStoreM53(temp_directory_.GetPath()));
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));

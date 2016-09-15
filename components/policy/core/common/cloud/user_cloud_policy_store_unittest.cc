@@ -88,11 +88,11 @@ class UserCloudPolicyStoreTest : public testing::Test {
   }
 
   base::FilePath policy_file() {
-    return tmp_dir_.path().AppendASCII("policy");
+    return tmp_dir_.GetPath().AppendASCII("policy");
   }
 
   base::FilePath key_file() {
-    return tmp_dir_.path().AppendASCII("policy_key");
+    return tmp_dir_.GetPath().AppendASCII("policy_key");
   }
 
   // Verifies that store_->policy_map() has the appropriate entries.

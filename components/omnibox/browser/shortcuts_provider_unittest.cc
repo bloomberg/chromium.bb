@@ -186,8 +186,8 @@ class FakeAutocompleteProviderClient
       : db_thread_("Test DB thread"), pool_owner_(3, "Background Pool") {
     set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
     if (history_dir_.CreateUniqueTempDir()) {
-      history_service_ = history::CreateHistoryService(history_dir_.path(),
-                                                       true);
+      history_service_ =
+          history::CreateHistoryService(history_dir_.GetPath(), true);
     }
 
     db_thread_.Start();
