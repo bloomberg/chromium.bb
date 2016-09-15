@@ -34,11 +34,11 @@ class ZipFileCreatorTest : public InProcessBrowserTest {
   }
 
   base::FilePath zip_archive_path() const {
-    return dir_.path().AppendASCII("test.zip");
+    return dir_.GetPath().AppendASCII("test.zip");
   }
 
   base::FilePath zip_base_dir() const {
-    return dir_.path().AppendASCII("files");
+    return dir_.GetPath().AppendASCII("files");
   }
 
  protected:
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
       EXPECT_FALSE(entry->is_directory());
       EXPECT_EQ(kRandomDataSize, entry->original_size());
 
-      const base::FilePath out = dir_.path().AppendASCII("archived_content");
+      const base::FilePath out = dir_.GetPath().AppendASCII("archived_content");
       EXPECT_TRUE(reader.ExtractCurrentEntryToFilePath(out));
       EXPECT_TRUE(base::ContentsEqual(zip_base_dir().Append(kFile2), out));
     } else {

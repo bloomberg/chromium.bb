@@ -55,7 +55,7 @@ TEST(FileManagerFileAPIUtilTest,
   base::ScopedTempDir drive_cache_dir;
   ASSERT_TRUE(drive_cache_dir.CreateUniqueTempDir());
   drive::DriveIntegrationServiceFactory::FactoryCallback factory_callback(
-      base::Bind(&CreateDriveIntegrationService, drive_cache_dir.path()));
+      base::Bind(&CreateDriveIntegrationService, drive_cache_dir.GetPath()));
   drive::DriveIntegrationServiceFactory::ScopedFactoryForTest
       integration_service_factory_scope(&factory_callback);
 

@@ -184,16 +184,20 @@ class TestVolume {
   virtual ~TestVolume() {}
 
   bool CreateRootDirectory(const Profile* profile) {
-    const base::FilePath path = profile->GetPath().Append(name_);
-    return root_.path() == path || root_.Set(path);
+    if (root_initialized_)
+      return true;
+
+    root_initialized_ = root_.Set(profile->GetPath().Append(name_));
+    return root_initialized_;
   }
 
-  const std::string& name() { return name_; }
-  const base::FilePath root_path() { return root_.path(); }
+  const std::string& name() const { return name_; }
+  const base::FilePath& root_path() const { return root_.GetPath(); }
 
  private:
   std::string name_;
   base::ScopedTempDir root_;
+  bool root_initialized_ = false;
 };
 
 // Listener to obtain the test relative messages synchronously.

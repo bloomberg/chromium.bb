@@ -125,10 +125,9 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   bool on_change_error = false;
   base::RunLoop run_loop;
   file_watcher->WatchLocalFile(
-      temp_dir.path(),
+      temp_dir.GetPath(),
       CreateQuitCallback(
-          &run_loop,
-          CreateCopyResultCallback(&changed_path, &on_change_error)),
+          &run_loop, CreateCopyResultCallback(&changed_path, &on_change_error)),
       CreateCopyResultCallback(&watcher_created));
   // Spin the message loop so the base::FilePathWatcher is created.
   base::RunLoop().RunUntilIdle();
@@ -137,11 +136,12 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   // Create a temporary file in the temporary directory. The file watcher
   // should detect the change in the directory.
   base::FilePath temp_file_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file_path));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &temp_file_path));
   // Wait until the directory change is notified.
   run_loop.Run();
   ASSERT_FALSE(on_change_error);
-  ASSERT_EQ(temp_dir.path().value(), changed_path.value());
+  ASSERT_EQ(temp_dir.GetPath().value(), changed_path.value());
 
   // This is ugly, but FileWatcher should be deleted explicitly here, and
   // spin the message loop so the base::FilePathWatcher is deleted.
