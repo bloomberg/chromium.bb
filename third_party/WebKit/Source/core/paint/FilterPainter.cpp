@@ -52,9 +52,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
         m_clipRecorder = wrapUnique(new LayerClipRecorder(context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
 
     if (!context.getPaintController().displayItemConstructionIsDisabled()) {
-        FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
-        CompositorFilterOperations compositorFilterOperations;
-        SkiaImageFilterBuilder::buildFilterOperations(filterOperations, &compositorFilterOperations);
+        CompositorFilterOperations compositorFilterOperations = layer.createCompositorFilterOperationsForFilter(m_layoutObject->styleRef());
         // FIXME: It's possible to have empty CompositorFilterOperations here even
         // though the SkImageFilter produced above is non-null, since the
         // layer's FilterEffectBuilder can have a stale representation of

@@ -35,18 +35,15 @@ class SkPicture;
 
 namespace blink {
 
-class AffineTransform;
 class BoxReflection;
 class CompositorFilterOperations;
 class FilterEffect;
 class FilterOperations;
-class Image;
 
 namespace SkiaImageFilterBuilder {
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
-PLATFORM_EXPORT void buildFilterOperations(const FilterOperations&, CompositorFilterOperations*);
-PLATFORM_EXPORT sk_sp<SkImageFilter> buildTransform(const AffineTransform&, sk_sp<SkImageFilter> input);
+PLATFORM_EXPORT CompositorFilterOperations buildFilterOperations(const FilterOperations&);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> transformColorSpace(
     sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);

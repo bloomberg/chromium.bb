@@ -81,12 +81,12 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/allocator/Partitions.h"
@@ -2685,7 +2685,7 @@ bool PaintLayer::scrollsOverflow() const
 
 namespace {
 
-FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingNode)
+FilterOperations resolveReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingNode)
 {
     if (filters.hasReferenceFilter()) {
         for (size_t i = 0; i < filters.size(); ++i) {
@@ -2710,12 +2710,18 @@ FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
         BoxReflection reflection = boxReflectionForPaintLayer(*this, style);
         filterOperations.operations().append(BoxReflectFilterOperation::create(reflection));
     }
-    return computeFilterOperationsHandleReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
+    return resolveReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
 }
 
-FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style) const
+CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForFilter(const ComputedStyle& style)
 {
-    return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingNode());
+    return SkiaImageFilterBuilder::buildFilterOperations(computeFilterOperations(style));
+}
+
+CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForBackdropFilter(const ComputedStyle& style)
+{
+    FilterOperations operations = resolveReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingNode());
+    return SkiaImageFilterBuilder::buildFilterOperations(operations);
 }
 
 PaintLayerFilterInfo& PaintLayer::ensureFilterInfo()

@@ -40,7 +40,6 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/json/JSONValues.h"
@@ -1143,18 +1142,14 @@ WebLayer* GraphicsLayer::platformLayer() const
     return m_layer->layer();
 }
 
-void GraphicsLayer::setFilters(const FilterOperations& filters)
+void GraphicsLayer::setFilters(CompositorFilterOperations filters)
 {
-    CompositorFilterOperations compositorFilters;
-    SkiaImageFilterBuilder::buildFilterOperations(filters, &compositorFilters);
-    m_layer->layer()->setFilters(compositorFilters.releaseCcFilterOperations());
+    platformLayer()->setFilters(filters.releaseCcFilterOperations());
 }
 
-void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
+void GraphicsLayer::setBackdropFilters(CompositorFilterOperations filters)
 {
-    CompositorFilterOperations compositorFilters;
-    SkiaImageFilterBuilder::buildFilterOperations(filters, &compositorFilters);
-    m_layer->layer()->setBackgroundFilters(compositorFilters.releaseCcFilterOperations());
+    platformLayer()->setBackgroundFilters(filters.releaseCcFilterOperations());
 }
 
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)

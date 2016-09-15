@@ -41,7 +41,6 @@
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/heap/Handle.h"
@@ -56,10 +55,11 @@
 
 namespace blink {
 
+class CompositorFilterOperations;
 class FloatRect;
 class Image;
-class LinkHighlight;
 class JSONObject;
+class LinkHighlight;
 class PaintController;
 class ScrollableArea;
 class WebLayer;
@@ -171,8 +171,8 @@ public:
     void setBlendMode(WebBlendMode);
     void setIsRootForIsolatedGroup(bool);
 
-    void setFilters(const FilterOperations&);
-    void setBackdropFilters(const FilterOperations&);
+    void setFilters(CompositorFilterOperations);
+    void setBackdropFilters(CompositorFilterOperations);
 
     void setFilterQuality(SkFilterQuality);
 

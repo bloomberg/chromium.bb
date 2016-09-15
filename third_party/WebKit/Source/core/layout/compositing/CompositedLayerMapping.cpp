@@ -64,6 +64,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
@@ -274,12 +275,12 @@ void CompositedLayerMapping::updateTransform(const ComputedStyle& style)
 
 void CompositedLayerMapping::updateFilters(const ComputedStyle& style)
 {
-    m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
+    m_graphicsLayer->setFilters(owningLayer().createCompositorFilterOperationsForFilter(style));
 }
 
 void CompositedLayerMapping::updateBackdropFilters(const ComputedStyle& style)
 {
-    m_graphicsLayer->setBackdropFilters(owningLayer().computeBackdropFilterOperations(style));
+    m_graphicsLayer->setBackdropFilters(owningLayer().createCompositorFilterOperationsForBackdropFilter(style));
 }
 
 void CompositedLayerMapping::updateLayerBlendMode(const ComputedStyle& style)

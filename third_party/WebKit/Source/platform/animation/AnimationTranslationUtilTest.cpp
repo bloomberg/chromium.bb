@@ -74,13 +74,12 @@ TEST(AnimationTranslationUtilTest, transformsWork)
 TEST(AnimationTranslationUtilTest, filtersWork)
 {
     FilterOperations ops;
-    CompositorFilterOperations outOps;
-
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
     ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
-    toCompositorFilterOperations(ops, &outOps);
+
+    CompositorFilterOperations outOps = toCompositorFilterOperations(ops);
 
     EXPECT_EQ(4UL, outOps.asCcFilterOperations().size());
     const float err = 0.0001;

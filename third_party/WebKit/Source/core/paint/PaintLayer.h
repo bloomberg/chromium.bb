@@ -58,7 +58,6 @@
 #include "core/paint/PaintLayerStackingNodeIterator.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/SquashingDisallowedReasons.h"
-#include "public/platform/WebBlendMode.h"
 #include "wtf/Allocator.h"
 #include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
@@ -67,6 +66,7 @@
 namespace blink {
 
 class CompositedLayerMapping;
+class CompositorFilterOperations;
 class ComputedStyle;
 class FilterEffectBuilder;
 class FilterOperations;
@@ -478,8 +478,8 @@ public:
     bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
-    FilterOperations computeFilterOperations(const ComputedStyle&) const;
-    FilterOperations computeBackdropFilterOperations(const ComputedStyle&) const;
+    CompositorFilterOperations createCompositorFilterOperationsForFilter(const ComputedStyle&);
+    CompositorFilterOperations createCompositorFilterOperationsForBackdropFilter(const ComputedStyle&);
     bool paintsWithFilters() const;
     bool paintsWithBackdropFilters() const;
     FilterEffect* lastFilterEffect() const;
@@ -788,6 +788,7 @@ private:
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();
 
+    FilterOperations computeFilterOperations(const ComputedStyle&) const;
     void updateReflectionInfo(const ComputedStyle*);
     FilterEffectBuilder* updateFilterEffectBuilder() const;
 

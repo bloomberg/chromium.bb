@@ -419,10 +419,10 @@ namespace {
 void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
-    CompositorFilterOperations ops;
-    toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), &ops);
-
-    CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops), keyframeTimingFunction);
+    CompositorFilterKeyframe filterKeyframe(
+        keyframe->offset(),
+        toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations()),
+        keyframeTimingFunction);
     curve.addKeyframe(filterKeyframe);
 }
 
