@@ -78,7 +78,7 @@ class FakeDriveServiceHelper {
   google_apis::DriveApiErrorCode GetAboutResource(
       std::unique_ptr<google_apis::AboutResource>* about_resource);
 
-  base::FilePath base_dir_path() { return base_dir_.path(); }
+  base::FilePath base_dir_path() { return base_dir_.GetPath(); }
 
  private:
   google_apis::DriveApiErrorCode CompleteListing(

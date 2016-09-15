@@ -80,7 +80,7 @@ class LevelDBWrapperTest : public testing::Test {
     options.max_open_files = 0;  // Use minimum.
     options.env = in_memory_env_.get();
     leveldb::Status status =
-        leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
+        leveldb::DB::Open(options, database_dir_.GetPath().AsUTF8Unsafe(), &db);
     ASSERT_TRUE(status.ok());
 
     db_.reset(new LevelDBWrapper(base::WrapUnique(db)));

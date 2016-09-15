@@ -986,7 +986,7 @@ class SyncManagerTest : public testing::Test,
     workers.push_back(worker);
 
     SyncManager::InitArgs args;
-    args.database_location = temp_dir_.path();
+    args.database_location = temp_dir_.GetPath();
     args.service_url = GURL("https://example.com/");
     args.post_factory = std::unique_ptr<HttpPostProviderFactory>(
         new TestHttpPostProviderFactory());

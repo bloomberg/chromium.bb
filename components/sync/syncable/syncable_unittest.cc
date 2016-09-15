@@ -132,7 +132,7 @@ TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_path =
-      temp_dir.path().Append(FILE_PATH_LITERAL("Test.sqlite3"));
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("Test.sqlite3"));
   std::string name = "user@x.com";
   NullDirectoryChangeDelegate delegate;
 
@@ -152,7 +152,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   void SetUp() override {
     SyncableDirectoryTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("Test.sqlite3"));
+    file_path_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Test.sqlite3"));
     base::DeleteFile(file_path_, false);
     CreateDirectory();
   }
@@ -551,7 +551,7 @@ class SyncableDirectoryManagement : public testing::Test {
 
 TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   base::FilePath path =
-      temp_dir_.path().Append(Directory::kSyncDatabaseFilename);
+      temp_dir_.GetPath().Append(Directory::kSyncDatabaseFilename);
 
   {
     Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),

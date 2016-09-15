@@ -416,7 +416,7 @@ int SyncClientMain(int argc, char* argv[]) {
   CancelationSignal scm_cancelation_signal;
 
   SyncManager::InitArgs args;
-  args.database_location = database_dir.path();
+  args.database_location = database_dir.GetPath();
   args.event_handler = WeakHandle<JsEventHandler>(js_event_handler.AsWeakPtr());
   args.service_url = GURL(kSyncServiceURL);
   args.post_factory = std::move(post_factory);

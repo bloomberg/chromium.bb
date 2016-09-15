@@ -78,9 +78,7 @@ class SyncEngineInitializerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::FilePath database_path() {
-    return database_dir_.path();
-  }
+  base::FilePath database_path() { return database_dir_.GetPath(); }
 
   SyncStatusCode RunInitializer() {
     SyncEngineInitializer* initializer =

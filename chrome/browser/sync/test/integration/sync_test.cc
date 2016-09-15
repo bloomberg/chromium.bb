@@ -347,7 +347,7 @@ void SyncTest::CreateProfile(int index) {
     CHECK(
       tmp_profile_paths_[index]->CreateUniqueTempDirUnderPath(user_data_dir));
   }
-  base::FilePath profile_path = tmp_profile_paths_[index]->path();
+  base::FilePath profile_path = tmp_profile_paths_[index]->GetPath();
   if (UsingExternalServers()) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
     // GAIA server. This requires creating profiles with no test hooks.

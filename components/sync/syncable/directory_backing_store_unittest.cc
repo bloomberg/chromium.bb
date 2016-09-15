@@ -66,7 +66,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
   base::FilePath GetDatabasePath() {
-    return temp_dir_.path().Append(Directory::kSyncDatabaseFilename);
+    return temp_dir_.GetPath().Append(Directory::kSyncDatabaseFilename);
   }
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
@@ -3520,7 +3520,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion89To90) {
 //      MigrateVersionXToY. You now have a database at version Y. Let's dump it.
 //   3. Set a breakpoint to stop execution just after the connection is
 //      destroyed.  Examine temp_dir_ to find the version Y database that was
-//      created on disk. E.g. (gdb) p temp_dir_.path().value().c_str()
+//      created on disk. E.g. (gdb) p temp_dir_.GetPath().value().c_str()
 //   4. Dump the database using the sqlite3 command line tool:
 //        > .output foo_dump.sql
 //        > .dump

@@ -439,7 +439,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   // Create a BookmarkModel. If |delete_bookmarks| is true, the bookmarks file
   // will be deleted before starting up the BookmarkModel.
   std::unique_ptr<BookmarkModel> CreateBookmarkModel(bool delete_bookmarks) {
-    const base::FilePath& data_path = data_dir_.path();
+    const base::FilePath& data_path = data_dir_.GetPath();
     auto model = base::MakeUnique<BookmarkModel>(
         base::WrapUnique(new bookmarks::TestBookmarkClient()));
     managed_bookmark_service_->BookmarkModelCreated(model.get());

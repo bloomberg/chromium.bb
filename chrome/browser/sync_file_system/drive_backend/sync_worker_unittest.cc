@@ -120,10 +120,9 @@ class SyncWorkerTest : public testing::Test,
             base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
             nullptr /* worker_pool */));
 
-    sync_worker_.reset(new SyncWorker(
-        profile_dir_.path(),
-        extension_service_->AsWeakPtr(),
-        in_memory_env_.get()));
+    sync_worker_.reset(new SyncWorker(profile_dir_.GetPath(),
+                                      extension_service_->AsWeakPtr(),
+                                      in_memory_env_.get()));
     sync_worker_->Initialize(std::move(sync_engine_context));
 
     sync_worker_->SetSyncEnabled(true);

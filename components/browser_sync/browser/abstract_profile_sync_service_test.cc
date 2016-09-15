@@ -197,7 +197,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
       profile_sync_service_bundle_.component_factory();
   EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
       .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
-          temp_dir_.path(), sync_service_->GetSyncClient(),
+          temp_dir_.GetPath(), sync_service_->GetSyncClient(),
           base::ThreadTaskRunnerHandle::Get(),
           profile_sync_service_bundle_.fake_invalidation_service(),
           sync_service_->sync_prefs()->AsWeakPtr(),

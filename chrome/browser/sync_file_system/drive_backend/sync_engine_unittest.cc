@@ -51,7 +51,7 @@ class SyncEngineTest : public testing::Test,
     sync_engine_.reset(new drive_backend::SyncEngine(
         ui_task_runner.get(), worker_task_runner_.get(),
         nullptr,  // drive_task_runner
-        worker_pool_owner_.pool().get(), profile_dir_.path(),
+        worker_pool_owner_.pool().get(), profile_dir_.GetPath(),
         nullptr,    // task_logger
         nullptr,    // notification_manager
         nullptr,    // extension_service

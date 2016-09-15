@@ -51,8 +51,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     sync_context_ =
-        new LocalFileSyncContext(base_dir_.path(),
-                                 in_memory_env_.get(),
+        new LocalFileSyncContext(base_dir_.GetPath(), in_memory_env_.get(),
                                  base::ThreadTaskRunnerHandle::Get().get(),
                                  base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_EQ(

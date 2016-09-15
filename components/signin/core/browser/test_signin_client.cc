@@ -54,7 +54,7 @@ std::string TestSigninClient::GetProductVersion() { return ""; }
 
 void TestSigninClient::LoadTokenDatabase() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
+  base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
   scoped_refptr<WebDatabaseService> web_database =
       new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());

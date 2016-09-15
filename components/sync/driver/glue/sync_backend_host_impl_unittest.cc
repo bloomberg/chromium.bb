@@ -180,7 +180,7 @@ class SyncBackendHostTest : public testing::Test {
     backend_.reset(new SyncBackendHostImpl(
         "dummyDebugName", &sync_client_, base::ThreadTaskRunnerHandle::Get(),
         nullptr, sync_prefs_->AsWeakPtr(),
-        temp_dir_.path().Append(base::FilePath(kTestSyncDir))));
+        temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir))));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
@@ -734,7 +734,7 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
 TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";
   base::FilePath temp_directory =
-      temp_dir_.path().Append(base::FilePath(kTestSyncDir));
+      temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
   base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
   ASSERT_TRUE(base::CreateDirectory(temp_directory));
   ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));

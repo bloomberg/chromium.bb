@@ -240,11 +240,9 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
       new content::MockSpecialStoragePolicy();
 
   if (quota_mode == QUOTA_ENABLED) {
-    quota_manager_ = new QuotaManager(false /* is_incognito */,
-                                      data_dir_.path(),
-                                      io_task_runner_.get(),
-                                      base::ThreadTaskRunnerHandle::Get().get(),
-                                      storage_policy.get());
+    quota_manager_ = new QuotaManager(
+        false /* is_incognito */, data_dir_.GetPath(), io_task_runner_.get(),
+        base::ThreadTaskRunnerHandle::Get().get(), storage_policy.get());
   }
 
   std::vector<std::string> additional_allowed_schemes;
@@ -263,7 +261,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
       storage_policy.get(),
       quota_manager_.get() ? quota_manager_->proxy() : nullptr,
       std::move(additional_backends),
-      std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.path(),
+      std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.GetPath(),
       options);
 
   is_filesystem_set_up_ = true;

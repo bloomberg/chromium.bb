@@ -168,10 +168,8 @@ class ListChangesTaskTest : public testing::Test {
 
   void InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    SyncEngineInitializer* initializer =
-        new SyncEngineInitializer(context_.get(),
-                                  database_dir_.path(),
-                                  in_memory_env_.get());
+    SyncEngineInitializer* initializer = new SyncEngineInitializer(
+        context_.get(), database_dir_.GetPath(), in_memory_env_.get());
 
     sync_task_manager_->ScheduleSyncTask(
         FROM_HERE, std::unique_ptr<SyncTask>(initializer),

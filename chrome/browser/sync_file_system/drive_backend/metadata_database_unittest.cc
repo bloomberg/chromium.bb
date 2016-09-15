@@ -211,8 +211,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
   SyncStatusCode InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     metadata_database_ = MetadataDatabase::CreateInternal(
-        database_dir_.path(), in_memory_env_.get(),
-        GetParam(), &status);
+        database_dir_.GetPath(), in_memory_env_.get(), GetParam(), &status);
     return status;
   }
 
@@ -268,7 +267,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     options.max_open_files = 0;  // Use minimum.
     options.env = in_memory_env_.get();
     leveldb::Status status =
-        leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
+        leveldb::DB::Open(options, database_dir_.GetPath().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());
 
     std::unique_ptr<LevelDBWrapper> wrapper(

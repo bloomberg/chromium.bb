@@ -72,11 +72,10 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
-    sync_context_ = new LocalFileSyncContext(
-        dir_.path(),
-        in_memory_env_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get());
+    sync_context_ =
+        new LocalFileSyncContext(dir_.GetPath(), in_memory_env_.get(),
+                                 base::ThreadTaskRunnerHandle::Get().get(),
+                                 base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_EQ(
         SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));
@@ -142,7 +141,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   bool CreateTempFile(base::FilePath* path) {
-    return base::CreateTemporaryFileInDir(dir_.path(), path);
+    return base::CreateTemporaryFileInDir(dir_.GetPath(), path);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

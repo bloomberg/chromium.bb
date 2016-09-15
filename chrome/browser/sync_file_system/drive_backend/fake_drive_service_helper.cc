@@ -343,7 +343,7 @@ DriveApiErrorCode FakeDriveServiceHelper::CompleteListing(
 
 void FakeDriveServiceHelper::Initialize() {
   ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-  temp_dir_ = base_dir_.path().Append(FPL("tmp"));
+  temp_dir_ = base_dir_.GetPath().Append(FPL("tmp"));
   ASSERT_TRUE(base::CreateDirectory(temp_dir_));
 }
 
