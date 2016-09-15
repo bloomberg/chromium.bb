@@ -38,7 +38,7 @@ class WALLPAPER_EXPORT WallpaperResizer {
   WallpaperResizer(const gfx::ImageSkia& image,
                    const gfx::Size& target_size,
                    WallpaperLayout layout,
-                   const scoped_refptr<base::TaskRunner>& task_runner);
+                   scoped_refptr<base::TaskRunner> task_runner);
 
   ~WallpaperResizer();
 

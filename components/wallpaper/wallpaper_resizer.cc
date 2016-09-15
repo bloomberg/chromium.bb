@@ -4,6 +4,8 @@
 
 #include "components/wallpaper/wallpaper_resizer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -105,12 +107,12 @@ WallpaperResizer::WallpaperResizer(
     const gfx::ImageSkia& image,
     const gfx::Size& target_size,
     WallpaperLayout layout,
-    const scoped_refptr<base::TaskRunner>& task_runner)
+    scoped_refptr<base::TaskRunner> task_runner)
     : image_(image),
       original_image_id_(GetImageId(image_)),
       target_size_(target_size),
       layout_(layout),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       weak_ptr_factory_(this) {
   image_.MakeThreadSafe();
 }

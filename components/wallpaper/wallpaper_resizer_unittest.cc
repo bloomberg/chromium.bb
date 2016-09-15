@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/threading/thread.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -62,15 +62,19 @@ namespace wallpaper {
 class WallpaperResizerTest : public testing::Test,
                              public WallpaperResizerObserver {
  public:
-  WallpaperResizerTest() : worker_pool_owner_(1, "WallpaperResizerTest") {}
+  WallpaperResizerTest() : worker_thread_("WallpaperResizerTest") {}
   ~WallpaperResizerTest() override {}
+
+  void SetUp() override {
+    ASSERT_TRUE(worker_thread_.Start());
+  }
 
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
                         WallpaperLayout layout) {
     std::unique_ptr<WallpaperResizer> resizer;
     resizer.reset(
-        new WallpaperResizer(image, target_size, layout, worker_pool()));
+        new WallpaperResizer(image, target_size, layout, task_runner()));
     resizer->AddObserver(this);
     resizer->StartResize();
     WaitForResize();
@@ -78,8 +82,8 @@ class WallpaperResizerTest : public testing::Test,
     return resizer->image();
   }
 
-  base::SequencedWorkerPool* worker_pool() {
-    return worker_pool_owner_.pool().get();
+  scoped_refptr<base::TaskRunner> task_runner() {
+    return worker_thread_.task_runner();
   }
 
   void WaitForResize() { base::RunLoop().Run(); }
@@ -88,7 +92,7 @@ class WallpaperResizerTest : public testing::Test,
 
  private:
   base::MessageLoop message_loop_;
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  base::Thread worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperResizerTest);
 };
@@ -149,7 +153,7 @@ TEST_F(WallpaperResizerTest, ImageId) {
   // Create a WallpaperResizer and check that it reports an original image ID
   // both pre- and post-resize that matches the ID returned by GetImageId().
   WallpaperResizer resizer(image, gfx::Size(10, 20), WALLPAPER_LAYOUT_STRETCH,
-                           worker_pool());
+                           task_runner());
   EXPECT_EQ(WallpaperResizer::GetImageId(image), resizer.original_image_id());
   resizer.AddObserver(this);
   resizer.StartResize();
