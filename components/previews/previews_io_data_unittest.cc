@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/previews_ui_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +72,7 @@ TEST_F(PreviewsIODataTest, TestInitialization) {
       new TestPreviewsIOData(loop_.task_runner(), loop_.task_runner())));
   set_ui_service(
       base::WrapUnique(new PreviewsUIService(io_data(), loop_.task_runner())));
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // After the outstanding posted tasks have run, |io_data_| should be fully
   // initialized.
   EXPECT_TRUE(io_data()->initialized());
