@@ -85,3 +85,13 @@ source_set("unit_tests") {
     "//third_party/crashpad/crashpad/util",
   ]
 }
+
+executable("dump_postmortem") {
+  sources = [
+    "dump_postmortem_minidump_main_win.cc",
+  ]
+  deps = [
+    ":stability_report_proto",
+    "//base",
+  ]
+}
