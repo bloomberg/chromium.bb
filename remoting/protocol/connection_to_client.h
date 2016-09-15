@@ -83,10 +83,6 @@ class ConnectionToClient {
   // Disconnect the client connection.
   virtual void Disconnect(ErrorCode error) = 0;
 
-  // Callback for HostEventDispatcher to be called with a timestamp for each
-  // received event.
-  virtual void OnInputEventReceived(int64_t timestamp) = 0;
-
   // Start video stream that sends screen content from |desktop_capturer| to the
   // client.
   virtual std::unique_ptr<VideoStream> StartVideoStream(

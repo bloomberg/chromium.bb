@@ -72,11 +72,6 @@ void WebrtcConnectionToClient::Disconnect(ErrorCode error) {
   session_->Close(error);
 }
 
-void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnInputEventReceived(this, timestamp);
-}
-
 std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   std::unique_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
@@ -175,8 +170,9 @@ void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
     std::unique_ptr<MessagePipe> pipe) {
   if (name == event_dispatcher_->channel_name() &&
       !event_dispatcher_->is_connected()) {
-    event_dispatcher_->set_on_input_event_callback(base::Bind(
-        &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
+    event_dispatcher_->set_on_input_event_callback(
+        base::Bind(&WebrtcConnectionToClient::OnInputEventReceived,
+                   base::Unretained(this)));
     event_dispatcher_->Init(std::move(pipe), this);
   }
 }
@@ -206,6 +202,11 @@ void WebrtcConnectionToClient::OnChannelClosed(
   LOG(ERROR) << "Channel " << channel_dispatcher->channel_name()
              << " was closed unexpectedly.";
   Disconnect(INCOMPATIBLE_PROTOCOL);
+}
+
+void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  event_handler_->OnInputEventReceived(this, timestamp);
 }
 
 }  // namespace protocol

@@ -47,7 +47,6 @@ class IceConnectionToClient : public ConnectionToClient,
       ConnectionToClient::EventHandler* event_handler) override;
   Session* session() override;
   void Disconnect(ErrorCode error) override;
-  void OnInputEventReceived(int64_t timestamp) override;
   std::unique_ptr<VideoStream> StartVideoStream(
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
   std::unique_ptr<AudioStream> StartAudioStream(
@@ -69,6 +68,9 @@ class IceConnectionToClient : public ConnectionToClient,
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
   void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
+
+  // Callback passed to |event_dispatcher_|
+  void OnInputEventReceived(int64_t timestamp);
 
   void NotifyIfChannelsReady();
 

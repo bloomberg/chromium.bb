@@ -30,8 +30,6 @@ namespace protocol {
 // must be smaller than the minimum RTO used in PseudoTCP, which is 250ms.
 static const int kKeepAlivePacketIntervalMs = 200;
 
-static bool g_enable_timestamps = false;
-
 VideoFramePump::FrameTimestamps::FrameTimestamps() {}
 VideoFramePump::FrameTimestamps::~FrameTimestamps() {}
 
@@ -41,11 +39,6 @@ VideoFramePump::PacketWithTimestamps::PacketWithTimestamps(
     : packet(std::move(packet)), timestamps(std::move(timestamps)) {}
 
 VideoFramePump::PacketWithTimestamps::~PacketWithTimestamps() {}
-
-// static
-void VideoFramePump::EnableTimestampsForTests() {
-  g_enable_timestamps = true;
-}
 
 VideoFramePump::VideoFramePump(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
@@ -216,10 +209,6 @@ void VideoFramePump::SendPacket(std::unique_ptr<PacketWithTimestamps> packet) {
 
 void VideoFramePump::UpdateFrameTimers(VideoPacket* packet,
                                        FrameTimestamps* timestamps) {
-  if (g_enable_timestamps)
-    packet->set_timestamp(timestamps->capture_ended_time.ToInternalValue());
-
-
   if (!timestamps->input_event_received_time.is_null()) {
     packet->set_capture_pending_time_ms((timestamps->capture_started_time -
                                          timestamps->input_event_received_time)

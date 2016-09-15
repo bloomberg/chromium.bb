@@ -43,7 +43,7 @@ message Rect {
 }
 
 message VideoPacket {
-  // Reserved fields IDs used for removed fields: 1 to 3, 10, 11.
+  // Reserved fields IDs used for removed fields: 1 to 3, 10, 11, 12.
 
   optional VideoPacketFormat format = 4;
 
@@ -61,9 +61,6 @@ message VideoPacket {
   // The client's timestamp of the latest event received by the host before
   // starting to capture this video frame.
   optional int64 latest_event_timestamp = 9;
-
-  // Optional frame timestamp. Used in tests to estimate frame latency.
-  optional int64 timestamp = 12;
 
   // Frame identifier used to match VideoFrame and VideoAck.
   optional int32 frame_id = 13;

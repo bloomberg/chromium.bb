@@ -60,7 +60,6 @@ class FakeConnectionToClient : public ConnectionToClient {
   void Disconnect(ErrorCode disconnect_error) override;
 
   Session* session() override;
-  void OnInputEventReceived(int64_t timestamp) override;
 
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_host_stub(HostStub* host_stub) override;

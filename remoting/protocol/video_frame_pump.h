@@ -70,9 +70,6 @@ class VideoStub;
 class VideoFramePump : public VideoStream,
                        public webrtc::DesktopCapturer::Callback {
  public:
-  // Enables timestamps for generated frames. Used for testing.
-  static void EnableTimestampsForTests();
-
   // Creates a VideoFramePump running capture, encode and network tasks on the
   // supplied TaskRunners. Video will be pumped to |video_stub|, which must
   // outlive the pump..

@@ -87,8 +87,6 @@ Session* FakeConnectionToClient::session() {
   return session_.get();
 }
 
-void FakeConnectionToClient::OnInputEventReceived(int64_t timestamp) {}
-
 void FakeConnectionToClient::set_clipboard_stub(ClipboardStub* clipboard_stub) {
   clipboard_stub_ = clipboard_stub;
 }

@@ -102,7 +102,6 @@ class ProtocolPerfTest
         capture_thread_("capture"),
         encode_thread_("encode"),
         decode_thread_("decode") {
-    protocol::VideoFramePump::EnableTimestampsForTests();
     host_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     capture_thread_.Start();

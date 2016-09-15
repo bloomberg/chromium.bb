@@ -82,11 +82,6 @@ void IceConnectionToClient::Disconnect(ErrorCode error) {
   session_->Close(error);
 }
 
-void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnInputEventReceived(this, timestamp);
-}
-
 std::unique_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -207,6 +202,11 @@ void IceConnectionToClient::OnChannelClosed(
     ChannelDispatcherBase* channel_dispatcher) {
   // ICE transport doesn't close channels dynamically.
   NOTREACHED();
+}
+
+void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  event_handler_->OnInputEventReceived(this, timestamp);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {
