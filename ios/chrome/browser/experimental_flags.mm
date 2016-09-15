@@ -117,7 +117,7 @@ bool IsAllBookmarksEnabled() {
       base::FieldTrialList::FindFullName("RemoveAllBookmarks");
 
   if (group_name.empty()) {
-    return true;  // If no finch experiment, keep all bookmarks enabled.
+    return false;  // If no finch experiment, all bookmarks is disabled.
   }
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
