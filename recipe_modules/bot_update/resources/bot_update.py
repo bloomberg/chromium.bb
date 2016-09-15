@@ -7,7 +7,6 @@
 
 import cStringIO
 import codecs
-import collections
 import copy
 import ctypes
 import json
@@ -16,7 +15,6 @@ import os
 import pprint
 import random
 import re
-import socket
 import subprocess
 import sys
 import tempfile
@@ -299,7 +297,9 @@ def remove(target):
   dead_folder = path.join(BUILDER_DIR, 'build.dead')
   if not path.exists(dead_folder):
     os.makedirs(dead_folder)
-  os.rename(target, path.join(dead_folder, uuid.uuid4().hex))
+  dest = path.join(dead_folder, uuid.uuid4().hex)
+  print 'Marking for removal %s => %s' % (target, dest)
+  os.rename(target, dest)
 
 
 def ensure_no_checkout(dir_names):
@@ -458,6 +458,11 @@ def force_revision(folder_name, revision):
     git('checkout', '--force', ref, cwd=folder_name)
 
 
+def is_broken_repo_dir(repo_dir):
+  # Treat absence of 'config' as a signal of a partially deleted repo.
+  return not path.exists(os.path.join(repo_dir, '.git', 'config'))
+
+
 def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
@@ -496,6 +501,12 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
           'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
 
       try:
+        # If repo deletion was aborted midway, it may have left .git in broken
+        # state.
+        if path.exists(sln_dir) and is_broken_repo_dir(sln_dir):
+          print 'Git repo %s appears to be broken, removing it' % sln_dir
+          remove(sln_dir)
+
         if not path.isdir(sln_dir):
           git(*clone_cmd)
         else:
@@ -1044,7 +1055,7 @@ def main():
   # Print a helpful message to tell developers whats going on with this step.
   print_debug_info()
 
-  # Parse, munipulate, and print the gclient solutions.
+  # Parse, manipulate, and print the gclient solutions.
   specs = {}
   exec(options.specs, specs)
   orig_solutions = specs.get('solutions', [])
