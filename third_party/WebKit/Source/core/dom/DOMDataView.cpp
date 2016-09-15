@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "platform/CheckedInt.h"
+#include "wtf/CheckedNumeric.h"
 #include "wtf/typed_arrays/ArrayBufferView.h"
 
 namespace blink {
@@ -17,12 +17,9 @@ class DataView final : public ArrayBufferView {
 public:
     static PassRefPtr<DataView> create(ArrayBuffer* buffer, unsigned byteOffset, unsigned byteLength)
     {
-        RELEASE_ASSERT(byteOffset <= buffer->byteLength());
-        CheckedInt<uint32_t> checkedOffset(byteOffset);
-        CheckedInt<uint32_t> checkedLength(byteLength);
-        CheckedInt<uint32_t> checkedMax = checkedOffset + checkedLength;
-        RELEASE_ASSERT(checkedMax.isValid());
-        RELEASE_ASSERT(checkedMax.value() <= buffer->byteLength());
+        CheckedNumeric<uint32_t> checkedMax = byteOffset;
+        checkedMax += byteLength;
+        RELEASE_ASSERT(checkedMax.ValueOrDie() <= buffer->byteLength());
         return adoptRef(new DataView(buffer, byteOffset, byteLength));
     }
 

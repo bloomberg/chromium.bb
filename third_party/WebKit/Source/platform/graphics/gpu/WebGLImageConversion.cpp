@@ -4,7 +4,6 @@
 
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 
-#include "platform/CheckedInt.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
 #include "platform/graphics/cpu/mips/WebGLImageConversionMSA.h"
@@ -12,6 +11,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -2062,77 +2062,77 @@ GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type,
     if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
         return GL_INVALID_ENUM;
     unsigned bytesPerGroup = bytesPerComponent * componentsPerPixel;
-    CheckedInt<uint32_t> checkedValue = static_cast<uint32_t>(rowLength);
+    CheckedNumeric<uint32_t> checkedValue = static_cast<uint32_t>(rowLength);
     checkedValue *=  bytesPerGroup;
-    if (!checkedValue.isValid())
+    if (!checkedValue.IsValid())
         return GL_INVALID_VALUE;
 
     unsigned lastRowSize;
     if (params.rowLength > 0 && params.rowLength != width) {
-        CheckedInt<uint32_t> tmp = width;
+        CheckedNumeric<uint32_t> tmp = width;
         tmp *= bytesPerGroup;
-        if (!tmp.isValid())
+        if (!tmp.IsValid())
             return GL_INVALID_VALUE;
-        lastRowSize = tmp.value();
+        lastRowSize = tmp.ValueOrDie();
     } else {
-        lastRowSize = checkedValue.value();
+        lastRowSize = checkedValue.ValueOrDie();
     }
 
     unsigned padding = 0;
-    unsigned residual = checkedValue.value() % params.alignment;
+    unsigned residual = checkedValue.ValueOrDie() % params.alignment;
     if (residual) {
         padding = params.alignment - residual;
         checkedValue += padding;
     }
-    if (!checkedValue.isValid())
+    if (!checkedValue.IsValid())
         return GL_INVALID_VALUE;
-    unsigned paddedRowSize = checkedValue.value();
+    unsigned paddedRowSize = checkedValue.ValueOrDie();
 
-    CheckedInt<uint32_t> rows = imageHeight;
+    CheckedNumeric<uint32_t> rows = imageHeight;
     rows *= (depth - 1);
     // Last image is not affected by IMAGE_HEIGHT parameter.
     rows += height;
-    if (!rows.isValid())
+    if (!rows.IsValid())
         return GL_INVALID_VALUE;
-    checkedValue *= (rows.value() - 1);
+    checkedValue *= (rows.ValueOrDie() - 1);
     // Last row is not affected by ROW_LENGTH parameter.
     checkedValue += lastRowSize;
-    if (!checkedValue.isValid())
+    if (!checkedValue.IsValid())
         return GL_INVALID_VALUE;
-    *imageSizeInBytes = checkedValue.value();
+    *imageSizeInBytes = checkedValue.ValueOrDie();
     if (paddingInBytes)
         *paddingInBytes = padding;
 
-    CheckedInt<uint32_t> skipSize = 0;
+    CheckedNumeric<uint32_t> skipSize = 0;
     if (params.skipImages > 0) {
-        CheckedInt<uint32_t> tmp = paddedRowSize;
+        CheckedNumeric<uint32_t> tmp = paddedRowSize;
         tmp *= imageHeight;
         tmp *= params.skipImages;
-        if (!tmp.isValid())
+        if (!tmp.IsValid())
             return GL_INVALID_VALUE;
-        skipSize += tmp.value();
+        skipSize += tmp.ValueOrDie();
     }
     if (params.skipRows > 0) {
-        CheckedInt<uint32_t> tmp = paddedRowSize;
+        CheckedNumeric<uint32_t> tmp = paddedRowSize;
         tmp *= params.skipRows;
-        if (!tmp.isValid())
+        if (!tmp.IsValid())
             return GL_INVALID_VALUE;
-        skipSize += tmp.value();
+        skipSize += tmp.ValueOrDie();
     }
     if (params.skipPixels > 0) {
-        CheckedInt<uint32_t> tmp = bytesPerGroup;
+        CheckedNumeric<uint32_t> tmp = bytesPerGroup;
         tmp *= params.skipPixels;
-        if (!tmp.isValid())
+        if (!tmp.IsValid())
             return GL_INVALID_VALUE;
-        skipSize += tmp.value();
+        skipSize += tmp.ValueOrDie();
     }
-    if (!skipSize.isValid())
+    if (!skipSize.IsValid())
         return GL_INVALID_VALUE;
     if (skipSizeInBytes)
-        *skipSizeInBytes = skipSize.value();
+        *skipSizeInBytes = skipSize.ValueOrDie();
 
-    checkedValue += skipSize.value();
-    if (!checkedValue.isValid())
+    checkedValue += skipSize.ValueOrDie();
+    if (!checkedValue.IsValid())
         return GL_INVALID_VALUE;
     return GL_NO_ERROR;
 }

@@ -203,7 +203,6 @@ component("platform") {
   sources = [
     "AsyncFileSystemCallbacks.h",
     "CalculationValue.h",
-    "CheckedInt.h",
     "ContentDecryptionModuleResult.h",
     "ContentSettingCallbacks.cpp",
     "ContentSettingCallbacks.h",

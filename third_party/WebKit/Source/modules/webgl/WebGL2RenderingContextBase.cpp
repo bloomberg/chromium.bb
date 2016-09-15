@@ -24,8 +24,8 @@
 #include "modules/webgl/WebGLTransformFeedback.h"
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
-#include "platform/CheckedInt.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -58,9 +58,9 @@ bool validateSubSourceAndGetData(DOMArrayBufferView* view, GLuint subOffset, GLu
         // type size is at most 8, so no overflow.
         byteOffset = subOffset * typeSize;
     }
-    CheckedInt<long long> total = byteOffset;
+    CheckedNumeric<long long> total = byteOffset;
     total += byteLength;
-    if (!total.isValid() || total.value() > view->byteLength()) {
+    if (!total.IsValid() || total.ValueOrDie() > view->byteLength()) {
         return false;
     }
     if (!byteLength) {

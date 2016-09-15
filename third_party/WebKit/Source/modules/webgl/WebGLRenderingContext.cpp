@@ -57,10 +57,10 @@
 #include "modules/webgl/WebGLDepthTexture.h"
 #include "modules/webgl/WebGLDrawBuffers.h"
 #include "modules/webgl/WebGLLoseContext.h"
-#include "platform/CheckedInt.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "wtf/CheckedNumeric.h"
 #include <memory>
 
 namespace blink {

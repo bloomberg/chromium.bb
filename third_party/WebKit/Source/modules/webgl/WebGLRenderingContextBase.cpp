@@ -83,7 +83,6 @@
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "modules/webgl/WebGLVertexArrayObjectOES.h"
-#include "platform/CheckedInt.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WaitableEvent.h"
@@ -93,6 +92,7 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
 #include "public/platform/functional/WebFunction.h"
+#include "wtf/CheckedNumeric.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
@@ -5765,11 +5765,11 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, Te
         synthesizeGLError(error, functionName, "invalid texture dimensions");
         return false;
     }
-    CheckedInt<uint32_t> total = srcOffset;
+    CheckedNumeric<uint32_t> total = srcOffset;
     total *= pixels->typeSize();
     total += totalBytesRequired;
     total += skipBytes;
-    if (!total.isValid() || pixels->byteLength() < total.value()) {
+    if (!total.IsValid() || pixels->byteLength() < total.ValueOrDie()) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request");
         return false;
     }
