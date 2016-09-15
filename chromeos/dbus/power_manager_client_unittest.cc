@@ -32,8 +32,11 @@ namespace {
 // Shorthand for a few commonly-used constants.
 const char* kInterface = power_manager::kPowerManagerInterface;
 const char* kSuspendImminent = power_manager::kSuspendImminentSignal;
+const char* kDarkSuspendImminent = power_manager::kDarkSuspendImminentSignal;
 const char* kHandleSuspendReadiness =
     power_manager::kHandleSuspendReadinessMethod;
+const char* kHandleDarkSuspendReadiness =
+    power_manager::kHandleDarkSuspendReadinessMethod;
 
 // Matcher that verifies that a dbus::Message has member |name|.
 MATCHER_P(HasMember, name, "") {
@@ -85,6 +88,10 @@ class TestObserver : public PowerManagerClient::Observer {
 
   int num_suspend_imminent() const { return num_suspend_imminent_; }
   int num_suspend_done() const { return num_suspend_done_; }
+  int num_dark_suspend_imminent() const { return num_dark_suspend_imminent_; }
+  base::Closure suspend_readiness_callback() const {
+    return suspend_readiness_callback_;
+  }
 
   void set_take_suspend_readiness_callback(bool take_callback) {
     take_suspend_readiness_callback_ = take_callback;
@@ -110,16 +117,23 @@ class TestObserver : public PowerManagerClient::Observer {
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
     num_suspend_done_++;
   }
+  void DarkSuspendImminent() override {
+    num_dark_suspend_imminent_++;
+    if (take_suspend_readiness_callback_)
+      suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
+  }
 
  private:
   PowerManagerClient* client_;  // Not owned.
 
-  // Number of times SuspendImminent() and SuspendDone() have been called.
+  // Number of times SuspendImminent(), SuspendDone(), and DarkSuspendImminent()
+  // have been called.
   int num_suspend_imminent_ = 0;
   int num_suspend_done_ = 0;
+  int num_dark_suspend_imminent_ = 0;
 
-  // Should SuspendImminent() call |client_|'s GetSuspendReadinessCallback()
-  // method?
+  // Should SuspendImminent() and DarkSuspendImminent() call |client_|'s
+  // GetSuspendReadinessCallback() method?
   bool take_suspend_readiness_callback_ = false;
 
   // Callback returned by |client_|'s GetSuspendReadinessCallback() method.
@@ -305,7 +319,8 @@ class PowerManagerClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientTest);
 };
 
-// Suspend readiness should be reported immediately when there are no observers.
+// Tests that suspend readiness is reported immediately when there are no
+// observers.
 TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutObservers) {
   const int kSuspendId = 1;
   ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
@@ -313,13 +328,15 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutObservers) {
   EmitSuspendDoneSignal(kSuspendId);
 }
 
-// Observers should be notified when suspend is imminent and done. Readiness
-// should be reported synchronously when GetSuspendReadinessCallback() hasn't
-// been called.
+// Tests that synchronous observers are notified about impending suspend
+// attempts and completion.
 TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutCallbacks) {
   TestObserver observer_1(client_.get());
   TestObserver observer_2(client_.get());
 
+  // Observers should be notified when suspend is imminent. Readiness should be
+  // reported synchronously since GetSuspendReadinessCallback() hasn't been
+  // called.
   const int kSuspendId = 1;
   ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
   EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
@@ -335,9 +352,8 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutCallbacks) {
   EXPECT_EQ(1, observer_2.num_suspend_done());
 }
 
-// When observers call GetSuspendReadinessCallback() from their
-// SuspendImminent() methods, the HandleSuspendReadiness method call should be
-// deferred until all callbacks are run.
+// Tests that readiness is deferred until asynchronous observers have run their
+// callbacks.
 TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithCallbacks) {
   TestObserver observer_1(client_.get());
   observer_1.set_take_suspend_readiness_callback(true);
@@ -345,16 +361,21 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithCallbacks) {
   observer_2.set_take_suspend_readiness_callback(true);
   TestObserver observer_3(client_.get());
 
+  // When observers call GetSuspendReadinessCallback() from their
+  // SuspendImminent() methods, the HandleSuspendReadiness method call should be
+  // deferred until all callbacks are run.
   const int kSuspendId = 1;
   EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
   EXPECT_TRUE(observer_1.RunSuspendReadinessCallback());
   ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
   EXPECT_TRUE(observer_2.RunSuspendReadinessCallback());
   EmitSuspendDoneSignal(kSuspendId);
+  EXPECT_EQ(1, observer_1.num_suspend_done());
+  EXPECT_EQ(1, observer_2.num_suspend_done());
 }
 
-// The RenderProcessManagerDelegate should be notified that suspend is imminent
-// only after observers have reported readiness.
+// Tests that RenderProcessManagerDelegate is notified about suspend and resume
+// in the common case where suspend readiness is reported.
 TEST_F(PowerManagerClientTest, NotifyRenderProcessManagerDelegate) {
   TestDelegate delegate(client_.get());
   TestObserver observer(client_.get());
@@ -365,18 +386,138 @@ TEST_F(PowerManagerClientTest, NotifyRenderProcessManagerDelegate) {
   EXPECT_EQ(0, delegate.num_suspend_imminent());
   EXPECT_EQ(0, delegate.num_suspend_done());
 
+  // The RenderProcessManagerDelegate should be notified that suspend is
+  // imminent only after observers have reported readiness.
   ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
   EXPECT_TRUE(observer.RunSuspendReadinessCallback());
   EXPECT_EQ(1, delegate.num_suspend_imminent());
   EXPECT_EQ(0, delegate.num_suspend_done());
 
+  // The delegate should be notified immediately after the attempt completes.
   EmitSuspendDoneSignal(kSuspendId);
   EXPECT_EQ(1, delegate.num_suspend_imminent());
   EXPECT_EQ(1, delegate.num_suspend_done());
 }
 
-// TODO(derat): Add more tests, e.g. for SuspendDone being received while
-// readiness callbacks are still outstanding (http://crbug.com/646912) and for
-// the handling of DarkSuspendImminent signals.
+// Tests that DarkSuspendImminent is handled in a manner similar to
+// SuspendImminent.
+TEST_F(PowerManagerClientTest, ReportDarkSuspendReadiness) {
+  TestDelegate delegate(client_.get());
+  TestObserver observer(client_.get());
+  observer.set_take_suspend_readiness_callback(true);
+
+  const int kSuspendId = 1;
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_imminent());
+  EXPECT_EQ(0, delegate.num_suspend_imminent());
+
+  ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
+  EXPECT_TRUE(observer.RunSuspendReadinessCallback());
+  EXPECT_EQ(1, delegate.num_suspend_imminent());
+
+  // The RenderProcessManagerDelegate shouldn't be notified about dark suspend
+  // attempts.
+  const int kDarkSuspendId = 5;
+  EmitSuspendImminentSignal(kDarkSuspendImminent, kDarkSuspendId);
+  EXPECT_EQ(1, observer.num_dark_suspend_imminent());
+  EXPECT_EQ(1, delegate.num_suspend_imminent());
+  EXPECT_EQ(0, delegate.num_suspend_done());
+
+  ExpectSuspendReadiness(kHandleDarkSuspendReadiness, kDarkSuspendId,
+                         kDarkSuspendDelayId);
+  EXPECT_TRUE(observer.RunSuspendReadinessCallback());
+  EXPECT_EQ(0, delegate.num_suspend_done());
+
+  EmitSuspendDoneSignal(kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_done());
+  EXPECT_EQ(1, delegate.num_suspend_done());
+}
+
+// Tests the case where a SuspendDone signal is received while a readiness
+// callback is still pending.
+TEST_F(PowerManagerClientTest, SuspendCancelledWhileCallbackPending) {
+  TestDelegate delegate(client_.get());
+  TestObserver observer(client_.get());
+  observer.set_take_suspend_readiness_callback(true);
+
+  const int kSuspendId = 1;
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_imminent());
+
+  // If the suspend attempt completes (probably due to cancellation) before the
+  // observer has run its readiness callback, the observer (but not the
+  // delegate, which hasn't been notified about suspend being imminent yet)
+  // should be notified about completion.
+  EmitSuspendDoneSignal(kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_done());
+  EXPECT_EQ(0, delegate.num_suspend_done());
+
+  // Ensure that the delegate doesn't receive late notification of suspend being
+  // imminent if the readiness callback runs at this point, since that would
+  // leave the renderers in a frozen state (http://crbug.com/646912). There's an
+  // implicit expectation that powerd doesn't get notified about readiness here,
+  // too.
+  EXPECT_TRUE(observer.RunSuspendReadinessCallback());
+  EXPECT_EQ(0, delegate.num_suspend_imminent());
+  EXPECT_EQ(0, delegate.num_suspend_done());
+}
+
+// Tests the case where a SuspendDone signal is received while a dark suspend
+// readiness callback is still pending.
+TEST_F(PowerManagerClientTest, SuspendDoneWhileDarkSuspendCallbackPending) {
+  TestDelegate delegate(client_.get());
+  TestObserver observer(client_.get());
+  observer.set_take_suspend_readiness_callback(true);
+
+  const int kSuspendId = 1;
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
+  EXPECT_TRUE(observer.RunSuspendReadinessCallback());
+  EXPECT_EQ(1, delegate.num_suspend_imminent());
+
+  const int kDarkSuspendId = 5;
+  EmitSuspendImminentSignal(kDarkSuspendImminent, kDarkSuspendId);
+  EXPECT_EQ(1, observer.num_dark_suspend_imminent());
+
+  // The delegate should be notified if the attempt completes now.
+  EmitSuspendDoneSignal(kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_done());
+  EXPECT_EQ(1, delegate.num_suspend_done());
+
+  // Dark suspend readiness shouldn't be reported even if the callback runs at
+  // this point, since the suspend attempt is already done. The delegate also
+  // shouldn't receive any more calls.
+  EXPECT_TRUE(observer.RunSuspendReadinessCallback());
+  EXPECT_EQ(1, delegate.num_suspend_imminent());
+  EXPECT_EQ(1, delegate.num_suspend_done());
+}
+
+// Tests the case where dark suspend is announced while readiness hasn't been
+// reported for the initial regular suspend attempt.
+TEST_F(PowerManagerClientTest, DarkSuspendImminentWhileCallbackPending) {
+  TestDelegate delegate(client_.get());
+  TestObserver observer(client_.get());
+  observer.set_take_suspend_readiness_callback(true);
+
+  // Announce that suspend is imminent and grab, but don't run, the readiness
+  // callback.
+  const int kSuspendId = 1;
+  EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_imminent());
+  base::Closure regular_callback = observer.suspend_readiness_callback();
+
+  // Before readiness is reported, announce that dark suspend is imminent.
+  const int kDarkSuspendId = 1;
+  EmitSuspendImminentSignal(kDarkSuspendImminent, kDarkSuspendId);
+  EXPECT_EQ(1, observer.num_dark_suspend_imminent());
+  base::Closure dark_callback = observer.suspend_readiness_callback();
+
+  // Complete the suspend attempt and run both of the earlier callbacks. Neither
+  // should result in readiness being reported.
+  EmitSuspendDoneSignal(kSuspendId);
+  EXPECT_EQ(1, observer.num_suspend_done());
+  regular_callback.Run();
+  dark_callback.Run();
+}
 
 }  // namespace chromeos
