@@ -206,6 +206,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         assertTrue(checkOrientationForLock(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT));
     }
 
+    @DisabledTest(message = "crbug.com/645609")
     @MediumTest
     @Feature({"ScreenOrientation"})
     @RetryOnFailure
