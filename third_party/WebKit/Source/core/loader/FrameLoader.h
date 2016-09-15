@@ -284,6 +284,7 @@ private:
 
     bool m_dispatchingDidClearWindowObjectInMainWorld;
     bool m_protectProvisionalLoader;
+    bool m_isNavigationHandledByClient;
 };
 
 } // namespace blink

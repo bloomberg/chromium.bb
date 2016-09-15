@@ -181,6 +181,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_forcedSandboxFlags(SandboxNone)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)
     , m_protectProvisionalLoader(false)
+    , m_isNavigationHandledByClient(false)
 {
     TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
     takeObjectSnapshot();
@@ -616,14 +617,14 @@ static bool shouldSendFinishNotification(LocalFrame* frame)
     return true;
 }
 
-static bool shouldSendCompleteNotification(LocalFrame* frame)
+static bool shouldSendCompleteNotification(LocalFrame* frame, bool isNavigationHandledByClient)
 {
     // FIXME: We might have already sent stop notifications and be re-completing.
     if (!frame->isLoading())
         return false;
     // Only send didStopLoading() if there are no navigations in progress at all,
     // whether committed, provisional, or pending.
-    return frame->loader().documentLoader()->sentDidFinishLoad() && !frame->loader().provisionalDocumentLoader();
+    return frame->loader().documentLoader()->sentDidFinishLoad() && !frame->loader().provisionalDocumentLoader() && !isNavigationHandledByClient;
 }
 
 void FrameLoader::checkCompleted()
@@ -656,7 +657,7 @@ void FrameLoader::checkCompleted()
             return;
     }
 
-    if (shouldSendCompleteNotification(m_frame)) {
+    if (shouldSendCompleteNotification(m_frame, m_isNavigationHandledByClient)) {
         m_progressTracker->progressCompleted();
         // Retry restoring scroll offset since finishing loading disables content
         // size clamping.
@@ -1052,6 +1053,8 @@ void FrameLoader::stopAllLoaders()
 
     m_inStopAllLoaders = true;
 
+    m_isNavigationHandledByClient = false;
+
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child)->loader().stopAllLoaders();
@@ -1377,6 +1380,8 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
     DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
     NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
 {
+    m_isNavigationHandledByClient = false;
+
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || substituteData.isValid())
         return true;
@@ -1408,6 +1413,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
     if (policy == NavigationPolicyIgnore)
         return false;
     if (policy == NavigationPolicyHandledByClient) {
+        m_isNavigationHandledByClient = true;
         // Mark the frame as loading since the embedder is handling the navigation.
         m_progressTracker->progressStarted();
         return false;
