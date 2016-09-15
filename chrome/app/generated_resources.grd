@@ -323,8 +323,8 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permission controls in the Website Settings popup.">
         Popups
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_PLUGINS" desc="The label used for plugin permissions in the Website Settings popup.">
-        Plugins
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_FLASH" desc="The label used for Flash permissions in the Website Settings popup.">
+        Flash
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_LOCATION" desc="The label used for location permission controls in the Website Settings popup.">
         Location
@@ -406,6 +406,9 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to allow.">
         Always block on this site
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_ASK" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to ask.">
+        Always ask on this site
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to detect important content.">
         Always detect important content on this site

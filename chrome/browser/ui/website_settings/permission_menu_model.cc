@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 
 #include "chrome/browser/plugins/plugins_field_trial.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,8 +39,13 @@ PermissionMenuModel::PermissionMenuModel(
           l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
       break;
     case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      // TODO(tommycli): We display the ASK string for DETECT because with
+      // HTML5 by Default, Chrome will ask before running Flash on most sites.
+      // Once the feature flag is gone, migrate the actual setting to ASK.
       label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
+          base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)
+              ? IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK
+              : IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT);
       break;
     case CONTENT_SETTING_NUM_SETTINGS:
       NOTREACHED();
@@ -73,7 +79,11 @@ PermissionMenuModel::PermissionMenuModel(
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
   }
 
-  if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+  // TODO(tommycli): With the HTML5 by Default feature, Flash is treated the
+  // same as any other permission with ASK, i.e. there is no ASK exception.
+  // Once the feature flag is gone, remove this block of code entirely.
+  if (permission_.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      !base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_DETECT_IMPORTANT_CONTENT);
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);

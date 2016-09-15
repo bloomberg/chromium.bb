@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -88,8 +89,8 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_WEBSITE_SETTINGS_TYPE_POPUPS,
      IDR_BLOCKED_POPUPS, IDR_ALLOWED_POPUPS},
 #if defined(ENABLE_PLUGINS)
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_WEBSITE_SETTINGS_TYPE_PLUGINS,
-     IDR_BLOCKED_POPUPS, IDR_ALLOWED_PLUGINS},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_WEBSITE_SETTINGS_TYPE_FLASH,
+     IDR_BLOCKED_PLUGINS, IDR_ALLOWED_PLUGINS},
 #endif
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_WEBSITE_SETTINGS_TYPE_LOCATION,
      IDR_BLOCKED_LOCATION, IDR_ALLOWED_LOCATION},
@@ -236,6 +237,14 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
 #if defined(ENABLE_PLUGINS)
   effective_setting =
       PluginsFieldTrial::EffectiveContentSetting(type, effective_setting);
+
+  // Display the UI string for ASK instead of DETECT for HTML5 by Default.
+  // TODO(tommycli): Once HTML5 by Default is shipped and the feature flag
+  // is removed, just migrate the actual content setting to ASK.
+  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+      effective_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+    effective_setting = CONTENT_SETTING_ASK;
+  }
 #endif
 
   const int* button_text_ids = NULL;
