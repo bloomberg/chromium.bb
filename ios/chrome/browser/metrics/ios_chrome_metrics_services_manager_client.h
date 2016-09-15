@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
@@ -38,6 +39,9 @@ class IOSChromeMetricsServicesManagerClient
       override;
   std::unique_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()
       override;
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateEntropyProvider() override;
+
   net::URLRequestContextGetter* GetURLRequestContext() override;
   bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback) override;
   bool IsMetricsReportingEnabled() override;

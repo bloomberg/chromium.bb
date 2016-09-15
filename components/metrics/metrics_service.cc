@@ -361,13 +361,6 @@ bool MetricsService::WasLastShutdownClean() const {
   return clean_exit_beacon_.exited_cleanly();
 }
 
-std::unique_ptr<const base::FieldTrial::EntropyProvider>
-MetricsService::CreateEntropyProvider() {
-  // TODO(asvitkine): Refactor the code so that MetricsService does not expose
-  // this method.
-  return state_manager_->CreateDefaultEntropyProvider();
-}
-
 void MetricsService::EnableRecording() {
   DCHECK(IsSingleThreaded());
 

@@ -80,6 +80,11 @@ IOSChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
   return IOSChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
+IOSChromeMetricsServicesManagerClient::CreateEntropyProvider() {
+  return GetMetricsStateManager()->CreateDefaultEntropyProvider();
+}
+
 net::URLRequestContextGetter*
 IOSChromeMetricsServicesManagerClient::GetURLRequestContext() {
   return GetApplicationContext()->GetSystemURLRequestContext();

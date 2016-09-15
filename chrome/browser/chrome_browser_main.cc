@@ -794,17 +794,14 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 // This will be called after the command-line has been mutated by about:flags
 void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetricsAndFieldTrials");
-  // Must initialize metrics after labs have been converted into switches,
-  // but before field trials are set up (so that client ID is available for
-  // one-time randomized field trials).
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
-  metrics::MetricsService* metrics = browser_process_->metrics_service();
-
   DCHECK(!field_trial_list_);
   field_trial_list_.reset(
-      new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
+      new base::FieldTrialList(browser_process_->GetMetricsServicesManager()
+                                   ->CreateEntropyProvider()
+                                   .release()));
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -844,6 +841,11 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   std::vector<std::string> variation_ids =
       about_flags::RegisterAllFeatureVariationParameters(
           &flags_storage, feature_list.get());
+
+  // Must initialize metrics after about:flags have been converted into
+  // switches, but before field trials are set up (so that client ID is
+  // available for one-time randomized field trials).
+  metrics::MetricsService* metrics = browser_process_->metrics_service();
 
   variations::VariationsHttpHeaderProvider* http_header_provider =
       variations::VariationsHttpHeaderProvider::GetInstance();

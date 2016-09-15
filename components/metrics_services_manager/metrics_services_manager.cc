@@ -24,6 +24,11 @@ MetricsServicesManager::MetricsServicesManager(
 
 MetricsServicesManager::~MetricsServicesManager() {}
 
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
+MetricsServicesManager::CreateEntropyProvider() {
+  return client_->CreateEntropyProvider();
+}
+
 metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetMetricsServiceClient()->GetMetricsService();

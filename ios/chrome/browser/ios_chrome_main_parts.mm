@@ -196,15 +196,13 @@ void IOSChromeMainParts::SetUpMetricsAndFieldTrials() {
   base::SetRecordActionTaskRunner(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
 
-  // Must initialize metrics after labs have been converted into switches,
-  // but before field trials are set up (so that client ID is available for
-  // one-time randomized field trials).
-  metrics::MetricsService* metrics = application_context_->GetMetricsService();
-
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
+  DCHECK(!field_trial_list_);
   field_trial_list_.reset(
-      new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
+      new base::FieldTrialList(application_context_->GetMetricsServicesManager()
+                                   ->CreateEntropyProvider()
+                                   .release()));
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -227,6 +225,11 @@ void IOSChromeMainParts::SetUpMetricsAndFieldTrials() {
       application_context_->GetLocalState());
   std::vector<std::string> variation_ids =
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
+
+  // Must initialize metrics after about:flags have been converted into
+  // switches, but before field trials are set up (so that client ID is
+  // available for one-time randomized field trials).
+  metrics::MetricsService* metrics = application_context_->GetMetricsService();
 
   variations::VariationsHttpHeaderProvider* http_header_provider =
       variations::VariationsHttpHeaderProvider::GetInstance();

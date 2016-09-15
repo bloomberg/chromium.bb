@@ -210,6 +210,11 @@ ChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
   return ChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
+ChromeMetricsServicesManagerClient::CreateEntropyProvider() {
+  return GetMetricsStateManager()->CreateDefaultEntropyProvider();
+}
+
 net::URLRequestContextGetter*
 ChromeMetricsServicesManagerClient::GetURLRequestContext() {
   return g_browser_process->system_request_context();

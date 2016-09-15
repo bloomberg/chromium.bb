@@ -124,16 +124,6 @@ class MetricsService : public base::HistogramFlattener {
   // Returns true if the last session exited cleanly.
   bool WasLastShutdownClean() const;
 
-  // Returns the preferred entropy provider used to seed persistent activities
-  // based on whether or not metrics reporting will be permitted on this client.
-  //
-  // If metrics reporting is enabled, this method returns an entropy provider
-  // that has a high source of entropy, partially based on the client ID.
-  // Otherwise, it returns an entropy provider that is based on a low entropy
-  // source.
-  std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider();
-
   // At startup, prefs needs to be called with a list of all the pref names and
   // types we'll be using.
   static void RegisterPrefs(PrefRegistrySimple* registry);

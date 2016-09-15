@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {
@@ -41,6 +42,16 @@ class MetricsServicesManager {
   explicit MetricsServicesManager(
       std::unique_ptr<MetricsServicesManagerClient> client);
   virtual ~MetricsServicesManager();
+
+  // Returns the preferred entropy provider used to seed persistent activities
+  // based on whether or not metrics reporting is permitted on this client.
+  //
+  // If there's consent to report metrics, this method returns an entropy
+  // provider that has a high source of entropy, partially based on the client
+  // ID. Otherwise, it returns an entropy provider that is based on a low
+  // entropy source.
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateEntropyProvider();
 
   // Returns the MetricsService, creating it if it hasn't been created yet (and
   // additionally creating the MetricsServiceClient in that case).
