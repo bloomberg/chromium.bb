@@ -686,6 +686,8 @@ def UpdateClang(args):
   compiler_rt_args = base_cmake_args + [
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
+  if sys.platform == 'darwin':
+    compiler_rt_args += ['-DCOMPILER_RT_ENABLE_IOS=ON']
   if sys.platform != 'win32':
     compiler_rt_args += ['-DLLVM_CONFIG_PATH=' +
                          os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config'),

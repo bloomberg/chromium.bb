@@ -211,11 +211,12 @@ def main():
                  'lib/libBlinkGCPlugin.' + so_ext,
                  ])
   if sys.platform == 'darwin':
-    want.extend([# Copy only the OSX (ASan and profile) and iossim (ASan)
-                 # runtime libraries:
+    want.extend([# Copy only the OSX and iossim (ASan and profile) runtime
+                 # libraries:
                  'lib/clang/*/lib/darwin/*asan_osx*',
                  'lib/clang/*/lib/darwin/*asan_iossim*',
                  'lib/clang/*/lib/darwin/*profile_osx*',
+                 'lib/clang/*/lib/darwin/*profile_iossim*',
                  ])
   elif sys.platform.startswith('linux'):
     # Copy the libstdc++.so.6 we linked Clang against so it can run.
