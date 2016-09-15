@@ -6,6 +6,7 @@
 
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
@@ -13,7 +14,6 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
-#include "platform/graphics/paint/ClipRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ AffineTransform SVGRootPainter::transformToPixelSnappedBorderBox(const LayoutPoi
     return paintOffsetToBorderBox;
 }
 
-void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void SVGRootPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // An empty viewport disables rendering.
     if (pixelSnappedSize(paintOffset).isEmpty())
@@ -55,15 +55,14 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (svg->hasEmptyViewBox())
         return;
 
-    PaintInfo paintInfoBeforeFiltering(paintInfo);
-
     // Apply initial viewport clip.
-    Optional<ClipRecorder> clipRecorder;
+    Optional<BoxClipper> boxClipper;
     if (m_layoutSVGRoot.shouldApplyViewportClip()) {
         // TODO(pdr): Clip the paint info cull rect here.
-        clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset)));
+        boxClipper.emplace(m_layoutSVGRoot, paintInfo, paintOffset, ForceContentsClip);
     }
 
+    PaintInfo paintInfoBeforeFiltering(paintInfo);
     AffineTransform transformToBorderBox = transformToPixelSnappedBorderBox(paintOffset);
     paintInfoBeforeFiltering.updateCullRect(transformToBorderBox);
     SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGRoot, transformToBorderBox);

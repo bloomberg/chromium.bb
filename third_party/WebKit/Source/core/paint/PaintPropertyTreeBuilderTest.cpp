@@ -1987,4 +1987,26 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties)
     EXPECT_TRUE(overflowBScrollProperties->scroll()->userScrollableVertical());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootClip)
+{
+    setBodyInnerHTML(
+        "<svg id='svg' xmlns='http://www.w3.org/2000/svg' width='100px' height='100px'>"
+        "  <rect width='200' height='200' fill='red' />"
+        "</svg>");
+
+    const ClipPaintPropertyNode* clip = getLayoutObjectByElementId("svg")->objectPaintProperties()->overflowClip();
+    EXPECT_EQ(frameContentClip(), clip->parent());
+    EXPECT_EQ(FloatRoundedRect(8, 8, 100, 100), clip->clipRect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip)
+{
+    setBodyInnerHTML(
+        "<svg id='svg' xmlns='http://www.w3.org/2000/svg' width='100px' height='100px' style='overflow: visible'>"
+        "  <rect width='200' height='200' fill='red' />"
+        "</svg>");
+
+    EXPECT_FALSE(getLayoutObjectByElementId("svg")->objectPaintProperties()->overflowClip());
+}
+
 } // namespace blink

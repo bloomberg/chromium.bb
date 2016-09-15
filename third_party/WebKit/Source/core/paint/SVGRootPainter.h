@@ -20,7 +20,7 @@ class SVGRootPainter {
 public:
     SVGRootPainter(const LayoutSVGRoot& layoutSVGRoot) : m_layoutSVGRoot(layoutSVGRoot) { }
 
-    void paint(const PaintInfo&, const LayoutPoint&);
+    void paintReplaced(const PaintInfo&, const LayoutPoint&);
 
     // The embedded SVG document uses an unsnapped viewport box for layout, while SVG root's border
     // box ultimately gets snapped during paint. This translate/scale transform is applied to

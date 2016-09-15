@@ -20,12 +20,20 @@
 
 namespace blink {
 
-static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
+static LayoutRect slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, const FloatRect& rect)
 {
+    if (object.isSVG() && !object.isSVGRoot()) {
+        LayoutRect result;
+        SVGLayoutSupport::mapToVisualRectInAncestorSpace(object, &ancestor, rect, result);
+        return result;
+    }
+
+    LayoutRect result(rect);
     if (object.isLayoutView())
-        toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
+        toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, result, InputIsInFrameCoordinates, DefaultVisualRectFlags);
     else
-        object.mapToVisualRectInAncestorSpace(&ancestor, rect);
+        object.mapToVisualRectInAncestorSpace(&ancestor, result);
+    return result;
 }
 
 // TODO(wangxianzhu): Combine this into PaintInvalidator::mapLocalRectToPaintInvalidationBacking() when removing PaintInvalidationState.
@@ -41,8 +49,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometr
 
     LayoutRect result;
     if (context.forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeSlowPathRect) {
-        result = LayoutRect(rect);
-        slowMapToVisualRectInAncestorSpace(object, *context.paintInvalidationContainer, result);
+        result = slowMapToVisualRectInAncestorSpace(object, *context.paintInvalidationContainer, rect);
     } else if (object == context.paintInvalidationContainer) {
         result = LayoutRect(rect);
     } else {

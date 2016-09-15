@@ -67,6 +67,7 @@ public:
     bool shouldApplyViewportClip() const;
 
     LayoutRect visualOverflowRect() const override;
+    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
     bool hasNonIsolatedBlendingDescendants() const final;
 

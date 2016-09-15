@@ -128,7 +128,7 @@ bool SVGLayoutSupport::mapToVisualRectInAncestorSpace(const LayoutObject& object
 
     // Apply initial viewport clip.
     if (svgRoot.shouldApplyViewportClip()) {
-        LayoutRect clipRect(svgRoot.pixelSnappedBorderBoxRect());
+        LayoutRect clipRect(svgRoot.overflowClipRect(LayoutPoint()));
         if (visualRectFlags & EdgeInclusive) {
             if (!resultRect.inclusiveIntersect(clipRect))
                 return false;

@@ -5,6 +5,7 @@
 #include "core/paint/BoxClipper.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -15,12 +16,23 @@
 
 namespace blink {
 
+static bool boxNeedsClip(const LayoutBox& box)
+{
+    if (box.hasControlClip())
+        return true;
+    if (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())
+        return true;
+    if (box.hasLayer() && box.layer()->isSelfPaintingLayer())
+        return false;
+    return box.hasOverflowClip() || box.styleRef().containsPaint();
+}
+
 BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
     : m_box(box)
     , m_paintInfo(paintInfo)
     , m_clipType(DisplayItem::kUninitializedType)
 {
-    ASSERT(m_paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly && m_paintInfo.phase != PaintPhaseSelfOutlineOnly);
+    DCHECK(m_paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly && m_paintInfo.phase != PaintPhaseSelfOutlineOnly);
 
     if (m_paintInfo.phase == PaintPhaseMask)
         return;
@@ -35,13 +47,10 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
         return;
     }
 
-    bool isControlClip = m_box.hasControlClip();
-    bool isOverflowOrContainmentClip = (m_box.hasOverflowClip() || box.styleRef().containsPaint()) && !(m_box.hasLayer() && m_box.layer()->isSelfPaintingLayer());
-
-    if (!isControlClip && !isOverflowOrContainmentClip)
+    if (!boxNeedsClip(m_box))
         return;
 
-    LayoutRect clipRect = isControlClip ? m_box.controlClipRect(accumulatedOffset) : m_box.overflowClipRect(accumulatedOffset);
+    LayoutRect clipRect = m_box.hasControlClip() ? m_box.controlClipRect(accumulatedOffset) : m_box.overflowClipRect(accumulatedOffset);
     FloatRoundedRect clipRoundedRect(0, 0, 0, 0);
     bool hasBorderRadius = m_box.style()->hasBorderRadius();
     if (hasBorderRadius)
@@ -77,7 +86,7 @@ BoxClipper::~BoxClipper()
     if (m_clipType == DisplayItem::kUninitializedType)
         return;
 
-    DCHECK(m_box.hasControlClip() || ((m_box.hasOverflowClip() || m_box.style()->containsPaint()) && !(m_box.hasLayer() && m_box.layer()->isSelfPaintingLayer())));
+    DCHECK(boxNeedsClip(m_box));
     m_paintInfo.context.getPaintController().endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
