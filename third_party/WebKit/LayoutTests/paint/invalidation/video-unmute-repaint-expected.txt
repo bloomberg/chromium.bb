@@ -30,29 +30,34 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
+                  "object": "LayoutBlockFlow DIV id='track'",
+                  "rect": [562, 485, 106, 48],
+                  "reason": "subtree"
+                },
+                {
                   "object": "LayoutFlexibleBox DIV",
                   "rect": [580, 508, 70, 2],
-                  "reason": "forced by layout"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutSlider INPUT",
                   "rect": [580, 508, 70, 2],
-                  "reason": "full"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
                   "rect": [597, 485, 36, 48],
-                  "reason": "full"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
                   "rect": [562, 485, 36, 48],
-                  "reason": "full"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutButton INPUT",
                   "rect": [530, 493, 32, 32],
-                  "reason": "full"
+                  "reason": "subtree"
                 }
               ]
             }
@@ -68,19 +73,23 @@
     },
     {
       "object": "LayoutButton INPUT",
-      "reason": "full"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSlider INPUT",
-      "reason": "full"
+      "reason": "subtree"
     },
     {
       "object": "LayoutFlexibleBox DIV",
-      "reason": "forced by layout"
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='track'",
+      "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow DIV id='thumb'",
-      "reason": "full"
+      "reason": "subtree"
     }
   ]
 }

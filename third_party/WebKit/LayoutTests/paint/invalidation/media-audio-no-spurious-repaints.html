@@ -1,7 +1,7 @@
 <!doctype html>
 <title>Verifies there are no spurious repaints for audio in a video tag.</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -15,7 +15,7 @@ async_test(function(t) {
     video.addEventListener('ended', t.step_func(function() {
         var layerTree = internals.layerTreeAsText(
             document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        var repaintRects = JSON.parse(layerTree).children[0].repaintRects;
+        var paintInvalidations = JSON.parse(layerTree).children[0].paintInvalidations;
         internals.stopTrackingRepaints(document);
 
         // Manually verify the number of repaints instead of using a repaint
@@ -32,13 +32,13 @@ async_test(function(t) {
                         ' Actual layer tree: ' + layerTree);
         });
 
-        assert_between_inclusive(repaintRects.length, minExpected, maxExpected);
-        for (var i = 0; i < repaintRects.length; ++i)
-            assert_array_equals(repaintRects[i], expectedRect);
+        assert_between_inclusive(paintInvalidations.length, minExpected, maxExpected);
+        for (var i = 0; i < paintInvalidations.length; ++i)
+            assert_array_equals(paintInvalidations[i].rect, expectedRect);
 
         t.done();
     }), false);
 
-    video.src = 'content/silence.wav';
+    video.src = '../../media/content/silence.wav';
 });
 </script>
