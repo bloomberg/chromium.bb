@@ -25,11 +25,11 @@ class CONTENT_EXPORT PresentationConnectionClient
   ~PresentationConnectionClient() override;
 
   // WebPresentationConnectionClient implementation.
-  blink::WebString getUrl() override;
+  blink::WebURL getUrl() override;
   blink::WebString getId() override;
 
  private:
-  blink::WebString url_;
+  blink::WebURL url_;
   blink::WebString id_;
 };
 

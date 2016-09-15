@@ -9,6 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/presentation/PresentationConnectionList.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +35,7 @@ public:
 class TestWebPresentationConnectionClient : public WebPresentationConnectionClient {
 public:
     WebString getId() override { return WebString::fromUTF8("id"); }
-    WebString getUrl() override { return WebString::fromUTF8("url"); }
+    WebURL getUrl() override { return URLTestHelpers::toKURL("http://www.example.com"); }
 };
 
 class PresentationReceiverTest : public ::testing::Test {

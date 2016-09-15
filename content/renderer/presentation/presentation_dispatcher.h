@@ -20,10 +20,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
+#include "url/gurl.h"
 
 namespace blink {
 class WebPresentationAvailabilityObserver;
 class WebString;
+class WebURL;
 template <typename T>
 class WebVector;
 }  // namespace blink
@@ -51,11 +53,11 @@ class CONTENT_EXPORT PresentationDispatcher
   };
 
   static SendMessageRequest* CreateSendTextMessageRequest(
-      const blink::WebString& presentationUrl,
+      const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const blink::WebString& message);
   static SendMessageRequest* CreateSendBinaryMessageRequest(
-      const blink::WebString& presentationUrl,
+      const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       blink::mojom::PresentationMessageType type,
       const uint8_t* data,
@@ -64,34 +66,34 @@ class CONTENT_EXPORT PresentationDispatcher
   // WebPresentationClient implementation.
   void setController(blink::WebPresentationController* controller) override;
   void startSession(
-      const blink::WebVector<blink::WebString>& presentationUrls,
+      const blink::WebVector<blink::WebURL>& presentationUrls,
       blink::WebPresentationConnectionClientCallbacks* callback) override;
   void joinSession(
-      const blink::WebVector<blink::WebString>& presentationUrls,
+      const blink::WebVector<blink::WebURL>& presentationUrls,
       const blink::WebString& presentationId,
       blink::WebPresentationConnectionClientCallbacks* callback) override;
-  void sendString(const blink::WebString& presentationUrl,
+  void sendString(const blink::WebURL& presentationUrl,
                   const blink::WebString& presentationId,
                   const blink::WebString& message) override;
-  void sendArrayBuffer(const blink::WebString& presentationUrl,
+  void sendArrayBuffer(const blink::WebURL& presentationUrl,
                        const blink::WebString& presentationId,
                        const uint8_t* data,
                        size_t length) override;
-  void sendBlobData(const blink::WebString& presentationUrl,
+  void sendBlobData(const blink::WebURL& presentationUrl,
                     const blink::WebString& presentationId,
                     const uint8_t* data,
                     size_t length) override;
-  void closeSession(const blink::WebString& presentationUrl,
+  void closeSession(const blink::WebURL& presentationUrl,
                     const blink::WebString& presentationId) override;
-  void terminateSession(const blink::WebString& presentationUrl,
+  void terminateSession(const blink::WebURL& presentationUrl,
                         const blink::WebString& presentationId) override;
   void getAvailability(
-      const blink::WebString& availabilityUrl,
+      const blink::WebURL& availabilityUrl,
       blink::WebPresentationAvailabilityCallbacks* callbacks) override;
   void startListening(blink::WebPresentationAvailabilityObserver*) override;
   void stopListening(blink::WebPresentationAvailabilityObserver*) override;
   void setDefaultPresentationUrls(
-      const blink::WebVector<blink::WebString>& presentationUrls) override;
+      const blink::WebVector<blink::WebURL>& presentationUrls) override;
 
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(
@@ -153,17 +155,18 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Tracks status of presentation displays availability for |availability_url|.
   struct AvailabilityStatus {
-    explicit AvailabilityStatus(const std::string& availability_url);
+    explicit AvailabilityStatus(const GURL& availability_url);
     ~AvailabilityStatus();
 
-    const std::string url;
+    const GURL url;
     bool last_known_availability;
     ListeningState listening_state;
     AvailabilityCallbacksMap availability_callbacks;
     AvailabilityObserversSet availability_observers;
   };
 
-  std::map<std::string, std::unique_ptr<AvailabilityStatus>>
+  // Map of AvailabilityStatus for known URLs.
+  std::map<GURL, std::unique_ptr<AvailabilityStatus>>
       availability_status_;
 
   // Updates the listening state of availability for |status| and notifies the

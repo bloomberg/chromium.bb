@@ -157,7 +157,7 @@ private:
     std::unique_ptr<FileReaderLoader> m_loader;
 };
 
-PresentationConnection::PresentationConnection(LocalFrame* frame, const String& id, const String& url)
+PresentationConnection::PresentationConnection(LocalFrame* frame, const String& id, const KURL& url)
     : DOMWindowProperty(frame)
     , m_id(id)
     , m_url(url)
@@ -406,7 +406,7 @@ void PresentationConnection::terminate()
 
 bool PresentationConnection::matches(WebPresentationConnectionClient* client) const
 {
-    return client && m_url == static_cast<String>(client->getUrl()) && m_id == static_cast<String>(client->getId());
+    return client && m_url == KURL(client->getUrl()) && m_id == static_cast<String>(client->getId());
 }
 
 void PresentationConnection::didChangeState(WebPresentationConnectionState state)

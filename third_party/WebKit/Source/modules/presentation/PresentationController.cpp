@@ -121,9 +121,9 @@ void PresentationController::setDefaultRequestUrl(const KURL& url)
         return;
 
     // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-    WebVector<WebString> presentationUrls(static_cast<size_t>(1));
+    WebVector<WebURL> presentationUrls(static_cast<size_t>(1));
     if (url.isValid())
-        presentationUrls[0] = url.getString();
+        presentationUrls[0] = url;
 
     m_client->setDefaultPresentationUrls(presentationUrls);
 }

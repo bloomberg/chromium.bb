@@ -6,6 +6,7 @@
 #define WebPresentationConnectionClient_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ public:
     virtual ~WebPresentationConnectionClient() { }
 
     virtual WebString getId() = 0;
-    virtual WebString getUrl() = 0;
+    virtual WebURL getUrl() = 0;
 };
 
 } // namespace blink

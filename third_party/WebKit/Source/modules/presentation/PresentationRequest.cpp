@@ -106,8 +106,8 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-    WebVector<WebString> presentationUrls(static_cast<size_t>(1U));
-    presentationUrls[0] = m_url.getString();
+    WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
+    presentationUrls[0] = m_url;
     client->startSession(presentationUrls, new PresentationConnectionCallbacks(resolver, this));
     return resolver->promise();
 }
@@ -123,8 +123,8 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const Str
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-    WebVector<WebString> presentationUrls(static_cast<size_t>(1U));
-    presentationUrls[0] = m_url.getString();
+    WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
+    presentationUrls[0] = m_url;
     client->joinSession(presentationUrls, id, new PresentationConnectionCallbacks(resolver, this));
     return resolver->promise();
 }
@@ -139,7 +139,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    client->getAvailability(m_url.getString(), new PresentationAvailabilityCallbacks(resolver, m_url));
+    client->getAvailability(m_url, new PresentationAvailabilityCallbacks(resolver, m_url));
     return resolver->promise();
 }
 

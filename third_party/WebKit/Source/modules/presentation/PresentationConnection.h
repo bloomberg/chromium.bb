@@ -10,6 +10,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -97,7 +98,7 @@ private:
 
     class Message;
 
-    PresentationConnection(LocalFrame*, const String& id, const String& url);
+    PresentationConnection(LocalFrame*, const String& id, const KURL&);
 
     bool canSendMessage(ExceptionState&);
     void handleMessageQueue();
@@ -110,7 +111,7 @@ private:
     void tearDown();
 
     String m_id;
-    String m_url;
+    KURL m_url;
     WebPresentationConnectionState m_state;
 
     // For Blob data handling.
