@@ -494,7 +494,6 @@ class InputApi(object):
       local_path = affected_file.LocalPath()
       for item in items:
         if self.re.match(item, local_path):
-          logging.debug("%s matched %s", item, local_path)
           return True
       return False
     return (Find(affected_file, white_list or self.DEFAULT_WHITE_LIST) and
