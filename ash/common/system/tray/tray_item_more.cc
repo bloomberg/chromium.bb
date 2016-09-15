@@ -23,9 +23,9 @@ namespace ash {
 TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
     : owner_(owner),
       show_more_(show_more),
-      icon_(NULL),
-      label_(NULL),
-      more_(NULL) {
+      icon_(nullptr),
+      label_(nullptr),
+      more_(nullptr) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
@@ -67,12 +67,6 @@ void TrayItemMore::SetImage(const gfx::ImageSkia& image_skia) {
 
 void TrayItemMore::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
-}
-
-void TrayItemMore::ReplaceIcon(views::View* view) {
-  delete icon_;
-  icon_ = NULL;
-  AddChildViewAt(view, 0);
 }
 
 bool TrayItemMore::PerformAction(const ui::Event& event) {

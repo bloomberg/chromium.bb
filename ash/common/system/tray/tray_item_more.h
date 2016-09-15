@@ -31,12 +31,6 @@ class TrayItemMore : public ActionableView {
   void SetImage(const gfx::ImageSkia& image_skia);
   void SetAccessibleName(const base::string16& name);
 
- protected:
-  // Replaces the default icon (on the left of the label), and allows a custom
-  // view to be placed there. Once the default icon is replaced, |SetImage|
-  // should never be called.
-  void ReplaceIcon(views::View* view);
-
  private:
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
