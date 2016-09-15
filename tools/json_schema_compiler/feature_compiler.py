@@ -189,6 +189,14 @@ FEATURE_GRAMMAR = (
         }
       }
     },
+    'session_types': {
+      list: {
+        'enum_map': {
+          'regular': 'FeatureSessionType::REGULAR',
+          'kiosk': 'FeatureSessionType::KIOSK',
+        }
+      }
+    },
     'whitelist': {
       list: {'subtype': unicode}
     },

@@ -46,6 +46,7 @@ class FeatureCompilerTest(unittest.TestCase):
       'max_manifest_version': 1,
       'noparent': True,
       'platforms': ['mac', 'win'],
+      'session_types': ['kiosk', 'regular'],
       'whitelist': ['zzz', 'yyy']
     })
     self.assertFalse(f.errors)

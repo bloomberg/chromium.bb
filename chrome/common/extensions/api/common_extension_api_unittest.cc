@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_features_unittest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -36,6 +37,15 @@ namespace {
 const char* const kTestFeatures[] = {
     "test1", "test2", "test3",   "test4",   "test5",
     "test6", "test7", "parent1", "parent2", "parent3",
+};
+
+const char* const kSessionTypeTestFeatures[] = {
+    "test1", "kiosk_only", "non_kiosk", "multiple_session_types"};
+
+struct FeatureSessionTypesTestData {
+  std::string api_name;
+  bool expect_available;
+  FeatureSessionType current_session_type;
 };
 
 class TestExtensionAPI : public ExtensionAPI {
@@ -278,6 +288,41 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
                                                  test_data[i].context,
                                                  test_data[i].url))
         << i;
+  }
+}
+
+TEST(ExtensionAPITest, SessionTypeFeature) {
+  const std::vector<FeatureSessionTypesTestData> kTestData(
+      {{"kiosk_only", true, FeatureSessionType::KIOSK},
+       {"kiosk_only", false, FeatureSessionType::REGULAR},
+       {"kiosk_only", false, FeatureSessionType::UNKNOWN},
+       {"non_kiosk", false, FeatureSessionType::KIOSK},
+       {"non_kiosk", true, FeatureSessionType::REGULAR},
+       {"non_kiosk", false, FeatureSessionType::UNKNOWN},
+       {"multiple_session_types", true, FeatureSessionType::KIOSK},
+       {"multiple_session_types", true, FeatureSessionType::REGULAR},
+       {"multiple_session_types", false, FeatureSessionType::UNKNOWN},
+       {"test1", true, FeatureSessionType::KIOSK},
+       {"test1", true, FeatureSessionType::REGULAR},
+       {"test1", true, FeatureSessionType::UNKNOWN}});
+
+  UnittestFeatureProvider api_feature_provider;
+
+  for (const auto& test : kTestData) {
+    TestExtensionAPI api;
+    api.RegisterDependencyProvider("api", &api_feature_provider);
+    for (const auto& key : kSessionTypeTestFeatures)
+      api.add_fake_schema(key);
+    ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
+
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> current_session(
+        ScopedCurrentFeatureSessionType(test.current_session_type));
+    EXPECT_EQ(test.expect_available,
+              api.IsAvailable(test.api_name, nullptr,
+                              Feature::BLESSED_EXTENSION_CONTEXT, GURL())
+                  .is_available())
+        << "Test case (" << test.api_name << ", "
+        << static_cast<int>(test.current_session_type) << ").";
   }
 }
 

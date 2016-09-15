@@ -253,6 +253,18 @@ available on.
 The accepted values are lists of strings from `chromeos`, `mac`, `linux`, and
 `win`.
 
+### session\_types
+
+The `session_types` property specifies in which types of sessions a feature
+should be available. The session type describes the type of user that is
+logged in the current session. Session types to which feature can be restricted
+are only supported on Chrome OS - features restricted to set of session types
+will be disabled on other platforms. Also, note that all currently supported
+session types imply that a user is logged into the session (i.e. features that
+use 'session_types' property will be disabled when a user is not logged in).
+
+The accepted values are lists of strings from `regular` and `kiosk`.
+
 ### whitelist
 
 The `whitelist` property specifies a list of ID hashes for extensions that

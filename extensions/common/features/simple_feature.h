@@ -21,6 +21,7 @@
 #include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 
 namespace extensions {
@@ -106,6 +107,7 @@ class SimpleFeature : public Feature {
   void set_contexts(std::initializer_list<Context> contexts);
   void set_dependencies(std::initializer_list<const char* const> dependencies);
   void set_extension_types(std::initializer_list<Manifest::Type> types);
+  void set_session_types(std::initializer_list<FeatureSessionType> types);
   void set_internal(bool is_internal) { is_internal_ = is_internal; }
   void set_location(Location location) { location_ = location; }
   // set_matches() is an exception to pass-by-value since we construct an
@@ -149,7 +151,8 @@ class SimpleFeature : public Feature {
                                      Manifest::Type type,
                                      const GURL& url,
                                      Context context,
-                                     version_info::Channel channel) const;
+                                     version_info::Channel channel,
+                                     FeatureSessionType session_type) const;
 
   // Handy utilities which construct the correct availability message.
   Availability CreateAvailability(AvailabilityResult result) const;
@@ -161,6 +164,8 @@ class SimpleFeature : public Feature {
                                   Context context) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   version_info::Channel channel) const;
+  Availability CreateAvailability(AvailabilityResult result,
+                                  FeatureSessionType session_type) const;
 
  private:
   friend struct FeatureComparator;
@@ -174,6 +179,7 @@ class SimpleFeature : public Feature {
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, CommandLineSwitch);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ComplexFeatureAvailability);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Context);
+  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, SessionType);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, FeatureValidation);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdWhitelist);
@@ -213,6 +219,7 @@ class SimpleFeature : public Feature {
   std::vector<std::string> whitelist_;
   std::vector<std::string> dependencies_;
   std::vector<Manifest::Type> extension_types_;
+  std::vector<FeatureSessionType> session_types_;
   std::vector<Context> contexts_;
   std::vector<Platform> platforms_;
   URLPatternSet matches_;

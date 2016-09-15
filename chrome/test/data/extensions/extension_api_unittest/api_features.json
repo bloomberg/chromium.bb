@@ -91,5 +91,20 @@
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
   },
   "parent3.noparent.child": {
+  },
+  "kiosk_only": {
+    "channel": "stable",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
+    "session_types": ["kiosk"]
+  },
+  "non_kiosk": {
+    "channel": "stable",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
+    "session_types": ["regular"]
+  },
+  "multiple_session_types": {
+    "channel": "stable",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
+    "session_types": ["kiosk", "regular"]
   }
 }
