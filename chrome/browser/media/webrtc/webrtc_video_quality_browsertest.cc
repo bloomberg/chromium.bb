@@ -317,7 +317,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
  protected:
   VideoQualityTestConfig test_config_;
 
-  base::FilePath GetWorkingDir() { return temp_working_dir_.path(); }
+  base::FilePath GetWorkingDir() { return temp_working_dir_.GetPath(); }
 
  private:
   base::FilePath GetSourceDir() {

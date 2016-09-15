@@ -777,9 +777,9 @@ void MediaFileSystemRegistryTest::SetUp() {
 #endif
 
   ASSERT_TRUE(galleries_dir_.CreateUniqueTempDir());
-  empty_dir_ = galleries_dir_.path().AppendASCII("empty");
+  empty_dir_ = galleries_dir_.GetPath().AppendASCII("empty");
   ASSERT_TRUE(base::CreateDirectory(empty_dir_));
-  dcim_dir_ = galleries_dir_.path().AppendASCII("with_dcim");
+  dcim_dir_ = galleries_dir_.GetPath().AppendASCII("with_dcim");
   ASSERT_TRUE(base::CreateDirectory(dcim_dir_));
   ASSERT_TRUE(base::CreateDirectory(
       dcim_dir_.Append(storage_monitor::kDCIMDirectoryName)));

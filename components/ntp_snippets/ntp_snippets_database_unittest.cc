@@ -74,7 +74,7 @@ class NTPSnippetsDatabaseTest : public testing::Test {
     // on the file.
     db_.reset();
 
-    db_.reset(new NTPSnippetsDatabase(database_dir_.path(),
+    db_.reset(new NTPSnippetsDatabase(database_dir_.GetPath(),
                                       base::ThreadTaskRunnerHandle::Get()));
   }
 

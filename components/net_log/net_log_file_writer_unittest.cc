@@ -48,7 +48,7 @@ class TestNetLogFileWriter : public NetLogFileWriter {
   bool GetNetExportLogBaseDirectory(base::FilePath* path) const override {
     if (lie_about_net_export_log_directory_)
       return false;
-    *path = net_log_temp_dir_.path();
+    *path = net_log_temp_dir_.GetPath();
     return true;
   }
 

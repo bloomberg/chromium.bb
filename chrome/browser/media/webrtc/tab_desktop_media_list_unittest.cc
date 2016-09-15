@@ -155,7 +155,7 @@ class TabDesktopMediaListTest : public testing::Test {
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.path()));
+        new UnittestProfileManager(temp_dir_.GetPath()));
 
 #if defined(OS_CHROMEOS)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();

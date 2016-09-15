@@ -76,20 +76,20 @@ class TestFolder {
     if (!folder_dir_.CreateUniqueTempDir())
       return false;
 
-    folder_info_ = AlbumInfo(name_, timestamp_, uid_, folder_dir_.path());
+    folder_info_ = AlbumInfo(name_, timestamp_, uid_, folder_dir_.GetPath());
 
     for (unsigned int i = 0; i < image_files_; ++i) {
       std::string image_filename = base::StringPrintf("img%05d.jpg", i);
       image_filenames_.insert(image_filename);
 
-      base::FilePath path = folder_dir_.path().AppendASCII(image_filename);
+      base::FilePath path = folder_dir_.GetPath().AppendASCII(image_filename);
 
       if (!WriteJPEGHeader(path))
         return false;
     }
 
     for (unsigned int i = 0; i < non_image_files_; ++i) {
-      base::FilePath path = folder_dir_.path().AppendASCII(
+      base::FilePath path = folder_dir_.GetPath().AppendASCII(
           base::StringPrintf("hello%05d.txt", i));
       if (base::WriteFile(path, NULL, 0) == -1)
         return false;
@@ -99,7 +99,7 @@ class TestFolder {
   }
 
   double GetVariantTimestamp() const {
-    DCHECK(!folder_dir_.path().empty());
+    DCHECK(!folder_dir_.GetPath().empty());
     base::Time variant_epoch;
     EXPECT_TRUE(base::Time::FromLocalExploded(picasa::kPmpVariantTimeEpoch,
                                               &variant_epoch));
@@ -112,12 +112,12 @@ class TestFolder {
   }
 
   const std::set<std::string>& image_filenames() const {
-    DCHECK(!folder_dir_.path().empty());
+    DCHECK(!folder_dir_.GetPath().empty());
     return image_filenames_;
   }
 
   const AlbumInfo& folder_info() const {
-    DCHECK(!folder_dir_.path().empty());
+    DCHECK(!folder_dir_.GetPath().empty());
     return folder_info_;
   }
 
@@ -246,7 +246,7 @@ class PicasaFileUtilTest : public testing::Test {
 
     ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
-        profile_dir_.path(),
+        profile_dir_.GetPath(),
         new TestPicasaFileUtil(media_path_filter_.get(),
                                picasa_data_provider_.get())));
 
@@ -255,8 +255,8 @@ class PicasaFileUtilTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(), NULL, std::move(additional_providers),
-        std::vector<storage::URLRequestAutoMountHandler>(), profile_dir_.path(),
-        content::CreateAllowFileAccessOptions());
+        std::vector<storage::URLRequestAutoMountHandler>(),
+        profile_dir_.GetPath(), content::CreateAllowFileAccessOptions());
   }
 
   void TearDown() override {
@@ -560,7 +560,7 @@ TEST_F(PicasaFileUtilTest, AlbumContents) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  base::FilePath image_path = temp_dir.path().AppendASCII("img.jpg");
+  base::FilePath image_path = temp_dir.GetPath().AppendASCII("img.jpg");
   ASSERT_TRUE(WriteJPEGHeader(image_path));
 
   AlbumImagesMap albums_images;

@@ -22,7 +22,7 @@ class SerializationUtilsTest : public testing::Test {
   SerializationUtilsTest() {
     bool success = temporary_dir.CreateUniqueTempDir();
     if (success) {
-      base::FilePath dir_path = temporary_dir.path();
+      base::FilePath dir_path = temporary_dir.GetPath();
       filename = dir_path.value() + "chromeossampletest";
       filepath = base::FilePath(filename);
     }

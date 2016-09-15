@@ -270,10 +270,10 @@ TEST_F(WebRtcRtpDumpHandlerTest, StartBothThenStopIncomingStopOutgoing) {
 TEST_F(WebRtcRtpDumpHandlerTest, DumpsCleanedUpIfNotReleased) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ResetDumpHandler(temp_dir.path(), true);
+  ResetDumpHandler(temp_dir.GetPath(), true);
 
   base::FilePath incoming_dump, outgoing_dump;
-  WriteFakeDumpFiles(temp_dir.path(), &incoming_dump, &outgoing_dump);
+  WriteFakeDumpFiles(temp_dir.GetPath(), &incoming_dump, &outgoing_dump);
 
   std::string error;
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
@@ -296,10 +296,10 @@ TEST_F(WebRtcRtpDumpHandlerTest, DumpDeletedIfEndDumpFailed) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Make the writer return failure on EndStream.
-  ResetDumpHandler(temp_dir.path(), false);
+  ResetDumpHandler(temp_dir.GetPath(), false);
 
   base::FilePath incoming_dump, outgoing_dump;
-  WriteFakeDumpFiles(temp_dir.path(), &incoming_dump, &outgoing_dump);
+  WriteFakeDumpFiles(temp_dir.GetPath(), &incoming_dump, &outgoing_dump);
 
   std::string error;
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));

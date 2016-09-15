@@ -26,13 +26,13 @@ class WebRtcLogUtilTest : public testing::Test {
     // when deleting old logs.
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     base::FilePath file;
-    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.path(), &file));
-    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.path(), &file));
+    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.GetPath(), &file));
+    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.GetPath(), &file));
     base::Time time_expect_to_keep =
         base::Time::Now() -
         base::TimeDelta::FromDays(kExpectedDaysToKeepLogFiles - 1);
     TouchFile(file, time_expect_to_keep, time_expect_to_keep);
-    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.path(), &file));
+    ASSERT_TRUE(CreateTemporaryFileInDir(dir_.GetPath(), &file));
     base::Time time_expect_to_delete =
         base::Time::Now() -
         base::TimeDelta::FromDays(kExpectedDaysToKeepLogFiles + 1);
@@ -40,7 +40,8 @@ class WebRtcLogUtilTest : public testing::Test {
   }
 
   void VerifyFiles(int expected_files) {
-    base::FileEnumerator files(dir_.path(), false, base::FileEnumerator::FILES);
+    base::FileEnumerator files(dir_.GetPath(), false,
+                               base::FileEnumerator::FILES);
     int file_counter = 0;
     for (base::FilePath name = files.Next(); !name.empty();
          name = files.Next()) {
@@ -57,14 +58,14 @@ class WebRtcLogUtilTest : public testing::Test {
 };
 
 TEST_F(WebRtcLogUtilTest, DeleteOldWebRtcLogFiles) {
-  WebRtcLogUtil::DeleteOldWebRtcLogFiles(dir_.path());
+  WebRtcLogUtil::DeleteOldWebRtcLogFiles(dir_.GetPath());
   VerifyFiles(2);
 }
 
 TEST_F(WebRtcLogUtilTest, DeleteOldAndRecentWebRtcLogFiles) {
   base::Time time_begin_delete =
       base::Time::Now() - base::TimeDelta::FromDays(1);
-  WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(dir_.path(),
+  WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(dir_.GetPath(),
                                                   time_begin_delete);
   VerifyFiles(1);
 }

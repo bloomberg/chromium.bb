@@ -114,12 +114,10 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
     return ImportedMediaGalleryRegistry::ITunesDataProvider();
   }
 
-  const base::FilePath& library_dir() const {
-    return library_dir_.path();
-  }
+  const base::FilePath& library_dir() const { return library_dir_.GetPath(); }
 
   base::FilePath XmlFile() const {
-    return library_dir_.path().AppendASCII("library.xml");
+    return library_dir_.GetPath().AppendASCII("library.xml");
   }
 
   void ExpectTrackLocation(const std::string& artist, const std::string& album,

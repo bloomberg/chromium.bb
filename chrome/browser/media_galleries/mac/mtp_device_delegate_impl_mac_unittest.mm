@@ -545,13 +545,13 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
 
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             DownloadFile(base::FilePath("/ic:id/nonexist"),
-                         temp_dir_.path().Append("target")));
+                         temp_dir_.GetPath().Append("target")));
 
   EXPECT_EQ(base::File::FILE_OK,
             DownloadFile(base::FilePath("/ic:id/filename"),
-                         temp_dir_.path().Append("target")));
+                         temp_dir_.GetPath().Append("target")));
   std::string contents;
-  EXPECT_TRUE(base::ReadFileToString(temp_dir_.path().Append("target"),
-                                     &contents));
+  EXPECT_TRUE(
+      base::ReadFileToString(temp_dir_.GetPath().Append("target"), &contents));
   EXPECT_EQ(kTestFileContents, contents);
 }

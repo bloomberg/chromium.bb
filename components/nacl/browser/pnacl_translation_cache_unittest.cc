@@ -60,7 +60,7 @@ void PnaclTranslationCacheTest::InitBackend(bool in_mem) {
   }
   // Use the private init method so we can control the size
   int rv = cache_->Init(in_mem ? net::MEMORY_CACHE : net::PNACL_CACHE,
-                        temp_dir_.path(),
+                        in_mem ? base::FilePath() : temp_dir_.GetPath(),
                         in_mem ? kMaxMemCacheSize : kTestDiskCacheSize,
                         init_cb.callback());
   if (in_mem)

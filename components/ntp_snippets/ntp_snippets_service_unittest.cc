@@ -398,7 +398,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
         "fr", &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), /*image_decoder=*/nullptr,
-        base::MakeUnique<NTPSnippetsDatabase>(database_dir_.path(),
+        base::MakeUnique<NTPSnippetsDatabase>(database_dir_.GetPath(),
                                               task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(utils_.fake_signin_manager(),
                                                    utils_.pref_service()));

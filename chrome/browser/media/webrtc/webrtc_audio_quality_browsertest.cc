@@ -777,14 +777,14 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   base::ScopedTempDir split_ref_files;
   ASSERT_TRUE(split_ref_files.CreateUniqueTempDir());
   ASSERT_NO_FATAL_FAILURE(
-      SplitFileOnSilenceIntoDir(reference_file, split_ref_files.path()));
+      SplitFileOnSilenceIntoDir(reference_file, split_ref_files.GetPath()));
   std::vector<base::FilePath> ref_segments =
-      ListWavFilesInDir(split_ref_files.path());
+      ListWavFilesInDir(split_ref_files.GetPath());
 
   base::ScopedTempDir split_actual_files;
   ASSERT_TRUE(split_actual_files.CreateUniqueTempDir());
   ASSERT_NO_FATAL_FAILURE(
-      SplitFileOnSilenceIntoDir(recording, split_actual_files.path()));
+      SplitFileOnSilenceIntoDir(recording, split_actual_files.GetPath()));
 
   // Keep the recording and split files if the analysis fails.
   base::FilePath actual_files_dir = split_actual_files.Take();

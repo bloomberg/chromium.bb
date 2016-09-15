@@ -231,11 +231,11 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
   }
 
   const base::FilePath GetTempDirPath() const {
-    return picasa_root_dir_.path().AppendASCII(kPicasaTempDirName);
+    return picasa_root_dir_.GetPath().AppendASCII(kPicasaTempDirName);
   }
 
   virtual base::FilePath GetColumnFileDestination() const {
-    return picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName);
+    return picasa_root_dir_.GetPath().AppendASCII(kPicasaDatabaseDirName);
   }
 
  private:
@@ -245,12 +245,12 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_folder_2_.CreateUniqueTempDir());
     ASSERT_TRUE(picasa_root_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateDirectory(
-        picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName)));
+        picasa_root_dir_.GetPath().AppendASCII(kPicasaDatabaseDirName)));
     ASSERT_TRUE(base::CreateDirectory(
-        picasa_root_dir_.path().AppendASCII(kPicasaTempDirName)));
+        picasa_root_dir_.GetPath().AppendASCII(kPicasaTempDirName)));
 
     picasa_data_provider_.reset(new TestPicasaDataProvider(
-        picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName)));
+        picasa_root_dir_.GetPath().AppendASCII(kPicasaDatabaseDirName)));
   }
 
   virtual void StartTestOnMediaTaskRunner() {

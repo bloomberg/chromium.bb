@@ -95,9 +95,9 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
   }
 
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
-  base::FilePath temp_dir() { return temp_dir_.path(); }
+  base::FilePath temp_dir() { return temp_dir_.GetPath(); }
   base::FilePath metrics_file() {
-    return temp_dir_.path().AppendASCII(kMetricsFilename);
+    return temp_dir_.GetPath().AppendASCII(kMetricsFilename);
   }
 
   FileMetricsProvider* provider() {
@@ -286,36 +286,40 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
   // ensure that each file has a later timestamp on disk than the previous one.
   base::ScopedTempDir metrics_files;
   EXPECT_TRUE(metrics_files.CreateUniqueTempDir());
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII(".foo.pma"),
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII(".foo.pma"),
                          allocator, base_time);
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("_bar.pma"),
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("_bar.pma"),
                          allocator, base_time);
 
   histogram = base::Histogram::FactoryGet("h1", 1, 100, 10, 0);
   histogram->Add(1);
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("a1.pma"), allocator,
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("a1.pma"),
+                         allocator,
                          base_time + base::TimeDelta::FromMinutes(1));
 
   histogram = base::Histogram::FactoryGet("h2", 1, 100, 10, 0);
   histogram->Add(2);
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("c2.pma"), allocator,
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("c2.pma"),
+                         allocator,
                          base_time + base::TimeDelta::FromMinutes(2));
 
   histogram = base::Histogram::FactoryGet("h3", 1, 100, 10, 0);
   histogram->Add(3);
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("b3.pma"), allocator,
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("b3.pma"),
+                         allocator,
                          base_time + base::TimeDelta::FromMinutes(3));
 
   histogram = base::Histogram::FactoryGet("h4", 1, 100, 10, 0);
   histogram->Add(3);
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("d4.pma"), allocator,
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("d4.pma"),
+                         allocator,
                          base_time + base::TimeDelta::FromMinutes(4));
 
-  base::TouchFile(metrics_files.path().AppendASCII("b3.pma"),
+  base::TouchFile(metrics_files.GetPath().AppendASCII("b3.pma"),
                   base_time + base::TimeDelta::FromMinutes(5),
                   base_time + base::TimeDelta::FromMinutes(5));
 
-  WriteMetricsFileAtTime(metrics_files.path().AppendASCII("baz"), allocator,
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("baz"), allocator,
                          base_time + base::TimeDelta::FromMinutes(6));
 
   // The global allocator has to be detached here so that no metrics created
@@ -324,7 +328,7 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
   base::GlobalHistogramAllocator::ReleaseForTesting();
 
   // Register the file and allow the "checker" task to run.
-  provider()->RegisterSource(metrics_files.path(),
+  provider()->RegisterSource(metrics_files.GetPath(),
                              FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
                              FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
                              kMetricsName);
@@ -339,13 +343,15 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
     EXPECT_EQ(expect_order[i], GetSnapshotHistogramCount()) << i;
   }
 
-  EXPECT_FALSE(base::PathExists(metrics_files.path().AppendASCII("a1.pma")));
-  EXPECT_FALSE(base::PathExists(metrics_files.path().AppendASCII("c2.pma")));
-  EXPECT_FALSE(base::PathExists(metrics_files.path().AppendASCII("b3.pma")));
-  EXPECT_FALSE(base::PathExists(metrics_files.path().AppendASCII("d4.pma")));
-  EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII(".foo.pma")));
-  EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII("_bar.pma")));
-  EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII("baz")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("a1.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("c2.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("b3.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("d4.pma")));
+  EXPECT_TRUE(
+      base::PathExists(metrics_files.GetPath().AppendASCII(".foo.pma")));
+  EXPECT_TRUE(
+      base::PathExists(metrics_files.GetPath().AppendASCII("_bar.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("baz")));
 }
 
 TEST_P(FileMetricsProviderTest, AccessReadWriteMetrics) {

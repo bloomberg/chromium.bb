@@ -108,7 +108,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                          const std::string& content,
                          bool expected_result) {
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-    base::FilePath base = base_dir_.path();
+    base::FilePath base = base_dir_.GetPath();
     base::FilePath src_path = base.AppendASCII("src_fs");
     ASSERT_TRUE(base::CreateDirectory(src_path));
 

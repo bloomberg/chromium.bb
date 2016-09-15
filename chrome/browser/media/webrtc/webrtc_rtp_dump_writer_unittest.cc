@@ -59,8 +59,8 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
 
-    incoming_dump_path_ = temp_dir_->path().AppendASCII("rtpdump_recv");
-    outgoing_dump_path_ = temp_dir_->path().AppendASCII("rtpdump_send");
+    incoming_dump_path_ = temp_dir_->GetPath().AppendASCII("rtpdump_recv");
+    outgoing_dump_path_ = temp_dir_->GetPath().AppendASCII("rtpdump_send");
     writer_.reset(new WebRtcRtpDumpWriter(
         incoming_dump_path_,
         outgoing_dump_path_,

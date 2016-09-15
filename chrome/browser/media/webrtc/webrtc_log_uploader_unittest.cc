@@ -262,8 +262,8 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   webrtc_log_uploader->OverrideUploadWithBufferForTesting(&post_data);
 
   // Create the fake dump files.
-  const base::FilePath incoming_dump = temp_dir.path().AppendASCII("recv");
-  const base::FilePath outgoing_dump = temp_dir.path().AppendASCII("send");
+  const base::FilePath incoming_dump = temp_dir.GetPath().AppendASCII("recv");
+  const base::FilePath outgoing_dump = temp_dir.GetPath().AppendASCII("send");
   const std::string incoming_dump_content = "dummy incoming";
   const std::string outgoing_dump_content = "dummy outgoing";
 
@@ -275,7 +275,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
                   outgoing_dump_content.size());
 
   WebRtcLogUploadDoneData upload_done_data;
-  upload_done_data.log_path = temp_dir.path().AppendASCII("log");
+  upload_done_data.log_path = temp_dir.GetPath().AppendASCII("log");
 
   std::unique_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<WebRtcLoggingHandlerHost> host(new WebRtcLoggingHandlerHost(

@@ -50,10 +50,8 @@ TEST(ChromeLocatorTest, GetNonExistentBundleInfo) {
   base::FilePath executable_path;
   base::FilePath version_path;
   base::FilePath framework_path;
-  EXPECT_FALSE(app_mode::GetChromeBundleInfo(temp_dir.path(),
-                                             std::string(),
-                                             &executable_path,
-                                             &version_path,
+  EXPECT_FALSE(app_mode::GetChromeBundleInfo(temp_dir.GetPath(), std::string(),
+                                             &executable_path, &version_path,
                                              &framework_path));
 }
 

@@ -110,21 +110,21 @@ void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
   music_path_string.append(base::IntToString(times_overrides_changed_));
   music_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_MUSIC,
-      fake_dir_.path().AppendASCII(music_path_string)));
+      fake_dir_.GetPath().AppendASCII(music_path_string)));
 
   pictures_override_.reset();
   std::string pictures_path_string("pictures");
   pictures_path_string.append(base::IntToString(times_overrides_changed_));
   pictures_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_PICTURES,
-      fake_dir_.path().AppendASCII(pictures_path_string)));
+      fake_dir_.GetPath().AppendASCII(pictures_path_string)));
 
   video_override_.reset();
   std::string videos_path_string("videos");
   videos_path_string.append(base::IntToString(times_overrides_changed_));
   video_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_VIDEOS,
-      fake_dir_.path().AppendASCII(videos_path_string)));
+      fake_dir_.GetPath().AppendASCII(videos_path_string)));
 
   times_overrides_changed_++;
 
@@ -133,13 +133,13 @@ void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
 
 base::FilePath EnsureMediaDirectoriesExists::GetFakeAppDataPath() const {
   DCHECK(fake_dir_.IsValid());
-  return fake_dir_.path().AppendASCII("appdata");
+  return fake_dir_.GetPath().AppendASCII("appdata");
 }
 
 #if defined(OS_WIN)
 base::FilePath EnsureMediaDirectoriesExists::GetFakeLocalAppDataPath() const {
   DCHECK(fake_dir_.IsValid());
-  return fake_dir_.path().AppendASCII("localappdata");
+  return fake_dir_.GetPath().AppendASCII("localappdata");
 }
 
 void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
@@ -164,14 +164,14 @@ void EnsureMediaDirectoriesExists::SetCustomPicasaAppDataPath(
 base::FilePath
 EnsureMediaDirectoriesExists::GetFakePicasaFoldersRootPath() const {
   DCHECK(fake_dir_.IsValid());
-  return fake_dir_.path().AppendASCII("picasa_folders");
+  return fake_dir_.GetPath().AppendASCII("picasa_folders");
 }
 #endif  // OS_WIN || OS_MACOSX
 
 #if defined(OS_MACOSX)
 base::FilePath EnsureMediaDirectoriesExists::GetFakeITunesRootPath() const {
   DCHECK(fake_dir_.IsValid());
-  return fake_dir_.path().AppendASCII("itunes");
+  return fake_dir_.GetPath().AppendASCII("itunes");
 }
 #endif  // OS_MACOSX
 

@@ -52,13 +52,9 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  const base::FilePath& app_data_dir() {
-    return app_data_dir_.path();
-  }
+  const base::FilePath& app_data_dir() { return app_data_dir_.GetPath(); }
 
-  const base::FilePath& music_dir() {
-    return music_dir_.path();
-  }
+  const base::FilePath& music_dir() { return music_dir_.GetPath(); }
 
   void WritePrefFile(const std::string& data) {
     base::FilePath pref_dir =

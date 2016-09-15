@@ -67,7 +67,7 @@ TEST_F(NaClFileHostTest, TestFilenamesWithPnaclPath) {
   base::ScopedTempDir scoped_tmp_dir;
   ASSERT_TRUE(scoped_tmp_dir.CreateUniqueTempDir());
 
-  base::FilePath kTestPnaclPath = scoped_tmp_dir.path();
+  base::FilePath kTestPnaclPath = scoped_tmp_dir.GetPath();
 
   nacl_browser_delegate()->SetPnaclDirectory(kTestPnaclPath);
   ASSERT_TRUE(nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(
