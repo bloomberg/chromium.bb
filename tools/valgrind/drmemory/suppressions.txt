@@ -74,6 +74,11 @@ name=https://github.com/DynamoRIO/drmemory/issues/68 (UNADDR 2)
 ...
 ntdll.dll!RtlValidateUnicodeString
 
+INVALID HEAP ARGUMENT
+name=https://crbug.com/647420
+...
+ucrtbase.dll!register_onexit_function
+
 ############################
 # TODO(timurrrr): investigate these
 UNADDRESSABLE ACCESS
