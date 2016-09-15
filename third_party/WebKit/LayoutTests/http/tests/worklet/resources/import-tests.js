@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <script src="../resources/testharness.js"></script>
-    <script src="../resources/testharnessreport.js"></script>
-</head>
-<body>
-<script>
+// Runs a series of tests related to importing scripts on a worklet.
+//
+// Usage:
+// runImportTests(workletType);
+function runImportTests(worklet) {
     promise_test(function() {
 
-        return paintWorklet.import('resources/empty-worklet-script.js').then(function(undefined_arg) {
+        return worklet.import('resources/empty-worklet-script.js').then(function(undefined_arg) {
             assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
         }).catch(function(error) {
             assert_unreached('unexpected rejection: ' + error);
@@ -18,7 +15,7 @@
 
     promise_test(function() {
 
-        return paintWorklet.import('resources/throwing-worklet-script.js').then(function(undefined_arg) {
+        return worklet.import('resources/throwing-worklet-script.js').then(function(undefined_arg) {
             assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
         }).catch(function(error) {
             assert_unreached('unexpected rejection: ' + error);
@@ -28,7 +25,7 @@
 
     promise_test(function() {
 
-        return paintWorklet.import('non-existant-worklet-script.js').then(function() {
+        return worklet.import('non-existant-worklet-script.js').then(function() {
             assert_unreached('import should fail.');
         }).catch(function(error) {
             assert_equals(error.name, 'NetworkError', 'error should be a NetworkError.');
@@ -38,14 +35,11 @@
 
     promise_test(function() {
 
-        return paintWorklet.import('http://invalid:123$').then(function() {
+        return worklet.import('http://invalid:123$').then(function() {
             assert_unreached('import should fail.');
         }).catch(function(error) {
             assert_equals(error.name, 'SyntaxError', 'error should be a SyntaxError.');
         });
 
     }, 'Attempting to resolve an invalid URL should reject the given promise with a SyntaxError.');
-
-</script>
-</body>
-</html>
+}
