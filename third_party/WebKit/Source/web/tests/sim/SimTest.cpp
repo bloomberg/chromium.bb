@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
@@ -32,6 +33,9 @@ SimTest::SimTest()
 
 SimTest::~SimTest()
 {
+    // Pump the message loop to process the load event.
+    testing::runPendingTasks();
+
     Document::setThreadedParsingEnabledForTesting(true);
     LayoutTestSupport::setMockThemeEnabledForTest(false);
     ScrollbarTheme::setMockScrollbarsEnabled(false);

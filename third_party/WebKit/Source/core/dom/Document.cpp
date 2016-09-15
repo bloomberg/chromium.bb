@@ -2642,7 +2642,6 @@ void Document::implicitClose()
         ImageLoader::dispatchPendingLoadEvents();
         ImageLoader::dispatchPendingErrorEvents();
 
-        HTMLLinkElement::dispatchPendingLoadEvents();
         HTMLStyleElement::dispatchPendingLoadEvents();
     }
 

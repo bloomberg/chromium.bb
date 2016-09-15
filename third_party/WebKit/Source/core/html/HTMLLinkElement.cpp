@@ -33,8 +33,8 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "core/events/EventSender.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -63,12 +63,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-
-static LinkEventSender& linkLoadEventSender()
-{
-    DEFINE_STATIC_LOCAL(LinkEventSender, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
-    return sharedLoadEventSender;
-}
 
 static bool styleSheetTypeIsSupported(const String& type)
 {
@@ -308,14 +302,8 @@ void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErr
     linkStyle()->notifyLoadedSheetAndAllCriticalSubresources(errorStatus);
 }
 
-void HTMLLinkElement::dispatchPendingLoadEvents()
+void HTMLLinkElement::dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>)
 {
-    linkLoadEventSender().dispatchPendingEvents();
-}
-
-void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
-{
-    DCHECK_EQ(eventSender, &linkLoadEventSender());
     DCHECK(m_link);
     if (m_link->hasLoaded())
         linkLoaded();
@@ -325,7 +313,7 @@ void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 
 void HTMLLinkElement::scheduleEvent()
 {
-    linkLoadEventSender().dispatchEventSoon(this);
+    TaskRunnerHelper::get(TaskType::DOMManipulation, &document())->postTask(BLINK_FROM_HERE, WTF::bind(&HTMLLinkElement::dispatchPendingEvent, wrapPersistent(this), passed(IncrementLoadEventDelayCount::create(document()))));
 }
 
 void HTMLLinkElement::startLoadingDynamicSheet()

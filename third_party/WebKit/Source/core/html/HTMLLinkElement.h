@@ -28,6 +28,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IconURL.h"
+#include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/StyleEngineContext.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/StyleSheetResource.h"
@@ -38,15 +39,13 @@
 #include "core/html/RelList.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
+#include <memory>
 
 namespace blink {
 
 class HTMLLinkElement;
 class KURL;
 class LinkImport;
-
-template<typename T> class EventSender;
-using LinkEventSender = EventSender<HTMLLinkElement>;
 
 //
 // LinkStyle handles dynamically change-able link resources, which is
@@ -166,10 +165,8 @@ public:
 
     DOMTokenList* sizes() const;
 
-    void dispatchPendingEvent(LinkEventSender*);
+    void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
     void scheduleEvent();
-    void dispatchEventImmediately();
-    static void dispatchPendingLoadEvents();
 
     // From LinkLoaderClient
     bool shouldLoadLink() override;
