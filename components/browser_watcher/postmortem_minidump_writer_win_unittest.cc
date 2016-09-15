@@ -43,7 +43,7 @@ class WritePostmortemDumpTest : public testing::Test {
 
     // Write the minidump.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    minidump_path_ = temp_dir_.path().AppendASCII("minidump.dmp");
+    minidump_path_ = temp_dir_.GetPath().AppendASCII("minidump.dmp");
   }
 
   bool WriteDump() {

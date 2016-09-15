@@ -383,7 +383,7 @@ OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM53() {
 std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM54() {
   std::unique_ptr<OfflinePageMetadataStore> store(
-      factory_.BuildStoreM53(temp_directory_.path()));
+      factory_.BuildStoreM53(temp_directory_.GetPath()));
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));

@@ -57,7 +57,7 @@ class ShortcutTest : public testing::Test {
       CreateTemporaryFileInDir(temp_dir_.GetPath(), &icon_path_2);
 
       link_properties_2_.set_target(target_file_2);
-      link_properties_2_.set_working_dir(temp_dir_2_.path());
+      link_properties_2_.set_working_dir(temp_dir_2_.GetPath());
       link_properties_2_.set_arguments(L"--super --crazy");
       link_properties_2_.set_description(L"The best in the west.");
       link_properties_2_.set_icon(icon_path_2, 0);
