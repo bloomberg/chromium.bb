@@ -106,10 +106,11 @@ void RunTest_AbortDontRunMoreTasks(bool delayed) {
   java_thread->Start();
 
   if (delayed) {
-    java_thread->message_loop()->PostDelayedTask(
+    java_thread->message_loop()->task_runner()->PostDelayedTask(
         FROM_HERE, Bind(&AbortMessagePump), TimeDelta::FromMilliseconds(10));
   } else {
-    java_thread->message_loop()->PostTask(FROM_HERE, Bind(&AbortMessagePump));
+    java_thread->message_loop()->task_runner()->PostTask(
+        FROM_HERE, Bind(&AbortMessagePump));
   }
 
   // Wait to ensure we catch the correct exception (and don't crash)
