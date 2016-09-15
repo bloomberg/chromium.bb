@@ -32,7 +32,7 @@ CastUI::CastUI(content::WebUI* web_ui)
   html_source->AddString("extensionId", extension_id);
   html_source->SetJsonPath("strings.js");
   html_source->SetDefaultResource(IDR_CAST_HTML);
-  html_source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
+  html_source->OverrideContentSecurityPolicyObjectSrc("object-src * chrome:;");
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 }
