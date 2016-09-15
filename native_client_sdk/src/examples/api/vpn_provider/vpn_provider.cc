@@ -13,6 +13,10 @@
 
 #include "vpn_provider_helper.h"
 
+#ifdef WIN32
+# undef PostMessage
+#endif
+
 class VpnProviderInstance : public pp::Instance {
  public:
   explicit VpnProviderInstance(PP_Instance instance)
