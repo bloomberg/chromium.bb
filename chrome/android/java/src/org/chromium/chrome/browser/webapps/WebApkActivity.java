@@ -51,7 +51,7 @@ public class WebApkActivity extends WebappActivity {
         // Register the WebAPK. It is possible that a WebAPK's meta data was deleted when user
         // cleared Chrome's data. When it is launched again, we know that the WebAPK is still
         // installed, so re-register it.
-        WebappRegistry.registerWebapp(WebApkActivity.this, getId(),
+        WebappRegistry.registerWebapp(WebApkActivity.this, mWebappInfo.id(),
                 new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {

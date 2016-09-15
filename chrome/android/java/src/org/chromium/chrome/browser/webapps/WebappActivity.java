@@ -152,7 +152,7 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        mDirectoryManager.cleanUpDirectories(this, getId());
+        mDirectoryManager.cleanUpDirectories(this, getActivityId());
     }
 
     @Override
@@ -500,8 +500,13 @@ public class WebappActivity extends FullScreenActivity {
         // Intentionally do nothing as WebappActivity explicitly sets status bar color.
     }
 
-    /** Returns a unique identifier for this WebappActivity. */
-    protected String getId() {
+    /**
+     * Returns a unique identifier for this WebappActivity.
+     * Note: do not call this function when you need {@link WebappInfo#id()}. Subclasses like
+     * WebappManagedActivity and WebApkManagedActivity overwrite this function and return the
+     * index of the activity.
+     */
+    protected String getActivityId() {
         return mWebappInfo.id();
     }
 
@@ -512,7 +517,7 @@ public class WebappActivity extends FullScreenActivity {
      */
     @Override
     protected final File getActivityDirectory() {
-        return mDirectoryManager.getWebappDirectory(this, getId());
+        return mDirectoryManager.getWebappDirectory(this, getActivityId());
     }
 
     private void hideSplashScreen(final int reason) {
