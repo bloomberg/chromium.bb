@@ -33,7 +33,7 @@ const base::FilePath::CharType cookie_filename[] = FILE_PATH_LITERAL("Cookies");
 class SQLitePersistentCookieStorePerfTest : public testing::Test {
  public:
   SQLitePersistentCookieStorePerfTest()
-      : pool_owner_(new base::SequencedWorkerPoolOwner(1, "Background Pool")),
+      : pool_owner_(new base::SequencedWorkerPoolOwner(2, "SetupPool")),
         loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
         key_loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -93,7 +93,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     // Shut down the pool, causing deferred (no-op) commits to be discarded.
     pool_owner_->pool()->Shutdown();
     // ~SequencedWorkerPoolOwner blocks on pool shutdown.
-    pool_owner_.reset(new base::SequencedWorkerPoolOwner(1, "pool"));
+    pool_owner_.reset(new base::SequencedWorkerPoolOwner(2, "TestPool"));
 
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(cookie_filename), client_task_runner(),
