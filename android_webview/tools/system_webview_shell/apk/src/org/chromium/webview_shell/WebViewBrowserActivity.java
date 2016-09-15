@@ -184,6 +184,23 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
         String url = getUrlFromIntent(getIntent());
         if (url == null) {
+            mWebView.restoreState(savedInstanceState);
+            url = mWebView.getUrl();
+            if (url != null) {
+                // If we have restored state, and that state includes
+                // a loaded URL, we reload. This allows us to keep the
+                // scroll offset, and also doesn't add an additional
+                // navigation history entry.
+                setUrlBarText(url);
+                // The immediately previous loadUrlFromurlbar must
+                // have got as far as calling loadUrl, so there is no
+                // URI parsing error at this point.
+                setUrlFail(false);
+                hideKeyboard(mUrlBar);
+                mWebView.reload();
+                mWebView.requestFocus();
+                return;
+            }
             // Make sure to load a blank page to make it immediately inspectable with
             // chrome://inspect.
             url = "about:blank";
@@ -191,6 +208,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         setUrlBarText(url);
         setUrlFail(false);
         loadUrlFromUrlBar(mUrlBar);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Deliberately don't catch TransactionTooLargeException here.
+        mWebView.saveState(savedInstanceState);
     }
 
     @Override
