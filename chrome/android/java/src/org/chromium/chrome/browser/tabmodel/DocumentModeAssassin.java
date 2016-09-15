@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.StrictMode;
 import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
@@ -106,7 +107,15 @@ public class DocumentModeAssassin {
 
     /** SharedPreference values to determine whether user had document mode turned on. */
     private static final String OPT_OUT_STATE = "opt_out_state";
+    private static final int OPT_IN_TO_DOCUMENT_MODE = 0;
+    private static final int OPT_OUT_STATE_UNSET = -1;
     private static final int OPTED_OUT_OF_DOCUMENT_MODE = 2;
+
+    /**
+     * Preference that denotes that Chrome has attempted to migrate from tabbed mode to document
+     * mode. Indicates that the user may be in document mode.
+     */
+    public static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
 
     /** Creates and holds the Singleton. */
     private static class LazyHolder {
@@ -377,7 +386,7 @@ public class DocumentModeAssassin {
         // Record that the user has opted-out of document mode now that their data has been
         // safely copied to the other directory.
         Log.d(TAG, "Setting tabbed mode preference.");
-        clearOptedOutState();
+        setOptedOutState(OPTED_OUT_OF_DOCUMENT_MODE);
         TabSwitcherCallout.setIsTabSwitcherCalloutNecessary(getContext(), true);
 
         // Remove all the {@link DocumentActivity} tasks from Android's Recents list.  Users
@@ -560,12 +569,50 @@ public class DocumentModeAssassin {
 
     /** @return True if the user is not in document mode. */
     public static boolean isOptedOutOfDocumentMode() {
-        return ContextUtils.getAppSharedPreferences().getInt(
-                OPT_OUT_STATE, OPTED_OUT_OF_DOCUMENT_MODE) == OPTED_OUT_OF_DOCUMENT_MODE;
+        // The OPT_OUT_STATE preference was introduced sometime after document mode was rolled out.
+        // It may not be set for all users, even if they are in document mode. In order to correctly
+        // detect whether the user is in document mode, if OPT_OUT_STATE is not state we must check
+        // whether MIGRATION_ON_UPGRADE_ATTEMPTED is set.
+        int optOutState = ContextUtils.getAppSharedPreferences().getInt(OPT_OUT_STATE,
+                OPT_OUT_STATE_UNSET);
+        if (optOutState == OPT_OUT_STATE_UNSET) {
+            boolean hasMigratedToDocumentMode = ContextUtils.getAppSharedPreferences().getBoolean(
+                    MIGRATION_ON_UPGRADE_ATTEMPTED, false);
+            if (!hasMigratedToDocumentMode) {
+                optOutState = OPTED_OUT_OF_DOCUMENT_MODE;
+            } else {
+                // Check if a migration has already happened by looking for tab_state0 file.
+                // See crbug.com/646146.
+                boolean newMetadataFileExists = false;
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+                try {
+                    File newMetadataFile = new File(
+                            TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
+                            TabbedModeTabPersistencePolicy.getStateFileName(TAB_MODEL_INDEX));
+                    newMetadataFileExists = newMetadataFile.exists();
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
+                }
+
+                if (newMetadataFileExists) {
+                    optOutState = OPTED_OUT_OF_DOCUMENT_MODE;
+                } else {
+                    optOutState = OPT_IN_TO_DOCUMENT_MODE;
+                }
+            }
+            setOptedOutState(optOutState);
+        }
+        return optOutState == OPTED_OUT_OF_DOCUMENT_MODE;
     }
 
-    /** Clears the opt out preference so that user doesn't migrate again. */
-    private void clearOptedOutState() {
-        ContextUtils.getAppSharedPreferences().edit().remove(OPT_OUT_STATE).apply();
+    /**
+     * Sets the opt out preference.
+     * @param state One of OPTED_OUT_OF_DOCUMENT_MODE or OPT_IN_TO_DOCUMENT_MODE.
+     */
+    public static void setOptedOutState(int state) {
+        SharedPreferences.Editor sharedPreferencesEditor =
+                ContextUtils.getAppSharedPreferences().edit();
+        sharedPreferencesEditor.putInt(OPT_OUT_STATE, state);
+        sharedPreferencesEditor.apply();
     }
 }
