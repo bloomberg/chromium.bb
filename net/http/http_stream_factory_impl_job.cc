@@ -206,8 +206,6 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
       spdy_session_direct_(false),
-      job_status_(STATUS_RUNNING),
-      other_job_status_(STATUS_RUNNING),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       ptr_factory_(this) {
   DCHECK(session);
@@ -581,8 +579,6 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     }
 
     case OK:
-      job_status_ = STATUS_SUCCEEDED;
-      MaybeMarkAlternativeServiceBroken();
       next_state_ = STATE_DONE;
       if (new_spdy_session_.get()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -613,11 +609,6 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       return ERR_IO_PENDING;
 
     default:
-      if (job_status_ != STATUS_BROKEN) {
-        DCHECK_EQ(STATUS_RUNNING, job_status_);
-        job_status_ = STATUS_FAILED;
-        MaybeMarkAlternativeServiceBroken();
-      }
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
                                 ptr_factory_.GetWeakPtr(), result));
@@ -1063,25 +1054,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return ReconsiderProxyAfterError(result);
   }
 
-  if (IsSpdyAlternative() && !using_spdy_) {
-    job_status_ = STATUS_BROKEN;
-    MaybeMarkAlternativeServiceBroken();
+  if (IsSpdyAlternative() && !using_spdy_)
     return ERR_NPN_NEGOTIATION_FAILED;
-  }
 
   if (!ssl_started && result < 0 &&
-      (IsSpdyAlternative() || IsQuicAlternative())) {
-    job_status_ = STATUS_BROKEN;
-    MaybeMarkAlternativeServiceBroken();
+      (IsSpdyAlternative() || IsQuicAlternative()))
     return result;
-  }
 
   if (using_quic_) {
-    if (result < 0) {
-      job_status_ = STATUS_BROKEN;
-      MaybeMarkAlternativeServiceBroken();
+    if (result < 0)
       return result;
-    }
+
     if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
       bidirectional_stream_impl_ =
           quic_request_.CreateBidirectionalStreamImpl();
@@ -1512,93 +1495,6 @@ void HttpStreamFactoryImpl::Job::ReportJobSucceededForRequest() {
   } else {
     // This Job was the normal Job, and hence the alternative Job lost the race.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
-  }
-}
-
-void HttpStreamFactoryImpl::Job::MarkOtherJobComplete(const Job& job) {
-  DCHECK_EQ(STATUS_RUNNING, other_job_status_);
-  DCHECK(!other_job_alternative_proxy_server_.is_valid());
-
-  other_job_status_ = job.job_status_;
-  other_job_alternative_service_ = job.alternative_service_;
-  other_job_alternative_proxy_server_ = job.alternative_proxy_server_;
-
-  // At most one job can have a valid |alternative_proxy_server_|.
-  DCHECK(!alternative_proxy_server_.is_valid() ||
-         !other_job_alternative_proxy_server_.is_valid());
-
-  MaybeMarkAlternativeServiceBroken();
-}
-
-void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
-  // At least one job should not be an alternative job.
-  DCHECK(alternative_service_.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL ||
-         other_job_alternative_service_.protocol ==
-             UNINITIALIZED_ALTERNATE_PROTOCOL);
-
-  if (job_status_ == STATUS_RUNNING || other_job_status_ == STATUS_RUNNING)
-    return;
-
-  MaybeNotifyAlternativeProxyServerBroken();
-
-  if (IsSpdyAlternative() || IsQuicAlternative()) {
-    if (job_status_ == STATUS_BROKEN && other_job_status_ == STATUS_SUCCEEDED) {
-      HistogramBrokenAlternateProtocolLocation(
-          BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
-      session_->http_server_properties()->MarkAlternativeServiceBroken(
-          alternative_service_);
-    }
-    return;
-  }
-
-  session_->quic_stream_factory()->OnTcpJobCompleted(job_status_ ==
-                                                     STATUS_SUCCEEDED);
-  if (job_status_ == STATUS_SUCCEEDED && other_job_status_ == STATUS_BROKEN) {
-    HistogramBrokenAlternateProtocolLocation(
-        BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_MAIN);
-    session_->http_server_properties()->MarkAlternativeServiceBroken(
-        other_job_alternative_service_);
-  }
-}
-
-void HttpStreamFactoryImpl::Job::MaybeNotifyAlternativeProxyServerBroken()
-    const {
-  if (!alternative_proxy_server_.is_valid() &&
-      !other_job_alternative_proxy_server_.is_valid()) {
-    // Neither of the two jobs used an alternative proxy server.
-    return;
-  }
-
-  // Neither this job, nor the other job should have used the alternative
-  // service.
-  DCHECK_EQ(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service_.protocol);
-  DCHECK_EQ(UNINITIALIZED_ALTERNATE_PROTOCOL,
-            other_job_alternative_service_.protocol);
-
-  ProxyDelegate* proxy_delegate = session_->params().proxy_delegate;
-  if (!proxy_delegate)
-    return;
-
-  if (alternative_proxy_server_.is_valid()) {
-    // |this| connected to the alternative proxy server.
-    if ((job_status_ == STATUS_BROKEN || job_status_ == STATUS_FAILED) &&
-        other_job_status_ == STATUS_SUCCEEDED) {
-      // Notify ProxyDelegate.
-      proxy_delegate->OnAlternativeProxyBroken(alternative_proxy_server_);
-    }
-    return;
-  }
-
-  if (other_job_alternative_proxy_server_.is_valid()) {
-    // Other job connected to the alternative proxy server.
-    if (job_status_ == STATUS_SUCCEEDED &&
-        (other_job_status_ == STATUS_BROKEN ||
-         other_job_status_ == STATUS_FAILED)) {
-      // Notify ProxyDelegate.
-      proxy_delegate->OnAlternativeProxyBroken(
-          other_job_alternative_proxy_server_);
-    }
-    return;
   }
 }
 

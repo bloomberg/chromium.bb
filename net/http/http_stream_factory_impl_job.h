@@ -235,10 +235,15 @@ class HttpStreamFactoryImpl::Job {
   // will be orphaned.
   void ReportJobSucceededForRequest();
 
-  // Marks that the other |job| has completed.
-  virtual void MarkOtherJobComplete(const Job& job);
-
   JobType job_type() const { return job_type_; }
+
+  const AlternativeService alternative_service() const {
+    return alternative_service_;
+  }
+
+  const ProxyServer alternative_proxy_server() const {
+    return alternative_proxy_server_;
+  }
 
  private:
   friend class HttpStreamFactoryImplJobPeer;
@@ -279,13 +284,6 @@ class HttpStreamFactoryImpl::Job {
     STATE_DRAIN_BODY_FOR_AUTH_RESTART_COMPLETE,
     STATE_DONE,
     STATE_NONE
-  };
-
-  enum JobStatus {
-    STATUS_RUNNING,
-    STATUS_FAILED,
-    STATUS_BROKEN,
-    STATUS_SUCCEEDED
   };
 
   void OnStreamReadyCallback();
@@ -380,13 +378,6 @@ class HttpStreamFactoryImpl::Job {
   // Should we force QUIC for this stream request.
   bool ShouldForceQuic() const;
 
-  void MaybeMarkAlternativeServiceBroken();
-
-  // May notify proxy delegate that the alternative proxy server is broken. The
-  // alternative proxy server is considered as broken if the alternative proxy
-  // server job failed, but the main job was successful.
-  void MaybeNotifyAlternativeProxyServerBroken() const;
-
   ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();
@@ -429,15 +420,9 @@ class HttpStreamFactoryImpl::Job {
   // AlternativeService for this Job if this is an alternative Job.
   const AlternativeService alternative_service_;
 
-  // AlternativeService for the other Job if this is not an alternative Job.
-  AlternativeService other_job_alternative_service_;
-
   // Alternative proxy server that should be used by |this| to fetch the
   // request.
   const ProxyServer alternative_proxy_server_;
-
-  // Alternative proxy server for the other job.
-  ProxyServer other_job_alternative_proxy_server_;
 
   // Unowned. |this| job is owned by |delegate_|.
   Delegate* delegate_;
@@ -492,9 +477,6 @@ class HttpStreamFactoryImpl::Job {
 
   // Only used if |new_spdy_session_| is non-NULL.
   bool spdy_session_direct_;
-
-  JobStatus job_status_;
-  JobStatus other_job_status_;
 
   // Type of stream that is requested.
   HttpStreamRequest::StreamType stream_type_;

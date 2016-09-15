@@ -154,6 +154,17 @@ class HttpStreamFactoryImplJobControllerTest
         server, alternative_service, expiration);
   }
 
+  void VerifyBrokenAlternateProtocolMapping(const HttpRequestInfo& request_info,
+                                            bool should_mark_broken) {
+    const url::SchemeHostPort server(request_info.url);
+    const AlternativeServiceVector alternative_service_vector =
+        session_->http_server_properties()->GetAlternativeServices(server);
+    EXPECT_EQ(1u, alternative_service_vector.size());
+    EXPECT_EQ(should_mark_broken,
+              session_->http_server_properties()->IsAlternativeServiceBroken(
+                  alternative_service_vector[0]));
+  }
+
   // Not owned by |this|.
   TestProxyDelegate* test_proxy_delegate_;
   TestJobFactory job_factory_;
@@ -262,6 +273,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
   // to serve Request yet and JobController will notify the factory to delete
   // itself upon completion.
   request_.reset();
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
@@ -295,7 +307,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   // thus should not notify Request of the alternative job's failure. But should
   // notify the main job to mark the alternative job failed.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
   job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
                                   SSLConfig());
   EXPECT_TRUE(!job_controller_->alternative_job());
@@ -306,10 +317,11 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(1);
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
                                   SSLConfig());
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
-       SecondJobFailsAfterFirstJobSucceeds) {
+       AltJobFailsAfterMainJobSucceeds) {
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
   // Use asynchronous proxy resolver.
@@ -344,8 +356,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
       .WillOnce(Invoke(DeleteHttpStreamPointer));
-  EXPECT_CALL(*job_factory_.alternative_job(), MarkOtherJobComplete(_))
-      .Times(1);
   job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig(),
                                  ProxyInfo());
 
@@ -355,13 +365,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
                                   SSLConfig());
 
+  VerifyBrokenAlternateProtocolMapping(request_info, true);
   // Reset the request as it's been successfully served.
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
-       SecondJobSucceedsAfterFirstJobFailed) {
+       AltJobSucceedsAfterMainJobFailed) {
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
   // Use asynchronous proxy resolver.
@@ -388,10 +399,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(job_controller_->alternative_job());
 
   // |main_job| fails but should not report status to Request.
-  // The alternative job will mark the main job complete.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
-  EXPECT_CALL(*job_factory_.alternative_job(), MarkOtherJobComplete(_))
-      .Times(1);
 
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
                                   SSLConfig());
@@ -405,6 +413,53 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
       .WillOnce(Invoke(DeleteHttpStreamPointer));
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig(),
                                  ProxyInfo());
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
+}
+
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       MainJobSucceedsAfterAltJobFailed) {
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  // Use asynchronous proxy resolver.
+  MockAsyncProxyResolverFactory* proxy_resolver_factory =
+      new MockAsyncProxyResolverFactory(false);
+  session_deps_.proxy_service.reset(
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr));
+  Initialize(false);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(QUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_.reset(
+      job_controller_->Start(request_info, &request_delegate_, nullptr,
+                             BoundNetLog(), HttpStreamRequest::HTTP_STREAM,
+                             DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // |alternative_job| fails but should not report status to Request.
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
+                                  SSLConfig());
+
+  // |main_job| succeeds and should report status to Request.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+  job_factory_.main_job()->SetStream(http_stream);
+
+  EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
+      .WillOnce(Invoke(DeleteHttpStreamPointer));
+  job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig(),
+                                 ProxyInfo());
+
+  VerifyBrokenAlternateProtocolMapping(request_info, true);
 }
 
 // Regression test for crbug/621069.
@@ -438,8 +493,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
   // |main_job| fails but should not report status to Request.
   // The alternative job will mark the main job complete.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
-  EXPECT_CALL(*job_factory_.alternative_job(), MarkOtherJobComplete(_))
-      .Times(1);
 
   job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
                                   SSLConfig());
@@ -488,7 +541,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DoNotResumeMainJobBeforeWait) {
 
   // Wait until OnStreamFailedCallback is executed on the alternative job.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(1);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -514,7 +566,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, InvalidPortForQuic) {
 
   // Wait until OnStreamFailedCallback is executed on the alternative job.
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -580,7 +631,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   resolver.pending_requests()[0]->CompleteNow(net::OK);
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -645,7 +695,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Request shouldn't be notified as the main job is still pending status.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(1);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -839,7 +888,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   EXPECT_TRUE(job_controller_->alternative_job());
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, _)).Times(0);
-  EXPECT_CALL(*job_factory_.main_job(), MarkOtherJobComplete(_)).Times(1);
 
   // Since the alternative proxy server job is started in the next message loop,
   // the main job would remain blocked until the alternative proxy starts, and

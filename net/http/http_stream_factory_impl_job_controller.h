@@ -201,6 +201,13 @@ class HttpStreamFactoryImpl::JobController
                            NextProto negotiated_protocol,
                            bool using_spdy);
 
+  // Must be called when |alternative_job_| fails.
+  void OnAlternativeJobFailed(Job* job);
+
+  // Called to report to http_server_properties to mark alternative service
+  // broken.
+  void ReportBrokenAlternativeService();
+
   void MaybeNotifyFactoryOfCompletion();
 
   // Called to resume the main job with delay.
@@ -254,6 +261,15 @@ class HttpStreamFactoryImpl::JobController
   // |main_job_| to proceed and then race the two jobs.
   std::unique_ptr<Job> main_job_;
   std::unique_ptr<Job> alternative_job_;
+
+  // True if |alternative_job_| uses alternative service/proxy server and it
+  // fails.
+  bool alternative_job_failed_;
+
+  // Either and only one of these records failed alternative service/proxy
+  // server that |alternative_job_| uses.
+  AlternativeService failed_alternative_service_;
+  ProxyServer failed_alternative_proxy_server_;
 
   // True if a Job has ever been bound to the |request_|.
   bool job_bound_;

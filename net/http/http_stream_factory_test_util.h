@@ -120,8 +120,6 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
 
   MOCK_METHOD0(Resume, void());
 
-  MOCK_METHOD1(MarkOtherJobComplete, void(const Job& job));
-
   MOCK_METHOD0(Orphan, void());
 };
 
