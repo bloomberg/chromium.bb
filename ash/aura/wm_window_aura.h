@@ -92,7 +92,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void SetParentUsingContext(WmWindow* context,
                              const gfx::Rect& screen_bounds) override;
   void AddChild(WmWindow* window) override;
-  WmWindow* GetParent() override;
+  const WmWindow* GetParent() const override;
   const WmWindow* GetTransientParent() const override;
   std::vector<WmWindow*> GetTransientChildren() override;
   void SetLayoutManager(
@@ -129,6 +129,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void SetRestoreOverrides(const gfx::Rect& bounds_override,
                            ui::WindowShowState window_state_override) override;
   void SetLockedToRoot(bool value) override;
+  bool IsLockedToRoot() const override;
   void SetCapture() override;
   bool HasCapture() override;
   void ReleaseCapture() override;
@@ -147,6 +148,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void Show() override;
   views::Widget* GetInternalWidget() override;
   void CloseWidget() override;
+  void SetFocused() override;
   bool IsFocused() const override;
   bool IsActive() const override;
   void Activate() override;
@@ -166,7 +168,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void SetSnapsChildrenToPhysicalPixelBoundary() override;
   void SnapToPixelBoundaryIfNecessary() override;
   void SetChildrenUseExtendedHitRegion() override;
-  void SetDescendantsStayInSameRootWindow(bool value) override;
   std::unique_ptr<views::View> CreateViewWithRecreatedLayers() override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;

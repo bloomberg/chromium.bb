@@ -6,7 +6,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/system_modal_container_layout_manager.h"
+#include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -27,44 +27,6 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-namespace {
-
-// Return true if the window or its ancestor has |kStayInSameRootWindowkey|
-// property.
-bool ShouldStayInSameRootWindow(const aura::Window* window) {
-  return window && (window->GetProperty(kStayInSameRootWindowKey) ||
-                    ShouldStayInSameRootWindow(window->parent()));
-}
-
-// Move all transient children to |dst_root|, including the ones in
-// the child windows and transient children of the transient children.
-void MoveAllTransientChildrenToNewRoot(const display::Display& display,
-                                       aura::Window* window) {
-  aura::Window* dst_root = Shell::GetInstance()
-                               ->window_tree_host_manager()
-                               ->GetRootWindowForDisplayId(display.id());
-  aura::Window::Windows transient_children = ::wm::GetTransientChildren(window);
-  for (aura::Window::Windows::iterator iter = transient_children.begin();
-       iter != transient_children.end(); ++iter) {
-    aura::Window* transient_child = *iter;
-    int container_id = transient_child->parent()->id();
-    DCHECK_GE(container_id, 0);
-    aura::Window* container = Shell::GetContainer(dst_root, container_id);
-    gfx::Rect parent_bounds_in_screen = transient_child->GetBoundsInScreen();
-    container->AddChild(transient_child);
-    transient_child->SetBoundsInScreen(parent_bounds_in_screen, display);
-
-    // Transient children may have transient children.
-    MoveAllTransientChildrenToNewRoot(display, transient_child);
-  }
-  // Move transient children of the child windows if any.
-  aura::Window::Windows children = window->children();
-  for (aura::Window::Windows::iterator iter = children.begin();
-       iter != children.end(); ++iter)
-    MoveAllTransientChildrenToNewRoot(display, *iter);
-}
-
-}  // namespace
 
 // static
 void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
@@ -157,84 +119,12 @@ void ScreenPositionController::ConvertHostPointToScreen(
 void ScreenPositionController::SetBounds(aura::Window* window,
                                          const gfx::Rect& bounds,
                                          const display::Display& display) {
-  DCHECK_NE(-1, display.id());
   if (!window->parent()->GetProperty(kUsesScreenCoordinatesKey)) {
     window->SetBounds(bounds);
     return;
   }
 
-  // Don't move a window to other root window if:
-  // a) the window is a transient window. It moves when its
-  //    transient_parent moves.
-  // b) if the window or its ancestor has kStayInSameRootWindowkey. It's
-  //    intentionally kept in the same root window even if the bounds is
-  //    outside of the display.
-  if (!::wm::GetTransientParent(window) &&
-      !ShouldStayInSameRootWindow(window)) {
-    aura::Window* dst_root = Shell::GetInstance()
-                                 ->window_tree_host_manager()
-                                 ->GetRootWindowForDisplayId(display.id());
-    DCHECK(dst_root);
-    aura::Window* dst_container = NULL;
-    if (dst_root != window->GetRootWindow()) {
-      int container_id = window->parent()->id();
-      // All containers that uses screen coordinates must have valid window ids.
-      DCHECK_GE(container_id, 0);
-      // Don't move modal background.
-      if (!SystemModalContainerLayoutManager::IsModalBackground(
-              WmWindowAura::Get(window)))
-        dst_container = Shell::GetContainer(dst_root, container_id);
-    }
-
-    if (dst_container && window->parent() != dst_container) {
-      aura::Window* focused =
-          aura::client::GetFocusClient(window)->GetFocusedWindow();
-      aura::client::ActivationClient* activation_client =
-          aura::client::GetActivationClient(window->GetRootWindow());
-      aura::Window* active = activation_client->GetActiveWindow();
-
-      aura::WindowTracker tracker;
-      if (focused)
-        tracker.Add(focused);
-      if (active && focused != active)
-        tracker.Add(active);
-
-      // Set new bounds now so that the container's layout manager
-      // can adjust the bounds if necessary.
-      gfx::Point origin = bounds.origin();
-      const gfx::Point display_origin = display.bounds().origin();
-      origin.Offset(-display_origin.x(), -display_origin.y());
-      gfx::Rect new_bounds = gfx::Rect(origin, bounds.size());
-
-      window->SetBounds(new_bounds);
-
-      dst_container->AddChild(window);
-
-      MoveAllTransientChildrenToNewRoot(display, window);
-
-      // Restore focused/active window.
-      if (tracker.Contains(focused)) {
-        aura::client::GetFocusClient(window)->FocusWindow(focused);
-        // TODO(beng): replace with GetRootWindow().
-        WmShell::Get()->set_root_window_for_new_windows(
-            WmWindowAura::Get(focused->GetRootWindow()));
-      } else if (tracker.Contains(active)) {
-        activation_client->ActivateWindow(active);
-      }
-      // TODO(oshima): We should not have to update the bounds again
-      // below in theory, but we currently do need as there is a code
-      // that assumes that the bounds will never be overridden by the
-      // layout mananger. We should have more explicit control how
-      // constraints are applied by the layout manager.
-    }
-  }
-  gfx::Point origin(bounds.origin());
-  const gfx::Point display_origin = display::Screen::GetScreen()
-                                        ->GetDisplayNearestWindow(window)
-                                        .bounds()
-                                        .origin();
-  origin.Offset(-display_origin.x(), -display_origin.y());
-  window->SetBounds(gfx::Rect(origin, bounds.size()));
+  wm::SetBoundsInScreen(WmWindowAura::Get(window), bounds, display);
 }
 
 }  // namespace ash

@@ -5,6 +5,7 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 
 #include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_transient_window_observer.h"
@@ -114,15 +115,16 @@ WmWindowMus::~WmWindowMus() {
 }
 
 // static
-WmWindowMus* WmWindowMus::Get(ui::Window* window) {
+const WmWindowMus* WmWindowMus::Get(const ui::Window* window) {
   if (!window)
     return nullptr;
 
-  WmWindowMus* wm_window = window->GetLocalProperty(kWmWindowKey);
+  const WmWindowMus* wm_window = window->GetLocalProperty(kWmWindowKey);
   if (wm_window)
     return wm_window;
   // WmWindowMus is owned by the ui::Window.
-  return new WmWindowMus(window);
+  // Unfortunately there isn't a good way to avoid the cast here.
+  return new WmWindowMus(const_cast<ui::Window*>(window));
 }
 
 // static
@@ -442,7 +444,7 @@ void WmWindowMus::AddChild(WmWindow* window) {
   window_->AddChild(GetMusWindow(window));
 }
 
-WmWindow* WmWindowMus::GetParent() {
+const WmWindow* WmWindowMus::GetParent() const {
   return Get(window_->parent());
 }
 
@@ -549,10 +551,14 @@ void WmWindowMus::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
 
 void WmWindowMus::SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                                     const display::Display& dst_display) {
-  // TODO: SetBoundsInScreen isn't fully implemented yet,
-  // http://crbug.com/615552.
-  NOTIMPLEMENTED();
-  SetBounds(ConvertRectFromScreen(bounds_in_screen));
+  DCHECK(GetParent());  // Aura code assumed a parent, so this does too.
+  if (static_cast<const WmWindowMus*>(GetParent())
+          ->child_bounds_in_screen_behavior_ ==
+      BoundsInScreenBehavior::USE_LOCAL_COORDINATES) {
+    SetBounds(bounds_in_screen);
+    return;
+  }
+  wm::SetBoundsInScreen(this, bounds_in_screen, dst_display);
 }
 
 gfx::Rect WmWindowMus::GetBoundsInScreen() const {
@@ -608,8 +614,11 @@ void WmWindowMus::SetRestoreOverrides(
 }
 
 void WmWindowMus::SetLockedToRoot(bool value) {
-  // TODO(sky): there is no getter for this. Investigate where used.
-  NOTIMPLEMENTED();
+  locked_to_root_ = value;
+}
+
+bool WmWindowMus::IsLockedToRoot() const {
+  return locked_to_root_;
 }
 
 void WmWindowMus::SetCapture() {
@@ -701,6 +710,10 @@ void WmWindowMus::CloseWidget() {
     widget_->Close();
 }
 
+void WmWindowMus::SetFocused() {
+  window_->SetFocus();
+}
+
 bool WmWindowMus::IsFocused() const {
   return window_->HasFocus();
 }
@@ -780,9 +793,7 @@ void WmWindowMus::InstallResizeHandleWindowTargeter(
 
 void WmWindowMus::SetBoundsInScreenBehaviorForChildren(
     WmWindow::BoundsInScreenBehavior behavior) {
-  // TODO: SetBoundsInScreen isn't fully implemented yet,
-  // http://crbug.com/615552.
-  NOTIMPLEMENTED();
+  child_bounds_in_screen_behavior_ = behavior;
 }
 
 void WmWindowMus::SetSnapsChildrenToPhysicalPixelBoundary() {
@@ -806,12 +817,6 @@ void WmWindowMus::SnapToPixelBoundaryIfNecessary() {
 
 void WmWindowMus::SetChildrenUseExtendedHitRegion() {
   children_use_extended_hit_region_ = true;
-}
-
-void WmWindowMus::SetDescendantsStayInSameRootWindow(bool value) {
-  // TODO: this logic feeds into SetBoundsInScreen(), which is not implemented:
-  // http://crbug.com/615552.
-  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<views::View> WmWindowMus::CreateViewWithRecreatedLayers() {

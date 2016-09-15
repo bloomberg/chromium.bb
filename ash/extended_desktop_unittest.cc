@@ -800,14 +800,13 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   w1->SetBounds(gfx::Rect(150, 10, 50, 50));
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
 
-  // The widget stays in the same root if kStayInSameRootWindowKey is set to
-  // true.
-  w1->GetNativeView()->SetProperty(kStayInSameRootWindowKey, true);
+  // The widget stays in the same root if kLockedToRootKey is set to true.
+  w1->GetNativeView()->SetProperty(kLockedToRootKey, true);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
 
   // The widget should now move to the 1st root window without the property.
-  w1->GetNativeView()->ClearProperty(kStayInSameRootWindowKey);
+  w1->GetNativeView()->ClearProperty(kLockedToRootKey);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
 

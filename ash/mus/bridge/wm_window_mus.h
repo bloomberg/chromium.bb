@@ -57,7 +57,10 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   ~WmWindowMus() override;
 
   // Returns a WmWindow for an ui::Window, creating if necessary.
-  static WmWindowMus* Get(ui::Window* window);
+  static WmWindowMus* Get(ui::Window* window) {
+    return const_cast<WmWindowMus*>(Get(const_cast<const ui::Window*>(window)));
+  }
+  static const WmWindowMus* Get(const ui::Window* window);
 
   static WmWindowMus* Get(views::Widget* widget);
 
@@ -153,7 +156,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetParentUsingContext(WmWindow* context,
                              const gfx::Rect& screen_bounds) override;
   void AddChild(WmWindow* window) override;
-  WmWindow* GetParent() override;
+  const WmWindow* GetParent() const override;
   const WmWindow* GetTransientParent() const override;
   std::vector<WmWindow*> GetTransientChildren() override;
   void SetLayoutManager(
@@ -190,6 +193,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetRestoreOverrides(const gfx::Rect& bounds_override,
                            ui::WindowShowState window_state_override) override;
   void SetLockedToRoot(bool value) override;
+  bool IsLockedToRoot() const override;
   void SetCapture() override;
   bool HasCapture() override;
   void ReleaseCapture() override;
@@ -200,6 +204,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void Show() override;
   views::Widget* GetInternalWidget() override;
   void CloseWidget() override;
+  void SetFocused() override;
   bool IsFocused() const override;
   bool IsActive() const override;
   void Activate() override;
@@ -227,7 +232,6 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetSnapsChildrenToPhysicalPixelBoundary() override;
   void SnapToPixelBoundaryIfNecessary() override;
   void SetChildrenUseExtendedHitRegion() override;
-  void SetDescendantsStayInSameRootWindow(bool value) override;
   std::unique_ptr<views::View> CreateViewWithRecreatedLayers() override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
@@ -296,6 +300,11 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   ui::wm::WindowType wm_window_type_ = ui::wm::WINDOW_TYPE_UNKNOWN;
   // Set to true if set_window_type() is called.
   bool is_wm_window_type_set_ = false;
+
+  BoundsInScreenBehavior child_bounds_in_screen_behavior_ =
+      BoundsInScreenBehavior::USE_LOCAL_COORDINATES;
+
+  bool locked_to_root_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };

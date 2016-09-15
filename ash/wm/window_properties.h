@@ -25,6 +25,11 @@ class WindowState;
 
 // Alphabetical sort.
 
+// If this is set to true, the window stays in the same root window even if the
+// bounds outside of its root window is set.
+// This is exported as it's used in the tests.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;
+
 // A property key which stores the bounds to restore a window to. These take
 // preference over the current bounds/state. This is used by e.g. the always
 // maximized mode window manager.
@@ -40,12 +45,6 @@ ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
 // Containers with this property (true) are aligned with physical pixel
 // boundary.
 extern const aura::WindowProperty<bool>* const kSnapChildrenToPixelBoundary;
-
-// If this is set to true, the window stays in the same root window
-// even if the bounds outside of its root window is set.
-// This is exported as it's used in the tests.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kStayInSameRootWindowKey;
 
 // Property to tell if the container uses the screen coordinates.
 extern const aura::WindowProperty<bool>* const kUsesScreenCoordinatesKey;

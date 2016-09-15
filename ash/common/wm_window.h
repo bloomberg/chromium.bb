@@ -155,7 +155,11 @@ class ASH_EXPORT WmWindow {
                                      const gfx::Rect& screen_bounds) = 0;
   virtual void AddChild(WmWindow* window) = 0;
 
-  virtual WmWindow* GetParent() = 0;
+  WmWindow* GetParent() {
+    return const_cast<WmWindow*>(
+        const_cast<const WmWindow*>(this)->GetParent());
+  }
+  virtual const WmWindow* GetParent() const = 0;
 
   WmWindow* GetTransientParent() {
     return const_cast<WmWindow*>(
@@ -200,7 +204,7 @@ class ASH_EXPORT WmWindow {
   //   This is the default.
   // USE_SCREEN_COORDINATES: the bounds are actual screen bounds and converted
   //   from the display. In this case the window may move to a different
-  //   display if allowed (see SetDescendantsStayInSameRootWindow()).
+  //   display if allowed (see SetLockedToRoot()).
   virtual void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                                  const display::Display& dst_display) = 0;
   virtual gfx::Rect GetBoundsInScreen() const = 0;
@@ -228,6 +232,7 @@ class ASH_EXPORT WmWindow {
   // If |value| is true the window can not be moved to another root, regardless
   // of the bounds set on it.
   virtual void SetLockedToRoot(bool value) = 0;
+  virtual bool IsLockedToRoot() const = 0;
 
   virtual void SetCapture() = 0;
   virtual bool HasCapture() = 0;
@@ -250,6 +255,7 @@ class ASH_EXPORT WmWindow {
   // forward to an associated widget.
   virtual void CloseWidget() = 0;
 
+  virtual void SetFocused() = 0;
   virtual bool IsFocused() const = 0;
 
   virtual bool IsActive() const = 0;
@@ -298,10 +304,6 @@ class ASH_EXPORT WmWindow {
 
   // Makes the hit region for children slightly larger for easier resizing.
   virtual void SetChildrenUseExtendedHitRegion() = 0;
-
-  // Sets whether descendants of this should not be moved to a different
-  // container. This is used by SetBoundsInScreen().
-  virtual void SetDescendantsStayInSameRootWindow(bool value) = 0;
 
   // Returns a View that renders the contents of this window's layers.
   virtual std::unique_ptr<views::View> CreateViewWithRecreatedLayers() = 0;

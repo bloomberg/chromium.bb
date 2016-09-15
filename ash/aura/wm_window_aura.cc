@@ -26,6 +26,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -374,7 +375,7 @@ void WmWindowAura::AddChild(WmWindow* window) {
   window_->AddChild(GetAuraWindow(window));
 }
 
-WmWindow* WmWindowAura::GetParent() {
+const WmWindow* WmWindowAura::GetParent() const {
   return Get(window_->parent());
 }
 
@@ -557,7 +558,11 @@ void WmWindowAura::SetRestoreOverrides(
 }
 
 void WmWindowAura::SetLockedToRoot(bool value) {
-  window_->SetProperty(kStayInSameRootWindowKey, value);
+  window_->SetProperty(kLockedToRootKey, value);
+}
+
+bool WmWindowAura::IsLockedToRoot() const {
+  return window_->GetProperty(kLockedToRootKey);
 }
 
 void WmWindowAura::SetCapture() {
@@ -631,6 +636,10 @@ views::Widget* WmWindowAura::GetInternalWidget() {
 void WmWindowAura::CloseWidget() {
   DCHECK(GetInternalWidget());
   GetInternalWidget()->Close();
+}
+
+void WmWindowAura::SetFocused() {
+  aura::client::GetFocusClient(window_)->FocusWindow(window_);
 }
 
 bool WmWindowAura::IsFocused() const {
@@ -724,10 +733,6 @@ void WmWindowAura::SetChildrenUseExtendedHitRegion() {
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
   window_->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
       window_, mouse_extend, touch_extend));
-}
-
-void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
-  window_->SetProperty(kStayInSameRootWindowKey, true);
 }
 
 std::unique_ptr<views::View> WmWindowAura::CreateViewWithRecreatedLayers() {

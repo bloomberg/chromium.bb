@@ -208,7 +208,7 @@ void WmRootWindowController::CreateContainers() {
   shelf_container->SetSnapsChildrenToPhysicalPixelBoundary();
   shelf_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
-  shelf_container->SetDescendantsStayInSameRootWindow(true);
+  shelf_container->SetLockedToRoot(true);
 
   WmWindow* panel_container =
       CreateContainer(kShellWindowId_PanelContainer, "PanelContainer",
@@ -223,7 +223,7 @@ void WmRootWindowController::CreateContainers() {
   shelf_bubble_container->SetSnapsChildrenToPhysicalPixelBoundary();
   shelf_bubble_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
-  shelf_bubble_container->SetDescendantsStayInSameRootWindow(true);
+  shelf_bubble_container->SetLockedToRoot(true);
 
   WmWindow* app_list_container =
       CreateContainer(kShellWindowId_AppListContainer, "AppListContainer",
@@ -266,7 +266,7 @@ void WmRootWindowController::CreateContainers() {
   status_container->SetSnapsChildrenToPhysicalPixelBoundary();
   status_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
-  status_container->SetDescendantsStayInSameRootWindow(true);
+  status_container->SetLockedToRoot(true);
 
   WmWindow* settings_bubble_container =
       CreateContainer(kShellWindowId_SettingBubbleContainer,
@@ -275,7 +275,7 @@ void WmRootWindowController::CreateContainers() {
   settings_bubble_container->SetSnapsChildrenToPhysicalPixelBoundary();
   settings_bubble_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
-  settings_bubble_container->SetDescendantsStayInSameRootWindow(true);
+  settings_bubble_container->SetLockedToRoot(true);
 
   WmWindow* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "VirtualKeyboardParentContainer",

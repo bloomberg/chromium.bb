@@ -7,6 +7,10 @@
 
 #include "ash/ash_export.h"
 
+namespace display {
+class Display;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -53,6 +57,12 @@ ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
 
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(WmWindow* window);
+
+// Sets the bounds of |window| to |bounds_in_screen|. This may move |window|
+// to |display| if necessary.
+ASH_EXPORT void SetBoundsInScreen(WmWindow* window,
+                                  const gfx::Rect& bounds_in_screen,
+                                  const display::Display& display);
 
 }  // namespace wm
 }  // namespace ash
