@@ -50,7 +50,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& fl
     return layoutObject;
 }
 
-unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit flowThreadOffset) const
+unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit flowThreadOffset, PageBoundaryRule rule) const
 {
     ASSERT(m_fragmentainerGroups.size() > 0);
     if (flowThreadOffset <= 0)
@@ -58,8 +58,12 @@ unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(LayoutU
     // TODO(mstensho): Introduce an interval tree or similar to speed up this.
     for (unsigned index = 0; index < m_fragmentainerGroups.size(); index++) {
         const auto& row = m_fragmentainerGroups[index];
-        if (row.logicalTopInFlowThread() <= flowThreadOffset && row.logicalBottomInFlowThread() > flowThreadOffset)
+        if (rule == AssociateWithLatterPage) {
+            if (row.logicalTopInFlowThread() <= flowThreadOffset && row.logicalBottomInFlowThread() > flowThreadOffset)
+                return index;
+        } else if (row.logicalTopInFlowThread() < flowThreadOffset && row.logicalBottomInFlowThread() >= flowThreadOffset) {
             return index;
+        }
     }
     return m_fragmentainerGroups.size() - 1;
 }
@@ -104,12 +108,12 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(LayoutUnit offsetInF
             return std::max(LayoutUnit(1), multicolHeightWithExtraRow - currentMulticolHeight);
         }
     }
-    return fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).logicalHeight();
+    return fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread, AssociateWithLatterPage).logicalHeight();
 }
 
 LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(LayoutUnit offsetInFlowThread, PageBoundaryRule pageBoundaryRule) const
 {
-    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
+    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread, pageBoundaryRule);
     LayoutUnit pageLogicalHeight = row.logicalHeight();
     ASSERT(pageLogicalHeight); // It's not allowed to call this method if the height is unknown.
     LayoutUnit pageLogicalBottom = row.columnLogicalTopForOffset(offsetInFlowThread) + pageLogicalHeight;
@@ -291,7 +295,7 @@ bool LayoutMultiColumnSet::heightIsAuto() const
 
 LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset, PageBoundaryRule rule, CoordinateSpaceConversion mode) const
 {
-    return fragmentainerGroupAtFlowThreadOffset(blockOffset).flowThreadTranslationAtOffset(blockOffset, rule, mode);
+    return fragmentainerGroupAtFlowThreadOffset(blockOffset, rule).flowThreadTranslationAtOffset(blockOffset, rule, mode);
 }
 
 LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
@@ -302,7 +306,7 @@ LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint
 
 LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) const
 {
-    return fragmentainerGroupAtFlowThreadOffset(offset).columnLogicalTopForOffset(offset);
+    return fragmentainerGroupAtFlowThreadOffset(offset, AssociateWithLatterPage).columnLogicalTopForOffset(offset);
 }
 
 bool LayoutMultiColumnSet::recalculateColumnHeight()

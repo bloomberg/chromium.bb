@@ -34,7 +34,7 @@ FragmentainerIterator::FragmentainerIterator(const LayoutFlowThread& flowThread,
         return;
     }
     // Then find the first interesting fragmentainer group.
-    m_currentFragmentainerGroupIndex = m_currentColumnSet->fragmentainerGroupIndexAtFlowThreadOffset(m_logicalTopInFlowThread);
+    m_currentFragmentainerGroupIndex = m_currentColumnSet->fragmentainerGroupIndexAtFlowThreadOffset(m_logicalTopInFlowThread, LayoutBox::AssociateWithLatterPage);
 
     // Now find the first and last fragmentainer we're interested in. We'll also clip against
     // the clip rect here. In case the clip rect doesn't intersect with any of the

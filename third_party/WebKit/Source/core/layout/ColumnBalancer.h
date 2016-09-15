@@ -23,7 +23,7 @@ protected:
 
     const MultiColumnFragmentainerGroup& groupAtOffset(LayoutUnit offsetInFlowThread) const
     {
-        return m_columnSet.fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
+        return m_columnSet.fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread, LayoutBox::AssociateWithLatterPage);
     }
 
     LayoutUnit offsetFromColumnLogicalTop(LayoutUnit offsetInFlowThread) const

@@ -64,14 +64,14 @@ public:
 
     const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
-    unsigned fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit) const;
-    MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset)
+    unsigned fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit, PageBoundaryRule) const;
+    MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset, PageBoundaryRule rule)
     {
-        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
+        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset, rule)];
     }
-    const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset) const
+    const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset, PageBoundaryRule rule) const
     {
-        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
+        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset, rule)];
     }
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtVisualPoint(const LayoutPoint&) const;
     const MultiColumnFragmentainerGroupList& fragmentainerGroups() const { return m_fragmentainerGroups; }
