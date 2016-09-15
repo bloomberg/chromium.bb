@@ -47,6 +47,7 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
  private:
   friend class PartialMagnificationControllerTestApi;
 
+  class BorderRenderer;
   class ContentMask;
 
   // ui::EventHandler:

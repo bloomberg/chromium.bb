@@ -27,6 +27,12 @@ const float kMagnificationScale = 2.f;
 const int kMagnifierRadius = 200;
 // Size of the border around the magnifying glass in DIP.
 const int kBorderSize = 10;
+// Thickness of the outline around magnifying glass border in DIP.
+const int kBorderOutlineThickness = 2;
+// The color of the border and its outlines. The border has an outline on both
+// sides, producing a black/white/black ring.
+const SkColor kBorderColor = SK_ColorWHITE;
+const SkColor kBorderOutlineColor = SK_ColorBLACK;
 // Inset on the zoom filter.
 const int kZoomInset = 0;
 // Vertical offset between the center of the magnifier and the tip of the
@@ -88,7 +94,7 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
   ui::Layer* layer() { return &layer_; }
 
  private:
-  // Overridden from LayerDelegate.
+  // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
     ui::PaintRecorder recorder(context, layer()->size());
 
@@ -117,6 +123,56 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
   bool stroke_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMask);
+};
+
+// The border renderer draws the border as well as outline on both the outer and
+// inner radius to increase visibility.
+class PartialMagnificationController::BorderRenderer
+    : public ui::LayerDelegate {
+ public:
+  explicit BorderRenderer(const gfx::Rect& magnifier_bounds)
+      : magnifier_bounds_(magnifier_bounds) {}
+
+  ~BorderRenderer() override {}
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, magnifier_bounds_.size());
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+
+    const int magnifier_radius = magnifier_bounds_.width() / 2;
+    // Draw the inner border.
+    paint.setStrokeWidth(kBorderSize);
+    paint.setColor(kBorderColor);
+    recorder.canvas()->DrawCircle(magnifier_bounds_.CenterPoint(),
+                                  magnifier_radius - kBorderSize / 2, paint);
+
+    // Draw border outer outline and then draw the border inner outline.
+    paint.setStrokeWidth(kBorderOutlineThickness);
+    paint.setColor(kBorderOutlineColor);
+    recorder.canvas()->DrawCircle(
+        magnifier_bounds_.CenterPoint(),
+        magnifier_radius - kBorderOutlineThickness / 2, paint);
+    recorder.canvas()->DrawCircle(
+        magnifier_bounds_.CenterPoint(),
+        magnifier_radius - kBorderSize + kBorderOutlineThickness / 2, paint);
+  }
+
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+
+  base::Closure PrepareForLayerBoundsChange() override {
+    return base::Closure();
+  }
+
+  gfx::Rect magnifier_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(BorderRenderer);
 };
 
 PartialMagnificationController::PartialMagnificationController() {
@@ -262,9 +318,9 @@ void PartialMagnificationController::CreateMagnifierWindow(
   zoom_layer_->SetBackgroundZoom(kMagnificationScale, kZoomInset);
   root_layer->Add(zoom_layer_.get());
 
-  border_layer_.reset(new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
+  border_layer_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
   border_layer_->SetBounds(gfx::Rect(GetWindowSize()));
-  border_layer_->SetColor(SK_ColorWHITE);
+  border_layer_->set_delegate(new BorderRenderer(gfx::Rect(GetWindowSize())));
   root_layer->Add(border_layer_.get());
 
   border_mask_.reset(new ContentMask(true, GetWindowSize()));
