@@ -606,20 +606,6 @@ cr.define('settings_about_page', function() {
     }
 
     function registerChannelSwitcherDialogTests() {
-      /**
-       * Converts an event occurrence to a promise.
-       * @param {string} eventType
-       * @param {!HTMLElement} target
-       * @return {!Promise} A promise firing once the event occurs.
-       * TODO(dpapad); Share this code with certificate_manager_page_test.js
-       * identical helper method.
-       */
-      function eventToPromise(eventType, target) {
-        return new Promise(function(resolve, reject) {
-          target.addEventListener(eventType, resolve);
-        });
-      }
-
       suite('ChannelSwitcherDialogTest', function() {
         var dialog = null;
         var radioButtons = null;
@@ -671,7 +657,7 @@ cr.define('settings_about_page', function() {
           assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
           assertFalse(dialog.$.changeChannel.hidden);
 
-          var whenTargetChannelChangedFired = eventToPromise(
+          var whenTargetChannelChangedFired = test_util.eventToPromise(
               'target-channel-changed', dialog);
 
           MockInteractions.tap(dialog.$.changeChannel);
@@ -696,7 +682,7 @@ cr.define('settings_about_page', function() {
           assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
           assertTrue(dialog.$.changeChannel.hidden);
 
-          var whenTargetChannelChangedFired = eventToPromise(
+          var whenTargetChannelChangedFired = test_util.eventToPromise(
               'target-channel-changed', dialog);
 
           MockInteractions.tap(dialog.$.changeChannelAndPowerwash);

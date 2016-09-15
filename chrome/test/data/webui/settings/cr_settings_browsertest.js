@@ -138,6 +138,7 @@ CrSettingsAboutPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
     'test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
     'about_page_tests.js',
@@ -438,6 +439,7 @@ CrSettingsCertificateManagerTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
     'test_browser_proxy.js',
     'certificate_manager_page_test.js',
   ]),
@@ -465,13 +467,13 @@ CrSettingsPrivacyPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_util.js',
     'test_browser_proxy.js',
     'privacy_page_test.js',
   ]),
 };
 
-// TODO(crbug.com/642574) Disabled because test is flaky.
-TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPage', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
   settings_privacy_page.registerTests();
   mocha.run();
 });

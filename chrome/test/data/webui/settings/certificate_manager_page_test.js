@@ -182,18 +182,6 @@ cr.define('certificate_manager_page', function() {
     MockInteractions.keyEventOn(element, 'input', kSpaceBar);
   }
 
-  /**
-   * Converts an event occurrence to a promise.
-   * @param {string} eventType
-   * @param {!HTMLElement} target
-   * @return {!Promise} A promise firing once the event occurs.
-   */
-  function eventToPromise(eventType, target) {
-    return new Promise(function(resolve, reject) {
-      target.addEventListener(eventType, resolve);
-    });
-  }
-
   function registerCaTrustEditDialogTests() {
     /** @type {?SettingsCaTrustEditDialogElement} */
     var dialog = null;
@@ -274,7 +262,8 @@ cr.define('certificate_manager_page', function() {
         document.body.appendChild(dialog);
         browserProxy.forceCertificatesError();
 
-        var whenErrorEventFired = eventToPromise('certificates-error', dialog);
+        var whenErrorEventFired =
+            test_util.eventToPromise('certificates-error', dialog);
 
         return browserProxy.whenCalled('getCaCertificateTrust').then(
             function() {
@@ -331,7 +320,8 @@ cr.define('certificate_manager_page', function() {
 
       test('DeleteError', function() {
         browserProxy.forceCertificatesError();
-        var whenErrorEventFired = eventToPromise('certificates-error', dialog);
+        var whenErrorEventFired =
+            test_util.eventToPromise('certificates-error', dialog);
 
         // Simulate clicking 'OK'.
         MockInteractions.tap(dialog.$.ok);
@@ -414,7 +404,8 @@ cr.define('certificate_manager_page', function() {
         confirmPasswordInputElement.value = passwordInputElement.value;
         triggerInputEvent(passwordInputElement);
 
-        var whenErrorEventFired = eventToPromise('certificates-error', dialog);
+        var whenErrorEventFired =
+            test_util.eventToPromise('certificates-error', dialog);
         MockInteractions.tap(dialog.$.ok);
 
         return browserProxy.whenCalled(methodName).then(function() {
@@ -477,7 +468,8 @@ cr.define('certificate_manager_page', function() {
         passwordInputElement.value = 'foopassword';
         triggerInputEvent(passwordInputElement);
 
-        var whenErrorEventFired = eventToPromise('certificates-error', dialog);
+        var whenErrorEventFired =
+            test_util.eventToPromise('certificates-error', dialog);
         MockInteractions.tap(dialog.$.ok);
         return browserProxy.whenCalled(methodName).then(function() {
           return whenErrorEventFired;
@@ -497,7 +489,8 @@ cr.define('certificate_manager_page', function() {
      *     |settings.CertificateActionEvent| fires.
      */
     var actionEventToPromise = function() {
-      return eventToPromise(settings.CertificateActionEvent, subentry);
+      return test_util.eventToPromise(
+          settings.CertificateActionEvent, subentry);
     };
 
     suite('CertificateSubentryTests', function() {
@@ -722,24 +715,10 @@ cr.define('certificate_manager_page', function() {
         var dialog = page.shadowRoot.querySelector(dialogTagName);
         assertTrue(!!dialog);
 
-        if (dialog.$.dialog.open)
-          return Promise.resolve();
-
         // Some dialogs are opened after some async operation to fetch initial
-        // data. Ensure that the underlying cr-dialog is actually opened by
-        // listening for changes for the 'open' attribute.
-        return new Promise(function(resolve, reject) {
-          var observer = new MutationObserver(function(mutations) {
-            assertEquals(1, mutations.length);
-            assertEquals('attributes', mutations[0].type);
-            assertEquals('open', mutations[0].attributeName);
-            observer.disconnect();
-            resolve();
-          });
-          observer.observe(
-              dialog.$.dialog,
-              {attributes: true, childList: false, characterData: false});
-        });
+        // data. Ensure that the underlying cr-dialog is actually opened before
+        // returning.
+        return test_util.whenAttributeIs(dialog.$.dialog, 'open', true);
       }
 
       test('OpensDialog_DeleteConfirmation', function() {
@@ -830,7 +809,7 @@ cr.define('certificate_manager_page', function() {
         assertTrue(!!importButton);
 
         var waitForActionEvent = actionEventExpected ?
-            eventToPromise(settings.CertificateActionEvent, element) :
+            test_util.eventToPromise(settings.CertificateActionEvent, element) :
             Promise.resolve(null);
 
         MockInteractions.tap(importButton);
