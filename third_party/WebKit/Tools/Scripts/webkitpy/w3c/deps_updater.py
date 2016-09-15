@@ -368,7 +368,7 @@ class DepsUpdater(object):
     def write_test_expectations(self):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
-        self.run([self.host.executable, script_path])
+        self.run([self.host.executable, script_path, '--verbose'])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.git_cl.run(['upload', '-m', message, '--rietveld'])

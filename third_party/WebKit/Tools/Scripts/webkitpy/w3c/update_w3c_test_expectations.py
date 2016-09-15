@@ -11,9 +11,9 @@ Specifically, this class fetches results from try bots for the current CL, and:
 This is used as part of the w3c test auto-import process.
 """
 
+import argparse
 import logging
 
-from webkitpy.common.net.buildbot import BuildBot, Build
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
@@ -29,14 +29,25 @@ class W3CExpectationsLineAdder(object):
         self.host.initialize_scm()
         self.finder = WebKitFinder(self.host.filesystem)
 
-    def run(self):
+    def run(self, args=None):
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
+        args = parser.parse_args(args)
+        log_level = logging.DEBUG if args.verbose else logging.INFO
+        logging.basicConfig(level=log_level, format='%(message)s')
+
         issue_number = self.get_issue_number()
+        if issue_number == 'None':
+            _log.error('No issue on current branch.')
+            return 1
+
         try_bots = self.get_try_bots()
         rietveld = Rietveld(self.host.web)
         try_jobs = rietveld.latest_try_jobs(issue_number, try_bots)
+        _log.debug('Latest try jobs: %r', try_jobs)
 
         if not try_jobs:
-            print 'No Try Job information was collected.'
+            _log.error('No try job information was collected.')
             return 1
 
         test_expectations = {}
@@ -255,6 +266,7 @@ class W3CExpectationsLineAdder(object):
         Args:
             line_list: A list of w3c test expectations lines.
         """
+        _log.debug('Lines to write to TestExpectations: %r', line_list)
         port = self.host.port_factory.get()
         expectations_file = port.path_to_generic_test_expectations_file()
         comment_line = '# Tests added from W3C auto import bot'
@@ -295,6 +307,7 @@ class W3CExpectationsLineAdder(object):
         """
         modified_files = self.host.executive.run_command(['git', 'diff', 'origin/master', '--name-only']).splitlines()
         tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_files, tests_results)
+        _log.debug('Tests to rebaseline: %r', tests_to_rebaseline)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(
                 self.finder.chromium_base(), self.finder.webkit_base(), self.finder.path_to_script('webkit-patch'))

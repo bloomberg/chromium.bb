@@ -2,20 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import unittest
+import json
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.layouttestresults import LayoutTestResult, LayoutTestResults
-from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.common.net.web_mock import MockWeb
+from webkitpy.common.system import logtesting
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
 
-class UpdateW3CTestExpectationsTest(unittest.TestCase):
+class UpdateW3CTestExpectationsTest(logtesting.LoggingTestCase):
 
     def setUp(self):
+        super(UpdateW3CTestExpectationsTest, self).setUp()
         self.host = MockHost()
         self.mock_dict_one = {
             'fake/test/path.html': {
@@ -44,6 +46,7 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase):
         })
 
     def tearDown(self):
+        super(UpdateW3CTestExpectationsTest, self).tearDown()
         self.host = None
 
     def test_get_failing_results_dict_only_passing_results(self):
@@ -224,3 +227,30 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase):
         tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(tests, test_dict)
         self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
         self.assertEqual(tests_results, test_dict)
+
+    def test_run_no_issue_number(self):
+        line_adder = W3CExpectationsLineAdder(self.host)
+        line_adder.get_issue_number = lambda: 'None'
+        self.assertEqual(1, line_adder.run(args=[]))
+        self.assertLog(['ERROR: No issue on current branch.\n'])
+
+    def test_run_no_try_results(self):
+        self.host.web = MockWeb(urls={
+            'https://codereview.chromium.org/api/11112222': json.dumps({
+                'patchsets': [1],
+            }),
+            'https://codereview.chromium.org/api/11112222/1': json.dumps({
+                'try_job_results': []
+            })
+        })
+        line_adder = W3CExpectationsLineAdder(self.host)
+        line_adder.get_issue_number = lambda: '11112222'
+        line_adder.get_try_bots = lambda: ['test-builder-name']
+        self.assertEqual(1, line_adder.run(args=[]))
+        self.assertEqual(
+            self.host.web.urls_fetched,
+            [
+                'https://codereview.chromium.org/api/11112222',
+                'https://codereview.chromium.org/api/11112222/1'
+            ])
+        self.assertLog(['ERROR: No try job information was collected.\n'])
