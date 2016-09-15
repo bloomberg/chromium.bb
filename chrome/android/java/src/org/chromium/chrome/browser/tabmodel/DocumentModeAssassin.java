@@ -106,16 +106,16 @@ public class DocumentModeAssassin {
     private static final int TAB_MODEL_INDEX = 0;
 
     /** SharedPreference values to determine whether user had document mode turned on. */
-    private static final String OPT_OUT_STATE = "opt_out_state";
+    static final String OPT_OUT_STATE = "opt_out_state";
     private static final int OPT_IN_TO_DOCUMENT_MODE = 0;
     private static final int OPT_OUT_STATE_UNSET = -1;
-    private static final int OPTED_OUT_OF_DOCUMENT_MODE = 2;
+    static final int OPTED_OUT_OF_DOCUMENT_MODE = 2;
 
     /**
      * Preference that denotes that Chrome has attempted to migrate from tabbed mode to document
      * mode. Indicates that the user may be in document mode.
      */
-    public static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
+    static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
 
     /** Creates and holds the Singleton. */
     private static class LazyHolder {
