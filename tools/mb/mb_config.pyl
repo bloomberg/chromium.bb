@@ -2463,7 +2463,7 @@
 
     'thin_lto': {
       'gn_args': 'use_thin_lto=true',
-      'mixins': ['cfi'],
+      'mixins': ['lto'],
     },
 
     'tsan': {
