@@ -149,49 +149,55 @@ void HotwordPrivateEventService::SignalEvent(
   router->BroadcastEvent(std::move(event));
 }
 
-bool HotwordPrivateSetEnabledFunction::RunSync() {
+ExtensionFunction::ResponseAction HotwordPrivateSetEnabledFunction::Run() {
   std::unique_ptr<api::hotword_private::SetEnabled::Params> params(
       api::hotword_private::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  PrefService* prefs = GetProfile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetBoolean(prefs::kHotwordSearchEnabled, params->state);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateSetAudioLoggingEnabledFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateSetAudioLoggingEnabledFunction::Run() {
   std::unique_ptr<api::hotword_private::SetAudioLoggingEnabled::Params> params(
       api::hotword_private::SetAudioLoggingEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // TODO(kcarattini): Sync the chrome pref with the account-level
   // Audio History setting.
-  PrefService* prefs = GetProfile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetBoolean(prefs::kHotwordAudioLoggingEnabled, params->state);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction::Run() {
   std::unique_ptr<api::hotword_private::SetHotwordAlwaysOnSearchEnabled::Params>
       params(
           api::hotword_private::SetHotwordAlwaysOnSearchEnabled::Params::Create(
               *args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  PrefService* prefs = GetProfile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, params->state);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateGetStatusFunction::RunSync() {
+ExtensionFunction::ResponseAction HotwordPrivateGetStatusFunction::Run() {
   std::unique_ptr<api::hotword_private::GetStatus::Params> params(
       api::hotword_private::GetStatus::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   api::hotword_private::StatusDetails result;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+      HotwordServiceFactory::GetForProfile(profile);
   if (!hotword_service) {
     result.available = false;
     result.always_on_available = false;
@@ -217,28 +223,29 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
         HotwordService::IsHotwordHardwareAvailable();
   }
 
-  PrefService* prefs = GetProfile()->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
 
-  SetResult(result.ToValue());
-  return true;
+  return RespondNow(OneArgument(result.ToValue()));
 }
 
-bool HotwordPrivateSetHotwordSessionStateFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateSetHotwordSessionStateFunction::Run() {
   std::unique_ptr<api::hotword_private::SetHotwordSessionState::Params> params(
       api::hotword_private::SetHotwordSessionState::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (hotword_service &&
       hotword_service->client() &&
       !hotword_service->IsTraining())
     hotword_service->client()->OnHotwordStateChanged(params->started);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateNotifyHotwordRecognitionFunction::Run() {
   std::unique_ptr<api::hotword_private::NotifyHotwordRecognition::Params>
       params(api::hotword_private::NotifyHotwordRecognition::Params::Create(
           *args_));
@@ -255,8 +262,9 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
     preamble->sample_data.swap(params->log->buffer);
   }
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+      HotwordServiceFactory::GetForProfile(profile);
   if (hotword_service) {
     if (hotword_service->IsTraining()) {
       hotword_service->NotifyHotwordTriggered();
@@ -265,77 +273,80 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
     } else if (hotword_service->IsAlwaysOnEnabled()) {
       AppListService* app_list_service = AppListService::Get();
       CHECK(app_list_service);
-      app_list_service->ShowForVoiceSearch(GetProfile(), preamble);
+      app_list_service->ShowForVoiceSearch(profile, preamble);
     }
   }
-  return true;
+
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateGetLaunchStateFunction::RunSync() {
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+ExtensionFunction::ResponseAction HotwordPrivateGetLaunchStateFunction::Run() {
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!hotword_service) {
-    error_ = hotword_private_constants::kHotwordServiceUnavailable;
-    return false;
+    return RespondNow(
+        Error(hotword_private_constants::kHotwordServiceUnavailable));
   }
 
   api::hotword_private::LaunchState result;
   result.launch_mode =
       hotword_service->GetHotwordAudioVerificationLaunchMode();
-  SetResult(result.ToValue());
-  return true;
+  return RespondNow(OneArgument(result.ToValue()));
 }
 
-bool HotwordPrivateStartTrainingFunction::RunSync() {
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+ExtensionFunction::ResponseAction HotwordPrivateStartTrainingFunction::Run() {
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!hotword_service) {
-    error_ = hotword_private_constants::kHotwordServiceUnavailable;
-    return false;
+    return RespondNow(
+        Error(hotword_private_constants::kHotwordServiceUnavailable));
   }
 
   hotword_service->StartTraining();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateFinalizeSpeakerModelFunction::RunSync() {
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+ExtensionFunction::ResponseAction
+HotwordPrivateFinalizeSpeakerModelFunction::Run() {
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!hotword_service) {
-    error_ = hotword_private_constants::kHotwordServiceUnavailable;
-    return false;
+    return RespondNow(
+        Error(hotword_private_constants::kHotwordServiceUnavailable));
   }
 
   hotword_service->FinalizeSpeakerModel();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateNotifySpeakerModelSavedFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateNotifySpeakerModelSavedFunction::Run() {
   HotwordPrivateEventService* event_service =
       BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(
-          GetProfile());
+          Profile::FromBrowserContext(browser_context()));
   if (!event_service) {
-    error_ = hotword_private_constants::kHotwordEventServiceUnavailable;
-    return false;
+    return RespondNow(
+        Error(hotword_private_constants::kHotwordEventServiceUnavailable));
   }
 
   event_service->OnSpeakerModelSaved();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateStopTrainingFunction::RunSync() {
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+ExtensionFunction::ResponseAction HotwordPrivateStopTrainingFunction::Run() {
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!hotword_service) {
-    error_ = hotword_private_constants::kHotwordServiceUnavailable;
-    return false;
+    return RespondNow(
+        Error(hotword_private_constants::kHotwordServiceUnavailable));
   }
 
   hotword_service->StopTraining();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateGetLocalizedStringsFunction::Run() {
 #if defined(OS_CHROMEOS)
   base::string16 device_type = ash::GetChromeOSDeviceName();
 #else
@@ -454,8 +465,7 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
-  SetResult(std::move(localized_strings));
-  return true;
+  return RespondNow(OneArgument(std::move(localized_strings)));
 }
 
 bool HotwordPrivateSetAudioHistoryEnabledFunction::RunAsync() {
@@ -511,19 +521,20 @@ void HotwordPrivateGetAudioHistoryEnabledFunction::SetResultAndSendResponse(
   SendResponse(true);
 }
 
-bool HotwordPrivateSpeakerModelExistsResultFunction::RunSync() {
+ExtensionFunction::ResponseAction
+HotwordPrivateSpeakerModelExistsResultFunction::Run() {
   std::unique_ptr<api::hotword_private::SpeakerModelExistsResult::Params>
       params(api::hotword_private::SpeakerModelExistsResult::Params::Create(
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(GetProfile());
+  HotwordService* hotword_service = HotwordServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!hotword_service)
-    return false;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
 
   hotword_service->SpeakerModelExistsComplete(params->exists);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

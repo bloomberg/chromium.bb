@@ -18,7 +18,8 @@ LauncherSearchProviderSetSearchResultsFunction::
     ~LauncherSearchProviderSetSearchResultsFunction() {
 }
 
-bool LauncherSearchProviderSetSearchResultsFunction::RunSync() {
+ExtensionFunction::ResponseAction
+LauncherSearchProviderSetSearchResultsFunction::Run() {
   using chromeos::launcher_search_provider::ErrorReporter;
   using chromeos::launcher_search_provider::Service;
   using extensions::api::launcher_search_provider::SetSearchResults::Params;
@@ -28,11 +29,11 @@ bool LauncherSearchProviderSetSearchResultsFunction::RunSync() {
 
   std::unique_ptr<ErrorReporter> error_reporter(
       new ErrorReporter(render_frame_host()));
-  Service* const service = Service::Get(GetProfile());
+  Service* const service = Service::Get(browser_context());
   service->SetSearchResults(extension(), std::move(error_reporter),
                             params->query_id, params->results);
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

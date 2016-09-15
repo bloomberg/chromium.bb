@@ -60,8 +60,7 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
   PrefChangeRegistrar pref_change_registrar_;
 };
 
-
-class HotwordPrivateSetEnabledFunction : public ChromeSyncExtensionFunction {
+class HotwordPrivateSetEnabledFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setEnabled",
                              HOTWORDPRIVATE_SETENABLED)
@@ -70,11 +69,11 @@ class HotwordPrivateSetEnabledFunction : public ChromeSyncExtensionFunction {
   ~HotwordPrivateSetEnabledFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateSetAudioLoggingEnabledFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setAudioLoggingEnabled",
                              HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED)
@@ -83,11 +82,11 @@ class HotwordPrivateSetAudioLoggingEnabledFunction
   ~HotwordPrivateSetAudioLoggingEnabledFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setHotwordAlwaysOnSearchEnabled",
                              HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED)
@@ -96,10 +95,10 @@ class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
   ~HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
+class HotwordPrivateGetStatusFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getStatus",
                              HOTWORDPRIVATE_GETSTATUS)
@@ -108,11 +107,11 @@ class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
   ~HotwordPrivateGetStatusFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateSetHotwordSessionStateFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.setHotwordSessionState",
                              HOTWORDPRIVATE_SETHOTWORDSESSIONSTATE);
@@ -121,11 +120,11 @@ class HotwordPrivateSetHotwordSessionStateFunction
   ~HotwordPrivateSetHotwordSessionStateFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateNotifyHotwordRecognitionFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.notifyHotwordRecognition",
                              HOTWORDPRIVATE_NOTIFYHOTWORDRECOGNITION);
@@ -134,11 +133,10 @@ class HotwordPrivateNotifyHotwordRecognitionFunction
   ~HotwordPrivateNotifyHotwordRecognitionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateGetLaunchStateFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateGetLaunchStateFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getLaunchState",
                              HOTWORDPRIVATE_GETLAUNCHSTATE)
@@ -147,11 +145,10 @@ class HotwordPrivateGetLaunchStateFunction :
   ~HotwordPrivateGetLaunchStateFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateStartTrainingFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateStartTrainingFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.startTraining",
                              HOTWORDPRIVATE_STARTTRAINING)
@@ -160,11 +157,11 @@ class HotwordPrivateStartTrainingFunction :
   ~HotwordPrivateStartTrainingFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateFinalizeSpeakerModelFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateFinalizeSpeakerModelFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.finalizeSpeakerModel",
                              HOTWORDPRIVATE_FINALIZESPEAKERMODEL)
@@ -173,11 +170,11 @@ class HotwordPrivateFinalizeSpeakerModelFunction :
   ~HotwordPrivateFinalizeSpeakerModelFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateNotifySpeakerModelSavedFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateNotifySpeakerModelSavedFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.notifySpeakerModelSaved",
                              HOTWORDPRIVATE_NOTIFYSPEAKERMODELSAVED)
@@ -186,11 +183,10 @@ class HotwordPrivateNotifySpeakerModelSavedFunction :
   ~HotwordPrivateNotifySpeakerModelSavedFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class HotwordPrivateStopTrainingFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateStopTrainingFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.stopTraining",
                              HOTWORDPRIVATE_STOPTRAINING)
@@ -199,11 +195,11 @@ class HotwordPrivateStopTrainingFunction :
   ~HotwordPrivateStopTrainingFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateGetLocalizedStringsFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getLocalizedStrings",
                              HOTWORDPRIVATE_GETLOCALIZEDSTRINGS)
@@ -212,7 +208,7 @@ class HotwordPrivateGetLocalizedStringsFunction
   ~HotwordPrivateGetLocalizedStringsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class HotwordPrivateSetAudioHistoryEnabledFunction
@@ -245,8 +241,8 @@ class HotwordPrivateGetAudioHistoryEnabledFunction
   void SetResultAndSendResponse(bool success, bool new_enabled_value);
 };
 
-class HotwordPrivateSpeakerModelExistsResultFunction :
-    public ChromeSyncExtensionFunction {
+class HotwordPrivateSpeakerModelExistsResultFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hotwordPrivate.speakerModelExistsResult",
                              HOTWORDPRIVATE_SPEAKERMODELEXISTSRESULT)
@@ -255,7 +251,7 @@ class HotwordPrivateSpeakerModelExistsResultFunction :
   ~HotwordPrivateSpeakerModelExistsResultFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

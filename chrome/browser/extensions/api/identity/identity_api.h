@@ -318,8 +318,7 @@ class IdentityGetProfileUserInfoFunction
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class IdentityRemoveCachedAuthTokenFunction
-    : public ChromeSyncExtensionFunction {
+class IdentityRemoveCachedAuthTokenFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.removeCachedAuthToken",
                              EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN)
@@ -328,8 +327,8 @@ class IdentityRemoveCachedAuthTokenFunction
  protected:
   ~IdentityRemoveCachedAuthTokenFunction() override;
 
-  // SyncExtensionFunction implementation:
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,

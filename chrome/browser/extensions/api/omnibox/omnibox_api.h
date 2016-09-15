@@ -73,7 +73,7 @@ class ExtensionOmniboxEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxEventRouter);
 };
 
-class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
+class OmniboxSendSuggestionsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("omnibox.sendSuggestions", OMNIBOX_SENDSUGGESTIONS)
 
@@ -81,7 +81,7 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
   ~OmniboxSendSuggestionsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class OmniboxAPI : public BrowserContextKeyedAPI,
@@ -150,7 +150,7 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
 template <>
 void BrowserContextKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies();
 
-class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
+class OmniboxSetDefaultSuggestionFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("omnibox.setDefaultSuggestion",
                              OMNIBOX_SETDEFAULTSUGGESTION)
@@ -159,7 +159,7 @@ class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
   ~OmniboxSetDefaultSuggestionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // If the extension has set a custom default suggestion via

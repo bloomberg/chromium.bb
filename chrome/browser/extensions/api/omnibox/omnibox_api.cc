@@ -284,33 +284,35 @@ void BrowserContextKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
-bool OmniboxSendSuggestionsFunction::RunSync() {
+ExtensionFunction::ResponseAction OmniboxSendSuggestionsFunction::Run() {
   std::unique_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-      content::Source<Profile>(GetProfile()->GetOriginalProfile()),
+      content::Source<Profile>(
+          Profile::FromBrowserContext(browser_context())->GetOriginalProfile()),
       content::Details<SendSuggestions::Params>(params.get()));
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool OmniboxSetDefaultSuggestionFunction::RunSync() {
+ExtensionFunction::ResponseAction OmniboxSetDefaultSuggestionFunction::Run() {
   std::unique_ptr<SetDefaultSuggestion::Params> params(
       SetDefaultSuggestion::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (SetOmniboxDefaultSuggestion(
-          GetProfile(), extension_id(), params->suggestion)) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (SetOmniboxDefaultSuggestion(profile, extension_id(),
+                                  params->suggestion)) {
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-        content::Source<Profile>(GetProfile()->GetOriginalProfile()),
+        content::Source<Profile>(profile->GetOriginalProfile()),
         content::NotificationService::NoDetails());
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 // This function converts style information populated by the JSON schema

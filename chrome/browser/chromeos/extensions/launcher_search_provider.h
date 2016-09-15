@@ -5,19 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LAUNCHER_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LAUNCHER_SEARCH_PROVIDER_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 // Implements chrome.launcherSearchProvider.setSearchResults method.
 class LauncherSearchProviderSetSearchResultsFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("launcherSearchProvider.setSearchResults",
                              LAUNCHERSEARCHPROVIDER_SETSEARCHRESULTS)
  protected:
   ~LauncherSearchProviderSetSearchResultsFunction() override;
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

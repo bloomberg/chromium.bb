@@ -27,9 +27,10 @@ static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
 }
 
-bool I18nGetAcceptLanguagesFunction::RunSync() {
-  std::string accept_languages =
-      GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+ExtensionFunction::ResponseAction I18nGetAcceptLanguagesFunction::Run() {
+  std::string accept_languages = Profile::FromBrowserContext(browser_context())
+                                     ->GetPrefs()
+                                     ->GetString(prefs::kAcceptLanguages);
   // Currently, there are 2 ways to set browser's accept-languages: through UI
   // or directly modify the preference file. The accept-languages set through
   // UI is guranteed to be valid, and the accept-languages string returned from
@@ -40,23 +41,19 @@ bool I18nGetAcceptLanguagesFunction::RunSync() {
   // of the language code) on accept-languages set through editing preference
   // file directly. So, here, we're adding extra checks to be resistant to
   // crashes caused by data corruption.
-  if (accept_languages.empty()) {
-    error_ = kEmptyAcceptLanguagesError;
-    return false;
-  }
+  if (accept_languages.empty())
+    return RespondNow(Error(kEmptyAcceptLanguagesError));
 
   std::vector<std::string> languages = base::SplitString(
       accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   languages.erase(std::remove(languages.begin(), languages.end(), ""),
                   languages.end());
 
-  if (languages.empty()) {
-    error_ = kEmptyAcceptLanguagesError;
-    return false;
-  }
+  if (languages.empty())
+    return RespondNow(Error(kEmptyAcceptLanguagesError));
 
-  results_ = GetAcceptLanguages::Results::Create(languages);
-  return true;
+  return RespondNow(
+      ArgumentList(GetAcceptLanguages::Results::Create(languages)));
 }
 
 }  // namespace extensions
