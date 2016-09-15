@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/ip_address.h"
@@ -214,18 +215,18 @@ class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
     delegate_.SetOnline();
     // Note that this is needed because base::ObserverListThreadSafe uses
     // PostTask().
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetOffline() {
     delegate_.SetOffline();
     // See comment above.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FakeMaxBandwidthChange(double max_bandwidth_mbps) {
     delegate_.FakeMaxBandwidthChanged(max_bandwidth_mbps);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FakeNetworkChange(ChangeType change,
@@ -249,13 +250,13 @@ class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
         break;
     }
     // See comment above.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void FakePurgeActiveNetworkList(NetworkChangeNotifier::NetworkList networks) {
     delegate_.FakePurgeActiveNetworkList(networks);
     // See comment above.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   NetworkChangeNotifierDelegateAndroid delegate_;
@@ -422,7 +423,7 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest,
 TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
   DNSChangeObserver dns_change_observer;
   NetworkChangeNotifier::AddDNSObserver(&dns_change_observer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ(1, dns_change_observer.initial_notifications_count());
   EXPECT_EQ(0, dns_change_observer.change_notifications_count());
   NetworkChangeNotifier::RemoveDNSObserver(&dns_change_observer);
