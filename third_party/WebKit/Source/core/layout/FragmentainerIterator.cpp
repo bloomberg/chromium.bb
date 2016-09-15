@@ -103,7 +103,7 @@ bool FragmentainerIterator::setFragmentainersOfInterest()
     // narrow it down even further. The clip rect needs to be relative to the current fragmentainer
     // group.
     LayoutRect clipRect = m_clipRectInMulticolContainer;
-    LayoutSize offset = group.flowThreadTranslationAtOffset(group.logicalTopInFlowThread(), CoordinateSpaceConversion::Visual);
+    LayoutSize offset = group.flowThreadTranslationAtOffset(group.logicalTopInFlowThread(), LayoutBox::AssociateWithFormerPage, CoordinateSpaceConversion::Visual);
     clipRect.move(-offset);
     unsigned firstFragmentainerInClipRect, lastFragmentainerInClipRect;
     group.columnIntervalForVisualRect(clipRect, firstFragmentainerInClipRect, lastFragmentainerInClipRect);
@@ -125,7 +125,7 @@ void FragmentainerIterator::updateOutput()
 
     // Set the physical translation offset.
     LayoutUnit fragmentainerLogicalTopInFlowThread = group.logicalTopInFlowThread() + m_currentFragmentainerIndex * group.logicalHeight();
-    m_paginationOffset = group.flowThreadTranslationAtOffset(fragmentainerLogicalTopInFlowThread, CoordinateSpaceConversion::Visual);
+    m_paginationOffset = group.flowThreadTranslationAtOffset(fragmentainerLogicalTopInFlowThread, LayoutBox::AssociateWithLatterPage, CoordinateSpaceConversion::Visual);
 
     // Set the overflow clip rect that corresponds to the fragmentainer.
     m_clipRectInFlowThread = group.flowThreadPortionOverflowRectAt(m_currentFragmentainerIndex);

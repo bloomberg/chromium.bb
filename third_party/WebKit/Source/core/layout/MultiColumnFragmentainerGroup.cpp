@@ -98,10 +98,16 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(LayoutMultiColumnSet
     return true; // Need another pass.
 }
 
-LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread, CoordinateSpaceConversion mode) const
+LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread, LayoutBox::PageBoundaryRule rule, CoordinateSpaceConversion mode) const
 {
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread);
+
+    // A column out of range doesn't have a flow thread portion, so we need to clamp to make sure
+    // that we stay within the actual columns. This means that content in the overflow area will be
+    // mapped to the last actual column, instead of being mapped to an imaginary column further
+    // ahead.
+    unsigned columnIndex = offsetInFlowThread >= logicalBottomInFlowThread() ? actualColumnCount() - 1 : columnIndexAtOffset(offsetInFlowThread, rule);
+
     LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
     flowThread->flipForWritingMode(portionRect);
     LayoutRect columnRect(columnRectAt(columnIndex));
@@ -117,11 +123,11 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
         // Translation that would map points in the coordinate space of the outermost flow thread to
         // visual points in the first column in the first fragmentainer group (row) in our multicol
         // container.
-        LayoutSize enclosingTranslationOrigin = enclosingFlowThread->flowThreadTranslationAtOffset(firstRow.blockOffsetInEnclosingFragmentationContext(), mode);
+        LayoutSize enclosingTranslationOrigin = enclosingFlowThread->flowThreadTranslationAtOffset(firstRow.blockOffsetInEnclosingFragmentationContext(), LayoutBox::AssociateWithLatterPage, mode);
 
         // Translation that would map points in the coordinate space of the outermost flow thread to
         // visual points in the first column in this fragmentainer group.
-        enclosingTranslation = enclosingFlowThread->flowThreadTranslationAtOffset(blockOffsetInEnclosingFragmentationContext(), mode);
+        enclosingTranslation = enclosingFlowThread->flowThreadTranslationAtOffset(blockOffsetInEnclosingFragmentationContext(), LayoutBox::AssociateWithLatterPage, mode);
 
         // What we ultimately return from this method is a translation that maps points in the
         // coordinate space of our flow thread to a visual point in a certain column in this
@@ -137,7 +143,7 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
 
 LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const
 {
-    unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread, AssumeNewColumns);
+    unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread, LayoutBox::AssociateWithLatterPage);
     return logicalTopInFlowThreadAt(columnIndex);
 }
 
@@ -187,7 +193,7 @@ LayoutRect MultiColumnFragmentainerGroup::fragmentsBoundingBox(const LayoutRect&
     flowThread->flipForWritingMode(startColumnFlowThreadOverflowPortion);
     LayoutRect startColumnRect(boundingBoxInFlowThread);
     startColumnRect.intersect(startColumnFlowThreadOverflowPortion);
-    startColumnRect.move(flowThreadTranslationAtOffset(logicalTopInFlowThreadAt(startColumn), CoordinateSpaceConversion::Containing));
+    startColumnRect.move(flowThreadTranslationAtOffset(logicalTopInFlowThreadAt(startColumn), LayoutBox::AssociateWithLatterPage, CoordinateSpaceConversion::Containing));
     if (startColumn == endColumn)
         return startColumnRect; // It all takes place in one column. We're done.
 
@@ -195,7 +201,7 @@ LayoutRect MultiColumnFragmentainerGroup::fragmentsBoundingBox(const LayoutRect&
     flowThread->flipForWritingMode(endColumnFlowThreadOverflowPortion);
     LayoutRect endColumnRect(boundingBoxInFlowThread);
     endColumnRect.intersect(endColumnFlowThreadOverflowPortion);
-    endColumnRect.move(flowThreadTranslationAtOffset(logicalTopInFlowThreadAt(endColumn), CoordinateSpaceConversion::Containing));
+    endColumnRect.move(flowThreadTranslationAtOffset(logicalTopInFlowThreadAt(endColumn), LayoutBox::AssociateWithLatterPage, CoordinateSpaceConversion::Containing));
     return unionRect(startColumnRect, endColumnRect);
 }
 
@@ -385,21 +391,22 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(unsign
     return overflowRect;
 }
 
-unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode mode) const
+unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInFlowThread, LayoutBox::PageBoundaryRule pageBoundaryRule) const
 {
     // Handle the offset being out of range.
     if (offsetInFlowThread < m_logicalTopInFlowThread)
         return 0;
-    // If we're laying out right now, we cannot constrain against some logical bottom, since it
-    // isn't known yet. Otherwise, just return the last column if we're past the logical bottom.
-    if (mode == ClampToExistingColumns) {
-        if (offsetInFlowThread >= m_logicalBottomInFlowThread)
-            return actualColumnCount() - 1;
-    }
 
-    if (m_columnHeight)
-        return ((offsetInFlowThread - m_logicalTopInFlowThread) / m_columnHeight).floor();
-    return 0;
+    if (!m_columnHeight)
+        return 0;
+    unsigned columnIndex = ((offsetInFlowThread - m_logicalTopInFlowThread) / m_columnHeight).floor();
+    if (pageBoundaryRule == LayoutBox::AssociateWithFormerPage
+        && columnIndex > 0 && logicalTopInFlowThreadAt(columnIndex) == offsetInFlowThread) {
+        // We are exactly at a column boundary, and we've been told to associate offsets at column
+        // boundaries with the former column, not the latter.
+        columnIndex--;
+    }
+    return columnIndex;
 }
 
 unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const
@@ -422,12 +429,11 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
 
 void MultiColumnFragmentainerGroup::columnIntervalForBlockRangeInFlowThread(LayoutUnit logicalTopInFlowThread, LayoutUnit logicalBottomInFlowThread, unsigned& firstColumn, unsigned& lastColumn) const
 {
+    logicalTopInFlowThread = std::max(logicalTopInFlowThread, this->logicalTopInFlowThread());
+    logicalBottomInFlowThread = std::min(logicalBottomInFlowThread, this->logicalBottomInFlowThread());
     ASSERT(logicalTopInFlowThread <= logicalBottomInFlowThread);
-    firstColumn = columnIndexAtOffset(logicalTopInFlowThread);
-    lastColumn = columnIndexAtOffset(logicalBottomInFlowThread);
-    // logicalBottomInFlowThread is an exclusive endpoint, so some additional adjustments may be necessary.
-    if (lastColumn > firstColumn && logicalTopInFlowThreadAt(lastColumn) == logicalBottomInFlowThread)
-        lastColumn--;
+    firstColumn = columnIndexAtOffset(logicalTopInFlowThread, LayoutBox::AssociateWithLatterPage);
+    lastColumn = columnIndexAtOffset(logicalBottomInFlowThread, LayoutBox::AssociateWithFormerPage);
 }
 
 void MultiColumnFragmentainerGroup::columnIntervalForVisualRect(const LayoutRect& rect, unsigned& firstColumn, unsigned& lastColumn) const

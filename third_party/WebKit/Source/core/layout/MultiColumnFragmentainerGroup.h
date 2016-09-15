@@ -62,7 +62,7 @@ public:
     void resetColumnHeight();
     bool recalculateColumnHeight(LayoutMultiColumnSet&);
 
-    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, CoordinateSpaceConversion) const;
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, LayoutBox::PageBoundaryRule, CoordinateSpaceConversion) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
     LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;
@@ -78,13 +78,10 @@ public:
 
     LayoutRect calculateOverflow() const;
 
-    enum ColumnIndexCalculationMode {
-        ClampToExistingColumns, // Stay within the range of already existing columns.
-        AssumeNewColumns // Allow column indices outside the range of already existing columns.
-    };
-    unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode = ClampToExistingColumns) const;
+    unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, LayoutBox::PageBoundaryRule) const;
 
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.
+    // Returns 1 or greater, never 0.
     unsigned actualColumnCount() const;
 
 private:

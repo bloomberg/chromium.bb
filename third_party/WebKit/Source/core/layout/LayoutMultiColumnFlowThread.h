@@ -191,7 +191,7 @@ public:
 
     bool isPageLogicalHeightKnown() const final;
 
-    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, CoordinateSpaceConversion) const;
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, PageBoundaryRule, CoordinateSpaceConversion) const;
     LayoutSize flowThreadTranslationAtPoint(const LayoutPoint& flowThreadPoint, CoordinateSpaceConversion) const;
 
     LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const override;

@@ -165,7 +165,7 @@ void InitialColumnHeightFinder::recordStrutBeforeOffset(LayoutUnit offsetInFlowT
     ASSERT(columnSet().usedColumnCount() >= 1);
     unsigned columnCount = columnSet().usedColumnCount();
     ASSERT(m_shortestStruts.size() == columnCount);
-    unsigned index = groupAtOffset(offsetInFlowThread).columnIndexAtOffset(offsetInFlowThread - strut, MultiColumnFragmentainerGroup::AssumeNewColumns);
+    unsigned index = groupAtOffset(offsetInFlowThread).columnIndexAtOffset(offsetInFlowThread - strut, LayoutBox::AssociateWithLatterPage);
     if (index >= columnCount)
         return;
     m_shortestStruts[index] = std::min(m_shortestStruts[index], strut);
@@ -173,7 +173,7 @@ void InitialColumnHeightFinder::recordStrutBeforeOffset(LayoutUnit offsetInFlowT
 
 LayoutUnit InitialColumnHeightFinder::spaceUsedByStrutsAt(LayoutUnit offsetInFlowThread) const
 {
-    unsigned stopBeforeColumn = groupAtOffset(offsetInFlowThread).columnIndexAtOffset(offsetInFlowThread, MultiColumnFragmentainerGroup::AssumeNewColumns) + 1;
+    unsigned stopBeforeColumn = groupAtOffset(offsetInFlowThread).columnIndexAtOffset(offsetInFlowThread, LayoutBox::AssociateWithLatterPage) + 1;
     stopBeforeColumn = std::min(stopBeforeColumn, columnSet().usedColumnCount());
     ASSERT(stopBeforeColumn <= m_shortestStruts.size());
     LayoutUnit totalStrutSpace;

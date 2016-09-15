@@ -124,7 +124,7 @@ public:
 
     // Find the column that contains the given block offset, and return the translation needed to
     // get from flow thread coordinates to visual coordinates.
-    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, CoordinateSpaceConversion) const;
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, PageBoundaryRule, CoordinateSpaceConversion) const;
 
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
 

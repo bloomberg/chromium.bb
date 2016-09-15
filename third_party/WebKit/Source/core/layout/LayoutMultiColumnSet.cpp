@@ -289,9 +289,9 @@ bool LayoutMultiColumnSet::heightIsAuto() const
     return !flowThread->columnHeightAvailable();
 }
 
-LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset, CoordinateSpaceConversion mode) const
+LayoutSize LayoutMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockOffset, PageBoundaryRule rule, CoordinateSpaceConversion mode) const
 {
-    return fragmentainerGroupAtFlowThreadOffset(blockOffset).flowThreadTranslationAtOffset(blockOffset, mode);
+    return fragmentainerGroupAtFlowThreadOffset(blockOffset).flowThreadTranslationAtOffset(blockOffset, rule, mode);
 }
 
 LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const

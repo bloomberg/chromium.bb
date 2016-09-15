@@ -332,21 +332,26 @@ bool LayoutMultiColumnFlowThread::isPageLogicalHeightKnown() const
     return false;
 }
 
-LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread, CoordinateSpaceConversion mode) const
+LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread, PageBoundaryRule rule, CoordinateSpaceConversion mode) const
 {
     if (!hasValidColumnSetInfo())
         return LayoutSize(0, 0);
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread);
     if (!columnSet)
         return LayoutSize(0, 0);
-    return columnSet->flowThreadTranslationAtOffset(offsetInFlowThread, mode);
+    return columnSet->flowThreadTranslationAtOffset(offsetInFlowThread, rule, mode);
 }
 
 LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtPoint(const LayoutPoint& flowThreadPoint, CoordinateSpaceConversion mode) const
 {
     LayoutPoint flippedPoint = flipForWritingMode(flowThreadPoint);
     LayoutUnit blockOffset = isHorizontalWritingMode() ? flippedPoint.y() : flippedPoint.x();
-    return flowThreadTranslationAtOffset(blockOffset, mode);
+
+    // If block direction is flipped, points at a column boundary belong in the former column, not
+    // the latter.
+    PageBoundaryRule rule = hasFlippedBlocksWritingMode() ? AssociateWithFormerPage : AssociateWithLatterPage;
+
+    return flowThreadTranslationAtOffset(blockOffset, rule, mode);
 }
 
 LayoutPoint LayoutMultiColumnFlowThread::flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const
