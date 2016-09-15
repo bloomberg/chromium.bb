@@ -91,15 +91,16 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
   os.makedirs(out_dir)
   build_dir = ''
   for (build_config, gn_extra_args) in [('Debug', 'is_debug=true'),
-        ('Release', 'is_debug=false enable_dsyms=true enable_stripping=true')]:
+        ('Release', 'is_debug=false enable_stripping=true')]:
     for (target_device, target_cpu, additional_cpu) in [('os', 'arm', 'arm64'),
         ('simulator', 'x86', 'x64')]:
       target_dir = '%s-iphone%s' % (build_config, target_device)
       build_dir = os.path.join("out", target_dir)
       gn_args = 'target_os="ios" enable_websockets=false ' \
+                'is_cronet_build=true is_component_build=false ' \
                 'disable_file_support=true disable_ftp_support=true ' \
                 'use_platform_icu_alternatives=true ' \
-                'disable_brotli_filter=true ' \
+                'disable_brotli_filter=true enable_dsyms=true ' \
                 'target_cpu="%s" additional_target_cpus = ["%s"] %s' % \
                 (target_cpu, additional_cpu, gn_extra_args)
 
@@ -117,10 +118,9 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
       # Copy framework.
       shutil.copytree(os.path.join(build_dir, 'Cronet.framework'),
                       os.path.join(out_dir, target_dir, 'Cronet.framework'))
-      # Copy symbols from release binaries.
-      if 'Release' in build_config:
-        shutil.copytree(os.path.join(build_dir, 'Cronet.dSYM'),
-            os.path.join(out_dir, target_dir, 'Cronet.framework.dSYM'))
+      # Copy symbols.
+      shutil.copytree(os.path.join(build_dir, 'Cronet.dSYM'),
+          os.path.join(out_dir, target_dir, 'Cronet.framework.dSYM'))
 
   # Copy common files from last built package.
   package_dir = os.path.join(build_dir, 'cronet')
