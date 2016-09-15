@@ -44,6 +44,7 @@ Polymer({
     var browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
+    /** @type {PaperRippleElement} */(this.$['cbd-ripple']).upAction();
     e.preventDefault();
   },
 

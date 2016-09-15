@@ -8480,6 +8480,7 @@ Polymer({
     var browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
+    this.$['cbd-ripple'].upAction();
     e.preventDefault();
   },
   getQueryString_: function(route) {
