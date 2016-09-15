@@ -96,8 +96,6 @@ crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
 
 crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
 
-crbug.com/636222 [ Mac10.10 ] paint/invalidation/fixed-and-absolute-position-scrolled.html [ Failure ]
-
 crbug.com/636271 [ Mac ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Win ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
