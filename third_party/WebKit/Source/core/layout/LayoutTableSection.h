@@ -311,7 +311,7 @@ public:
 
     bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
 
-    bool hasRepeatingHeaderGroup() const;
+    bool isRepeatingHeaderGroup() const;
 
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

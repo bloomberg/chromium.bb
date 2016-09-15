@@ -1002,10 +1002,11 @@ void LayoutTableSection::layoutRows()
             rowLayoutObject->updateLayerTransformAfterLayout();
             if (isPaginated) {
                 paginationStrutOnRow = paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
+                rowLayoutObject->setPaginationStrut(LayoutUnit(paginationStrutOnRow));
                 if (paginationStrutOnRow) {
                     // If there isn't room for at least one content row on a page with a header group, then
                     // we won't repeat the header on each page.
-                    if (!r && table()->header() && table()->sectionAbove(this) == table()->header())
+                    if (!r && table()->header() && table()->sectionAbove(this) == table()->header() && table()->header()->getPaginationBreakability() != AllowAnyBreaks)
                         state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() - table()->header()->logicalHeight());
                     // If we have a header group we will paint it at the top of each page, move the rows
                     // down to accomodate it.
@@ -1718,7 +1719,7 @@ void LayoutTableSection::setLogicalPositionForCell(LayoutTableCell* cell, unsign
     cell->setLogicalLocation(cellLocation);
 }
 
-bool LayoutTableSection::hasRepeatingHeaderGroup() const
+bool LayoutTableSection::isRepeatingHeaderGroup() const
 {
     if (getPaginationBreakability() == LayoutBox::AllowAnyBreaks)
         return false;
@@ -1735,7 +1736,7 @@ bool LayoutTableSection::hasRepeatingHeaderGroup() const
     // If the first row of the section after the header group doesn't fit on the page, then
     // don't repeat the header on each page. See https://drafts.csswg.org/css-tables-3/#repeated-headers
     LayoutTableSection* sectionBelow = table()->sectionBelow(this);
-    if (sectionBelow && sectionBelow->firstRow() && sectionBelow->paginationStrutForRow(sectionBelow->firstRow(), sectionBelow->logicalTop()))
+    if (sectionBelow && sectionBelow->firstRow() && sectionBelow->firstRow()->paginationStrut())
         return false;
 
     return true;
@@ -1748,7 +1749,7 @@ bool LayoutTableSection::mapToVisualRectInAncestorSpace(const LayoutBoxModelObje
     // Repeating table headers are painted once per fragmentation page/column. This does not go through the regular fragmentation machinery,
     // so we need special code to expand the invalidation rect to contain all positions of the header in all columns.
     // Note that this is in flow thread coordinates, not visual coordinates. The enclosing LayoutFlowThread will convert to visual coordinates.
-    if (table()->header() == this && hasRepeatingHeaderGroup())
+    if (table()->header() == this && isRepeatingHeaderGroup())
         rect.setHeight(table()->logicalHeight());
     return LayoutTableBoxComponent::mapToVisualRectInAncestorSpace(ancestor, rect, flags);
 }

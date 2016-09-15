@@ -37,7 +37,7 @@ inline const LayoutTableCell* TableSectionPainter::primaryCellToPaint(unsigned r
 
 void TableSectionPainter::paintRepeatingHeaderGroup(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue, ItemToPaint itemToPaint)
 {
-    if (!m_layoutTableSection.hasRepeatingHeaderGroup())
+    if (!m_layoutTableSection.isRepeatingHeaderGroup())
         return;
 
     LayoutTable* table = m_layoutTableSection.table();
