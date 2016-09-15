@@ -116,9 +116,8 @@ void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
   if (callback_.is_null())
     return;
 
-  if (stream) {
-    next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
-  } else {
+  DCHECK_EQ(STATE_HANDLE_PROMISE_COMPLETE, next_state_);
+  if (!stream) {
     // rendezvous has failed so proceed as with a non-push request.
     next_state_ = STATE_REQUEST_STREAM;
   }
@@ -173,16 +172,6 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-bool QuicHttpStream::CancelPromiseIfHasBody() {
-  if (!request_body_stream_)
-    return false;
-
-  // A request with a body is ineligble for push.
-  this->push_handle_->Cancel();
-  this->push_handle_ = nullptr;
-  return true;
-}
-
 int QuicHttpStream::DoHandlePromise() {
   QuicAsyncStatus push_status = session_->push_promise_index()->Try(
       request_headers_, this, &this->push_handle_);
@@ -196,14 +185,8 @@ int QuicHttpStream::DoHandlePromise() {
       next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
       break;
     case QUIC_PENDING:
-      if (!CancelPromiseIfHasBody()) {
-        next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
-        // Have a promise but the promised stream doesn't exist yet.
-        // Still have to do validation before accepting the promised
-        // stream for sure.
-        return ERR_IO_PENDING;
-      }
-      next_state_ = STATE_REQUEST_STREAM;
+      next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
+      return ERR_IO_PENDING;
   }
   return OK;
 }
@@ -211,11 +194,6 @@ int QuicHttpStream::DoHandlePromise() {
 int QuicHttpStream::DoHandlePromiseComplete(int rv) {
   if (rv != OK)
     return rv;
-
-  if (CancelPromiseIfHasBody()) {
-    next_state_ = STATE_REQUEST_STREAM;
-    return OK;
-  }
 
   next_state_ = STATE_OPEN;
   stream_net_log_.AddEvent(
@@ -258,6 +236,18 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
   if (request_body_stream_) {
+    // A request with a body is ineligible for push, so reset the
+    // promised stream and request a new stream.
+    if (found_promise_) {
+      found_promise_ = false;
+      std::string url(request_info_->url.spec());
+      QuicClientPromisedInfo* promised =
+          session_->push_promise_index()->GetPromised(url);
+      if (promised != nullptr) {
+        session_->ResetPromised(promised->id(), QUIC_STREAM_CANCELLED);
+      }
+    }
+
     // TODO(rch): Can we be more precise about when to allocate
     // raw_request_body_buf_. Removed the following check. DoReadRequestBody()
     // was being called even if we didn't yet allocate raw_request_body_buf_.
@@ -277,9 +267,6 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   int rv;
 
   if (found_promise_) {
-    // TODO(rch): If this request has a body, instead of waiting for the pushed
-    // headers to arrive before canceling the push we could cancel the pushed
-    // stream now and go straight to STATE_REQUEST_STREAM.
     next_state_ = STATE_HANDLE_PROMISE;
   } else {
     next_state_ = STATE_SET_REQUEST_PRIORITY;

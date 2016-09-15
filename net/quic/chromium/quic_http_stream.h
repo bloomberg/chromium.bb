@@ -134,7 +134,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void EnterStateSendHeaders();
 
   void ResetStream();
-  bool CancelPromiseIfHasBody();
 
   State next_state_;
 
