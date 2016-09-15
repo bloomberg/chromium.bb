@@ -159,8 +159,9 @@ X11SurfaceFactory::~X11SurfaceFactory() {}
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
   std::vector<gl::GLImplementation> impls;
-  impls.push_back(gl::kGLImplementationDesktopGL);
   impls.push_back(gl::kGLImplementationEGLGLES2);
+  // DesktopGL (GLX) should be the first option when crbug.com/646982 is fixed.
+  impls.push_back(gl::kGLImplementationDesktopGL);
   impls.push_back(gl::kGLImplementationOSMesaGL);
   return impls;
 }
