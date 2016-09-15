@@ -113,7 +113,7 @@ PluginsTest.prototype = {
   },
 };
 
-TEST_F('PluginsTest', 'Plugins', function() {
+TEST_F('PluginsTest', 'DISABLED_Plugins', function() {
   var browserProxy = this.browserProxy;
 
   var fakePluginData = {
