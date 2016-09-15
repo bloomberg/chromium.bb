@@ -1,32 +1,30 @@
-<!doctype html>
-<script src="../resources/js-test.js"></script>
-<script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
-<body>
- <div id="host1"></div>
- <div id="host2"></div>
- <div id="host3"></div>
-</body>
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<div id='host1'></div>
+<div id='host2'></div>
+<div id='host3'></div>
 <script>
-debug('Attach open shadow root.');
-var host1 = document.querySelector('#host1');
-shouldBeNonNull("host1.attachShadow({mode: 'open'})");
+'use strict';
 
-debug('Attach closed shadow root.');
-var host2 = document.querySelector('#host2');
-shouldBeNonNull("host2.attachShadow({mode: 'closed'})");
+test(() => {
+    let root1 = host1.attachShadow({mode: 'open'});
+    assert_not_equals(root1, null, 'Attach open shadow root should succeed.');
+    assert_equals(Object.getPrototypeOf(root1), ShadowRoot.prototype,
+        'ShadowRoot object should be returned by attachShadow({mode:"open"}).');
 
-debug('Attach shadow root whose mode is neither open nor closed.');
-var host4 = document.querySelector('#host3');
-shouldThrow("host4.attachShadow({mode: 'illegal'})");
+    let root2 = host2.attachShadow({mode: 'closed'});
+    assert_not_equals(root2, null, 'Attach closed shadow root should succeed.');
+    assert_equals(Object.getPrototypeOf(root2), ShadowRoot.prototype,
+        'ShadowRoot object should be returned by attachShadow({mode:"closed"}).');
 
-debug('Attach open shadow root with shadow-dom.js utility.');
-document.body.appendChild(
-    createDOM('div', {id: 'host5'},
-        attachShadow({mode: 'open'})));
-var host5 = document.querySelector('#host5');
-var root5 = host5.shadowRoot;
-shouldBeNonNull(root5);
+    assert_throws({name: 'TypeError'}, () => { host3.attachShadow({mode: 'illegal'}); },
+        'Attach shadow root whose mode is neither open nor closed should throw TypeError.');
 
-debug('Attach shadow root on already shadowed host will raise InvalidStateError exception.');
-shouldThrow("host1.attachShadow({mode: 'open'})");
+    assert_throws({name: 'InvalidStateError'}, () => { host1.attachShadow({mode: 'open'}); },
+        'Attach shadow on a host which has open shadow root will raise InvalidStateError exception.');
+    assert_throws({name: 'InvalidStateError'}, () => { host2.attachShadow({mode: 'open'}); },
+        'Attach shadow on a host wich has closed shadow root will raise InvalidStateError exception.');
+}, 'Test for Element.attachShadow() with mode parameter.');
 </script>
