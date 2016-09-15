@@ -10,16 +10,15 @@
 
 namespace base {
 class FilePath;
-class SequencedWorkerPool;
+class TaskRunner;
 }
 
 // A CrashUploadList that retrieves the list of uploaded reports from the
 // Crashpad database.
 class CrashUploadListCrashpad : public CrashUploadList {
  public:
-  CrashUploadListCrashpad(
-      Delegate* delegate,
-      const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
+  CrashUploadListCrashpad(Delegate* delegate,
+                          scoped_refptr<base::TaskRunner> task_runner);
 
  protected:
   ~CrashUploadListCrashpad() override;

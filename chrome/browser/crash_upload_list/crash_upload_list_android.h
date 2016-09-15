@@ -10,17 +10,16 @@
 
 namespace base {
 class FilePath;
-class SequencedWorkerPool;
+class TaskRunner;
 }
 
 // A CrashUploadList that retrieves the list of uploaded reports from the
 // Android crash reporter.
 class CrashUploadListAndroid : public CrashUploadList {
  public:
-  CrashUploadListAndroid(
-      Delegate* delegate,
-      const base::FilePath& upload_log_path,
-      const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
+  CrashUploadListAndroid(Delegate* delegate,
+                         const base::FilePath& upload_log_path,
+                         scoped_refptr<base::TaskRunner> task_runner);
 
  protected:
   ~CrashUploadListAndroid() override;

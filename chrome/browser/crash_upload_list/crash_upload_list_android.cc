@@ -4,17 +4,19 @@
 
 #include "chrome/browser/crash_upload_list/crash_upload_list_android.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_runner.h"
 #include "ui/base/text/bytes_formatting.h"
 
 CrashUploadListAndroid::CrashUploadListAndroid(
     Delegate* delegate,
     const base::FilePath& upload_log_path,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
-    : CrashUploadList(delegate, upload_log_path, worker_pool) {}
+    scoped_refptr<base::TaskRunner> task_runner)
+    : CrashUploadList(delegate, upload_log_path, std::move(task_runner)) {}
 
 CrashUploadListAndroid::~CrashUploadListAndroid() {}
 

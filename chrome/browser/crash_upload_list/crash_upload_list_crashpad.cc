@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
-#include "base/threading/sequenced_worker_pool.h"
+#include <utility>
+
+#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -80,8 +82,8 @@ UploadList::UploadInfo::State ReportUploadStateToUploadInfoState(
 
 CrashUploadListCrashpad::CrashUploadListCrashpad(
     Delegate* delegate,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
-    : CrashUploadList(delegate, base::FilePath(), worker_pool) {}
+    scoped_refptr<base::TaskRunner> task_runner)
+    : CrashUploadList(delegate, base::FilePath(), std::move(task_runner)) {}
 
 CrashUploadListCrashpad::~CrashUploadListCrashpad() {}
 

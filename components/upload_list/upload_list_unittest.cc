@@ -11,11 +11,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,12 +31,14 @@ const char kTestCaptureTime[] = "2345678901";
 class UploadListTest : public testing::Test,
                        public UploadList::Delegate {
  public:
-  UploadListTest() : worker_pool_owner_(1, "UploadListTest") {}
+  UploadListTest() : worker_thread_("UploadListTest") {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(worker_thread_.Start());
   }
 
+ protected:
   void WriteUploadLog(const std::string& log_data) {
     ASSERT_GT(base::WriteFile(log_path(), log_data.c_str(),
                               static_cast<int>(log_data.size())),
@@ -53,9 +57,10 @@ class UploadListTest : public testing::Test,
     quit_closure_.Run();
   }
 
-  const scoped_refptr<base::SequencedWorkerPool> worker_pool() {
-    return worker_pool_owner_.pool();
+  scoped_refptr<base::TaskRunner> task_runner() const {
+    return worker_thread_.task_runner();
   }
+
   base::FilePath log_path() {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("uploads.log"));
   }
@@ -63,8 +68,10 @@ class UploadListTest : public testing::Test,
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  base::Thread worker_thread_;
   base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(UploadListTest);
 };
 
 // These tests test that UploadList can parse a vector of log entry strings of
@@ -80,7 +87,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadId) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -108,7 +115,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalId) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -137,7 +144,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdCaptureTime) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -165,7 +172,7 @@ TEST_F(UploadListTest, ParseLocalIdCaptureTime) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -197,7 +204,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -229,7 +236,7 @@ TEST_F(UploadListTest, ParseMultipleEntries) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -266,7 +273,7 @@ TEST_F(UploadListTest, ParseWithState) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   upload_list->LoadUploadListAsynchronously();
   WaitForUploadList();
@@ -298,7 +305,7 @@ TEST_F(UploadListTest, SimultaneousAccess) {
   WriteUploadLog(test_entry);
 
   scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), worker_pool());
+      new UploadList(this, log_path(), task_runner());
 
   // Queue up a bunch of loads, waiting only for the first one to complete.
   // Clearing the delegate prevents the QuitClosure from being Run more than

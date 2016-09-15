@@ -4,17 +4,17 @@
 
 #include "components/upload_list/crash_upload_list.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
 
 // static
 const char CrashUploadList::kReporterLogFilename[] = "uploads.log";
 
-CrashUploadList::CrashUploadList(
-    Delegate* delegate,
-    const base::FilePath& upload_log_path,
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
-    : UploadList(delegate, upload_log_path, worker_pool) {}
+CrashUploadList::CrashUploadList(Delegate* delegate,
+                                 const base::FilePath& upload_log_path,
+                                 scoped_refptr<base::TaskRunner> task_runner)
+    : UploadList(delegate, upload_log_path, std::move(task_runner)) {}
 
-CrashUploadList::~CrashUploadList() {}
+CrashUploadList::~CrashUploadList() = default;
