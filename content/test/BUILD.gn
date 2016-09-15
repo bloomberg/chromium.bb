@@ -1099,6 +1099,7 @@ test("content_unittests") {
     "../browser/memory/memory_monitor_win_unittest.cc",
     "../browser/memory/test_memory_monitor.cc",
     "../browser/memory/test_memory_monitor.h",
+    "../browser/mojo/merge_dictionary_unittest.cc",
     "../browser/net/quota_policy_cookie_store_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/notification_database_data_unittest.cc",
