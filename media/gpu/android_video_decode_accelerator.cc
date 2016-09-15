@@ -1571,7 +1571,9 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
       MediaCodecUtil::IsVp8DecoderAvailable()) {
     SupportedProfile profile;
     profile.profile = VP8PROFILE_ANY;
-    profile.min_resolution.SetSize(0, 0);
+    // Since there is little to no power benefit below 360p, don't advertise
+    // support for it.  Let libvpx decode it, and save a MediaCodec instance.
+    profile.min_resolution.SetSize(480, 360);
     profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
     // internal software decoder instead. It's more up to date and secured
@@ -1585,7 +1587,8 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
 
   if (MediaCodecUtil::IsVp9DecoderAvailable()) {
     SupportedProfile profile;
-    profile.min_resolution.SetSize(0, 0);
+    // Limit to 360p, like we do for vp8.  See above.
+    profile.min_resolution.SetSize(480, 360);
     profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
     // internal software decoder instead. It's more up to date and secured
