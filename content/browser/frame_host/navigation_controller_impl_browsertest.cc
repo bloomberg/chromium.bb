@@ -576,14 +576,24 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   const GURL page_url = embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html");
 
-  // Use data scheme first so that the next page will be loaded
+  // Use a chrome:// url first so that the next page will be loaded
   // in a separate site instance.
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  GURL initial_url(std::string(kChromeUIScheme) +
+                   url::kStandardSchemeSeparator + kChromeUIGpuHost);
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
+  int initial_renderer_id =
+      shell()->web_contents()->GetRenderProcessHost()->GetID();
 
   // Now navigate and replace the current entry.
   RendererLocationReplace(shell(), page_url);
+
+  // Verify that process swap actually occured.
+  EXPECT_NE(initial_renderer_id,
+            shell()->web_contents()->GetRenderProcessHost()->GetID());
+
+  // The navigation entry should have been replaced.
   EXPECT_EQ(1, controller.GetEntryCount());
 
   // Page ID should be updated.
