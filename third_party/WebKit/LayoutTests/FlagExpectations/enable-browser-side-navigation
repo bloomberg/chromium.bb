@@ -25,12 +25,6 @@
   plugins/iframe-plugin-bgcolor.html [ Crash ]
   plugins/plugin-document-back-forward.html [ Crash ]
 
-# Failing due to ctrl+click doesn't work on same site navigation.
-  editing/pasteboard/paste-when-over-link.html [ Failure ]
-  fast/events/isolated-worlds-override-keystate.html [ Failure ]
-  fast/events/main-world-does-not-override-keystate.html [ Failure ]
-  fast/events/simulated-click-on-anchor-with-target-blank.html [ Failure ]
-
 # https://crbug.com/608375: PlzNavigate: Appcache support
   http/tests/appcache/fallback.html [ Timeout ]
   http/tests/appcache/main-resource-hash.html [ Crash Timeout ]

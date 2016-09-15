@@ -5115,8 +5115,13 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (IsBrowserSideNavigationEnabled() &&
       info.urlRequest.checkForBrowserSideNavigation() &&
       ShouldMakeNetworkRequestForURL(url)) {
-    BeginNavigation(info);
-    return blink::WebNavigationPolicyHandledByClient;
+    if (info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
+      BeginNavigation(info);
+      return blink::WebNavigationPolicyHandledByClient;
+    } else {
+      LoadURLExternally(info.urlRequest, info.defaultPolicy);
+      return blink::WebNavigationPolicyIgnore;
+    }
   }
 
   return info.defaultPolicy;
