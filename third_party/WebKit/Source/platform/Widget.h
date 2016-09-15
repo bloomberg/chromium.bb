@@ -59,8 +59,8 @@ public:
     IntSize size() const { return frameRect().size(); }
     IntPoint location() const { return frameRect().location(); }
 
-    virtual void setFrameRect(const IntRect& frame) { m_frame = frame; }
-    const IntRect& frameRect() const { return m_frame; }
+    virtual void setFrameRect(const IntRect& frameRect) { m_frameRect = frameRect; }
+    const IntRect& frameRect() const { return m_frameRect; }
     IntRect boundsRect() const { return IntRect(0, 0, width(),  height()); }
 
     void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
@@ -124,7 +124,7 @@ public:
 
 private:
     Member<Widget> m_parent;
-    IntRect m_frame;
+    IntRect m_frameRect;
     bool m_selfVisible;
     bool m_parentVisible;
 };
