@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_web_dialog_sheet.h"
 
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -12,6 +13,7 @@
 - (id)initWithCustomWindow:(NSWindow*)customWindow
          webDialogDelegate:(ui::WebDialogDelegate*)delegate {
   if (self = [super initWithCustomWindow:customWindow]) {
+    current_size_ = ui::kWindowSizeDeterminedLater.size;
     web_dialog_delegate_ = delegate;
   }
 
@@ -33,6 +35,7 @@
 }
 
 - (void)resizeWithNewSize:(NSSize)size {
+  DCHECK(size.height > 0 && size.width > 0);
   current_size_ = size;
   [customWindow_ setContentSize:current_size_];
 
