@@ -74,8 +74,6 @@ std::vector<uint8_t> EncodeImagePng(const gfx::ImageSkia image) {
 ArcWallpaperService::ArcWallpaperService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->wallpaper()->AddObserver(this);
-  DCHECK(!ArcWallpaperService::instance());
-  ArcWallpaperService::set_instance(this);
 }
 
 ArcWallpaperService::~ArcWallpaperService() {
@@ -84,8 +82,6 @@ ArcWallpaperService::~ArcWallpaperService() {
   // call Cancel() even when there is no in-flight request.
   ImageDecoder::Cancel(this);
   arc_bridge_service()->wallpaper()->RemoveObserver(this);
-  DCHECK(ArcWallpaperService::instance() == this);
-  ArcWallpaperService::set_instance(nullptr);
 }
 
 void ArcWallpaperService::OnInstanceReady() {
@@ -114,16 +110,6 @@ void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&EncodeImagePng, wallpaper), callback);
-}
-
-void ArcWallpaperService::SetWallpaperJpeg(
-    const std::vector<uint8_t>& jpeg_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If there is an in-flight request, cancel it. It is safe to call Cancel()
-  // even when there is no in-flight request.
-  ImageDecoder::Cancel(this);
-  ImageDecoder::StartWithOptions(this, std::move(jpeg_data),
-                                 ImageDecoder::ROBUST_JPEG_CODEC, true);
 }
 
 void ArcWallpaperService::OnImageDecoded(const SkBitmap& bitmap) {

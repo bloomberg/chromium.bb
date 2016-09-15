@@ -17,7 +17,6 @@
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
-#include "components/arc/set_wallpaper_delegate.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 
@@ -28,10 +27,6 @@ namespace {
 constexpr char kArcIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
 
 }  // namespace
-
-// TODO(muyuanli): This will be removed once SetWallpaperDelegate class is
-// removed.
-SetWallpaperDelegate* SetWallpaperDelegate::instance_ = nullptr;
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(
     ArcBridgeService* bridge_service,
@@ -88,14 +83,10 @@ void ArcIntentHelperBridge::OpenWallpaperPicker() {
   ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
 }
 
-void ArcIntentHelperBridge::SetWallpaper(mojo::Array<uint8_t> jpeg_data) {
+void ArcIntentHelperBridge::SetWallpaperDeprecated(
+    mojo::Array<uint8_t> jpeg_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SetWallpaperDelegate* delegate = SetWallpaperDelegate::instance();
-  if (delegate == nullptr) {
-    LOG(ERROR) << "SetWallpaperDelegate is not available.";
-    return;
-  }
-  delegate->SetWallpaperJpeg(jpeg_data.PassStorage());
+  LOG(ERROR) << "IntentHelper.SetWallpaper is deprecated";
 }
 
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(

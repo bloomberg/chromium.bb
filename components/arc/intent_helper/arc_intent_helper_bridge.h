@@ -63,7 +63,7 @@ class ArcIntentHelperBridge
   void OnOpenDownloads() override;
   void OnOpenUrl(const mojo::String& url) override;
   void OpenWallpaperPicker() override;
-  void SetWallpaper(mojo::Array<uint8_t> jpeg_data) override;
+  void SetWallpaperDeprecated(mojo::Array<uint8_t> jpeg_data) override;
 
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;

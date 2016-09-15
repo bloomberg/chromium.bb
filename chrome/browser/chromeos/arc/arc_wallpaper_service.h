@@ -16,7 +16,6 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/wallpaper.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "components/arc/set_wallpaper_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class SkBitmap;
@@ -26,7 +25,6 @@ namespace arc {
 // Lives on the UI thread.
 class ArcWallpaperService
     : public ArcService,
-      public SetWallpaperDelegate,
       public ImageDecoder::ImageRequest,
       public InstanceHolder<mojom::WallpaperInstance>::Observer,
       public mojom::WallpaperHost {
@@ -43,8 +41,6 @@ class ArcWallpaperService
   void SetWallpaper(mojo::Array<uint8_t> png_data) override;
   void GetWallpaper(const GetWallpaperCallback& callback) override;
 
-  // SetWallpaperDelegate implementation.
-  void SetWallpaperJpeg(const std::vector<uint8_t>& jpeg_data) override;
   // ImageDecoder::ImageRequest implementation.
   void OnImageDecoded(const SkBitmap& bitmap) override;
   void OnDecodeImageFailed() override;

@@ -57,7 +57,6 @@ static_library("arc") {
     "obb_mounter/arc_obb_mounter_bridge.h",
     "power/arc_power_bridge.cc",
     "power/arc_power_bridge.h",
-    "set_wallpaper_delegate.h",
     "storage_manager/arc_storage_manager.cc",
     "storage_manager/arc_storage_manager.h",
     "user_data/arc_user_data_service.cc",

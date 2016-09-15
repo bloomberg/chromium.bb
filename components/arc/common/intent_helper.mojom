@@ -71,6 +71,7 @@ struct UrlWithMimeType {
 };
 
 // Handles intents from ARC in Chrome.
+// Deprecated method ID: 4
 // Next method ID: 6
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
@@ -91,7 +92,7 @@ interface IntentHelperHost {
 
   // Sets an image as the wallpaper.
   // |jpeg_data| is a JPEG encoded wallpaper image.
-  [MinVersion=8] SetWallpaper@4(array<uint8> jpeg_data);
+  [MinVersion=8] SetWallpaperDeprecated@4(array<uint8> jpeg_data);
 };
 
 // Sends intents to ARC on behalf of Chrome.
