@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/sequence_token.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -110,7 +111,9 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   }
 
   bool RunsTasksOnCurrentThread() const override {
-    return tls_current_worker_pool.Get().Get() == worker_pool_;
+    // TODO(fdoray): Rename TaskRunner::RunsTaskOnCurrentThread() to something
+    // that reflects this behavior more accurately. crbug.com/646905
+    return sequence_->token() == SequenceToken::GetForCurrentThread();
   }
 
  private:

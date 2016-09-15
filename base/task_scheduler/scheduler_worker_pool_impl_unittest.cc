@@ -327,6 +327,31 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
   task_ran.Wait();
 }
 
+// Verify that the RunsTasksOnCurrentThread() method of a SEQUENCED TaskRunner
+// returns false when called from a task that isn't part of the sequence.
+TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksOnCurrentThread) {
+  scoped_refptr<TaskRunner> task_runner(
+      worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam()));
+  scoped_refptr<TaskRunner> sequenced_task_runner(
+      worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(),
+                                               ExecutionMode::SEQUENCED));
+
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
+  task_runner->PostTask(
+      FROM_HERE,
+      Bind(
+          [](scoped_refptr<TaskRunner> sequenced_task_runner,
+             WaitableEvent* task_ran) {
+            EXPECT_FALSE(sequenced_task_runner->RunsTasksOnCurrentThread());
+            // Tests that use TestTaskFactory already verify that
+            // RunsTasksOnCurrentThread() returns true when appropriate.
+            task_ran->Signal();
+          },
+          sequenced_task_runner, Unretained(&task_ran)));
+  task_ran.Wait();
+}
+
 INSTANTIATE_TEST_CASE_P(Parallel,
                         TaskSchedulerWorkerPoolImplTest,
                         ::testing::Values(ExecutionMode::PARALLEL));
