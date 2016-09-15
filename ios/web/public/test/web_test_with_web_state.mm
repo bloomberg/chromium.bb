@@ -71,10 +71,10 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     return web_controller.loadPhase == PAGE_LOADED;
   });
 
-  // Wait until scripts execution becomes possible.
-  base::test::ios::WaitUntilCondition(^bool {
-    return [ExecuteJavaScript(@"0;") isEqual:@0];
-  });
+  // Reload the page if script execution is not possible.
+  if (![ExecuteJavaScript(@"0;") isEqual:@0]) {
+    LoadHtml(html, url);
+  }
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html) {
