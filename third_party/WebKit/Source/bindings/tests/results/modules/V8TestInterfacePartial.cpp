@@ -354,16 +354,16 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-    TestInterfacePartial3Implementation::unscopeableVoidMethod(*impl);
+    TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
 }
 
-static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
+    TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
 }
 
 static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -392,7 +392,7 @@ static void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInf
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"partialVoidTestEnumModulesArgMethod", TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"unscopeableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"unscopableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
@@ -448,13 +448,13 @@ void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Co
     V8TestInterface::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
     v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
-    v8::Local<v8::Object> unscopeables;
+    v8::Local<v8::Object> unscopables;
     if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
-        unscopeables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+        unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
     else
-        unscopeables = v8::Object::New(isolate);
-    unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
-    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopeables).FromJust();
+        unscopables = v8::Object::New(isolate);
+    unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
+    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
 }
 
 void V8TestInterfacePartial::initialize()

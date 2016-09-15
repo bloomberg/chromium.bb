@@ -1,7 +1,7 @@
 {% extends 'interface_base.cpp' %}
 
 {% set has_prepare_prototype_and_interface_object =
-    unscopeables or has_conditional_attributes_on_prototype or
+    unscopables or has_conditional_attributes_on_prototype or
     methods | conditionally_exposed(is_partial) %}
 {% set prepare_prototype_and_interface_object_func =
     '%s::preparePrototypeAndInterfaceObject' % v8_class
@@ -926,8 +926,8 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     v8::Isolate* isolate = context->GetIsolate();
-{% if unscopeables %}
-    {{install_unscopeables() | indent}}
+{% if unscopables %}
+    {{install_unscopables() | indent}}
 {% endif %}
 {% if has_conditional_attributes_on_prototype %}
     {{install_conditionally_enabled_attributes_on_prototype() | indent}}
@@ -942,19 +942,19 @@ void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
 
 
 {##############################################################################}
-{% macro install_unscopeables() %}
+{% macro install_unscopables() %}
 v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
-v8::Local<v8::Object> unscopeables;
+v8::Local<v8::Object> unscopables;
 if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
-    unscopeables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+    unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
 else
-    unscopeables = v8::Object::New(isolate);
-{% for name, runtime_enabled_function in unscopeables %}
+    unscopables = v8::Object::New(isolate);
+{% for name, runtime_enabled_function in unscopables %}
 {% filter runtime_enabled(runtime_enabled_function) %}
-unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
+unscopables->CreateDataProperty(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
 {% endfilter %}
 {% endfor %}
-prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopeables).FromJust();
+prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
 {% endmacro %}
 
 

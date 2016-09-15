@@ -2569,14 +2569,14 @@ bool Internals::isCSSPropertyUseCounted(Document* document, const String& proper
     return UseCounter::isCounted(*document, propertyName);
 }
 
-String Internals::unscopeableAttribute()
+String Internals::unscopableAttribute()
 {
-    return "unscopeableAttribute";
+    return "unscopableAttribute";
 }
 
-String Internals::unscopeableMethod()
+String Internals::unscopableMethod()
 {
-    return "unscopeableMethod";
+    return "unscopableMethod";
 }
 
 ClientRectList* Internals::focusRingRects(Element* element)

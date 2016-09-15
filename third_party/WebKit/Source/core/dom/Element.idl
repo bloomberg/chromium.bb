@@ -84,7 +84,7 @@ interface Element : Node {
     [RuntimeEnabled=ShadowDOMV1, RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     NodeList getDestinationInsertionPoints();
     [PerWorldBindings, ImplementedAs=openShadowRoot] readonly attribute ShadowRoot? shadowRoot;
-    [RuntimeEnabled=ShadowDOMV1, Unscopeable, CEReactions, Reflect] attribute DOMString slot;
+    [RuntimeEnabled=ShadowDOMV1, Unscopable, CEReactions, Reflect] attribute DOMString slot;
     [RuntimeEnabled=ShadowDOMV1, ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement assignedSlot;
 
     // Pointer Lock

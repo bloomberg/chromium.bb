@@ -330,8 +330,8 @@
 
     iterable<long>;
 
-    [Unscopeable] readonly attribute DOMString unscopeableAttribute;
-    [Unscopeable] DOMString unscopeableMethod();
+    [Unscopable] readonly attribute DOMString unscopableAttribute;
+    [Unscopable] DOMString unscopableMethod();
 
     ClientRectList focusRingRects(Element element);
     ClientRectList outlineRects(Element element);

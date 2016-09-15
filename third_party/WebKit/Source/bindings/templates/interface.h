@@ -157,7 +157,7 @@ public:
        * a C++ pointer to the DOM object (if the object is not in oilpan) #}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {# End custom internal fields #}
-    {% if unscopeables or has_conditional_attributes_on_prototype or
+    {% if unscopables or has_conditional_attributes_on_prototype or
           methods | conditionally_exposed(is_partial) %}
     {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
     {% endif %}

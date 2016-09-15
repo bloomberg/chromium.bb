@@ -28,7 +28,7 @@ public:
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     {% endif %}
     {% endfor %}
-    {% if unscopeables or has_conditional_attributes_on_prototype or
+    {% if unscopables or has_conditional_attributes_on_prototype or
           methods | conditionally_exposed(is_partial) %}
     static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
     {% endif %}

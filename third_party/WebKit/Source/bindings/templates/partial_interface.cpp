@@ -1,7 +1,7 @@
 {% extends 'interface_base.cpp' %}
 
 {% set has_prepare_prototype_and_interface_object =
-    unscopeables or has_conditional_attributes_on_prototype or
+    unscopables or has_conditional_attributes_on_prototype or
     methods | conditionally_exposed(is_partial) %}
 {% set prepare_prototype_and_interface_object_func =
     '%s::preparePrototypeAndInterfaceObject' % v8_class_or_partial
@@ -11,7 +11,7 @@
 
 {##############################################################################}
 {% block prepare_prototype_and_interface_object %}
-{% from 'interface.cpp' import install_unscopeables with context %}
+{% from 'interface.cpp' import install_unscopables with context %}
 {% from 'interface.cpp' import install_conditionally_enabled_attributes_on_prototype with context %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods
         with context %}
@@ -21,8 +21,8 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
 #error No one is currently using a partial interface with context-dependent properties.  If you\'re planning to use it, please consult with the binding team: <blink-reviews-bindings@chromium.org>
     {{v8_class}}::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
     v8::Isolate* isolate = context->GetIsolate();
-{% if unscopeables %}
-    {{install_unscopeables() | indent}}
+{% if unscopables %}
+    {{install_unscopables() | indent}}
 {% endif %}
 {% if has_conditional_attributes_on_prototype %}
     {{install_conditionally_enabled_attributes_on_prototype() | indent}}

@@ -261,11 +261,11 @@ interface TestObject {
     [Measure] attribute long measuredLongAttribute;
     [SameObject] readonly attribute TestInterface sameObjectAttribute;
     [SameObject, SaveSameObject] readonly attribute TestInterface saveSameObjectAttribute;
-    [Unscopeable] attribute long unscopeableLongAttribute;
-    [Unscopeable, OriginTrialEnabled=FeatureName] attribute long unscopeableOriginTrialEnabledLongAttribute;
-    [Unscopeable, RuntimeEnabled=FeatureName] attribute long unscopeableRuntimeEnabledLongAttribute;
-    [Unscopeable] void unscopeableVoidMethod();
-    [Unscopeable, RuntimeEnabled=FeatureName] void unscopeableRuntimeEnabledVoidMethod();
+    [Unscopable] attribute long unscopableLongAttribute;
+    [Unscopable, OriginTrialEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
+    [Unscopable, RuntimeEnabled=FeatureName] attribute long unscopableRuntimeEnabledLongAttribute;
+    [Unscopable] void unscopableVoidMethod();
+    [Unscopable, RuntimeEnabled=FeatureName] void unscopableRuntimeEnabledVoidMethod();
 
 
     // Methods

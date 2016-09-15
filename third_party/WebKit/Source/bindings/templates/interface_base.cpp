@@ -12,7 +12,7 @@ namespace blink {
 {% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class
                            if has_visit_dom_wrapper else '0' %}
 {% set has_prepare_prototype_and_interface_object =
-    unscopeables or has_conditional_attributes_on_prototype or
+    unscopables or has_conditional_attributes_on_prototype or
     methods | conditionally_exposed(is_partial) %}
 {% set prepare_prototype_and_interface_object_func =
     '%s::preparePrototypeAndInterfaceObject' % v8_class

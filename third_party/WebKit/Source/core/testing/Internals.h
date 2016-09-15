@@ -374,8 +374,8 @@ public:
     bool isUseCounted(Document*, int useCounterId);
     bool isCSSPropertyUseCounted(Document*, const String&);
 
-    String unscopeableAttribute();
-    String unscopeableMethod();
+    String unscopableAttribute();
+    String unscopableMethod();
 
     ClientRectList* focusRingRects(Element*);
     ClientRectList* outlineRects(Element*);

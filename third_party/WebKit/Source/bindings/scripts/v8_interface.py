@@ -295,14 +295,14 @@ def interface_context(interface):
         raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
                         '%s' % interface.name)
 
-    # [Unscopeable] attributes and methods
-    unscopeables = []
+    # [Unscopable] attributes and methods
+    unscopables = []
     for attribute in interface.attributes:
-        if 'Unscopeable' in attribute.extended_attributes:
-            unscopeables.append((attribute.name, v8_utilities.runtime_enabled_function_name(attribute)))
+        if 'Unscopable' in attribute.extended_attributes:
+            unscopables.append((attribute.name, v8_utilities.runtime_enabled_function_name(attribute)))
     for method in interface.operations:
-        if 'Unscopeable' in method.extended_attributes:
-            unscopeables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
+        if 'Unscopable' in method.extended_attributes:
+            unscopables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
 
     # [CEReactions]
     setter_or_deleters = (
@@ -323,7 +323,7 @@ def interface_context(interface):
             interface_length(constructors + custom_constructors),
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'named_constructor': named_constructor,
-        'unscopeables': sorted(unscopeables),
+        'unscopables': sorted(unscopables),
     })
 
     # Constants

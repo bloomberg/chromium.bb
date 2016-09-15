@@ -478,9 +478,9 @@ By default, interface members are configurable (i.e. you can modify a property d
 
 Implementation: **Non-standard**: `[Unforgeable]` for attributes has an unspeced side-effect that it makes the property data-type property (`{writable: ..., value: ...}`) although it must be accessor-type property (`{get: ..., set: ...}`). ([Bug 497616](https://crbug.co/497616))
 
-### [Unscopeable] _(o, a)_
+### [Unscopable] _(o, a)_
 
-Standard: [Unscopeable](http://heycam.github.io/webidl/#Unscopeable)
+Standard: [Unscopable](http://heycam.github.io/webidl/#Unscopable)
 
 Summary: The interface member will not appear as a named property within `with` statements.
 

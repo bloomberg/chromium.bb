@@ -15,7 +15,7 @@ test(function () {
     assert_true('Symbol' in window);
     var unscopables = Object.getPrototypeOf(node)[Symbol.unscopables];
     assert_true(unscopables.prepend);
-}, 'ChildNode.prepend() unscopeable');
+}, 'ChildNode.prepend() unscopable');
 
 function test_prepend(node, nodeName) {
 

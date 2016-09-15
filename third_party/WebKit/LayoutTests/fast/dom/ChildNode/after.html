@@ -15,7 +15,7 @@ test(function () {
     assert_true('Symbol' in window);
     var unscopables = Object.getPrototypeOf(child)[Symbol.unscopables];
     assert_true(unscopables.after);
-}, 'ChildNode.after() unscopeable');
+}, 'ChildNode.after() unscopable');
 
 function test_after(nodeName) {
     var child;

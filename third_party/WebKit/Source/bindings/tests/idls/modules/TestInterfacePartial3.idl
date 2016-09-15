@@ -44,5 +44,5 @@
     void partialVoidTestEnumModulesArgMethod(TestEnumModules arg);
     static void partial2StaticVoidMethod(DOMString value);
 
-    [Unscopeable] void unscopeableVoidMethod();
+    [Unscopable] void unscopableVoidMethod();
 };
