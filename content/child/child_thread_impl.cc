@@ -570,11 +570,11 @@ void ChildThreadImpl::Init(const Options& options) {
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
 
-  ConnectChannel(options.use_mojo_channel);
-
   channel_->AddAssociatedInterface(
       base::Bind(&ChildThreadImpl::OnRouteProviderRequest,
                  base::Unretained(this)));
+
+  ConnectChannel(options.use_mojo_channel);
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.

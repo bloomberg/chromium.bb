@@ -164,13 +164,17 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
       base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;
 
   // Adds a generic associated interface factory to bind incoming interface
-  // requests directly on the IO thread. MUST be called before Init().
+  // requests directly on the IO thread. MUST be called either before Init() or
+  // before the remote end of the Channel is able to send messages (e.g. before
+  // its process is launched.)
   void AddGenericAssociatedInterfaceForIOThread(
       const std::string& name,
       const GenericAssociatedInterfaceFactory& factory);
 
   // Adds a generic associated interface factory to bind incoming interface
-  // requests on the ChannelProxy's thread. MUST be called before Init().
+  // requests on the ChannelProxy's thread. MUST be called before Init() or
+  // before the remote end of the Channel is able to send messages (e.g. before
+  // its process is launched.)
   void AddGenericAssociatedInterface(
       const std::string& name,
       const GenericAssociatedInterfaceFactory& factory);

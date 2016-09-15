@@ -408,8 +408,8 @@ void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
   }
   Channel::AssociatedInterfaceSupport* support =
       channel_->GetAssociatedInterfaceSupport();
-  DCHECK(support);
-  support->AddGenericAssociatedInterface(name, factory);
+  if (support)
+    support->AddGenericAssociatedInterface(name, factory);
 }
 
 void ChannelProxy::Context::SendFromThisThread(Message* message) {
