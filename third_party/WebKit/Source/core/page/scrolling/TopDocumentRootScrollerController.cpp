@@ -12,7 +12,9 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -21,14 +23,14 @@ namespace blink {
 
 // static
 TopDocumentRootScrollerController* TopDocumentRootScrollerController::create(
-    Document& document)
+    FrameHost& host)
 {
-    return new TopDocumentRootScrollerController(document);
+    return new TopDocumentRootScrollerController(host);
 }
 
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(
-    Document& document)
-    : RootScrollerController(document)
+    FrameHost& host)
+: m_frameHost(&host)
 {
 }
 
@@ -36,17 +38,22 @@ DEFINE_TRACE(TopDocumentRootScrollerController)
 {
     visitor->trace(m_viewportApplyScroll);
     visitor->trace(m_globalRootScroller);
-    RootScrollerController::trace(visitor);
+    visitor->trace(m_frameHost);
 }
 
-void TopDocumentRootScrollerController::globalRootScrollerMayHaveChanged()
+void TopDocumentRootScrollerController::didChangeRootScroller()
 {
-    updateGlobalRootScroller();
+    recomputeGlobalRootScroller();
 }
 
 Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement()
 {
-    Element* element = effectiveRootScroller();
+    if (!topDocument())
+        return nullptr;
+
+    DCHECK(topDocument()->rootScrollerController());
+    Element* element =
+        topDocument()->rootScrollerController()->effectiveRootScroller();
 
     while (element && element->isFrameOwnerElement()) {
         HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(element);
@@ -64,15 +71,17 @@ Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement()
     return element;
 }
 
-void TopDocumentRootScrollerController::updateGlobalRootScroller()
+void TopDocumentRootScrollerController::recomputeGlobalRootScroller()
 {
-    Element* target = findGlobalRootScrollerElement();
+    if (!m_viewportApplyScroll)
+        return;
 
-    if (!m_viewportApplyScroll || !target)
+    Element* target = findGlobalRootScrollerElement();
+    if (!target)
         return;
 
     ScrollableArea* targetScroller =
-        scrollableAreaFor(*target);
+        RootScrollerUtil::scrollableAreaFor(*target);
 
     if (!targetScroller)
         return;
@@ -106,6 +115,18 @@ void TopDocumentRootScrollerController::updateGlobalRootScroller()
     m_viewportApplyScroll->setScroller(targetScroller);
 }
 
+Document* TopDocumentRootScrollerController::topDocument() const
+{
+    if (!m_frameHost)
+        return nullptr;
+
+    if (!m_frameHost->page().mainFrame()
+        || !m_frameHost->page().mainFrame()->isLocalFrame())
+        return nullptr;
+
+    return toLocalFrame(m_frameHost->page().mainFrame())->document();
+}
+
 void TopDocumentRootScrollerController
     ::setNeedsCompositingInputsUpdateOnGlobalRootScroller()
 {
@@ -126,30 +147,23 @@ void TopDocumentRootScrollerController
 
 void TopDocumentRootScrollerController::didUpdateCompositing()
 {
-    RootScrollerController::didUpdateCompositing();
-
-    // Let the compositor-side counterpart know about this change.
-    if (FrameHost* frameHost = m_document->frameHost())
-        frameHost->chromeClient().registerViewportLayers();
-}
-
-void TopDocumentRootScrollerController::didAttachDocument()
-{
-    FrameHost* frameHost = m_document->frameHost();
-    FrameView* frameView = m_document->view();
-
-    if (!frameHost || !frameView)
+    if (!m_frameHost)
         return;
 
-    RootFrameViewport* rootFrameViewport = frameView->getRootFrameViewport();
-    DCHECK(rootFrameViewport);
+    // Let the compositor-side counterpart know about this change.
+    m_frameHost->chromeClient().registerViewportLayers();
+}
 
+void TopDocumentRootScrollerController::initializeViewportScrollCallback(
+    RootFrameViewport& rootFrameViewport)
+{
+    DCHECK(m_frameHost);
     m_viewportApplyScroll = ViewportScrollCallback::create(
-        &frameHost->topControls(),
-        &frameHost->overscrollController(),
-        *rootFrameViewport);
+        &m_frameHost->topControls(),
+        &m_frameHost->overscrollController(),
+        rootFrameViewport);
 
-    updateGlobalRootScroller();
+    recomputeGlobalRootScroller();
 }
 
 bool TopDocumentRootScrollerController::isViewportScrollCallback(
@@ -161,12 +175,13 @@ bool TopDocumentRootScrollerController::isViewportScrollCallback(
     return callback == m_viewportApplyScroll.get();
 }
 
-GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer()
+GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const
 {
     if (!m_globalRootScroller)
         return nullptr;
 
-    ScrollableArea* area = scrollableAreaFor(*m_globalRootScroller);
+    ScrollableArea* area =
+        RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller);
 
     if (!area)
         return nullptr;

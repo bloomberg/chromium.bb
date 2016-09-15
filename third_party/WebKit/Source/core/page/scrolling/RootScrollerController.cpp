@@ -11,6 +11,8 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/page/scrolling/RootScrollerUtil.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -86,10 +88,6 @@ void RootScrollerController::didUpdateLayout()
     recomputeEffectiveRootScroller();
 }
 
-void RootScrollerController::globalRootScrollerMayHaveChanged()
-{
-}
-
 void RootScrollerController::recomputeEffectiveRootScroller()
 {
     bool rootScrollerValid =
@@ -119,27 +117,8 @@ void RootScrollerController::recomputeEffectiveRootScroller()
             ->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
     }
 
-    m_document->topDocument().rootScrollerController()
-        ->globalRootScrollerMayHaveChanged();
-}
-
-ScrollableArea* RootScrollerController::scrollableAreaFor(
-    const Element& element) const
-{
-    if (!element.layoutObject() || !element.layoutObject()->isBox())
-        return nullptr;
-
-    LayoutBox* box = toLayoutBox(element.layoutObject());
-
-    // For a FrameView, we use the layoutViewport rather than the
-    // getScrollableArea() since that could be the RootFrameViewport. The
-    // rootScroller's ScrollableArea will be swapped in as the layout viewport
-    // in RootFrameViewport so we need to ensure we get the layout viewport.
-    if (box->isDocumentElement())
-        return element.document().view()->layoutViewportScrollableArea();
-
-    return static_cast<PaintInvalidationCapableScrollableArea*>(
-        box->getScrollableArea());
+    if (FrameHost* frameHost = m_document->frameHost())
+        frameHost->globalRootScrollerController().didChangeRootScroller();
 }
 
 bool RootScrollerController::isValidRootScroller(const Element& element) const
@@ -147,46 +126,13 @@ bool RootScrollerController::isValidRootScroller(const Element& element) const
     if (!element.layoutObject())
         return false;
 
-    if (!scrollableAreaFor(element))
+    if (!RootScrollerUtil::scrollableAreaFor(element))
         return false;
 
     if (!fillsViewport(element))
         return false;
 
     return true;
-}
-
-void RootScrollerController::didUpdateCompositing()
-{
-}
-
-void RootScrollerController::didAttachDocument()
-{
-}
-
-GraphicsLayer* RootScrollerController::rootScrollerLayer()
-{
-    NOTREACHED();
-    return nullptr;
-}
-
-bool RootScrollerController::isViewportScrollCallback(
-    const ScrollStateCallback* callback) const
-{
-    // TopDocumentRootScrollerController must override this method to actually
-    // do the comparison.
-    DCHECK(!m_document->isInMainFrame());
-
-    // If we don't have a local owner we must be in a remote iframe.
-    // RootScrollerController doesn't yet work in OOPIF and in any case we have
-    // no way to get at the ViewportScrollCallback so just return false.
-    // TODO(bokan): Make document.rootScroller work in OOPIF. crbug.com/642378.
-    if (!m_document->localOwner())
-        return false;
-
-    RootScrollerController* topDocumentController =
-        m_document->topDocument().rootScrollerController();
-    return topDocumentController->isViewportScrollCallback(callback);
 }
 
 PaintLayer* RootScrollerController::rootScrollerPaintLayer() const

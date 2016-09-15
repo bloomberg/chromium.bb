@@ -536,8 +536,8 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     Element* container =
         iframe->contentDocument()->getElementById("container");
 
-    RootScrollerController* mainController =
-        mainFrame()->document()->rootScrollerController();
+    const TopDocumentRootScrollerController& mainController =
+        mainFrame()->document()->frameHost()->globalRootScrollerController();
 
     NonThrowableExceptionState nonThrow;
 
@@ -545,9 +545,9 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
     // and the main FrameView's scroll layer should be the layer to use.
     {
         EXPECT_EQ(
-            mainController->rootScrollerLayer(),
+            mainController.rootScrollerLayer(),
             mainFrameView()->layerForScrolling());
-        EXPECT_TRUE(mainController->isViewportScrollCallback(
+        EXPECT_TRUE(mainController.isViewportScrollCallback(
             mainFrame()->document()->documentElement()->getApplyScroll()));
     }
 
@@ -559,9 +559,9 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
         mainFrameView()->updateAllLifecyclePhases();
 
         EXPECT_EQ(
-            mainController->rootScrollerLayer(),
+            mainController.rootScrollerLayer(),
             mainFrameView()->layerForScrolling());
-        EXPECT_TRUE(mainController->isViewportScrollCallback(
+        EXPECT_TRUE(mainController.isViewportScrollCallback(
             mainFrame()->document()->documentElement()->getApplyScroll()));
     }
 
@@ -577,11 +577,11 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
                 toLayoutBox(container->layoutObject())->getScrollableArea());
 
         EXPECT_EQ(
-            mainController->rootScrollerLayer(),
+            mainController.rootScrollerLayer(),
             containerScroller->layerForScrolling());
-        EXPECT_FALSE(mainController->isViewportScrollCallback(
+        EXPECT_FALSE(mainController.isViewportScrollCallback(
             mainFrame()->document()->documentElement()->getApplyScroll()));
-        EXPECT_TRUE(mainController->isViewportScrollCallback(
+        EXPECT_TRUE(mainController.isViewportScrollCallback(
             container->getApplyScroll()));
     }
 
@@ -592,13 +592,13 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
         iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
         mainFrameView()->updateAllLifecyclePhases();
         EXPECT_EQ(
-            mainController->rootScrollerLayer(),
+            mainController.rootScrollerLayer(),
             iframe->contentDocument()->view()->layerForScrolling());
-        EXPECT_FALSE(mainController->isViewportScrollCallback(
+        EXPECT_FALSE(mainController.isViewportScrollCallback(
             container->getApplyScroll()));
-        EXPECT_FALSE(mainController->isViewportScrollCallback(
+        EXPECT_FALSE(mainController.isViewportScrollCallback(
             mainFrame()->document()->documentElement()->getApplyScroll()));
-        EXPECT_TRUE(mainController->isViewportScrollCallback(
+        EXPECT_TRUE(mainController.isViewportScrollCallback(
             iframe->contentDocument()->documentElement()->getApplyScroll()));
     }
 
@@ -608,13 +608,13 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
         mainFrame()->document()->setRootScroller(nullptr, nonThrow);
         mainFrameView()->updateAllLifecyclePhases();
         EXPECT_EQ(
-            mainController->rootScrollerLayer(),
+            mainController.rootScrollerLayer(),
             mainFrameView()->layerForScrolling());
-        EXPECT_TRUE(mainController->isViewportScrollCallback(
+        EXPECT_TRUE(mainController.isViewportScrollCallback(
             mainFrame()->document()->documentElement()->getApplyScroll()));
-        EXPECT_FALSE(mainController->isViewportScrollCallback(
+        EXPECT_FALSE(mainController.isViewportScrollCallback(
             container->getApplyScroll()));
-        EXPECT_FALSE(mainController->isViewportScrollCallback(
+        EXPECT_FALSE(mainController.isViewportScrollCallback(
             iframe->contentDocument()->documentElement()->getApplyScroll()));
     }
 }
@@ -768,9 +768,6 @@ TEST_F(RootScrollerTest, RemoteMainFrame)
 // of the global root scroller have their masking bit removed.
 TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
 {
-    // TODO(bokan): Remove casts to TDRSC once follow-up patch lands separating TDRSC
-    // from RootScrollerController.
-
     initialize("root-scroller-iframe.html");
 
     HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
@@ -782,6 +779,8 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
         mainFrame()->document()->rootScrollerController();
     RootScrollerController* childController =
         iframe->contentDocument()->rootScrollerController();
+    TopDocumentRootScrollerController& globalController =
+        frameHost().globalRootScrollerController();
 
     PaintLayerCompositor* mainCompositor =
         mainFrameView()->layoutViewItem().compositor();
@@ -846,8 +845,7 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
             childController->effectiveRootScroller());
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
-            ((TopDocumentRootScrollerController*)mainController)
-                ->globalRootScroller());
+            globalController.globalRootScroller());
 
         EXPECT_FALSE(mainCompositor->rootContentLayer()->platformLayer()
             ->masksToBounds());
@@ -879,8 +877,7 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
             childController->effectiveRootScroller());
         ASSERT_EQ(mainFrame()->document()->documentElement(),
-            ((TopDocumentRootScrollerController*)mainController)
-                ->globalRootScroller());
+            globalController.globalRootScroller());
 
         EXPECT_TRUE(mainCompositor->rootContentLayer()->platformLayer()
             ->masksToBounds());
@@ -909,8 +906,7 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
             childController->effectiveRootScroller());
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
-            ((TopDocumentRootScrollerController*)mainController)
-                ->globalRootScroller());
+            globalController.globalRootScroller());
 
         EXPECT_FALSE(mainCompositor->rootContentLayer()->platformLayer()
             ->masksToBounds());

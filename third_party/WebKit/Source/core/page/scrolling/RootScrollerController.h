@@ -28,9 +28,9 @@ class ScrollStateCallback;
 // scroller this will be nullptr. The "effective" root scroller is the current
 // element we're using internally to apply viewport scrolling actions.  The
 // effective root scroller will only be null during document initialization.
-// Both these elements are from this controller's associated Document. The final
-// "global" root scroller, the one whose scrolling hides top controls, may be in
-// a different frame.
+// Both these elements come from this controller's associated Document. The
+// final "global" root scroller, the one whose scrolling hides top controls,
+// may be in a different frame.
 //
 // If the currently set m_rootScroller is a valid element to become the root
 // scroller, it will be promoted to the effective root scroller. If it is not
@@ -41,12 +41,11 @@ class ScrollStateCallback;
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
 public:
-    // Creates a RootScrollerController for the given document. Note, instances
-    // of this class need to be made aware of lifecycle events, see the
-    // didUpdateLayout, didUpdateCompositing, etc. type methods below.
+    // Creates a RootScrollerController for the given document. Note: instances
+    // of this class need to be made aware of layout updates.
     static RootScrollerController* create(Document&);
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE();
 
     // Sets the element that will be used as the root scroller. This can be
     // nullptr, in which case we'll use the default element (documentElement) as
@@ -71,41 +70,13 @@ public:
     // replaced by the defualt root scroller.
     void didUpdateLayout();
 
-    // This class needs to be informed of changes to compositing so that it can
-    // update the compositor when the effective root scroller changes.
-    virtual void didUpdateCompositing();
-
-    // This class needs to be informed when the document has been attached to a
-    // FrameView so that we can initialize the viewport scroll callback.
-    virtual void didAttachDocument();
-
-    // Returns the GraphicsLayer for the current effective root scroller
-    // element.
-    virtual GraphicsLayer* rootScrollerLayer();
-
-    // Returns true if the given ScrollStateCallback is the
-    // ViewportScrollCallback managed by this class.
-    // TODO(bokan): Temporarily needed to allow ScrollCustomization to
-    // differentiate between real custom callback and the built-in viewport
-    // apply scroll. crbug.com/623079.
-    virtual bool isViewportScrollCallback(const ScrollStateCallback*) const;
-
+    // Returns the PaintLayer associated with the currently effective root
+    // scroller.
     PaintLayer* rootScrollerPaintLayer() const;
 
-protected:
+private:
     RootScrollerController(Document&);
 
-    // Called when the root scroller of any descendant frames changes. This
-    // will only ever be called on the top document's RootScrollerController.
-    virtual void globalRootScrollerMayHaveChanged();
-
-    // Returns the ScrollableArea to use to scroll the given Element.
-    ScrollableArea* scrollableAreaFor(const Element&) const;
-
-    // The owning Document whose root scroller this object manages.
-    WeakMember<Document> m_document;
-
-private:
     // Ensures the effective root scroller is currently valid and replaces it
     // with the default if not.
     void recomputeEffectiveRootScroller();
@@ -117,6 +88,9 @@ private:
     // Returns the Element that should be used if the currently set
     // m_rootScroller isn't valid to be a root scroller.
     Element* defaultEffectiveRootScroller();
+
+    // The owning Document whose root scroller this object manages.
+    WeakMember<Document> m_document;
 
     // The Element that was set from script as rootScroller for this Document.
     // Depending on its validity to be the root scroller (e.g. a display: none

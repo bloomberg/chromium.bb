@@ -87,7 +87,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/page/scrolling/RootScrollerController.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -4223,7 +4223,7 @@ void WebViewImpl::registerViewportLayersWithCompositor()
 
     // Get the outer viewport scroll layer.
     GraphicsLayer* layoutViewportScrollLayer =
-        document->rootScrollerController()->rootScrollerLayer();
+        page()->frameHost().globalRootScrollerController().rootScrollerLayer();
     WebLayer* layoutViewportWebLayer = layoutViewportScrollLayer
         ? layoutViewportScrollLayer->platformLayer()
         : nullptr;

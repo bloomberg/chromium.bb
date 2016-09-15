@@ -253,7 +253,6 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal()
             scrollableArea->updateCompositorScrollAnimations();
     }
 
-    m_layoutView.document().rootScrollerController()->didUpdateCompositing();
 #if ENABLE(ASSERT)
     ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     assertNoUnresolvedDirtyBits();
@@ -475,15 +474,12 @@ void PaintLayerCompositor::updateClippingOnCompositorLayers()
             !RuntimeEnabledFeatures::rootLayerScrollingEnabled() && shouldClip);
     }
 
-    // TODO(bokan): Temporary hack-cast to TDRSC until the follow-up patch
-    // lands and we can get a pointer to a TopDocumentRootScrollerController
-    // legitimately.
-    TopDocumentRootScrollerController* globalRootScrollerController =
-        (TopDocumentRootScrollerController*)m_layoutView.document().topDocument().rootScrollerController();
+    const TopDocumentRootScrollerController& globalRootScrollerController =
+        m_layoutView.document().frameHost()->globalRootScrollerController();
 
     Element* documentElement = m_layoutView.document().documentElement();
     bool frameIsRootScroller = documentElement && documentElement->isSameNode(
-        globalRootScrollerController->globalRootScroller());
+        globalRootScrollerController.globalRootScroller());
 
     // We normally clip iframes' (but not the root frame) overflow controls
     // host and container layers but if the root scroller is the iframe itself

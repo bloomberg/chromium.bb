@@ -50,6 +50,7 @@ struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class Settings;
 class TopControls;
+class TopDocumentRootScrollerController;
 class UseCounter;
 class Visitor;
 class VisualViewport;
@@ -113,6 +114,8 @@ public:
     ConsoleMessageStorage& consoleMessageStorage();
     const ConsoleMessageStorage& consoleMessageStorage() const;
 
+    TopDocumentRootScrollerController& globalRootScrollerController() const;
+
     DECLARE_TRACE();
 
     // Don't allow more than a certain number of frames in a page.
@@ -137,6 +140,7 @@ private:
     const Member<OverscrollController> m_overscrollController;
     const Member<EventHandlerRegistry> m_eventHandlerRegistry;
     const Member<ConsoleMessageStorage> m_consoleMessageStorage;
+    const Member<TopDocumentRootScrollerController> m_globalRootScrollerController;
 
     AtomicString m_overrideEncoding;
     int m_subframeCount;

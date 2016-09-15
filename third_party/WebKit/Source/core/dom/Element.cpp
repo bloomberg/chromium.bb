@@ -129,6 +129,7 @@
 #include "core/page/scrolling/ScrollCustomizationCallbacks.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGAElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -536,7 +537,7 @@ void Element::callDistributeScroll(ScrollState& scrollState)
     // allow the viewport scroll callback so we don't disable overscroll.
     // crbug.com/623079.
     bool disableCustomCallbacks = !scrollState.isDirectManipulation()
-        && !document().rootScrollerController()->isViewportScrollCallback(callback);
+        && !document().frameHost()->globalRootScrollerController().isViewportScrollCallback(callback);
 
     if (!callback || disableCustomCallbacks) {
         nativeDistributeScroll(scrollState);
@@ -614,7 +615,7 @@ void Element::callApplyScroll(ScrollState& scrollState)
     // allow the viewport scroll callback so we don't disable overscroll.
     // crbug.com/623079.
     bool disableCustomCallbacks = !scrollState.isDirectManipulation()
-        && !document().rootScrollerController()->isViewportScrollCallback(callback);
+        && !document().frameHost()->globalRootScrollerController().isViewportScrollCallback(callback);
 
     if (!callback || disableCustomCallbacks) {
         nativeApplyScroll(scrollState);

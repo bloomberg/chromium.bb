@@ -491,11 +491,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = ResourceFetcher::create(nullptr);
     }
 
-    // TODO(bokan): This will probably blow up if we don't have an m_frame here
-    // since we'll assume a child RootScrollerController. crbug.com/505516.
-    m_rootScrollerController = isInMainFrame()
-        ? TopDocumentRootScrollerController::create(*this)
-        : RootScrollerController::create(*this);
+    m_rootScrollerController = RootScrollerController::create(*this);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
@@ -2164,9 +2160,6 @@ void Document::initialize()
 
     if (view())
         view()->didAttachDocument();
-
-    // Needs to be called after view()->didAttachDocument().
-    m_rootScrollerController->didAttachDocument();
 }
 
 void Document::shutdown()

@@ -82,8 +82,8 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PrePaintTreeWalk.h"
@@ -2435,6 +2435,9 @@ void FrameView::didAttachDocument()
         RootFrameViewport* rootFrameViewport =
             RootFrameViewport::create(visualViewport, *layoutViewport);
         m_viewportScrollableArea = rootFrameViewport;
+
+        frameHost->globalRootScrollerController()
+            .initializeViewportScrollCallback(*rootFrameViewport);
     }
 }
 
@@ -2630,6 +2633,8 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
             scrollContentsIfNeededRecursive();
 
             DCHECK(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+
+            m_frame->host()->globalRootScrollerController().didUpdateCompositing();
 
             if (targetState >= DocumentLifecycle::PrePaintClean) {
                 if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())

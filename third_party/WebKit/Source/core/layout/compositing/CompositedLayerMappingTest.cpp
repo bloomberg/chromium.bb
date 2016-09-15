@@ -653,10 +653,8 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
 {
     NonThrowableExceptionState nonThrow;
 
-    // TODO(bokan): Avoid cast once follow-up patch separates TDRSC from
-    // RootScrollerController.
-    TopDocumentRootScrollerController* rootScrollerController =
-        (TopDocumentRootScrollerController*)document().rootScrollerController();
+    TopDocumentRootScrollerController& rootScrollerController =
+        document().frameHost()->globalRootScrollerController();
 
     setBodyInnerHTML(
         // The container DIV is composited with scrolling contents and a
@@ -732,7 +730,7 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
     {
         document().setRootScroller(innerScroller, nonThrow);
         document().view()->updateAllLifecyclePhases();
-        ASSERT_EQ(innerScroller, rootScrollerController->globalRootScroller());
+        ASSERT_EQ(innerScroller, rootScrollerController.globalRootScroller());
 
         EXPECT_FALSE(mapping->ancestorClippingLayer());
         EXPECT_FALSE(mapping->scrollingLayer()->platformLayer()->masksToBounds());
@@ -744,7 +742,7 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
     {
         document().setRootScroller(innerScroller2, nonThrow);
         document().view()->updateAllLifecyclePhases();
-        ASSERT_EQ(innerScroller2, rootScrollerController->globalRootScroller());
+        ASSERT_EQ(innerScroller2, rootScrollerController.globalRootScroller());
 
         EXPECT_TRUE(mapping->ancestorClippingLayer());
         EXPECT_TRUE(mapping->ancestorClippingLayer()->platformLayer()->masksToBounds());
@@ -758,7 +756,7 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
     {
         document().setRootScroller(innerScroller3, nonThrow);
         document().view()->updateAllLifecyclePhases();
-        ASSERT_EQ(innerScroller3, rootScrollerController->globalRootScroller());
+        ASSERT_EQ(innerScroller3, rootScrollerController.globalRootScroller());
 
         EXPECT_TRUE(mapping2->scrollingLayer()->platformLayer()->masksToBounds());
 
@@ -770,7 +768,7 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
     {
         document().setRootScroller(nullptr, nonThrow);
         document().view()->updateAllLifecyclePhases();
-        ASSERT_EQ(document().documentElement(), rootScrollerController->globalRootScroller());
+        ASSERT_EQ(document().documentElement(), rootScrollerController.globalRootScroller());
 
         EXPECT_TRUE(mapping3->clippingLayer());
         EXPECT_TRUE(mapping3->clippingLayer()->platformLayer()->masksToBounds());

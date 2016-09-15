@@ -57,6 +57,8 @@ blink_core_sources("page") {
     "scrolling/OverscrollController.h",
     "scrolling/RootScrollerController.cpp",
     "scrolling/RootScrollerController.h",
+    "scrolling/RootScrollerUtil.cpp",
+    "scrolling/RootScrollerUtil.h",
     "scrolling/ScrollCustomizationCallbacks.cpp",
     "scrolling/ScrollCustomizationCallbacks.h",
     "scrolling/ScrollState.cpp",
