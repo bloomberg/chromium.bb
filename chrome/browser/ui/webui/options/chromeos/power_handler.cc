@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
@@ -24,9 +25,11 @@ namespace chromeos {
 namespace options {
 
 PowerHandler::PowerHandler() {
-  this->show_power_status_ = switches::PowerOverlayEnabled() ||
-                             (PowerStatus::Get()->IsBatteryPresent() &&
-                              PowerStatus::Get()->SupportsDualRoleDevices());
+  // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
+  this->show_power_status_ = !chrome::IsRunningInMash() &&
+                             (switches::PowerOverlayEnabled() ||
+                              (PowerStatus::Get()->IsBatteryPresent() &&
+                               PowerStatus::Get()->SupportsDualRoleDevices()));
 }
 
 PowerHandler::~PowerHandler() {

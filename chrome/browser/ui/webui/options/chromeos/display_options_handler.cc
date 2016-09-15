@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/user_metrics.h"
@@ -191,14 +192,15 @@ base::DictionaryValue* ConvertBoundsToValue(const gfx::Rect& bounds) {
 }  // namespace
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
-  // ash::Shell doesn't exist in Athena.
-  // See: http://crbug.com/416961
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
+  if (!chrome::IsRunningInMash())
+    ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
-  // ash::Shell doesn't exist in Athena.
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
+  if (!chrome::IsRunningInMash())
+    ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
@@ -373,6 +375,10 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 }
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
+  // TODO(mash) Support Chrome display settings in Mash. crbug.com/548429
+  if (chrome::IsRunningInMash())
+    return;
+
   ash::DisplayManager* display_manager = GetDisplayManager();
   bool disable_multi_display_layout =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
