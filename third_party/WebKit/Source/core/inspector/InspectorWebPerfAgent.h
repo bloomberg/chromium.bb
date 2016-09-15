@@ -14,7 +14,6 @@ namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
-class Location;
 class InspectedFrames;
 
 // Inspector Agent for Web Performance APIs
@@ -23,7 +22,6 @@ class CORE_EXPORT InspectorWebPerfAgent final
     , public WebThread::TaskObserver
     , public scheduler::TaskTimeObserver {
     WTF_MAKE_NONCOPYABLE(InspectorWebPerfAgent);
-    friend class InspectorWebPerfAgentTest;
 public:
     explicit InspectorWebPerfAgent(InspectedFrames*);
     ~InspectorWebPerfAgent();
@@ -41,7 +39,6 @@ public:
 
 private:
     Member<InspectedFrames> m_inspectedFrames;
-    HeapHashSet<Member<Location>> m_frameContextLocations;
 };
 
 } // namespace blink
