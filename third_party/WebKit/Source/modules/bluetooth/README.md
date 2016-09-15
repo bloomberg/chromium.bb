@@ -5,6 +5,14 @@ Web Bluetooth
 
 [WB]: https://webbluetoothcg.github.io/web-bluetooth/
 
+Scanning
+--------------------------------------------------------------------------------
+There isn't much support for GATT over BR/EDR from neither platforms nor
+devices so performing a Dual scan will find devices that the API is not
+able to interact with. To avoid wasting power and confusing users with
+devices they are not able to interact with, navigator.bluetooth.requestDevice
+performs an LE-only Scan.
+
 Testing
 --------------------------------------------------------------------------------
 
