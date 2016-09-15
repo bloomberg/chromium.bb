@@ -248,6 +248,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // will be ignored.
   virtual void PrioritizeArcInstance(const ArcCallback& callback) = 0;
 
+  // Emits the "arc-booted" upstart signal.
+  virtual void EmitArcBooted() = 0;
+
   // Asynchronously retrieves the timestamp which ARC instance is invoked or
   // returns false if there is no ARC instance or ARC is not available.
   virtual void GetArcStartTime(const GetArcStartTimeCallback& callback) = 0;

@@ -194,6 +194,8 @@ void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
 void DeviceSettingsTestHelper::PrioritizeArcInstance(
     const ArcCallback& callback) {}
 
+void DeviceSettingsTestHelper::EmitArcBooted() {}
+
 void DeviceSettingsTestHelper::GetArcStartTime(
     const GetArcStartTimeCallback& callback) {}
 

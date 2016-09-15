@@ -179,6 +179,8 @@ void FakeSessionManagerClient::PrioritizeArcInstance(
       FROM_HERE, base::Bind(callback, arc_available_));
 }
 
+void FakeSessionManagerClient::EmitArcBooted() {}
+
 void FakeSessionManagerClient::GetArcStartTime(
     const GetArcStartTimeCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

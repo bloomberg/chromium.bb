@@ -49,6 +49,7 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->PrioritizeArcInstance(
       base::Bind(PrioritizeArcInstanceCallback));
+  session_manager_client->EmitArcBooted();
 }
 
 }  // namespace arc

@@ -344,6 +344,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    callback));
   }
 
+  void EmitArcBooted() override {
+    SimpleMethodCallToSessionManager(
+        login_manager::kSessionManagerEmitArcBooted);
+  }
+
   void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -897,6 +902,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   void PrioritizeArcInstance(const ArcCallback& callback) override {
     callback.Run(false);
   }
+
+  void EmitArcBooted() override {}
 
   void StopArcInstance(const ArcCallback& callback) override {
     callback.Run(false);
