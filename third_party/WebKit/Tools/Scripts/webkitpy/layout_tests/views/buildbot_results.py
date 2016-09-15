@@ -28,12 +28,9 @@
 
 
 from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationLine
 
 from webkitpy.common.net.layouttestresults import LayoutTestResults
-
-
-TestExpectations = test_expectations.TestExpectations
-TestExpectationParser = test_expectations.TestExpectationParser
 
 
 class BuildBotPrinter(object):
@@ -145,7 +142,7 @@ class BuildBotPrinter(object):
                     actual = result.actual_results().split(" ")
                     expected = result.expected_results().split(" ")
                     # FIXME: clean this up once the old syntax is gone
-                    new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp]
+                    new_expectations_list = [TestExpectationLine.inverted_expectation_tokens[exp]
                                              for exp in list(set(actual) | set(expected))]
                     self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
                 self._print("")
@@ -161,7 +158,7 @@ class BuildBotPrinter(object):
                     result = test_results.result_for_test(test)
                     actual = result.actual_results().split(" ")
                     expected = result.expected_results().split(" ")
-                    new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp] for exp in actual]
+                    new_expectations_list = [TestExpectationLine.inverted_expectation_tokens[exp] for exp in actual]
                     self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
                 self._print("")
 

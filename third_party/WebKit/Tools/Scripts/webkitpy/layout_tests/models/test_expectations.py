@@ -105,7 +105,7 @@ class TestExpectationParser(object):
         line_number = 0
         for line in expectations_string.split("\n"):
             line_number += 1
-            test_expectation = self._tokenize_line(filename, line, line_number)
+            test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number)
             self._parse_line(test_expectation)
             expectation_lines.append(test_expectation)
         return expectation_lines
@@ -128,7 +128,7 @@ class TestExpectationParser(object):
             _log.warning('The following test %s from the Skipped list doesn\'t exist', test_name)
         expectation_line = self._create_expectation_line(test_name, [TestExpectationParser.PASS_EXPECTATION], '<Skipped file>')
         expectation_line.expectations = [TestExpectationParser.SKIP_MODIFIER, TestExpectationParser.WONTFIX_MODIFIER]
-        expectation_line.is_skipped_outside_expectations_file = True
+        expectation_line.is_extra_skipped_test = True
         self._parse_line(expectation_line)
         return expectation_line
 
@@ -221,6 +221,62 @@ class TestExpectationParser(object):
         if expectation_line.path in self._all_tests:
             expectation_line.matching_tests.append(expectation_line.path)
 
+
+class TestExpectationLine(object):
+    """Represents a line in test expectations file."""
+
+    def __init__(self):
+        """Initializes a blank-line equivalent of an expectation."""
+        self.original_string = None
+        self.filename = None  # this is the path to the expectations file for this line
+        self.line_numbers = "0"
+        self.name = None  # this is the path in the line itself
+        self.path = None  # this is the normpath of self.name
+        self.bugs = []
+        self.specifiers = []
+        self.parsed_specifiers = []
+        self.matching_configurations = set()
+        self.expectations = []
+        self.parsed_expectations = set()
+        self.comment = None
+        self.matching_tests = []
+        self.warnings = []
+        self.is_extra_skipped_test = False
+
+    def __str__(self):
+        return "TestExpectationLine{name=%s, matching_configurations=%s, original_string=%s}" % (
+            self.name, self.matching_configurations, self.original_string)
+
+    def __eq__(self, other):
+        return (self.original_string == other.original_string
+                and self.filename == other.filename
+                and self.line_numbers == other.line_numbers
+                and self.name == other.name
+                and self.path == other.path
+                and self.bugs == other.bugs
+                and self.specifiers == other.specifiers
+                and self.parsed_specifiers == other.parsed_specifiers
+                and self.matching_configurations == other.matching_configurations
+                and self.expectations == other.expectations
+                and self.parsed_expectations == other.parsed_expectations
+                and self.comment == other.comment
+                and self.matching_tests == other.matching_tests
+                and self.warnings == other.warnings
+                and self.is_extra_skipped_test == other.is_extra_skipped_test)
+
+    def is_invalid(self):
+        return bool(self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING])
+
+    def is_flaky(self):
+        return len(self.parsed_expectations) > 1
+
+    def is_comment(self):
+        return bool(re.match(r"^\s*#.*$", self.original_string))
+
+    def is_whitespace(self):
+        return not self.original_string.strip()
+
+
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
     _configuration_tokens_list = [
         'Mac', 'Mac10.9', 'Mac10.10', 'Mac10.11', 'Retina',
@@ -250,13 +306,12 @@ class TestExpectationParser(object):
         'WontFix': 'WONTFIX',
     }
 
-    _inverted_expectation_tokens = dict(
+    inverted_expectation_tokens = dict(
         [(value, name) for name, value in _expectation_tokens.iteritems()] +
         [('TEXT', 'Failure'), ('IMAGE', 'Failure'), ('IMAGE+TEXT', 'Failure'), ('AUDIO', 'Failure')])
 
-    # FIXME: Seems like these should be classmethods on TestExpectationLine instead of TestExpectationParser.
     @classmethod
-    def _tokenize_line(cls, filename, expectation_string, line_number):
+    def tokenize_line(cls, filename, expectation_string, line_number):
         """Tokenizes a line from TestExpectations and returns an unparsed TestExpectationLine instance using the old format.
 
         The new format for a test expectation line is:
@@ -387,66 +442,6 @@ class TestExpectationParser(object):
         expectation_line.warnings = warnings
         return expectation_line
 
-    @classmethod
-    def _split_space_separated(cls, space_separated_string):
-        """Splits a space-separated string into an array."""
-        return [part.strip() for part in space_separated_string.strip().split(' ')]
-
-
-class TestExpectationLine(object):
-    """Represents a line in test expectations file."""
-
-    def __init__(self):
-        """Initializes a blank-line equivalent of an expectation."""
-        self.original_string = None
-        self.filename = None  # this is the path to the expectations file for this line
-        self.line_numbers = "0"
-        self.name = None  # this is the path in the line itself
-        self.path = None  # this is the normpath of self.name
-        self.bugs = []
-        self.specifiers = []
-        self.parsed_specifiers = []
-        self.matching_configurations = set()
-        self.expectations = []
-        self.parsed_expectations = set()
-        self.comment = None
-        self.matching_tests = []
-        self.warnings = []
-        self.is_skipped_outside_expectations_file = False
-
-    def __str__(self):
-        return "TestExpectationLine{name=%s, matching_configurations=%s, original_string=%s}" % (
-            self.name, self.matching_configurations, self.original_string)
-
-    def __eq__(self, other):
-        return (self.original_string == other.original_string
-                and self.filename == other.filename
-                and self.line_numbers == other.line_numbers
-                and self.name == other.name
-                and self.path == other.path
-                and self.bugs == other.bugs
-                and self.specifiers == other.specifiers
-                and self.parsed_specifiers == other.parsed_specifiers
-                and self.matching_configurations == other.matching_configurations
-                and self.expectations == other.expectations
-                and self.parsed_expectations == other.parsed_expectations
-                and self.comment == other.comment
-                and self.matching_tests == other.matching_tests
-                and self.warnings == other.warnings
-                and self.is_skipped_outside_expectations_file == other.is_skipped_outside_expectations_file)
-
-    def is_invalid(self):
-        return bool(self.warnings and self.warnings != [TestExpectationParser.MISSING_BUG_WARNING])
-
-    def is_flaky(self):
-        return len(self.parsed_expectations) > 1
-
-    def is_comment(self):
-        return bool(re.match(r"^\s*#.*$", self.original_string))
-
-    def is_whitespace(self):
-        return not self.original_string.strip()
-
     @staticmethod
     def create_passing_expectation(test):
         expectation_line = TestExpectationLine()
@@ -484,8 +479,7 @@ class TestExpectationLine(object):
         result.matching_configurations = set(line1.matching_configurations) | set(line2.matching_configurations)
         result.matching_tests = list(list(set(line1.matching_tests) | set(line2.matching_tests)))
         result.warnings = list(set(line1.warnings) | set(line2.warnings))
-        result.is_skipped_outside_expectations_file = (line1.is_skipped_outside_expectations_file or
-                                                       line2.is_skipped_outside_expectations_file)
+        result.is_extra_skipped_test = line1.is_extra_skipped_test or line2.is_extra_skipped_test
         return result
 
     def to_string(self, test_configuration_converter=None, include_specifiers=True,
@@ -538,19 +532,19 @@ class TestExpectationLine(object):
             return ['Slow']
         return expectations
 
-    @staticmethod
-    def _format_line(bugs, specifiers, name, expectations, comment, include_specifiers=True,
+    @classmethod
+    def _format_line(cls, bugs, specifiers, name, expectations, comment, include_specifiers=True,
                      include_expectations=True, include_comment=True):
         new_specifiers = []
         new_expectations = []
         for specifier in specifiers:
             # FIXME: Make this all work with the mixed-cased specifiers (e.g. WontFix, Slow, etc).
             specifier = specifier.upper()
-            new_specifiers.append(TestExpectationParser._inverted_configuration_tokens.get(specifier, specifier))
+            new_specifiers.append(cls._inverted_configuration_tokens.get(specifier, specifier))
 
         for expectation in expectations:
             expectation = expectation.upper()
-            new_expectations.append(TestExpectationParser._inverted_expectation_tokens.get(expectation, expectation))
+            new_expectations.append(cls.inverted_expectation_tokens.get(expectation, expectation))
 
         result = ''
         if include_specifiers and (bugs or new_specifiers):
@@ -671,7 +665,7 @@ class TestExpectationsModel(object):
         """Returns the expectations for the given test as an uppercase string.
         If there are no expectations for the test, then "PASS" is returned.
         """
-        if self.get_expectation_line(test).is_skipped_outside_expectations_file:
+        if self.get_expectation_line(test).is_extra_skipped_test:
             return 'NOTRUN'
 
         expectations = self.get_expectations(test)

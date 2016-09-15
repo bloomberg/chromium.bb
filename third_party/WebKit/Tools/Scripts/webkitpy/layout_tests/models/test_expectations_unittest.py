@@ -463,7 +463,7 @@ class ExpectationSyntaxTests(Base):
         expectations = expectations or []
         warnings = warnings or []
         line_number = '1'
-        expectation_line = TestExpectationParser._tokenize_line(filename, line, line_number)
+        expectation_line = TestExpectationLine.tokenize_line(filename, line, line_number)
         self.assertEqual(expectation_line.warnings, warnings)
         self.assertEqual(expectation_line.name, name)
         self.assertEqual(expectation_line.filename, filename)
@@ -904,7 +904,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         unittest.TestCase.__init__(self, testFunc)
 
     def _tokenize(self, line):
-        return TestExpectationParser._tokenize_line('path', line, 0)
+        return TestExpectationLine.tokenize_line('path', line, 0)
 
     def assert_round_trip(self, in_string, expected_string=None):
         expectation = self._tokenize(in_string)
