@@ -92,10 +92,6 @@ public:
 
     virtual void handleEvent(Event*) { }
 
-    // It is important for cross-platform code to realize that Mac has flipped coordinates. Therefore any code
-    // that tries to convert the location of a rect using the point-based convertFromRootFrame will end
-    // up with an inaccurate rect. Always make sure to use the rect-based convertFromRootFrame method
-    // when converting window rects.
     IntRect convertToRootFrame(const IntRect&) const;
     IntRect convertFromRootFrame(const IntRect&) const;
 
