@@ -2154,7 +2154,7 @@ public class ToolbarPhone extends ToolbarLayout
             updateNtpTransitionAnimation();
         }
 
-        if (inOrEnteringTabSwitcher) mNewTabButton.setIsIncognito(isIncognito);
+        mNewTabButton.setIsIncognito(isIncognito);
 
         CharSequence newTabContentDescription = getResources().getText(
                 isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab :
