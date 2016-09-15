@@ -1,31 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-.editing { 
-    font-size: 24px; 
-    width: 600px; 
-}
-</style>
-<title>Editing Test</title> 
-</head> 
-<body contenteditable id="root">
-<div id="test" class="editing">one two three</div><div>four five six</div>
-<script src="../../resources/dump-as-markup.js"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+test(() => {
+    assert_not_equals(window.testRunner, undefined,
+        'This test requires testRunner.');
 
-if (!window.testRunner)
-    document.write("(cannot run interactively)");
-else {
-    testRunner.dumpEditingCallbacks();
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>|one two three</div>',
+                '<div>four five six</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            testRunner.execCommand('deleteToEndOfParagraph');
+        },
+        [
+            '<div contenteditable>',
+                '<div>|<br></div><div>four five six</div>',
+            '</div>',
+        ].join(''),
+        '1 Delete a paragraph');
 
-    getSelection().collapse(document.getElementById('test'), 0);
-    // test for 4570218 by using double deleteToEndOfParagraph
-    testRunner.execCommand("DeleteToEndOfParagraph");
-    testRunner.execCommand("DeleteToEndOfParagraph");
-    Markup.dump('test');
-}
-
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>|<br></div>',
+                '<div>four five six</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            testRunner.execCommand('deleteToEndOfParagraph');
+        },
+        [
+            '<div contenteditable>',
+                '<div>|four five six</div>',
+            '</div>',
+        ].join(''),
+        '2 Delete an empty paragraph');
+    }, 'Delete to end of paragraph');
 </script>
-</body>
-</html>
