@@ -58,9 +58,9 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override;
-  void DidFailToInitializeOutputSurface() override;
+  void RequestNewCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink() override;
+  void DidFailToInitializeCompositorFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}
@@ -72,14 +72,14 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
   void DidAbortSwapBuffers() override {}
 
  private:
-  void HandlePendingOutputSurfaceRequest();
+  void HandlePendingCompositorFrameSinkRequest();
 
   CompositorDependencies* compositor_dependencies_;
 
   scoped_refptr<cc::ContextProvider> context_provider_;
 
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  bool output_surface_request_pending_;
+  bool compositor_frame_sink_request_pending_;
   std::unique_ptr<cc::Display> display_;
 
   gfx::Size viewport_size_in_px_;

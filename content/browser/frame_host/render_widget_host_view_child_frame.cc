@@ -43,7 +43,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       next_surface_sequence_(1u),
-      last_output_surface_id_(0),
+      last_compositor_frame_sink_id_(0),
       current_surface_scale_factor_(1.f),
       ack_pending_count_(0),
       frame_connector_(nullptr),
@@ -340,11 +340,12 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     frame_connector_->BubbleScrollEvent(event);
 }
 
-void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id) {
+void RenderWidgetHostViewChildFrame::SurfaceDrawn(
+    uint32_t compositor_frame_sink_id) {
   DCHECK_GT(ack_pending_count_, 0U);
   if (host_) {
     host_->Send(new ViewMsg_ReclaimCompositorResources(
-        host_->GetRoutingID(), output_surface_id, true /* is_swap_ack */,
+        host_->GetRoutingID(), compositor_frame_sink_id, true /* is_swap_ack */,
         surface_returned_resources_));
     surface_returned_resources_.clear();
   }
@@ -352,7 +353,7 @@ void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id) {
 }
 
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
@@ -370,15 +371,16 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
   // Check whether we need to recreate the cc::Surface, which means the child
   // frame renderer has changed its output surface, or size, or scale factor.
-  if (output_surface_id != last_output_surface_id_ && surface_factory_) {
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_ &&
+      surface_factory_) {
     surface_factory_->Destroy(surface_id_);
     surface_factory_.reset();
   }
-  if (output_surface_id != last_output_surface_id_ ||
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
       frame_size != current_surface_size_ ||
       scale_factor != current_surface_scale_factor_) {
     ClearCompositorSurfaceIfNecessary();
-    last_output_surface_id_ = output_surface_id;
+    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
     current_surface_size_ = frame_size;
     current_surface_scale_factor_ = scale_factor;
   }
@@ -404,7 +406,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
   cc::SurfaceFactory::DrawCallback ack_callback =
       base::Bind(&RenderWidgetHostViewChildFrame::SurfaceDrawn, AsWeakPtr(),
-                 output_surface_id);
+                 compositor_frame_sink_id);
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK_LT(ack_pending_count_, 1000U);
@@ -623,8 +625,8 @@ void RenderWidgetHostViewChildFrame::ReturnResources(
 
   if (!ack_pending_count_ && host_) {
     host_->Send(new ViewMsg_ReclaimCompositorResources(
-        host_->GetRoutingID(), last_output_surface_id_, false /* is_swap_ack */,
-        resources));
+        host_->GetRoutingID(), last_compositor_frame_sink_id_,
+        false /* is_swap_ack */, resources));
     return;
   }
 

@@ -49,12 +49,12 @@
       state.OnBeginImplFrameIdle();                                         \
   }
 
-#define SET_UP_STATE(state)                                         \
-  state.SetVisible(true);                                           \
-  EXPECT_ACTION_UPDATE_STATE(                                       \
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION); \
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);   \
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();      \
+#define SET_UP_STATE(state)                                                \
+  state.SetVisible(true);                                                  \
+  EXPECT_ACTION_UPDATE_STATE(                                              \
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION); \
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);          \
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();       \
   state.SetCanDraw(true);
 
 namespace cc {
@@ -81,9 +81,9 @@ class StateMachine : public SchedulerStateMachine {
       : SchedulerStateMachine(scheduler_settings),
         draw_result_for_test_(DRAW_SUCCESS) {}
 
-  void CreateAndInitializeOutputSurfaceWithActivatedCommit() {
-    DidCreateAndInitializeOutputSurface();
-    output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+  void CreateAndInitializeCompositorFrameSinkWithActivatedCommit() {
+    DidCreateAndInitializeCompositorFrameSink();
+    compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_ACTIVE;
   }
 
   void SetBeginMainFrameState(BeginMainFrameState cs) {
@@ -105,8 +105,8 @@ class StateMachine : public SchedulerStateMachine {
     return begin_impl_frame_state_;
   }
 
-  OutputSurfaceState output_surface_state() const {
-    return output_surface_state_;
+  CompositorFrameSinkState compositor_frame_sink_state() const {
+    return compositor_frame_sink_state_;
   }
 
   void SetNeedsBeginMainFrameForTest(bool needs_begin_main_frame) {
@@ -189,16 +189,16 @@ void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
       return;
     }
 
-    case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
-      sm->WillBeginOutputSurfaceCreation();
+    case SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION:
+      sm->WillBeginCompositorFrameSinkCreation();
       return;
 
     case SchedulerStateMachine::ACTION_PREPARE_TILES:
       sm->WillPrepareTiles();
       return;
 
-    case SchedulerStateMachine::ACTION_INVALIDATE_OUTPUT_SURFACE:
-      sm->WillInvalidateOutputSurface();
+    case SchedulerStateMachine::ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK:
+      sm->WillInvalidateCompositorFrameSink();
       return;
   }
 }
@@ -208,9 +208,9 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
 
@@ -261,9 +261,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     StateMachine state(default_scheduler_settings);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
     state.SetBeginMainFrameState(
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetNeedsRedraw(false);
@@ -305,9 +305,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetNeedsBeginMainFrame();
 
@@ -332,9 +332,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetNeedsBeginMainFrame();
     state.SetCanDraw(false);
@@ -720,9 +720,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetBeginImplFrameState(all_begin_impl_frame_states[j]);
       bool visible =
@@ -748,9 +748,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
     StateMachine state(default_scheduler_settings);
     state.SetVisible(true);
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+        SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+    state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
     state.SetCanDraw(true);
     state.SetBeginMainFrameState(begin_main_frame_states[i]);
     state.SetBeginImplFrameState(
@@ -787,9 +787,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameStatesRedrawWhenInvisible) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -823,9 +823,9 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
       StateMachine state(default_scheduler_settings);
       state.SetVisible(true);
       EXPECT_ACTION_UPDATE_STATE(
-          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+          SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
       EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-      state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+      state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -845,9 +845,9 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
 
   state.SetActiveTreeNeedsFirstDraw(true);
   state.SetNeedsBeginMainFrame();
@@ -1227,9 +1227,9 @@ TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.CouldSendBeginMainFrame());
@@ -1241,36 +1241,36 @@ TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenBeginFrameSourcePaused) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetBeginFrameSourcePaused(true);
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.CouldSendBeginMainFrame());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, TestNoRequestOutputSurfaceWhenInvisible) {
+TEST(SchedulerStateMachineTest, TestNoRequestCompositorFrameSinkWhenInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  // We should not request an OutputSurface when we are still invisible.
+  // We should not request an CompositorFrameSink when we are still invisible.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetVisible(false);
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 }
 
 // See ProxyMain::BeginMainFrame "EarlyOut_NotVisible" /
-// "EarlyOut_OutputSurfaceLost" cases.
+// "EarlyOut_CompositorFrameSinkLost" cases.
 TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
@@ -1329,9 +1329,9 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.DidCreateAndInitializeOutputSurface();
+  state.DidCreateAndInitializeCompositorFrameSink();
   state.SetCanDraw(true);
 
   // Get into a begin frame / commit state.
@@ -1379,8 +1379,8 @@ TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
   state.SetCanDraw(true);
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Check that the first init does not SetNeedsBeginMainFrame.
@@ -1401,19 +1401,19 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
             state.NextAction());
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Once context recreation begins, nothing should happen.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Recreate the context.
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
 
   // When the context is recreated, we should begin a commit.
   state.OnBeginImplFrame();
@@ -1427,14 +1427,14 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
             state.NextAction());
-  state.DidLoseOutputSurface();
-  EXPECT_EQ(state.output_surface_state(),
-            SchedulerStateMachine::OUTPUT_SURFACE_NONE);
+  state.DidLoseCompositorFrameSink();
+  EXPECT_EQ(state.compositor_frame_sink_state(),
+            SchedulerStateMachine::COMPOSITOR_FRAME_SINK_NONE);
 
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Once context recreation begins, nothing should happen.
@@ -1451,9 +1451,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Recreate the context
-  state.DidCreateAndInitializeOutputSurface();
-  EXPECT_EQ(state.output_surface_state(),
-            SchedulerStateMachine::OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT);
+  state.DidCreateAndInitializeCompositorFrameSink();
+  EXPECT_EQ(
+      state.compositor_frame_sink_state(),
+      SchedulerStateMachine::COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
   EXPECT_FALSE(state.RedrawPending());
 
   // When the context is recreated, we wait until the next BeginImplFrame
@@ -1475,15 +1476,16 @@ TEST(SchedulerStateMachineTest,
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_EQ(state.output_surface_state(),
-            SchedulerStateMachine::OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION);
+  EXPECT_EQ(state.compositor_frame_sink_state(),
+            SchedulerStateMachine::
+                COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION);
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_EQ(state.output_surface_state(),
-            SchedulerStateMachine::OUTPUT_SURFACE_ACTIVE);
+  EXPECT_EQ(state.compositor_frame_sink_state(),
+            SchedulerStateMachine::COMPOSITOR_FRAME_SINK_ACTIVE);
 
-  // Finishing the first commit after initializing an output surface should
+  // Finishing the first commit after initializing an CompositorFrameSink should
   // automatically cause a redraw.
   EXPECT_TRUE(state.RedrawPending());
   state.OnBeginImplFrame();
@@ -1562,7 +1564,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Cause a lost context while the BeginMainFrame is in flight.
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
   // Ask for another draw. Expect nothing happens.
   state.SetNeedsRedraw(true);
@@ -1575,14 +1577,15 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
 
-  // We will abort the draw when the output surface is lost if we are
+  // We will abort the draw when the CompositorFrameSink is lost if we are
   // waiting for the first draw to unblock the main thread.
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
 
   // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION(
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 
   state.OnBeginImplFrame();
   EXPECT_IMPL_FRAME_STATE(
@@ -1619,7 +1622,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Cause a lost context while the BeginMainFrame is in flight.
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
   // Ask for another draw and also set needs commit. Expect nothing happens.
   state.SetNeedsRedraw(true);
@@ -1634,12 +1637,13 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.active_tree_needs_first_draw());
 
-  // Because the output surface is missing, we expect the draw to abort.
+  // Because the CompositorFrameSink is missing, we expect the draw to abort.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
 
   // Expect to begin context recreation only in BEGIN_IMPL_FRAME_STATE_IDLE
   EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION(
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 
   state.OnBeginImplFrame();
   EXPECT_IMPL_FRAME_STATE(
@@ -1653,10 +1657,10 @@ TEST(SchedulerStateMachineTest,
 
   state.OnBeginImplFrameIdle();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 
-  // After we get a new output surface, the commit flow should start.
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  // After we get a new CompositorFrameSink, the commit flow should start.
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -1676,19 +1680,20 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
+TEST(SchedulerStateMachineTest,
+     DontDrawBeforeCommitAfterLostCompositorFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
 
   state.SetNeedsRedraw(true);
 
-  // Cause a lost output surface, and restore it.
-  state.DidLoseOutputSurface();
+  // Cause a lost CompositorFrameSink, and restore it.
+  state.DidLoseCompositorFrameSink();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.DidCreateAndInitializeOutputSurface();
+  state.DidCreateAndInitializeCompositorFrameSink();
 
   EXPECT_FALSE(state.RedrawPending());
   state.OnBeginImplFrame();
@@ -1696,7 +1701,7 @@ TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
 }
 
 TEST(SchedulerStateMachineTest,
-     TestPendingActivationsShouldBeForcedAfterLostOutputSurface) {
+     TestPendingActivationsShouldBeForcedAfterLostCompositorFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -1705,7 +1710,7 @@ TEST(SchedulerStateMachineTest,
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
 
   // Cause a lost context.
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
@@ -1723,9 +1728,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginFrameNeededWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
 
   EXPECT_FALSE(state.BeginFrameNeeded());
   state.SetNeedsRedraw(true);
@@ -1743,9 +1748,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameWhenInvisible) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
@@ -1764,9 +1769,9 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetVisible(false);
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
@@ -1789,9 +1794,9 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
   state.SetBeginFrameSourcePaused(true);
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
@@ -1814,19 +1819,21 @@ TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
   state.SetNeedsBeginMainFrame();
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
-  // When we are visible, we normally want to begin output surface creation
+  // When we are visible, we normally want to begin CompositorFrameSink creation
   // as soon as possible.
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 
-  state.DidCreateAndInitializeOutputSurface();
-  EXPECT_EQ(state.output_surface_state(),
-            SchedulerStateMachine::OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT);
+  state.DidCreateAndInitializeCompositorFrameSink();
+  EXPECT_EQ(
+      state.compositor_frame_sink_state(),
+      SchedulerStateMachine::COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT);
 
   // We should not send a BeginMainFrame when we are invisible, even if we've
-  // lost the output surface and are trying to get the first commit, since the
+  // lost the CompositorFrameSink and are trying to get the first commit, since
+  // the
   // main thread will just abort anyway.
   state.SetVisible(false);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
@@ -1887,24 +1894,24 @@ TEST(SchedulerStateMachineTest, ForceDrawForResourcelessSoftwareDraw) {
   state.SetBeginFrameSourcePaused(false);
 
   state.SetVisible(false);
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
 
   state.SetCanDraw(false);
-  state.WillBeginOutputSurfaceCreation();
-  state.DidCreateAndInitializeOutputSurface();
+  state.WillBeginCompositorFrameSinkCreation();
+  state.DidCreateAndInitializeCompositorFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(true);
-  state.WillBeginOutputSurfaceCreation();
-  state.DidCreateAndInitializeOutputSurface();
+  state.WillBeginCompositorFrameSinkCreation();
+  state.DidCreateAndInitializeCompositorFrameSink();
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetCanDraw(false);
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
 }
 
@@ -2016,7 +2023,7 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
 }
 
 TEST(SchedulerStateMachineTest,
-     TestTriggerDeadlineImmediatelyOnLostOutputSurface) {
+     TestTriggerDeadlineImmediatelyOnLostCompositorFrameSink) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -2029,9 +2036,10 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 
-  state.DidLoseOutputSurface();
+  state.DidLoseCompositorFrameSink();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  // The deadline should be triggered immediately when output surface is lost.
+  // The deadline should be triggered immediately when CompositorFrameSink is
+  // lost.
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
@@ -2110,7 +2118,8 @@ TEST(SchedulerStateMachineTest, EarlyOutCommitWantsProactiveBeginFrame) {
   EXPECT_FALSE(state.ProactiveBeginFrameWanted());
 }
 
-TEST(SchedulerStateMachineTest, NoOutputSurfaceCreationWhileCommitPending) {
+TEST(SchedulerStateMachineTest,
+     NoCompositorFrameSinkCreationWhileCommitPending) {
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state);
@@ -2120,10 +2129,10 @@ TEST(SchedulerStateMachineTest, NoOutputSurfaceCreationWhileCommitPending) {
   state.OnBeginImplFrame();
   PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
 
-  // Lose the output surface.
-  state.DidLoseOutputSurface();
+  // Lose the CompositorFrameSink.
+  state.DidLoseCompositorFrameSink();
 
-  // The scheduler shouldn't trigger the output surface creation till the
+  // The scheduler shouldn't trigger the CompositorFrameSink creation till the
   // previous commit has been cleared.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -2134,20 +2143,20 @@ TEST(SchedulerStateMachineTest, NoOutputSurfaceCreationWhileCommitPending) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Abort the commit, since that is what we expect the main thread to do if the
-  // output surface was lost due to a synchronous call from the main thread to
-  // release the output surface.
+  // CompositorFrameSink was lost due to a synchronous call from the main thread
+  // to release the CompositorFrameSink.
   state.NotifyBeginMainFrameStarted();
   state.BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
+      CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST);
 
-  // The scheduler should begin the output surface creation now.
+  // The scheduler should begin the CompositorFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 }
 
-TEST(SchedulerStateMachineTest, OutputSurfaceCreationWhileCommitPending) {
+TEST(SchedulerStateMachineTest, CompositorFrameSinkCreationWhileCommitPending) {
   SchedulerSettings settings;
-  settings.abort_commit_before_output_surface_creation = false;
+  settings.abort_commit_before_compositor_frame_sink_creation = false;
   StateMachine state(settings);
   SET_UP_STATE(state);
 
@@ -2156,10 +2165,10 @@ TEST(SchedulerStateMachineTest, OutputSurfaceCreationWhileCommitPending) {
   state.OnBeginImplFrame();
   PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
 
-  // Lose the output surface.
-  state.DidLoseOutputSurface();
+  // Lose the CompositorFrameSink.
+  state.DidLoseCompositorFrameSink();
 
-  // The scheduler shouldn't trigger the output surface creation till the
+  // The scheduler shouldn't trigger the CompositorFrameSink creation till the
   // previous begin impl frame state is cleared from the pipeline.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
@@ -2167,9 +2176,9 @@ TEST(SchedulerStateMachineTest, OutputSurfaceCreationWhileCommitPending) {
   state.OnBeginImplFrameDeadline();
   state.OnBeginImplFrameIdle();
 
-  // The scheduler should begin the output surface creation now.
+  // The scheduler should begin the CompositorFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 }
 
 }  // namespace

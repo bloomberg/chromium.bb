@@ -12,9 +12,9 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -33,13 +33,12 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
   SurfaceAggregatorPerfTest() : factory_(&manager_, &empty_client_) {
-    output_surface_ = FakeOutputSurface::CreateSoftware(
-        base::WrapUnique(new SoftwareOutputDevice));
-    output_surface_->BindToClient(&output_surface_client_);
+    context_provider_ = TestContextProvider::Create();
+    context_provider_->BindToCurrentThread();
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
 
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
+        context_provider_.get(), shared_bitmap_manager_.get());
   }
 
   void RunTest(int num_surfaces,
@@ -141,8 +140,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   SurfaceManager manager_;
   EmptySurfaceFactoryClient empty_client_;
   SurfaceFactory factory_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<OutputSurface> output_surface_;
+  scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;

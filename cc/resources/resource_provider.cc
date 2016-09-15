@@ -398,7 +398,7 @@ ResourceProvider::ResourceProvider(
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
-      lost_output_surface_(false),
+      lost_context_provider_(false),
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
       next_child_(1),
@@ -720,9 +720,9 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   // Exported resources are lost on shutdown.
   bool exported_resource_lost =
       style == FOR_SHUTDOWN && resource->exported_count > 0;
-  // GPU resources are lost when output surface is lost.
+  // GPU resources are lost when context is lost.
   bool gpu_resource_lost =
-      IsGpuResourceType(resource->type) && lost_output_surface_;
+      IsGpuResourceType(resource->type) && lost_context_provider_;
   bool lost_resource =
       resource->lost || exported_resource_lost || gpu_resource_lost;
 
@@ -1687,7 +1687,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
     bool is_lost = resource.lost ||
-                   (IsGpuResourceType(resource.type) && lost_output_surface_);
+                   (IsGpuResourceType(resource.type) && lost_context_provider_);
     if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
       if (style != FOR_SHUTDOWN) {
         // Defer this resource deletion.

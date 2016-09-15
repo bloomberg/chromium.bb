@@ -16,8 +16,8 @@
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/input/top_controls_manager.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/output_surface.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/trees/layer_tree_host.h"
@@ -79,7 +79,7 @@ ProxyImpl::ProxyImpl(
 
   // TODO(enne): remove these settings.
   DCHECK(!settings.use_external_begin_frame_source);
-  DCHECK(settings.use_output_surface_begin_frame_source);
+  DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
   scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),
                                  external_begin_frame_source_.get(),
@@ -98,10 +98,10 @@ ProxyImpl::~ProxyImpl() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
 
-  // Take away the OutputSurface before destroying things so it doesn't try
-  // to call into its client mid-shutdown.
-  scheduler_->DidLoseOutputSurface();
-  layer_tree_host_impl_->ReleaseOutputSurface();
+  // Take away the CompositorFrameSink before destroying things so it doesn't
+  // try to call into its client mid-shutdown.
+  scheduler_->DidLoseCompositorFrameSink();
+  layer_tree_host_impl_->ReleaseCompositorFrameSink();
 
   scheduler_ = nullptr;
   external_begin_frame_source_ = nullptr;
@@ -127,15 +127,16 @@ void ProxyImpl::UpdateTopControlsStateOnImpl(TopControlsState constraints,
       constraints, current, animate);
 }
 
-void ProxyImpl::InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) {
-  TRACE_EVENT0("cc", "ProxyImpl::InitializeOutputSurfaceOnImplThread");
+void ProxyImpl::InitializeCompositorFrameSinkOnImpl(
+    CompositorFrameSink* compositor_frame_sink) {
+  TRACE_EVENT0("cc", "ProxyImpl::InitializeCompositorFrameSinkOnImplThread");
   DCHECK(IsImplThread());
 
   LayerTreeHostImpl* host_impl = layer_tree_host_impl_.get();
-  bool success = host_impl->InitializeRenderer(output_surface);
-  channel_impl_->DidInitializeOutputSurface(success);
+  bool success = host_impl->InitializeRenderer(compositor_frame_sink);
+  channel_impl_->DidInitializeCompositorFrameSink(success);
   if (success)
-    scheduler_->DidCreateAndInitializeOutputSurface();
+    scheduler_->DidCreateAndInitializeCompositorFrameSink();
 }
 
 void ProxyImpl::MainThreadHasStoppedFlingingOnImpl() {
@@ -191,22 +192,22 @@ void ProxyImpl::SetVisibleOnImpl(bool visible) {
   scheduler_->SetVisible(visible);
 }
 
-void ProxyImpl::ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) {
+void ProxyImpl::ReleaseCompositorFrameSinkOnImpl(CompletionEvent* completion) {
   DCHECK(IsImplThread());
 
-  // Unlike DidLoseOutputSurfaceOnImplThread, we don't need to call
-  // LayerTreeHost::DidLoseOutputSurface since it already knows.
-  scheduler_->DidLoseOutputSurface();
-  layer_tree_host_impl_->ReleaseOutputSurface();
+  // Unlike DidLoseCompositorFrameSinkOnImplThread, we don't need to call
+  // LayerTreeHost::DidLoseCompositorFrameSink since it already knows.
+  scheduler_->DidLoseCompositorFrameSink();
+  layer_tree_host_impl_->ReleaseCompositorFrameSink();
   completion->Signal();
 }
 
 void ProxyImpl::FinishGLOnImpl(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ProxyImpl::FinishGLOnImplThread");
   DCHECK(IsImplThread());
-  if (layer_tree_host_impl_->output_surface()) {
+  if (layer_tree_host_impl_->compositor_frame_sink()) {
     ContextProvider* context_provider =
-        layer_tree_host_impl_->output_surface()->context_provider();
+        layer_tree_host_impl_->compositor_frame_sink()->context_provider();
     if (context_provider)
       context_provider->ContextGL()->Finish();
   }
@@ -217,7 +218,7 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
     CompletionEvent* completion,
     bool* main_frame_will_happen) {
   DCHECK(IsImplThread());
-  if (layer_tree_host_impl_->output_surface()) {
+  if (layer_tree_host_impl_->compositor_frame_sink()) {
     *main_frame_will_happen = scheduler_->MainFrameForTestingWillHappen();
   } else {
     *main_frame_will_happen = false;
@@ -257,15 +258,15 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   scheduler_->NotifyReadyToCommit();
 }
 
-void ProxyImpl::DidLoseOutputSurfaceOnImplThread() {
-  TRACE_EVENT0("cc", "ProxyImpl::DidLoseOutputSurfaceOnImplThread");
+void ProxyImpl::DidLoseCompositorFrameSinkOnImplThread() {
+  TRACE_EVENT0("cc", "ProxyImpl::DidLoseCompositorFrameSinkOnImplThread");
   DCHECK(IsImplThread());
-  channel_impl_->DidLoseOutputSurface();
-  scheduler_->DidLoseOutputSurface();
+  channel_impl_->DidLoseCompositorFrameSink();
+  scheduler_->DidLoseCompositorFrameSink();
 }
 
 void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
-  // During shutdown, destroying the OutputSurface may unset the
+  // During shutdown, destroying the CompositorFrameSink may unset the
   // BeginFrameSource.
   if (scheduler_) {
     // TODO(enne): this overrides any preexisting begin frame source.  Those
@@ -431,9 +432,9 @@ void ProxyImpl::DidCompletePageScaleAnimationOnImplThread() {
   channel_impl_->DidCompletePageScaleAnimation();
 }
 
-void ProxyImpl::OnDrawForOutputSurface(bool resourceless_software_draw) {
+void ProxyImpl::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
   DCHECK(IsImplThread());
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
 }
 
 void ProxyImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -530,10 +531,11 @@ void ProxyImpl::ScheduledActionActivateSyncTree() {
   layer_tree_host_impl_->ActivateSyncTree();
 }
 
-void ProxyImpl::ScheduledActionBeginOutputSurfaceCreation() {
-  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionBeginOutputSurfaceCreation");
+void ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation() {
+  TRACE_EVENT0("cc",
+               "ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation");
   DCHECK(IsImplThread());
-  channel_impl_->RequestNewOutputSurface();
+  channel_impl_->RequestNewCompositorFrameSink();
 }
 
 void ProxyImpl::ScheduledActionPrepareTiles() {
@@ -542,11 +544,11 @@ void ProxyImpl::ScheduledActionPrepareTiles() {
   layer_tree_host_impl_->PrepareTiles();
 }
 
-void ProxyImpl::ScheduledActionInvalidateOutputSurface() {
-  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionInvalidateOutputSurface");
+void ProxyImpl::ScheduledActionInvalidateCompositorFrameSink() {
+  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionInvalidateCompositorFrameSink");
   DCHECK(IsImplThread());
-  DCHECK(layer_tree_host_impl_->output_surface());
-  layer_tree_host_impl_->output_surface()->Invalidate();
+  DCHECK(layer_tree_host_impl_->compositor_frame_sink());
+  layer_tree_host_impl_->compositor_frame_sink()->Invalidate();
 }
 
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {

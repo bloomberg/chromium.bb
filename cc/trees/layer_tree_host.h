@@ -31,7 +31,7 @@
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/resource_format.h"
 #include "cc/trees/compositor_mode.h"
@@ -153,8 +153,9 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   void SetHasGpuRasterizationTrigger(bool has_trigger) override;
   void SetVisible(bool visible) override;
   bool IsVisible() const override;
-  void SetOutputSurface(std::unique_ptr<OutputSurface> output_surface) override;
-  std::unique_ptr<OutputSurface> ReleaseOutputSurface() override;
+  void SetCompositorFrameSink(
+      std::unique_ptr<CompositorFrameSink> compositor_frame_sink) override;
+  std::unique_ptr<CompositorFrameSink> ReleaseCompositorFrameSink() override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
   void SetNeedsCommit() override;
@@ -192,12 +193,12 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();
-  void RequestNewOutputSurface();
-  void DidInitializeOutputSurface();
-  void DidFailToInitializeOutputSurface();
+  void RequestNewCompositorFrameSink();
+  void DidInitializeCompositorFrameSink();
+  void DidFailToInitializeCompositorFrameSink();
   virtual std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
-  void DidLoseOutputSurface();
+  void DidLoseCompositorFrameSink();
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   bool UpdateLayers();
@@ -350,13 +351,13 @@ class CC_EXPORT LayerTreeHost : public LayerTreeHostInterface {
 
   SwapPromiseManager swap_promise_manager_;
 
-  // |current_output_surface_| can't be updated until we've successfully
-  // initialized a new output surface. |new_output_surface_| contains the
-  // new output surface that is currently being initialized. If initialization
-  // is successful then |new_output_surface_| replaces
-  // |current_output_surface_|.
-  std::unique_ptr<OutputSurface> new_output_surface_;
-  std::unique_ptr<OutputSurface> current_output_surface_;
+  // |current_compositor_frame_sink_| can't be updated until we've successfully
+  // initialized a new CompositorFrameSink. |new_compositor_frame_sink_|
+  // contains the new CompositorFrameSink that is currently being initialized.
+  // If initialization is successful then |new_compositor_frame_sink_| replaces
+  // |current_compositor_frame_sink_|.
+  std::unique_ptr<CompositorFrameSink> new_compositor_frame_sink_;
+  std::unique_ptr<CompositorFrameSink> current_compositor_frame_sink_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

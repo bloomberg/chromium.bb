@@ -7,17 +7,16 @@
 
 
 namespace content {
-
-class SynchronousCompositorOutputSurface;
+class SynchronousCompositorFrameSink;
 
 class SynchronousCompositorRegistry {
  public:
-  virtual void RegisterOutputSurface(
+  virtual void RegisterCompositorFrameSink(
       int routing_id,
-      SynchronousCompositorOutputSurface* output_surface) = 0;
-  virtual void UnregisterOutputSurface(
+      SynchronousCompositorFrameSink* compositor_frame_sink) = 0;
+  virtual void UnregisterCompositorFrameSink(
       int routing_id,
-      SynchronousCompositorOutputSurface* output_surface) = 0;
+      SynchronousCompositorFrameSink* compositor_frame_sink) = 0;
 
  protected:
   virtual ~SynchronousCompositorRegistry() {}

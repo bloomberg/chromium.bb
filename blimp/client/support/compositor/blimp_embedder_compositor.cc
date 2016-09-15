@@ -12,10 +12,11 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
+#include "cc/surfaces/direct_compositor_frame_sink.h"
 #include "cc/surfaces/display.h"
-#include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -72,7 +73,7 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
     : compositor_dependencies_(compositor_dependencies),
       surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
           compositor_dependencies->AllocateSurfaceClientId())),
-      output_surface_request_pending_(false),
+      compositor_frame_sink_request_pending_(false),
       root_layer_(cc::Layer::Create()) {
   compositor_dependencies_->GetSurfaceManager()->RegisterSurfaceClientId(
       surface_id_allocator_->client_id());
@@ -124,7 +125,7 @@ void BlimpEmbedderCompositor::SetContextProvider(
   if (context_provider_) {
     DCHECK(host_->IsVisible());
     host_->SetVisible(false);
-    host_->ReleaseOutputSurface();
+    host_->ReleaseCompositorFrameSink();
     display_.reset();
   }
 
@@ -132,29 +133,29 @@ void BlimpEmbedderCompositor::SetContextProvider(
 
   if (context_provider_) {
     host_->SetVisible(true);
-    if (output_surface_request_pending_) {
-      HandlePendingOutputSurfaceRequest();
+    if (compositor_frame_sink_request_pending_) {
+      HandlePendingCompositorFrameSinkRequest();
     }
   }
 }
 
-void BlimpEmbedderCompositor::RequestNewOutputSurface() {
-  DCHECK(!output_surface_request_pending_)
+void BlimpEmbedderCompositor::RequestNewCompositorFrameSink() {
+  DCHECK(!compositor_frame_sink_request_pending_)
       << "We already have a pending request?";
-  output_surface_request_pending_ = true;
-  HandlePendingOutputSurfaceRequest();
+  compositor_frame_sink_request_pending_ = true;
+  HandlePendingCompositorFrameSinkRequest();
 }
 
-void BlimpEmbedderCompositor::DidInitializeOutputSurface() {
-  output_surface_request_pending_ = false;
+void BlimpEmbedderCompositor::DidInitializeCompositorFrameSink() {
+  compositor_frame_sink_request_pending_ = false;
 }
 
-void BlimpEmbedderCompositor::DidFailToInitializeOutputSurface() {
-  NOTREACHED() << "Can't fail to initialize the OutputSurface here";
+void BlimpEmbedderCompositor::DidFailToInitializeCompositorFrameSink() {
+  NOTREACHED() << "Can't fail to initialize the CompositorFrameSink here";
 }
 
-void BlimpEmbedderCompositor::HandlePendingOutputSurfaceRequest() {
-  DCHECK(output_surface_request_pending_);
+void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
+  DCHECK(compositor_frame_sink_request_pending_);
 
   // Can't handle the request right now since we don't have a widget.
   if (!host_->IsVisible())
@@ -165,7 +166,7 @@ void BlimpEmbedderCompositor::HandlePendingOutputSurfaceRequest() {
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       compositor_dependencies_->GetGpuMemoryBufferManager();
 
-  std::unique_ptr<cc::OutputSurface> display_output_surface =
+  auto display_output_surface =
       base::MakeUnique<DisplayOutputSurface>(context_provider_);
 
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
@@ -185,13 +186,11 @@ void BlimpEmbedderCompositor::HandlePendingOutputSurfaceRequest() {
   display_->Resize(viewport_size_in_px_);
 
   // The Browser compositor and display share the same context provider.
-  std::unique_ptr<cc::OutputSurface> delegated_output_surface =
-      base::MakeUnique<cc::SurfaceDisplayOutputSurface>(
-          compositor_dependencies_->GetSurfaceManager(),
-          surface_id_allocator_.get(), display_.get(), context_provider_,
-          nullptr);
+  auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
+      compositor_dependencies_->GetSurfaceManager(),
+      surface_id_allocator_.get(), display_.get(), context_provider_, nullptr);
 
-  host_->SetOutputSurface(std::move(delegated_output_surface));
+  host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 }  // namespace client

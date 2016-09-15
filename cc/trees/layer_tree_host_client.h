@@ -17,7 +17,7 @@ class Vector2dF;
 namespace cc {
 class ContextProvider;
 class InputHandlerClient;
-class OutputSurface;
+class CompositorFrameSink;
 struct BeginFrameArgs;
 
 class LayerTreeHostClient {
@@ -46,13 +46,13 @@ class LayerTreeHostClient {
       const gfx::Vector2dF& elastic_overscroll_delta,
       float page_scale,
       float top_controls_delta) = 0;
-  // Request an OutputSurface from the client. When the client has one it should
-  // call LayerTreeHost::SetOutputSurface.  This will result in either
-  // DidFailToInitializeOutputSurface or DidInitializeOutputSurface being
-  // called.
-  virtual void RequestNewOutputSurface() = 0;
-  virtual void DidInitializeOutputSurface() = 0;
-  virtual void DidFailToInitializeOutputSurface() = 0;
+  // Request an CompositorFrameSink from the client. When the client has one it
+  // should call LayerTreeHost::SetCompositorFrameSink.  This will result in
+  // either DidFailToInitializeCompositorFrameSink or
+  // DidInitializeCompositorFrameSink being called.
+  virtual void RequestNewCompositorFrameSink() = 0;
+  virtual void DidInitializeCompositorFrameSink() = 0;
+  virtual void DidFailToInitializeCompositorFrameSink() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;

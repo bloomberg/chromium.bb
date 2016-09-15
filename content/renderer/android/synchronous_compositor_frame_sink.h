@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
-#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FRAME_SINK_H_
+#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FRAME_SINK_H_
 
 #include <stddef.h>
 
@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/managed_memory_policy.h"
-#include "cc/output/output_surface.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "ipc/ipc_message.h"
@@ -43,44 +43,44 @@ class FrameSwapMessageQueue;
 class SynchronousCompositorRegistry;
 class WebGraphicsContext3DCommandBufferImpl;
 
-class SynchronousCompositorOutputSurfaceClient {
+class SynchronousCompositorFrameSinkClient {
  public:
   virtual void DidActivatePendingTree() = 0;
   virtual void Invalidate() = 0;
-  virtual void SwapBuffers(uint32_t output_surface_id,
+  virtual void SwapBuffers(uint32_t compositor_frame_sink_id,
                            cc::CompositorFrame frame) = 0;
 
  protected:
-  virtual ~SynchronousCompositorOutputSurfaceClient() {}
+  virtual ~SynchronousCompositorFrameSinkClient() {}
 };
 
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
 // layer, instead of driven by the compositor internals - hence it holds two
-// 'client' pointers (|client_| in the OutputSurface baseclass and
+// 'client' pointers (|client_| in the CompositorFrameSink baseclass and
 // |delegate_|) which represent the consumers of the two roles in plays.
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
-class SynchronousCompositorOutputSurface
-    : NON_EXPORTED_BASE(public cc::OutputSurface),
+class SynchronousCompositorFrameSink
+    : NON_EXPORTED_BASE(public cc::CompositorFrameSink),
       public cc::SurfaceFactoryClient {
  public:
-  SynchronousCompositorOutputSurface(
+  SynchronousCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       int routing_id,
-      uint32_t output_surface_id,
+      uint32_t compositor_frame_sink_id,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
-  ~SynchronousCompositorOutputSurface() override;
+  ~SynchronousCompositorFrameSink() override;
 
-  void SetSyncClient(SynchronousCompositorOutputSurfaceClient* compositor);
+  void SetSyncClient(SynchronousCompositorFrameSinkClient* compositor);
   bool OnMessageReceived(const IPC::Message& message);
 
-  // OutputSurface.
-  bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
+  // cc::CompositorFrameSink implementation.
+  bool BindToClient(cc::CompositorFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
@@ -116,17 +116,17 @@ class SynchronousCompositorOutputSurface
 
   // IPC handlers.
   void SetMemoryPolicy(size_t bytes_limit);
-  void OnReclaimResources(uint32_t output_surface_id,
+  void OnReclaimResources(uint32_t compositor_frame_sink_id,
                           const cc::ReturnedResourceArray& resources);
 
   const int routing_id_;
-  const uint32_t output_surface_id_;
+  const uint32_t compositor_frame_sink_id_;
   SynchronousCompositorRegistry* const registry_;  // Not owned.
-  IPC::Sender* const sender_;  // Not owned.
+  IPC::Sender* const sender_;                      // Not owned.
   bool registered_ = false;
 
   // Not owned.
-  SynchronousCompositorOutputSurfaceClient* sync_client_ = nullptr;
+  SynchronousCompositorFrameSinkClient* sync_client_ = nullptr;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_ = nullptr;
@@ -159,14 +159,14 @@ class SynchronousCompositorOutputSurface
   // Uses surface_manager_.
   std::unique_ptr<cc::Display> display_;
   // Owned by |display_|.
-  SoftwareOutputSurface* software_output_surface_ = nullptr;
+  SoftwareOutputSurface* software_compositor_frame_sink_ = nullptr;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorFrameSink);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_FRAME_SINK_H_

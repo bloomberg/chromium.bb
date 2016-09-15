@@ -18,26 +18,26 @@ namespace cc {
 class FakeResourceProvider : public ResourceProvider {
  public:
   static std::unique_ptr<FakeResourceProvider> Create(
-      OutputSurface* output_surface,
+      ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager) {
     return base::WrapUnique(new FakeResourceProvider(
-        output_surface, shared_bitmap_manager, nullptr, nullptr, 0, 1, true,
+        context_provider, shared_bitmap_manager, nullptr, nullptr, 0, 1, true,
         false, false, DefaultBufferToTextureTargetMapForTesting()));
   }
 
   static std::unique_ptr<FakeResourceProvider> Create(
-      OutputSurface* output_surface,
+      ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
     return base::WrapUnique(new FakeResourceProvider(
-        output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
+        context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
         nullptr, 0, 1, true, false, false,
         DefaultBufferToTextureTargetMapForTesting()));
   }
 
  private:
   FakeResourceProvider(
-      OutputSurface* output_surface,
+      ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
@@ -47,9 +47,7 @@ class FakeResourceProvider : public ResourceProvider {
       bool use_gpu_memory_buffer_resources,
       bool enable_color_correct_rendering,
       const BufferToTextureTargetMap& buffer_to_texture_target_map)
-      : ResourceProvider(output_surface->context_provider(),  // TODO(danakj):
-                                                              // Remove output
-                                                              // surface dep
+      : ResourceProvider(context_provider,
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,
                          blocking_main_thread_task_runner,

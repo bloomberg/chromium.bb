@@ -1668,7 +1668,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ResettingCompositorReturnsResources) {
     EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
     ViewMsg_ReclaimCompositorResources::Param params;
     ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(0u, std::get<0>(params));  // output_surface_id
+    EXPECT_EQ(0u, std::get<0>(params));  // compositor_frame_sink_id
     EXPECT_TRUE(std::get<1>(params));    // is_swap_ack
   }
   manager->RemoveObserver(&damage_observer);
@@ -1699,12 +1699,12 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
     EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
     ViewMsg_ReclaimCompositorResources::Param params;
     ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(0u, std::get<0>(params));  // output_surface_id
+    EXPECT_EQ(0u, std::get<0>(params));  // compositor_frame_sink_id
     EXPECT_FALSE(std::get<1>(params));   // is_swap_ack
   }
 }
 
-// This test verifies that when the output_surface_id changes, then
+// This test verifies that when the compositor_frame_sink_id changes, then
 // DelegateFrameHost returns compositor resources without a swap ack.
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   FakeSurfaceDamageObserver damage_observer;
@@ -1734,7 +1734,8 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   view_->ReturnResources(resources);
   EXPECT_EQ(0u, sink_->message_count());
 
-  // Swap another CompositorFrame but this time from another output_surface_id.
+  // Swap another CompositorFrame but this time from another
+  // compositor_frame_sink_id.
   // This should trigger a non-ACK ReclaimCompositorResources IPC.
   view_->OnSwapCompositorFrame(1,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
@@ -1744,7 +1745,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
     EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
     ViewMsg_ReclaimCompositorResources::Param params;
     ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(0u, std::get<0>(params));  // output_surface_id
+    EXPECT_EQ(0u, std::get<0>(params));  // compositor_frame_sink_id
     EXPECT_FALSE(std::get<1>(params));   // is_swap_ack
   }
   sink_->ClearMessages();
@@ -1759,7 +1760,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
     EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
     ViewMsg_ReclaimCompositorResources::Param params;
     ViewMsg_ReclaimCompositorResources::Read(msg, &params);
-    EXPECT_EQ(1u, std::get<0>(params));    // output_surface_id
+    EXPECT_EQ(1u, std::get<0>(params));    // compositor_frame_sink_id
     EXPECT_EQ(true, std::get<1>(params));  // is_swap_ack
   }
 

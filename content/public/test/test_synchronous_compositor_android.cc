@@ -39,10 +39,10 @@ void TestSynchronousCompositor::DemandDrawHwAsync(
     const gfx::Transform& transform_for_tile_priority) {}
 
 void TestSynchronousCompositor::ReturnResources(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     const cc::ReturnedResourceArray& resources) {
   ReturnedResources returned_resources;
-  returned_resources.output_surface_id = output_surface_id;
+  returned_resources.compositor_frame_sink_id = compositor_frame_sink_id;
   returned_resources.resources = resources;
   frame_ack_array_.push_back(returned_resources);
 }
@@ -58,14 +58,14 @@ bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
 }
 
 void TestSynchronousCompositor::SetHardwareFrame(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::CompositorFrame> frame) {
-  hardware_frame_.output_surface_id = output_surface_id;
+  hardware_frame_.compositor_frame_sink_id = compositor_frame_sink_id;
   hardware_frame_.frame = std::move(frame);
 }
 
 TestSynchronousCompositor::ReturnedResources::ReturnedResources()
-    : output_surface_id(0u) {}
+    : compositor_frame_sink_id(0u) {}
 
 TestSynchronousCompositor::ReturnedResources::ReturnedResources(
     const ReturnedResources& other) = default;

@@ -58,7 +58,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
       const gfx::Rect& src_subrect_in_pixel,
       cc::CopyOutputRequest::CopyOutputRequestCallback result_callback);
 
-  void OutputSurfaceChanged();
+  void CompositorFrameSinkChanged();
 
   void UpdateBackgroundColor(SkColor color);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_display_output_surface.h"
+#include "cc/surfaces/direct_compositor_frame_sink.h"
 
 #include <memory>
 
@@ -14,8 +14,8 @@
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/fake_compositor_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
@@ -27,9 +27,9 @@ namespace {
 
 static constexpr int kArbitraryClientId = 0;
 
-class SurfaceDisplayOutputSurfaceTest : public testing::Test {
+class DirectCompositorFrameSinkTest : public testing::Test {
  public:
-  SurfaceDisplayOutputSurfaceTest()
+  DirectCompositorFrameSinkTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
         allocator_(kArbitraryClientId),
@@ -55,32 +55,32 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
         std::move(begin_frame_source), std::move(display_output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
-    delegated_output_surface_.reset(new SurfaceDisplayOutputSurface(
+    compositor_frame_sink_.reset(new DirectCompositorFrameSink(
         &surface_manager_, &allocator_, display_.get(), context_provider_,
         nullptr));
 
-    delegated_output_surface_->BindToClient(&delegated_output_surface_client_);
+    compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
     display_->Resize(display_size_);
     display_->SetVisible(true);
 
     EXPECT_FALSE(
-        delegated_output_surface_client_.did_lose_output_surface_called());
+        compositor_frame_sink_client_.did_lose_compositor_frame_sink_called());
   }
 
-  ~SurfaceDisplayOutputSurfaceTest() override {}
+  ~DirectCompositorFrameSinkTest() override {}
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
     render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect,
                         gfx::Transform());
 
-    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    auto frame_data = base::MakeUnique<DelegatedFrameData>();
     frame_data->render_pass_list.push_back(std::move(render_pass));
 
     CompositorFrame frame;
     frame.delegated_frame_data = std::move(frame_data);
 
-    delegated_output_surface_->SwapBuffers(std::move(frame));
+    compositor_frame_sink_->SwapBuffers(std::move(frame));
   }
 
   void SetUp() override {
@@ -106,25 +106,25 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   scoped_refptr<TestContextProvider> context_provider_;
   FakeOutputSurface* display_output_surface_ = nullptr;
   std::unique_ptr<Display> display_;
-  FakeOutputSurfaceClient delegated_output_surface_client_;
-  std::unique_ptr<SurfaceDisplayOutputSurface> delegated_output_surface_;
+  FakeCompositorFrameSinkClient compositor_frame_sink_client_;
+  std::unique_ptr<DirectCompositorFrameSink> compositor_frame_sink_;
 };
 
-TEST_F(SurfaceDisplayOutputSurfaceTest, DamageTriggersSwapBuffers) {
+TEST_F(DirectCompositorFrameSinkTest, DamageTriggersSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(SurfaceDisplayOutputSurfaceTest, NoDamageDoesNotTriggerSwapBuffers) {
+TEST_F(DirectCompositorFrameSinkTest, NoDamageDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(gfx::Rect());
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(SurfaceDisplayOutputSurfaceTest, SuspendedDoesNotTriggerSwapBuffers) {
+TEST_F(DirectCompositorFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   display_output_surface_->set_suspended_for_recycle(true);
@@ -139,9 +139,9 @@ TEST_F(SurfaceDisplayOutputSurfaceTest, SuspendedDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(SurfaceDisplayOutputSurfaceTest,
+TEST_F(DirectCompositorFrameSinkTest,
        LockingResourcesDoesNotIndirectlyCauseDamage) {
-  delegated_output_surface_->ForceReclaimResources();
+  compositor_frame_sink_->ForceReclaimResources();
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunPendingTasks();
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());

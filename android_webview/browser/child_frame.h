@@ -21,7 +21,7 @@ namespace android_webview {
 
 class ChildFrame {
  public:
-  ChildFrame(uint32_t output_surface_id,
+  ChildFrame(uint32_t compositor_frame_sink_id,
              std::unique_ptr<cc::CompositorFrame> frame,
              const CompositorID& compositor_id,
              bool viewport_rect_for_tile_priority_empty,
@@ -30,7 +30,7 @@ class ChildFrame {
              bool is_layer);
   ~ChildFrame();
 
-  const uint32_t output_surface_id;
+  const uint32_t compositor_frame_sink_id;
   std::unique_ptr<cc::CompositorFrame> frame;
   // The id of the compositor this |frame| comes from.
   const CompositorID compositor_id;

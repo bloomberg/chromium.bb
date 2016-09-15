@@ -23,9 +23,9 @@ class CC_EXPORT ChannelImpl {
   virtual void BeginMainFrameNotExpectedSoon() = 0;
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) = 0;
-  virtual void DidLoseOutputSurface() = 0;
-  virtual void RequestNewOutputSurface() = 0;
-  virtual void DidInitializeOutputSurface(bool success) = 0;
+  virtual void DidLoseCompositorFrameSink() = 0;
+  virtual void RequestNewCompositorFrameSink() = 0;
+  virtual void DidInitializeCompositorFrameSink(bool success) = 0;
   virtual void DidCompletePageScaleAnimation() = 0;
   virtual void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) = 0;

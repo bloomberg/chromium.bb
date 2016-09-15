@@ -930,7 +930,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
   // For max_texture_size. When a new output surface is received the needs
   // update draw properties flag is set again.
-  if (!layer_tree_host_impl_->output_surface())
+  if (!layer_tree_host_impl_->compositor_frame_sink())
     return false;
 
   // Clear this after the renderer early out, as it should still be
@@ -1267,11 +1267,7 @@ const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
 }
 
 ContextProvider* LayerTreeImpl::context_provider() const {
-  return output_surface()->context_provider();
-}
-
-OutputSurface* LayerTreeImpl::output_surface() const {
-  return layer_tree_host_impl_->output_surface();
+  return layer_tree_host_impl_->compositor_frame_sink()->context_provider();
 }
 
 ResourceProvider* LayerTreeImpl::resource_provider() const {

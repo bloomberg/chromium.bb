@@ -19,8 +19,6 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -30,8 +28,8 @@
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_delegating_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
@@ -61,27 +59,28 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         committed_at_least_once_(false),
         context_should_support_io_surface_(false),
         fallback_context_works_(false),
-        async_output_surface_creation_(false) {
+        async_compositor_frame_sink_creation_(false) {
     media::InitializeMediaLibrary();
   }
 
   void LoseContext() {
-    // CreateFakeOutputSurface happens on a different thread, so lock context3d_
-    // to make sure we don't set it to null after recreating it there.
+    // CreateDisplayCompositorFrameSink happens on a different thread, so lock
+    // context3d_ to make sure we don't set it to null after recreating it
+    // there.
     base::AutoLock lock(context3d_lock_);
     // For sanity-checking tests, they should only call this when the
     // context is not lost.
     CHECK(context3d_);
     context3d_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                     GL_INNOCENT_CONTEXT_RESET_ARB);
-    context3d_ = NULL;
+    context3d_ = nullptr;
   }
 
   virtual std::unique_ptr<TestWebGraphicsContext3D> CreateContext3d() {
     return TestWebGraphicsContext3D::Create();
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     if (times_to_fail_create_) {
@@ -93,7 +92,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
                                 GL_INNOCENT_CONTEXT_RESET_ARB);
       compositor_context_provider = std::move(test_compositor_context_provider);
     }
-    return LayerTreeTest::CreateDelegatingOutputSurface(
+    return LayerTreeTest::CreateCompositorFrameSink(
         std::move(compositor_context_provider),
         std::move(worker_context_provider));
   }
@@ -146,7 +145,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     times_to_fail_recreate_ = 0;
   }
 
-  void DidFailToInitializeOutputSurface() override { ++times_create_failed_; }
+  void DidFailToInitializeCompositorFrameSink() override {
+    ++times_create_failed_;
+  }
 
   void TearDown() override {
     LayerTreeTest::TearDown();
@@ -156,8 +157,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   void ExpectCreateToFail() { ++times_to_expect_create_failed_; }
 
  protected:
-  // Protects use of context3d_ so LoseContext and CreateFakeOutputSurface
-  // can both use it on different threads.
+  // Protects use of context3d_ so LoseContext and
+  // CreateDisplayCompositorFrameSink can both use it on different threads.
   base::Lock context3d_lock_;
   TestWebGraphicsContext3D* context3d_;
 
@@ -170,7 +171,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   bool committed_at_least_once_;
   bool context_should_support_io_surface_;
   bool fallback_context_works_;
-  bool async_output_surface_creation_;
+  bool async_compositor_frame_sink_creation_;
 };
 
 class LayerTreeHostContextTestLostContextSucceeds
@@ -186,22 +187,22 @@ class LayerTreeHostContextTestLostContextSucceeds
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void RequestNewOutputSurface() override {
-    if (async_output_surface_creation_) {
+  void RequestNewCompositorFrameSink() override {
+    if (async_compositor_frame_sink_creation_) {
       MainThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
-                                    AsyncRequestNewOutputSurface,
+                                    AsyncRequestNewCompositorFrameSink,
                                 base::Unretained(this)));
     } else {
-      AsyncRequestNewOutputSurface();
+      AsyncRequestNewCompositorFrameSink();
     }
   }
 
-  void AsyncRequestNewOutputSurface() {
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+  void AsyncRequestNewCompositorFrameSink() {
+    LayerTreeHostContextTest::RequestNewCompositorFrameSink();
   }
 
-  void DidInitializeOutputSurface() override {
+  void DidInitializeCompositorFrameSink() override {
     if (first_initialized_)
       ++num_losses_;
     else
@@ -240,85 +241,85 @@ class LayerTreeHostContextTestLostContextSucceeds
         // Losing the context and failing to recreate it (or losing it again
         // immediately) a small number of times should succeed.
         {
-         1,      // times_to_lose_during_commit
-         0,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            1,      // times_to_lose_during_commit
+            0,      // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         0,      // times_to_lose_during_commit
-         1,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            1,      // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         1,      // times_to_lose_during_commit
-         0,      // times_to_lose_during_draw
-         3,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            1,      // times_to_lose_during_commit
+            0,      // times_to_lose_during_draw
+            3,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         0,      // times_to_lose_during_commit
-         1,      // times_to_lose_during_draw
-         3,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            1,      // times_to_lose_during_draw
+            3,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         0,      // times_to_lose_during_commit
-         1,      // times_to_lose_during_draw
-         3,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         true,   // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            1,      // times_to_lose_during_draw
+            3,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            true,   // async_compositor_frame_sink_creation
         },
         // Losing the context and recreating it any number of times should
         // succeed.
         {
-         10,     // times_to_lose_during_commit
-         0,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            10,     // times_to_lose_during_commit
+            0,      // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         0,      // times_to_lose_during_commit
-         10,     // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         false,  // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            10,     // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         10,     // times_to_lose_during_commit
-         0,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         true,   // async_output_surface_creation
+            10,     // times_to_lose_during_commit
+            0,      // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            true,   // async_compositor_frame_sink_creation
         },
         {
-         0,      // times_to_lose_during_commit
-         10,     // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         false,  // fallback_context_works
-         true,   // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            10,     // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            false,  // fallback_context_works
+            true,   // async_compositor_frame_sink_creation
         },
         // Losing the context, failing to reinitialize it, and making a fallback
         // context should work.
         {
-         0,      // times_to_lose_during_commit
-         1,      // times_to_lose_during_draw
-         0,      // times_to_fail_recreate
-         true,   // fallback_context_works
-         false,  // async_output_surface_creation
+            0,      // times_to_lose_during_commit
+            1,      // times_to_lose_during_draw
+            0,      // times_to_fail_recreate
+            true,   // fallback_context_works
+            false,  // async_compositor_frame_sink_creation
         },
         {
-         0,     // times_to_lose_during_commit
-         1,     // times_to_lose_during_draw
-         0,     // times_to_fail_recreate
-         true,  // fallback_context_works
-         true,  // async_output_surface_creation
+            0,     // times_to_lose_during_commit
+            1,     // times_to_lose_during_draw
+            0,     // times_to_fail_recreate
+            true,  // fallback_context_works
+            true,  // async_compositor_frame_sink_creation
         },
     };
 
@@ -334,8 +335,8 @@ class LayerTreeHostContextTestLostContextSucceeds
     times_to_lose_during_draw_ = kTests[test_case_].times_to_lose_during_draw;
     times_to_fail_recreate_ = kTests[test_case_].times_to_fail_recreate;
     fallback_context_works_ = kTests[test_case_].fallback_context_works;
-    async_output_surface_creation_ =
-        kTests[test_case_].async_output_surface_creation;
+    async_compositor_frame_sink_creation_ =
+        kTests[test_case_].async_compositor_frame_sink_creation;
     ++test_case_;
     return true;
   }
@@ -345,7 +346,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     int times_to_lose_during_draw;
     int times_to_fail_recreate;
     bool fallback_context_works;
-    bool async_output_surface_creation;
+    bool async_compositor_frame_sink_creation;
   };
 
  protected:
@@ -358,10 +359,10 @@ class LayerTreeHostContextTestLostContextSucceeds
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
 
-class LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface
+class LayerTreeHostClientNotVisibleDoesNotCreateCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface()
+  LayerTreeHostClientNotVisibleDoesNotCreateCompositorFrameSink()
       : LayerTreeHostContextTest() {}
 
   void WillBeginTest() override {
@@ -374,59 +375,60 @@ class LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface
     EndTest();
   }
 
-  void RequestNewOutputSurface() override {
-    ADD_FAILURE() << "RequestNewOutputSurface() should not be called";
+  void RequestNewCompositorFrameSink() override {
+    ADD_FAILURE() << "RequestNewCompositorFrameSink() should not be called";
   }
 
-  void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+  void DidInitializeCompositorFrameSink() override { EXPECT_TRUE(false); }
 
   void AfterTest() override {}
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostClientNotVisibleDoesNotCreateOutputSurface);
+    LayerTreeHostClientNotVisibleDoesNotCreateCompositorFrameSink);
 
-// This tests the OutputSurface release logic in the following sequence.
-// SetUp LTH and create and init OutputSurface
+// This tests the CompositorFrameSink release logic in the following sequence.
+// SetUp LTH and create and init CompositorFrameSink.
 // LTH::SetVisible(false);
-// LTH::ReleaseOutputSurface();
+// LTH::ReleaseCompositorFrameSink();
 // ...
 // LTH::SetVisible(true);
-// Create and init new OutputSurface
-class LayerTreeHostClientTakeAwayOutputSurface
+// Create and init new CompositorFrameSink
+class LayerTreeHostClientTakeAwayCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostClientTakeAwayOutputSurface()
+  LayerTreeHostClientTakeAwayCompositorFrameSink()
       : LayerTreeHostContextTest(), setos_counter_(0) {}
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     if (layer_tree_host()->IsVisible()) {
       setos_counter_++;
-      LayerTreeHostContextTest::RequestNewOutputSurface();
+      LayerTreeHostContextTest::RequestNewCompositorFrameSink();
     }
   }
 
-  void HideAndReleaseOutputSurface() {
+  void HideAndReleaseCompositorFrameSink() {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     layer_tree_host()->SetVisible(false);
-    std::unique_ptr<OutputSurface> surface =
-        layer_tree_host()->ReleaseOutputSurface();
+    std::unique_ptr<CompositorFrameSink> surface =
+        layer_tree_host()->ReleaseCompositorFrameSink();
     CHECK(surface);
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::MakeVisible,
+        base::Bind(&LayerTreeHostClientTakeAwayCompositorFrameSink::MakeVisible,
                    base::Unretained(this)));
   }
 
-  void DidInitializeOutputSurface() override {
+  void DidInitializeCompositorFrameSink() override {
     EXPECT_TRUE(layer_tree_host()->IsVisible());
     if (setos_counter_ == 1) {
       MainThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::
-                                    HideAndReleaseOutputSurface,
-                                base::Unretained(this)));
+          FROM_HERE,
+          base::Bind(&LayerTreeHostClientTakeAwayCompositorFrameSink::
+                         HideAndReleaseCompositorFrameSink,
+                     base::Unretained(this)));
     } else {
       EndTest();
     }
@@ -442,12 +444,12 @@ class LayerTreeHostClientTakeAwayOutputSurface
   int setos_counter_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostClientTakeAwayOutputSurface);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostClientTakeAwayCompositorFrameSink);
 
-class MultipleCompositeDoesNotCreateOutputSurface
+class MultipleCompositeDoesNotCreateCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
-  MultipleCompositeDoesNotCreateOutputSurface()
+  MultipleCompositeDoesNotCreateCompositorFrameSink()
       : LayerTreeHostContextTest(), request_count_(0) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -455,7 +457,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
     settings->use_zero_copy = true;
   }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     EXPECT_GE(1, ++request_count_);
     EndTest();
   }
@@ -465,7 +467,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
     layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
   }
 
-  void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+  void DidInitializeCompositorFrameSink() override { EXPECT_TRUE(false); }
 
   void AfterTest() override {}
 
@@ -473,15 +475,15 @@ class MultipleCompositeDoesNotCreateOutputSurface
 };
 
 // This test uses Composite() which only exists for single thread.
-SINGLE_THREAD_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
+SINGLE_THREAD_TEST_F(MultipleCompositeDoesNotCreateCompositorFrameSink);
 
 // This test makes sure that once a SingleThreadProxy issues a
-// DidFailToInitializeOutputSurface, that future Composite calls will not
+// DidFailToInitializeCompositorFrameSink, that future Composite calls will not
 // trigger additional requests for output surfaces.
-class FailedCreateDoesNotCreateExtraOutputSurface
+class FailedCreateDoesNotCreateExtraCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
-  FailedCreateDoesNotCreateExtraOutputSurface()
+  FailedCreateDoesNotCreateExtraCompositorFrameSink()
       : LayerTreeHostContextTest(), num_requests_(0), has_failed_(false) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -489,18 +491,19 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     settings->use_zero_copy = true;
   }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     num_requests_++;
     // There should be one initial request and then one request from
-    // the LayerTreeTest test hooks DidFailToInitializeOutputSurface (which is
-    // hard to skip).  This second request is just ignored and is test cruft.
+    // the LayerTreeTest test hooks DidFailToInitializeCompositorFrameSink
+    // (which is hard to skip).  This second request is just ignored and is test
+    // cruft.
     EXPECT_LE(num_requests_, 2);
     if (num_requests_ > 1)
       return;
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    LayerTreeHostContextTest::RequestNewCompositorFrameSink();
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     ExpectCreateToFail();
@@ -508,7 +511,7 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     test_compositor_context_provider->UnboundTestContext3d()
         ->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                               GL_INNOCENT_CONTEXT_RESET_ARB);
-    return LayerTreeTest::CreateDelegatingOutputSurface(
+    return LayerTreeTest::CreateCompositorFrameSink(
         std::move(test_compositor_context_provider),
         std::move(worker_context_provider));
   }
@@ -525,10 +528,10 @@ class FailedCreateDoesNotCreateExtraOutputSurface
     EndTest();
   }
 
-  void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+  void DidInitializeCompositorFrameSink() override { EXPECT_TRUE(false); }
 
-  void DidFailToInitializeOutputSurface() override {
-    LayerTreeHostContextTest::DidFailToInitializeOutputSurface();
+  void DidFailToInitializeCompositorFrameSink() override {
+    LayerTreeHostContextTest::DidFailToInitializeCompositorFrameSink();
     EXPECT_FALSE(has_failed_);
     has_failed_ = true;
   }
@@ -540,12 +543,12 @@ class FailedCreateDoesNotCreateExtraOutputSurface
 };
 
 // This test uses Composite() which only exists for single thread.
-SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
+SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraCompositorFrameSink);
 
-class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
+class LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostContextTestCommitAfterDelayedOutputSurface()
+  LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink()
       : LayerTreeHostContextTest(), creating_output_(false) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -553,17 +556,18 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
     settings->use_zero_copy = true;
   }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostContextTestCommitAfterDelayedOutputSurface::
-                       CreateAndSetOutputSurface,
-                   base::Unretained(this)));
+        base::Bind(
+            &LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink::
+                CreateAndSetCompositorFrameSink,
+            base::Unretained(this)));
   }
 
-  void CreateAndSetOutputSurface() {
+  void CreateAndSetCompositorFrameSink() {
     creating_output_ = true;
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    LayerTreeHostContextTest::RequestNewCompositorFrameSink();
   }
 
   void BeginTest() override {
@@ -581,7 +585,8 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
 };
 
 // This test uses Composite() which only exists for single thread.
-SINGLE_THREAD_TEST_F(LayerTreeHostContextTestCommitAfterDelayedOutputSurface);
+SINGLE_THREAD_TEST_F(
+    LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink);
 
 class LayerTreeHostContextTestAvoidUnnecessaryComposite
     : public LayerTreeHostContextTest {
@@ -594,8 +599,8 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
     settings->use_zero_copy = true;
   }
 
-  void RequestNewOutputSurface() override {
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+  void RequestNewCompositorFrameSink() override {
+    LayerTreeHostContextTest::RequestNewCompositorFrameSink();
     EndTest();
   }
 
@@ -666,17 +671,17 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostContextTestLostContextSucceedsWithContent);
 
-class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
+class LayerTreeHostContextTestCreateCompositorFrameSinkFailsOnce
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostContextTestCreateOutputSurfaceFailsOnce()
+  LayerTreeHostContextTestCreateCompositorFrameSinkFailsOnce()
       : times_to_fail_(1), times_initialized_(0) {
     times_to_fail_create_ = times_to_fail_;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidInitializeOutputSurface() override { times_initialized_++; }
+  void DidInitializeCompositorFrameSink() override { times_initialized_++; }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override { EndTest(); }
 
@@ -691,7 +696,7 @@ class LayerTreeHostContextTestCreateOutputSurfaceFailsOnce
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestCreateOutputSurfaceFailsOnce);
+    LayerTreeHostContextTestCreateCompositorFrameSinkFailsOnce);
 
 class LayerTreeHostContextTestLostContextAndEvictTextures
     : public LayerTreeHostContextTest {
@@ -771,7 +776,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
       EndTest();
   }
 
-  void DidInitializeOutputSurface() override {}
+  void DidInitializeCompositorFrameSink() override {}
 
   void AfterTest() override {}
 
@@ -883,19 +888,18 @@ class LayerTreeHostContextTestDontUseLostResources
   LayerTreeHostContextTestDontUseLostResources() : lost_context_(false) {
     context_should_support_io_surface_ = true;
 
-    child_output_surface_ = FakeOutputSurface::CreateDelegating3d();
-    child_output_surface_->BindToClient(&output_surface_client_);
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    child_context_provider_ = TestContextProvider::Create();
+    CHECK(child_context_provider_->BindToCurrentThread());
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     child_resource_provider_ = FakeResourceProvider::Create(
-        child_output_surface_.get(), shared_bitmap_manager_.get());
+        child_context_provider_.get(), shared_bitmap_manager_.get());
   }
 
   static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
                                    bool lost) {}
 
   void SetupTree() override {
-    gpu::gles2::GLES2Interface* gl =
-        child_output_surface_->context_provider()->ContextGL();
+    gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
 
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
 
@@ -1043,14 +1047,14 @@ class LayerTreeHostContextTestDontUseLostResources
     return draw_result;
   }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     // This will get called twice:
-    // First when we create the initial output surface...
+    // First when we create the initial CompositorFrameSink...
     if (layer_tree_host()->SourceFrameNumber() > 0) {
       // ... and then again after we forced the context to be lost.
       lost_context_ = true;
     }
-    LayerTreeHostContextTest::RequestNewOutputSurface();
+    LayerTreeHostContextTest::RequestNewCompositorFrameSink();
   }
 
   void DidCommitAndDrawFrame() override {
@@ -1070,8 +1074,7 @@ class LayerTreeHostContextTestDontUseLostResources
   FakeContentLayerClient client_;
   bool lost_context_;
 
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> child_output_surface_;
+  scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> child_resource_provider_;
 
@@ -1111,7 +1114,7 @@ class LayerTreeHostContextTestImplSidePainting
 
   void AfterTest() override {}
 
-  void DidInitializeOutputSurface() override { EndTest(); }
+  void DidInitializeCompositorFrameSink() override { EndTest(); }
 
  private:
   FakeContentLayerClient client_;
@@ -1604,11 +1607,11 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
 
     // After the first frame, we will lose the context and then not start
     // allowing commits until that happens. The 2nd frame should not happen
-    // before DidInitializeOutputSurface occurs.
+    // before DidInitializeCompositorFrameSink occurs.
     lost_ = true;
   }
 
-  void DidInitializeOutputSurface() override {
+  void DidInitializeCompositorFrameSink() override {
     EXPECT_TRUE(lost_);
     lost_ = false;
   }

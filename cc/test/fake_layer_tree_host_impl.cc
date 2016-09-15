@@ -63,7 +63,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
 }
 
 FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {
-  ReleaseOutputSurface();
+  ReleaseCompositorFrameSink();
 }
 
 void FakeLayerTreeHostImpl::CreatePendingTree() {

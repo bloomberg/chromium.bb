@@ -63,8 +63,8 @@ void RemoteChannelMain::UpdateTopControlsStateOnImpl(
     TopControlsState current,
     bool animate) {}
 
-void RemoteChannelMain::InitializeOutputSurfaceOnImpl(
-    OutputSurface* output_surface) {
+void RemoteChannelMain::InitializeCompositorFrameSinkOnImpl(
+    CompositorFrameSink*) {
   NOTREACHED() << "Should not be called on the server LayerTreeHost";
 }
 
@@ -99,7 +99,7 @@ void RemoteChannelMain::SetVisibleOnImpl(bool visible) {
   NOTIMPLEMENTED() << "Visibility is not controlled by the server";
 }
 
-void RemoteChannelMain::ReleaseOutputSurfaceOnImpl(
+void RemoteChannelMain::ReleaseCompositorFrameSinkOnImpl(
     CompletionEvent* completion) {
   NOTREACHED() << "Should not be called on the server LayerTreeHost";
   completion->Signal();

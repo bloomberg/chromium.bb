@@ -19,12 +19,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "cc/output/buffer_to_texture_target_map.h"
-#include "cc/output/output_surface.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_texture.h"
@@ -431,33 +429,20 @@ class ResourceProviderTest
         std::unique_ptr<ResourceProviderContext> context3d(
             ResourceProviderContext::Create(shared_data_.get()));
         context3d_ = context3d.get();
-
-        scoped_refptr<TestContextProvider> context_provider =
-            TestContextProvider::Create(std::move(context3d));
-
-        output_surface_ = FakeOutputSurface::Create3d(context_provider);
+        context_provider_ = TestContextProvider::Create(std::move(context3d));
+        context_provider_->BindToCurrentThread();
 
         std::unique_ptr<ResourceProviderContext> child_context_owned =
             ResourceProviderContext::Create(shared_data_.get());
         child_context_ = child_context_owned.get();
-        if (child_needs_sync_token) {
-          child_output_surface_ =
-              FakeOutputSurface::Create3d(std::move(child_context_owned));
-        } else {
-          child_output_surface_ = FakeOutputSurface::CreateNoRequireSyncPoint(
-              std::move(child_context_owned));
-        }
+        child_context_provider_ =
+            TestContextProvider::Create(std::move(child_context_owned));
+        child_context_provider_->BindToCurrentThread();
         break;
       }
       case ResourceProvider::RESOURCE_TYPE_BITMAP:
-        output_surface_ = FakeOutputSurface::CreateSoftware(
-            base::WrapUnique(new SoftwareOutputDevice));
-        child_output_surface_ = FakeOutputSurface::CreateSoftware(
-            base::WrapUnique(new SoftwareOutputDevice));
         break;
     }
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
-    CHECK(child_output_surface_->BindToClient(&child_output_surface_client_));
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
@@ -465,17 +450,16 @@ class ResourceProviderTest
         gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
 
     resource_provider_ = base::MakeUnique<ResourceProvider>(
-        output_surface_->context_provider(), shared_bitmap_manager_.get(),
+        context_provider_.get(), shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
         kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
         kEnableColorCorrectRendering,
         DefaultBufferToTextureTargetMapForTesting());
     child_resource_provider_ = base::MakeUnique<ResourceProvider>(
-        child_output_surface_->context_provider(), shared_bitmap_manager_.get(),
+        child_context_provider_.get(), shared_bitmap_manager_.get(),
         child_gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
-        0, 1,
-        child_output_surface_->capabilities().delegated_sync_points_required,
-        kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
+        0, 1, child_needs_sync_token, kUseGpuMemoryBufferResources,
+        kEnableColorCorrectRendering,
         DefaultBufferToTextureTargetMapForTesting());
   }
 
@@ -541,10 +525,8 @@ class ResourceProviderTest
   std::unique_ptr<ContextSharedData> shared_data_;
   ResourceProviderContext* context3d_;
   ResourceProviderContext* child_context_;
-  FakeOutputSurfaceClient output_surface_client_;
-  FakeOutputSurfaceClient child_output_surface_client_;
-  std::unique_ptr<OutputSurface> output_surface_;
-  std::unique_ptr<OutputSurface> child_output_surface_;
+  scoped_refptr<TestContextProvider> context_provider_;
+  scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
@@ -1262,7 +1244,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   EXPECT_EQ(0u, returned_to_child.size());
 
   EXPECT_EQ(2u, resource_provider_->num_resources());
-  resource_provider_->DidLoseOutputSurface();
+  resource_provider_->DidLoseContextProvider();
   resource_provider_ = nullptr;
 
   EXPECT_EQ(2u, returned_to_child.size());
@@ -1480,20 +1462,17 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_BITMAP)
     return;
 
-  std::unique_ptr<ResourceProviderContext> child_context_owned(
-      ResourceProviderContext::Create(shared_data_.get()));
-
-  FakeOutputSurfaceClient child_output_surface_client;
-  std::unique_ptr<OutputSurface> child_output_surface(
-      FakeOutputSurface::Create3d(std::move(child_context_owned)));
-  CHECK(child_output_surface->BindToClient(&child_output_surface_client));
+  scoped_refptr<TestContextProvider> child_context_provider =
+      TestContextProvider::Create(
+          ResourceProviderContext::Create(shared_data_.get()));
+  child_context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> child_resource_provider(
       base::MakeUnique<ResourceProvider>(
-          child_output_surface->context_provider(),
-          shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-          nullptr, 0, 1, kDelegatedSyncPointsRequired,
-          kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
+          child_context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
+          kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
+          kEnableColorCorrectRendering,
           DefaultBufferToTextureTargetMapForTesting()));
 
   gfx::Size size(1, 1);
@@ -2006,36 +1985,31 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
         new TextureStateTrackingContext);
     TextureStateTrackingContext* child_context = child_context_owned.get();
 
-    FakeOutputSurfaceClient child_output_surface_client;
-    std::unique_ptr<OutputSurface> child_output_surface(
-        FakeOutputSurface::Create3d(std::move(child_context_owned)));
-    CHECK(child_output_surface->BindToClient(&child_output_surface_client));
-    std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
-        new TestSharedBitmapManager());
+    auto child_context_provider =
+        TestContextProvider::Create(std::move(child_context_owned));
+    child_context_provider->BindToCurrentThread();
+    auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
 
     std::unique_ptr<ResourceProvider> child_resource_provider(
         base::MakeUnique<ResourceProvider>(
-            child_output_surface->context_provider(),
-            shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
-            kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kEnableColorCorrectRendering,
+            child_context_provider.get(), shared_bitmap_manager.get(), nullptr,
+            nullptr, 0, 1, kDelegatedSyncPointsRequired,
+            kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     std::unique_ptr<TextureStateTrackingContext> parent_context_owned(
         new TextureStateTrackingContext);
     TextureStateTrackingContext* parent_context = parent_context_owned.get();
 
-    FakeOutputSurfaceClient parent_output_surface_client;
-    std::unique_ptr<OutputSurface> parent_output_surface(
-        FakeOutputSurface::Create3d(std::move(parent_context_owned)));
-    CHECK(parent_output_surface->BindToClient(&parent_output_surface_client));
+    auto parent_context_provider =
+        TestContextProvider::Create(std::move(parent_context_owned));
+    parent_context_provider->BindToCurrentThread();
 
     std::unique_ptr<ResourceProvider> parent_resource_provider(
         base::MakeUnique<ResourceProvider>(
-            parent_output_surface->context_provider(),
-            shared_bitmap_manager.get(), nullptr, nullptr, 0, 1,
-            kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
-            kEnableColorCorrectRendering,
+            parent_context_provider.get(), shared_bitmap_manager.get(), nullptr,
+            nullptr, 0, 1, kDelegatedSyncPointsRequired,
+            kUseGpuMemoryBufferResources, kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
 
     gfx::Size size(1, 1);
@@ -2351,7 +2325,7 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
   }
 
   // Lose the output surface in the parent.
-  resource_provider_->DidLoseOutputSurface();
+  resource_provider_->DidLoseContextProvider();
 
   {
     EXPECT_EQ(0u, returned_to_child.size());
@@ -2482,7 +2456,7 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
   }
 
   // Lose the output surface in the parent.
-  resource_provider_->DidLoseOutputSurface();
+  resource_provider_->DidLoseContextProvider();
 
   {
     EXPECT_EQ(0u, returned_to_child.size());
@@ -2649,7 +2623,7 @@ TEST_P(ResourceProviderTest, LostContext) {
   EXPECT_FALSE(lost_resource);
   EXPECT_FALSE(main_thread_task_runner);
 
-  resource_provider_->DidLoseOutputSurface();
+  resource_provider_->DidLoseContextProvider();
   resource_provider_ = nullptr;
 
   EXPECT_LE(sync_token.release_count(), release_sync_token.release_count());
@@ -2665,15 +2639,12 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -2748,15 +2719,12 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -2795,15 +2763,12 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -2843,15 +2808,12 @@ TEST_P(ResourceProviderTest, TextureHint) {
   TextureStateTrackingContext* context = context_owned.get();
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -2905,15 +2867,9 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   std::unique_ptr<SharedBitmap> shared_bitmap(
       CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateSoftware(
-          base::WrapUnique(new SoftwareOutputDevice)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          nullptr, shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0,
           1, kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -2957,15 +2913,13 @@ class ResourceProviderTestTextureMailboxGLFilters
     std::unique_ptr<TextureStateTrackingContext> context_owned(
         new TextureStateTrackingContext);
     TextureStateTrackingContext* context = context_owned.get();
-
-    FakeOutputSurfaceClient output_surface_client;
-    std::unique_ptr<OutputSurface> output_surface(
-        FakeOutputSurface::Create3d(std::move(context_owned)));
-    CHECK(output_surface->BindToClient(&output_surface_client));
+    auto context_provider =
+        TestContextProvider::Create(std::move(context_owned));
+    context_provider->BindToCurrentThread();
 
     std::unique_ptr<ResourceProvider> resource_provider(
         base::MakeUnique<ResourceProvider>(
-            output_surface->context_provider(), shared_bitmap_manager,
+            context_provider.get(), shared_bitmap_manager,
             gpu_memory_buffer_manager, main_thread_task_runner, 0, 1,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
             kEnableColorCorrectRendering,
@@ -3105,15 +3059,12 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3178,15 +3129,12 @@ TEST_P(ResourceProviderTest,
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3237,15 +3185,12 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   std::unique_ptr<TextureStateTrackingContext> context_owned(
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3362,15 +3307,12 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3423,15 +3365,12 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
   AllocationTrackingContext3D* context = context_owned.get();
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3482,15 +3421,12 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
   context->set_support_texture_format_bgra8888(true);
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3536,11 +3472,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   const int kWidth = 2;
   const int kHeight = 2;
@@ -3552,7 +3485,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
 
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3625,16 +3558,13 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
       new AllocationTrackingContext3D);
   AllocationTrackingContext3D* context = context_owned.get();
   context_owned->set_support_compressed_texture_etc1(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3660,16 +3590,13 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
       new AllocationTrackingContext3D);
   AllocationTrackingContext3D* context = context_owned.get();
   context_owned->set_support_compressed_texture_etc1(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
   std::unique_ptr<ResourceProvider> resource_provider(
       base::MakeUnique<ResourceProvider>(
-          output_surface->context_provider(), shared_bitmap_manager_.get(),
+          context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr, 0, 1,
           kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
           kEnableColorCorrectRendering,
@@ -3714,13 +3641,9 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
   std::unique_ptr<TextureIdAllocationTrackingContext> context_owned(
       new TextureIdAllocationTrackingContext);
   TextureIdAllocationTrackingContext* context = context_owned.get();
-
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(context_owned)));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+  auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -3729,8 +3652,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
     size_t kTextureAllocationChunkSize = 1;
     std::unique_ptr<ResourceProvider> resource_provider(
         base::MakeUnique<ResourceProvider>(
-            output_surface->context_provider(), shared_bitmap_manager.get(),
-            nullptr, nullptr, 0, kTextureAllocationChunkSize,
+            context_provider.get(), shared_bitmap_manager.get(), nullptr,
+            nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
             kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));
@@ -3749,8 +3672,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
     size_t kTextureAllocationChunkSize = 8;
     std::unique_ptr<ResourceProvider> resource_provider(
         base::MakeUnique<ResourceProvider>(
-            output_surface->context_provider(), shared_bitmap_manager.get(),
-            nullptr, nullptr, 0, kTextureAllocationChunkSize,
+            context_provider.get(), shared_bitmap_manager.get(), nullptr,
+            nullptr, 0, kTextureAllocationChunkSize,
             kDelegatedSyncPointsRequired, kUseGpuMemoryBufferResources,
             kEnableColorCorrectRendering,
             DefaultBufferToTextureTargetMapForTesting()));

@@ -23,8 +23,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/output_surface.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/input/synthetic_gesture_packet.h"
@@ -747,13 +747,13 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
   GetWebWidget()->beginFrame(frame_time_sec);
 }
 
-std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
-    bool fallback) {
+std::unique_ptr<cc::CompositorFrameSink>
+RenderWidget::CreateCompositorFrameSink(bool fallback) {
   DCHECK(GetWebWidget());
   // For widgets that are never visible, we don't start the compositor, so we
-  // never get a request for a cc::OutputSurface.
+  // never get a request for a cc::CompositorFrameSink.
   DCHECK(!compositor_never_visible_);
-  return RenderThreadImpl::current()->CreateCompositorOutputSurface(
+  return RenderThreadImpl::current()->CreateCompositorFrameSink(
       fallback, routing_id_, frame_swap_message_queue_,
       GetURLForGraphicsContext3D());
 }
@@ -1142,7 +1142,7 @@ void RenderWidget::initializeLayerTreeView() {
   OnDeviceScaleFactorChanged();
   compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
   // For background pages and certain tests, we don't want to trigger
-  // OutputSurface creation.
+  // CompositorFrameSink creation.
   if (compositor_never_visible_ || !RenderThreadImpl::current())
     compositor_->SetNeverVisible();
 

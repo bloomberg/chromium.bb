@@ -27,7 +27,8 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
 
  private:
   // ContextFactory:
-  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
+  void CreateCompositorFrameSink(
+      base::WeakPtr<ui::Compositor> compositor) override;
   std::unique_ptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer) override;

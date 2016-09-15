@@ -67,7 +67,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
       compositor_(nullptr),
       tick_clock_(new base::DefaultTickClock()),
-      last_output_surface_id_(0),
+      last_compositor_frame_sink_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
       background_color_(SK_ColorRED),
@@ -395,7 +395,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 }
 
-void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
+void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
                                             cc::CompositorFrame frame) {
   DCHECK(frame.delegated_frame_data.get());
 #if defined(OS_CHROMEOS)
@@ -427,7 +427,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
                                       frame.metadata.latency_info.end());
 
     client_->DelegatedFrameHostSendReclaimCompositorResources(
-        output_surface_id, true /* is_swap_ack*/, resources);
+        compositor_frame_sink_id, true /* is_swap_ack*/, resources);
     skipped_frames_ = true;
     return;
   }
@@ -442,7 +442,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
     root_pass->damage_rect = damage_rect;
   }
 
-  if (output_surface_id != last_output_surface_id_) {
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
     // Resource ids are scoped by the output surface.
     // If the originating output surface doesn't match the last one, it
     // indicates the renderer's output surface may have been recreated, in which
@@ -454,10 +454,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
 
     surface_factory_.reset();
     if (!surface_returned_resources_.empty()) {
-      SendReclaimCompositorResources(last_output_surface_id_,
+      SendReclaimCompositorResources(last_compositor_frame_sink_id_,
                                      false /* is_swap_ack */);
     }
-    last_output_surface_id_ = output_surface_id;
+    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
   }
   bool skip_frame = false;
   pending_delegated_ack_count_++;
@@ -505,7 +505,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
     cc::SurfaceFactory::DrawCallback ack_callback;
     if (compositor_ && !skip_frame) {
       ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
-                                output_surface_id);
+                                compositor_frame_sink_id);
     }
     surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                             ack_callback);
@@ -524,7 +524,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
   // Note that |compositor_| may be reset by SetShowSurface or
   // SetShowDelegatedContent above.
   if (!compositor_ || skip_frame) {
-    SendReclaimCompositorResources(output_surface_id, true /* is_swap_ack */);
+    SendReclaimCompositorResources(compositor_frame_sink_id,
+                                   true /* is_swap_ack */);
   } else {
     can_lock_compositor_ = NO_PENDING_COMMIT;
   }
@@ -541,10 +542,10 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
 }
 
 void DelegatedFrameHost::SendReclaimCompositorResources(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     bool is_swap_ack) {
   client_->DelegatedFrameHostSendReclaimCompositorResources(
-      output_surface_id, is_swap_ack, surface_returned_resources_);
+      compositor_frame_sink_id, is_swap_ack, surface_returned_resources_);
   surface_returned_resources_.clear();
   if (is_swap_ack) {
     DCHECK_GT(pending_delegated_ack_count_, 0);
@@ -552,8 +553,9 @@ void DelegatedFrameHost::SendReclaimCompositorResources(
   }
 }
 
-void DelegatedFrameHost::SurfaceDrawn(uint32_t output_surface_id) {
-  SendReclaimCompositorResources(output_surface_id, true /* is_swap_ack */);
+void DelegatedFrameHost::SurfaceDrawn(uint32_t compositor_frame_sink_id) {
+  SendReclaimCompositorResources(compositor_frame_sink_id,
+                                 true /* is_swap_ack */);
 }
 
 void DelegatedFrameHost::ReturnResources(
@@ -563,7 +565,7 @@ void DelegatedFrameHost::ReturnResources(
   std::copy(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
   if (!pending_delegated_ack_count_) {
-    SendReclaimCompositorResources(last_output_surface_id_,
+    SendReclaimCompositorResources(last_compositor_frame_sink_id_,
                                    false /* is_swap_ack */);
   }
 }

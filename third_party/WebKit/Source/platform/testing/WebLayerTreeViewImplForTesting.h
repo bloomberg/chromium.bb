@@ -84,9 +84,9 @@ public:
         const gfx::Vector2dF& elasticOverscrollDelta,
         float pageScale,
         float topControlsDelta) override;
-    void RequestNewOutputSurface() override;
-    void DidInitializeOutputSurface() override {}
-    void DidFailToInitializeOutputSurface() override;
+    void RequestNewCompositorFrameSink() override;
+    void DidInitializeCompositorFrameSink() override {}
+    void DidFailToInitializeCompositorFrameSink() override;
     void WillCommit() override {}
     void DidCommit() override {}
     void DidCommitAndDrawFrame() override {}

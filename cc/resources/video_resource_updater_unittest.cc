@@ -93,23 +93,18 @@ class VideoResourceUpdaterTest : public testing::Test {
     context3d_ = context3d.get();
     context3d_->set_support_texture_storage(true);
 
-    output_surface3d_ = FakeOutputSurface::Create3d(std::move(context3d));
-    CHECK(output_surface3d_->BindToClient(&client_));
+    context_provider_ = TestContextProvider::Create(std::move(context3d));
+    context_provider_->BindToCurrentThread();
   }
 
   void SetUp() override {
     testing::Test::SetUp();
 
-    output_surface_software_ = FakeOutputSurface::CreateSoftware(
-        base::WrapUnique(new SoftwareOutputDevice));
-    CHECK(output_surface_software_->BindToClient(&client_));
-
     shared_bitmap_manager_.reset(new SharedBitmapManagerAllocationCounter());
     resource_provider3d_ = FakeResourceProvider::Create(
-        output_surface3d_.get(), shared_bitmap_manager_.get());
-
-    resource_provider_software_ = FakeResourceProvider::Create(
-        output_surface_software_.get(), shared_bitmap_manager_.get());
+        context_provider_.get(), shared_bitmap_manager_.get());
+    resource_provider_software_ =
+        FakeResourceProvider::Create(nullptr, shared_bitmap_manager_.get());
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
@@ -241,16 +236,14 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   WebGraphicsContext3DUploadCounter* context3d_;
-  FakeOutputSurfaceClient client_;
-  std::unique_ptr<FakeOutputSurface> output_surface3d_;
-  std::unique_ptr<FakeOutputSurface> output_surface_software_;
+  scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManagerAllocationCounter> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider3d_;
   std::unique_ptr<ResourceProvider> resource_provider_software_;
 };
 
 TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
@@ -260,7 +253,7 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
 }
 
 TEST_F(VideoResourceUpdaterTest, HighBitFrameNoF16) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
 
@@ -277,7 +270,7 @@ class VideoResourceUpdaterTestWithF16 : public VideoResourceUpdaterTest {
 };
 
 TEST_F(VideoResourceUpdaterTestWithF16, HighBitFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
 
@@ -296,7 +289,7 @@ TEST_F(VideoResourceUpdaterTest, HighBitFrameSoftwareCompositor) {
 }
 
 TEST_F(VideoResourceUpdaterTest, WonkySoftwareFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateWonkyTestYUVVideoFrame();
 
@@ -315,7 +308,7 @@ TEST_F(VideoResourceUpdaterTest, WonkySoftwareFrameSoftwareCompositor) {
 }
 
 TEST_F(VideoResourceUpdaterTest, ReuseResource) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
   video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
@@ -347,7 +340,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
 }
 
 TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDelete) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
   video_frame->set_timestamp(base::TimeDelta::FromSeconds(1234));
@@ -441,7 +434,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
 
   scoped_refptr<media::VideoFrame> video_frame =
@@ -473,7 +466,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
+  VideoResourceUpdater updater(context_provider_.get(),
                                resource_provider3d_.get());
   context3d_->ResetTextureCreationCount();
   scoped_refptr<media::VideoFrame> video_frame =

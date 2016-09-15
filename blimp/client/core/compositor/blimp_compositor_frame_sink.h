@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_CORE_COMPOSITOR_DELEGATED_OUTPUT_SURFACE_H_
-#define BLIMP_CLIENT_CORE_COMPOSITOR_DELEGATED_OUTPUT_SURFACE_H_
+#ifndef BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_FRAME_SINK_H_
+#define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_FRAME_SINK_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "blimp/client/core/compositor/blimp_output_surface.h"
-#include "cc/output/output_surface.h"
+#include "blimp/client/core/compositor/blimp_compositor_frame_sink_proxy.h"
+#include "cc/output/compositor_frame_sink.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,44 +26,44 @@ namespace client {
 
 // This class is created on the main thread, but then becomes bound to the
 // compositor thread and will be destroyed there (soon, crbug.com/640730).
-class DelegatedOutputSurface : public cc::OutputSurface,
-                               public BlimpOutputSurface {
+class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
+                                 public BlimpCompositorFrameSinkProxyClient {
  public:
-  DelegatedOutputSurface(
+  BlimpCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      base::WeakPtr<BlimpOutputSurfaceClient> client);
+      base::WeakPtr<BlimpCompositorFrameSinkProxy> main_thread_proxy);
 
-  ~DelegatedOutputSurface() override;
+  ~BlimpCompositorFrameSink() override;
 
-  // cc::OutputSurface implementation.
+  // cc::CompositorFrameSink implementation.
   uint32_t GetFramebufferCopyTextureFormat() override;
-  bool BindToClient(cc::OutputSurfaceClient* client) override;
+  bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void SwapBuffers(cc::CompositorFrame frame) override;
   void DetachFromClient() override;
 
-  // BlimpOutputSurface implementation.
+  // BlimpCompositorFrameSinkProxyClient implementation.
   void ReclaimCompositorResources(
       const cc::ReturnedResourceArray& resources) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  base::WeakPtr<BlimpOutputSurfaceClient> blimp_client_;
+  base::WeakPtr<BlimpCompositorFrameSinkProxy> main_thread_proxy_;
 
   bool bound_to_client_;
 
-  // This OutputSurface is responsible for providing the BeginFrameSource to
-  // drive frame creation.  This will be built on the compositor impl thread at
-  // BindToClient call time.
+  // This CompositorFrameSink is responsible for providing the BeginFrameSource
+  // to drive frame creation.  This will be built on the compositor impl thread
+  // at BindToClient call time.
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
 
-  base::WeakPtrFactory<DelegatedOutputSurface> weak_factory_;
+  base::WeakPtrFactory<BlimpCompositorFrameSink> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DelegatedOutputSurface);
+  DISALLOW_COPY_AND_ASSIGN(BlimpCompositorFrameSink);
 };
 
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_CORE_COMPOSITOR_DELEGATED_OUTPUT_SURFACE_H_
+#endif  // BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_FRAME_SINK_H_

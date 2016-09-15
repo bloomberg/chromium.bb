@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_delegating_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 
 #include <stdint.h>
 #include <utility>
 
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
 
 namespace cc {
 
-TestDelegatingOutputSurface::TestDelegatingOutputSurface(
+TestCompositorFrameSink::TestCompositorFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     std::unique_ptr<OutputSurface> display_output_surface,
@@ -26,9 +28,9 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
     base::SingleThreadTaskRunner* task_runner,
     bool synchronous_composite,
     bool force_disable_reclaim_resources)
-    : OutputSurface(std::move(compositor_context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+    : CompositorFrameSink(std::move(compositor_context_provider),
+                          std::move(worker_context_provider),
+                          nullptr),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(new SurfaceIdAllocator(kCompositorClientId)),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
@@ -59,8 +61,8 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
                   base::MakeUnique<TextureMailboxDeleter>(task_runner)));
 
   capabilities_.delegated_rendering = true;
-  // Since this OutputSurface and the Display are tightly coupled and in the
-  // same process/thread, the LayerTreeHostImpl can reclaim resources from
+  // Since this CompositorFrameSink and the Display are tightly coupled and in
+  // the same process/thread, the LayerTreeHostImpl can reclaim resources from
   // the Display. But we allow tests to disable this to mimic an out-of-process
   // Display.
   capabilities_.can_force_reclaim_resources = !force_disable_reclaim_resources;
@@ -68,20 +70,20 @@ TestDelegatingOutputSurface::TestDelegatingOutputSurface(
       !context_shared_with_compositor;
 }
 
-TestDelegatingOutputSurface::~TestDelegatingOutputSurface() {
+TestCompositorFrameSink::~TestCompositorFrameSink() {
   DCHECK(copy_requests_.empty());
 }
 
-void TestDelegatingOutputSurface::RequestCopyOfOutput(
+void TestCompositorFrameSink::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> request) {
   copy_requests_.push_back(std::move(request));
 }
 
-bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
-  if (!OutputSurface::BindToClient(client))
+bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
+  if (!CompositorFrameSink::BindToClient(client))
     return false;
 
-  // We want the Display's output surface to hear about lost context, and since
+  // We want the Display's OutputSurface to hear about lost context, and since
   // this shares a context with it (when delegated_sync_points_required is
   // false), we should not be listening for lost context callbacks on the
   // context here.
@@ -100,7 +102,7 @@ bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
   return true;
 }
 
-void TestDelegatingOutputSurface::DetachFromClient() {
+void TestCompositorFrameSink::DetachFromClient() {
   // Some tests make BindToClient fail on purpose. ^__^
   if (bound_) {
     if (!delegated_surface_id_.is_null())
@@ -116,10 +118,10 @@ void TestDelegatingOutputSurface::DetachFromClient() {
   surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   weak_ptrs_.InvalidateWeakPtrs();
-  OutputSurface::DetachFromClient();
+  CompositorFrameSink::DetachFromClient();
 }
 
-void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
+void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   if (test_client_)
     test_client_->DisplayReceivedCompositorFrame(frame);
 
@@ -138,7 +140,7 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
 
   surface_factory_->SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
-      base::Bind(&TestDelegatingOutputSurface::DidDrawCallback,
+      base::Bind(&TestCompositorFrameSink::DidDrawCallback,
                  weak_ptrs_.GetWeakPtr(), synchronous));
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_)
@@ -150,20 +152,20 @@ void TestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
     display_->DrawAndSwap();
 }
 
-void TestDelegatingOutputSurface::DidDrawCallback(bool synchronous) {
+void TestCompositorFrameSink::DidDrawCallback(bool synchronous) {
   // This is the frame ack to unthrottle the next frame, not actually a notice
   // that drawing is done.
   if (synchronous) {
     // For synchronous draws, this must be posted to a new stack because we are
     // still the original call to SwapBuffers, and we want to leave that before
     // saying that it is done.
-    OutputSurface::PostSwapBuffersComplete();
+    CompositorFrameSink::PostSwapBuffersComplete();
   } else {
     client_->DidSwapBuffersComplete();
   }
 }
 
-void TestDelegatingOutputSurface::ForceReclaimResources() {
+void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
       !delegated_surface_id_.is_null()) {
     surface_factory_->SubmitCompositorFrame(delegated_surface_id_,
@@ -172,39 +174,39 @@ void TestDelegatingOutputSurface::ForceReclaimResources() {
   }
 }
 
-void TestDelegatingOutputSurface::BindFramebuffer() {
+void TestCompositorFrameSink::BindFramebuffer() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
 }
 
-uint32_t TestDelegatingOutputSurface::GetFramebufferCopyTextureFormat() {
+uint32_t TestCompositorFrameSink::GetFramebufferCopyTextureFormat() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
   return 0;
 }
 
-void TestDelegatingOutputSurface::ReturnResources(
+void TestCompositorFrameSink::ReturnResources(
     const ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
 }
 
-void TestDelegatingOutputSurface::SetBeginFrameSource(
+void TestCompositorFrameSink::SetBeginFrameSource(
     BeginFrameSource* begin_frame_source) {
   client_->SetBeginFrameSource(begin_frame_source);
 }
 
-void TestDelegatingOutputSurface::DisplayOutputSurfaceLost() {
-  client_->DidLoseOutputSurface();
+void TestCompositorFrameSink::DisplayOutputSurfaceLost() {
+  client_->DidLoseCompositorFrameSink();
 }
 
-void TestDelegatingOutputSurface::DisplayWillDrawAndSwap(
+void TestCompositorFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
   if (test_client_)
     test_client_->DisplayWillDrawAndSwap(will_draw_and_swap, render_passes);
 }
 
-void TestDelegatingOutputSurface::DisplayDidDrawAndSwap() {
+void TestCompositorFrameSink::DisplayDidDrawAndSwap() {
   if (test_client_)
     test_client_->DisplayDidDrawAndSwap();
 }

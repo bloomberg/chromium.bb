@@ -49,7 +49,8 @@ class GpuProcessTransportFactory
   ~GpuProcessTransportFactory() override;
 
   // ui::ContextFactory implementation.
-  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
+  void CreateCompositorFrameSink(
+      base::WeakPtr<ui::Compositor> compositor) override;
   std::unique_ptr<ui::Reflector> CreateReflector(ui::Compositor* source,
                                                  ui::Layer* target) override;
   void RemoveReflector(ui::Reflector* reflector) override;

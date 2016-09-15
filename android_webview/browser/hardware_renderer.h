@@ -47,7 +47,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   void ReturnResourcesInChildFrame();
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
                                    const CompositorID& compositor_id,
-                                   uint32_t output_surface_id);
+                                   uint32_t compositor_frame_sink_id);
 
   void AllocateSurface();
   void DestroySurface();
@@ -74,9 +74,10 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   cc::SurfaceId child_id_;
   CompositorID compositor_id_;
   // HardwareRenderer guarantees resources are returned in the order of
-  // output_surface_id, and resources for old output surfaces are dropped.
-  uint32_t last_committed_output_surface_id_;
-  uint32_t last_submitted_output_surface_id_;
+  // compositor_frame_sink_id, and resources for old output surfaces are
+  // dropped.
+  uint32_t last_committed_compositor_frame_sink_id_;
+  uint32_t last_submitted_compositor_frame_sink_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRenderer);
 };

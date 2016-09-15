@@ -16,10 +16,10 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/test/fake_client_picture_cache.h"
+#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_engine_picture_cache.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
@@ -253,12 +253,12 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<FakeOutputSurface> output_surface =
-      FakeOutputSurface::CreateDelegatingSoftware();
+  std::unique_ptr<FakeCompositorFrameSink> compositor_frame_sink =
+      FakeCompositorFrameSink::CreateSoftware();
   FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
-  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
   std::unique_ptr<FakePictureLayerImpl> layer_impl =
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);
@@ -294,15 +294,15 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateDelegating3d());
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
+      FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
@@ -338,15 +338,15 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   host->CommitComplete();
   FakeImplTaskRunnerProvider impl_task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateDelegating3d());
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
+      FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.InitializeRenderer(compositor_frame_sink.get());
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
@@ -386,15 +386,15 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
   TestSharedBitmapManager shared_bitmap_manager;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateDelegating3d());
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
+      FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
+  EXPECT_TRUE(host_impl.InitializeRenderer(compositor_frame_sink.get()));
 
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(

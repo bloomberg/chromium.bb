@@ -30,7 +30,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(std::move(context_provider),
                     std::move(worker_context_provider),
                     std::move(software_device)) {
-  capabilities_.delegated_rendering = delegated_rendering;
+  capabilities_.delegated_rendering = false;
 }
 
 FakeOutputSurface::~FakeOutputSurface() = default;

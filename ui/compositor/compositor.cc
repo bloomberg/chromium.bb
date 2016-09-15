@@ -79,7 +79,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       window_(nullptr),
 #endif
       widget_valid_(false),
-      output_surface_requested_(false),
+      compositor_frame_sink_requested_(false),
       surface_id_allocator_(new cc::SurfaceIdAllocator(
           context_factory->AllocateSurfaceClientId())),
       task_runner_(task_runner),
@@ -184,7 +184,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // thread.
   settings.image_decode_tasks_enabled = false;
 
-  settings.use_output_surface_begin_frame_source = true;
+  settings.use_compositor_frame_sink_begin_frame_source = true;
 
   settings.gpu_memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
   settings.gpu_memory_policy.priority_cutoff_when_visible =
@@ -263,10 +263,10 @@ void Compositor::RemoveSurfaceClient(uint32_t client_id) {
   surface_clients_.erase(it);
 }
 
-void Compositor::SetOutputSurface(
-    std::unique_ptr<cc::OutputSurface> output_surface) {
-  output_surface_requested_ = false;
-  host_->SetOutputSurface(std::move(output_surface));
+void Compositor::SetCompositorFrameSink(
+    std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink) {
+  compositor_frame_sink_requested_ = false;
+  host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
   // Display properties are reset when the output surface is lost, so update it
   // to match the Compositor's.
   context_factory_->SetDisplayVisible(this, host_->IsVisible());
@@ -388,13 +388,13 @@ void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   DCHECK(!widget_valid_);
   widget_ = widget;
   widget_valid_ = true;
-  if (output_surface_requested_)
-    context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
+  if (compositor_frame_sink_requested_)
+    context_factory_->CreateCompositorFrameSink(weak_ptr_factory_.GetWeakPtr());
 }
 
 gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
   DCHECK(!IsVisible());
-  host_->ReleaseOutputSurface();
+  host_->ReleaseCompositorFrameSink();
   context_factory_->RemoveCompositor(this);
   widget_valid_ = false;
   gfx::AcceleratedWidget widget = widget_;
@@ -472,18 +472,18 @@ void Compositor::UpdateLayerTreeHost() {
   SendDamagedRectsRecursive(root_layer());
 }
 
-void Compositor::RequestNewOutputSurface() {
-  DCHECK(!output_surface_requested_);
-  output_surface_requested_ = true;
+void Compositor::RequestNewCompositorFrameSink() {
+  DCHECK(!compositor_frame_sink_requested_);
+  compositor_frame_sink_requested_ = true;
   if (widget_valid_)
-    context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
+    context_factory_->CreateCompositorFrameSink(weak_ptr_factory_.GetWeakPtr());
 }
 
-void Compositor::DidInitializeOutputSurface() {
-}
+void Compositor::DidInitializeCompositorFrameSink() {}
 
-void Compositor::DidFailToInitializeOutputSurface() {
-  // The OutputSurface should already be bound/initialized before being given to
+void Compositor::DidFailToInitializeCompositorFrameSink() {
+  // The CompositorFrameSink should already be bound/initialized before being
+  // given to
   // the Compositor.
   NOTREACHED();
 }

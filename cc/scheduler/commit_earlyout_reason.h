@@ -15,7 +15,7 @@ class CommitEarlyOutReason;
 }
 
 enum class CommitEarlyOutReason {
-  ABORTED_OUTPUT_SURFACE_LOST,
+  ABORTED_COMPOSITOR_FRAME_SINK_LOST,
   ABORTED_NOT_VISIBLE,
   ABORTED_DEFERRED_COMMIT,
   FINISHED_NO_UPDATES,
@@ -31,8 +31,8 @@ CC_EXPORT void CommitEarlyOutReasonToProtobuf(
 
 inline const char* CommitEarlyOutReasonToString(CommitEarlyOutReason reason) {
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
-      return "CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST";
+    case CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST:
+      return "CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST";
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
       return "CommitEarlyOutReason::ABORTED_NOT_VISIBLE";
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:

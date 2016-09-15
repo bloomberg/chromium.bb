@@ -17,9 +17,9 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
+#include "cc/surfaces/direct_compositor_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -106,6 +106,7 @@ InProcessContextFactory::InProcessContextFactory(
       use_test_surface_(true),
       context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
+  DCHECK(surface_manager);
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
@@ -119,7 +120,7 @@ void InProcessContextFactory::SendOnLostResources() {
   FOR_EACH_OBSERVER(ContextFactoryObserver, observer_list_, OnLostResources());
 }
 
-void InProcessContextFactory::CreateOutputSurface(
+void InProcessContextFactory::CreateCompositorFrameSink(
     base::WeakPtr<Compositor> compositor) {
   // Try to reuse existing shared worker context provider.
   bool shared_worker_context_provider_lost = false;
@@ -167,30 +168,25 @@ void InProcessContextFactory::CreateOutputSurface(
         context_provider, shared_worker_context_provider_);
   }
 
-  if (surface_manager_) {
-    std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
-        new cc::DelayBasedBeginFrameSource(
-            base::MakeUnique<cc::DelayBasedTimeSource>(
-                compositor->task_runner().get())));
-    std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-        begin_frame_source.get(), compositor->task_runner().get(),
-        display_output_surface->capabilities().max_frames_pending));
-    per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
-        GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
-        compositor->GetRendererSettings(), std::move(begin_frame_source),
-        std::move(display_output_surface), std::move(scheduler),
-        base::MakeUnique<cc::TextureMailboxDeleter>(
-            compositor->task_runner().get()));
+  std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
+      new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(
+              compositor->task_runner().get())));
+  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+      begin_frame_source.get(), compositor->task_runner().get(),
+      display_output_surface->capabilities().max_frames_pending));
+  per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
+      GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
+      compositor->GetRendererSettings(), std::move(begin_frame_source),
+      std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<cc::TextureMailboxDeleter>(
+          compositor->task_runner().get()));
 
-    auto* display = per_compositor_data_[compositor.get()].get();
-    std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
-        new cc::SurfaceDisplayOutputSurface(
-            surface_manager_, compositor->surface_id_allocator(), display,
-            context_provider, shared_worker_context_provider_));
-    compositor->SetOutputSurface(std::move(surface_output_surface));
-  } else {
-    compositor->SetOutputSurface(std::move(display_output_surface));
-  }
+  auto* display = per_compositor_data_[compositor.get()].get();
+  auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
+      surface_manager_, compositor->surface_id_allocator(), display,
+      context_provider, shared_worker_context_provider_);
+  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 std::unique_ptr<Reflector> InProcessContextFactory::CreateReflector(

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/top_controls_state.h"
-#include "cc/output/output_surface.h"
 #include "cc/trees/channel_main.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
@@ -19,6 +18,7 @@ namespace cc {
 class AnimationEvents;
 class BeginFrameSource;
 class ChannelMain;
+class CompositorFrameSink;
 class LayerTreeHost;
 class LayerTreeMutator;
 
@@ -52,9 +52,9 @@ class CC_EXPORT ProxyMain : public Proxy {
   void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
-  void DidLoseOutputSurface();
-  void RequestNewOutputSurface();
-  void DidInitializeOutputSurface(bool success);
+  void DidLoseCompositorFrameSink();
+  void RequestNewCompositorFrameSink();
+  void DidInitializeCompositorFrameSink(bool success);
   void DidCompletePageScaleAnimation();
   void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
@@ -80,7 +80,8 @@ class CC_EXPORT ProxyMain : public Proxy {
   // Proxy implementation.
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(OutputSurface* output_surface) override;
+  void SetCompositorFrameSink(
+      CompositorFrameSink* compositor_frame_sink) override;
   void SetVisible(bool visible) override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
@@ -98,7 +99,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool SupportsImplScrolling() const override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool MainFrameWillHappenForTesting() override;
-  void ReleaseOutputSurface() override;
+  void ReleaseCompositorFrameSink() override;
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override;

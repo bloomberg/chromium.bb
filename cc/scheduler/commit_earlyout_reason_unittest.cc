@@ -18,9 +18,9 @@ CommitEarlyOutReason SerializeAndDeserializeReason(
 }
 
 TEST(CommitEarlyOutReasonUnittest, SerializeCommitEarlyOutReason) {
-  EXPECT_EQ(CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST,
+  EXPECT_EQ(CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST,
             SerializeAndDeserializeReason(
-                CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST));
+                CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST));
 
   EXPECT_EQ(
       CommitEarlyOutReason::ABORTED_NOT_VISIBLE,

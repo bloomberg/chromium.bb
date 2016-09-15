@@ -265,8 +265,9 @@ void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
       src_subrect, target, callback_with_decrement);
 }
 
-void BrowserCompositorMac::SwapCompositorFrame(uint32_t output_surface_id,
-                                               cc::CompositorFrame frame) {
+void BrowserCompositorMac::SwapCompositorFrame(
+    uint32_t compositor_frame_sink_id,
+    cc::CompositorFrame frame) {
   // Compute the frame size based on the root render pass rect size.
   cc::RenderPass* root_pass =
       frame.delegated_frame_data->render_pass_list.back().get();
@@ -278,7 +279,7 @@ void BrowserCompositorMac::SwapCompositorFrame(uint32_t output_surface_id,
     recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
                                                           pixel_size);
   }
-  delegated_frame_host_->SwapDelegatedFrame(output_surface_id,
+  delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                             std::move(frame));
 }
 
@@ -435,11 +436,11 @@ void BrowserCompositorMac::DelegatedFrameHostResizeLockWasReleased() {
 }
 
 void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
-    int output_surface_id,
+    int compositor_frame_sink_id,
     bool is_swap_ack,
     const cc::ReturnedResourceArray& resources) {
   client_->BrowserCompositorMacSendReclaimCompositorResources(
-      output_surface_id, is_swap_ack, resources);
+      compositor_frame_sink_id, is_swap_ack, resources);
 }
 
 void BrowserCompositorMac::DelegatedFrameHostOnLostCompositorResources() {

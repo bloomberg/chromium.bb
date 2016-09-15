@@ -41,7 +41,7 @@ class CC_EXPORT LayerTreeSettings {
   // TODO(enne): Remove this after everything uses output surface begin frames.
   bool use_external_begin_frame_source = false;
   // TODO(enne): Temporary staging for unified begin frame source work.
-  bool use_output_surface_begin_frame_source = true;
+  bool use_compositor_frame_sink_begin_frame_source = true;
   bool main_frame_before_activation_enabled = false;
   bool using_synchronous_renderer_compositor = false;
   bool can_use_lcd_text = true;
@@ -92,7 +92,7 @@ class CC_EXPORT LayerTreeSettings {
   bool verify_transform_tree_calculations = false;
   bool image_decode_tasks_enabled = false;
   bool wait_for_beginframe_interval = true;
-  bool abort_commit_before_output_surface_creation = true;
+  bool abort_commit_before_compositor_frame_sink_creation = true;
   bool use_layer_lists = false;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
   ManagedMemoryPolicy gpu_memory_policy;

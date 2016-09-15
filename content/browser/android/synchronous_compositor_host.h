@@ -63,7 +63,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
-  void ReturnResources(uint32_t output_surface_id,
+  void ReturnResources(uint32_t compositor_frame_sink_id,
                        const cc::ReturnedResourceArray& resources) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset(
@@ -91,12 +91,12 @@ class SynchronousCompositorHost : public SynchronousCompositor {
                             SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
   void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
-  void OutputSurfaceCreated();
+  void CompositorFrameSinkCreated();
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
   SynchronousCompositor::Frame ProcessHardwareFrame(
-      uint32_t output_surface_id,
+      uint32_t compositor_frame_sink_id,
       cc::CompositorFrame compositor_frame);
   bool DemandDrawHwReceiveFrame(const IPC::Message& message);
 

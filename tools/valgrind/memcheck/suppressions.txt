@@ -2511,10 +2511,10 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content26GpuProcessTransportFactory23CreatePerCompositorDataEPN2ui10CompositorE
-   fun:_ZN7content26GpuProcessTransportFactory19CreateOutputSurfaceEN4base7WeakPtrIN2ui10CompositorEEE
-   fun:_ZN2ui10Compositor23RequestNewOutputSurfaceEv
-   fun:_ZN2cc13LayerTreeHost23RequestNewOutputSurfaceEv
-   fun:_ZN2cc17SingleThreadProxy23RequestNewOutputSurfaceEv
+   fun:_ZN7content26GpuProcessTransportFactory19CreateCompositorFrameSinkEN4base7WeakPtrIN2ui10CompositorEEE
+   fun:_ZN2ui10Compositor23RequestNewCompositorFrameSinkEv
+   fun:_ZN2cc13LayerTreeHost23RequestNewCompositorFrameSinkEv
+   fun:_ZN2cc17SingleThreadProxy23RequestNewCompositorFrameSinkEv
 }
 {
    bug_484459
@@ -2601,7 +2601,7 @@
    fun:_ZN2cc17SingleThreadProxy16DoBeginMainFrameERKNS_14BeginFrameArgsE
    fun:_ZN2cc17SingleThreadProxy20CompositeImmediatelyEN4base9TimeTicksE
    fun:_ZN2cc13LayerTreeHost9CompositeEN4base9TimeTicksE
-   fun:_ZN7content12_GLOBAL__N_135RenderWidgetCompositorOutputSurface20SynchronousCompositeEv
+   fun:_ZN7content12_GLOBAL__N_135RenderWidgetCompositorCompositorFrameSink20SynchronousCompositeEv
 }
 {
    bug_525328

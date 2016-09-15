@@ -146,12 +146,12 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
 {
 }
 
-void WebLayerTreeViewImplForTesting::RequestNewOutputSurface()
+void WebLayerTreeViewImplForTesting::RequestNewCompositorFrameSink()
 {
-    // Intentionally do not create and set an OutputSurface.
+    // Intentionally do not create and set an CompositorFrameSink.
 }
 
-void WebLayerTreeViewImplForTesting::DidFailToInitializeOutputSurface()
+void WebLayerTreeViewImplForTesting::DidFailToInitializeCompositorFrameSink()
 {
     ASSERT_NOT_REACHED();
 }

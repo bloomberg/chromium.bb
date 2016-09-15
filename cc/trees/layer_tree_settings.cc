@@ -102,8 +102,8 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
   scheduler_settings.throttle_frame_production = wait_for_beginframe_interval;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
-  scheduler_settings.abort_commit_before_output_surface_creation =
-      abort_commit_before_output_surface_creation;
+  scheduler_settings.abort_commit_before_compositor_frame_sink_creation =
+      abort_commit_before_compositor_frame_sink_creation;
   return scheduler_settings;
 }
 

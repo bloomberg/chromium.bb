@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/cpp/output_surface.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface_client.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gpu_service.h"
@@ -14,10 +14,10 @@
 
 namespace ui {
 
-OutputSurface::OutputSurface(
+CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     std::unique_ptr<ui::WindowSurface> surface)
-    : cc::OutputSurface(
+    : cc::CompositorFrameSink(
           make_scoped_refptr(new ContextProvider(std::move(gpu_channel_host))),
           nullptr,
           nullptr),
@@ -25,9 +25,9 @@ OutputSurface::OutputSurface(
   capabilities_.delegated_rendering = true;
 }
 
-OutputSurface::~OutputSurface() {}
+CompositorFrameSink::~CompositorFrameSink() {}
 
-bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
+bool CompositorFrameSink::BindToClient(cc::CompositorFrameSinkClient* client) {
   surface_->BindToThread();
   surface_->set_client(this);
 
@@ -37,43 +37,43 @@ bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
           base::ThreadTaskRunnerHandle::Get().get())));
 
   client->SetBeginFrameSource(begin_frame_source_.get());
-  return cc::OutputSurface::BindToClient(client);
+  return cc::CompositorFrameSink::BindToClient(client);
 }
 
-void OutputSurface::DetachFromClient() {
+void CompositorFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
   surface_.reset();
-  cc::OutputSurface::DetachFromClient();
+  cc::CompositorFrameSink::DetachFromClient();
 }
 
-void OutputSurface::BindFramebuffer() {
+void CompositorFrameSink::BindFramebuffer() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
 }
 
-uint32_t OutputSurface::GetFramebufferCopyTextureFormat() {
+uint32_t CompositorFrameSink::GetFramebufferCopyTextureFormat() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
   return 0;
 }
 
-void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
-  // OutputSurface owns WindowSurface, and so if OutputSurface is
+void CompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
+  // CompositorFrameSink owns WindowSurface, and so if CompositorFrameSink is
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.
   surface_->SubmitCompositorFrame(
-      std::move(frame),
-      base::Bind(&OutputSurface::SwapBuffersComplete, base::Unretained(this)));
+      std::move(frame), base::Bind(&CompositorFrameSink::SwapBuffersComplete,
+                                   base::Unretained(this)));
 }
 
-void OutputSurface::OnResourcesReturned(
+void CompositorFrameSink::OnResourcesReturned(
     ui::WindowSurface* surface,
     mojo::Array<cc::ReturnedResource> resources) {
   client_->ReclaimResources(resources.To<cc::ReturnedResourceArray>());
 }
 
-void OutputSurface::SwapBuffersComplete() {
+void CompositorFrameSink::SwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
 }
 

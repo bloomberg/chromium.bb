@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/android/synchronous_compositor_output_surface.h"
+#include "content/renderer/android/synchronous_compositor_frame_sink.h"
 
 #include <vector>
 
@@ -14,8 +14,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/output_surface_client.h"
+#include "cc/output/output_surface.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/texture_mailbox_deleter.h"
@@ -70,7 +71,7 @@ class SoftwareDevice : public cc::SoftwareOutputDevice {
 
 }  // namespace
 
-class SynchronousCompositorOutputSurface::SoftwareOutputSurface
+class SynchronousCompositorFrameSink::SoftwareOutputSurface
     : public cc::OutputSurface {
  public:
   SoftwareOutputSurface(std::unique_ptr<SoftwareDevice> software_device)
@@ -91,19 +92,19 @@ class SynchronousCompositorOutputSurface::SoftwareOutputSurface
   }
 };
 
-SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
+SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     int routing_id,
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
-    : cc::OutputSurface(std::move(context_provider),
-                        std::move(worker_context_provider),
-                        nullptr),
+    : cc::CompositorFrameSink(std::move(context_provider),
+                              std::move(worker_context_provider),
+                              nullptr),
       routing_id_(routing_id),
-      output_surface_id_(output_surface_id),
+      compositor_frame_sink_id_(compositor_frame_sink_id),
       registry_(registry),
       sender_(RenderThreadImpl::current()->sync_compositor_message_filter()),
       memory_policy_(0u),
@@ -122,21 +123,20 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 }
 
-SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() =
-    default;
+SynchronousCompositorFrameSink::~SynchronousCompositorFrameSink() = default;
 
-void SynchronousCompositorOutputSurface::SetSyncClient(
-    SynchronousCompositorOutputSurfaceClient* compositor) {
+void SynchronousCompositorFrameSink::SetSyncClient(
+    SynchronousCompositorFrameSinkClient* compositor) {
   DCHECK(CalledOnValidThread());
   sync_client_ = compositor;
   if (sync_client_)
-    Send(new SyncCompositorHostMsg_OutputSurfaceCreated(routing_id_));
+    Send(new SyncCompositorHostMsg_CompositorFrameSinkCreated(routing_id_));
 }
 
-bool SynchronousCompositorOutputSurface::OnMessageReceived(
+bool SynchronousCompositorFrameSink::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorOutputSurface, message)
+  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorFrameSink, message)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetMemoryPolicy, SetMemoryPolicy)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ReclaimResources, OnReclaimResources)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -144,19 +144,19 @@ bool SynchronousCompositorOutputSurface::OnMessageReceived(
   return handled;
 }
 
-bool SynchronousCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* surface_client) {
+bool SynchronousCompositorFrameSink::BindToClient(
+    cc::CompositorFrameSinkClient* sink_client) {
   DCHECK(CalledOnValidThread());
-  if (!cc::OutputSurface::BindToClient(surface_client))
+  if (!cc::CompositorFrameSink::BindToClient(sink_client))
     return false;
 
   DCHECK(begin_frame_source_);
   client_->SetBeginFrameSource(begin_frame_source_.get());
   client_->SetMemoryPolicy(memory_policy_);
   client_->SetTreeActivationCallback(
-      base::Bind(&SynchronousCompositorOutputSurface::DidActivatePendingTree,
+      base::Bind(&SynchronousCompositorFrameSink::DidActivatePendingTree,
                  base::Unretained(this)));
-  registry_->RegisterOutputSurface(routing_id_, this);
+  registry_->RegisterCompositorFrameSink(routing_id_, this);
   registered_ = true;
 
   surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
@@ -165,10 +165,10 @@ bool SynchronousCompositorOutputSurface::BindToClient(
 
   cc::RendererSettings software_renderer_settings;
 
-  std::unique_ptr<SoftwareOutputSurface> output_surface(
+  std::unique_ptr<SoftwareOutputSurface> compositor_frame_sink(
       new SoftwareOutputSurface(
           base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)));
-  software_output_surface_ = output_surface.get();
+  software_compositor_frame_sink_ = compositor_frame_sink.get();
 
   // The shared_bitmap_manager and gpu_memory_buffer_manager here are null as
   // this Display is only used for resourcesless software draws, where no
@@ -177,7 +177,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      nullptr /* begin_frame_source */, std::move(output_surface),
+      nullptr /* begin_frame_source */, std::move(compositor_frame_sink),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get(),
                        surface_id_allocator_->client_id());
@@ -185,13 +185,13 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   return true;
 }
 
-void SynchronousCompositorOutputSurface::DetachFromClient() {
+void SynchronousCompositorFrameSink::DetachFromClient() {
   DCHECK(CalledOnValidThread());
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
   begin_frame_source_ = nullptr;
   if (registered_)
-    registry_->UnregisterOutputSurface(routing_id_, this);
+    registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
   if (!delegated_surface_id_.is_null())
     surface_factory_->Destroy(delegated_surface_id_);
@@ -199,27 +199,25 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
       surface_id_allocator_->client_id());
   surface_manager_->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
-  software_output_surface_ = nullptr;
+  software_compositor_frame_sink_ = nullptr;
   display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
-  cc::OutputSurface::DetachFromClient();
+  cc::CompositorFrameSink::DetachFromClient();
   CancelFallbackTick();
 }
 
-void SynchronousCompositorOutputSurface::Reshape(
-    const gfx::Size& size,
-    float scale_factor,
-    const gfx::ColorSpace& color_space,
-    bool has_alpha) {
+void SynchronousCompositorFrameSink::Reshape(const gfx::Size& size,
+                                             float scale_factor,
+                                             const gfx::ColorSpace& color_space,
+                                             bool has_alpha) {
   // Intentional no-op: surface size is controlled by the embedder.
 }
 
 static void NoOpDrawCallback() {}
 
-void SynchronousCompositorOutputSurface::SwapBuffers(
-    cc::CompositorFrame frame) {
+void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
 
@@ -259,20 +257,19 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     swap_frame = std::move(frame);
   }
 
-  sync_client_->SwapBuffers(output_surface_id_, std::move(swap_frame));
+  sync_client_->SwapBuffers(compositor_frame_sink_id_, std::move(swap_frame));
   DeliverMessages();
   did_swap_ = true;
 }
 
-void SynchronousCompositorOutputSurface::CancelFallbackTick() {
+void SynchronousCompositorFrameSink::CancelFallbackTick() {
   fallback_tick_.Cancel();
   fallback_tick_pending_ = false;
 }
 
-void SynchronousCompositorOutputSurface::FallbackTickFired() {
+void SynchronousCompositorFrameSink::FallbackTickFired() {
   DCHECK(CalledOnValidThread());
-  TRACE_EVENT0("renderer",
-               "SynchronousCompositorOutputSurface::FallbackTickFired");
+  TRACE_EVENT0("renderer", "SynchronousCompositorFrameSink::FallbackTickFired");
   base::AutoReset<bool> in_fallback_tick(&fallback_tick_running_, true);
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
@@ -282,14 +279,14 @@ void SynchronousCompositorOutputSurface::FallbackTickFired() {
   DemandDrawSw(&canvas);
 }
 
-void SynchronousCompositorOutputSurface::Invalidate() {
+void SynchronousCompositorFrameSink::Invalidate() {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->Invalidate();
 
   if (!fallback_tick_pending_) {
     fallback_tick_.Reset(
-        base::Bind(&SynchronousCompositorOutputSurface::FallbackTickFired,
+        base::Bind(&SynchronousCompositorFrameSink::FallbackTickFired,
                    base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, fallback_tick_.callback(),
@@ -298,18 +295,18 @@ void SynchronousCompositorOutputSurface::Invalidate() {
   }
 }
 
-void SynchronousCompositorOutputSurface::BindFramebuffer() {
+void SynchronousCompositorFrameSink::BindFramebuffer() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
 }
 
-uint32_t SynchronousCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+uint32_t SynchronousCompositorFrameSink::GetFramebufferCopyTextureFormat() {
   // This is a delegating output surface, no framebuffer/direct drawing support.
   NOTREACHED();
   return 0;
 }
 
-void SynchronousCompositorOutputSurface::DemandDrawHw(
+void SynchronousCompositorFrameSink::DemandDrawHw(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
@@ -323,7 +320,7 @@ void SynchronousCompositorOutputSurface::DemandDrawHw(
   InvokeComposite(gfx::Transform(), gfx::Rect(viewport_size));
 }
 
-void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
+void SynchronousCompositorFrameSink::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
@@ -341,12 +338,12 @@ void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   base::AutoReset<bool> set_in_software_draw(&in_software_draw_, true);
   display_->SetExternalViewport(viewport);
   display_->SetExternalClip(viewport);
-  software_output_surface_->SetSurfaceSize(
+  software_compositor_frame_sink_->SetSurfaceSize(
       gfx::SkISizeToSize(canvas->getBaseLayerSize()));
   InvokeComposite(transform, viewport);
 }
 
-void SynchronousCompositorOutputSurface::InvokeComposite(
+void SynchronousCompositorFrameSink::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport) {
   gfx::Transform adjusted_transform = transform;
@@ -362,17 +359,17 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   }
 }
 
-void SynchronousCompositorOutputSurface::OnReclaimResources(
-    uint32_t output_surface_id,
+void SynchronousCompositorFrameSink::OnReclaimResources(
+    uint32_t compositor_frame_sink_id,
     const cc::ReturnedResourceArray& resources) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
-  if (output_surface_id != output_surface_id_)
+  if (compositor_frame_sink_id != compositor_frame_sink_id_)
     return;
   client_->ReclaimResources(resources);
 }
 
-void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
+void SynchronousCompositorFrameSink::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
   bool became_zero = memory_policy_.bytes_limit_when_visible && !bytes_limit;
   bool became_non_zero =
@@ -394,14 +391,14 @@ void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   }
 }
 
-void SynchronousCompositorOutputSurface::DidActivatePendingTree() {
+void SynchronousCompositorFrameSink::DidActivatePendingTree() {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->DidActivatePendingTree();
   DeliverMessages();
 }
 
-void SynchronousCompositorOutputSurface::DeliverMessages() {
+void SynchronousCompositorFrameSink::DeliverMessages() {
   std::vector<std::unique_ptr<IPC::Message>> messages;
   std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();
@@ -411,22 +408,22 @@ void SynchronousCompositorOutputSurface::DeliverMessages() {
   }
 }
 
-bool SynchronousCompositorOutputSurface::Send(IPC::Message* message) {
+bool SynchronousCompositorFrameSink::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
   return sender_->Send(message);
 }
 
-bool SynchronousCompositorOutputSurface::CalledOnValidThread() const {
+bool SynchronousCompositorFrameSink::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-void SynchronousCompositorOutputSurface::ReturnResources(
+void SynchronousCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(resources.empty());
   client_->ReclaimResources(resources);
 }
 
-void SynchronousCompositorOutputSurface::SetBeginFrameSource(
+void SynchronousCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // Software output is synchronous and doesn't use a BeginFrameSource.
   NOTREACHED();

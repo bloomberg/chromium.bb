@@ -214,7 +214,7 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
 
   settings->renderer_settings.buffer_to_texture_target_map =
       BlimpGpuMemoryBufferManager::GetDefaultBufferToTextureTargetMap();
-  settings->use_output_surface_begin_frame_source = true;
+  settings->use_compositor_frame_sink_begin_frame_source = true;
 }
 
 }  // namespace client

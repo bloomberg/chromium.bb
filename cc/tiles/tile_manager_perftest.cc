@@ -12,10 +12,10 @@
 #include "cc/debug/lap_timer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_compositor_frame_sink.h"
+#include "cc/test/fake_compositor_frame_sink_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
@@ -51,7 +51,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
   void InitializeRenderer() override {
     host_impl()->SetVisible(true);
-    host_impl()->InitializeRenderer(output_surface());
+    host_impl()->InitializeRenderer(compositor_frame_sink());
     tile_manager()->SetTileTaskManagerForTesting(
         g_fake_tile_task_manager.Pointer());
   }

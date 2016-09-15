@@ -158,16 +158,16 @@ class FakeSchedulerClient : public SchedulerClient,
   void ScheduledActionActivateSyncTree() override {
     PushAction("ScheduledActionActivateSyncTree");
   }
-  void ScheduledActionBeginOutputSurfaceCreation() override {
-    PushAction("ScheduledActionBeginOutputSurfaceCreation");
+  void ScheduledActionBeginCompositorFrameSinkCreation() override {
+    PushAction("ScheduledActionBeginCompositorFrameSinkCreation");
   }
   void ScheduledActionPrepareTiles() override {
     PushAction("ScheduledActionPrepareTiles");
     scheduler_->WillPrepareTiles();
     scheduler_->DidPrepareTiles();
   }
-  void ScheduledActionInvalidateOutputSurface() override {
-    actions_.push_back("ScheduledActionInvalidateOutputSurface");
+  void ScheduledActionInvalidateCompositorFrameSink() override {
+    actions_.push_back("ScheduledActionInvalidateCompositorFrameSink");
     states_.push_back(scheduler_->AsValue());
   }
 
@@ -271,7 +271,7 @@ class SchedulerTest : public testing::Test {
 
   void CreateSchedulerAndInitSurface() {
     CreateScheduler();
-    EXPECT_SCOPED(InitializeOutputSurfaceAndFirstCommit());
+    EXPECT_SCOPED(InitializeCompositorFrameSinkAndFirstCommit());
   }
 
   void SetUpScheduler(bool initSurface) {
@@ -292,10 +292,11 @@ class SchedulerTest : public testing::Test {
 
   // As this function contains EXPECT macros, to allow debugging it should be
   // called inside EXPECT_SCOPED like so;
-  //   EXPECT_SCOPED(client.InitializeOutputSurfaceAndFirstCommit(scheduler));
-  void InitializeOutputSurfaceAndFirstCommit() {
-    TRACE_EVENT0("cc",
-                 "SchedulerUnitTest::InitializeOutputSurfaceAndFirstCommit");
+  //   EXPECT_SCOPED(
+  //       client.InitializeCompositorFrameSinkAndFirstCommit(scheduler));
+  void InitializeCompositorFrameSinkAndFirstCommit() {
+    TRACE_EVENT0(
+        "cc", "SchedulerUnitTest::InitializeCompositorFrameSinkAndFirstCommit");
     DCHECK(scheduler_);
 
     // Check the client doesn't have any actions queued when calling this
@@ -303,15 +304,16 @@ class SchedulerTest : public testing::Test {
     EXPECT_NO_ACTION(client_);
     EXPECT_FALSE(scheduler_->begin_frames_expected());
 
-    // Start the initial output surface creation.
+    // Start the initial CompositorFrameSink creation.
     scheduler_->SetVisible(true);
     scheduler_->SetCanDraw(true);
-    EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+    EXPECT_SINGLE_ACTION("ScheduledActionBeginCompositorFrameSinkCreation",
+                         client_);
 
     client_->Reset();
 
     // We don't see anything happening until the first impl frame.
-    scheduler_->DidCreateAndInitializeOutputSurface();
+    scheduler_->DidCreateAndInitializeCompositorFrameSink();
     scheduler_->SetNeedsBeginMainFrame();
     EXPECT_TRUE(scheduler_->begin_frames_expected());
     EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -331,7 +333,7 @@ class SchedulerTest : public testing::Test {
       if (scheduler_settings_.using_synchronous_renderer_compositor) {
         scheduler_->SetNeedsRedraw();
         bool resourceless_software_draw = false;
-        scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+        scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
       } else {
         // Run the posted deadline task.
         EXPECT_TRUE(client_->IsInsideBeginImplFrame());
@@ -429,15 +431,16 @@ class SchedulerTest : public testing::Test {
   FakeCompositorTimingHistory* fake_compositor_timing_history_;
 };
 
-TEST_F(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
+TEST_F(SchedulerTest, InitializeCompositorFrameSinkDoesNotBeginImplFrame) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(false);
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginCompositorFrameSinkCreation",
+                       client_);
   client_->Reset();
-  scheduler_->DidCreateAndInitializeOutputSurface();
+  scheduler_->DidCreateAndInitializeCompositorFrameSink();
   EXPECT_NO_ACTION(client_);
 }
 
@@ -634,7 +637,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   // Because we just swapped, the Scheduler should also request the next
-  // BeginImplFrame from the OutputSurface.
+  // BeginImplFrame from the CompositorFrameSink.
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
   // Since another commit is needed, the next BeginImplFrame should initiate
@@ -1233,7 +1236,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
 }
 
-TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
+TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;
   scheduler_settings_.use_external_begin_frame_source = true;
@@ -1265,12 +1268,14 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
   // There is no posted deadline.
   EXPECT_NO_ACTION(client_);
 
-  // Scheduler loses output surface, and stops waiting for ready to draw signal.
+  // Scheduler loses CompositorFrameSink, and stops waiting for ready to draw
+  // signal.
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
@@ -2476,23 +2481,26 @@ TEST_F(SchedulerTest,
                                          throttle_frame_production);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterOutputSurfaceIsInitialized) {
+TEST_F(SchedulerTest,
+       DidLoseCompositorFrameSinkAfterCompositorFrameSinkIsInitialized) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(false);
 
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
 
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginCompositorFrameSinkCreation",
+                       client_);
   client_->Reset();
-  scheduler_->DidCreateAndInitializeOutputSurface();
+  scheduler_->DidCreateAndInitializeCompositorFrameSink();
   EXPECT_NO_ACTION(client_);
 
-  scheduler_->DidLoseOutputSurface();
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  scheduler_->DidLoseCompositorFrameSink();
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginCompositorFrameSinkCreation",
+                       client_);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginFrameStarted) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2507,7 +2515,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION(client_);
 
@@ -2519,13 +2527,14 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
 TEST_F(SchedulerTest,
-       DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency) {
+       DidLoseCompositorFrameSinkAfterBeginFrameStartedWithHighLatency) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2540,7 +2549,7 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   // Do nothing when impl frame is in deadine pending state.
   EXPECT_NO_ACTION(client_);
 
@@ -2548,7 +2557,8 @@ TEST_F(SchedulerTest,
   // Run posted deadline.
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  // OnBeginImplFrameDeadline didn't schedule output surface creation because
+  // OnBeginImplFrameDeadline didn't schedule CompositorFrameSink creation
+  // because
   // main frame is not yet completed.
   EXPECT_ACTION("RemoveObserver(this)", client_, 0, 2);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
@@ -2566,10 +2576,11 @@ TEST_F(SchedulerTest,
   scheduler_->NotifyReadyToCommit();
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 2, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 2,
+                3);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommit) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterReadyToCommit) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2589,19 +2600,20 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommit) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   // Sync tree should be forced to activate.
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   // RemoveObserver(this) is not called until the end of the frame.
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsPrepareTiles) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterSetNeedsPrepareTiles) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2615,19 +2627,20 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsPrepareTiles) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION(client_);
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 0, 4);
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 1,
+                4);
   EXPECT_ACTION("RemoveObserver(this)", client_, 2, 4);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 3, 4);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkAfterBeginRetroFramePosted) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2675,8 +2688,9 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
 
   client_->Reset();
   EXPECT_FALSE(scheduler_->IsBeginRetroFrameArgsEmpty());
-  scheduler_->DidLoseOutputSurface();
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  scheduler_->DidLoseCompositorFrameSink();
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_TRUE(scheduler_->IsBeginRetroFrameArgsEmpty());
@@ -2687,7 +2701,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
   EXPECT_NO_ACTION(client_);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkDuringBeginRetroFrameRunning) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2742,14 +2756,15 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
 
   client_->Reset();
   EXPECT_FALSE(scheduler_->IsBeginRetroFrameArgsEmpty());
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   EXPECT_NO_ACTION(client_);
   EXPECT_TRUE(scheduler_->IsBeginRetroFrameArgsEmpty());
 
   // BeginImplFrame deadline should abort drawing.
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -2761,7 +2776,8 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   EXPECT_NO_ACTION(client_);
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceWithDelayBasedBeginFrameSource) {
+TEST_F(SchedulerTest,
+       DidLoseCompositorFrameSinkWithDelayBasedBeginFrameSource) {
   SetUpScheduler(true);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
@@ -2790,19 +2806,20 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceWithDelayBasedBeginFrameSource) {
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   // RemoveObserver(this) is not called until the end of the frame.
   EXPECT_NO_ACTION(client_);
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                2);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
   EXPECT_FALSE(scheduler_->begin_frames_expected());
 }
 
-TEST_F(SchedulerTest, DidLoseOutputSurfaceWhenIdle) {
+TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
@@ -2831,8 +2848,9 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceWhenIdle) {
 
   // Idle time between BeginFrames.
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  scheduler_->DidLoseCompositorFrameSink();
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
@@ -3082,12 +3100,14 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
   scheduler_->NotifyReadyToActivate();
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
-  // Scheduler loses output surface, and stops waiting for ready to draw signal.
+  // Scheduler loses CompositorFrameSink, and stops waiting for ready to draw
+  // signal.
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunPendingTasks();
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 
@@ -3098,7 +3118,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
   EXPECT_NO_ACTION(client_);
 
   client_->Reset();
-  scheduler_->DidCreateAndInitializeOutputSurface();
+  scheduler_->DidCreateAndInitializeCompositorFrameSink();
   EXPECT_NO_ACTION(client_);
 
   client_->Reset();
@@ -3164,14 +3184,14 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Next vsync.
   AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
   // Android onDraw. This doesn't consume the single begin frame request.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -3183,13 +3203,13 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Next vsync.
   AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -3210,7 +3230,7 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_ACTION("AddObserver(this)", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3299,14 +3319,14 @@ TEST_F(SchedulerTest, SynchronousCompositorCommit) {
   // Next vsync.
   AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -3353,7 +3373,7 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 2, 3);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -3392,13 +3412,13 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3407,7 +3427,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3437,13 +3457,13 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3466,12 +3486,12 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Next vsync.
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionInvalidateCompositorFrameSink", client_, 1, 2);
   client_->Reset();
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3492,7 +3512,7 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = true;
-  scheduler_->OnDrawForOutputSurface(resourceless_software_draw);
+  scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   // SynchronousCompositor has to draw regardless of visibility.
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3563,7 +3583,7 @@ TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
   EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
 }
 
-TEST_F(SchedulerTest, NoOutputSurfaceCreationWhileCommitPending) {
+TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
   SetUpScheduler(true);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -3573,13 +3593,13 @@ TEST_F(SchedulerTest, NoOutputSurfaceCreationWhileCommitPending) {
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
 
-  // Lose the output surface and trigger the deadline.
+  // Lose the CompositorFrameSink and trigger the deadline.
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   EXPECT_NO_ACTION(client_);
 
-  // The scheduler should not trigger the output surface creation till the
+  // The scheduler should not trigger the CompositorFrameSink creation till the
   // commit is aborted.
   task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3589,12 +3609,14 @@ TEST_F(SchedulerTest, NoOutputSurfaceCreationWhileCommitPending) {
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks::Now());
   scheduler_->BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+      CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST);
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginCompositorFrameSinkCreation",
+                       client_);
 }
 
-TEST_F(SchedulerTest, OutputSurfaceCreationWhileCommitPending) {
-  scheduler_settings_.abort_commit_before_output_surface_creation = false;
+TEST_F(SchedulerTest, CompositorFrameSinkCreationWhileCommitPending) {
+  scheduler_settings_.abort_commit_before_compositor_frame_sink_creation =
+      false;
   SetUpScheduler(true);
 
   // SetNeedsBeginMainFrame should begin the frame.
@@ -3604,17 +3626,19 @@ TEST_F(SchedulerTest, OutputSurfaceCreationWhileCommitPending) {
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
 
-  // Lose the output surface and trigger the deadline.
+  // Lose the CompositorFrameSink and trigger the deadline.
   client_->Reset();
-  scheduler_->DidLoseOutputSurface();
+  scheduler_->DidLoseCompositorFrameSink();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   EXPECT_NO_ACTION(client_);
 
-  // The scheduler should trigger the output surface creation immediately after
+  // The scheduler should trigger the CompositorFrameSink creation immediately
+  // after
   // the begin_impl_frame_state_ is cleared.
   task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
+                2);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
 }
 

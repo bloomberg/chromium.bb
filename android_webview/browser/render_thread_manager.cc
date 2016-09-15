@@ -222,23 +222,23 @@ bool RenderThreadManager::IsInsideHardwareRelease() const {
 }
 
 RenderThreadManager::ReturnedResources::ReturnedResources()
-    : output_surface_id(0u) {}
+    : compositor_frame_sink_id(0u) {}
 
 RenderThreadManager::ReturnedResources::~ReturnedResources() {}
 
 void RenderThreadManager::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources,
     const CompositorID& compositor_id,
-    uint32_t output_surface_id) {
+    uint32_t compositor_frame_sink_id) {
   base::AutoLock lock(lock_);
   ReturnedResources& returned_resources =
       returned_resources_map_[compositor_id];
-  if (returned_resources.output_surface_id != output_surface_id) {
+  if (returned_resources.compositor_frame_sink_id != compositor_frame_sink_id) {
     returned_resources.resources.clear();
   }
   returned_resources.resources.insert(returned_resources.resources.end(),
                                       resources.begin(), resources.end());
-  returned_resources.output_surface_id = output_surface_id;
+  returned_resources.compositor_frame_sink_id = compositor_frame_sink_id;
 }
 
 void RenderThreadManager::SwapReturnedResourcesOnUI(

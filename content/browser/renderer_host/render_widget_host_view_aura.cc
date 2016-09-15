@@ -1040,7 +1040,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 #endif
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
@@ -1065,7 +1065,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     selection.end.SetEdge(end_edge_top, end_edge_bottom);
   }
 
-  delegated_frame_host_->SwapDelegatedFrame(output_surface_id,
+  delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                             std::move(frame));
   SelectionUpdated(selection.is_editable, selection.is_empty_text_form_control,
                    selection.start, selection.end);
@@ -2909,11 +2909,11 @@ void RenderWidgetHostViewAura::DelegatedFrameHostResizeLockWasReleased() {
 }
 
 void RenderWidgetHostViewAura::DelegatedFrameHostSendReclaimCompositorResources(
-    int output_surface_id,
+    int compositor_frame_sink_id,
     bool is_swap_ack,
     const cc::ReturnedResourceArray& resources) {
   host_->Send(new ViewMsg_ReclaimCompositorResources(
-      host_->GetRoutingID(), output_surface_id, is_swap_ack, resources));
+      host_->GetRoutingID(), compositor_frame_sink_id, is_swap_ack, resources));
 }
 
 void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {

@@ -1599,7 +1599,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
   cc::CompositorFrame frame(std::move(std::get<1>(param)));
-  uint32_t output_surface_id = std::get<0>(param);
+  uint32_t compositor_frame_sink_id = std::get<0>(param);
   std::vector<IPC::Message> messages_to_deliver_with_frame;
   messages_to_deliver_with_frame.swap(std::get<2>(param));
 
@@ -1616,7 +1616,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
   if (view_) {
-    view_->OnSwapCompositorFrame(output_surface_id, std::move(frame));
+    view_->OnSwapCompositorFrame(compositor_frame_sink_id, std::move(frame));
     view_->DidReceiveRendererFrame();
   } else {
     cc::ReturnedResourceArray resources;
@@ -1624,7 +1624,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
       cc::TransferableResource::ReturnResources(
           frame.delegated_frame_data->resource_list, &resources);
     }
-    SendReclaimCompositorResources(routing_id_, output_surface_id,
+    SendReclaimCompositorResources(routing_id_, compositor_frame_sink_id,
                                    process_->GetID(), true /* is_swap_ack */,
                                    resources);
   }
@@ -2063,15 +2063,15 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 // static
 void RenderWidgetHostImpl::SendReclaimCompositorResources(
     int32_t route_id,
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     int renderer_host_id,
     bool is_swap_ack,
     const cc::ReturnedResourceArray& resources) {
   RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
   if (!host)
     return;
-  host->Send(new ViewMsg_ReclaimCompositorResources(route_id, output_surface_id,
-                                                    is_swap_ack, resources));
+  host->Send(new ViewMsg_ReclaimCompositorResources(
+      route_id, compositor_frame_sink_id, is_swap_ack, resources));
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {

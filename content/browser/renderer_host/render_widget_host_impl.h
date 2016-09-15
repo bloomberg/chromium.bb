@@ -427,7 +427,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Called by the view in response to OnSwapCompositorFrame.
   static void SendReclaimCompositorResources(
       int32_t route_id,
-      uint32_t output_surface_id,
+      uint32_t compositor_frame_sink_id,
       int renderer_host_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources);

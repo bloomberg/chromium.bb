@@ -15,13 +15,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
-#include "blimp/client/core/compositor/delegated_output_surface.h"
+#include "blimp/client/core/compositor/blimp_compositor_frame_sink.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "blimp/net/blimp_stats.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
@@ -64,8 +64,8 @@ BlimpCompositor::BlimpCompositor(
     : render_widget_id_(render_widget_id),
       client_(client),
       compositor_dependencies_(compositor_dependencies),
-      output_surface_(nullptr),
-      output_surface_request_pending_(false),
+      proxy_client_(nullptr),
+      compositor_frame_sink_request_pending_(false),
       layer_(cc::Layer::Create()),
       remote_proto_channel_receiver_(nullptr),
       outstanding_commits_(0U),
@@ -112,18 +112,18 @@ void BlimpCompositor::NotifyWhenDonePendingCommits(base::Closure callback) {
       std::make_pair(outstanding_commits_, callback));
 }
 
-void BlimpCompositor::RequestNewOutputSurface() {
+void BlimpCompositor::RequestNewCompositorFrameSink() {
   DCHECK(!surface_factory_);
-  DCHECK(!output_surface_request_pending_);
+  DCHECK(!compositor_frame_sink_request_pending_);
 
-  output_surface_request_pending_ = true;
+  compositor_frame_sink_request_pending_ = true;
   GetEmbedderDeps()->GetContextProviders(
       base::Bind(&BlimpCompositor::OnContextProvidersCreated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BlimpCompositor::DidInitializeOutputSurface() {
-  output_surface_request_pending_ = false;
+void BlimpCompositor::DidInitializeCompositorFrameSink() {
+  compositor_frame_sink_request_pending_ = false;
 }
 
 void BlimpCompositor::DidCommitAndDrawFrame() {
@@ -174,13 +174,13 @@ void BlimpCompositor::OnCompositorMessageReceived(
 void BlimpCompositor::OnContextProvidersCreated(
     const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider) {
-  DCHECK(!surface_factory_)
-      << "Any connection to the old output surface should have been destroyed";
+  DCHECK(!surface_factory_) << "Any connection to the old CompositorFrameSink "
+                               "should have been destroyed";
 
-  // Make sure we still have a host and we're still expecting an output surface.
-  // This can happen if the host dies while the request is outstanding and we
-  // build a new one that hasn't asked for a surface yet.
-  if (!output_surface_request_pending_)
+  // Make sure we still have a host and we're still expecting a
+  // CompositorFrameSink. This can happen if the host dies while the request is
+  // outstanding and we build a new one that hasn't asked for a surface yet.
+  if (!compositor_frame_sink_request_pending_)
     return;
 
   // Try again if the context creation failed.
@@ -191,13 +191,12 @@ void BlimpCompositor::OnContextProvidersCreated(
     return;
   }
 
-  std::unique_ptr<DelegatedOutputSurface> delegated_output_surface =
-      base::MakeUnique<DelegatedOutputSurface>(
-          std::move(compositor_context_provider),
-          std::move(worker_context_provider),
-          base::ThreadTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr());
+  auto compositor_frame_sink = base::MakeUnique<BlimpCompositorFrameSink>(
+      std::move(compositor_context_provider),
+      std::move(worker_context_provider), base::ThreadTaskRunnerHandle::Get(),
+      weak_ptr_factory_.GetWeakPtr());
 
-  host_->SetOutputSurface(std::move(delegated_output_surface));
+  host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 void BlimpCompositor::SendWebGestureEvent(
@@ -205,12 +204,12 @@ void BlimpCompositor::SendWebGestureEvent(
   client_->SendWebGestureEvent(render_widget_id_, gesture_event);
 }
 
-void BlimpCompositor::BindToOutputSurface(
-    base::WeakPtr<BlimpOutputSurface> output_surface) {
+void BlimpCompositor::BindToProxyClient(
+    base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!surface_factory_);
 
-  output_surface_ = output_surface;
+  proxy_client_ = proxy_client;
   surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
       GetEmbedderDeps()->GetSurfaceManager(), this);
 }
@@ -249,21 +248,23 @@ void BlimpCompositor::SwapCompositorFrame(cc::CompositorFrame frame) {
                                           base::Closure());
 }
 
-void BlimpCompositor::UnbindOutputSurface() {
+void BlimpCompositor::UnbindProxyClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_factory_);
 
   DestroyDelegatedContent();
   surface_factory_.reset();
-  output_surface_ = nullptr;
+  proxy_client_ = nullptr;
 }
 
 void BlimpCompositor::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(surface_factory_);
   compositor_dependencies_->GetCompositorTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&BlimpOutputSurface::ReclaimCompositorResources,
-                            output_surface_, resources));
+      FROM_HERE,
+      base::Bind(
+          &BlimpCompositorFrameSinkProxyClient::ReclaimCompositorResources,
+          proxy_client_, resources));
 }
 
 CompositorDependencies* BlimpCompositor::GetEmbedderDeps() {
@@ -298,7 +299,7 @@ void BlimpCompositor::CreateLayerTreeHost() {
       compositor_dependencies_->GetLayerTreeSettings();
   // TODO(khushalsagar): This is a hack. Remove when we move the split point
   // out. For details on why this is needed, see crbug.com/586210.
-  settings->abort_commit_before_output_surface_creation = false;
+  settings->abort_commit_before_compositor_frame_sink_creation = false;
   params.settings = settings;
 
   params.animation_host = cc::AnimationHost::CreateMainInstance();
@@ -333,9 +334,9 @@ void BlimpCompositor::DestroyLayerTreeHost() {
   // BlimpInputManager.
   input_manager_.reset();
 
-  // Cancel any outstanding OutputSurface requests.  That way if we get an async
-  // callback related to the old request we know to drop it.
-  output_surface_request_pending_ = false;
+  // Cancel any outstanding CompositorFrameSink requests.  That way if we get an
+  // async callback related to the old request we know to drop it.
+  compositor_frame_sink_request_pending_ = false;
 
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);

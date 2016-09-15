@@ -31,7 +31,7 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
-      output_surface_(nullptr),
+      compositor_frame_sink_(nullptr),
       inside_receive_(false),
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
@@ -48,21 +48,21 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
 }
 
 SynchronousCompositorProxy::~SynchronousCompositorProxy() {
-  // The OutputSurface is destroyed/removed by the compositor before shutting
-  // down everything.
-  DCHECK_EQ(output_surface_, nullptr);
+  // The CompositorFrameSink is destroyed/removed by the compositor before
+  // shutting down everything.
+  DCHECK_EQ(compositor_frame_sink_, nullptr);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(nullptr);
 }
 
-void SynchronousCompositorProxy::SetOutputSurface(
-    SynchronousCompositorOutputSurface* output_surface) {
-  DCHECK_NE(output_surface_, output_surface);
-  if (output_surface_) {
-    output_surface_->SetSyncClient(nullptr);
+void SynchronousCompositorProxy::SetCompositorFrameSink(
+    SynchronousCompositorFrameSink* compositor_frame_sink) {
+  DCHECK_NE(compositor_frame_sink_, compositor_frame_sink);
+  if (compositor_frame_sink_) {
+    compositor_frame_sink_->SetSyncClient(nullptr);
   }
-  output_surface_ = output_surface;
-  if (output_surface_) {
-    output_surface_->SetSyncClient(this);
+  compositor_frame_sink_ = compositor_frame_sink;
+  if (compositor_frame_sink_) {
+    compositor_frame_sink_->SetSyncClient(this);
   }
 }
 
@@ -129,7 +129,8 @@ void SynchronousCompositorProxy::PopulateCommonParams(
 
 void SynchronousCompositorProxy::OnMessageReceived(
     const IPC::Message& message) {
-  if (output_surface_ && output_surface_->OnMessageReceived(message))
+  if (compositor_frame_sink_ &&
+      compositor_frame_sink_->OnMessageReceived(message))
     return;
 
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
@@ -168,19 +169,19 @@ void SynchronousCompositorProxy::DoDemandDrawHw(
   DCHECK(!inside_receive_);
   inside_receive_ = true;
 
-  if (output_surface_) {
+  if (compositor_frame_sink_) {
     if (!reply_message) {
       base::AutoReset<bool> scoped_hardware_draw_reply_async(
           &hardware_draw_reply_async_, true);
-      output_surface_->DemandDrawHw(params.viewport_size,
-                                    params.viewport_rect_for_tile_priority,
-                                    params.transform_for_tile_priority);
+      compositor_frame_sink_->DemandDrawHw(
+          params.viewport_size, params.viewport_rect_for_tile_priority,
+          params.transform_for_tile_priority);
     } else {
       base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
           &hardware_draw_reply_, reply_message);
-      output_surface_->DemandDrawHw(params.viewport_size,
-                                    params.viewport_rect_for_tile_priority,
-                                    params.transform_for_tile_priority);
+      compositor_frame_sink_->DemandDrawHw(
+          params.viewport_size, params.viewport_rect_for_tile_priority,
+          params.transform_for_tile_priority);
     }
   }
 
@@ -195,38 +196,40 @@ void SynchronousCompositorProxy::DoDemandDrawHw(
   }
 }
 
-void SynchronousCompositorProxy::SwapBuffersHwAsync(uint32_t output_surface_id,
-                                                    cc::CompositorFrame frame) {
+void SynchronousCompositorProxy::SwapBuffersHwAsync(
+    uint32_t compositor_frame_sink_id,
+    cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(hardware_draw_reply_async_);
-  SendDemandDrawHwReplyAsync(std::move(frame), output_surface_id);
+  SendDemandDrawHwReplyAsync(std::move(frame), compositor_frame_sink_id);
   inside_receive_ = false;
 }
 
-void SynchronousCompositorProxy::SwapBuffersHw(uint32_t output_surface_id,
-                                               cc::CompositorFrame frame) {
+void SynchronousCompositorProxy::SwapBuffersHw(
+    uint32_t compositor_frame_sink_id,
+    cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(hardware_draw_reply_);
-  SendDemandDrawHwReply(std::move(frame), output_surface_id,
+  SendDemandDrawHwReply(std::move(frame), compositor_frame_sink_id,
                         hardware_draw_reply_);
   inside_receive_ = false;
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReplyAsync(
     cc::CompositorFrame frame,
-    uint32_t output_surface_id) {
-  Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_, output_surface_id,
-                                             frame));
+    uint32_t compositor_frame_sink_id) {
+  Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_,
+                                             compositor_frame_sink_id, frame));
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReply(
     cc::CompositorFrame frame,
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
   PopulateCommonParams(&common_renderer_params);
   SyncCompositorMsg_DemandDrawHw::WriteReplyParams(
-      reply_message, common_renderer_params, output_surface_id, frame);
+      reply_message, common_renderer_params, compositor_frame_sink_id, frame);
   Send(reply_message);
 }
 
@@ -261,7 +264,7 @@ void SynchronousCompositorProxy::SetSharedMemory(
 
 void SynchronousCompositorProxy::ZeroSharedMemory() {
   // It is possible for this to get called twice, eg. if draw is called before
-  // the OutputSurface is ready. Just ignore duplicated calls rather than
+  // the CompositorFrameSink is ready. Just ignore duplicated calls rather than
   // inventing a complicated system to avoid it.
   if (software_draw_shm_->zeroed)
     return;
@@ -275,13 +278,13 @@ void SynchronousCompositorProxy::DemandDrawSw(
     IPC::Message* reply_message) {
   DCHECK(!inside_receive_);
   inside_receive_ = true;
-  if (output_surface_) {
+  if (compositor_frame_sink_) {
     base::AutoReset<IPC::Message*> scoped_software_draw_reply(
         &software_draw_reply_, reply_message);
     SkCanvas* sk_canvas_for_draw = SynchronousCompositorGetSkCanvas();
     if (use_in_process_zero_copy_software_draw_) {
       DCHECK(sk_canvas_for_draw);
-      output_surface_->DemandDrawSw(sk_canvas_for_draw);
+      compositor_frame_sink_->DemandDrawSw(sk_canvas_for_draw);
     } else {
       DCHECK(!sk_canvas_for_draw);
       DoDemandDrawSw(params);
@@ -296,7 +299,7 @@ void SynchronousCompositorProxy::DemandDrawSw(
 
 void SynchronousCompositorProxy::DoDemandDrawSw(
     const SyncCompositorDemandDrawSwParams& params) {
-  DCHECK(output_surface_);
+  DCHECK(compositor_frame_sink_);
   DCHECK(software_draw_shm_->zeroed);
   software_draw_shm_->zeroed = false;
 
@@ -313,7 +316,7 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   canvas.setMatrix(params.transform.matrix());
   canvas.setClipRegion(SkRegion(gfx::RectToSkIRect(params.clip)));
 
-  output_surface_->DemandDrawSw(&canvas);
+  compositor_frame_sink_->DemandDrawSw(&canvas);
 }
 
 void SynchronousCompositorProxy::SwapBuffersSw(cc::CompositorFrame frame) {
@@ -334,7 +337,7 @@ void SynchronousCompositorProxy::SendDemandDrawSwReply(
   Send(reply_message);
 }
 
-void SynchronousCompositorProxy::SwapBuffers(uint32_t output_surface_id,
+void SynchronousCompositorProxy::SwapBuffers(uint32_t compositor_frame_sink_id,
                                              cc::CompositorFrame frame) {
   // Verify that exactly one of these is true.
   DCHECK(hardware_draw_reply_async_ || hardware_draw_reply_ ||
@@ -343,9 +346,9 @@ void SynchronousCompositorProxy::SwapBuffers(uint32_t output_surface_id,
            (hardware_draw_reply_ && hardware_draw_reply_async_) ||
            (software_draw_reply_ && hardware_draw_reply_async_)));
   if (hardware_draw_reply_async_) {
-    SwapBuffersHwAsync(output_surface_id, std::move(frame));
+    SwapBuffersHwAsync(compositor_frame_sink_id, std::move(frame));
   } else if (hardware_draw_reply_) {
-    SwapBuffersHw(output_surface_id, std::move(frame));
+    SwapBuffersHw(compositor_frame_sink_id, std::move(frame));
   } else if (software_draw_reply_) {
     SwapBuffersSw(std::move(frame));
   }

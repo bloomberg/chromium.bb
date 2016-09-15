@@ -792,7 +792,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ExtractSmartClipData,
 // given to the browser in a swap are not being used anymore.
 // If this message is in response to a swap then is_swap_ack is set.
 IPC_MESSAGE_ROUTED3(ViewMsg_ReclaimCompositorResources,
-                    uint32_t /* output_surface_id */,
+                    uint32_t /* compositor_frame_sink_id */,
                     bool /* is_swap_ack */,
                     cc::ReturnedResourceArray /* resources */)
 
@@ -1063,7 +1063,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
 
 IPC_MESSAGE_ROUTED3(
     ViewHostMsg_SwapCompositorFrame,
-    uint32_t /* output_surface_id */,
+    uint32_t /* compositor_frame_sink_id */,
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 

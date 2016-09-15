@@ -150,7 +150,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(uint32_t output_surface_id,
+  void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
@@ -246,9 +246,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  private:
   void RunAckCallbacks();
 
-  void CheckOutputSurfaceChanged(uint32_t output_surface_id);
+  void CheckCompositorFrameSinkChanged(uint32_t compositor_frame_sink_id);
   void SubmitCompositorFrame(cc::CompositorFrame frame_data);
-  void SendReclaimCompositorResources(uint32_t output_surface_id,
+  void SendReclaimCompositorResources(uint32_t compositor_frame_sink_id,
                                       bool is_swap_ack);
 
   void OnFrameMetadataUpdated(const cc::CompositorFrameMetadata& frame_metadata,
@@ -283,9 +283,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Drop any incoming frames from the renderer when there are locks on the
   // current frame.
-  void RetainFrame(uint32_t output_surface_id, cc::CompositorFrame frame);
+  void RetainFrame(uint32_t compositor_frame_sink_id,
+                   cc::CompositorFrame frame);
 
-  void InternalSwapCompositorFrame(uint32_t output_surface_id,
+  void InternalSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                                    cc::CompositorFrame frame);
   void DestroyDelegatedContent();
   void OnLostResources();
@@ -339,8 +340,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Size current_surface_size_;
 
   // The output surface id of the last received frame.
-  uint32_t last_output_surface_id_;
-
+  uint32_t last_compositor_frame_sink_id_;
 
   std::queue<base::Closure> ack_callbacks_;
 
@@ -370,9 +370,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool observing_root_window_;
 
   struct LastFrameInfo {
-    LastFrameInfo(uint32_t output_id, cc::CompositorFrame output_frame);
+    LastFrameInfo(uint32_t compositor_frame_sink_id,
+                  cc::CompositorFrame output_frame);
     ~LastFrameInfo();
-    uint32_t output_surface_id;
+    uint32_t compositor_frame_sink_id;
     cc::CompositorFrame frame;
   };
 

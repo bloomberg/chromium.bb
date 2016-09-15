@@ -27,9 +27,9 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
@@ -54,6 +54,7 @@ class AnimationEvents;
 class AnimationHost;
 class CompletionEvent;
 class CompositorFrameMetadata;
+class CompositorFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
@@ -96,7 +97,7 @@ enum class GpuRasterizationStatus {
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
-  virtual void DidLoseOutputSurfaceOnImplThread() = 0;
+  virtual void DidLoseCompositorFrameSinkOnImplThread() = 0;
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
   virtual void SetEstimatedParentDrawTime(base::TimeDelta draw_time) = 0;
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
@@ -126,7 +127,8 @@ class LayerTreeHostImplClient {
   virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
 
   // Called when output surface asks for a draw.
-  virtual void OnDrawForOutputSurface(bool resourceless_software_draw) = 0;
+  virtual void OnDrawForCompositorFrameSink(
+      bool resourceless_software_draw) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
@@ -137,7 +139,7 @@ class LayerTreeHostImplClient {
 class CC_EXPORT LayerTreeHostImpl
     : public InputHandler,
       public TileManagerClient,
-      public OutputSurfaceClient,
+      public CompositorFrameSinkClient,
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
@@ -364,13 +366,13 @@ class CC_EXPORT LayerTreeHostImpl
   void AddVideoFrameController(VideoFrameController* controller) override;
   void RemoveVideoFrameController(VideoFrameController* controller) override;
 
-  // OutputSurfaceClient implementation.
+  // CompositorFrameSinkClient implementation.
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetNeedsRedrawRect(const gfx::Rect& rect) override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override;
-  void DidLoseOutputSurface() override;
+  void DidLoseCompositorFrameSink() override;
   void DidSwapBuffersComplete() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
@@ -390,15 +392,17 @@ class CC_EXPORT LayerTreeHostImpl
   // Implementation.
   int id() const { return id_; }
   bool CanDraw() const;
-  OutputSurface* output_surface() const { return output_surface_; }
-  void ReleaseOutputSurface();
+  CompositorFrameSink* compositor_frame_sink() const {
+    return compositor_frame_sink_;
+  }
+  void ReleaseCompositorFrameSink();
 
   std::string LayerTreeAsJson() const;
 
   int RequestedMSAASampleCount() const;
 
   // TODO(danakj): Rename this, there is no renderer.
-  virtual bool InitializeRenderer(OutputSurface* output_surface);
+  virtual bool InitializeRenderer(CompositorFrameSink* compositor_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
   void SetHasGpuRasterizationTrigger(bool flag);
@@ -718,9 +722,10 @@ class CC_EXPORT LayerTreeHostImpl
   // request queue.
   std::set<UIResourceId> evicted_ui_resources_;
 
-  OutputSurface* output_surface_;
+  CompositorFrameSink* compositor_frame_sink_;
 
-  // The following scoped variables must not outlive the |output_surface_|.
+  // The following scoped variables must not outlive the
+  // |compositor_frame_sink_|.
   // These should be transfered to ContextCacheController's
   // ClientBecameNotVisible() before the output surface is destroyed.
   std::unique_ptr<ContextCacheController::ScopedVisibility>
@@ -798,7 +803,7 @@ class CC_EXPORT LayerTreeHostImpl
   // overridden.
   gfx::Size device_viewport_size_;
 
-  // Optional top-level constraints that can be set by the OutputSurface.
+  // Optional top-level constraints that can be set by the CompositorFrameSink.
   // - external_transform_ applies a transform above the root layer
   // - external_viewport_ is used DrawProperties, tile management and
   // glViewport/window projection matrix.

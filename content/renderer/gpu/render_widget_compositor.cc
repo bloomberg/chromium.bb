@@ -242,7 +242,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.main_task_runner =
       compositor_deps_->GetCompositorMainThreadTaskRunner();
   params.animation_host = cc::AnimationHost::CreateMainInstance();
-  DCHECK(settings.use_output_surface_begin_frame_source);
+  DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
 
   if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
     DCHECK(!threaded_);
@@ -1026,42 +1026,44 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
                                  top_controls_delta);
 }
 
-void RenderWidgetCompositor::RequestNewOutputSurface() {
+void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
   // If the host is closing, then no more compositing is possible.  This
   // prevents shutdown races between handling the close message and
-  // the CreateOutputSurface task.
+  // the CreateCompositorFrameSink task.
   if (delegate_->IsClosing())
     return;
 
-  bool fallback =
-      num_failed_recreate_attempts_ >= OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK;
-  std::unique_ptr<cc::OutputSurface> surface(
-      delegate_->CreateOutputSurface(fallback));
+  bool fallback = num_failed_recreate_attempts_ >=
+                  COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK;
+  std::unique_ptr<cc::CompositorFrameSink> surface(
+      delegate_->CreateCompositorFrameSink(fallback));
 
   if (!surface) {
-    DidFailToInitializeOutputSurface();
+    DidFailToInitializeCompositorFrameSink();
     return;
   }
 
   DCHECK_EQ(surface->capabilities().max_frames_pending, 1);
 
-  layer_tree_host_->SetOutputSurface(std::move(surface));
+  layer_tree_host_->SetCompositorFrameSink(std::move(surface));
 }
 
-void RenderWidgetCompositor::DidInitializeOutputSurface() {
+void RenderWidgetCompositor::DidInitializeCompositorFrameSink() {
   num_failed_recreate_attempts_ = 0;
 }
 
-void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
+void RenderWidgetCompositor::DidFailToInitializeCompositorFrameSink() {
   ++num_failed_recreate_attempts_;
   // Tolerate a certain number of recreation failures to work around races
   // in the output-surface-lost machinery.
-  LOG_IF(FATAL, (num_failed_recreate_attempts_ >= MAX_OUTPUT_SURFACE_RETRIES))
-      << "Failed to create a fallback OutputSurface.";
+  LOG_IF(FATAL,
+         (num_failed_recreate_attempts_ >= MAX_COMPOSITOR_FRAME_SINK_RETRIES))
+      << "Failed to create a fallback CompositorFrameSink.";
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidgetCompositor::RequestNewOutputSurface,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&RenderWidgetCompositor::RequestNewCompositorFrameSink,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::WillCommit() {

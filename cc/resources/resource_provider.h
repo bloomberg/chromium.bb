@@ -102,7 +102,7 @@ class CC_EXPORT ResourceProvider
 
   void Initialize();
 
-  void DidLoseOutputSurface() { lost_output_surface_ = true; }
+  void DidLoseContextProvider() { lost_context_provider_ = true; }
 
   int max_texture_size() const { return max_texture_size_; }
   ResourceFormat best_texture_format() const { return best_texture_format_; }
@@ -680,7 +680,7 @@ class CC_EXPORT ResourceProvider
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
-  bool lost_output_surface_;
+  bool lost_context_provider_;
   int highp_threshold_min_;
   ResourceId next_id_;
   ResourceMap resources_;

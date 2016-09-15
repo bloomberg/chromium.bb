@@ -19,18 +19,17 @@
 namespace cc {
 class AnimationPlayer;
 class FakeLayerTreeHostClient;
-class FakeOutputSurface;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
-class LayerTreeTestDelegatingOutputSurfaceClient;
+class LayerTreeTestCompositorFrameSinkClient;
 class ProxyImpl;
 class ProxyMain;
 class RemoteChannelImplForTest;
 class TestContextProvider;
-class TestDelegatingOutputSurface;
+class TestCompositorFrameSink;
 class TestGpuMemoryBufferManager;
 class TestTaskGraphRunner;
 class TestWebGraphicsContext3D;
@@ -116,7 +115,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchCompositeImmediately();
   void DispatchNextCommitWaitsForActivation();
 
-  std::unique_ptr<OutputSurface> ReleaseOutputSurfaceOnLayerTreeHost();
+  std::unique_ptr<CompositorFrameSink>
+  ReleaseCompositorFrameSinkOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
 
   virtual void AfterTest() = 0;
@@ -156,19 +156,18 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DestroyLayerTreeHost();
 
   // By default, output surface recreation is synchronous.
-  void RequestNewOutputSurface() override;
+  void RequestNewCompositorFrameSink() override;
   // Override this and call the base class to change what ContextProviders will
   // be used (such as for pixel tests). Or override it and create your own
-  // TestDelegatingOutputSurface to control how it is created.
-  virtual std::unique_ptr<TestDelegatingOutputSurface>
-  CreateDelegatingOutputSurface(
+  // TestCompositorFrameSink to control how it is created.
+  virtual std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
   // Override this and call the base class to change what ContextProvider will
-  // be used, such as to prevent sharing the context with the delegating
-  // OutputSurface. Or override it and create your own OutputSurface to change
-  // what type of OutputSurface is used, such as a real OutputSurface for pixel
-  // tests or a software-compositing OutputSurface.
+  // be used, such as to prevent sharing the context with the
+  // CompositorFrameSink. Or override it and create your own OutputSurface to
+  // change what type of OutputSurface is used, such as a real OutputSurface for
+  // pixel tests or a software-compositing OutputSurface.
   virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider);
 
@@ -200,8 +199,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   int timeout_seconds_ = false;
 
-  std::unique_ptr<LayerTreeTestDelegatingOutputSurfaceClient>
-      delegating_output_surface_client_;
+  std::unique_ptr<LayerTreeTestCompositorFrameSinkClient>
+      compositor_frame_sink_client_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::unique_ptr<base::Thread> impl_thread_;

@@ -10,9 +10,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,11 +20,11 @@ namespace cc {
 class ResourcePoolTest : public testing::Test {
  public:
   void SetUp() override {
-    output_surface_ = FakeOutputSurface::CreateDelegating3d();
-    ASSERT_TRUE(output_surface_->BindToClient(&output_surface_client_));
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    context_provider_ = TestContextProvider::Create();
+    context_provider_->BindToCurrentThread();
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
+        context_provider_.get(), shared_bitmap_manager_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
@@ -33,8 +32,7 @@ class ResourcePoolTest : public testing::Test {
   }
 
  protected:
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
+  scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

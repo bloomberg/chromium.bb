@@ -11,8 +11,8 @@
 #include "cc/animation/animation_events.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -50,8 +50,8 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
-      output_surface_creation_requested_(false),
-      output_surface_lost_(true),
+      compositor_frame_sink_creation_requested_(false),
+      compositor_frame_sink_lost_(true),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(task_runner_provider_);
@@ -77,7 +77,7 @@ void SingleThreadProxy::Start(
 
     // TODO(enne): remove these settings.
     DCHECK(!settings.use_external_begin_frame_source);
-    DCHECK(settings.use_output_surface_begin_frame_source);
+    DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
     scheduler_on_impl_thread_ =
         Scheduler::Create(this, scheduler_settings, layer_tree_host_->GetId(),
                           task_runner_provider_->MainThreadTaskRunner(),
@@ -116,45 +116,47 @@ void SingleThreadProxy::SetVisible(bool visible) {
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 }
 
-void SingleThreadProxy::RequestNewOutputSurface() {
+void SingleThreadProxy::RequestNewCompositorFrameSink() {
   DCHECK(task_runner_provider_->IsMainThread());
-  output_surface_creation_callback_.Cancel();
-  if (output_surface_creation_requested_)
+  compositor_frame_sink_creation_callback_.Cancel();
+  if (compositor_frame_sink_creation_requested_)
     return;
-  output_surface_creation_requested_ = true;
-  layer_tree_host_->RequestNewOutputSurface();
+  compositor_frame_sink_creation_requested_ = true;
+  layer_tree_host_->RequestNewCompositorFrameSink();
 }
 
-void SingleThreadProxy::ReleaseOutputSurface() {
-  output_surface_lost_ = true;
+void SingleThreadProxy::ReleaseCompositorFrameSink() {
+  compositor_frame_sink_lost_ = true;
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidLoseOutputSurface();
-  return layer_tree_host_impl_->ReleaseOutputSurface();
+    scheduler_on_impl_thread_->DidLoseCompositorFrameSink();
+  return layer_tree_host_impl_->ReleaseCompositorFrameSink();
 }
 
-void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
+void SingleThreadProxy::SetCompositorFrameSink(
+    CompositorFrameSink* compositor_frame_sink) {
   DCHECK(task_runner_provider_->IsMainThread());
-  DCHECK(output_surface_creation_requested_);
+  DCHECK(compositor_frame_sink_creation_requested_);
 
   bool success;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
-    success = layer_tree_host_impl_->InitializeRenderer(output_surface);
+    success = layer_tree_host_impl_->InitializeRenderer(compositor_frame_sink);
   }
 
   if (success) {
-    layer_tree_host_->DidInitializeOutputSurface();
+    layer_tree_host_->DidInitializeCompositorFrameSink();
     if (scheduler_on_impl_thread_)
-      scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+      scheduler_on_impl_thread_->DidCreateAndInitializeCompositorFrameSink();
     else if (!inside_synchronous_composite_)
       SetNeedsCommit();
-    output_surface_creation_requested_ = false;
-    output_surface_lost_ = false;
+    compositor_frame_sink_creation_requested_ = false;
+    compositor_frame_sink_lost_ = false;
   } else {
-    // DidFailToInitializeOutputSurface is treated as a RequestNewOutputSurface,
-    // and so output_surface_creation_requested remains true.
-    layer_tree_host_->DidFailToInitializeOutputSurface();
+    // DidFailToInitializeCompositorFrameSink is treated as a
+    // RequestNewCompositorFrameSink, and so
+    // compositor_frame_sink_creation_requested remains true.
+    layer_tree_host_->DidFailToInitializeCompositorFrameSink();
   }
 }
 
@@ -294,9 +296,9 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
 
-    // Take away the OutputSurface before destroying things so it doesn't try
-    // to call into its client mid-shutdown.
-    layer_tree_host_impl_->ReleaseOutputSurface();
+    // Take away the CompositorFrameSink before destroying things so it doesn't
+    // try to call into its client mid-shutdown.
+    layer_tree_host_impl_->ReleaseCompositorFrameSink();
 
     BlockingTaskRunner::CapturePostTasks blocked(
         task_runner_provider_->blocking_main_thread_task_runner());
@@ -410,25 +412,27 @@ void SingleThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
   layer_tree_host_->DidCompletePageScaleAnimation();
 }
 
-void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::DidLoseOutputSurfaceOnImplThread");
+void SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread() {
+  TRACE_EVENT0("cc",
+               "SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread");
   {
     DebugScopedSetMainThread main(task_runner_provider_);
     // This must happen before we notify the scheduler as it may try to recreate
     // the output surface if already in BEGIN_IMPL_FRAME_STATE_IDLE.
-    layer_tree_host_->DidLoseOutputSurface();
+    layer_tree_host_->DidLoseCompositorFrameSink();
   }
   client_->DidAbortSwapBuffers();
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidLoseOutputSurface();
-  output_surface_lost_ = true;
+    scheduler_on_impl_thread_->DidLoseCompositorFrameSink();
+  compositor_frame_sink_lost_ = true;
 }
 
 void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
   DCHECK(layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
   // TODO(enne): this overrides any preexisting begin frame source.  Those
   // other sources will eventually be removed and this will be the only path.
-  if (!layer_tree_host_->GetSettings().use_output_surface_begin_frame_source)
+  if (!layer_tree_host_->GetSettings()
+           .use_compositor_frame_sink_begin_frame_source)
     return;
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetBeginFrameSource(source);
@@ -447,7 +451,7 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
-void SingleThreadProxy::OnDrawForOutputSurface(
+void SingleThreadProxy::OnDrawForCompositorFrameSink(
     bool resourceless_software_draw) {
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
@@ -460,11 +464,11 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
 #endif
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
-  if (output_surface_lost_) {
-    RequestNewOutputSurface();
-    // RequestNewOutputSurface could have synchronously created an output
+  if (compositor_frame_sink_lost_) {
+    RequestNewCompositorFrameSink();
+    // RequestNewCompositorFrameSink could have synchronously created an output
     // surface, so check again before returning.
-    if (output_surface_lost_)
+    if (compositor_frame_sink_lost_)
       return;
   }
 
@@ -525,14 +529,14 @@ bool SingleThreadProxy::ShouldComposite() const {
   return layer_tree_host_impl_->visible() && layer_tree_host_impl_->CanDraw();
 }
 
-void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
-  if (output_surface_creation_callback_.IsCancelled() &&
-      !output_surface_creation_requested_) {
-    output_surface_creation_callback_.Reset(
-        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
+void SingleThreadProxy::ScheduleRequestNewCompositorFrameSink() {
+  if (compositor_frame_sink_creation_callback_.IsCancelled() &&
+      !compositor_frame_sink_creation_requested_) {
+    compositor_frame_sink_creation_callback_.Reset(
+        base::Bind(&SingleThreadProxy::RequestNewCompositorFrameSink,
                    weak_factory_.GetWeakPtr()));
     task_runner_provider_->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, output_surface_creation_callback_.callback());
+        FROM_HERE, compositor_frame_sink_creation_callback_.callback());
   }
 }
 
@@ -728,7 +732,7 @@ void SingleThreadProxy::ScheduledActionActivateSyncTree() {
   layer_tree_host_impl_->ActivateSyncTree();
 }
 
-void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
+void SingleThreadProxy::ScheduledActionBeginCompositorFrameSinkCreation() {
   DebugScopedSetMainThread main(task_runner_provider_);
   DCHECK(scheduler_on_impl_thread_);
   // If possible, create the output surface in a post task.  Synchronously
@@ -736,9 +740,9 @@ void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
   // from the ThreadProxy behavior.  However, sometimes there is no
   // task runner.
   if (task_runner_provider_->MainThreadTaskRunner()) {
-    ScheduleRequestNewOutputSurface();
+    ScheduleRequestNewCompositorFrameSink();
   } else {
-    RequestNewOutputSurface();
+    RequestNewCompositorFrameSink();
   }
 }
 
@@ -748,7 +752,7 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
   layer_tree_host_impl_->PrepareTiles();
 }
 
-void SingleThreadProxy::ScheduledActionInvalidateOutputSurface() {
+void SingleThreadProxy::ScheduledActionInvalidateCompositorFrameSink() {
   NOTREACHED();
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/core/compositor/delegated_output_surface.h"
+#include "blimp/client/core/compositor/blimp_compositor_frame_sink.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -10,7 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_compositor_frame_sink_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_context_support.h"
 #include "cc/test/test_gles2_interface.h"
@@ -21,30 +21,30 @@ namespace blimp {
 namespace client {
 namespace {
 
-class FakeBlimpOutputSurfaceClient : public BlimpOutputSurfaceClient {
+class FakeBlimpCompositorFrameSinkProxy : public BlimpCompositorFrameSinkProxy {
  public:
-  FakeBlimpOutputSurfaceClient(
+  FakeBlimpCompositorFrameSinkProxy(
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
       : compositor_task_runner_(compositor_task_runner),
-        output_surface_(nullptr),
+        proxy_client_(nullptr),
         swap_count_(0),
         weak_factory_(this) {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
-  ~FakeBlimpOutputSurfaceClient() override {
+  ~FakeBlimpCompositorFrameSinkProxy() override {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
-  base::WeakPtr<FakeBlimpOutputSurfaceClient> GetWeakPtr() {
+  base::WeakPtr<FakeBlimpCompositorFrameSinkProxy> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
-  void BindToOutputSurface(
-      base::WeakPtr<BlimpOutputSurface> output_surface) override {
+  void BindToProxyClient(base::WeakPtr<BlimpCompositorFrameSinkProxyClient>
+                             proxy_client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    EXPECT_EQ(nullptr, output_surface_);
-    output_surface_ = output_surface;
+    EXPECT_EQ(nullptr, proxy_client_);
+    proxy_client_ = proxy_client;
     bound_ = true;
   }
 
@@ -53,11 +53,11 @@ class FakeBlimpOutputSurfaceClient : public BlimpOutputSurfaceClient {
     swap_count_++;
   }
 
-  void UnbindOutputSurface() override {
+  void UnbindProxyClient() override {
     DCHECK(bound_);
-    bound_ = true;
+    bound_ = false;
     DCHECK(thread_checker_.CalledOnValidThread());
-    output_surface_ = nullptr;
+    proxy_client_ = nullptr;
   }
 
   int swap_count() const { return swap_count_; }
@@ -66,10 +66,10 @@ class FakeBlimpOutputSurfaceClient : public BlimpOutputSurfaceClient {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   bool bound_ = false;
-  base::WeakPtr<BlimpOutputSurface> output_surface_;
+  base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client_;
   int swap_count_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<FakeBlimpOutputSurfaceClient> weak_factory_;
+  base::WeakPtrFactory<FakeBlimpCompositorFrameSinkProxy> weak_factory_;
 };
 
 class TestContextProvider : public cc::TestContextProvider {
@@ -97,32 +97,32 @@ class TestContextProvider : public cc::TestContextProvider {
   const bool bind_should_fail_;
 };
 
-class DelegatedOutputSurfaceTest : public testing::Test {
+class BlimpCompositorFrameSinkTest : public testing::Test {
  public:
-  DelegatedOutputSurfaceTest() {}
+  BlimpCompositorFrameSinkTest() {}
 
   void SetUpTest(bool bind_should_fail) {
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     compositor_thread_ = base::MakeUnique<base::Thread>("Compositor");
     ASSERT_TRUE(compositor_thread_->Start());
     compositor_task_runner_ = compositor_thread_->task_runner();
-    blimp_output_surface_client_ =
-        base::MakeUnique<FakeBlimpOutputSurfaceClient>(compositor_task_runner_);
-    output_surface_ = base::MakeUnique<DelegatedOutputSurface>(
+    main_thread_proxy_ = base::MakeUnique<FakeBlimpCompositorFrameSinkProxy>(
+        compositor_task_runner_);
+    compositor_frame_sink_ = base::MakeUnique<BlimpCompositorFrameSink>(
         TestContextProvider::Create(bind_should_fail), nullptr,
-        main_task_runner_, blimp_output_surface_client_->GetWeakPtr());
+        main_task_runner_, main_thread_proxy_->GetWeakPtr());
 
     base::WaitableEvent init_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DelegatedOutputSurfaceTest::InitOnCompositorThread,
+        base::Bind(&BlimpCompositorFrameSinkTest::InitOnCompositorThread,
                    base::Unretained(this), &init_event));
     init_event.Wait();
 
-    // Run all tasks so the registration of the BlimpOutputSurface on the main
-    // thread completes.
+    // Run all tasks so the registration of the BlimpCompositorFrameSink on the
+    // main thread completes.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -132,14 +132,15 @@ class DelegatedOutputSurfaceTest : public testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DelegatedOutputSurfaceTest::DoSwapBuffersOnCompositorThread,
-                   base::Unretained(this), &swap_event));
+        base::Bind(
+            &BlimpCompositorFrameSinkTest::DoSwapBuffersOnCompositorThread,
+            base::Unretained(this), &swap_event));
     swap_event.Wait();
   }
 
   void TearDown() override {
-    EXPECT_EQ(blimp_output_surface_client_->swap_count(),
-              output_surface_client_.swap_count());
+    EXPECT_EQ(main_thread_proxy_->swap_count(),
+              compositor_frame_sink_client_.swap_count());
   }
 
   void EndTest() {
@@ -148,33 +149,34 @@ class DelegatedOutputSurfaceTest : public testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DelegatedOutputSurfaceTest::ShutdownOnCompositorThread,
+        base::Bind(&BlimpCompositorFrameSinkTest::ShutdownOnCompositorThread,
                    base::Unretained(this), &shutdown_event));
     shutdown_event.Wait();
     compositor_thread_->Stop();
 
-    // Run all tasks so the unregistration of the BlimpOutputSurface on the main
-    // thread completes.
+    // Run all tasks so the unregistration of the BlimpCompositorFrameSink on
+    // the main thread completes.
     base::RunLoop().RunUntilIdle();
   }
 
   void InitOnCompositorThread(base::WaitableEvent* event) {
-    bound_ = output_surface_->BindToClient(&output_surface_client_);
+    bound_ =
+        compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
     event->Signal();
   }
 
   void DoSwapBuffersOnCompositorThread(base::WaitableEvent* event) {
-    output_surface_->SwapBuffers(cc::CompositorFrame());
+    compositor_frame_sink_->SwapBuffers(cc::CompositorFrame());
     event->Signal();
   }
 
   void ShutdownOnCompositorThread(base::WaitableEvent* event) {
     base::RunLoop().RunUntilIdle();
     if (bound_) {
-      output_surface_->DetachFromClient();
+      compositor_frame_sink_->DetachFromClient();
       bound_ = false;
     }
-    output_surface_.reset();
+    compositor_frame_sink_.reset();
     event->Signal();
   }
 
@@ -182,31 +184,31 @@ class DelegatedOutputSurfaceTest : public testing::Test {
   std::unique_ptr<base::Thread> compositor_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  std::unique_ptr<DelegatedOutputSurface> output_surface_;
-  std::unique_ptr<FakeBlimpOutputSurfaceClient> blimp_output_surface_client_;
+  std::unique_ptr<BlimpCompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<FakeBlimpCompositorFrameSinkProxy> main_thread_proxy_;
 
   bool bound_ = false;
-  cc::FakeOutputSurfaceClient output_surface_client_;
+  cc::FakeCompositorFrameSinkClient compositor_frame_sink_client_;
 };
 
-TEST_F(DelegatedOutputSurfaceTest, BindFails) {
+TEST_F(BlimpCompositorFrameSinkTest, BindFails) {
   SetUpTest(true);
-  EXPECT_FALSE(blimp_output_surface_client_->bound());
+  EXPECT_FALSE(main_thread_proxy_->bound());
   EndTest();
 }
 
-TEST_F(DelegatedOutputSurfaceTest, BindSucceedsSwapBuffers) {
+TEST_F(BlimpCompositorFrameSinkTest, BindSucceedsSwapBuffers) {
   SetUpTest(false);
-  EXPECT_TRUE(blimp_output_surface_client_->bound());
+  EXPECT_TRUE(main_thread_proxy_->bound());
 
   DoSwapBuffers();
   DoSwapBuffers();
   DoSwapBuffers();
 
-  // Run all tasks so the swap buffer calls to the BlimpOutputSurface on the
-  // main thread complete.
+  // Run all tasks so the swap buffer calls to the BlimpCompositorFrameSink on
+  // the main thread complete.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, blimp_output_surface_client_->swap_count());
+  EXPECT_EQ(3, main_thread_proxy_->swap_count());
 
   EndTest();
 }

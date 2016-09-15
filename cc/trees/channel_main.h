@@ -8,7 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/completion_event.h"
 #include "cc/input/top_controls_state.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/trees/proxy_common.h"
@@ -35,14 +35,16 @@ class CC_EXPORT ChannelMain {
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) = 0;
-  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) = 0;
+  virtual void InitializeCompositorFrameSinkOnImpl(
+      CompositorFrameSink* compositor_frame_sink) = 0;
   virtual void InitializeMutatorOnImpl(
       std::unique_ptr<LayerTreeMutator> mutator) = 0;
   virtual void MainThreadHasStoppedFlingingOnImpl() = 0;
   virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) = 0;
   virtual void SetDeferCommitsOnImpl(bool defer_commits) = 0;
   virtual void SetVisibleOnImpl(bool visible) = 0;
-  virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
+  virtual void ReleaseCompositorFrameSinkOnImpl(
+      CompletionEvent* completion) = 0;
   virtual void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) = 0;

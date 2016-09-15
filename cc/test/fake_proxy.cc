@@ -18,7 +18,7 @@ bool FakeProxy::CommitToActiveTree() const {
   return false;
 }
 
-void FakeProxy::ReleaseOutputSurface() {}
+void FakeProxy::ReleaseCompositorFrameSink() {}
 
 bool FakeProxy::BeginMainFrameRequested() const { return false; }
 

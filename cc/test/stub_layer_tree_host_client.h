@@ -24,9 +24,9 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override {}
-  void DidInitializeOutputSurface() override {}
-  void DidFailToInitializeOutputSurface() override {}
+  void RequestNewCompositorFrameSink() override {}
+  void DidInitializeCompositorFrameSink() override {}
+  void DidFailToInitializeCompositorFrameSink() override {}
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}

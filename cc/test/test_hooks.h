@@ -85,8 +85,8 @@ class TestHooks : public AnimationDelegate {
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
   virtual void UpdateLayerTreeHost() {}
-  virtual void DidInitializeOutputSurface() {}
-  virtual void DidFailToInitializeOutputSurface() {}
+  virtual void DidInitializeCompositorFrameSink() {}
+  virtual void DidFailToInitializeCompositorFrameSink() {}
   virtual void DidAddAnimation() {}
   virtual void WillCommit() {}
   virtual void DidCommit() {}
@@ -111,7 +111,7 @@ class TestHooks : public AnimationDelegate {
                                std::unique_ptr<AnimationCurve> curve) override {
   }
 
-  virtual void RequestNewOutputSurface() = 0;
+  virtual void RequestNewCompositorFrameSink() = 0;
 };
 
 }  // namespace cc

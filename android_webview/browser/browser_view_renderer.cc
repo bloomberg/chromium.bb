@@ -262,7 +262,7 @@ void BrowserViewRenderer::OnDrawHardwareProcessFrame(
   gfx::Rect viewport_rect_for_tile_priority =
       ComputeViewportRectForTilePriority();
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
-      frame.output_surface_id, std::move(frame.frame), compositor_id_,
+      frame.compositor_frame_sink_id, std::move(frame.frame), compositor_id_,
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
       offscreen_pre_raster_, external_draw_constraints_.is_layer);
 
@@ -322,7 +322,8 @@ void BrowserViewRenderer::ReturnUnusedResource(
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
   if (compositor && !resources.empty())
-    compositor->ReturnResources(child_frame->output_surface_id, resources);
+    compositor->ReturnResources(child_frame->compositor_frame_sink_id,
+                                resources);
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent(
@@ -336,7 +337,8 @@ void BrowserViewRenderer::ReturnResourceFromParent(
     resources.swap(pair.second.resources);
 
     if (compositor && !resources.empty()) {
-      compositor->ReturnResources(pair.second.output_surface_id, resources);
+      compositor->ReturnResources(pair.second.compositor_frame_sink_id,
+                                  resources);
     }
   }
 }

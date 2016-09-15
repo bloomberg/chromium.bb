@@ -44,12 +44,12 @@ class CompositorMessageToMain;
 //                                                          .
 //                                                          .
 //                                          ProxyImpl::ScheduledActionBegin
-//                                                     OutputSurfaceCreation
+//                                                   CompositorFrameSinkCreation
 //                                                          |
-//                                         ChannelImpl::RequestNewOutputSurface
+//                                    ChannelImpl::RequestNewCompositorFrameSink
 //                                                          |
 // RemoteChannelImpl::                                      |
-//      RequestNewOutputSurface()<----PostTask--------------
+//      RequestNewCompositorFrameSink()<----PostTask--------------
 //              .
 //              .
 //              |
@@ -99,7 +99,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
     // This is set to true if we lost the output surface and can not push any
     // commits to the impl thread.
-    bool waiting_for_output_surface_initialization;
+    bool waiting_for_compositor_frame_sink_initialization;
 
     // The queue of messages received from the server. The messages are added to
     // this queue if we are waiting for a new output surface to be initialized.
@@ -131,8 +131,9 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   // Proxy implementation
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(OutputSurface* output_surface) override;
-  void ReleaseOutputSurface() override;
+  void SetCompositorFrameSink(
+      CompositorFrameSink* compositor_frame_sink) override;
+  void ReleaseCompositorFrameSink() override;
   void SetVisible(bool visible) override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
@@ -160,9 +161,9 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
-  void DidLoseOutputSurface() override;
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface(bool success) override;
+  void DidLoseCompositorFrameSink() override;
+  void RequestNewCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink(bool success) override;
   void DidCompletePageScaleAnimation() override;
   void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override;
@@ -173,9 +174,9 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void HandleProto(const proto::CompositorMessageToImpl& proto);
   void DidCompleteSwapBuffersOnMain();
   void DidCommitAndDrawFrameOnMain();
-  void DidLoseOutputSurfaceOnMain();
-  void RequestNewOutputSurfaceOnMain();
-  void DidInitializeOutputSurfaceOnMain(bool success);
+  void DidLoseCompositorFrameSinkOnMain();
+  void RequestNewCompositorFrameSinkOnMain();
+  void DidInitializeCompositorFrameSinkOnMain(bool success);
   void SendMessageProtoOnMain(std::unique_ptr<proto::CompositorMessage> proto);
   void PostSetNeedsRedrawToImpl(const gfx::Rect& damaged_rect);
 

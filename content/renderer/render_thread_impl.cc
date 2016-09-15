@@ -39,8 +39,8 @@
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/output/buffer_to_texture_target_map.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -95,8 +95,8 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
-#include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/gpu/renderer_compositor_frame_sink.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
@@ -165,7 +165,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_filter.h"
-#include "content/renderer/android/synchronous_compositor_output_surface.h"
+#include "content/renderer/android/synchronous_compositor_frame_sink.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
@@ -243,7 +243,7 @@ const double kThrottledResourceRequestFlushPeriodS = 1. / 60.;
 const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 
 // Unique identifier for each output surface created.
-uint32_t g_next_output_surface_id = 1;
+uint32_t g_next_compositor_frame_sink_id = 1;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -1798,8 +1798,8 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   return gpu_channel_;
 }
 
-std::unique_ptr<cc::OutputSurface>
-RenderThreadImpl::CreateCompositorOutputSurface(
+std::unique_ptr<cc::CompositorFrameSink>
+RenderThreadImpl::CreateCompositorFrameSink(
     bool use_software,
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
@@ -1816,19 +1816,19 @@ RenderThreadImpl::CreateCompositorOutputSurface(
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
         EstablishGpuChannelSync();
-    return connection->CreateOutputSurface(std::move(gpu_channel_host));
+    return connection->CreateCompositorFrameSink(std::move(gpu_channel_host));
   }
 #endif
 
-  uint32_t output_surface_id = g_next_output_surface_id++;
+  uint32_t compositor_frame_sink_id = g_next_compositor_frame_sink_id++;
 
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
         cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
-      return base::MakeUnique<CompositorOutputSurface>(
-          routing_id, output_surface_id,
+      return base::MakeUnique<RendererCompositorFrameSink>(
+          routing_id, compositor_frame_sink_id,
           CreateExternalBeginFrameSource(routing_id),
           std::move(vulkan_context_provider),
           std::move(frame_swap_message_queue));
@@ -1852,8 +1852,8 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
   if (use_software) {
     DCHECK(!layout_test_mode());
-    return base::MakeUnique<CompositorOutputSurface>(
-        routing_id, output_surface_id,
+    return base::MakeUnique<RendererCompositorFrameSink>(
+        routing_id, compositor_frame_sink_id,
         CreateExternalBeginFrameSource(routing_id), nullptr, nullptr,
         std::move(frame_swap_message_queue));
   }
@@ -1898,25 +1898,25 @@ RenderThreadImpl::CreateCompositorOutputSurface(
           command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
-    return layout_test_deps_->CreateOutputSurface(
+    return layout_test_deps_->CreateCompositorFrameSink(
         routing_id, std::move(gpu_channel_host), std::move(context_provider),
         std::move(worker_context_provider), this);
   }
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
-    return base::MakeUnique<SynchronousCompositorOutputSurface>(
+    return base::MakeUnique<SynchronousCompositorFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
-        routing_id, output_surface_id,
+        routing_id, compositor_frame_sink_id,
         CreateExternalBeginFrameSource(routing_id),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue));
   }
 #endif
-  return base::WrapUnique(new CompositorOutputSurface(
-      routing_id, output_surface_id, CreateExternalBeginFrameSource(routing_id),
-      std::move(context_provider), std::move(worker_context_provider),
-      std::move(frame_swap_message_queue)));
+  return base::WrapUnique(new RendererCompositorFrameSink(
+      routing_id, compositor_frame_sink_id,
+      CreateExternalBeginFrameSource(routing_id), std::move(context_provider),
+      std::move(worker_context_provider), std::move(frame_swap_message_queue)));
 }
 
 std::unique_ptr<cc::SwapPromise>

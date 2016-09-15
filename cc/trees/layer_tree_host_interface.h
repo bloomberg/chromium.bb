@@ -24,7 +24,7 @@ class LayerTree;
 class LayerTreeDebugState;
 class LayerTreeMutator;
 class LayerTreeSettings;
-class OutputSurface;
+class CompositorFrameSink;
 class SwapPromiseMonitor;
 class TaskRunnerProvider;
 class UIResourceManager;
@@ -77,22 +77,23 @@ class CC_EXPORT LayerTreeHostInterface {
   // Sets whether the content is suitable to use Gpu Rasterization.
   virtual void SetHasGpuRasterizationTrigger(bool has_trigger) = 0;
 
-  // Visibility and OutputSurface -------------------------------
+  // Visibility and CompositorFrameSink -------------------------------
 
   virtual void SetVisible(bool visible) = 0;
   virtual bool IsVisible() const = 0;
 
-  // Called in response to an OutputSurface request made to the client using
-  // LayerTreeHostClient::RequestNewOutputSurface. The client will be informed
-  // of the OutputSurface initialization status using DidInitializaOutputSurface
-  // or DidFailToInitializeOutputSurface. The request is completed when the host
-  // successfully initializes an OutputSurface.
-  virtual void SetOutputSurface(
-      std::unique_ptr<OutputSurface> output_surface) = 0;
+  // Called in response to an CompositorFrameSink request made to the client
+  // using LayerTreeHostClient::RequestNewCompositorFrameSink. The client will
+  // be informed of the CompositorFrameSink initialization status using
+  // DidInitializaCompositorFrameSink or DidFailToInitializeCompositorFrameSink.
+  // The request is completed when the host successfully initializes an
+  // CompositorFrameSink.
+  virtual void SetCompositorFrameSink(
+      std::unique_ptr<CompositorFrameSink> compositor_frame_sink) = 0;
 
-  // Forces the host to immediately release all references to the OutputSurface,
-  // if any. Can be safely called any time.
-  virtual std::unique_ptr<OutputSurface> ReleaseOutputSurface() = 0;
+  // Forces the host to immediately release all references to the
+  // CompositorFrameSink, if any. Can be safely called any time.
+  virtual std::unique_ptr<CompositorFrameSink> ReleaseCompositorFrameSink() = 0;
 
   // Frame Scheduling (main and compositor frames) requests -------
 

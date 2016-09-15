@@ -35,6 +35,7 @@ namespace cc {
 class Display;
 class Layer;
 class LayerTreeHost;
+class OutputSurface;
 class SurfaceIdAllocator;
 class SurfaceManager;
 class VulkanContextProvider;
@@ -98,9 +99,9 @@ class CONTENT_EXPORT CompositorImpl
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override;
-  void DidFailToInitializeOutputSurface() override;
+  void RequestNewCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink() override;
+  void DidFailToInitializeCompositorFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override;
   void DidCommitAndDrawFrame() override {}
@@ -121,7 +122,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
 
-  void HandlePendingOutputSurfaceRequest();
+  void HandlePendingCompositorFrameSinkRequest();
 
 #if defined(ENABLE_VULKAN)
   void CreateVulkanOutputSurface();
@@ -171,11 +172,11 @@ class CONTENT_EXPORT CompositorImpl
 
   size_t num_successive_context_creation_failures_;
 
-  // Whether there is an OutputSurface request pending from the current
-  // |host_|. Becomes |true| if RequestNewOutputSurface is called, and |false|
-  // if |host_| is deleted or we succeed in creating *and* initializing an
-  // OutputSurface (which is essentially the contract with cc).
-  bool output_surface_request_pending_;
+  // Whether there is an CompositorFrameSink request pending from the current
+  // |host_|. Becomes |true| if RequestNewCompositorFrameSink is called, and
+  // |false| if |host_| is deleted or we succeed in creating *and* initializing
+  // a CompositorFrameSink (which is essentially the contract with cc).
+  bool compositor_frame_sink_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
   bool needs_begin_frames_;

@@ -27,8 +27,8 @@
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_delegating_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -228,8 +228,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidActivateTreeOnThread(this);
   }
 
-  bool InitializeRenderer(OutputSurface* output_surface) override {
-    bool success = LayerTreeHostImpl::InitializeRenderer(output_surface);
+  bool InitializeRenderer(CompositorFrameSink* compositor_frame_sink) override {
+    bool success = LayerTreeHostImpl::InitializeRenderer(compositor_frame_sink);
     test_hooks_->InitializedRendererOnThread(this, success);
     return success;
   }
@@ -300,17 +300,17 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
                                      top_controls_delta);
   }
 
-  void RequestNewOutputSurface() override {
-    test_hooks_->RequestNewOutputSurface();
+  void RequestNewCompositorFrameSink() override {
+    test_hooks_->RequestNewCompositorFrameSink();
   }
 
-  void DidInitializeOutputSurface() override {
-    test_hooks_->DidInitializeOutputSurface();
+  void DidInitializeCompositorFrameSink() override {
+    test_hooks_->DidInitializeCompositorFrameSink();
   }
 
-  void DidFailToInitializeOutputSurface() override {
-    test_hooks_->DidFailToInitializeOutputSurface();
-    RequestNewOutputSurface();
+  void DidFailToInitializeCompositorFrameSink() override {
+    test_hooks_->DidFailToInitializeCompositorFrameSink();
+    RequestNewCompositorFrameSink();
   }
 
   void WillCommit() override { test_hooks_->WillCommit(); }
@@ -439,13 +439,13 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   bool test_started_;
 };
 
-class LayerTreeTestDelegatingOutputSurfaceClient
-    : public TestDelegatingOutputSurfaceClient {
+class LayerTreeTestCompositorFrameSinkClient
+    : public TestCompositorFrameSinkClient {
  public:
-  explicit LayerTreeTestDelegatingOutputSurfaceClient(TestHooks* hooks)
+  explicit LayerTreeTestCompositorFrameSinkClient(TestHooks* hooks)
       : hooks_(hooks) {}
 
-  // TestDelegatingOutputSurfaceClient implementation.
+  // TestCompositorFrameSinkClient implementation.
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
     hooks_->DisplayReceivedCompositorFrameOnThread(frame);
   }
@@ -464,8 +464,8 @@ class LayerTreeTestDelegatingOutputSurfaceClient
 LayerTreeTest::LayerTreeTest()
     : image_serialization_processor_(
           base::WrapUnique(new FakeImageSerializationProcessor)),
-      delegating_output_surface_client_(
-          new LayerTreeTestDelegatingOutputSurfaceClient(this)),
+      compositor_frame_sink_client_(
+          new LayerTreeTestCompositorFrameSinkClient(this)),
       weak_factory_(this) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -604,13 +604,13 @@ void LayerTreeTest::PostNextCommitWaitsForActivationToMainThread() {
                  main_thread_weak_ptr_));
 }
 
-std::unique_ptr<OutputSurface>
-LayerTreeTest::ReleaseOutputSurfaceOnLayerTreeHost() {
+std::unique_ptr<CompositorFrameSink>
+LayerTreeTest::ReleaseCompositorFrameSinkOnLayerTreeHost() {
   if (IsRemoteTest()) {
     DCHECK(remote_client_layer_tree_host_);
-    return remote_client_layer_tree_host_->ReleaseOutputSurface();
+    return remote_client_layer_tree_host_->ReleaseCompositorFrameSink();
   }
-  return layer_tree_host_->ReleaseOutputSurface();
+  return layer_tree_host_->ReleaseCompositorFrameSink();
 }
 
 void LayerTreeTest::SetVisibleOnLayerTreeHost(bool visible) {
@@ -641,7 +641,7 @@ void LayerTreeTest::DoBeginTest() {
     DCHECK(remote_proto_channel_bridge_.channel_main.HasReceiver());
 
     LayerTreeSettings settings = settings_;
-    settings.abort_commit_before_output_surface_creation = false;
+    settings.abort_commit_before_compositor_frame_sink_creation = false;
     remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
         this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
         nullptr, nullptr, task_graph_runner_.get(), settings,
@@ -819,10 +819,10 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   settings_.verify_transform_tree_calculations = true;
   settings_.renderer_settings.buffer_to_texture_target_map =
       DefaultBufferToTextureTargetMapForTesting();
-  // The TestDelegatingOutputSurface will provide a BeginFrameSource.
-  settings_.use_output_surface_begin_frame_source = true;
+  // The TestCompositorFrameSink will provide a BeginFrameSource.
+  settings_.use_compositor_frame_sink_begin_frame_source = true;
   InitializeSettings(&settings_);
-  DCHECK(settings_.use_output_surface_begin_frame_source);
+  DCHECK(settings_.use_compositor_frame_sink_begin_frame_source);
   DCHECK(!settings_.use_external_begin_frame_source);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -843,27 +843,27 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   AfterTest();
 }
 
-void LayerTreeTest::RequestNewOutputSurface() {
+void LayerTreeTest::RequestNewCompositorFrameSink() {
   scoped_refptr<TestContextProvider> shared_context_provider =
       TestContextProvider::Create();
   scoped_refptr<TestContextProvider> worker_context_provider =
       TestContextProvider::CreateWorker();
 
-  auto delegating_output_surface = CreateDelegatingOutputSurface(
+  auto compositor_frame_sink = CreateCompositorFrameSink(
       std::move(shared_context_provider), std::move(worker_context_provider));
-  delegating_output_surface->SetClient(delegating_output_surface_client_.get());
+  compositor_frame_sink->SetClient(compositor_frame_sink_client_.get());
 
   if (IsRemoteTest()) {
     DCHECK(remote_client_layer_tree_host_);
-    remote_client_layer_tree_host_->SetOutputSurface(
-        std::move(delegating_output_surface));
+    remote_client_layer_tree_host_->SetCompositorFrameSink(
+        std::move(compositor_frame_sink));
   } else {
-    layer_tree_host_->SetOutputSurface(std::move(delegating_output_surface));
+    layer_tree_host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
   }
 }
 
-std::unique_ptr<TestDelegatingOutputSurface>
-LayerTreeTest::CreateDelegatingOutputSurface(
+std::unique_ptr<TestCompositorFrameSink>
+LayerTreeTest::CreateCompositorFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider) {
   bool synchronous_composite =
@@ -872,7 +872,7 @@ LayerTreeTest::CreateDelegatingOutputSurface(
   // Disable reclaim resources by default to act like the Display lives
   // out-of-process.
   bool force_disable_reclaim_resources = true;
-  return base::MakeUnique<TestDelegatingOutputSurface>(
+  return base::MakeUnique<TestCompositorFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
       CreateDisplayOutputSurface(compositor_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(),

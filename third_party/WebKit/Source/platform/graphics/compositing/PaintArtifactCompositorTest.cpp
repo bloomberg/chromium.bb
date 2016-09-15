@@ -7,7 +7,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
-#include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
@@ -43,15 +43,17 @@ EffectPaintPropertyNode* dummyRootEffect()
     return node;
 }
 
-class WebLayerTreeViewWithOutputSurface : public WebLayerTreeViewImplForTesting {
+class WebLayerTreeViewWithCompositorFrameSink : public WebLayerTreeViewImplForTesting {
 public:
-    WebLayerTreeViewWithOutputSurface(const cc::LayerTreeSettings& settings)
-        : WebLayerTreeViewImplForTesting(settings) {}
+    WebLayerTreeViewWithCompositorFrameSink(const cc::LayerTreeSettings& settings)
+        : WebLayerTreeViewImplForTesting(settings)
+    {
+    }
 
     // cc::LayerTreeHostClient
-    void RequestNewOutputSurface() override
+    void RequestNewCompositorFrameSink() override
     {
-        layerTreeHost()->SetOutputSurface(cc::FakeOutputSurface::CreateDelegating3d());
+        layerTreeHost()->SetCompositorFrameSink(cc::FakeCompositorFrameSink::Create3d());
     }
 };
 
@@ -74,7 +76,7 @@ protected:
         cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();
         settings.single_thread_proxy_scheduler = false;
         settings.use_layer_lists = true;
-        m_webLayerTreeView = wrapUnique(new WebLayerTreeViewWithOutputSurface(settings));
+        m_webLayerTreeView = wrapUnique(new WebLayerTreeViewWithCompositorFrameSink(settings));
         m_webLayerTreeView->setRootLayer(*m_paintArtifactCompositor->getWebLayer());
     }
 
@@ -116,7 +118,7 @@ private:
     std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
     scoped_refptr<base::TestSimpleTaskRunner> m_taskRunner;
     base::ThreadTaskRunnerHandle m_taskRunnerHandle;
-    std::unique_ptr<WebLayerTreeViewWithOutputSurface> m_webLayerTreeView;
+    std::unique_ptr<WebLayerTreeViewWithCompositorFrameSink> m_webLayerTreeView;
 };
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EmptyPaintArtifact)

@@ -5,9 +5,9 @@
 #include "platform/graphics/CompositorMutableState.h"
 
 #include "base/message_loop/message_loop.h"
+#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -23,23 +23,22 @@ namespace blink {
 
 using cc::FakeImplTaskRunnerProvider;
 using cc::FakeLayerTreeHostImpl;
-using cc::FakeOutputSurface;
+using cc::FakeCompositorFrameSink;
 using cc::LayerImpl;
 using cc::LayerTreeSettings;
-using cc::OutputSurface;
 using cc::TestTaskGraphRunner;
 using cc::TestSharedBitmapManager;
 
 class CompositorMutableStateTest : public testing::Test {
 public:
     CompositorMutableStateTest()
-        : m_outputSurface(FakeOutputSurface::CreateDelegating3d())
+        : m_compositorFrameSink(FakeCompositorFrameSink::Create3d())
     {
         LayerTreeSettings settings;
         settings.layer_transforms_should_scale_layer_contents = true;
         m_hostImpl.reset(new FakeLayerTreeHostImpl(settings, &m_taskRunnerProvider, &m_sharedBitmapManager, &m_taskGraphRunner));
         m_hostImpl->SetVisible(true);
-        EXPECT_TRUE(m_hostImpl->InitializeRenderer(m_outputSurface.get()));
+        EXPECT_TRUE(m_hostImpl->InitializeRenderer(m_compositorFrameSink.get()));
     }
 
     void SetLayerPropertiesForTesting(LayerImpl* layer)
@@ -63,7 +62,7 @@ private:
     TestSharedBitmapManager m_sharedBitmapManager;
     TestTaskGraphRunner m_taskGraphRunner;
     FakeImplTaskRunnerProvider m_taskRunnerProvider;
-    std::unique_ptr<OutputSurface> m_outputSurface;
+    std::unique_ptr<FakeCompositorFrameSink> m_compositorFrameSink;
     std::unique_ptr<FakeLayerTreeHostImpl> m_hostImpl;
 };
 

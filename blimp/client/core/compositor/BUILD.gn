@@ -12,19 +12,19 @@ source_set("compositor") {
     "blimp_compositor.h",
     "blimp_compositor_dependencies.cc",
     "blimp_compositor_dependencies.h",
+    "blimp_compositor_frame_sink.cc",
+    "blimp_compositor_frame_sink.h",
+    "blimp_compositor_frame_sink_proxy.h",
     "blimp_compositor_manager.cc",
     "blimp_compositor_manager.h",
     "blimp_image_decoder.cc",
     "blimp_image_decoder.h",
-    "blimp_output_surface.h",
     "blob_channel_feature.cc",
     "blob_channel_feature.h",
     "blob_image_serialization_processor.cc",
     "blob_image_serialization_processor.h",
     "decoding_image_generator.cc",
     "decoding_image_generator.h",
-    "delegated_output_surface.cc",
-    "delegated_output_surface.h",
   ]
 
   deps = [
@@ -56,10 +56,10 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_client_picture_cache_unittest.cc",
+    "blimp_compositor_frame_sink_unittest.cc",
     "blimp_compositor_manager_unittest.cc",
     "blimp_compositor_unittest.cc",
     "blob_channel_feature_unittest.cc",
-    "delegated_output_surface_unittest.cc",
   ]
 
   deps = [

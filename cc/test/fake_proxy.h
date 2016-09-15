@@ -19,8 +19,9 @@ class FakeProxy : public Proxy {
 
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(OutputSurface* output_surface) override {}
-  void ReleaseOutputSurface() override;
+  void SetCompositorFrameSink(
+      CompositorFrameSink* compositor_frame_sink) override {}
+  void ReleaseCompositorFrameSink() override;
   void SetVisible(bool visible) override {}
   void SetNeedsAnimate() override {}
   void SetNeedsUpdateLayers() override {}

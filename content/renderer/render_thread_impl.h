@@ -66,7 +66,7 @@ class Thread;
 namespace cc {
 class ContextProvider;
 class ImageSerializationProcessor;
-class OutputSurface;
+class CompositorFrameSink;
 class TaskGraphRunner;
 }
 
@@ -231,7 +231,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // time this routine returns.
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
-  std::unique_ptr<cc::OutputSurface> CreateCompositorOutputSurface(
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       bool use_software,
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,

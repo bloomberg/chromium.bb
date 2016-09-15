@@ -65,7 +65,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources,
                                    const CompositorID& compositor_id,
-                                   uint32_t output_surface_id);
+                                   uint32_t compositor_frame_sink_id);
 
  private:
   friend class internal::RequestInvokeGLTracker;

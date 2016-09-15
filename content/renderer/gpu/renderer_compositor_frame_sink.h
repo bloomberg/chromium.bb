@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
-#define CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
+#ifndef CONTENT_RENDERER_GPU_RENDERER_COMPOSITOR_FRAME_SINK_H_
+#define CONTENT_RENDERER_GPU_RENDERER_COMPOSITOR_FRAME_SINK_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -28,6 +28,7 @@ class Message;
 }
 
 namespace cc {
+class BeginFrameSource;
 class CompositorFrame;
 class CompositorFrameAck;
 class ContextProvider;
@@ -38,65 +39,67 @@ class FrameSwapMessageQueue;
 
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
-class CompositorOutputSurface
-    : NON_EXPORTED_BASE(public cc::OutputSurface),
+class RendererCompositorFrameSink
+    : NON_EXPORTED_BASE(public cc::CompositorFrameSink),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  CompositorOutputSurface(
+  RendererCompositorFrameSink(
       int32_t routing_id,
-      uint32_t output_surface_id,
+      uint32_t compositor_frame_sink_id,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
-  CompositorOutputSurface(
+  RendererCompositorFrameSink(
       int32_t routing_id,
-      uint32_t output_surface_id,
+      uint32_t compositor_frame_sink_id,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
-  ~CompositorOutputSurface() override;
+  ~RendererCompositorFrameSink() override;
 
-  // cc::OutputSurface implementation.
-  bool BindToClient(cc::OutputSurfaceClient* client) override;
+  // cc::CompositorFrameSink implementation.
+  bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SwapBuffers(cc::CompositorFrame frame) override;
   void BindFramebuffer() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
  protected:
-  uint32_t output_surface_id_;
+  uint32_t compositor_frame_sink_id_;
 
  private:
-  class CompositorOutputSurfaceProxy :
-      public base::RefCountedThreadSafe<CompositorOutputSurfaceProxy> {
+  class RendererCompositorFrameSinkProxy
+      : public base::RefCountedThreadSafe<RendererCompositorFrameSinkProxy> {
    public:
-    explicit CompositorOutputSurfaceProxy(
-        CompositorOutputSurface* output_surface)
-        : output_surface_(output_surface) {}
-    void ClearOutputSurface() { output_surface_ = NULL; }
+    explicit RendererCompositorFrameSinkProxy(
+        RendererCompositorFrameSink* compositor_frame_sink)
+        : compositor_frame_sink_(compositor_frame_sink) {}
+    void ClearCompositorFrameSink() { compositor_frame_sink_ = NULL; }
     void OnMessageReceived(const IPC::Message& message) {
-      if (output_surface_)
-        output_surface_->OnMessageReceived(message);
+      if (compositor_frame_sink_)
+        compositor_frame_sink_->OnMessageReceived(message);
     }
 
    private:
-    friend class base::RefCountedThreadSafe<CompositorOutputSurfaceProxy>;
-    ~CompositorOutputSurfaceProxy() {}
-    CompositorOutputSurface* output_surface_;
+    friend class base::RefCountedThreadSafe<RendererCompositorFrameSinkProxy>;
+    ~RendererCompositorFrameSinkProxy() {}
+    RendererCompositorFrameSink* compositor_frame_sink_;
 
-    DISALLOW_COPY_AND_ASSIGN(CompositorOutputSurfaceProxy);
+    DISALLOW_COPY_AND_ASSIGN(RendererCompositorFrameSinkProxy);
   };
 
   void OnMessageReceived(const IPC::Message& message);
-  void OnReclaimCompositorResources(uint32_t output_surface_id,
+  void OnReclaimCompositorResources(uint32_t compositor_frame_sink_id,
                                     bool is_swap_ack,
                                     const cc::ReturnedResourceArray& resources);
   bool Send(IPC::Message* message);
 
-  scoped_refptr<CompositorForwardingMessageFilter> output_surface_filter_;
-  CompositorForwardingMessageFilter::Handler output_surface_filter_handler_;
-  scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
+  scoped_refptr<CompositorForwardingMessageFilter>
+      compositor_frame_sink_filter_;
+  CompositorForwardingMessageFilter::Handler
+      compositor_frame_sink_filter_handler_;
+  scoped_refptr<RendererCompositorFrameSinkProxy> compositor_frame_sink_proxy_;
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
@@ -105,4 +108,4 @@ class CompositorOutputSurface
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
+#endif  // CONTENT_RENDERER_GPU_RENDERER_COMPOSITOR_FRAME_SINK_H_

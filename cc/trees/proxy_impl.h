@@ -33,7 +33,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate);
-  void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface);
+  void InitializeCompositorFrameSinkOnImpl(
+      CompositorFrameSink* compositor_frame_sink);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
   void MainThreadHasStoppedFlingingOnImpl();
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
@@ -45,7 +46,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
       base::TimeTicks main_thread_start_time,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises);
   void SetVisibleOnImpl(bool visible);
-  void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);
+  void ReleaseCompositorFrameSinkOnImpl(CompletionEvent* completion);
   void FinishGLOnImpl(CompletionEvent* completion);
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
@@ -65,7 +66,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   };
 
   // LayerTreeHostImplClient implementation
-  void DidLoseOutputSurfaceOnImplThread() override;
+  void DidLoseCompositorFrameSinkOnImplThread() override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
   void DidSwapBuffersCompleteOnImplThread() override;
@@ -91,7 +92,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void WillPrepareTiles() override;
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
-  void OnDrawForOutputSurface(bool resourceless_software_draw) override;
+  void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -101,9 +102,9 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
-  void ScheduledActionBeginOutputSurfaceCreation() override;
+  void ScheduledActionBeginCompositorFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
-  void ScheduledActionInvalidateOutputSurface() override;
+  void ScheduledActionInvalidateCompositorFrameSink() override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
   DrawResult DrawAndSwapInternal(bool forced_draw);

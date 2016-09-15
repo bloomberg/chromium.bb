@@ -204,7 +204,7 @@ bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
   return current_frame_.get() != nullptr;
 }
 
-void DelegatedFrameHostAndroid::OutputSurfaceChanged() {
+void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
   DestroyDelegatedContent();
   surface_factory_.reset();
 }

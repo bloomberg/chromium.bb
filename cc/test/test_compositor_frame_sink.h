@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_
-#define CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_
+#ifndef CC_TEST_TEST_COMPOSITOR_FRAME_SINK_H_
+#define CC_TEST_TEST_COMPOSITOR_FRAME_SINK_H_
 
 #include "base/memory/weak_ptr.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
@@ -18,10 +18,11 @@
 
 namespace cc {
 class CopyOutputRequest;
+class OutputSurface;
 
-class TestDelegatingOutputSurfaceClient {
+class TestCompositorFrameSinkClient {
  public:
-  virtual ~TestDelegatingOutputSurfaceClient() {}
+  virtual ~TestCompositorFrameSinkClient() {}
 
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
@@ -29,14 +30,14 @@ class TestDelegatingOutputSurfaceClient {
   virtual void DisplayDidDrawAndSwap() = 0;
 };
 
-// Delegating output surface that owns and forwards frames to a Display.
-class TestDelegatingOutputSurface : public OutputSurface,
-                                    public SurfaceFactoryClient,
-                                    public DisplayClient {
+// CompositorFrameSink that owns and forwards frames to a Display.
+class TestCompositorFrameSink : public CompositorFrameSink,
+                                public SurfaceFactoryClient,
+                                public DisplayClient {
  public:
   // Pass true for |force_disable_reclaim_resources| to act like the Display
   // is out-of-process and can't return resources synchronously.
-  TestDelegatingOutputSurface(
+  TestCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
       std::unique_ptr<OutputSurface> display_output_surface,
@@ -46,9 +47,9 @@ class TestDelegatingOutputSurface : public OutputSurface,
       base::SingleThreadTaskRunner* task_runner,
       bool synchronous_composite,
       bool force_disable_reclaim_resources);
-  ~TestDelegatingOutputSurface() override;
+  ~TestCompositorFrameSink() override;
 
-  void SetClient(TestDelegatingOutputSurfaceClient* client) {
+  void SetClient(TestCompositorFrameSinkClient* client) {
     test_client_ = client;
   }
   void SetEnlargePassTextureAmount(const gfx::Size& s) {
@@ -60,8 +61,8 @@ class TestDelegatingOutputSurface : public OutputSurface,
   // Will be submitted with the next SwapBuffers.
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
 
-  // OutputSurface implementation.
-  bool BindToClient(OutputSurfaceClient* client) override;
+  // CompositorFrameSink implementation.
+  bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SwapBuffers(CompositorFrame frame) override;
   void ForceReclaimResources() override;
@@ -82,7 +83,7 @@ class TestDelegatingOutputSurface : public OutputSurface,
   void DidDrawCallback(bool synchronous);
 
   // TODO(danakj): These don't need to be stored in unique_ptrs when
-  // OutputSurface is owned/destroyed on the compositor thread.
+  // CompositorFrameSink is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;
   std::unique_ptr<SurfaceIdAllocator> surface_id_allocator_;
   SurfaceId delegated_surface_id_;
@@ -94,14 +95,14 @@ class TestDelegatingOutputSurface : public OutputSurface,
   std::unique_ptr<Display> display_;
 
   bool bound_ = false;
-  TestDelegatingOutputSurfaceClient* test_client_ = nullptr;
+  TestCompositorFrameSinkClient* test_client_ = nullptr;
   gfx::Size enlarge_pass_texture_amount_;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
-  base::WeakPtrFactory<TestDelegatingOutputSurface> weak_ptrs_;
+  base::WeakPtrFactory<TestCompositorFrameSink> weak_ptrs_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_
+#endif  // CC_TEST_TEST_COMPOSITOR_FRAME_SINK_H_

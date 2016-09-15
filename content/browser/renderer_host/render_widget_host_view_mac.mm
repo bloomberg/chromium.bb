@@ -400,12 +400,12 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
 
 void RenderWidgetHostViewMac::
     BrowserCompositorMacSendReclaimCompositorResources(
-        int output_surface_id,
+        int compositor_frame_sink_id,
         bool is_swap_ack,
         const cc::ReturnedResourceArray& resources) {
   render_widget_host_->Send(new ViewMsg_ReclaimCompositorResources(
-      render_widget_host_->GetRoutingID(), output_surface_id, is_swap_ack,
-      resources));
+      render_widget_host_->GetRoutingID(), compositor_frame_sink_id,
+      is_swap_ack, resources));
 }
 
 void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {
@@ -1311,8 +1311,9 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewMac::OnSwapCompositorFrame(uint32_t output_surface_id,
-                                                    cc::CompositorFrame frame) {
+void RenderWidgetHostViewMac::OnSwapCompositorFrame(
+    uint32_t compositor_frame_sink_id,
+    cc::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
@@ -1320,7 +1321,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(uint32_t output_surface_id,
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
   if (frame.delegated_frame_data) {
-    browser_compositor_->SwapCompositorFrame(output_surface_id,
+    browser_compositor_->SwapCompositorFrame(compositor_frame_sink_id,
                                              std::move(frame));
     UpdateDisplayVSyncParameters();
   } else {

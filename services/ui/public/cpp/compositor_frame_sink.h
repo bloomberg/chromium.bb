@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_OUTPUT_SURFACE_H_
-#define SERVICES_UI_PUBLIC_CPP_OUTPUT_SURFACE_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_PUBLIC_CPP_COMPOSITOR_FRAME_SINK_H_
 
 #include "base/macros.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,15 +19,16 @@ class GpuChannelHost;
 
 namespace ui {
 
-class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
+class CompositorFrameSink : public cc::CompositorFrameSink,
+                            public WindowSurfaceClient {
  public:
-  OutputSurface(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-                std::unique_ptr<WindowSurface> surface);
-  ~OutputSurface() override;
+  CompositorFrameSink(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+                      std::unique_ptr<WindowSurface> surface);
+  ~CompositorFrameSink() override;
 
-  // cc::OutputSurface implementation.
+  // cc::CompositorFrameSink implementation.
   void SwapBuffers(cc::CompositorFrame frame) override;
-  bool BindToClient(cc::OutputSurfaceClient* client) override;
+  bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void BindFramebuffer() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
@@ -43,9 +44,9 @@ class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<WindowSurface> surface_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutputSurface);
+  DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_OUTPUT_SURFACE_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_COMPOSITOR_FRAME_SINK_H_

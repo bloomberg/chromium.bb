@@ -14,9 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_external_begin_frame_source.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/render_widget.h"
@@ -41,7 +42,7 @@ class StubRenderWidgetCompositorDelegate
                            float page_scale,
                            float top_controls_delta) override {}
   void BeginMainFrame(double frame_time_sec) override {}
-  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       bool fallback) override {
     return nullptr;
   }
@@ -68,16 +69,16 @@ class FakeRenderWidgetCompositorDelegate
  public:
   FakeRenderWidgetCompositorDelegate() = default;
 
-  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       bool fallback) override {
-    EXPECT_EQ(
-        num_requests_since_last_success_ >
-            RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
-        fallback);
+    EXPECT_EQ(num_requests_since_last_success_ >
+                  RenderWidgetCompositor::
+                      COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
+              fallback);
     last_create_was_fallback_ = fallback;
 
     bool success = num_failures_ >= num_failures_before_success_;
-    if (!success && use_null_output_surface_)
+    if (!success && use_null_compositor_frame_sink_)
       return nullptr;
 
     auto context_provider = cc::TestContextProvider::Create();
@@ -86,9 +87,9 @@ class FakeRenderWidgetCompositorDelegate
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
 
-    // Create delegating surface so that max_pending_frames = 1.
-    return cc::FakeOutputSurface::CreateDelegating3d(
-        std::move(context_provider));
+    auto s = cc::FakeCompositorFrameSink::Create3d(std::move(context_provider));
+    EXPECT_EQ(1, s->capabilities().max_frames_pending);
+    return std::move(s);
   }
 
   void add_success() {
@@ -117,8 +118,12 @@ class FakeRenderWidgetCompositorDelegate
     return num_failures_before_success_;
   }
 
-  void set_use_null_output_surface(bool u) { use_null_output_surface_ = u; }
-  bool use_null_output_surface() const { return use_null_output_surface_; }
+  void set_use_null_compositor_frame_sink(bool u) {
+    use_null_compositor_frame_sink_ = u;
+  }
+  bool use_null_compositor_frame_sink() const {
+    return use_null_compositor_frame_sink_;
+  }
 
  private:
   int num_requests_ = 0;
@@ -128,7 +133,7 @@ class FakeRenderWidgetCompositorDelegate
   int num_fallback_successes_ = 0;
   int num_successes_ = 0;
   bool last_create_was_fallback_ = false;
-  bool use_null_output_surface_ = true;
+  bool use_null_compositor_frame_sink_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetCompositorDelegate);
 };
@@ -139,11 +144,10 @@ class FakeRenderWidgetCompositorDelegate
 // The use null output surface parameter allows testing whether failures
 // from RenderWidget (couldn't create an output surface) vs failures from
 // the compositor (couldn't bind the output surface) are handled identically.
-class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
+class RenderWidgetCompositorFrameSink : public RenderWidgetCompositor {
  public:
-  RenderWidgetCompositorOutputSurface(
-      FakeRenderWidgetCompositorDelegate* delegate,
-      CompositorDependencies* compositor_deps)
+  RenderWidgetCompositorFrameSink(FakeRenderWidgetCompositorDelegate* delegate,
+                                  CompositorDependencies* compositor_deps)
       : RenderWidgetCompositor(delegate, compositor_deps),
         delegate_(delegate) {}
 
@@ -152,41 +156,41 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
   // Force a new output surface to be created.
   void SynchronousComposite() {
     layer_tree_host()->SetVisible(false);
-    layer_tree_host()->ReleaseOutputSurface();
+    layer_tree_host()->ReleaseCompositorFrameSink();
     layer_tree_host()->SetVisible(true);
 
     base::TimeTicks some_time;
     layer_tree_host()->Composite(some_time);
   }
 
-  void RequestNewOutputSurface() override {
+  void RequestNewCompositorFrameSink() override {
     delegate_->add_request();
-    RenderWidgetCompositor::RequestNewOutputSurface();
+    RenderWidgetCompositor::RequestNewCompositorFrameSink();
   }
 
-  void DidInitializeOutputSurface() override {
+  void DidInitializeCompositorFrameSink() override {
     delegate_->add_success();
     if (delegate_->num_requests() == expected_requests_) {
       EndTest();
     } else {
-      RenderWidgetCompositor::DidInitializeOutputSurface();
+      RenderWidgetCompositor::DidInitializeCompositorFrameSink();
       // Post the synchronous composite task so that it is not called
-      // reentrantly as a part of RequestNewOutputSurface.
+      // reentrantly as a part of RequestNewCompositorFrameSink.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
+          base::Bind(&RenderWidgetCompositorFrameSink::SynchronousComposite,
                      base::Unretained(this)));
     }
   }
 
-  void DidFailToInitializeOutputSurface() override {
+  void DidFailToInitializeCompositorFrameSink() override {
     delegate_->add_failure();
     if (delegate_->num_requests() == expected_requests_) {
       EndTest();
       return;
     }
 
-    RenderWidgetCompositor::DidFailToInitializeOutputSurface();
+    RenderWidgetCompositor::DidFailToInitializeCompositorFrameSink();
   }
 
   void SetUp(int expected_successes, int expected_fallback_succeses) {
@@ -213,21 +217,22 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
   int expected_fallback_successes_ = 0;
   int expected_requests_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorOutputSurface);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorFrameSink);
 };
 
-class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
+class RenderWidgetCompositorFrameSinkTest : public testing::Test {
  public:
-  RenderWidgetCompositorOutputSurfaceTest()
+  RenderWidgetCompositorFrameSinkTest()
       : render_widget_compositor_(&compositor_delegate_, &compositor_deps_) {
     render_widget_compositor_.Initialize(1.f /* initial_device_scale_factor */);
   }
 
-  void RunTest(bool use_null_output_surface,
+  void RunTest(bool use_null_compositor_frame_sink,
                int num_failures_before_success,
                int expected_successes,
                int expected_fallback_succeses) {
-    compositor_delegate_.set_use_null_output_surface(use_null_output_surface);
+    compositor_delegate_.set_use_null_compositor_frame_sink(
+        use_null_compositor_frame_sink);
     compositor_delegate_.set_num_failures_before_success(
         num_failures_before_success);
     render_widget_compositor_.SetUp(expected_successes,
@@ -235,7 +240,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
     render_widget_compositor_.setVisible(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
+        base::Bind(&RenderWidgetCompositorFrameSink::SynchronousComposite,
                    base::Unretained(&render_widget_compositor_)));
     base::RunLoop().Run();
     render_widget_compositor_.AfterTest();
@@ -246,47 +251,52 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
   FakeRenderWidgetCompositorDelegate compositor_delegate_;
-  RenderWidgetCompositorOutputSurface render_widget_compositor_;
+  RenderWidgetCompositorFrameSink render_widget_compositor_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorOutputSurfaceTest);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetCompositorFrameSinkTest);
 };
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, SucceedOnce) {
+TEST_F(RenderWidgetCompositorFrameSinkTest, SucceedOnce) {
   RunTest(false, 0, 1, 0);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, SucceedTwice) {
+TEST_F(RenderWidgetCompositorFrameSinkTest, SucceedTwice) {
   RunTest(false, 0, 2, 0);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, FailOnceNull) {
+TEST_F(RenderWidgetCompositorFrameSinkTest, FailOnceNull) {
   static_assert(
-      RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK >= 2,
+      RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
+          2,
       "Adjust the values of this test if this fails");
   RunTest(true, 1, 1, 0);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, FailOnceBind) {
+TEST_F(RenderWidgetCompositorFrameSinkTest, FailOnceBind) {
   static_assert(
-      RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK >= 2,
+      RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK >=
+          2,
       "Adjust the values of this test if this fails");
   RunTest(false, 1, 1, 0);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessNull) {
-  RunTest(true, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessNull) {
+  RunTest(true,
+          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           0, 1);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessBind) {
-  RunTest(false, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessBind) {
+  RunTest(false,
+          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           0, 1);
 }
 
-TEST_F(RenderWidgetCompositorOutputSurfaceTest, FallbackSuccessNormalSuccess) {
+TEST_F(RenderWidgetCompositorFrameSinkTest, FallbackSuccessNormalSuccess) {
   // The first success is a fallback, but the next should not be a fallback.
-  RunTest(false, RenderWidgetCompositor::OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK,
+  RunTest(false,
+          RenderWidgetCompositor::COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
           1, 1);
 }
 

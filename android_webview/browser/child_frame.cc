@@ -8,14 +8,14 @@
 
 namespace android_webview {
 
-ChildFrame::ChildFrame(uint32_t output_surface_id,
+ChildFrame::ChildFrame(uint32_t compositor_frame_sink_id,
                        std::unique_ptr<cc::CompositorFrame> frame,
                        const CompositorID& compositor_id,
                        bool viewport_rect_for_tile_priority_empty,
                        const gfx::Transform& transform_for_tile_priority,
                        bool offscreen_pre_raster,
                        bool is_layer)
-    : output_surface_id(output_surface_id),
+    : compositor_frame_sink_id(compositor_frame_sink_id),
       frame(std::move(frame)),
       compositor_id(compositor_id),
       viewport_rect_for_tile_priority_empty(

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/test/layer_test_common.h"
@@ -54,8 +54,10 @@ TEST(TextureLayerImplTest, Occlusion) {
   LayerTestCommon::LayerImplTest impl;
 
   gpu::Mailbox mailbox;
-  impl.output_surface()->context_provider()->ContextGL()->GenMailboxCHROMIUM(
-      mailbox.name);
+  impl.compositor_frame_sink()
+      ->context_provider()
+      ->ContextGL()
+      ->GenMailboxCHROMIUM(mailbox.name);
   TextureMailbox texture_mailbox(
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
@@ -112,8 +114,10 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
   LayerTestCommon::LayerImplTest impl;
 
   gpu::Mailbox mailbox;
-  impl.output_surface()->context_provider()->ContextGL()->GenMailboxCHROMIUM(
-      mailbox.name);
+  impl.compositor_frame_sink()
+      ->context_provider()
+      ->ContextGL()
+      ->GenMailboxCHROMIUM(mailbox.name);
   TextureMailbox texture_mailbox(
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,

@@ -26,17 +26,17 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings(const SchedulerSettings& other);
   ~SchedulerSettings();
 
-  bool use_external_begin_frame_source;
-  bool main_frame_while_swap_throttled_enabled;
-  bool main_frame_before_activation_enabled;
-  bool commit_to_active_tree;
-  bool timeout_and_draw_when_animation_checkerboards;
-  bool using_synchronous_renderer_compositor;
-  bool throttle_frame_production;
-  bool abort_commit_before_output_surface_creation;
+  bool use_external_begin_frame_source = false;
+  bool main_frame_while_swap_throttled_enabled = false;
+  bool main_frame_before_activation_enabled = false;
+  bool commit_to_active_tree = false;
+  bool timeout_and_draw_when_animation_checkerboards = true;
+  bool using_synchronous_renderer_compositor = false;
+  bool throttle_frame_production = true;
+  bool abort_commit_before_compositor_frame_sink_creation = true;
 
-  int maximum_number_of_failed_draws_before_draw_is_forced;
-  base::TimeDelta background_frame_interval;
+  int maximum_number_of_failed_draws_before_draw_is_forced = 3;
+  base::TimeDelta background_frame_interval = base::TimeDelta::FromSeconds(1);
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 };

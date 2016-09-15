@@ -35,7 +35,7 @@ namespace gfx { class Rect; }
 
 namespace cc {
 class LayerImpl;
-class OutputSurface;
+class CompositorFrameSink;
 class QuadList;
 class RenderSurfaceImpl;
 class ResourceProvider;
@@ -140,8 +140,8 @@ class LayerTestCommon {
 
     void RequestCopyOfOutput();
 
-    OutputSurface* output_surface() const {
-      return host_->host_impl()->output_surface();
+    CompositorFrameSink* compositor_frame_sink() const {
+      return host_->host_impl()->compositor_frame_sink();
     }
     ResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
@@ -165,7 +165,7 @@ class LayerTestCommon {
    private:
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
-    std::unique_ptr<OutputSurface> output_surface_;
+    std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
     std::unique_ptr<FakeLayerTreeHost> host_;
     std::unique_ptr<RenderPass> render_pass_;
     scoped_refptr<AnimationTimeline> timeline_;

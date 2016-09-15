@@ -16,6 +16,8 @@ source_set("surface_id") {
 component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
+    "direct_compositor_frame_sink.cc",
+    "direct_compositor_frame_sink.h",
     "display.cc",
     "display.h",
     "display_client.h",
@@ -25,8 +27,6 @@ component("surfaces") {
     "surface.h",
     "surface_aggregator.cc",
     "surface_aggregator.h",
-    "surface_display_output_surface.cc",
-    "surface_display_output_surface.h",
     "surface_factory.cc",
     "surface_factory.h",
     "surface_factory_client.h",

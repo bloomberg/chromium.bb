@@ -351,7 +351,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
+        output_surface_->context_provider(), shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<FakeRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get());
     renderer_->Initialize();
@@ -381,7 +381,7 @@ class GLRendererShaderTest : public GLRendererTest {
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
+        output_surface_->context_provider(), shared_bitmap_manager_.get());
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
     renderer_->Initialize();
@@ -613,7 +613,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -646,7 +646,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -677,7 +677,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -718,7 +718,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -752,7 +752,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -810,7 +810,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -891,7 +891,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -977,7 +977,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -1066,7 +1066,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -1200,7 +1200,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -1238,7 +1238,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
@@ -1624,7 +1624,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
-        &output_surface_, shared_bitmap_manager_.get());
+        output_surface_.context_provider(), shared_bitmap_manager_.get());
 
     renderer_.reset(new FakeRendererGL(&settings_, &output_surface_,
                                        resource_provider_.get()));
@@ -1780,7 +1780,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
   std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
@@ -1937,7 +1937,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface.get(),
+      FakeResourceProvider::Create(output_surface->context_provider(),
                                    shared_bitmap_manager.get());
   std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
@@ -2018,7 +2018,8 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     CHECK(output_surface->BindToClient(&output_surface_client));
 
     std::unique_ptr<ResourceProvider> resource_provider =
-        FakeResourceProvider::Create(output_surface.get(), nullptr);
+        FakeResourceProvider::Create(output_surface->context_provider(),
+                                     nullptr);
 
     RendererSettings settings;
     settings.partial_swap_enabled = partial_swap;
@@ -2095,8 +2096,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
         TestWebGraphicsContext3D::Create(), std::move(context_support));
     output_surface_ = FakeOutputSurface::Create3d(std::move(context_provider));
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ =
-        FakeResourceProvider::Create(output_surface_.get(), nullptr);
+    resource_provider_ = FakeResourceProvider::Create(
+        output_surface_->context_provider(), nullptr);
     renderer_ =
         base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
                                      resource_provider_.get(), nullptr, 0);

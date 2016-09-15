@@ -61,30 +61,6 @@ class FakeOutputSurface : public OutputSurface {
         nullptr, nullptr, std::move(software_device), false));
   }
 
-  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d() {
-    return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(),
-                              TestContextProvider::CreateWorker(), true));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d(
-      scoped_refptr<TestContextProvider> context_provider) {
-    return base::WrapUnique(new FakeOutputSurface(
-        context_provider, TestContextProvider::CreateWorker(), true));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> CreateDelegating3d(
-      std::unique_ptr<TestWebGraphicsContext3D> context) {
-    return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
-                              TestContextProvider::CreateWorker(), true));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> CreateDelegatingSoftware() {
-    return base::WrapUnique(
-        new FakeOutputSurface(nullptr, nullptr, nullptr, true));
-  }
-
   static std::unique_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
     std::unique_ptr<FakeOutputSurface> surface(Create3d(std::move(context)));

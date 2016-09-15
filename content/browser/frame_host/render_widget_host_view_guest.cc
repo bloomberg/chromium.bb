@@ -262,7 +262,7 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 }
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
-    uint32_t output_surface_id,
+    uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
 
@@ -276,16 +276,17 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
   // Check whether we need to recreate the cc::Surface, which means the child
   // frame renderer has changed its output surface, or size, or scale factor.
-  if (output_surface_id != last_output_surface_id_ && surface_factory_) {
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_ &&
+      surface_factory_) {
     surface_factory_->Destroy(surface_id_);
     surface_factory_.reset();
   }
-  if (output_surface_id != last_output_surface_id_ ||
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
       frame_size != current_surface_size_ ||
       scale_factor != current_surface_scale_factor_ ||
       guest_->has_attached_since_surface_set()) {
     ClearCompositorSurfaceIfNecessary();
-    last_output_surface_id_ = output_surface_id;
+    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
     current_surface_size_ = frame_size;
     current_surface_scale_factor_ = scale_factor;
   }
@@ -311,7 +312,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
   cc::SurfaceFactory::DrawCallback ack_callback = base::Bind(
       &RenderWidgetHostViewChildFrame::SurfaceDrawn,
-      RenderWidgetHostViewChildFrame::AsWeakPtr(), output_surface_id);
+      RenderWidgetHostViewChildFrame::AsWeakPtr(), compositor_frame_sink_id);
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);

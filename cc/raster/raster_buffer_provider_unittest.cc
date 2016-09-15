@@ -27,10 +27,9 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -149,9 +148,7 @@ class RasterBufferProviderTest
   enum NamedTaskSet { REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW, ALL };
 
   RasterBufferProviderTest()
-      : context_provider_(TestContextProvider::Create()),
-        worker_context_provider_(TestContextProvider::CreateWorker()),
-        all_tile_tasks_finished_(
+      : all_tile_tasks_finished_(
             base::ThreadTaskRunnerHandle::Get().get(),
             base::Bind(&RasterBufferProviderTest::AllTileTasksFinished,
                        base::Unretained(this))),
@@ -162,12 +159,12 @@ class RasterBufferProviderTest
   void SetUp() override {
     switch (GetParam()) {
       case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = ZeroCopyRasterBufferProvider::Create(
             resource_provider_.get(), PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
             base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
@@ -175,13 +172,13 @@ class RasterBufferProviderTest
             PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
-        CreateSoftwareOutputSurfaceAndResourceProvider();
+        CreateSoftwareResourceProvider();
         raster_buffer_provider_ =
             BitmapRasterBufferProvider::Create(resource_provider_.get());
         break;
@@ -279,22 +276,20 @@ class RasterBufferProviderTest
   }
 
  private:
-  void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_,
-                                                  worker_context_provider_);
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
+  void Create3dResourceProvider() {
+    context_provider_ = TestContextProvider::Create();
+    context_provider_->BindToCurrentThread();
+    worker_context_provider_ = TestContextProvider::CreateWorker();
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), nullptr, &gpu_memory_buffer_manager_);
+        context_provider_.get(), &shared_bitmap_manager_,
+        &gpu_memory_buffer_manager_);
   }
 
-  void CreateSoftwareOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::CreateSoftware(
-        base::WrapUnique(new SoftwareOutputDevice));
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
+  void CreateSoftwareResourceProvider() {
     resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), &shared_bitmap_manager_, nullptr);
+        nullptr, &shared_bitmap_manager_, &gpu_memory_buffer_manager_);
   }
 
   void OnTimeout() {
@@ -305,8 +300,6 @@ class RasterBufferProviderTest
  protected:
   scoped_refptr<TestContextProvider> context_provider_;
   scoped_refptr<TestContextProvider> worker_context_provider_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
@@ -374,8 +367,8 @@ TEST_P(RasterBufferProviderTest, FalseThrottling) {
 }
 
 TEST_P(RasterBufferProviderTest, LostContext) {
-  LoseContext(output_surface_->context_provider());
-  LoseContext(output_surface_->worker_context_provider());
+  LoseContext(context_provider_.get());
+  LoseContext(worker_context_provider_.get());
 
   AppendTask(0u);
   AppendTask(1u);

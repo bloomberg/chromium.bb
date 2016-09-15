@@ -33,14 +33,14 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate) override;
-  void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override;
+  void InitializeCompositorFrameSinkOnImpl(CompositorFrameSink*) override;
   void InitializeMutatorOnImpl(
       std::unique_ptr<LayerTreeMutator> mutator) override;
   void MainThreadHasStoppedFlingingOnImpl() override;
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
   void SetDeferCommitsOnImpl(bool defer_commits) override;
   void SetVisibleOnImpl(bool visible) override;
-  void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
+  void ReleaseCompositorFrameSinkOnImpl(CompletionEvent* completion) override;
   void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) override;

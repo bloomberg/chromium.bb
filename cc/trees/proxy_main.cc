@@ -13,7 +13,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -94,26 +94,26 @@ void ProxyMain::SetAnimationEvents(std::unique_ptr<AnimationEvents> events) {
   layer_tree_host_->SetAnimationEvents(std::move(events));
 }
 
-void ProxyMain::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "ProxyMain::DidLoseOutputSurface");
+void ProxyMain::DidLoseCompositorFrameSink() {
+  TRACE_EVENT0("cc", "ProxyMain::DidLoseCompositorFrameSink");
   DCHECK(IsMainThread());
-  layer_tree_host_->DidLoseOutputSurface();
+  layer_tree_host_->DidLoseCompositorFrameSink();
 }
 
-void ProxyMain::RequestNewOutputSurface() {
-  TRACE_EVENT0("cc", "ProxyMain::RequestNewOutputSurface");
+void ProxyMain::RequestNewCompositorFrameSink() {
+  TRACE_EVENT0("cc", "ProxyMain::RequestNewCompositorFrameSink");
   DCHECK(IsMainThread());
-  layer_tree_host_->RequestNewOutputSurface();
+  layer_tree_host_->RequestNewCompositorFrameSink();
 }
 
-void ProxyMain::DidInitializeOutputSurface(bool success) {
-  TRACE_EVENT0("cc", "ProxyMain::DidInitializeOutputSurface");
+void ProxyMain::DidInitializeCompositorFrameSink(bool success) {
+  TRACE_EVENT0("cc", "ProxyMain::DidInitializeCompositorFrameSink");
   DCHECK(IsMainThread());
 
   if (!success)
-    layer_tree_host_->DidFailToInitializeOutputSurface();
+    layer_tree_host_->DidFailToInitializeCompositorFrameSink();
   else
-    layer_tree_host_->DidInitializeOutputSurface();
+    layer_tree_host_->DidInitializeCompositorFrameSink();
 }
 
 void ProxyMain::DidCompletePageScaleAnimation() {
@@ -253,8 +253,9 @@ bool ProxyMain::CommitToActiveTree() const {
   return false;
 }
 
-void ProxyMain::SetOutputSurface(OutputSurface* output_surface) {
-  channel_main_->InitializeOutputSurfaceOnImpl(output_surface);
+void ProxyMain::SetCompositorFrameSink(
+    CompositorFrameSink* compositor_frame_sink) {
+  channel_main_->InitializeCompositorFrameSinkOnImpl(compositor_frame_sink);
 }
 
 void ProxyMain::SetVisible(bool visible) {
@@ -396,11 +397,11 @@ bool ProxyMain::MainFrameWillHappenForTesting() {
   return main_frame_will_happen;
 }
 
-void ProxyMain::ReleaseOutputSurface() {
+void ProxyMain::ReleaseCompositorFrameSink() {
   DCHECK(IsMainThread());
   DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
   CompletionEvent completion;
-  channel_main_->ReleaseOutputSurfaceOnImpl(&completion);
+  channel_main_->ReleaseCompositorFrameSinkOnImpl(&completion);
   completion.Wait();
 }
 

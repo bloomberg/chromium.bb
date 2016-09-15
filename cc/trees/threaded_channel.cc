@@ -47,11 +47,11 @@ void ThreadedChannel::UpdateTopControlsStateOnImpl(TopControlsState constraints,
                  constraints, current, animate));
 }
 
-void ThreadedChannel::InitializeOutputSurfaceOnImpl(
-    OutputSurface* output_surface) {
+void ThreadedChannel::InitializeCompositorFrameSinkOnImpl(
+    CompositorFrameSink* output_surface) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::InitializeOutputSurfaceOnImpl,
+      FROM_HERE, base::Bind(&ProxyImpl::InitializeCompositorFrameSinkOnImpl,
                             proxy_impl_weak_ptr_, output_surface));
 }
 
@@ -116,10 +116,11 @@ void ThreadedChannel::SetVisibleOnImpl(bool visible) {
       base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_weak_ptr_, visible));
 }
 
-void ThreadedChannel::ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) {
+void ThreadedChannel::ReleaseCompositorFrameSinkOnImpl(
+    CompletionEvent* completion) {
   DCHECK(IsMainThread());
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::ReleaseOutputSurfaceOnImpl,
+      FROM_HERE, base::Bind(&ProxyImpl::ReleaseCompositorFrameSinkOnImpl,
                             proxy_impl_weak_ptr_, completion));
 }
 
@@ -221,24 +222,24 @@ void ThreadedChannel::SetAnimationEvents(
                             impl().proxy_main_weak_ptr, base::Passed(&events)));
 }
 
-void ThreadedChannel::DidLoseOutputSurface() {
+void ThreadedChannel::DidLoseCompositorFrameSink() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyMain::DidLoseOutputSurface, impl().proxy_main_weak_ptr));
-}
-
-void ThreadedChannel::RequestNewOutputSurface() {
-  DCHECK(IsImplThread());
-  MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::RequestNewOutputSurface,
+      FROM_HERE, base::Bind(&ProxyMain::DidLoseCompositorFrameSink,
                             impl().proxy_main_weak_ptr));
 }
 
-void ThreadedChannel::DidInitializeOutputSurface(bool success) {
+void ThreadedChannel::RequestNewCompositorFrameSink() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::DidInitializeOutputSurface,
+      FROM_HERE, base::Bind(&ProxyMain::RequestNewCompositorFrameSink,
+                            impl().proxy_main_weak_ptr));
+}
+
+void ThreadedChannel::DidInitializeCompositorFrameSink(bool success) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::DidInitializeCompositorFrameSink,
                             impl().proxy_main_weak_ptr, success));
 }
 

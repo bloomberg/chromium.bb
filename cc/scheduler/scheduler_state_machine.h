@@ -48,14 +48,15 @@ class CC_EXPORT SchedulerStateMachine {
   // settings must be valid for the lifetime of this class.
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
 
-  enum OutputSurfaceState {
-    OUTPUT_SURFACE_NONE,
-    OUTPUT_SURFACE_ACTIVE,
-    OUTPUT_SURFACE_CREATING,
-    OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT,
-    OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION,
+  enum CompositorFrameSinkState {
+    COMPOSITOR_FRAME_SINK_NONE,
+    COMPOSITOR_FRAME_SINK_ACTIVE,
+    COMPOSITOR_FRAME_SINK_CREATING,
+    COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT,
+    COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION,
   };
-  static const char* OutputSurfaceStateToString(OutputSurfaceState state);
+  static const char* CompositorFrameSinkStateToString(
+      CompositorFrameSinkState state);
 
   // Note: BeginImplFrameState does not cycle through these states in a fixed
   // order on all platforms. It's up to the scheduler to set these correctly.
@@ -120,9 +121,9 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_DRAW_AND_SWAP_IF_POSSIBLE,
     ACTION_DRAW_AND_SWAP_FORCED,
     ACTION_DRAW_AND_SWAP_ABORT,
-    ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+    ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
     ACTION_PREPARE_TILES,
-    ACTION_INVALIDATE_OUTPUT_SURFACE,
+    ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK,
   };
   static const char* ActionToString(Action action);
 
@@ -134,9 +135,9 @@ class CC_EXPORT SchedulerStateMachine {
   void WillCommit(bool commit_had_no_updates);
   void WillActivate();
   void WillDraw();
-  void WillBeginOutputSurfaceCreation();
+  void WillBeginCompositorFrameSinkCreation();
   void WillPrepareTiles();
-  void WillInvalidateOutputSurface();
+  void WillInvalidateCompositorFrameSink();
 
   void DidDraw(DrawResult draw_result);
 
@@ -195,7 +196,7 @@ class CC_EXPORT SchedulerStateMachine {
   // with a low resolution or checkerboarded tile.
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 
-  // Notification from the OutputSurface that a swap has been consumed.
+  // Notification from the CompositorFrameSink that a swap has been consumed.
   void DidSwapBuffersComplete();
 
   int pending_swaps() const { return pending_swaps_; }
@@ -257,9 +258,9 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   void DidPrepareTiles();
-  void DidLoseOutputSurface();
-  void DidCreateAndInitializeOutputSurface();
-  bool HasInitializedOutputSurface() const;
+  void DidLoseCompositorFrameSink();
+  void DidCreateAndInitializeCompositorFrameSink();
+  bool HasInitializedCompositorFrameSink() const;
 
   // True if we need to abort draws to make forward progress.
   bool PendingDrawsShouldBeAborted() const;
@@ -282,20 +283,20 @@ class CC_EXPORT SchedulerStateMachine {
   // TODO(sunnyps): Rename this to ShouldAbortCurrentFrame or similar.
   bool PendingActivationsShouldBeForced() const;
 
-  bool ShouldBeginOutputSurfaceCreation() const;
+  bool ShouldBeginCompositorFrameSinkCreation() const;
   bool ShouldDraw() const;
   bool ShouldActivatePendingTree() const;
   bool ShouldSendBeginMainFrame() const;
   bool ShouldCommit() const;
   bool ShouldPrepareTiles() const;
-  bool ShouldInvalidateOutputSurface() const;
+  bool ShouldInvalidateCompositorFrameSink() const;
 
   void WillDrawInternal();
   void DidDrawInternal(DrawResult draw_result);
 
   const SchedulerSettings settings_;
 
-  OutputSurfaceState output_surface_state_;
+  CompositorFrameSinkState compositor_frame_sink_state_;
   BeginImplFrameState begin_impl_frame_state_;
   BeginMainFrameState begin_main_frame_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
@@ -306,13 +307,13 @@ class CC_EXPORT SchedulerStateMachine {
   int last_frame_number_swap_performed_;
   int last_frame_number_draw_performed_;
   int last_frame_number_begin_main_frame_sent_;
-  int last_frame_number_invalidate_output_surface_performed_;
+  int last_frame_number_invalidate_compositor_frame_sink_performed_;
 
   // These are used to ensure that an action only happens once per frame,
   // deadline, etc.
   bool draw_funnel_;
   bool send_begin_main_frame_funnel_;
-  bool invalidate_output_surface_funnel_;
+  bool invalidate_compositor_frame_sink_funnel_;
   // prepare_tiles_funnel_ is "filled" each time PrepareTiles is called
   // and "drained" on each BeginImplFrame. If the funnel gets too full,
   // we start throttling ACTION_PREPARE_TILES such that we average one
@@ -322,7 +323,7 @@ class CC_EXPORT SchedulerStateMachine {
   int consecutive_checkerboard_animations_;
   int max_pending_swaps_;
   int pending_swaps_;
-  int swaps_with_current_output_surface_;
+  int swaps_with_current_compositor_frame_sink_;
   bool needs_redraw_;
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
@@ -334,7 +335,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;
   bool active_tree_needs_first_draw_;
-  bool did_create_and_initialize_first_output_surface_;
+  bool did_create_and_initialize_first_compositor_frame_sink_;
   TreePriority tree_priority_;
   ScrollHandlerState scroll_handler_state_;
   bool critical_begin_main_frame_to_activate_is_fast_;

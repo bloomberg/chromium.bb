@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_display_output_surface.h"
+#include "cc/surfaces/direct_compositor_frame_sink.h"
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -13,15 +14,15 @@
 
 namespace cc {
 
-SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
+DirectCompositorFrameSink::DirectCompositorFrameSink(
     SurfaceManager* surface_manager,
     SurfaceIdAllocator* surface_id_allocator,
     Display* display,
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+    : CompositorFrameSink(std::move(context_provider),
+                          std::move(worker_context_provider),
+                          nullptr),
       surface_manager_(surface_manager),
       surface_id_allocator_(surface_id_allocator),
       display_(display),
@@ -31,18 +32,18 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
   capabilities_.adjust_deadline_for_parent = true;
   capabilities_.can_force_reclaim_resources = true;
 
-  // Display and SurfaceDisplayOutputSurface share a GL context, so sync
+  // Display and DirectCompositorFrameSink share a GL context, so sync
   // points aren't needed when passing resources between them.
   capabilities_.delegated_sync_points_required = false;
   factory_.set_needs_sync_points(false);
 }
 
-SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
+DirectCompositorFrameSink::DirectCompositorFrameSink(
     SurfaceManager* surface_manager,
     SurfaceIdAllocator* surface_id_allocator,
     Display* display,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : OutputSurface(std::move(vulkan_context_provider)),
+    : CompositorFrameSink(std::move(vulkan_context_provider)),
       surface_manager_(surface_manager),
       surface_id_allocator_(surface_id_allocator),
       display_(display),
@@ -53,13 +54,13 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
   capabilities_.can_force_reclaim_resources = true;
 }
 
-SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
+DirectCompositorFrameSink::~DirectCompositorFrameSink() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (HasClient())
     DetachFromClient();
 }
 
-void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
+void DirectCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   gfx::Size frame_size =
       frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
@@ -75,17 +76,18 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
 
   factory_.SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
-      base::Bind(&SurfaceDisplayOutputSurface::DidDrawCallback,
+      base::Bind(&DirectCompositorFrameSink::DidDrawCallback,
                  base::Unretained(this)));
 }
 
-bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
+bool DirectCompositorFrameSink::BindToClient(
+    CompositorFrameSinkClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->client_id(), this);
 
-  if (!OutputSurface::BindToClient(client))
+  if (!CompositorFrameSink::BindToClient(client))
     return false;
 
   // We want the Display's output surface to hear about lost context, and since
@@ -101,14 +103,14 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   return true;
 }
 
-void SurfaceDisplayOutputSurface::ForceReclaimResources() {
+void DirectCompositorFrameSink::ForceReclaimResources() {
   if (!delegated_surface_id_.is_null()) {
     factory_.SubmitCompositorFrame(delegated_surface_id_, CompositorFrame(),
                                    SurfaceFactory::DrawCallback());
   }
 }
 
-void SurfaceDisplayOutputSurface::DetachFromClient() {
+void DirectCompositorFrameSink::DetachFromClient() {
   DCHECK(HasClient());
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
@@ -117,52 +119,52 @@ void SurfaceDisplayOutputSurface::DetachFromClient() {
   if (!delegated_surface_id_.is_null())
     factory_.Destroy(delegated_surface_id_);
 
-  OutputSurface::DetachFromClient();
+  CompositorFrameSink::DetachFromClient();
 }
 
-void SurfaceDisplayOutputSurface::BindFramebuffer() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
+void DirectCompositorFrameSink::BindFramebuffer() {
+  // This is a CompositorFrameSink, no framebuffer/direct drawing support.
   NOTREACHED();
 }
 
-uint32_t SurfaceDisplayOutputSurface::GetFramebufferCopyTextureFormat() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
+uint32_t DirectCompositorFrameSink::GetFramebufferCopyTextureFormat() {
+  // This is a CompositorFrameSink, no framebuffer/direct drawing support.
   NOTREACHED();
   return 0;
 }
 
-void SurfaceDisplayOutputSurface::ReturnResources(
+void DirectCompositorFrameSink::ReturnResources(
     const ReturnedResourceArray& resources) {
   if (client_)
     client_->ReclaimResources(resources);
 }
 
-void SurfaceDisplayOutputSurface::SetBeginFrameSource(
+void DirectCompositorFrameSink::SetBeginFrameSource(
     BeginFrameSource* begin_frame_source) {
   DCHECK(client_);
   client_->SetBeginFrameSource(begin_frame_source);
 }
 
-void SurfaceDisplayOutputSurface::DisplayOutputSurfaceLost() {
-  output_surface_lost_ = true;
-  client_->DidLoseOutputSurface();
+void DirectCompositorFrameSink::DisplayOutputSurfaceLost() {
+  is_lost_ = true;
+  client_->DidLoseCompositorFrameSink();
 }
 
-void SurfaceDisplayOutputSurface::DisplayWillDrawAndSwap(
+void DirectCompositorFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const RenderPassList& render_passes) {
   // This notification is not relevant to our client outside of tests.
 }
 
-void SurfaceDisplayOutputSurface::DisplayDidDrawAndSwap() {
+void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
   // This notification is not relevant to our client outside of tests. We
   // unblock the client from DidDrawCallback() when the surface is going to
   // be drawn.
 }
 
-void SurfaceDisplayOutputSurface::DidDrawCallback() {
+void DirectCompositorFrameSink::DidDrawCallback() {
   // TODO(danakj): Why the lost check?
-  if (!output_surface_lost_)
+  if (!is_lost_)
     client_->DidSwapBuffersComplete();
 }
 

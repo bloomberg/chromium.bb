@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
-#include "cc/test/test_delegating_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_view_test_proxy.h"
@@ -226,21 +226,25 @@ namespace {
 // request at SwapBuffers time.
 class CopyRequestSwapPromise : public cc::SwapPromise {
  public:
-  using FindOutputSurfaceCallback =
-      base::Callback<cc::TestDelegatingOutputSurface*()>;
-  CopyRequestSwapPromise(std::unique_ptr<cc::CopyOutputRequest> request,
-                         FindOutputSurfaceCallback output_surface_callback)
+  using FindCompositorFrameSinkCallback =
+      base::Callback<cc::TestCompositorFrameSink*()>;
+  CopyRequestSwapPromise(
+      std::unique_ptr<cc::CopyOutputRequest> request,
+      FindCompositorFrameSinkCallback find_compositor_frame_sink_callback)
       : copy_request_(std::move(request)),
-        output_surface_callback_(std::move(output_surface_callback)) {}
+        find_compositor_frame_sink_callback_(
+            std::move(find_compositor_frame_sink_callback)) {}
 
   // cc::SwapPromise implementation.
   void OnCommit() override {
-    output_surface_from_commit_ = output_surface_callback_.Run();
-    DCHECK(output_surface_from_commit_);
+    compositor_frame_sink_from_commit_ =
+        find_compositor_frame_sink_callback_.Run();
+    DCHECK(compositor_frame_sink_from_commit_);
   }
   void DidActivate() override {}
   void DidSwap(cc::CompositorFrameMetadata*) override {
-    output_surface_from_commit_->RequestCopyOfOutput(std::move(copy_request_));
+    compositor_frame_sink_from_commit_->RequestCopyOfOutput(
+        std::move(copy_request_));
   }
   DidNotSwapAction DidNotSwap(DidNotSwapReason r) override {
     // The compositor should always swap in layout test mode.
@@ -251,15 +255,15 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
 
  private:
   std::unique_ptr<cc::CopyOutputRequest> copy_request_;
-  FindOutputSurfaceCallback output_surface_callback_;
-  cc::TestDelegatingOutputSurface* output_surface_from_commit_ = nullptr;
+  FindCompositorFrameSinkCallback find_compositor_frame_sink_callback_;
+  cc::TestCompositorFrameSink* compositor_frame_sink_from_commit_ = nullptr;
 };
 
 }  // namespace
 
 class LayoutTestDependenciesImpl : public LayoutTestDependencies {
  public:
-  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<cc::ContextProvider> compositor_context_provider,
@@ -300,43 +304,44 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
         RenderWidgetCompositor::GenerateLayerTreeSettings(
             *base::CommandLine::ForCurrentProcess(), deps, 1.f);
 
-    auto output_surface = base::MakeUnique<cc::TestDelegatingOutputSurface>(
+    auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), std::move(display_output_surface),
         deps->GetSharedBitmapManager(), deps->GetGpuMemoryBufferManager(),
         settings.renderer_settings, task_runner, synchronous_composite,
         false /* force_disable_reclaim_resources */);
-    output_surfaces_[routing_id] = output_surface.get();
-    return std::move(output_surface);
+    compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
+    return std::move(compositor_frame_sink);
   }
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutput(
       int32_t routing_id,
       std::unique_ptr<cc::CopyOutputRequest> request) override {
-    // Note that we can't immediately check output_surfaces_, since it may not
-    // have been created yet. Instead, we wait until OnCommit to find the
-    // currently active OutputSurface for the given RenderWidget routing_id.
+    // Note that we can't immediately check compositor_frame_sinks_, since it
+    // may not have been created yet. Instead, we wait until OnCommit to find
+    // the currently active CompositorFrameSink for the given RenderWidget
+    // routing_id.
     return base::MakeUnique<CopyRequestSwapPromise>(
         std::move(request),
         base::Bind(
-            &LayoutTestDependenciesImpl::FindOutputSurface,
+            &LayoutTestDependenciesImpl::FindCompositorFrameSink,
             // |this| will still be valid, because its lifetime is tied to
             // RenderThreadImpl, which outlives layout test execution.
             base::Unretained(this), routing_id));
   }
 
  private:
-  cc::TestDelegatingOutputSurface* FindOutputSurface(int32_t routing_id) {
-    auto it = output_surfaces_.find(routing_id);
-    return it == output_surfaces_.end() ? nullptr : it->second;
+  cc::TestCompositorFrameSink* FindCompositorFrameSink(int32_t routing_id) {
+    auto it = compositor_frame_sinks_.find(routing_id);
+    return it == compositor_frame_sinks_.end() ? nullptr : it->second;
   }
 
   // Entries are not removed, so this map can grow. However, it is only used in
   // layout tests, so this memory usage does not occur in production.
   // Entries in this map will outlive the output surface, because this object is
   // owned by RenderThreadImpl, which outlives layout test execution.
-  std::unordered_map<int32_t, cc::TestDelegatingOutputSurface*>
-      output_surfaces_;
+  std::unordered_map<int32_t, cc::TestCompositorFrameSink*>
+      compositor_frame_sinks_;
 };
 
 void EnableRendererLayoutTestMode() {

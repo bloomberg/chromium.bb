@@ -11,8 +11,8 @@ namespace cc {
 CommitEarlyOutReason CommitEarlyOutReasonFromProtobuf(
     const proto::CommitEarlyOutReason& proto) {
   switch (proto.reason()) {
-    case proto::CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
-      return CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST;
+    case proto::CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST:
+      return CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST;
     case proto::CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
       return CommitEarlyOutReason::ABORTED_NOT_VISIBLE;
     case proto::CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
@@ -21,15 +21,15 @@ CommitEarlyOutReason CommitEarlyOutReasonFromProtobuf(
       return CommitEarlyOutReason::FINISHED_NO_UPDATES;
   }
   NOTREACHED();
-  return CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST;
+  return CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST;
 }
 
 void CommitEarlyOutReasonToProtobuf(CommitEarlyOutReason reason,
                                     proto::CommitEarlyOutReason* proto) {
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
+    case CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST:
       proto->set_reason(
-          proto::CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
+          proto::CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST);
       return;
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
       proto->set_reason(proto::CommitEarlyOutReason::ABORTED_NOT_VISIBLE);

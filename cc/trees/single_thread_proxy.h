@@ -38,8 +38,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // Proxy implementation
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(OutputSurface* output_surface) override;
-  void ReleaseOutputSurface() override;
+  void SetCompositorFrameSink(
+      CompositorFrameSink* compositor_frame_sink) override;
+  void ReleaseCompositorFrameSink() override;
   void SetVisible(bool visible) override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
@@ -69,13 +70,13 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
-  void ScheduledActionBeginOutputSurfaceCreation() override;
+  void ScheduledActionBeginCompositorFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
-  void ScheduledActionInvalidateOutputSurface() override;
+  void ScheduledActionInvalidateCompositorFrameSink() override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
   // LayerTreeHostImplClient implementation
-  void DidLoseOutputSurfaceOnImplThread() override;
+  void DidLoseCompositorFrameSinkOnImplThread() override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
   void DidSwapBuffersCompleteOnImplThread() override;
@@ -98,9 +99,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void WillPrepareTiles() override;
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
-  void OnDrawForOutputSurface(bool resourceless_software_draw) override;
+  void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override;
 
-  void RequestNewOutputSurface();
+  void RequestNewCompositorFrameSink();
 
   // Called by the legacy path where RenderWidget does the scheduling.
   void CompositeImmediately(base::TimeTicks frame_begin_time);
@@ -121,7 +122,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void CommitComplete();
 
   bool ShouldComposite() const;
-  void ScheduleRequestNewOutputSurface();
+  void ScheduleRequestNewCompositorFrameSink();
 
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
@@ -152,13 +153,13 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // True if a request to the LayerTreeHostClient to create an output surface
   // is still outstanding.
-  bool output_surface_creation_requested_;
+  bool compositor_frame_sink_creation_requested_;
   // When output surface is lost, is set to true until a new output surface is
   // initialized.
-  bool output_surface_lost_;
+  bool compositor_frame_sink_lost_;
 
-  // This is the callback for the scheduled RequestNewOutputSurface.
-  base::CancelableClosure output_surface_creation_callback_;
+  // This is the callback for the scheduled RequestNewCompositorFrameSink.
+  base::CancelableClosure compositor_frame_sink_creation_callback_;
 
   base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
 

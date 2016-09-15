@@ -439,7 +439,7 @@ base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
   return draw_duration_history_.Percentile(kDrawEstimationPercentile);
 }
 
-void CompositorTimingHistory::DidCreateAndInitializeOutputSurface() {
+void CompositorTimingHistory::DidCreateAndInitializeCompositorFrameSink() {
   // After we get a new output surface, we won't get a spurious
   // swap ack from the old output surface.
   swap_start_time_ = base::TimeTicks();

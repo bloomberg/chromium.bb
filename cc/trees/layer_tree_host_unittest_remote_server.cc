@@ -51,9 +51,9 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override { NOTREACHED(); }
-  void DidInitializeOutputSurface() override { NOTREACHED(); }
-  void DidFailToInitializeOutputSurface() override { NOTREACHED(); }
+  void RequestNewCompositorFrameSink() override { NOTREACHED(); }
+  void DidInitializeCompositorFrameSink() override { NOTREACHED(); }
+  void DidFailToInitializeCompositorFrameSink() override { NOTREACHED(); }
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}

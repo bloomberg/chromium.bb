@@ -49,7 +49,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/skia_common.h"
-#include "cc/test/test_delegating_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -436,7 +436,7 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 
 class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
  public:
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     // Create the main ContextProvider with a MockContextSupport.
@@ -459,7 +459,7 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
     EXPECT_CALL(*mock_worker_context_support_,
                 SetAggressivelyFreeResources(false));
 
-    return LayerTreeHostTest::CreateDelegatingOutputSurface(
+    return LayerTreeHostTest::CreateCompositorFrameSink(
         std::move(test_main_context_provider),
         std::move(test_worker_context_provider));
   }
@@ -592,11 +592,11 @@ class LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated
                 SetAggressivelyFreeResources(true));
     EXPECT_CALL(*mock_main_context_support_,
                 SetAggressivelyFreeResources(true));
-    host_impl->DidLoseOutputSurface();
+    host_impl->DidLoseCompositorFrameSink();
     has_recreated_ = true;
   }
 
-  void DidInitializeOutputSurface() override {
+  void DidInitializeCompositorFrameSink() override {
     // This is run after we have recreated our OutputSurface.
     if (!has_recreated_)
       return;
@@ -2721,9 +2721,9 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
   int commit_complete_count_;
 };
 
-class OnDrawOutputSurface : public TestDelegatingOutputSurface {
+class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
  public:
-  explicit OnDrawOutputSurface(
+  explicit OnDrawCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
       std::unique_ptr<OutputSurface> display_output_surface,
@@ -2734,18 +2734,18 @@ class OnDrawOutputSurface : public TestDelegatingOutputSurface {
       bool synchronous_composite,
       bool force_disable_reclaim_resources,
       base::Closure invalidate_callback)
-      : TestDelegatingOutputSurface(std::move(compositor_context_provider),
-                                    std::move(worker_context_provider),
-                                    std::move(display_output_surface),
-                                    shared_bitmap_manager,
-                                    gpu_memory_buffer_manager,
-                                    renderer_settings,
-                                    task_runner,
-                                    synchronous_composite,
-                                    force_disable_reclaim_resources),
+      : TestCompositorFrameSink(std::move(compositor_context_provider),
+                                std::move(worker_context_provider),
+                                std::move(display_output_surface),
+                                shared_bitmap_manager,
+                                gpu_memory_buffer_manager,
+                                renderer_settings,
+                                task_runner,
+                                synchronous_composite,
+                                force_disable_reclaim_resources),
         invalidate_callback_(std::move(invalidate_callback)) {}
 
-  // TestDelegatingOutputSurface overrides.
+  // TestCompositorFrameSink overrides.
   void Invalidate() override { invalidate_callback_.Run(); }
 
   void OnDraw(bool resourceless_software_draw) {
@@ -2766,14 +2766,14 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     settings->using_synchronous_renderer_compositor = true;
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     auto on_draw_callback = base::Bind(
         &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
             CallOnDraw,
         base::Unretained(this));
-    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+    auto output_surface = base::MakeUnique<OnDrawCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
@@ -2791,13 +2791,13 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
       // surface. But it needs to be done on a new stack frame.
       bool resourceless_software_draw = false;
       ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&OnDrawOutputSurface::OnDraw,
+          FROM_HERE, base::Bind(&OnDrawCompositorFrameSink::OnDraw,
                                 base::Unretained(output_surface_),
                                 resourceless_software_draw));
     }
   }
 
-  OnDrawOutputSurface* output_surface_ = nullptr;
+  OnDrawCompositorFrameSink* output_surface_ = nullptr;
 };
 
 MULTI_THREAD_TEST_F(
@@ -2916,13 +2916,13 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     client_.set_bounds(root_layer_->bounds());
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     auto on_draw_callback =
         base::Bind(&LayerTreeHostTestResourcelessSoftwareDraw::CallOnDraw,
                    base::Unretained(this));
-    auto output_surface = base::MakeUnique<OnDrawOutputSurface>(
+    auto output_surface = base::MakeUnique<OnDrawCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
@@ -2942,7 +2942,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
       // surface. But it needs to be done on a new stack frame.
       bool resourceless_software_draw = true;
       ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&OnDrawOutputSurface::OnDraw,
+          FROM_HERE, base::Bind(&OnDrawCompositorFrameSink::OnDraw,
                                 base::Unretained(output_surface_),
                                 resourceless_software_draw));
     }
@@ -2984,7 +2984,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  OnDrawOutputSurface* output_surface_ = nullptr;
+  OnDrawCompositorFrameSink* output_surface_ = nullptr;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<Layer> parent_layer_;
@@ -3042,7 +3042,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     auto* context = static_cast<TestContextProvider*>(
-                        impl->output_surface()->context_provider())
+                        impl->compositor_frame_sink()->context_provider())
                         ->TestContext3d();
 
     int frame = impl->active_tree()->source_frame_number();
@@ -5489,7 +5489,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     settings->use_zero_copy = true;
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     bool synchronous_composite =
@@ -5497,7 +5497,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
     // Relaiming resources is parameterized for this test.
     bool force_disable_reclaim_resources = !reclaim_resources_;
-    return base::MakeUnique<TestDelegatingOutputSurface>(
+    return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         CreateDisplayOutputSurface(compositor_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
@@ -6956,7 +6956,7 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
 
     // Retrieve max texture size from Skia.
     ContextProvider* context_provider =
-        host_impl->output_surface()->context_provider();
+        host_impl->compositor_frame_sink()->context_provider();
     ASSERT_TRUE(context_provider);
     ContextProvider::ScopedContextLock context_lock(context_provider);
 

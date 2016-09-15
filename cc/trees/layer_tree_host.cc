@@ -526,41 +526,43 @@ void LayerTreeHost::CommitComplete() {
   }
 }
 
-void LayerTreeHost::SetOutputSurface(std::unique_ptr<OutputSurface> surface) {
-  TRACE_EVENT0("cc", "LayerTreeHost::SetOutputSurface");
+void LayerTreeHost::SetCompositorFrameSink(
+    std::unique_ptr<CompositorFrameSink> surface) {
+  TRACE_EVENT0("cc", "LayerTreeHost::SetCompositorFrameSink");
   DCHECK(surface);
 
-  DCHECK(!new_output_surface_);
-  new_output_surface_ = std::move(surface);
-  proxy_->SetOutputSurface(new_output_surface_.get());
+  DCHECK(!new_compositor_frame_sink_);
+  new_compositor_frame_sink_ = std::move(surface);
+  proxy_->SetCompositorFrameSink(new_compositor_frame_sink_.get());
 }
 
-std::unique_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
+std::unique_ptr<CompositorFrameSink>
+LayerTreeHost::ReleaseCompositorFrameSink() {
   DCHECK(!visible_);
 
-  DidLoseOutputSurface();
-  proxy_->ReleaseOutputSurface();
-  return std::move(current_output_surface_);
+  DidLoseCompositorFrameSink();
+  proxy_->ReleaseCompositorFrameSink();
+  return std::move(current_compositor_frame_sink_);
 }
 
-void LayerTreeHost::RequestNewOutputSurface() {
-  client_->RequestNewOutputSurface();
+void LayerTreeHost::RequestNewCompositorFrameSink() {
+  client_->RequestNewCompositorFrameSink();
 }
 
-void LayerTreeHost::DidInitializeOutputSurface() {
-  DCHECK(new_output_surface_);
-  current_output_surface_ = std::move(new_output_surface_);
-  client_->DidInitializeOutputSurface();
+void LayerTreeHost::DidInitializeCompositorFrameSink() {
+  DCHECK(new_compositor_frame_sink_);
+  current_compositor_frame_sink_ = std::move(new_compositor_frame_sink_);
+  client_->DidInitializeCompositorFrameSink();
 }
 
-void LayerTreeHost::DidFailToInitializeOutputSurface() {
-  DCHECK(new_output_surface_);
+void LayerTreeHost::DidFailToInitializeCompositorFrameSink() {
+  DCHECK(new_compositor_frame_sink_);
   // Note: It is safe to drop all output surface references here as
   // LayerTreeHostImpl will not keep a pointer to either the old or
-  // new output surface after failing to initialize the new one.
-  current_output_surface_ = nullptr;
-  new_output_surface_ = nullptr;
-  client_->DidFailToInitializeOutputSurface();
+  // new CompositorFrameSink after failing to initialize the new one.
+  current_compositor_frame_sink_ = nullptr;
+  new_compositor_frame_sink_ = nullptr;
+  client_->DidFailToInitializeCompositorFrameSink();
 }
 
 std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
@@ -588,8 +590,8 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   return host_impl;
 }
 
-void LayerTreeHost::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "LayerTreeHost::DidLoseOutputSurface");
+void LayerTreeHost::DidLoseCompositorFrameSink() {
+  TRACE_EVENT0("cc", "LayerTreeHost::DidLoseCompositorFrameSink");
   DCHECK(task_runner_provider_->IsMainThread());
   SetNeedsCommit();
 }

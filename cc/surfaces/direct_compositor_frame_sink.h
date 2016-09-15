@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_DISPLAY_OUTPUT_SURFACE_H_
-#define CC_SURFACES_SURFACE_DISPLAY_OUTPUT_SURFACE_H_
+#ifndef CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_
+#define CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/output_surface.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -18,31 +18,31 @@ class Display;
 class SurfaceIdAllocator;
 class SurfaceManager;
 
-// This class is maps a compositor OutputSurface to the surface system's Display
-// concept, allowing a compositor client to submit frames for a native root
-// window or physical display.
-class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
-    : public OutputSurface,
+// This class submits compositor frames to an in-process Display, with the
+// client's frame being the root surface of the Display.
+class CC_SURFACES_EXPORT DirectCompositorFrameSink
+    : public CompositorFrameSink,
       public SurfaceFactoryClient,
       public NON_EXPORTED_BASE(DisplayClient) {
  public:
-  // The underlying Display and SurfaceManager must outlive this class.
-  SurfaceDisplayOutputSurface(
+  // The underlying Display, SurfaceManager, and SurfaceIdAllocator must outlive
+  // this class.
+  DirectCompositorFrameSink(
       SurfaceManager* surface_manager,
       SurfaceIdAllocator* allocator,
       Display* display,
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
-  SurfaceDisplayOutputSurface(
+  DirectCompositorFrameSink(
       SurfaceManager* surface_manager,
       SurfaceIdAllocator* allocator,
       Display* display,
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
-  ~SurfaceDisplayOutputSurface() override;
+  ~DirectCompositorFrameSink() override;
 
-  // OutputSurface implementation.
+  // CompositorFrameSink implementation.
   void SwapBuffers(CompositorFrame frame) override;
-  bool BindToClient(OutputSurfaceClient* client) override;
+  bool BindToClient(CompositorFrameSinkClient* client) override;
   void ForceReclaimResources() override;
   void DetachFromClient() override;
   void BindFramebuffer() override;
@@ -70,11 +70,11 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   SurfaceFactory factory_;
   SurfaceId delegated_surface_id_;
   gfx::Size last_swap_frame_size_;
-  bool output_surface_lost_ = false;
+  bool is_lost_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceDisplayOutputSurface);
+  DISALLOW_COPY_AND_ASSIGN(DirectCompositorFrameSink);
 };
 
 }  // namespace cc
 
-#endif  // CC_SURFACES_SURFACE_DISPLAY_OUTPUT_SURFACE_H_
+#endif  // CC_SURFACES_DIRECT_COMPOSITOR_FRAME_SINK_H_

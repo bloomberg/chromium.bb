@@ -20,9 +20,9 @@ class FakeChannelImpl : public ChannelImpl {
   void BeginMainFrameNotExpectedSoon() override {}
   void DidCommitAndDrawFrame() override {}
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
-  void DidLoseOutputSurface() override {}
-  void RequestNewOutputSurface() override {}
-  void DidInitializeOutputSurface(bool success) override {}
+  void DidLoseCompositorFrameSink() override {}
+  void RequestNewCompositorFrameSink() override {}
+  void DidInitializeCompositorFrameSink(bool success) override {}
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override {}

@@ -20,7 +20,7 @@
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_software_output_device.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_delegating_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -37,8 +37,8 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-std::unique_ptr<TestDelegatingOutputSurface>
-    LayerTreePixelTest::CreateDelegatingOutputSurface(
+std::unique_ptr<TestCompositorFrameSink>
+    LayerTreePixelTest::CreateCompositorFrameSink(
         scoped_refptr<ContextProvider>,
         scoped_refptr<ContextProvider>) {
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
@@ -54,13 +54,12 @@ std::unique_ptr<TestDelegatingOutputSurface>
   // Allow resource reclaiming for partial raster tests to get back
   // resources from the Display.
   bool force_disable_reclaim_resources = false;
-  auto delegating_output_surface =
-      base::MakeUnique<TestDelegatingOutputSurface>(
-          compositor_context_provider, std::move(worker_context_provider),
-          CreateDisplayOutputSurface(compositor_context_provider),
-          shared_bitmap_manager(), gpu_memory_buffer_manager(),
-          RendererSettings(), ImplThreadTaskRunner(), synchronous_composite,
-          force_disable_reclaim_resources);
+  auto delegating_output_surface = base::MakeUnique<TestCompositorFrameSink>(
+      compositor_context_provider, std::move(worker_context_provider),
+      CreateDisplayOutputSurface(compositor_context_provider),
+      shared_bitmap_manager(), gpu_memory_buffer_manager(), RendererSettings(),
+      ImplThreadTaskRunner(), synchronous_composite,
+      force_disable_reclaim_resources);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;

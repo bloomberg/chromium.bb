@@ -46,7 +46,7 @@ class InProcessContextFactory : public ContextFactory {
   void SendOnLostResources();
 
   // ContextFactory implementation
-  void CreateOutputSurface(base::WeakPtr<Compositor> compositor) override;
+  void CreateCompositorFrameSink(base::WeakPtr<Compositor> compositor) override;
 
   std::unique_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
                                              Layer* mirroring_layer) override;

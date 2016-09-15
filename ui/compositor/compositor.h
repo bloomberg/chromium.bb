@@ -99,7 +99,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Creates an output surface for the given compositor. The factory may keep
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
-  virtual void CreateOutputSurface(base::WeakPtr<Compositor> compositor) = 0;
+  virtual void CreateCompositorFrameSink(
+      base::WeakPtr<Compositor> compositor) = 0;
 
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroring_layer|.
@@ -142,7 +143,7 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Inform the display corresponding to this compositor if it is visible. When
   // false it does not need to produce any frames. Visibility is reset for each
-  // call to CreateOutputSurface.
+  // call to CreateCompositorFrameSink.
   virtual void SetDisplayVisible(ui::Compositor* compositor, bool visible) = 0;
 
   // Resize the display corresponding to this compositor to a particular size.
@@ -156,7 +157,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                              base::TimeDelta interval) = 0;
   // Mac path for transporting vsync parameters to the display.  Other platforms
-  // update it via the BrowserCompositorOutputSurface directly.
+  // update it via the BrowserCompositorCompositorFrameSink directly.
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                          base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
@@ -212,7 +213,7 @@ class COMPOSITOR_EXPORT Compositor
   void AddSurfaceClient(uint32_t client_id);
   void RemoveSurfaceClient(uint32_t client_id);
 
-  void SetOutputSurface(std::unique_ptr<cc::OutputSurface> surface);
+  void SetCompositorFrameSink(std::unique_ptr<cc::CompositorFrameSink> surface);
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();
@@ -284,7 +285,8 @@ class COMPOSITOR_EXPORT Compositor
   // context.
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
-  // Most platforms set their vsync info via BrowerCompositorOutputSurface's
+  // Most platforms set their vsync info via
+  // BrowerCompositorCompositorFrameSink's
   // OnUpdateVSyncParametersFromGpu, but Mac routes vsync info via the
   // browser compositor instead through this path.
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
@@ -357,9 +359,9 @@ class COMPOSITOR_EXPORT Compositor
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override;
-  void DidFailToInitializeOutputSurface() override;
+  void RequestNewCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink() override;
+  void DidFailToInitializeCompositorFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override;
   void DidCommitAndDrawFrame() override;
@@ -413,7 +415,7 @@ class COMPOSITOR_EXPORT Compositor
   // A map from child id to parent id.
   std::unordered_map<uint32_t, uint32_t> surface_clients_;
   bool widget_valid_;
-  bool output_surface_requested_;
+  bool compositor_frame_sink_requested_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> root_web_layer_;
   std::unique_ptr<cc::LayerTreeHost> host_;

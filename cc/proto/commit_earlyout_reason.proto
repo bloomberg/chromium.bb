@@ -10,7 +10,7 @@ package cc.proto;
 
 message CommitEarlyOutReason {
   enum Reason {
-    ABORTED_OUTPUT_SURFACE_LOST = 1;
+    ABORTED_COMPOSITOR_FRAME_SINK_LOST = 1;
     ABORTED_NOT_VISIBLE = 2;
     ABORTED_DEFERRED_COMMIT = 3;
     FINISHED_NO_UPDATES = 4;

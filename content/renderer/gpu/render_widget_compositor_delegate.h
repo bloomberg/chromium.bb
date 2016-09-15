@@ -17,7 +17,7 @@ class WebWidget;
 namespace cc {
 class BeginFrameSource;
 class CopyOutputRequest;
-class OutputSurface;
+class CompositorFrameSink;
 class SwapPromise;
 }
 
@@ -43,8 +43,8 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // Notifies that the compositor has issed a BeginMainFrame.
   virtual void BeginMainFrame(double frame_time_sec) = 0;
 
-  // Requests an OutputSurface to render into.
-  virtual std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+  // Requests a CompositorFrameSink to submit to.
+  virtual std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
       bool fallback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.

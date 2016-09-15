@@ -25,7 +25,7 @@ void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
         widget, compositor_dependencies()->GetGpuMemoryBufferManager());
   }
 
-  SetContextProvider(provider);
+  SetContextProvider(std::move(provider));
 }
 
 void BrowserCompositor::DidCompleteSwapBuffers() {

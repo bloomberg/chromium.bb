@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "blimp/client/core/compositor/blimp_output_surface.h"
+#include "blimp/client/core/compositor/blimp_compositor_frame_sink_proxy.h"
 #include "blimp/client/core/input/blimp_input_manager.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -82,7 +82,7 @@ class BlimpCompositorClient {
 class BlimpCompositor : public cc::LayerTreeHostClient,
                         public cc::RemoteProtoChannel,
                         public BlimpInputManagerClient,
-                        public BlimpOutputSurfaceClient,
+                        public BlimpCompositorFrameSinkProxy,
                         public cc::SurfaceFactoryClient {
  public:
   BlimpCompositor(const int render_widget_id,
@@ -126,10 +126,10 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override;
+  void RequestNewCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink() override;
   // TODO(khushalsagar): Need to handle context initialization failures.
-  void DidFailToInitializeOutputSurface() override {}
+  void DidFailToInitializeCompositorFrameSink() override {}
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override;
@@ -144,19 +144,19 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   void SendWebGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
 
-  // BlimpOutputSurfaceClient implementation.
-  void BindToOutputSurface(
-      base::WeakPtr<BlimpOutputSurface> output_surface) override;
+  // BlimpCompositorFrameSinkProxy implementation.
+  void BindToProxyClient(
+      base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client) override;
   void SwapCompositorFrame(cc::CompositorFrame frame) override;
-  void UnbindOutputSurface() override;
+  void UnbindProxyClient() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
 
   // Called when the a ContextProvider has been created by the
-  // CompositorDependencies class.  If |host_| is waiting on an OutputSurface
-  // this will build one for it.
+  // CompositorDependencies class.  If |host_| is waiting on an
+  // CompositorFrameSink this will build one for it.
   void OnContextProvidersCreated(
       const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
       const scoped_refptr<cc::ContextProvider>& worker_context_provider);
@@ -191,13 +191,13 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   std::unique_ptr<cc::LayerTreeHostInterface> host_;
 
-  // The SurfaceFactory is bound to the lifetime of the BlimpOutputSurface. When
+  // The SurfaceFactory is bound to the lifetime of the |proxy_client_|. When
   // detached, the surface factory will be destroyed.
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  base::WeakPtr<BlimpOutputSurface> output_surface_;
+  base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client_;
 
-  // Whether or not |host_| has asked for an output surface.
-  bool output_surface_request_pending_;
+  // Whether or not |host_| has asked for a new CompositorFrameSink.
+  bool compositor_frame_sink_request_pending_;
 
   // Data for the current frame.
   cc::SurfaceId surface_id_;

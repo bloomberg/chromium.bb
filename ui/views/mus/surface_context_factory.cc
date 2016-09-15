@@ -5,11 +5,10 @@
 #include "ui/views/mus/surface_context_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/gpu_service.h"
-#include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
@@ -34,15 +33,15 @@ SurfaceContextFactory::SurfaceContextFactory(ui::GpuService* gpu_service)
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
-void SurfaceContextFactory::CreateOutputSurface(
+void SurfaceContextFactory::CreateCompositorFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
   ui::mojom::SurfaceType surface_type = native_widget->surface_type();
-  std::unique_ptr<cc::OutputSurface> surface(
-      new ui::OutputSurface(gpu_service_->EstablishGpuChannelSync(),
-                            window->RequestSurface(surface_type)));
-  compositor->SetOutputSurface(std::move(surface));
+  auto compositor_frame_sink = base::MakeUnique<ui::CompositorFrameSink>(
+      gpu_service_->EstablishGpuChannelSync(),
+      window->RequestSurface(surface_type));
+  compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 
 std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(

@@ -42,9 +42,9 @@ class SchedulerClient {
   virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
-  virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
+  virtual void ScheduledActionBeginCompositorFrameSinkCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
-  virtual void ScheduledActionInvalidateOutputSurface() = 0;
+  virtual void ScheduledActionInvalidateCompositorFrameSink() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
 
@@ -68,7 +68,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void OnBeginFrameSourcePausedChanged(bool paused) override;
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
-  void OnDrawForOutputSurface(bool resourceless_software_draw);
+  void OnDrawForCompositorFrameSink(bool resourceless_software_draw);
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -102,8 +102,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void WillPrepareTiles();
   void DidPrepareTiles();
-  void DidLoseOutputSurface();
-  void DidCreateAndInitializeOutputSurface();
+  void DidLoseCompositorFrameSink();
+  void DidCreateAndInitializeCompositorFrameSink();
 
   // Tests do not want to shut down until all possible BeginMainFrames have
   // occured to prevent flakiness.

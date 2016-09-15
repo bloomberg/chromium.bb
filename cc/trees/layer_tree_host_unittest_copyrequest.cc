@@ -17,7 +17,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_delegating_output_surface.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
@@ -463,10 +463,10 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     client_.set_bounds(root_->bounds());
   }
 
-  std::unique_ptr<TestDelegatingOutputSurface> CreateDelegatingOutputSurface(
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
-    auto surface = LayerTreeHostCopyRequestTest::CreateDelegatingOutputSurface(
+    auto surface = LayerTreeHostCopyRequestTest::CreateCompositorFrameSink(
         std::move(compositor_context_provider),
         std::move(worker_context_provider));
     display_ = surface->display();
@@ -852,7 +852,7 @@ class LayerTreeHostCopyRequestTestCountTextures
     // These tests expect the LayerTreeHostImpl to share a context with
     // the Display so that sync points are not needed and the texture counts
     // are visible together.
-    // Since this test does not override CreateDelegatingOutputSurface, the
+    // Since this test does not override CreateCompositorFrameSink, the
     // |compositor_context_provider| will be a TestContextProvider.
     display_context_provider_ =
         static_cast<TestContextProvider*>(compositor_context_provider.get());

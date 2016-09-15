@@ -22,9 +22,8 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/test/test_context_support.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -310,8 +309,6 @@ class RasterBufferProviderPerfTestBase {
  protected:
   scoped_refptr<ContextProvider> compositor_context_provider_;
   scoped_refptr<ContextProvider> worker_context_provider_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
@@ -327,12 +324,12 @@ class RasterBufferProviderPerfTest
   void SetUp() override {
     switch (GetParam()) {
       case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = ZeroCopyRasterBufferProvider::Create(
             resource_provider_.get(), PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
             task_runner_.get(), compositor_context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
@@ -341,13 +338,13 @@ class RasterBufferProviderPerfTest
             false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
-        Create3dOutputSurfaceAndResourceProvider();
+        Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
-        CreateSoftwareOutputSurfaceAndResourceProvider();
+        CreateSoftwareResourceProvider();
         raster_buffer_provider_ =
             BitmapRasterBufferProvider::Create(resource_provider_.get());
         break;
@@ -485,20 +482,15 @@ class RasterBufferProviderPerfTest
   }
 
  private:
-  void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(compositor_context_provider_,
-                                                  worker_context_provider_);
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), nullptr, &gpu_memory_buffer_manager_);
+  void Create3dResourceProvider() {
+    resource_provider_ =
+        FakeResourceProvider::Create(compositor_context_provider_.get(),
+                                     nullptr, &gpu_memory_buffer_manager_);
   }
 
-  void CreateSoftwareOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::CreateSoftware(
-        base::WrapUnique(new SoftwareOutputDevice));
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), &shared_bitmap_manager_, nullptr);
+  void CreateSoftwareResourceProvider() {
+    resource_provider_ =
+        FakeResourceProvider::Create(nullptr, &shared_bitmap_manager_, nullptr);
   }
 
   std::string TestModifierString() const {
@@ -562,11 +554,8 @@ class RasterBufferProviderCommonPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    output_surface_ = FakeOutputSurface::Create3d(compositor_context_provider_,
-                                                  worker_context_provider_);
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ =
-        FakeResourceProvider::Create(output_surface_.get(), nullptr);
+    resource_provider_ = FakeResourceProvider::Create(
+        compositor_context_provider_.get(), nullptr);
   }
 
   void RunBuildTileTaskGraphTest(const std::string& test_name,

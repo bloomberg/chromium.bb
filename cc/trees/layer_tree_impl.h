@@ -43,7 +43,6 @@ class LayerTreeDebugState;
 class LayerTreeImpl;
 class LayerTreeSettings;
 class MemoryHistory;
-class OutputSurface;
 class PageScaleAnimation;
 class PictureLayerImpl;
 class TaskRunnerProvider;
@@ -77,7 +76,6 @@ class CC_EXPORT LayerTreeImpl {
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
   ContextProvider* context_provider() const;
-  OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   ImageDecodeController* image_decode_controller() const;

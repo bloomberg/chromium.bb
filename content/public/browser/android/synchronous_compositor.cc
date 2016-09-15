@@ -10,16 +10,17 @@
 
 namespace content {
 
-SynchronousCompositor::Frame::Frame() : output_surface_id(0u) {}
+SynchronousCompositor::Frame::Frame() : compositor_frame_sink_id(0u) {}
 
 SynchronousCompositor::Frame::~Frame() {}
 
 SynchronousCompositor::Frame::Frame(Frame&& rhs)
-    : output_surface_id(rhs.output_surface_id), frame(std::move(rhs.frame)) {}
+    : compositor_frame_sink_id(rhs.compositor_frame_sink_id),
+      frame(std::move(rhs.frame)) {}
 
 SynchronousCompositor::Frame& SynchronousCompositor::Frame::operator=(
     Frame&& rhs) {
-  output_surface_id = rhs.output_surface_id;
+  compositor_frame_sink_id = rhs.compositor_frame_sink_id;
   frame = std::move(rhs.frame);
   return *this;
 }

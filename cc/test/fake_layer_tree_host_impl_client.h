@@ -13,7 +13,7 @@ namespace cc {
 class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
  public:
   // LayerTreeHostImplClient implementation.
-  void DidLoseOutputSurfaceOnImplThread() override {}
+  void DidLoseCompositorFrameSinkOnImplThread() override {}
   void SetBeginFrameSource(BeginFrameSource* source) override {}
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
   void DidSwapBuffersCompleteOnImplThread() override {}
@@ -36,7 +36,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
-  void OnDrawForOutputSurface(bool resourceless_software_draw) override {}
+  void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override {}
 };
 
 }  // namespace cc

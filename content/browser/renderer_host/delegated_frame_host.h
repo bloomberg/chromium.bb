@@ -69,7 +69,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
   virtual void DelegatedFrameHostSendReclaimCompositorResources(
-      int output_surface_id,
+      int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
   virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
@@ -126,7 +126,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Public interface exposed to RenderWidgetHostView.
 
-  void SwapDelegatedFrame(uint32_t output_surface_id,
+  void SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
                           cc::CompositorFrame frame);
   void ClearDelegatedFrame();
   void WasHidden();
@@ -239,9 +239,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       const gpu::SyncToken& sync_token);
 
-  void SendReclaimCompositorResources(uint32_t output_surface_id,
+  void SendReclaimCompositorResources(uint32_t compositor_frame_sink_id,
                                       bool is_swap_ack);
-  void SurfaceDrawn(uint32_t output_surface_id);
+  void SurfaceDrawn(uint32_t compositor_frame_sink_id);
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.
@@ -264,7 +264,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
   // surfaces.
-  uint32_t last_output_surface_id_;
+  uint32_t last_compositor_frame_sink_id_;
 
   // The number of delegated frame acks that are pending, to delay resource
   // returns until the acks are sent.

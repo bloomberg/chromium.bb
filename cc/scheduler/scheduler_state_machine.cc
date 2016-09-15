@@ -20,7 +20,7 @@ const int kMaxPendingSwaps = 1;
 
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
-      output_surface_state_(OUTPUT_SURFACE_NONE),
+      compositor_frame_sink_state_(COMPOSITOR_FRAME_SINK_NONE),
       begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
       begin_main_frame_state_(BEGIN_MAIN_FRAME_STATE_IDLE),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
@@ -29,14 +29,14 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_swap_performed_(-1),
       last_frame_number_draw_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
-      last_frame_number_invalidate_output_surface_performed_(-1),
+      last_frame_number_invalidate_compositor_frame_sink_performed_(-1),
       draw_funnel_(false),
       send_begin_main_frame_funnel_(true),
-      invalidate_output_surface_funnel_(false),
+      invalidate_compositor_frame_sink_funnel_(false),
       prepare_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
       pending_swaps_(0),
-      swaps_with_current_output_surface_(0),
+      swaps_with_current_compositor_frame_sink_(0),
       needs_redraw_(false),
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
@@ -48,7 +48,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       has_pending_tree_(false),
       pending_tree_is_ready_for_activation_(false),
       active_tree_needs_first_draw_(false),
-      did_create_and_initialize_first_output_surface_(false),
+      did_create_and_initialize_first_compositor_frame_sink_(false),
       tree_priority_(NEW_CONTENT_TAKES_PRIORITY),
       scroll_handler_state_(
           ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER),
@@ -62,19 +62,19 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       did_draw_in_last_frame_(false),
       did_swap_in_last_frame_(false) {}
 
-const char* SchedulerStateMachine::OutputSurfaceStateToString(
-    OutputSurfaceState state) {
+const char* SchedulerStateMachine::CompositorFrameSinkStateToString(
+    CompositorFrameSinkState state) {
   switch (state) {
-    case OUTPUT_SURFACE_NONE:
-      return "OUTPUT_SURFACE_NONE";
-    case OUTPUT_SURFACE_ACTIVE:
-      return "OUTPUT_SURFACE_ACTIVE";
-    case OUTPUT_SURFACE_CREATING:
-      return "OUTPUT_SURFACE_CREATING";
-    case OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT:
-      return "OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT";
-    case OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION:
-      return "OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION";
+    case COMPOSITOR_FRAME_SINK_NONE:
+      return "COMPOSITOR_FRAME_SINK_NONE";
+    case COMPOSITOR_FRAME_SINK_ACTIVE:
+      return "COMPOSITOR_FRAME_SINK_ACTIVE";
+    case COMPOSITOR_FRAME_SINK_CREATING:
+      return "COMPOSITOR_FRAME_SINK_CREATING";
+    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
+      return "COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT";
+    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
+      return "COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION";
   }
   NOTREACHED();
   return "???";
@@ -175,12 +175,12 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_AND_SWAP_FORCED";
     case ACTION_DRAW_AND_SWAP_ABORT:
       return "ACTION_DRAW_AND_SWAP_ABORT";
-    case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
-      return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
+    case ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION:
+      return "ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION";
     case ACTION_PREPARE_TILES:
       return "ACTION_PREPARE_TILES";
-    case ACTION_INVALIDATE_OUTPUT_SURFACE:
-      return "ACTION_INVALIDATE_OUTPUT_SURFACE";
+    case ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK:
+      return "ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK";
   }
   NOTREACHED();
   return "???";
@@ -202,8 +202,9 @@ void SchedulerStateMachine::AsValueInto(
                    BeginImplFrameStateToString(begin_impl_frame_state_));
   state->SetString("begin_main_frame_state",
                    BeginMainFrameStateToString(begin_main_frame_state_));
-  state->SetString("output_surface_state_",
-                   OutputSurfaceStateToString(output_surface_state_));
+  state->SetString(
+      "compositor_frame_sink_state_",
+      CompositorFrameSinkStateToString(compositor_frame_sink_state_));
   state->SetString("forced_redraw_state",
                    ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
   state->EndDictionary();
@@ -221,13 +222,13 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("funnel: send_begin_main_frame_funnel",
                     send_begin_main_frame_funnel_);
   state->SetInteger("funnel: prepare_tiles_funnel", prepare_tiles_funnel_);
-  state->SetBoolean("funnel: invalidate_output_surface_funnel",
-                    invalidate_output_surface_funnel_);
+  state->SetBoolean("funnel: invalidate_compositor_frame_sink_funnel",
+                    invalidate_compositor_frame_sink_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
   state->SetInteger("pending_swaps_", pending_swaps_);
-  state->SetInteger("swaps_with_current_output_surface",
-                    swaps_with_current_output_surface_);
+  state->SetInteger("swaps_with_current_compositor_frame_sink",
+                    swaps_with_current_compositor_frame_sink_);
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
@@ -242,8 +243,8 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("active_tree_needs_first_draw",
                     active_tree_needs_first_draw_);
   state->SetBoolean("wait_for_ready_to_draw", wait_for_ready_to_draw_);
-  state->SetBoolean("did_create_and_initialize_first_output_surface",
-                    did_create_and_initialize_first_output_surface_);
+  state->SetBoolean("did_create_and_initialize_first_compositor_frame_sink",
+                    did_create_and_initialize_first_compositor_frame_sink_);
   state->SetString("tree_priority", TreePriorityToString(tree_priority_));
   state->SetString("scroll_handler_state",
                    ScrollHandlerStateToString(scroll_handler_state_));
@@ -266,9 +267,10 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // pending activations will be forced and draws will be aborted. However,
   // when the embedder is Android WebView, software draws could be scheduled by
   // the Android OS at any time and draws should not be aborted in this case.
-  bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_NONE);
+  bool is_compositor_frame_sink_lost =
+      (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE);
   if (resourceless_draw_)
-    return is_output_surface_lost || !can_draw_;
+    return is_compositor_frame_sink_lost || !can_draw_;
 
   // These are all the cases where we normally cannot or do not want to draw
   // but, if needs_redraw_ is true and we do not draw to make forward progress,
@@ -276,7 +278,7 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // This should be a superset of PendingActivationsShouldBeForced() since
   // activation of the pending tree is blocked by drawing of the active tree and
   // the main thread might be blocked on activation of the most recent commit.
-  return is_output_surface_lost || !can_draw_ || !visible_ ||
+  return is_compositor_frame_sink_lost || !can_draw_ || !visible_ ||
          begin_frame_source_paused_;
 }
 
@@ -284,7 +286,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   // There is no output surface to trigger our activations.
   // If we do not force activations to make forward progress, we might deadlock
   // with the main thread.
-  if (output_surface_state_ == OUTPUT_SURFACE_NONE)
+  if (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE)
     return true;
 
   // If we're not visible, we should force activation.
@@ -305,7 +307,7 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   return false;
 }
 
-bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
+bool SchedulerStateMachine::ShouldBeginCompositorFrameSinkCreation() const {
   if (!visible_)
     return false;
 
@@ -316,12 +318,12 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   // assumes that any state passed from the client during the commit will not be
   // tied to the output surface.
   if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE &&
-      settings_.abort_commit_before_output_surface_creation) {
+      settings_.abort_commit_before_compositor_frame_sink_creation) {
     return false;
   }
 
-  // Make sure the BeginImplFrame from any previous OutputSurfaces
-  // are complete before creating the new OutputSurface.
+  // Make sure the BeginImplFrame from any previous CompositorFrameSinks
+  // are complete before creating the new CompositorFrameSink.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_IDLE)
     return false;
 
@@ -334,7 +336,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 
   // We need to create the output surface if we don't have one and we haven't
   // started creating one yet.
-  return output_surface_state_ == OUTPUT_SURFACE_NONE;
+  return compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE;
 }
 
 bool SchedulerStateMachine::ShouldDraw() const {
@@ -353,7 +355,7 @@ bool SchedulerStateMachine::ShouldDraw() const {
     return false;
 
   // Don't draw if we are waiting on the first commit after a surface.
-  if (output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
+  if (compositor_frame_sink_state_ != COMPOSITOR_FRAME_SINK_ACTIVE)
     return false;
 
   // Do not queue too many swaps.
@@ -450,8 +452,8 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT)
     return true;
 
-  // We shouldn't normally accept commits if there isn't an OutputSurface.
-  if (!HasInitializedOutputSurface())
+  // We shouldn't normally accept commits if there isn't an CompositorFrameSink.
+  if (!HasInitializedCompositorFrameSink())
     return false;
 
   if (!settings_.main_frame_while_swap_throttled_enabled) {
@@ -504,9 +506,9 @@ bool SchedulerStateMachine::ShouldPrepareTiles() const {
   return needs_prepare_tiles_;
 }
 
-bool SchedulerStateMachine::ShouldInvalidateOutputSurface() const {
+bool SchedulerStateMachine::ShouldInvalidateCompositorFrameSink() const {
   // Do not invalidate too many times in a frame.
-  if (invalidate_output_surface_funnel_)
+  if (invalidate_compositor_frame_sink_funnel_)
     return false;
 
   // Only the synchronous compositor requires invalidations.
@@ -540,10 +542,10 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_PREPARE_TILES;
   if (ShouldSendBeginMainFrame())
     return ACTION_SEND_BEGIN_MAIN_FRAME;
-  if (ShouldInvalidateOutputSurface())
-    return ACTION_INVALIDATE_OUTPUT_SURFACE;
-  if (ShouldBeginOutputSurfaceCreation())
-    return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
+  if (ShouldInvalidateCompositorFrameSink())
+    return ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK;
+  if (ShouldBeginCompositorFrameSinkCreation())
+    return ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION;
   return ACTION_NONE;
 }
 
@@ -586,10 +588,11 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   }
 
   // Update the output surface state.
-  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
-    output_surface_state_ = has_pending_tree_
-                                ? OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION
-                                : OUTPUT_SURFACE_ACTIVE;
+  if (compositor_frame_sink_state_ ==
+      COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT) {
+    compositor_frame_sink_state_ =
+        has_pending_tree_ ? COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION
+                          : COMPOSITOR_FRAME_SINK_ACTIVE;
   }
 }
 
@@ -601,8 +604,9 @@ void SchedulerStateMachine::WillActivate() {
                                   : BEGIN_MAIN_FRAME_STATE_IDLE;
   }
 
-  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
-    output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+  if (compositor_frame_sink_state_ ==
+      COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION)
+    compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_ACTIVE;
 
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION)
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
@@ -696,9 +700,9 @@ void SchedulerStateMachine::WillPrepareTiles() {
   needs_prepare_tiles_ = false;
 }
 
-void SchedulerStateMachine::WillBeginOutputSurfaceCreation() {
-  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_NONE);
-  output_surface_state_ = OUTPUT_SURFACE_CREATING;
+void SchedulerStateMachine::WillBeginCompositorFrameSinkCreation() {
+  DCHECK_EQ(compositor_frame_sink_state_, COMPOSITOR_FRAME_SINK_NONE);
+  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_CREATING;
 
   // The following DCHECKs make sure we are in the proper quiescent state.
   // The pipeline should be flushed entirely before we start output
@@ -706,16 +710,16 @@ void SchedulerStateMachine::WillBeginOutputSurfaceCreation() {
 
   // We allow output surface creation while the previous commit has not been
   // aborted if the embedder explicitly allows it.
-  DCHECK(!settings_.abort_commit_before_output_surface_creation ||
+  DCHECK(!settings_.abort_commit_before_compositor_frame_sink_creation ||
          begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_IDLE);
   DCHECK(!has_pending_tree_);
   DCHECK(!active_tree_needs_first_draw_);
 }
 
-void SchedulerStateMachine::WillInvalidateOutputSurface() {
-  DCHECK(!invalidate_output_surface_funnel_);
-  invalidate_output_surface_funnel_ = true;
-  last_frame_number_invalidate_output_surface_performed_ =
+void SchedulerStateMachine::WillInvalidateCompositorFrameSink() {
+  DCHECK(!invalidate_compositor_frame_sink_funnel_);
+  invalidate_compositor_frame_sink_funnel_ = true;
+  last_frame_number_invalidate_compositor_frame_sink_performed_ =
       current_frame_number_;
 
   // The synchronous compositor makes no guarantees about a draw coming in after
@@ -738,7 +742,7 @@ bool SchedulerStateMachine::BeginFrameNeededForVideo() const {
 bool SchedulerStateMachine::BeginFrameNeeded() const {
   // We can't handle BeginFrames when output surface isn't initialized.
   // TODO(brianderson): Support output surface creation inside a BeginFrame.
-  if (!HasInitializedOutputSurface())
+  if (!HasInitializedCompositorFrameSink())
     return false;
 
   // If we are not visible, we don't need BeginFrame messages.
@@ -827,7 +831,7 @@ void SchedulerStateMachine::OnBeginImplFrame() {
 
   // Clear funnels for any actions we perform during the frame.
   send_begin_main_frame_funnel_ = false;
-  invalidate_output_surface_funnel_ = false;
+  invalidate_compositor_frame_sink_funnel_ = false;
 
   // "Drain" the PrepareTiles funnel.
   if (prepare_tiles_funnel_ > 0)
@@ -974,7 +978,7 @@ void SchedulerStateMachine::DidSwapBuffers() {
   DCHECK_LT(pending_swaps_, kMaxPendingSwaps);
 
   pending_swaps_++;
-  swaps_with_current_output_surface_++;
+  swaps_with_current_compositor_frame_sink_++;
 
   did_swap_in_last_frame_ = true;
   last_frame_number_swap_performed_ = current_frame_number_;
@@ -1040,7 +1044,7 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   main_thread_missed_last_deadline_ = false;
 
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
+    case CommitEarlyOutReason::ABORTED_COMPOSITOR_FRAME_SINK_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:
       begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
@@ -1059,11 +1063,11 @@ void SchedulerStateMachine::DidPrepareTiles() {
   prepare_tiles_funnel_++;
 }
 
-void SchedulerStateMachine::DidLoseOutputSurface() {
-  if (output_surface_state_ == OUTPUT_SURFACE_NONE ||
-      output_surface_state_ == OUTPUT_SURFACE_CREATING)
+void SchedulerStateMachine::DidLoseCompositorFrameSink() {
+  if (compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_NONE ||
+      compositor_frame_sink_state_ == COMPOSITOR_FRAME_SINK_CREATING)
     return;
-  output_surface_state_ = OUTPUT_SURFACE_NONE;
+  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_NONE;
   needs_redraw_ = false;
   wait_for_ready_to_draw_ = false;
 }
@@ -1077,18 +1081,18 @@ void SchedulerStateMachine::NotifyReadyToDraw() {
   wait_for_ready_to_draw_ = false;
 }
 
-void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
-  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_CREATING);
-  output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT;
+void SchedulerStateMachine::DidCreateAndInitializeCompositorFrameSink() {
+  DCHECK_EQ(compositor_frame_sink_state_, COMPOSITOR_FRAME_SINK_CREATING);
+  compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT;
 
-  if (did_create_and_initialize_first_output_surface_) {
+  if (did_create_and_initialize_first_compositor_frame_sink_) {
     // TODO(boliu): See if we can remove this when impl-side painting is always
     // on. Does anything on the main thread need to update after recreate?
     needs_begin_main_frame_ = true;
   }
-  did_create_and_initialize_first_output_surface_ = true;
+  did_create_and_initialize_first_compositor_frame_sink_ = true;
   pending_swaps_ = 0;
-  swaps_with_current_output_surface_ = 0;
+  swaps_with_current_compositor_frame_sink_ = 0;
   main_thread_missed_last_deadline_ = false;
 }
 
@@ -1097,15 +1101,15 @@ void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_STARTED;
 }
 
-bool SchedulerStateMachine::HasInitializedOutputSurface() const {
-  switch (output_surface_state_) {
-    case OUTPUT_SURFACE_NONE:
-    case OUTPUT_SURFACE_CREATING:
+bool SchedulerStateMachine::HasInitializedCompositorFrameSink() const {
+  switch (compositor_frame_sink_state_) {
+    case COMPOSITOR_FRAME_SINK_NONE:
+    case COMPOSITOR_FRAME_SINK_CREATING:
       return false;
 
-    case OUTPUT_SURFACE_ACTIVE:
-    case OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT:
-    case OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION:
+    case COMPOSITOR_FRAME_SINK_ACTIVE:
+    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_COMMIT:
+    case COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION:
       return true;
   }
   NOTREACHED();

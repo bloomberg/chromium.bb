@@ -11,7 +11,7 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "services/ui/public/cpp/output_surface.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
@@ -38,13 +38,13 @@ void RenderWidgetMusConnection::Bind(
   }
 }
 
-std::unique_ptr<cc::OutputSurface>
-RenderWidgetMusConnection::CreateOutputSurface(
+std::unique_ptr<cc::CompositorFrameSink>
+RenderWidgetMusConnection::CreateCompositorFrameSink(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
 
-  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
+  std::unique_ptr<cc::CompositorFrameSink> surface(new ui::CompositorFrameSink(
       std::move(gpu_channel_host),
       ui::WindowSurface::Create(&window_surface_binding_)));
   if (compositor_mus_connection_) {
