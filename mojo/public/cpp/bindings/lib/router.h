@@ -132,6 +132,10 @@ class Router : public MessageReceiverWithResponder {
     return &control_message_proxy_;
   }
 
+  bool SimulateReceivingMessageForTesting(Message* message) {
+    return filters_.Accept(message);
+  }
+
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
   // response.

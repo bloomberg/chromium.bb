@@ -129,6 +129,10 @@ class MultiplexRouter
     return connector_.handle();
   }
 
+  bool SimulateReceivingMessageForTesting(Message* message) {
+    return filters_.Accept(message);
+  }
+
  private:
   class InterfaceEndpoint;
   struct Task;

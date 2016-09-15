@@ -152,7 +152,8 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 
   // TODO(yzshen): the way to use validator (or message filter in general)
   // directly is a little awkward.
-  filters_.Append(std::move(payload_validator));
+  if (payload_validator)
+    filters_.Append(std::move(payload_validator));
 
   controller_ = handle_.group_controller()->AttachEndpointClient(
       handle_, this, task_runner_);

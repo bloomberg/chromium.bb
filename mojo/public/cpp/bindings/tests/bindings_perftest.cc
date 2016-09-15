@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
@@ -149,6 +150,7 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
     if (!quit_closure_.is_null()) {
       count++;
       if (count >= expected_count_) {
+        end_time_ = base::TimeTicks::Now();
         quit_closure_.Run();
         return true;
       }
@@ -166,20 +168,25 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
     return true;
   }
 
-  void Serve(uint32_t expected_count) {
+  base::TimeDelta Serve(uint32_t expected_count) {
     base::RunLoop run_loop;
 
     expected_count_ = expected_count;
     quit_closure_ = run_loop.QuitClosure();
 
+    start_time_ = base::TimeTicks::Now();
     internal::MessageBuilder builder(0, 8);
     bool result = sender_->Accept(builder.message());
     DCHECK(result);
 
     run_loop.Run();
+
+    return end_time_ - start_time_;
   }
 
  private:
+  base::TimeTicks start_time_;
+  base::TimeTicks end_time_;
   uint32_t expected_count_ = 0;
   MessageReceiver* sender_;
   base::Closure quit_closure_;
@@ -197,18 +204,14 @@ TEST_F(MojoBindingsPerftest, RouterPingPong) {
   router1.set_incoming_receiver(&paddle1);
 
   static const uint32_t kWarmUpIterations = 1000;
-  static const uint32_t kTestIterations = 100000;
+  static const uint32_t kTestIterations = 1000000;
 
   paddle0.Serve(kWarmUpIterations);
 
-  const MojoTimeTicks start_time = MojoGetTimeTicksNow();
-  paddle0.Serve(kTestIterations);
-  const MojoTimeTicks end_time = MojoGetTimeTicksNow();
+  base::TimeDelta duration = paddle0.Serve(kTestIterations);
 
-  test::LogPerfResult(
-      "RouterPingPong", nullptr,
-      kTestIterations / MojoTicksToSeconds(end_time - start_time),
-      "pings/second");
+  test::LogPerfResult("RouterPingPong", nullptr,
+                      kTestIterations / duration.InSecondsF(), "pings/second");
 }
 
 TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
@@ -224,30 +227,109 @@ TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
   PingPongPaddle paddle1(nullptr);
 
   InterfaceEndpointClient client0(
-      router0->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle0,
-      base::MakeUnique<PassThroughFilter>(), false,
-      base::ThreadTaskRunnerHandle::Get(), 0u);
+      router0->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle0, nullptr,
+      false, base::ThreadTaskRunnerHandle::Get(), 0u);
   InterfaceEndpointClient client1(
-      router1->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle1,
-      base::MakeUnique<PassThroughFilter>(), false,
-      base::ThreadTaskRunnerHandle::Get(), 0u);
+      router1->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle1, nullptr,
+      false, base::ThreadTaskRunnerHandle::Get(), 0u);
 
   paddle0.set_sender(&client0);
   paddle1.set_sender(&client1);
 
   static const uint32_t kWarmUpIterations = 1000;
-  static const uint32_t kTestIterations = 100000;
+  static const uint32_t kTestIterations = 1000000;
 
   paddle0.Serve(kWarmUpIterations);
 
-  const MojoTimeTicks start_time = MojoGetTimeTicksNow();
-  paddle0.Serve(kTestIterations);
-  const MojoTimeTicks end_time = MojoGetTimeTicksNow();
+  base::TimeDelta duration = paddle0.Serve(kTestIterations);
 
-  test::LogPerfResult(
-      "MultiplexRouterPingPong", nullptr,
-      kTestIterations / MojoTicksToSeconds(end_time - start_time),
-      "pings/second");
+  test::LogPerfResult("MultiplexRouterPingPong", nullptr,
+                      kTestIterations / duration.InSecondsF(), "pings/second");
+}
+
+class CounterReceiver : public MessageReceiverWithResponderStatus {
+ public:
+  bool Accept(Message* message) override {
+    counter_++;
+    return true;
+  }
+
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiverWithStatus* responder) override {
+    NOTREACHED();
+    return true;
+  }
+
+  uint32_t counter() const { return counter_; }
+
+  void Reset() { counter_ = 0; }
+
+ private:
+  uint32_t counter_ = 0;
+};
+
+TEST_F(MojoBindingsPerftest, RouterDispatchCost) {
+  MessagePipe pipe;
+  internal::Router router(std::move(pipe.handle0), FilterChain(), false,
+                          base::ThreadTaskRunnerHandle::Get(), 0u);
+  CounterReceiver receiver;
+  router.set_incoming_receiver(&receiver);
+
+  static const uint32_t kIterations[] = {1000, 3000000};
+
+  for (size_t i = 0; i < 2; ++i) {
+    receiver.Reset();
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    for (size_t j = 0; j < kIterations[i]; ++j) {
+      internal::MessageBuilder builder(0, 8);
+      bool result =
+          router.SimulateReceivingMessageForTesting(builder.message());
+      DCHECK(result);
+    }
+
+    base::TimeTicks end_time = base::TimeTicks::Now();
+    base::TimeDelta duration = end_time - start_time;
+    CHECK_EQ(kIterations[i], receiver.counter());
+
+    if (i == 1) {
+      test::LogPerfResult("RouterDispatchCost", nullptr,
+                          kIterations[i] / duration.InSecondsF(),
+                          "times/second");
+    }
+  }
+}
+
+TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
+  MessagePipe pipe;
+  scoped_refptr<internal::MultiplexRouter> router(new internal::MultiplexRouter(
+      true, std::move(pipe.handle0), base::ThreadTaskRunnerHandle::Get()));
+  CounterReceiver receiver;
+  InterfaceEndpointClient client(
+      router->CreateLocalEndpointHandle(kMasterInterfaceId), &receiver, nullptr,
+      false, base::ThreadTaskRunnerHandle::Get(), 0u);
+
+  static const uint32_t kIterations[] = {1000, 3000000};
+
+  for (size_t i = 0; i < 2; ++i) {
+    receiver.Reset();
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    for (size_t j = 0; j < kIterations[i]; ++j) {
+      internal::MessageBuilder builder(0, 8);
+      bool result =
+          router->SimulateReceivingMessageForTesting(builder.message());
+      DCHECK(result);
+    }
+
+    base::TimeTicks end_time = base::TimeTicks::Now();
+    base::TimeDelta duration = end_time - start_time;
+    CHECK_EQ(kIterations[i], receiver.counter());
+
+    if (i == 1) {
+      test::LogPerfResult("MultiplexRouterDispatchCost", nullptr,
+                          kIterations[i] / duration.InSecondsF(),
+                          "times/second");
+    }
+  }
 }
 
 }  // namespace
