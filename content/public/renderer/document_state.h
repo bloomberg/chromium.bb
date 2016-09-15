@@ -167,20 +167,6 @@ class CONTENT_EXPORT DocumentState
     proxy_server_ = proxy_server;
   }
 
-  void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
-  bool was_prefetcher() const { return was_prefetcher_; }
-
-  void set_was_referred_by_prefetcher(bool value) {
-    was_referred_by_prefetcher_ = value;
-  }
-  bool was_referred_by_prefetcher() const {
-    return was_referred_by_prefetcher_;
-  }
-
-  void set_was_after_preconnect_request(bool value) {
-    was_after_preconnect_request_ = value;
-  }
-  bool was_after_preconnect_request() { return was_after_preconnect_request_; }
 
   // For LoadDataWithBaseURL navigations, |was_load_data_with_base_url_request_|
   // is set to true and |data_url_| is set to the data URL of the navigation.
@@ -228,11 +214,6 @@ class CONTENT_EXPORT DocumentState
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_fetched_via_proxy_;
   net::HostPortPair proxy_server_;
-
-  // A prefetcher is a page that contains link rel=prefetch elements.
-  bool was_prefetcher_;
-  bool was_referred_by_prefetcher_;
-  bool was_after_preconnect_request_;
 
   bool was_load_data_with_base_url_request_;
   GURL data_url_;

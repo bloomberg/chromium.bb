@@ -494,19 +494,6 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
       break;
   }
 
-  if (document_state->was_prefetcher()) {
-    PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
-                  begin_to_finish_doc);
-    PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcher",
-                  begin_to_finish_all_loads);
-  }
-  if (document_state->was_referred_by_prefetcher()) {
-    PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
-                  begin_to_finish_doc);
-    PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
-                  begin_to_finish_all_loads);
-  }
-
   const bool use_webrequest_histogram = WasWebRequestUsedBySomeExtensions();
   if (use_webrequest_histogram) {
     switch (load_type) {
