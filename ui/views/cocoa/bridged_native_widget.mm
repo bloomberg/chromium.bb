@@ -839,6 +839,11 @@ void BridgedNativeWidget::OnVisibilityChanged() {
   if (layer()) {
     layer()->SetVisible(window_visible_);
     layer()->SchedulePaint(gfx::Rect(GetClientAreaSize()));
+
+    // For translucent windows which are made visible, recalculate shadow when
+    // the frame from the compositor arrives.
+    if (![window_ isOpaque])
+      invalidate_shadow_on_frame_swap_ = window_visible_;
   }
 
   NotifyVisibilityChangeDown();

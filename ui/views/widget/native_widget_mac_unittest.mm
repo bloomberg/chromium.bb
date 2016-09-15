@@ -1376,6 +1376,17 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
   EXPECT_EQ(2, [window invalidateShadowCount]);
 
+  // Hiding the window does not require shadow invalidation.
+  widget->Hide();
+  test_api.SimulateFrameSwap(gfx::Size(123, 456));
+  EXPECT_EQ(2, [window invalidateShadowCount]);
+
+  // Showing a translucent window after hiding it, should trigger shadow
+  // invalidation.
+  widget->Show();
+  test_api.SimulateFrameSwap(gfx::Size(123, 456));
+  EXPECT_EQ(3, [window invalidateShadowCount]);
+
   widget->CloseNow();
 }
 
