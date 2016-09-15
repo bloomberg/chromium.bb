@@ -257,6 +257,7 @@ if (enable_extensions) {
     public_deps = [
       ":common_constants",
       ":mojo",
+      "//skia",
     ]
 
     deps = [

@@ -282,7 +282,7 @@ source_set("unit_tests") {
     "//extensions:extensions_renderer_resources",
 
     # TODO(brettw) these tests should not be including headers from browser.
-    "//extensions/browser",
+    "//extensions/browser/mojo",
     "//extensions/common",
     "//gin",
     "//mojo/edk/js",
