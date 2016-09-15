@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -301,19 +302,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         ->ClearSettingsForOneType(
             CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT);
 
-    // Set up the custom parameter.
-    base::FieldTrialList field_trials_(nullptr);
-    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-        kPromptTrialName, kPromptGroupName);
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        features::kBlockPromptsIfDismissedOften.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
-    base::FeatureList::SetInstance(std::move(feature_list));
-    EXPECT_EQ(base::FeatureList::GetFieldTrial(
-                  features::kBlockPromptsIfDismissedOften),
-              trial);
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
 
     EXPECT_TRUE(
         base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften));
@@ -325,7 +315,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     DismissMultipleTimesAndExpectBlock(url,
                                        content::PermissionType::NOTIFICATIONS,
                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, 3);
-    base::FeatureList::ClearInstanceForTesting();
   }
 
   void TestVariationBlockOnSeveralDismissals_TestContent() {
