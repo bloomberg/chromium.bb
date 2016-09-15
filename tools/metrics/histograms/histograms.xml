@@ -68988,6 +68988,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time for capturing one frame in window capturing.</summary>
 </histogram>
 
+<histogram name="WebShare.ApiCount" enum="WebShareMethod">
+  <owner>mgiuca@chromium.org</owner>
+  <summary>
+    Counts the number of calls to navigator.share. Includes both successful and
+    failed shares.
+  </summary>
+</histogram>
+
+<histogram name="WebShare.ShareOutcome" enum="WebShareOutcome">
+  <owner>mgiuca@chromium.org</owner>
+  <summary>
+    Records the outcome of calls to navigator.share. This will not count any
+    calls that never complete (e.g., if the page closes while the picker is
+    open). Therefore, DO NOT look at the raw percentages of this histogram;
+    instead, compare these numbers with the WebShare.ApiCount.Share total.
+
+    NOTE: At the moment, if the user cancels the picker, its recording will be
+    delayed, and possibly never recorded (https://crbug.com/636274), so that
+    will account for a discrepancy between ShareOutcome and ApiCount.Share.
+  </summary>
+</histogram>
+
 <histogram name="WebsiteSettings.Action" enum="WebsiteSettingsAction">
   <owner>lgarron@chromium.org</owner>
   <summary>
@@ -98913,6 +98935,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="VP8"/>
   <int value="2" label="VP9"/>
   <int value="3" label="H264"/>
+</enum>
+
+<enum name="WebShareMethod" type="int">
+  <int value="0" label="Share"/>
+</enum>
+
+<enum name="WebShareOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="UnknownFailure"/>
+  <int value="2" label="Canceled"/>
 </enum>
 
 <enum name="WebsiteSettingsAction" type="int">
