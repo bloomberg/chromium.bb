@@ -40,7 +40,7 @@ bool PaymentsValidators::isValidCountryCodeFormat(const String& code, String* op
         return true;
 
     if (optionalErrorMessage)
-        *optionalErrorMessage = "'" + code + "' is not a valid ISO 3166 country code, should be 2 upper case letters [A-Z]";
+        *optionalErrorMessage = "'" + code + "' is not a valid CLDR country code, should be 2 upper case letters [A-Z]";
 
     return false;
 }
@@ -51,7 +51,7 @@ bool PaymentsValidators::isValidLanguageCodeFormat(const String& code, String* o
         return true;
 
     if (optionalErrorMessage)
-        *optionalErrorMessage = "'" + code + "' is not a valid ISO 639 language code, should be 2-3 lower case letters [a-z]";
+        *optionalErrorMessage = "'" + code + "' is not a valid BCP-47 language code, should be 2-3 lower case letters [a-z]";
 
     return false;
 }
