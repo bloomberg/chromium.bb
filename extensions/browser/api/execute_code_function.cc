@@ -42,62 +42,49 @@ ExecuteCodeFunction::ExecuteCodeFunction() {
 ExecuteCodeFunction::~ExecuteCodeFunction() {
 }
 
-void ExecuteCodeFunction::DidLoadFile(bool success,
-                                      std::unique_ptr<std::string> data) {
-  if (!success || !details_->file) {
-    DidLoadAndLocalizeFile(resource_.relative_path().AsUTF8Unsafe(), success,
-                           std::move(data));
-    return;
-  }
-
-  ScriptExecutor::ScriptType script_type =
-      ShouldInsertCSS() ? ScriptExecutor::CSS : ScriptExecutor::JAVASCRIPT;
-
-  std::string extension_id;
-  base::FilePath extension_path;
-  std::string extension_default_locale;
-  if (extension()) {
-    extension_id = extension()->id();
-    extension_path = extension()->path();
-    extension()->manifest()->GetString(manifest_keys::kDefaultLocale,
-                                       &extension_default_locale);
-  }
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExecuteCodeFunction::GetFileURLAndLocalizeCSS, this,
-                 script_type, base::Passed(std::move(data)), extension_id,
-                 extension_path, extension_default_locale));
-}
-
-void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
-    ScriptExecutor::ScriptType script_type,
-    std::unique_ptr<std::string> data,
+void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeOnFileThread(
     const std::string& extension_id,
     const base::FilePath& extension_path,
-    const std::string& extension_default_locale) {
-  // Check if the file is CSS and needs localization.
-  if ((script_type == ScriptExecutor::CSS) && !extension_id.empty() &&
-      (data->find(MessageBundle::kMessageBegin) != std::string::npos)) {
-    std::unique_ptr<SubstitutionMap> localization_messages(
-        file_util::LoadMessageBundleSubstitutionMap(
-            extension_path, extension_id, extension_default_locale));
-
-    // We need to do message replacement on the data, so it has to be mutable.
-    std::string error;
-    MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
-                                                         data.get(), &error);
-  }
+    const std::string& extension_default_locale,
+    bool might_require_localization,
+    std::string* data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   file_url_ = net::FilePathToFileURL(resource_.GetFilePath());
 
-  // Call back DidLoadAndLocalizeFile on the UI thread. The success parameter
-  // is always true, because if loading had failed, we wouldn't have had
-  // anything to localize.
+  if (!might_require_localization)
+    return;
+
+  bool needs_message_substituion =
+      data->find(extensions::MessageBundle::kMessageBegin) != std::string::npos;
+  if (!needs_message_substituion)
+    return;
+
+  std::unique_ptr<SubstitutionMap> localization_messages(
+      file_util::LoadMessageBundleSubstitutionMap(extension_path, extension_id,
+                                                  extension_default_locale));
+
+  std::string error;
+  MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
+                                                       data, &error);
+}
+
+void ExecuteCodeFunction::GetFileURLAndLocalizeComponentResourceOnFileThread(
+    std::unique_ptr<std::string> data,
+    const std::string& extension_id,
+    const base::FilePath& extension_path,
+    const std::string& extension_default_locale,
+    bool might_require_localization) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  GetFileURLAndMaybeLocalizeOnFileThread(
+      extension_id, extension_path, extension_default_locale,
+      might_require_localization, data.get());
+
+  bool success = true;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
-                 resource_.relative_path().AsUTF8Unsafe(), true,
+                 resource_.relative_path().AsUTF8Unsafe(), success,
                  base::Passed(std::move(data))));
 }
 
@@ -207,6 +194,15 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
     return false;
   }
 
+  const std::string& extension_id = extension()->id();
+  base::FilePath extension_path = extension()->path();
+  std::string extension_default_locale;
+  extension()->manifest()->GetString(manifest_keys::kDefaultLocale,
+                                     &extension_default_locale);
+  // TODO(lazyboy): |extension_id| should not be empty(), turn this into a
+  // DCHECK.
+  bool might_require_localization = ShouldInsertCSS() && !extension_id.empty();
+
   int resource_id;
   const ComponentExtensionResourceManager*
       component_extension_resource_manager =
@@ -219,11 +215,25 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
           &resource_id)) {
     base::StringPiece resource =
         ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-    DidLoadFile(true, base::WrapUnique(
-                          new std::string(resource.data(), resource.size())));
+    std::unique_ptr<std::string> data(
+        new std::string(resource.data(), resource.size()));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ExecuteCodeFunction::
+                       GetFileURLAndLocalizeComponentResourceOnFileThread,
+                   this, base::Passed(std::move(data)), extension_id,
+                   extension_path, extension_default_locale,
+                   might_require_localization));
   } else {
+    FileReader::OptionalFileThreadTaskCallback get_file_and_l10n_callback =
+        base::Bind(&ExecuteCodeFunction::GetFileURLAndMaybeLocalizeOnFileThread,
+                   this, extension_id, extension_path, extension_default_locale,
+                   might_require_localization);
+
     scoped_refptr<FileReader> file_reader(new FileReader(
-        resource_, base::Bind(&ExecuteCodeFunction::DidLoadFile, this)));
+        resource_, get_file_and_l10n_callback,
+        base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
+                   resource_.relative_path().AsUTF8Unsafe())));
     file_reader->Start();
   }
 

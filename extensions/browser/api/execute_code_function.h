@@ -52,17 +52,27 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   std::unique_ptr<api::extension_types::InjectDetails> details_;
 
  private:
-  // Called when contents from the file whose path is specified in JSON
-  // arguments has been loaded.
-  void DidLoadFile(bool success, std::unique_ptr<std::string> data);
+  // Retrieves the file url for the given |extension_path| and optionally
+  // localizes |data|.
+  // Localization depends on whether |might_require_localization| was specified.
+  // Only CSS file content needs to be localized.
+  void GetFileURLAndMaybeLocalizeOnFileThread(
+      const std::string& extension_id,
+      const base::FilePath& extension_path,
+      const std::string& extension_default_locale,
+      bool might_require_localization,
+      std::string* data);
 
-  // Runs on FILE thread. Loads message bundles for the extension and
-  // localizes the CSS data. Calls back DidLoadAndLocalizeFile on the UI thread.
-  void GetFileURLAndLocalizeCSS(ScriptExecutor::ScriptType script_type,
-                                std::unique_ptr<std::string> data,
-                                const std::string& extension_id,
-                                const base::FilePath& extension_path,
-                                const std::string& extension_default_locale);
+  // Retrieves the file url for the given |extension_path| and optionally
+  // localizes |data|.
+  // Similar to GetFileURLAndMaybeLocalizeOnFileThread, but only applies to
+  // component extension resource.
+  void GetFileURLAndLocalizeComponentResourceOnFileThread(
+      std::unique_ptr<std::string> data,
+      const std::string& extension_id,
+      const base::FilePath& extension_path,
+      const std::string& extension_default_locale,
+      bool might_require_localization);
 
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef.

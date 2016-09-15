@@ -90,9 +90,11 @@ class ContentScriptLoader {
 
     extensions::ExtensionResource resource = resources_.front();
     resources_.pop();
-    scoped_refptr<FileReader> reader(
-        new FileReader(resource, base::Bind(&ContentScriptLoader::OnFileLoaded,
-                                            base::Unretained(this))));
+    scoped_refptr<FileReader> reader(new FileReader(
+        resource,
+        FileReader::OptionalFileThreadTaskCallback(),  // null callback.
+        base::Bind(&ContentScriptLoader::OnFileLoaded,
+                   base::Unretained(this))));
     reader->Start();
   }
 

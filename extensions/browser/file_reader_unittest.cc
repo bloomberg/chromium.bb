@@ -35,7 +35,7 @@ class Receiver {
   Receiver() : succeeded_(false) {
   }
 
-  FileReader::Callback NewCallback() {
+  FileReader::DoneCallback NewCallback() {
     return base::Bind(&Receiver::DidReadFile, base::Unretained(this));
   }
 
@@ -67,7 +67,8 @@ void RunBasicTest(const char* filename) {
   Receiver receiver;
 
   scoped_refptr<FileReader> file_reader(
-      new FileReader(resource, receiver.NewCallback()));
+      new FileReader(resource, FileReader::OptionalFileThreadTaskCallback(),
+                     receiver.NewCallback()));
   file_reader->Start();
 
   base::RunLoop().Run();
@@ -95,7 +96,8 @@ TEST_F(FileReaderTest, NonExistantFile) {
   Receiver receiver;
 
   scoped_refptr<FileReader> file_reader(
-      new FileReader(resource, receiver.NewCallback()));
+      new FileReader(resource, FileReader::OptionalFileThreadTaskCallback(),
+                     receiver.NewCallback()));
   file_reader->Start();
 
   base::RunLoop().Run();
