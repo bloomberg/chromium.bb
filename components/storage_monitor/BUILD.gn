@@ -56,7 +56,7 @@ static_library("storage_monitor") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux && use_dbus) {
     deps += [
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
@@ -111,7 +111,7 @@ static_library("test_support") {
     "//content/public/browser",
   ]
 
-  if (is_linux) {
+  if (is_linux && use_dbus) {
     deps = [
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
@@ -146,7 +146,7 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_linux) {
+  if (is_linux && use_dbus) {
     deps += [ "//device/media_transfer_protocol" ]
     if (!is_chromeos) {
       sources += [ "storage_monitor_linux_unittest.cc" ]

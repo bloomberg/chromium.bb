@@ -5,6 +5,8 @@
 import("//build/config/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+assert(use_dbus)
+
 # GYP version: device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_file_entry_proto
 proto_library("mtp_file_entry_proto") {
   sources = [
