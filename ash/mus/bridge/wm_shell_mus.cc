@@ -252,6 +252,13 @@ display::Display WmShellMus::GetFirstDisplay() const {
 
 bool WmShellMus::IsInUnifiedMode() const {
   // TODO(mash): implement http://crbug.com/622480.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool WmShellMus::IsInUnifiedModeIgnoreMirroring() const {
+  // TODO(mash): implement http://crbug.com/622480.
+  NOTIMPLEMENTED();
   return false;
 }
 

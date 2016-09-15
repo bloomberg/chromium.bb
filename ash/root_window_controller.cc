@@ -99,101 +99,6 @@ namespace {
 const int kBootSplashScreenHideDurationMs = 500;
 #endif
 
-float ToRelativeValue(int value, int src, int dst) {
-  return static_cast<float>(value) / static_cast<float>(src) * dst;
-}
-
-void MoveOriginRelativeToSize(const gfx::Size& src_size,
-                              const gfx::Size& dst_size,
-                              gfx::Rect* bounds_in_out) {
-  gfx::Point origin = bounds_in_out->origin();
-  bounds_in_out->set_origin(gfx::Point(
-      ToRelativeValue(origin.x(), src_size.width(), dst_size.width()),
-      ToRelativeValue(origin.y(), src_size.height(), dst_size.height())));
-}
-
-// Reparents |window| to |new_parent|.
-void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
-  const gfx::Size src_size = window->parent()->bounds().size();
-  const gfx::Size dst_size = new_parent->bounds().size();
-  // Update the restore bounds to make it relative to the display.
-  wm::WindowState* state = wm::GetWindowState(window);
-  gfx::Rect restore_bounds;
-  bool has_restore_bounds = state->HasRestoreBounds();
-
-  bool update_bounds = (state->IsNormalOrSnapped() || state->IsMinimized()) &&
-                       new_parent->id() != kShellWindowId_DockedContainer;
-  gfx::Rect local_bounds;
-  if (update_bounds) {
-    local_bounds = WmWindowAura::GetAuraWindow(state->window())->bounds();
-    MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
-  }
-
-  if (has_restore_bounds) {
-    restore_bounds = state->GetRestoreBoundsInParent();
-    MoveOriginRelativeToSize(src_size, dst_size, &restore_bounds);
-  }
-
-  new_parent->AddChild(window);
-
-  // Docked windows have bounds handled by the layout manager in AddChild().
-  if (update_bounds)
-    window->SetBounds(local_bounds);
-
-  if (has_restore_bounds)
-    state->SetRestoreBoundsInParent(restore_bounds);
-}
-
-// Reparents the appropriate set of windows from |src| to |dst|.
-void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
-  // Set of windows to move.
-  const int kContainerIdsToMove[] = {
-      kShellWindowId_DefaultContainer,
-      kShellWindowId_DockedContainer,
-      kShellWindowId_PanelContainer,
-      kShellWindowId_AlwaysOnTopContainer,
-      kShellWindowId_SystemModalContainer,
-      kShellWindowId_LockSystemModalContainer,
-      kShellWindowId_UnparentedControlContainer,
-      kShellWindowId_OverlayContainer,
-  };
-  const int kExtraContainerIdsToMoveInUnifiedMode[] = {
-      kShellWindowId_LockScreenContainer,
-      kShellWindowId_LockScreenWallpaperContainer,
-  };
-  std::vector<int> container_ids(
-      kContainerIdsToMove,
-      kContainerIdsToMove + arraysize(kContainerIdsToMove));
-  // Check the default_multi_display_mode because this is also necessary
-  // in trasition between mirror <-> unified mode.
-  if (Shell::GetInstance()
-          ->display_manager()
-          ->current_default_multi_display_mode() == DisplayManager::UNIFIED) {
-    for (int id : kExtraContainerIdsToMoveInUnifiedMode)
-      container_ids.push_back(id);
-  }
-
-  for (int id : container_ids) {
-    aura::Window* src_container = Shell::GetContainer(src, id);
-    aura::Window* dst_container = Shell::GetContainer(dst, id);
-    while (!src_container->children().empty()) {
-      // Restart iteration from the source container windows each time as they
-      // may change as a result of moving other windows.
-      aura::Window::Windows::const_iterator iter =
-          src_container->children().begin();
-      while (iter != src_container->children().end() &&
-             SystemModalContainerLayoutManager::IsModalBackground(
-                 WmWindowAura::Get(*iter))) {
-        ++iter;
-      }
-      // If the entire window list is modal background windows then stop.
-      if (iter == src_container->children().end())
-        break;
-      ReparentWindow(*iter, dst_container);
-    }
-  }
-}
-
 bool IsWindowAboveContainer(aura::Window* window,
                             aura::Window* blocking_container) {
   std::vector<aura::Window*> target_path;
@@ -553,9 +458,7 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  // Clear the workspace controller, so it doesn't incorrectly update the shelf.
-  wm_root_window_controller_->DeleteWorkspaceController();
-  ReparentAllWindows(GetRootWindow(), dst);
+  wm_root_window_controller_->MoveWindowsTo(WmWindowAura::Get(dst));
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {

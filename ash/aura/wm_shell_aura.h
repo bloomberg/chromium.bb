@@ -44,6 +44,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   bool IsActiveDisplayId(int64_t display_id) const override;
   display::Display GetFirstDisplay() const override;
   bool IsInUnifiedMode() const override;
+  bool IsInUnifiedModeIgnoreMirroring() const override;
   bool IsForceMaximizeOnFirstRun() override;
   void SetDisplayWorkAreaInsets(WmWindow* window,
                                 const gfx::Insets& insets) override;

@@ -129,6 +129,12 @@ bool WmShellAura::IsInUnifiedMode() const {
   return Shell::GetInstance()->display_manager()->IsInUnifiedMode();
 }
 
+bool WmShellAura::IsInUnifiedModeIgnoreMirroring() const {
+  return Shell::GetInstance()
+             ->display_manager()
+             ->current_default_multi_display_mode() == DisplayManager::UNIFIED;
+}
+
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return delegate()->IsForceMaximizeOnFirstRun();
 }

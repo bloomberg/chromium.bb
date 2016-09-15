@@ -198,9 +198,14 @@ class ASH_EXPORT WmShell {
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
   virtual bool IsActiveDisplayId(int64_t display_id) const = 0;
 
-  // Returns true if the desktop is in unified mode.
+  // Returns true if the desktop is in unified mode and there are no mirroring
+  // displays.
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
   virtual bool IsInUnifiedMode() const = 0;
+
+  // Returns true if the desktop is in unified mode.
+  // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
+  virtual bool IsInUnifiedModeIgnoreMirroring() const = 0;
 
   // Returns the first display; this is the first display listed by hardware,
   // which corresponds to internal displays on devices with integrated displays.

@@ -119,6 +119,9 @@ class ASH_EXPORT WmRootWindowController {
   virtual void OnWallpaperAnimationFinished(views::Widget* widget);
 
  protected:
+  // Moves child windows to |dest|.
+  void MoveWindowsTo(WmWindow* dest);
+
   // Creates the containers (WmWindows) used by the shell.
   void CreateContainers();
 

@@ -13,6 +13,7 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
@@ -24,6 +25,103 @@
 
 namespace ash {
 namespace {
+
+// Scales |value| that is originally between 0 and |src_max| to be between
+// 0 and |dst_max|.
+float ToRelativeValue(int value, int src_max, int dst_max) {
+  return static_cast<float>(value) / static_cast<float>(src_max) * dst_max;
+}
+
+// Uses ToRelativeValue() to scale the origin of |bounds_in_out|. The
+// width/height are not changed.
+void MoveOriginRelativeToSize(const gfx::Size& src_size,
+                              const gfx::Size& dst_size,
+                              gfx::Rect* bounds_in_out) {
+  gfx::Point origin = bounds_in_out->origin();
+  bounds_in_out->set_origin(gfx::Point(
+      ToRelativeValue(origin.x(), src_size.width(), dst_size.width()),
+      ToRelativeValue(origin.y(), src_size.height(), dst_size.height())));
+}
+
+// Reparents |window| to |new_parent|.
+void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
+  const gfx::Size src_size = window->GetParent()->GetBounds().size();
+  const gfx::Size dst_size = new_parent->GetBounds().size();
+  // Update the restore bounds to make it relative to the display.
+  wm::WindowState* state = window->GetWindowState();
+  gfx::Rect restore_bounds;
+  bool has_restore_bounds = state->HasRestoreBounds();
+
+  bool update_bounds =
+      (state->IsNormalOrSnapped() || state->IsMinimized()) &&
+      new_parent->GetShellWindowId() != kShellWindowId_DockedContainer;
+  gfx::Rect local_bounds;
+  if (update_bounds) {
+    local_bounds = state->window()->GetBounds();
+    MoveOriginRelativeToSize(src_size, dst_size, &local_bounds);
+  }
+
+  if (has_restore_bounds) {
+    restore_bounds = state->GetRestoreBoundsInParent();
+    MoveOriginRelativeToSize(src_size, dst_size, &restore_bounds);
+  }
+
+  new_parent->AddChild(window);
+
+  // Docked windows have bounds handled by the layout manager in AddChild().
+  if (update_bounds)
+    window->SetBounds(local_bounds);
+
+  if (has_restore_bounds)
+    state->SetRestoreBoundsInParent(restore_bounds);
+}
+
+// Reparents the appropriate set of windows from |src| to |dst|.
+void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
+  // Set of windows to move.
+  const int kContainerIdsToMove[] = {
+      kShellWindowId_DefaultContainer,
+      kShellWindowId_DockedContainer,
+      kShellWindowId_PanelContainer,
+      kShellWindowId_AlwaysOnTopContainer,
+      kShellWindowId_SystemModalContainer,
+      kShellWindowId_LockSystemModalContainer,
+      kShellWindowId_UnparentedControlContainer,
+      kShellWindowId_OverlayContainer,
+  };
+  const int kExtraContainerIdsToMoveInUnifiedMode[] = {
+      kShellWindowId_LockScreenContainer,
+      kShellWindowId_LockScreenWallpaperContainer,
+  };
+  std::vector<int> container_ids(
+      kContainerIdsToMove,
+      kContainerIdsToMove + arraysize(kContainerIdsToMove));
+  // Check the display mode as this is also necessary when trasitioning between
+  // mirror and unified mode.
+  if (WmShell::Get()->IsInUnifiedModeIgnoreMirroring()) {
+    for (int id : kExtraContainerIdsToMoveInUnifiedMode)
+      container_ids.push_back(id);
+  }
+
+  for (int id : container_ids) {
+    WmWindow* src_container = src->GetChildByShellWindowId(id);
+    WmWindow* dst_container = dst->GetChildByShellWindowId(id);
+    while (!src_container->GetChildren().empty()) {
+      // Restart iteration from the source container windows each time as they
+      // may change as a result of moving other windows.
+      WmWindow::Windows src_container_children = src_container->GetChildren();
+      WmWindow::Windows::const_iterator iter = src_container_children.begin();
+      while (iter != src_container_children.end() &&
+             SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
+        ++iter;
+      }
+      // If the entire window list is modal background windows then stop.
+      if (iter == src_container_children.end())
+        break;
+      ReparentWindow(*iter, dst_container);
+    }
+  }
+}
 
 // Creates a new window for use as a container.
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
@@ -138,6 +236,12 @@ void WmRootWindowController::OnWallpaperAnimationFinished(
     // Release the old controller and close its wallpaper widget.
     SetWallpaperWidgetController(controller);
   }
+}
+
+void WmRootWindowController::MoveWindowsTo(WmWindow* dest) {
+  // Clear the workspace controller, so it doesn't incorrectly update the shelf.
+  DeleteWorkspaceController();
+  ReparentAllWindows(GetWindow(), dest);
 }
 
 void WmRootWindowController::CreateContainers() {
