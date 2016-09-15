@@ -2454,14 +2454,14 @@ split_static_library("browser") {
 
   if (!is_android && !is_chromeos) {
     sources += [
-      "metrics/desktop_engagement/audible_contents_tracker.cc",
-      "metrics/desktop_engagement/audible_contents_tracker.h",
-      "metrics/desktop_engagement/chrome_visibility_observer.cc",
-      "metrics/desktop_engagement/chrome_visibility_observer.h",
-      "metrics/desktop_engagement/desktop_engagement_observer.cc",
-      "metrics/desktop_engagement/desktop_engagement_observer.h",
-      "metrics/desktop_engagement/desktop_engagement_service.cc",
-      "metrics/desktop_engagement/desktop_engagement_service.h",
+      "metrics/desktop_session_duration/audible_contents_tracker.cc",
+      "metrics/desktop_session_duration/audible_contents_tracker.h",
+      "metrics/desktop_session_duration/chrome_visibility_observer.cc",
+      "metrics/desktop_session_duration/chrome_visibility_observer.h",
+      "metrics/desktop_session_duration/desktop_session_duration_observer.cc",
+      "metrics/desktop_session_duration/desktop_session_duration_observer.h",
+      "metrics/desktop_session_duration/desktop_session_duration_tracker.cc",
+      "metrics/desktop_session_duration/desktop_session_duration_tracker.h",
       "net/disk_cache_dir_policy_handler.cc",
       "net/disk_cache_dir_policy_handler.h",
       "platform_util.cc",

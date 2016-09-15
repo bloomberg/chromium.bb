@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/desktop_engagement/audible_contents_tracker.h"
+#include "chrome/browser/metrics/desktop_session_duration/audible_contents_tracker.h"
 
-#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

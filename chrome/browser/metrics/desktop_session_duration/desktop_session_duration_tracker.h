@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_SERVICE_H_
-#define CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_SERVICE_H_
+#ifndef CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_TRACKER_H_
+#define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_TRACKER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/metrics/desktop_engagement/audible_contents_tracker.h"
-#include "chrome/browser/metrics/desktop_engagement/chrome_visibility_observer.h"
+#include "chrome/browser/metrics/desktop_session_duration/audible_contents_tracker.h"
+#include "chrome/browser/metrics/desktop_session_duration/chrome_visibility_observer.h"
 
 namespace metrics {
 
-// Class for tracking and recording user engagement based on browser visibility,
-// audio and user interaction.
-class DesktopEngagementService : public AudibleContentsTracker::Observer {
+// Class for tracking and recording session length on desktop based on browser
+// visibility, audio and user interaction.
+class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
  public:
-  // Creates the |DesktopEngagementService| instance and initializes the
-  // observes that notify to it.
+  // Creates the |DesktopSessionDurationTracker| instance and initializes the
+  // observers that notify to it.
   static void Initialize();
 
-  // Returns true if the |DesktopEngagementService| instance has been created.
+  // Returns true if the |DesktopSessionDurationTracker| instance has been
+  // created.
   static bool IsInitialized();
 
-  // Returns the |DesktopEngagementService| instance.
-  static DesktopEngagementService* Get();
+  // Returns the |DesktopSessionDurationTracker| instance.
+  static DesktopSessionDurationTracker* Get();
 
   // Called when user interaction with the browser is caught.
   void OnUserEvent();
@@ -43,8 +44,8 @@ class DesktopEngagementService : public AudibleContentsTracker::Observer {
   }
 
  protected:
-  DesktopEngagementService();
-  ~DesktopEngagementService() override;
+  DesktopSessionDurationTracker();
+  ~DesktopSessionDurationTracker() override;
 
   // AudibleContentsTracker::Observer
   void OnAudioStart() override;
@@ -87,11 +88,11 @@ class DesktopEngagementService : public AudibleContentsTracker::Observer {
   ChromeVisibilityObserver visibility_observer_;
   AudibleContentsTracker audio_tracker_;
 
-  base::WeakPtrFactory<DesktopEngagementService> weak_factory_;
+  base::WeakPtrFactory<DesktopSessionDurationTracker> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopEngagementService);
+  DISALLOW_COPY_AND_ASSIGN(DesktopSessionDurationTracker);
 };
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_SERVICE_H_
+#endif  // CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_TRACKER_H_

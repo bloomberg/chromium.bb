@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_OBSERVER_H_
-#define CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_OBSERVER_H_
+#ifndef CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_OBSERVER_H_
+#define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_OBSERVER_H_
 
 #include "base/macros.h"
 #include "content/public/browser/render_widget_host.h"
@@ -14,24 +14,24 @@
 
 namespace metrics {
 
-class DesktopEngagementService;
+class DesktopSessionDurationTracker;
 
 // Tracks user input events from web contents and notifies
-// |DesktopEngagementService|.
-class DesktopEngagementObserver
+// |DesktopSessionDurationTracker|.
+class DesktopSessionDurationObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<DesktopEngagementObserver>,
+      public content::WebContentsUserData<DesktopSessionDurationObserver>,
       public content::RenderWidgetHost::InputEventObserver {
  public:
-  DesktopEngagementObserver(content::WebContents* web_contents,
-                            DesktopEngagementService* service);
-  ~DesktopEngagementObserver() override;
+  DesktopSessionDurationObserver(content::WebContents* web_contents,
+                                 DesktopSessionDurationTracker* service);
+  ~DesktopSessionDurationObserver() override;
 
-  static DesktopEngagementObserver* CreateForWebContents(
+  static DesktopSessionDurationObserver* CreateForWebContents(
       content::WebContents* web_contents);
 
  private:
-  friend class content::WebContentsUserData<DesktopEngagementObserver>;
+  friend class content::WebContentsUserData<DesktopSessionDurationObserver>;
 
   // Register / Unregister input event callback to given RenderViewHost
   void RegisterInputEventObserver(content::RenderViewHost* host);
@@ -44,11 +44,11 @@ class DesktopEngagementObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
-  DesktopEngagementService* service_;
+  DesktopSessionDurationTracker* service_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopEngagementObserver);
+  DISALLOW_COPY_AND_ASSIGN(DesktopSessionDurationObserver);
 };
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_DESKTOP_ENGAGEMENT_OBSERVER_H_
+#endif  // CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_SESSION_DURATION_OBSERVER_H_

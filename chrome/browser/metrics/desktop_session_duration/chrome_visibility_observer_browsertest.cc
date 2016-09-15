@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/desktop_engagement/chrome_visibility_observer.h"
+#include "chrome/browser/metrics/desktop_session_duration/chrome_visibility_observer.h"
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"

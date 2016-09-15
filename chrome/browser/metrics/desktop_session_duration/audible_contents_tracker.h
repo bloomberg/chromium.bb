@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_AUDIBLE_CONTENTS_TRACKER_H_
-#define CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_AUDIBLE_CONTENTS_TRACKER_H_
+#ifndef CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_AUDIBLE_CONTENTS_TRACKER_H_
+#define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_AUDIBLE_CONTENTS_TRACKER_H_
 
 #include <set>
 
@@ -18,8 +18,8 @@ class AudibleContentsTracker : public chrome::BrowserListObserver,
                                public TabStripModelObserver {
  public:
   // Interface for an observer of the AudibleContentsTracker. The only client
-  // of this class is the DesktopEngagementService, but an observer interface
-  // has been created for ease of testing.
+  // of this class is the DesktopSessionDurationTracker, but an observer
+  // interface has been created for ease of testing.
   class Observer {
    public:
     Observer() {}
@@ -73,4 +73,4 @@ class AudibleContentsTracker : public chrome::BrowserListObserver,
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_AUDIBLE_CONTENTS_TRACKER_H_
+#endif  // CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_AUDIBLE_CONTENTS_TRACKER_H_

@@ -275,7 +275,7 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #endif
 
 using content::BrowserThread;
@@ -919,7 +919,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  metrics::DesktopEngagementService::Initialize();
+  metrics::DesktopSessionDurationTracker::Initialize();
 #endif
 
 #if defined(OS_WIN)

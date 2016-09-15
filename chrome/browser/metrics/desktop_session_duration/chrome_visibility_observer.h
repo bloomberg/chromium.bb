@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_CHROME_VISIBILITY_OBSERVER_H_
-#define CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_CHROME_VISIBILITY_OBSERVER_H_
+#ifndef CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_CHROME_VISIBILITY_OBSERVER_H_
+#define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_CHROME_VISIBILITY_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 namespace metrics {
-
 // Observer for tracking browser visibility events.
 class ChromeVisibilityObserver : public chrome::BrowserListObserver {
  public:
@@ -17,8 +16,8 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
   ~ChromeVisibilityObserver() override;
 
  protected:
-  // Notifies |DesktopEngagementService| of visibility changes. Overridden by
-  // tests.
+  // Notifies |DesktopSessionDurationTracker| of visibility changes. Overridden
+  // by tests.
   virtual void SendVisibilityChangeEvent(bool active);
 
  private:
@@ -46,4 +45,4 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_DESKTOP_ENGAGEMENT_CHROME_VISIBILITY_OBSERVER_H_
+#endif  // CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_CHROME_VISIBILITY_OBSERVER_H_

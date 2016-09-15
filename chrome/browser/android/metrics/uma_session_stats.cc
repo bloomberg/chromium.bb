@@ -65,7 +65,7 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
     base::TimeDelta duration = base::TimeTicks::Now() - session_start_time_;
 
     // Note: This metric is recorded separately on desktop in
-    // DesktopEngagementService::EndSession.
+    // DesktopSessionDurationTracker::EndSession.
     UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
 
     DCHECK(g_browser_process);

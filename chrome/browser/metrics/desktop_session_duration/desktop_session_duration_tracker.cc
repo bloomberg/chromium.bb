@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -13,33 +13,33 @@ namespace metrics {
 
 namespace {
 
-DesktopEngagementService* g_instance = nullptr;
+DesktopSessionDurationTracker* g_instance = nullptr;
 
 }  // namespace
 
 // static
-void DesktopEngagementService::Initialize() {
-  g_instance = new DesktopEngagementService;
+void DesktopSessionDurationTracker::Initialize() {
+  g_instance = new DesktopSessionDurationTracker;
 }
 
 // static
-bool DesktopEngagementService::IsInitialized() {
+bool DesktopSessionDurationTracker::IsInitialized() {
   return g_instance != nullptr;
 }
 
 // static
-DesktopEngagementService* DesktopEngagementService::Get() {
+DesktopSessionDurationTracker* DesktopSessionDurationTracker::Get() {
   DCHECK(g_instance);
   return g_instance;
 }
 
-void DesktopEngagementService::StartTimer(base::TimeDelta duration) {
+void DesktopSessionDurationTracker::StartTimer(base::TimeDelta duration) {
   timer_.Start(FROM_HERE, duration,
-               base::Bind(&DesktopEngagementService::OnTimerFired,
+               base::Bind(&DesktopSessionDurationTracker::OnTimerFired,
                           weak_factory_.GetWeakPtr()));
 }
 
-void DesktopEngagementService::OnVisibilityChanged(bool visible) {
+void DesktopSessionDurationTracker::OnVisibilityChanged(bool visible) {
   is_visible_ = visible;
   if (is_visible_ && !is_first_session_) {
     OnUserEvent();
@@ -49,7 +49,7 @@ void DesktopEngagementService::OnVisibilityChanged(bool visible) {
   }
 }
 
-void DesktopEngagementService::OnUserEvent() {
+void DesktopSessionDurationTracker::OnUserEvent() {
   if (!is_visible_)
     return;
 
@@ -61,7 +61,7 @@ void DesktopEngagementService::OnUserEvent() {
   }
 }
 
-void DesktopEngagementService::OnAudioStart() {
+void DesktopSessionDurationTracker::OnAudioStart() {
   // This may start session.
   is_audio_playing_ = true;
   if (!in_session_) {
@@ -70,7 +70,7 @@ void DesktopEngagementService::OnAudioStart() {
   }
 }
 
-void DesktopEngagementService::OnAudioEnd() {
+void DesktopSessionDurationTracker::OnAudioEnd() {
   is_audio_playing_ = false;
 
   // If the timer is not running, this means that no user events happened in the
@@ -81,7 +81,7 @@ void DesktopEngagementService::OnAudioEnd() {
   }
 }
 
-DesktopEngagementService::DesktopEngagementService()
+DesktopSessionDurationTracker::DesktopSessionDurationTracker()
     : session_start_(base::TimeTicks::Now()),
       last_user_event_(session_start_),
       audio_tracker_(this),
@@ -89,9 +89,9 @@ DesktopEngagementService::DesktopEngagementService()
   InitInactivityTimeout();
 }
 
-DesktopEngagementService::~DesktopEngagementService() {}
+DesktopSessionDurationTracker::~DesktopSessionDurationTracker() {}
 
-void DesktopEngagementService::OnTimerFired() {
+void DesktopSessionDurationTracker::OnTimerFired() {
   base::TimeDelta remaining =
       inactivity_timeout_ - (base::TimeTicks::Now() - last_user_event_);
   if (remaining.ToInternalValue() > 0) {
@@ -106,14 +106,14 @@ void DesktopEngagementService::OnTimerFired() {
   }
 }
 
-void DesktopEngagementService::StartSession() {
+void DesktopSessionDurationTracker::StartSession() {
   in_session_ = true;
   is_first_session_ = false;
   session_start_ = base::TimeTicks::Now();
   StartTimer(inactivity_timeout_);
 }
 
-void DesktopEngagementService::EndSession() {
+void DesktopSessionDurationTracker::EndSession() {
   in_session_ = false;
 
   base::TimeDelta delta = base::TimeTicks::Now() - session_start_;
@@ -129,12 +129,12 @@ void DesktopEngagementService::EndSession() {
   UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", delta);
 }
 
-void DesktopEngagementService::InitInactivityTimeout() {
+void DesktopSessionDurationTracker::InitInactivityTimeout() {
   const int kDefaultInactivityTimeoutMinutes = 5;
 
   int timeout_minutes = kDefaultInactivityTimeoutMinutes;
   std::string param_value = variations::GetVariationParamValue(
-      "DesktopEngagement", "inactivity_timeout");
+      "DesktopSessionDuration", "inactivity_timeout");
   if (!param_value.empty())
     base::StringToInt(param_value, &timeout_minutes);
 

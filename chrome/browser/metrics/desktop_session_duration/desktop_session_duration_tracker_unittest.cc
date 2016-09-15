@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -10,33 +10,34 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Mock class for |DesktopEngagementService| for testing.
-class MockDesktopEngagementService : public metrics::DesktopEngagementService {
+// Mock class for |DesktopSessionDurationTracker| for testing.
+class MockDesktopSessionDurationTracker
+    : public metrics::DesktopSessionDurationTracker {
  public:
-  MockDesktopEngagementService() {}
+  MockDesktopSessionDurationTracker() {}
 
   bool is_timeout() const { return time_out_; }
 
-  using metrics::DesktopEngagementService::OnAudioStart;
-  using metrics::DesktopEngagementService::OnAudioEnd;
+  using metrics::DesktopSessionDurationTracker::OnAudioStart;
+  using metrics::DesktopSessionDurationTracker::OnAudioEnd;
 
  protected:
   void OnTimerFired() override {
-    DesktopEngagementService::OnTimerFired();
+    DesktopSessionDurationTracker::OnTimerFired();
     time_out_ = true;
   }
 
  private:
   bool time_out_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDesktopEngagementService);
+  DISALLOW_COPY_AND_ASSIGN(MockDesktopSessionDurationTracker);
 };
 
-TEST(DesktopEngagementServiceTest, TestVisibility) {
+TEST(DesktopSessionDurationTrackerTest, TestVisibility) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
 
-  MockDesktopEngagementService instance;
+  MockDesktopSessionDurationTracker instance;
 
   // The browser becomes visible but it shouldn't start the session.
   instance.OnVisibilityChanged(true);
@@ -74,11 +75,11 @@ TEST(DesktopEngagementServiceTest, TestVisibility) {
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 2);
 }
 
-TEST(DesktopEngagementServiceTest, TestUserEvent) {
+TEST(DesktopSessionDurationTrackerTest, TestUserEvent) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
 
-  MockDesktopEngagementService instance;
+  MockDesktopSessionDurationTracker instance;
   instance.SetInactivityTimeoutForTesting(1);
 
   EXPECT_FALSE(instance.in_session());
@@ -111,11 +112,11 @@ TEST(DesktopEngagementServiceTest, TestUserEvent) {
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
 }
 
-TEST(DesktopEngagementServiceTest, TestAudioEvent) {
+TEST(DesktopSessionDurationTrackerTest, TestAudioEvent) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
 
-  MockDesktopEngagementService instance;
+  MockDesktopSessionDurationTracker instance;
   instance.SetInactivityTimeoutForTesting(1);
 
   instance.OnVisibilityChanged(true);
@@ -157,14 +158,14 @@ TEST(DesktopEngagementServiceTest, TestAudioEvent) {
 TEST(DesktopEngagementServiceTest, MAYBE_TestTimeoutDiscount) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::HistogramTester histogram_tester;
-  MockDesktopEngagementService instance;
+  MockDesktopSessionDurationTracker instance;
 
   int inactivity_interval = 2;
   instance.SetInactivityTimeoutForTesting(inactivity_interval);
 
   instance.OnVisibilityChanged(true);
   base::TimeTicks before_session_start = base::TimeTicks::Now();
-  instance.OnUserEvent(); // This should start the session
+  instance.OnUserEvent();  // This should start the session
   histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Wait until the session expires.
@@ -178,7 +179,6 @@ TEST(DesktopEngagementServiceTest, MAYBE_TestTimeoutDiscount) {
   // interval.
   base::Bucket bucket =
       histogram_tester.GetAllSamples("Session.TotalDuration")[0];
-  EXPECT_LE(
-    bucket.min + inactivity_interval,
-    (after_session_end - before_session_start).InSeconds());
+  EXPECT_LE(bucket.min + inactivity_interval,
+            (after_session_end - before_session_start).InSeconds());
 }

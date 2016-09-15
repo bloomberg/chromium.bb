@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/desktop_engagement/chrome_visibility_observer.h"
+#include "chrome/browser/metrics/desktop_session_duration/chrome_visibility_observer.h"
 
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/metrics/desktop_engagement/desktop_engagement_service.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "components/variations/variations_associated_data.h"
@@ -24,7 +24,7 @@ ChromeVisibilityObserver::~ChromeVisibilityObserver() {
 }
 
 void ChromeVisibilityObserver::SendVisibilityChangeEvent(bool active) {
-  DesktopEngagementService::Get()->OnVisibilityChanged(active);
+  DesktopSessionDurationTracker::Get()->OnVisibilityChanged(active);
 }
 
 void ChromeVisibilityObserver::CancelVisibilityChange() {
@@ -60,7 +60,7 @@ void ChromeVisibilityObserver::InitVisibilityGapTimeout() {
 
   int timeout_seconds = kDefaultVisibilityGapTimeout;
   std::string param_value = variations::GetVariationParamValue(
-      "DesktopEngagement", "visibility_gap_timeout");
+      "DesktopSessionDuration", "visibility_gap_timeout");
   if (!param_value.empty())
     base::StringToInt(param_value, &timeout_seconds);
 
