@@ -78,6 +78,7 @@ class MigrationTest : public testing::TestWithParam<int> {
                      &kernel_load_info) == OPENED;
   }
 
+  void SetUpCorruptedRootDatabase(sql::Connection* connection);
   void SetUpVersion67Database(sql::Connection* connection);
   void SetUpVersion68Database(sql::Connection* connection);
   void SetUpVersion69Database(sql::Connection* connection);
@@ -409,6 +410,51 @@ void ExpectTimes(const Directory::MetahandlesMap& handles_map,
 }
 
 }  // namespace
+
+void MigrationTest::SetUpCorruptedRootDatabase(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
+      "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
+      "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
+      "CREATE TABLE metas (metahandle bigint primary key ON CONFLICT FAIL,"
+      "base_version bigint default -1,server_version bigint default 0,"
+      "mtime bigint default 0,server_mtime bigint default 0,"
+      "ctime bigint default 0,server_ctime bigint default 0,"
+      "server_position_in_parent bigint default 0,"
+      "local_external_id bigint default 0,id varchar(255) default 'r',"
+      "parent_id varchar(255) default 'r',"
+      "server_parent_id varchar(255) default 'r',"
+      "prev_id varchar(255) default 'r',next_id varchar(255) default 'r',"
+      "is_unsynced bit default 0,is_unapplied_update bit default 0,"
+      "is_del bit default 0,is_dir bit default 0,"
+      "is_bookmark_object bit default 0,server_is_dir bit default 0,"
+      "server_is_del bit default 0,server_is_bookmark_object bit default 0,"
+      "name varchar(255), "            /* COLLATE PATHNAME, */
+      "unsanitized_name varchar(255)," /* COLLATE PATHNAME, */
+      "non_unique_name varchar,"
+      "server_name varchar(255)," /* COLLATE PATHNAME */
+      "server_non_unique_name varchar,"
+      "bookmark_url varchar,server_bookmark_url varchar,"
+      "singleton_tag varchar,bookmark_favicon blob,"
+      "server_bookmark_favicon blob);"
+      "INSERT INTO metas VALUES(1,-1,0," LEGACY_PROTO_TIME_VALS(
+          1) ",0,0,'r2','r2','r','r','r',0,0,0,1,0,0,0,0,NULL,"
+             "NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);"
+             "CREATE TABLE share_info (id VARCHAR(128) primary key, "
+             "last_sync_timestamp INT, name VARCHAR(128), "
+             "initial_sync_ended BIT default 0, store_birthday VARCHAR(256), "
+             "db_create_version VARCHAR(128), db_create_time int, "
+             "next_id bigint default -2, cache_guid VARCHAR(32));"
+             "INSERT INTO share_info VALUES('nick@chromium.org',694,"
+             "'nick@chromium.org',1,'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb',"
+             "'Unknown',1263522064,-65542,"
+             "'9010788312004066376x-6609234393368420856x');"
+             "CREATE TABLE share_version (id VARCHAR(128) primary key, data "
+             "INT);"
+             "INSERT INTO share_version VALUES('nick@chromium.org',68);"));
+  ASSERT_TRUE(connection->CommitTransaction());
+}
 
 void MigrationTest::SetUpVersion67Database(sql::Connection* connection) {
   // This is a version 67 database dump whose contents were backformed from
@@ -3561,6 +3607,23 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   ASSERT_TRUE(s.Run());
 
   // Trying to unpack this entry should signal that the DB is corrupted.
+  Directory::MetahandlesMap handles_map;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
+  Directory::KernelLoadInfo kernel_load_info;
+  ASSERT_EQ(FAILED_DATABASE_CORRUPT,
+            dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                      &kernel_load_info));
+}
+
+TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpCorruptedRootDatabase(&connection);
+
+  std::unique_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;

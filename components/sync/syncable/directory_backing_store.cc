@@ -27,6 +27,7 @@
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/syncable_columns.h"
+#include "components/sync/syncable/syncable_id.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "sql/connection.h"
 #include "sql/error_delegate_util.h"
@@ -1642,6 +1643,8 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 
 // This function checks to see if the given list of Metahandles has any nodes
 // whose PARENT_ID values refer to ID values that do not actually exist.
+// This function also checks that a root node with the correct id exists in the
+// set.
 // Returns true on success.
 bool DirectoryBackingStore::VerifyReferenceIntegrity(
     const Directory::MetahandlesMap* handles_map) {
@@ -1666,6 +1669,9 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
         return false;
       }
     }
+  }
+  if (ids_set.find(Id::GetRoot().value()) == ids_set.end()) {
+    return false;
   }
   return is_ok;
 }
