@@ -95,7 +95,10 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   enum State {
     STATE_NONE,
+    STATE_HANDLE_PROMISE,
+    STATE_HANDLE_PROMISE_COMPLETE,
     STATE_REQUEST_STREAM,
+    STATE_REQUEST_STREAM_COMPLETE,
     STATE_SET_REQUEST_PRIORITY,
     STATE_WAIT_FOR_CONFIRMATION,
     STATE_WAIT_FOR_CONFIRMATION_COMPLETE,
@@ -108,12 +111,14 @@ class NET_EXPORT_PRIVATE QuicHttpStream
     STATE_OPEN,
   };
 
-  void OnStreamReady(int rv);
   void OnIOComplete(int rv);
   void DoCallback(int rv);
 
   int DoLoop(int rv);
-  int DoStreamRequest();
+  int DoHandlePromise();
+  int DoHandlePromiseComplete(int rv);
+  int DoRequestStream();
+  int DoRequestStreamComplete(int rv);
   int DoSetRequestPriority();
   int DoWaitForConfirmation();
   int DoWaitForConfirmationComplete(int rv);
@@ -128,7 +133,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   int ReadAvailableData(IOBuffer* buf, int buf_len);
   void EnterStateSendHeaders();
-  int HandlePromise();
 
   void ResetStream();
   bool CancelPromiseIfHasBody();

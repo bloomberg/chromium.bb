@@ -111,26 +111,20 @@ void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
     stream_ = static_cast<QuicChromiumClientStream*>(stream);
     stream_->SetDelegate(this);
   }
-  // callback_ should be non-null in the case of asynchronous
+
+  // callback_ should only be non-null in the case of asynchronous
   // rendezvous; i.e. |Try()| returned QUIC_PENDING.
-  if (!callback_.is_null()) {
-    if (stream) {
-      next_state_ = STATE_OPEN;
-      stream_net_log_.AddEvent(
-          NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-          base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                     &request_info_->url));
-      session_->net_log().AddEvent(
-          NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-          base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                     &request_info_->url));
-      DoCallback(OK);
-      return;
-    }
+  if (callback_.is_null())
+    return;
+
+  if (stream) {
+    next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
+  } else {
     // rendezvous has failed so proceed as with a non-push request.
     next_state_ = STATE_REQUEST_STREAM;
-    OnIOComplete(OK);
   }
+
+  OnIOComplete(OK);
 }
 
 int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
@@ -180,40 +174,17 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-void QuicHttpStream::OnStreamReady(int rv) {
-  DCHECK(rv == OK || !stream_);
-  if (rv == OK) {
-    stream_->SetDelegate(this);
-    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
-      stream_->DisableConnectionMigration();
-    }
-    if (response_info_) {
-      // This happens in the case of a asynchronous push rendezvous
-      // that ultimately fails (e.g. vary failure).  |response_info_|
-      // non-null implies that |DoStreamRequest()| was called via
-      // |SendRequest()|.
-      next_state_ = STATE_SET_REQUEST_PRIORITY;
-      rv = DoLoop(OK);
-    }
-  } else if (!was_handshake_confirmed_) {
-    rv = ERR_QUIC_HANDSHAKE_FAILED;
-  }
-  if (rv != ERR_IO_PENDING) {
-    DoCallback(rv);
-  }
-}
-
 bool QuicHttpStream::CancelPromiseIfHasBody() {
   if (!request_body_stream_)
     return false;
-  // Method type or request with body ineligble for push.
+
+  // A request with a body is ineligble for push.
   this->push_handle_->Cancel();
   this->push_handle_ = nullptr;
-  next_state_ = STATE_REQUEST_STREAM;
   return true;
 }
 
-int QuicHttpStream::HandlePromise() {
+int QuicHttpStream::DoHandlePromise() {
   QuicAsyncStatus push_status = session_->push_promise_index()->Try(
       request_headers_, this, &this->push_handle_);
 
@@ -223,32 +194,40 @@ int QuicHttpStream::HandlePromise() {
       next_state_ = STATE_REQUEST_STREAM;
       break;
     case QUIC_SUCCESS:
-      next_state_ = STATE_OPEN;
-      if (!CancelPromiseIfHasBody()) {
-        stream_net_log_.AddEvent(
-            NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-            base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                       &request_info_->url));
-        session_->net_log().AddEvent(
-            NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-            base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                       &request_info_->url));
-        // Avoid the call to |DoLoop()| below, which would reset
-        // next_state_ to STATE_NONE.
-        return OK;
-      }
-
+      next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
       break;
     case QUIC_PENDING:
       if (!CancelPromiseIfHasBody()) {
+        next_state_ = STATE_HANDLE_PROMISE_COMPLETE;
         // Have a promise but the promised stream doesn't exist yet.
         // Still have to do validation before accepting the promised
         // stream for sure.
         return ERR_IO_PENDING;
       }
-      break;
+      next_state_ = STATE_REQUEST_STREAM;
   }
-  return DoLoop(OK);
+  return OK;
+}
+
+int QuicHttpStream::DoHandlePromiseComplete(int rv) {
+  if (rv != OK)
+    return rv;
+
+  if (CancelPromiseIfHasBody()) {
+    next_state_ = STATE_REQUEST_STREAM;
+    return OK;
+  }
+
+  next_state_ = STATE_OPEN;
+  stream_net_log_.AddEvent(
+      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                 &request_info_->url));
+  session_->net_log().AddEvent(
+      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                 &request_info_->url));
+  return OK;
 }
 
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
@@ -299,11 +278,14 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   int rv;
 
   if (found_promise_) {
-    rv = HandlePromise();
+    // TODO(rch): If this request has a body, instead of waiting for the pushed
+    // headers to arrive before canceling the push we could cancel the pushed
+    // stream now and go straight to STATE_REQUEST_STREAM.
+    next_state_ = STATE_HANDLE_PROMISE;
   } else {
     next_state_ = STATE_SET_REQUEST_PRIORITY;
-    rv = DoLoop(OK);
   }
+  rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -592,10 +574,23 @@ int QuicHttpStream::DoLoop(int rv) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
+      case STATE_HANDLE_PROMISE:
+        CHECK_EQ(OK, rv);
+        rv = DoHandlePromise();
+        break;
+      case STATE_HANDLE_PROMISE_COMPLETE:
+        CHECK_EQ(OK, rv);
+        rv = DoHandlePromiseComplete(rv);
+        break;
       case STATE_REQUEST_STREAM:
-        rv = DoStreamRequest();
+        CHECK_EQ(OK, rv);
+        rv = DoRequestStream();
+        break;
+      case STATE_REQUEST_STREAM_COMPLETE:
+        rv = DoRequestStreamComplete(rv);
         break;
       case STATE_SET_REQUEST_PRIORITY:
+        CHECK_EQ(OK, rv);
         rv = DoSetRequestPriority();
         break;
       case STATE_WAIT_FOR_CONFIRMATION:
@@ -639,22 +634,32 @@ int QuicHttpStream::DoLoop(int rv) {
   return rv;
 }
 
-int QuicHttpStream::DoStreamRequest() {
-  int rv = stream_request_.StartRequest(
+int QuicHttpStream::DoRequestStream() {
+  next_state_ = STATE_REQUEST_STREAM_COMPLETE;
+  return stream_request_.StartRequest(
       session_, &stream_,
-      base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
-  if (rv == OK) {
-    stream_->SetDelegate(this);
-    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
-      stream_->DisableConnectionMigration();
-    }
-    if (response_info_) {
-      next_state_ = STATE_SET_REQUEST_PRIORITY;
-    }
-  } else if (rv != ERR_IO_PENDING && !was_handshake_confirmed_) {
-    rv = ERR_QUIC_HANDSHAKE_FAILED;
+      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
+}
+
+int QuicHttpStream::DoRequestStreamComplete(int rv) {
+  DCHECK(rv == OK || !stream_);
+  if (rv != OK)
+    return was_handshake_confirmed_ ? rv : ERR_QUIC_HANDSHAKE_FAILED;
+
+  stream_->SetDelegate(this);
+  if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
+    stream_->DisableConnectionMigration();
   }
-  return rv;
+
+  if (response_info_) {
+    // This happens in the case of a asynchronous push rendezvous
+    // that ultimately fails (e.g. vary failure).  |response_info_|
+    // non-null implies that |DoRequestStream()| was called via
+    // |SendRequest()|.
+    next_state_ = STATE_SET_REQUEST_PRIORITY;
+  }
+
+  return OK;
 }
 
 int QuicHttpStream::DoSetRequestPriority() {
