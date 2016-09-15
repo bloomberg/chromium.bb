@@ -5265,13 +5265,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Mark non-secure origins as non-secure
       </message>
       <message name="IDS_MARK_NON_SECURE_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab.">
-        Mark non-secure origins as non-secure, or as "dubious".
+        Change the UI treatment for non-secure (HTTP) origins
       </message>
       <message name="IDS_MARK_NON_SECURE_AS_NEUTRAL">
-        Mark non-secure origins as neutral.
+        Always mark non-secure origins as neutral
       </message>
       <message name="IDS_MARK_NON_SECURE_AS_NON_SECURE">
-        Mark non-secure origins as non-secure.
+        Always mark non-secure origins as non-secure
+      </message>
+      <message name="IDS_MARK_NON_SECURE_WITH_PASSWORDS_OR_CC_AS_NON_SECURE">
+        Mark non-secure origins as non-secure when password or credit card fields are detected
       </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML

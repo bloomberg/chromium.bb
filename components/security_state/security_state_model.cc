@@ -37,7 +37,8 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   } else if (choice == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
     level = SecurityStateModel::SECURITY_ERROR;
-  } else if (group == switches::kMarkNonSecureAsNeutral) {
+  } else if (group == switches::kMarkNonSecureAsNeutral ||
+             group == switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure) {
     status = NEUTRAL;
     level = SecurityStateModel::NONE;
   } else if (group == switches::kMarkNonSecureAsNonSecure) {

@@ -11,6 +11,8 @@ namespace switches {
 const char kMarkNonSecureAs[] = "mark-non-secure-as";
 const char kMarkNonSecureAsNeutral[] = "neutral";
 const char kMarkNonSecureAsNonSecure[] = "non-secure";
+const char kMarkNonSecureWithPasswordsOrCcAsNonSecure[] =
+    "non-secure-passwords-cc";
 
 }  // namespace switches
 }  // namespace security_state

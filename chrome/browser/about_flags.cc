@@ -200,7 +200,10 @@ const FeatureEntry::Choice kMarkNonSecureAsChoices[] = {
      security_state::switches::kMarkNonSecureAsNeutral},
     {IDS_MARK_NON_SECURE_AS_NON_SECURE,
      security_state::switches::kMarkNonSecureAs,
-     security_state::switches::kMarkNonSecureAsNonSecure}};
+     security_state::switches::kMarkNonSecureAsNonSecure},
+    {IDS_MARK_NON_SECURE_WITH_PASSWORDS_OR_CC_AS_NON_SECURE,
+     security_state::switches::kMarkNonSecureAs,
+     security_state::switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure}};
 
 const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
