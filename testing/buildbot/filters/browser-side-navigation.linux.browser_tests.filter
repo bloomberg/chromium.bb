@@ -194,6 +194,7 @@
 -ServiceWorker*
 -SessionRestoreTest.RestoreForeignTab
 -SessionRestoreTest.RestoreWebUISettings
+-StartupBrowserCreatorTest.ProfilesWithoutPagesNotLaunched
 -StreamsPrivateApiTest.Abort
 -StreamsPrivateApiTest.FileURL
 -StreamsPrivateApiTest.Headers
