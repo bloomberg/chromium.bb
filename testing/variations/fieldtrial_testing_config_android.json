@@ -263,10 +263,10 @@
             "group_name": "Enabled"
         }
     ],
-    "NonValidatingReloadOnRefreshContent": [
+    "NonValidatingReloadOnNormalReload": [
         {
             "enable_features": [
-                "NonValidatingReloadOnRefreshContent"
+                "NonValidatingReloadOnNormalReload"
             ],
             "group_name": "Enabled"
         }
