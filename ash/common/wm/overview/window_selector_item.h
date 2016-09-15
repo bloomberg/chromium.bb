@@ -18,6 +18,10 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
 
+namespace gfx {
+class SlideAnimation;
+}
+
 namespace views {
 class ImageButton;
 }
@@ -200,6 +204,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // Fades out a window caption when exiting overview mode.
   void FadeOut(std::unique_ptr<views::Widget> widget);
+
+  // Allows a test to directly set animation state.
+  gfx::SlideAnimation* GetBackgroundViewAnimation();
 
   static bool hide_header() { return use_mask_ || use_shape_; }
 

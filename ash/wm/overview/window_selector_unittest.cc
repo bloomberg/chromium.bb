@@ -60,6 +60,7 @@
 #include "ui/display/manager/display_layout.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -271,6 +272,13 @@ class WindowSelectorTest
     if (iter == windows.end())
       return nullptr;
     return *iter;
+  }
+
+  gfx::SlideAnimation* GetBackgroundViewAnimationForWindow(
+      int grid_index,
+      aura::Window* window) {
+    return GetWindowItemForWindow(grid_index, window)
+        ->GetBackgroundViewAnimation();
   }
 
   // Selects |window| in the active overview session by cycling through all
@@ -1283,6 +1291,38 @@ TEST_P(WindowSelectorTest, DISABLED_MinimizedWindowVisibility) {
     ToggleOverview();
     EXPECT_FALSE(window1->IsVisible());
     EXPECT_FALSE(window1->layer()->GetTargetVisibility());
+  }
+}
+
+// Tests that it is safe to destroy a window while the overview header animation
+// is still active. See http://crbug.com/646350.
+TEST_P(WindowSelectorTest, SafeToDestroyWindowDuringAnimation) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  {
+    // Quickly enter and exit overview mode to activate header animations.
+    std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+    ui::ScopedAnimationDurationScaleMode test_duration_mode(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+    ToggleOverview();
+    EXPECT_TRUE(IsSelecting());
+
+    gfx::SlideAnimation* animation =
+        GetBackgroundViewAnimationForWindow(0, window.get());
+    if (ash::MaterialDesignController::IsOverviewMaterial())
+      ASSERT_NE(nullptr, animation);
+    ToggleOverview();
+    EXPECT_FALSE(IsSelecting());
+    if (animation)
+      EXPECT_TRUE(animation->is_animating());
+
+    // Close the window while the overview header animation is active.
+    window.reset();
+
+    // Progress animation to the end - should not crash.
+    if (animation) {
+      animation->SetCurrentValue(1.0);
+      animation->Reset(1.0);
+    }
   }
 }
 

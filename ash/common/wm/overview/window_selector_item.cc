@@ -33,6 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -197,7 +198,10 @@ class WindowSelectorItem::RoundedContainerView
 
   ~RoundedContainerView() override { StopObservingLayerAnimations(); }
 
-  void OnItemRestored() { item_ = nullptr; }
+  void OnItemRestored() {
+    item_ = nullptr;
+    item_window_ = nullptr;
+  }
 
   // Starts observing layer animations so that actions can be taken when
   // particular animations (opacity) complete. It should only be called once
@@ -215,6 +219,9 @@ class WindowSelectorItem::RoundedContainerView
     layer_->GetAnimator()->RemoveObserver(this);
     layer_ = nullptr;
   }
+
+  // Used by tests to set animation state.
+  gfx::SlideAnimation* animation() { return animation_.get(); }
 
   void set_color(SkColor target_color) { target_color_ = target_color; }
 
@@ -894,6 +901,10 @@ void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
   window_selector_->delegate()->AddDelayedAnimationObserver(
       std::move(observer));
   widget_ptr->SetOpacity(0.f);
+}
+
+gfx::SlideAnimation* WindowSelectorItem::GetBackgroundViewAnimation() {
+  return background_view_ ? background_view_->animation() : nullptr;
 }
 
 }  // namespace ash
