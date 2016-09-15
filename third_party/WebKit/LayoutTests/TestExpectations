@@ -755,6 +755,8 @@ crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ong
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 
+crbug.com/647470 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Pass Failure ]
+
 # The following tests need to be updated to work with scroll anchoring (bit.ly/scroll-anchoring)
 crbug.com/624534 inspector/console/console-viewport-selection.html [ Failure ]
 crbug.com/624534 inspector/console/console-viewport-stick-to-bottom.html [ Failure ]
