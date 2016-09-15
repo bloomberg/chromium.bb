@@ -52,7 +52,7 @@ function AudioPlayer(container) {
   var STORAGE_PREFIX = 'audioplayer-';
   var KEYS_TO_SAVE_STATES =
       ['shuffle',
-       'repeat',
+       'repeat-mode',
        'volume',
        'playlist-expanded',
        'track-info-expanded'];

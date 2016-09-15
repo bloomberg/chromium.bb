@@ -99,6 +99,7 @@
           '../elements/track_info_panel.js',
           '../elements/track_list.js',
           '../elements/audio_player.js',
+          '../elements/repeat_button.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_extensions.js',

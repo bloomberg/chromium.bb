@@ -121,10 +121,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioAutoAdvanceDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatSingleFileDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatSingleFileDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatMultipleFileDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeSingleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeSingleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatOneModeSingleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeMultipleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeMultipleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "audioRepeatOneModeMultipleFileDrive")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)

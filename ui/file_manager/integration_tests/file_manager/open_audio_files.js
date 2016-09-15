@@ -232,7 +232,7 @@ function audioAutoAdvance(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatSingleFile(path) {
+function audioRepeatAllModeSingleFile(path) {
   var appId;
   var audioAppId;
 
@@ -268,7 +268,7 @@ function audioRepeatSingleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick',
           audioAppId,
-          ['audio-player /deep/ files-icon-button.repeat'],
+          ['audio-player /deep/ repeat-button .no-repeat'],
           this.next);
     },
     function(result) {
@@ -300,7 +300,7 @@ function audioRepeatSingleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioNoRepeatSingleFile(path) {
+function audioNoRepeatModeSingleFile(path) {
   var appId;
   var audioAppId;
 
@@ -354,7 +354,82 @@ function audioNoRepeatSingleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatMultipleFile(path) {
+function audioRepeatOneModeSingleFile(path) {
+  var appId;
+  var audioAppId;
+
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, path, this.next);
+    },
+    // Select the song.
+    function(results) {
+      appId = results.windowId;
+
+      remoteCall.callRemoteTestUtil(
+          'openFile', appId, ['Beautiful Song.ogg'], this.next);
+    },
+    // Wait for the audio player window.
+    function(result) {
+      chrome.test.assertTrue(result);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
+    },
+    // Wait for the changes of the player status.
+    function(inAppId) {
+      audioAppId = inAppId;
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
+          then(this.next);
+    },
+    // Get the source file name.
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
+              'external' + path + '/Beautiful%20Song.ogg',
+          element.attributes.currenttrackurl);
+
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ repeat-button .no-repeat'],
+          this.next);
+    },
+    function() {
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ repeat-button .repeat-all'],
+          this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result, 'Failed to click the repeat button');
+
+      var selector = 'audio-player[playing][playcount="1"]';
+      audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
+    },
+    // Get the source file name.
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
+              'external' + path + '/Beautiful%20Song.ogg',
+          element.attributes.currenttrackurl);
+
+      // Close window
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+    },
+    // Wait for the audio player.
+    function(result) {
+      chrome.test.assertTrue(result);
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
+ * Tests if the audio player play the next file after the current file.
+ *
+ * @param {string} path Directory path to be tested.
+ */
+function audioRepeatAllModeMultipleFile(path) {
   var appId;
   var audioAppId;
 
@@ -404,7 +479,7 @@ function audioRepeatMultipleFile(path) {
       audioPlayerApp.callRemoteTestUtil(
           'fakeMouseClick',
           audioAppId,
-          ['audio-player /deep/ files-icon-button.repeat'],
+          ['audio-player /deep/ repeat-button .no-repeat'],
           this.next);
     },
     function(result) {
@@ -439,7 +514,7 @@ function audioRepeatMultipleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioNoRepeatMultipleFile(path) {
+function audioNoRepeatModeMultipleFile(path) {
   var appId;
   var audioAppId;
 
@@ -503,6 +578,95 @@ function audioNoRepeatMultipleFile(path) {
   ]);
 }
 
+/**
+ * Tests if the audio player play the next file after the current file.
+ *
+ * @param {string} path Directory path to be tested.
+ */
+function audioRepeatOneModeMultipleFile(path) {
+  var appId;
+  var audioAppId;
+
+  var expectedFilesBefore =
+      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
+          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET);
+  var expectedFilesAfter =
+      expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]);
+
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, path, this.next);
+    },
+    // Select the song.
+    function(results) {
+      appId = results.windowId;
+
+      // Add an additional audio file.
+      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForFiles(appId, expectedFilesAfter).then(this.next);
+    },
+    function(/* no result */) {
+      remoteCall.callRemoteTestUtil(
+          'openFile', appId, ['newly added file.ogg'], this.next);
+    },
+    // Wait for the audio player window.
+    function(result) {
+      chrome.test.assertTrue(result);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
+    },
+    // Wait for the changes of the player status.
+    function(inAppId) {
+      audioAppId = inAppId;
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
+          then(this.next);
+    },
+    // Get the source file name.
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
+              'external' + path + '/newly%20added%20file.ogg',
+          element.attributes.currenttrackurl);
+
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ repeat-button .no-repeat'],
+          this.next);
+    },
+    function() {
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ repeat-button .repeat-all'],
+          this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result, 'Failed to click the repeat button');
+
+      var selector = 'audio-player[playing][playcount="1"]';
+      audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
+    },
+    // Get the source file name.
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
+              'external' + path + '/newly%20added%20file.ogg',
+          element.attributes.currenttrackurl);
+
+      // Close window
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+    },
+    // Wait for the audio player.
+    function(result) {
+      chrome.test.assertTrue(result);
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
 testcase.audioOpenDownloads = function() {
   audioOpen(RootPath.DOWNLOADS);
 };
@@ -515,20 +679,28 @@ testcase.audioAutoAdvanceDrive = function() {
   audioAutoAdvance(RootPath.DRIVE);
 };
 
-testcase.audioRepeatSingleFileDrive = function() {
-  audioRepeatSingleFile(RootPath.DRIVE);
+testcase.audioRepeatAllModeSingleFileDrive = function() {
+  audioRepeatAllModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioNoRepeatSingleFileDrive = function() {
-  audioNoRepeatSingleFile(RootPath.DRIVE);
+testcase.audioNoRepeatModeSingleFileDrive = function() {
+  audioNoRepeatModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioRepeatMultipleFileDrive = function() {
-  audioRepeatMultipleFile(RootPath.DRIVE);
+testcase.audioRepeatOneModeSingleFileDrive = function() {
+  audioRepeatOneModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioNoRepeatMultipleFileDrive = function() {
-  audioNoRepeatMultipleFile(RootPath.DRIVE);
+testcase.audioRepeatAllModeMultipleFileDrive = function() {
+  audioRepeatAllModeMultipleFile(RootPath.DRIVE);
+};
+
+testcase.audioNoRepeatModeMultipleFileDrive = function() {
+  audioNoRepeatModeMultipleFile(RootPath.DRIVE);
+};
+
+testcase.audioRepeatOneModeMultipleFileDrive = function() {
+  audioRepeatOneModeMultipleFile(RootPath.DRIVE);
 };
 
 })();

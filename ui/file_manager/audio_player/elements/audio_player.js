@@ -41,10 +41,11 @@ Polymer({
     },
 
     /**
-     * Whether the repeat button is ON.
+     * What mode the repeat button idicates.
+     * repeat-modes can be "no-repeat", "repeat-all", "repeat-one".
      */
-    repeat: {
-      type: Boolean,
+    repeatMode: {
+      type: String,
       notify: true
     },
 
@@ -223,7 +224,13 @@ Polymer({
    */
   onAudioEnded: function() {
     this.playcount++;
-    this.advance_(true /* forward */, this.repeat);
+
+    if(this.repeatMode === "repeat-one") {
+      this.playing = true;
+      this.$.audio.currentTime = 0;
+      return;
+    }
+    this.advance_(true /* forward */, this.repeatMode === "repeat-all");
   },
 
   /**
@@ -231,7 +238,12 @@ Polymer({
    * This handler is registered in this.ready().
    */
   onAudioError: function() {
-    this.scheduleAutoAdvance_(true /* forward */, this.repeat);
+    if(this.repeatMode === "repeat-one") {
+      this.playing = false;
+      return;
+    }
+    this.scheduleAutoAdvance_(
+        true /* forward */, this.repeatMode === "repeat-all");
   },
 
   /**
@@ -267,7 +279,8 @@ Polymer({
   /**
    * Goes to the previous or the next track.
    * @param {boolean} forward True if next, false if previous.
-   * @param {boolean} repeat True if repeat-mode is enabled. False otherwise.
+   * @param {boolean} repeat True if repeat-mode is "repeat-all". False
+   *     "no-repeat".
    * @private
    */
   advance_: function(forward, repeat) {

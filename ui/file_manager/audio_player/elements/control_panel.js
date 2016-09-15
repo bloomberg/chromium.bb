@@ -77,11 +77,12 @@
       },
 
       /**
-       * Whether the repeat button is ON.
+       * What mode the repeat button idicates.
+       * repeat-modes can be "no-repeat", "repeat-all", "repeat-one".
        */
-      repeat: {
-        type: Boolean,
-        value: false,
+      repeatMode: {
+        type: String,
+        value: "no-repeat",
         notify: true
       },
 

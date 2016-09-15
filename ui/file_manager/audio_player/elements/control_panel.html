@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
+<link rel="import" href="repeat_button.html">
 
 <dom-module id="control-panel">
   <link rel="import" type="css" href="control_panel.css">
@@ -21,12 +22,12 @@
             active="{{shuffle}}">
         </files-icon-button>
 
-        <!-- Repeat toggle button in the bottom line. -->
-        <files-icon-button toggles
+        <!-- RepeatMode toggle button in the bottom line. -->
+        <repeat-button
             id="repeat"
-            class="repeat media-button toggle"
-            active="{{repeat}}">
-        </files-icon-button>
+            class="repeat-mode media-button"
+            repeat-mode="{{repeatMode}}">
+        </repeat-button>
 
         <!-- Prev button in the bottom line. -->
         <files-icon-button

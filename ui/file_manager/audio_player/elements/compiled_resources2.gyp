@@ -12,6 +12,10 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
+#      'target_name': 'repeat_button',
+#      'includes': ['../../compile_js2.gypi'],
+#    },
+#    {
 #      'target_name': 'track_info_panel',
 #      'includes': ['../../compile_js2.gypi'],
 #    },

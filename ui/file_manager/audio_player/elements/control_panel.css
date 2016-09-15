@@ -141,16 +141,9 @@ paper-slider.disabled {
   pointer-events: auto;
 }
 
-.media-button.repeat {
+.media-button.repeat-mode {
   margin-left: 8px;
   margin-right: 0;
-}
-
-.media-button.repeat {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_repeat.png) 1x,
-      url(../assets/200/player_button_repeat.png) 2x);
-  pointer-events: auto;
 }
 
 .media-button.play {
