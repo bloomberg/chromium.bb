@@ -35,7 +35,7 @@ public class SeparateTaskCustomTabActivity extends CustomTabActivity {
     }
 
     @Override
-    public void finishAndClose() {
+    protected void handleFinishAndClose() {
         ApiCompatibilityUtils.finishAndRemoveTask(this);
     }
 }

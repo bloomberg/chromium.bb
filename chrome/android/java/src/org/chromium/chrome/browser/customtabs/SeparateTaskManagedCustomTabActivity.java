@@ -88,7 +88,7 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
     }
 
     @Override
-    public void finishAndClose() {
+    protected void handleFinishAndClose() {
         Intent intent = new Intent(getIntent());
         intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
