@@ -99,10 +99,12 @@ class MediaPipelineImpl {
   // Cached here because CMA pipeline backend does not support rate == 0,
   // which is emulated by pausing the backend.
   float playback_rate_;
+
+  // Since av pipeline still need to access device components in their
+  // destructor, it's important to delete them first.
   std::unique_ptr<MediaPipelineBackend> media_pipeline_backend_;
   std::unique_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
   MediaPipelineBackend::VideoDecoder* video_decoder_;
-
   std::unique_ptr<AudioPipelineImpl> audio_pipeline_;
   std::unique_ptr<VideoPipelineImpl> video_pipeline_;
   std::unique_ptr<FlushTask> pending_flush_task_;

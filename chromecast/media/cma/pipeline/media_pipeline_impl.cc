@@ -103,21 +103,10 @@ MediaPipelineImpl::~MediaPipelineImpl() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  weak_factory_.InvalidateWeakPtrs();
-
   if (backend_state_ != BACKEND_STATE_UNINITIALIZED &&
       backend_state_ != BACKEND_STATE_INITIALIZED)
     metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Ended");
-
-  // Since av pipeline still need to access device components in their
-  // destructor, it's important to delete them first.
-  video_pipeline_.reset();
-  audio_pipeline_.reset();
-  audio_decoder_.reset();
-  media_pipeline_backend_.reset();
-  if (!client_.pipeline_backend_destroyed_cb.is_null())
-    client_.pipeline_backend_destroyed_cb.Run();
 }
 
 void MediaPipelineImpl::Initialize(
@@ -126,9 +115,7 @@ void MediaPipelineImpl::Initialize(
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   audio_decoder_.reset();
-  media_pipeline_backend_.reset(media_pipeline_backend.release());
-  if (!client_.pipeline_backend_created_cb.is_null())
-    client_.pipeline_backend_created_cb.Run();
+  media_pipeline_backend_ = std::move(media_pipeline_backend);
 
   if (load_type == kLoadTypeURL || load_type == kLoadTypeMediaSource) {
     base::TimeDelta low_threshold(kLowBufferThresholdURL);
