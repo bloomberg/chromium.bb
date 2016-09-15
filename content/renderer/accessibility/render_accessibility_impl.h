@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Handlers for messages from the browser to the renderer.
   void OnDoDefaultAction(int acc_obj_id);
-  void OnEventsAck();
+  void OnEventsAck(int ack_token);
   void OnFatalError();
   void OnHitTest(gfx::Point point);
   void OnSetAccessibilityFocus(int acc_obj_id);
@@ -170,6 +170,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Whether we are processing a client-initiated action.
   bool during_action_;
+
+  // Token to send with event messages so we know when they're acknowledged.
+  int ack_token_;
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;

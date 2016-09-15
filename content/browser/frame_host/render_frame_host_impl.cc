@@ -1826,12 +1826,12 @@ RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params,
-    int reset_token) {
+    int reset_token, int ack_token) {
   // Don't process this IPC if either we're waiting on a reset and this
   // IPC doesn't have the matching token ID, or if we're not waiting on a
   // reset but this message includes a reset token.
   if (accessibility_reset_token_ != reset_token) {
-    Send(new AccessibilityMsg_Events_ACK(routing_id_));
+    Send(new AccessibilityMsg_Events_ACK(routing_id_, ack_token));
     return;
   }
   accessibility_reset_token_ = 0;
@@ -1901,7 +1901,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   }
 
   // Always send an ACK or the renderer can be in a bad state.
-  Send(new AccessibilityMsg_Events_ACK(routing_id_));
+  Send(new AccessibilityMsg_Events_ACK(routing_id_, ack_token));
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(

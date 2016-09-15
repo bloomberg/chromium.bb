@@ -75,7 +75,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     const IPC::Message* message =
         sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
     ASSERT_TRUE(message);
-    std::tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
+    std::tuple<std::vector<AccessibilityHostMsg_EventParams>, int, int> param;
     AccessibilityHostMsg_Events::Read(message, &param);
     *param_list = std::get<0>(param);
   }

@@ -41,6 +41,12 @@ using blink::WebScopedAXContext;
 using blink::WebSettings;
 using blink::WebView;
 
+namespace {
+// The next token to use to distinguish between ack events sent to this
+// RenderAccessibilityImpl and a previous instance.
+static int g_next_ack_token = 1;
+}
+
 namespace content {
 
 // Cap the number of nodes returned in an accessibility
@@ -81,6 +87,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
       reset_token_(0),
       during_action_(false),
       weak_factory_(this) {
+  ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);
@@ -363,7 +370,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
              << "\n" << event_msg.update.ToString();
   }
 
-  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_));
+  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_,
+                                       ack_token_));
   reset_token_ = 0;
 
   if (had_layout_complete_messages)
@@ -443,7 +451,11 @@ void RenderAccessibilityImpl::OnDoDefaultAction(int acc_obj_id) {
   obj.performDefaultAction();
 }
 
-void RenderAccessibilityImpl::OnEventsAck() {
+void RenderAccessibilityImpl::OnEventsAck(int ack_token) {
+  // Ignore acks intended for a different or previous instance.
+  if (ack_token_ != ack_token)
+    return;
+
   DCHECK(ack_pending_);
   ack_pending_ = false;
   SendPendingAccessibilityEvents();

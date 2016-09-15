@@ -708,7 +708,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDispatchLoad();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,
-      int reset_token);
+      int reset_token,
+      int ack_token);
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
