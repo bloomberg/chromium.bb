@@ -1671,6 +1671,7 @@ test("blink_platform_unittests") {
     "graphics/filters/FilterOperationsTest.cpp",
     "graphics/filters/ImageFilterBuilderTest.cpp",
     "graphics/gpu/DrawingBufferTest.cpp",
+    "graphics/gpu/SharedGpuContextTest.cpp",
     "graphics/gpu/WebGLImageConversionTest.cpp",
     "graphics/paint/DisplayItemClientTest.cpp",
     "graphics/paint/DisplayItemListTest.cpp",
