@@ -453,7 +453,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         LayoutSize previousSize = size();
 
         updateLogicalWidth();
-        bool logicalHeightWasIndefinite = !hasDefiniteLogicalHeight();
+        m_hasDefiniteLogicalHeight = hasDefiniteLogicalHeight();
 
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
@@ -475,10 +475,10 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
         // 2- Next, the track sizing algorithm resolves the sizes of the grid rows, using the
         // grid column sizes calculated in the previous step.
-        if (logicalHeightWasIndefinite)
-            computeIntrinsicLogicalHeight(sizingData);
-        else
+        if (cachedHasDefiniteLogicalHeight())
             computeTrackSizesForDirection(ForRows, sizingData, availableLogicalHeight(ExcludeMarginBorderPadding));
+        else
+            computeIntrinsicLogicalHeight(sizingData);
         setLogicalHeight(computeTrackBasedLogicalHeight(sizingData) + borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
         LayoutUnit oldClientAfterEdge = clientLogicalBottom();
@@ -487,7 +487,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         // The above call might have changed the grid's logical height depending on min|max height restrictions.
         // Update the sizes of the rows whose size depends on the logical height (also on definite|indefinite sizes).
         LayoutUnit availableSpaceForRows = contentLogicalHeight();
-        if (logicalHeightWasIndefinite)
+        if (!cachedHasDefiniteLogicalHeight())
             computeTrackSizesForDirection(ForRows, sizingData, availableSpaceForRows);
 
         // 3- If the min-content contribution of any grid items have changed based on the row
@@ -929,7 +929,7 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto>.
     if (minTrackBreadth.hasPercentage() || maxTrackBreadth.hasPercentage()) {
         // For the inline axis this only happens when we're computing the intrinsic sizes (AvailableSpaceIndefinite).
-        if ((sizingOperation == IntrinsicSizeComputation) || (direction == ForRows && !hasDefiniteLogicalHeight())) {
+        if ((sizingOperation == IntrinsicSizeComputation) || (direction == ForRows && !cachedHasDefiniteLogicalHeight())) {
             if (minTrackBreadth.hasPercentage())
                 minTrackBreadth = Length(Auto);
             if (maxTrackBreadth.hasPercentage())
@@ -2670,6 +2670,12 @@ void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     if (!m_gridItemArea.isEmpty())
         GridPainter(*this).paintChildren(paintInfo, paintOffset);
+}
+
+bool LayoutGrid::cachedHasDefiniteLogicalHeight() const
+{
+    SECURITY_DCHECK(m_hasDefiniteLogicalHeight);
+    return m_hasDefiniteLogicalHeight.value();
 }
 
 } // namespace blink

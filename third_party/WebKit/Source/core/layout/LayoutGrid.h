@@ -220,6 +220,8 @@ private:
     bool isOrthogonalChild(const LayoutBox&) const;
     GridTrackSizingDirection flowAwareDirectionForChild(const LayoutBox&, GridTrackSizingDirection) const;
 
+    bool cachedHasDefiniteLogicalHeight() const;
+
     typedef Vector<Vector<GridCell>> GridRepresentation;
     GridRepresentation m_grid;
     bool m_gridIsDirty;
@@ -245,6 +247,8 @@ private:
 
     std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyColumns { nullptr };
     std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyRows { nullptr };
+
+    Optional<bool> m_hasDefiniteLogicalHeight;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());
