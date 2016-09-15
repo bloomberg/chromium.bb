@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_ui.h"
 
-#include "chrome/browser/profiles/profile.h"
+// #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/md_feedback/md_feedback_webui_message_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -48,6 +49,9 @@ content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
   html_source->AddLocalizedString("sendSystemInfoLabel",
                                   IDS_MD_FEEDBACK_SEND_SYSTEM_INFO_LABEL);
 
+  // File resources.
+  html_source->AddResourcePath("feedback.js", IDR_MD_FEEDBACK_FEEDBACK_JS);
+
   // Polymer resources.
   html_source->AddResourcePath("feedback_container.html",
         IDR_MD_FEEDBACK_FEEDBACK_CONTAINER_HTML);
@@ -62,12 +66,13 @@ content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
 }  // namespace
 
 MdFeedbackUI::MdFeedbackUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
+    : content::WebUIController(web_ui), profile_(Profile::FromWebUI(web_ui)) {
   // Set up the chrome://feedback data html_source.
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
-      CreateMdFeedbackUIHTMLSource(profile);
-  content::WebUIDataSource::Add(profile, html_source);
+      CreateMdFeedbackUIHTMLSource(profile_);
+  content::WebUIDataSource::Add(profile_, html_source);
+
+  web_ui->AddMessageHandler(new MdFeedbackWebUIMessageHandler(this));
 }
 
 MdFeedbackUI::~MdFeedbackUI() {}

@@ -2585,6 +2585,8 @@ split_static_library("browser") {
       "download/download_shelf.h",
       "download/download_shelf_context_menu.cc",
       "download/download_shelf_context_menu.h",
+      "feedback/feedback_dialog_utils.cc",
+      "feedback/feedback_dialog_utils.h",
       "feedback/feedback_profile_observer.cc",
       "feedback/feedback_profile_observer.h",
       "feedback/show_feedback_page.cc",

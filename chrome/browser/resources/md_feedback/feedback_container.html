@@ -20,8 +20,8 @@
     </div>
     <div>
       <paper-textarea label="$i18n{openEndedLabel}"></paper-textarea>
-      <paper-input label="$i18n{urlLabel}"></paper-input>
-      <paper-input label="$i18n{emailLabel}"></paper-input>
+      <paper-input label="$i18n{urlLabel}" placeholder="[[url]]"></paper-input>
+      <paper-input label="$i18n{emailLabel}" placeholder="[[email]]"></paper-input>
     </div>
     <div>
       <paper-checkbox>$i18n{includeScreenshotLabel}</paper-checkbox>
@@ -30,7 +30,7 @@
       <paper-checkbox>$i18n{sendSystemInfoLabel}</paper-checkbox>
     </div>
     <div>
-      <span>[[getPrivacyNote_()]]</span>
+      <span id="privacyNote"></span>
     </div>
     <div>
       <paper-button>$i18n{cancelButton}</paper-button>

@@ -6,18 +6,26 @@
 #define CHROME_BROWSER_UI_WEBUI_MD_FEEDBACK_MD_FEEDBACK_UI_H_
 
 #include "base/macros.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
+class MdFeedbackWebUIMessageHandler;
+
 // The WebUI for chrome://feedback.
 class MdFeedbackUI : public content::WebUIController {
  public:
   explicit MdFeedbackUI(content::WebUI* web_ui);
   ~MdFeedbackUI() override;
+
+  Profile* profile() { return profile_; }
+
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(MdFeedbackUI);
 };
 

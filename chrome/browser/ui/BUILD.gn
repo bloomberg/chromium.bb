@@ -914,6 +914,8 @@ split_static_library("ui") {
       "webui/md_feedback/md_feedback_dialog_controller.h",
       "webui/md_feedback/md_feedback_ui.cc",
       "webui/md_feedback/md_feedback_ui.h",
+      "webui/md_feedback/md_feedback_webui_message_handler.cc",
+      "webui/md_feedback/md_feedback_webui_message_handler.h",
       "webui/md_history_ui.cc",
       "webui/md_history_ui.h",
       "webui/ntp/app_launcher_handler.cc",

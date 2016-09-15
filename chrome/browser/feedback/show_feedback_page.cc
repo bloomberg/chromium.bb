@@ -4,41 +4,13 @@
 
 #include <string>
 
-#include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
+#include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_dialog_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/signin/core/account_id/account_id.h"
-#include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
-
-namespace {
-
-GURL GetTargetTabUrl(int session_id, int index) {
-  Browser* browser = chrome::FindBrowserWithID(session_id);
-  // Sanity checks.
-  if (!browser || index >= browser->tab_strip_model()->count())
-    return GURL();
-
-  if (index >= 0) {
-    content::WebContents* target_tab =
-        browser->tab_strip_model()->GetWebContentsAt(index);
-    if (target_tab)
-      return target_tab->GetURL();
-  }
-
-  return GURL();
-}
-
-}  // namespace
 
 namespace chrome {
 
@@ -51,34 +23,11 @@ void ShowFeedbackPage(Browser* browser,
                                browser->tab_strip_model()->active_index());
   }
 
-  Profile* profile = NULL;
-  if (browser) {
-    profile = browser->profile();
-  } else {
-    profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-  }
+  Profile* profile = GetFeedbackProfile(browser);
   if (!profile) {
     LOG(ERROR) << "Cannot invoke feedback: No profile found!";
     return;
   }
-
-  // We do not want to launch on an OTR profile.
-  profile = profile->GetOriginalProfile();
-  DCHECK(profile);
-
-#if defined(OS_CHROMEOS)
-  // Obtains the display profile ID on which the Feedback window should show.
-  chrome::MultiUserWindowManager* const window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  const AccountId display_account_id =
-      window_manager && browser
-          ? window_manager->GetUserPresentingWindow(
-                browser->window()->GetNativeWindow())
-          : EmptyAccountId();
-  profile = display_account_id.is_valid()
-                ? multi_user_util::GetProfileFromAccountId(display_account_id)
-                : profile;
-#endif
 
   if (::switches::MdFeedbackEnabled()) {
     MdFeedbackDialogController::GetInstance()->Show(profile);
