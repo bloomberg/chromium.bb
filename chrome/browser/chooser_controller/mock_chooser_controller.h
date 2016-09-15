@@ -14,6 +14,12 @@
 
 class MockChooserController : public ChooserController {
  public:
+  enum ConnectedPairedStatus {
+    NONE = 0,
+    CONNECTED = 1 << 0,
+    PAIRED = 1 << 1,
+  };
+
   explicit MockChooserController(content::RenderFrameHost* owner);
   ~MockChooserController() override;
 
@@ -24,6 +30,8 @@ class MockChooserController : public ChooserController {
   size_t NumOptions() const override;
   int GetSignalStrengthLevel(size_t index) const override;
   base::string16 GetOption(size_t index) const override;
+  bool IsConnected(size_t index) const override;
+  bool IsPaired(size_t index) const override;
   base::string16 GetStatus() const override;
   MOCK_METHOD0(RefreshOptions, void());
   MOCK_METHOD1(Select, void(size_t index));
@@ -36,13 +44,15 @@ class MockChooserController : public ChooserController {
   void OnDiscoveryStateChanged(content::BluetoothChooser::DiscoveryState state);
 
   void OptionAdded(const base::string16& option_name,
-                   int signal_strength_level);
+                   int signal_strength_level,
+                   int connected_paired_status);
   void OptionRemoved(const base::string16& option_name);
   void OptionUpdated(const base::string16& previous_option_name,
                      const base::string16& new_option_name,
-                     int new_signal_strengh_level);
+                     int new_signal_strengh_level,
+                     int new_connected_paired_status);
 
-  static const int kNoImage;
+  static const int kNoSignalStrengthLevelImage;
   static const int kSignalStrengthLevel0Bar;
   static const int kSignalStrengthLevel1Bar;
   static const int kSignalStrengthLevel2Bar;
@@ -55,6 +65,8 @@ class MockChooserController : public ChooserController {
   struct OptionInfo {
     base::string16 name;
     int signal_strength_level;
+    // This value is the '|' of ConnectedPairedStatus values.
+    int connected_paired_status;
   };
 
   std::vector<OptionInfo> options_;

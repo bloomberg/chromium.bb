@@ -206,6 +206,12 @@ void WebBluetoothServiceImpl::SetClientConnectionErrorHandler(
   binding_.set_connection_error_handler(closure);
 }
 
+bool WebBluetoothServiceImpl::IsDevicePaired(
+    const std::string& device_address) {
+  return allowed_devices_map_.GetDeviceId(GetOrigin(), device_address) !=
+         nullptr;
+}
+
 void WebBluetoothServiceImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   if (navigation_handle->HasCommitted() &&

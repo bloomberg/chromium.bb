@@ -17,6 +17,7 @@ action("aggregate_vector_icons") {
     "bar_close.1x.icon",
     "bar_close.icon",
     "blocked_badge.icon",
+    "bluetooth_connected.icon",
     "browser_tools.icon",
     "browser_tools_error.icon",
     "browser_tools_update.icon",

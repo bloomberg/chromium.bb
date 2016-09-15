@@ -44,6 +44,16 @@ base::string16 MockChooserController::GetOption(size_t index) const {
   return options_[index].name;
 }
 
+bool MockChooserController::IsConnected(size_t index) const {
+  return options_[index].connected_paired_status &
+         ConnectedPairedStatus::CONNECTED;
+}
+
+bool MockChooserController::IsPaired(size_t index) const {
+  return options_[index].connected_paired_status &
+         ConnectedPairedStatus::PAIRED;
+}
+
 base::string16 MockChooserController::GetStatus() const {
   return status_text_;
 }
@@ -98,8 +108,10 @@ void MockChooserController::OnDiscoveryStateChanged(
 }
 
 void MockChooserController::OptionAdded(const base::string16& option_name,
-                                        int signal_strength_level) {
-  options_.push_back({option_name, signal_strength_level});
+                                        int signal_strength_level,
+                                        int connected_paired_status) {
+  options_.push_back(
+      {option_name, signal_strength_level, connected_paired_status});
   if (view())
     view()->OnOptionAdded(options_.size() - 1);
 }
@@ -121,20 +133,22 @@ void MockChooserController::OptionRemoved(const base::string16& option_name) {
 void MockChooserController::OptionUpdated(
     const base::string16& previous_option_name,
     const base::string16& new_option_name,
-    int new_signal_strength_level) {
+    int new_signal_strength_level,
+    int new_connected_paired_status) {
   auto it = std::find_if(options_.begin(), options_.end(),
                          [&previous_option_name](const OptionInfo& option) {
                            return option.name == previous_option_name;
                          });
 
   if (it != options_.end()) {
-    *it = {new_option_name, new_signal_strength_level};
+    *it = {new_option_name, new_signal_strength_level,
+           new_connected_paired_status};
     if (view())
       view()->OnOptionUpdated(it - options_.begin());
   }
 }
 
-const int MockChooserController::kNoImage = -1;
+const int MockChooserController::kNoSignalStrengthLevelImage = -1;
 const int MockChooserController::kSignalStrengthLevel0Bar = 0;
 const int MockChooserController::kSignalStrengthLevel1Bar = 1;
 const int MockChooserController::kSignalStrengthLevel2Bar = 2;

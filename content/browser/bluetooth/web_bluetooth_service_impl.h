@@ -61,6 +61,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // Sets the connection error handler for WebBluetoothServiceImpl's Binding.
   void SetClientConnectionErrorHandler(base::Closure closure);
 
+  // Returns whether the device is paired with the |render_frame_host_|'s
+  // GetLastCommittedOrigin().
+  bool IsDevicePaired(const std::string& device_address);
+
  private:
   friend class FrameConnectedBluetoothDevicesTest;
   typedef base::Callback<void(device::BluetoothDevice*)>

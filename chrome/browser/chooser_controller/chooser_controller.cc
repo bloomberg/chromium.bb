@@ -58,3 +58,11 @@ bool ChooserController::ShouldShowIconBeforeText() const {
 int ChooserController::GetSignalStrengthLevel(size_t index) const {
   return -1;
 }
+
+bool ChooserController::IsConnected(size_t index) const {
+  return false;
+}
+
+bool ChooserController::IsPaired(size_t index) const {
+  return false;
+}

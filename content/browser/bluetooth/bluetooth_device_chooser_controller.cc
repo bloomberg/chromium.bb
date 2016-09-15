@@ -352,9 +352,8 @@ void BluetoothDeviceChooserController::AddFilteredDevice(
     base::Optional<int8_t> rssi = device.GetInquiryRSSI();
     chooser_->AddOrUpdateDevice(
         device.GetAddress(), !!device.GetName() /* should_update_name */,
-        device.GetNameForDisplay(),
-        // TODO(http://crbug.com/543466): Show connection and paired status.
-        false /* is_gatt_connected */, false /* is_paired */,
+        device.GetNameForDisplay(), device.IsGattConnected(),
+        web_bluetooth_service_->IsDevicePaired(device.GetAddress()),
         rssi ? CalculateSignalStrengthLevel(rssi.value()) : -1);
   }
 }

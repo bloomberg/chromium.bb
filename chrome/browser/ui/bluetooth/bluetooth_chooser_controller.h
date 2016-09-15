@@ -33,6 +33,8 @@ class BluetoothChooserController : public ChooserController {
   base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
   int GetSignalStrengthLevel(size_t index) const override;
+  bool IsConnected(size_t index) const override;
+  bool IsPaired(size_t index) const override;
   base::string16 GetOption(size_t index) const override;
   void RefreshOptions() override;
   base::string16 GetStatus() const override;
@@ -69,6 +71,8 @@ class BluetoothChooserController : public ChooserController {
   struct BluetoothDeviceInfo {
     std::string id;
     int signal_strength_level;
+    bool is_connected;
+    bool is_paired;
   };
 
   // Clears |device_names_and_ids_| and |device_name_counts_|. Called when

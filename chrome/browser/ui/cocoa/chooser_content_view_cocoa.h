@@ -71,7 +71,7 @@ class ChooserController;
 - (base::scoped_nsobject<NSTextField>)createChooserTitle:(NSString*)title;
 
 // Creates a table row view for the chooser.
-- (base::scoped_nsobject<NSView>)createTableRowView:(NSInteger)rowIndex;
+- (base::scoped_nsobject<NSView>)createTableRowView:(NSInteger)row;
 
 // The height of a table row view.
 - (CGFloat)tableRowViewHeight:(NSInteger)row;
@@ -87,9 +87,6 @@ class ChooserController;
 
 // Creates the separator.
 - (base::scoped_nsobject<NSBox>)createSeparator;
-
-// Creates a text field with |text|.
-- (base::scoped_nsobject<NSTextField>)createTextField:(NSString*)text;
 
 // Creates a hyperlink button with |text|.
 - (base::scoped_nsobject<NSButton>)createHyperlinkButtonWithText:
@@ -163,6 +160,9 @@ class ChooserController;
 
 // Gets the text from table row view. For testing only.
 - (NSTextField*)tableRowViewText:(NSInteger)row;
+
+// Gets the paired status from table row view. For testing only.
+- (NSTextField*)tableRowViewPairedStatus:(NSInteger)row;
 
 @end
 

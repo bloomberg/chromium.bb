@@ -190,8 +190,8 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 
 - (NSView*)tableView:(NSTableView*)tableView
     viewForTableColumn:(NSTableColumn*)tableColumn
-                   row:(NSInteger)rowIndex {
-  return [chooserContentView_ createTableRowView:rowIndex].autorelease();
+                   row:(NSInteger)row {
+  return [chooserContentView_ createTableRowView:row].autorelease();
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView

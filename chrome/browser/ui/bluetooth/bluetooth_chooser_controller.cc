@@ -67,6 +67,14 @@ int BluetoothChooserController::GetSignalStrengthLevel(size_t index) const {
   return devices_[index].signal_strength_level;
 }
 
+bool BluetoothChooserController::IsConnected(size_t index) const {
+  return devices_[index].is_connected;
+}
+
+bool BluetoothChooserController::IsPaired(size_t index) const {
+  return devices_[index].is_paired;
+}
+
 base::string16 BluetoothChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, devices_.size());
   const std::string& device_id = devices_[index].id;
@@ -208,19 +216,20 @@ void BluetoothChooserController::AddOrUpdateDevice(
                      });
 
     DCHECK(device_it != devices_.end());
-    // http://crbug.com/543466 Update connection and paired status
-
     // When Bluetooth device scanning stops, the |signal_strength_level|
     // is -1, and in this case, should still use the previously stored
     // signal strength level value.
     if (signal_strength_level != -1)
       device_it->signal_strength_level = signal_strength_level;
+    device_it->is_connected = is_gatt_connected;
+    device_it->is_paired = is_paired;
     if (view())
       view()->OnOptionUpdated(device_it - devices_.begin());
     return;
   }
 
-  devices_.push_back({device_id, signal_strength_level});
+  devices_.push_back(
+      {device_id, signal_strength_level, is_gatt_connected, is_paired});
   device_id_to_name_map_.insert({device_id, device_name});
   ++device_name_counts_[device_name];
   if (view())

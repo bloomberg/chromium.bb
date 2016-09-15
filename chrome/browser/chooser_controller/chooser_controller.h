@@ -85,6 +85,14 @@ class ChooserController {
   // The |index|th option string which is listed in the chooser.
   virtual base::string16 GetOption(size_t index) const = 0;
 
+  // Returns if the |index|th option is connected.
+  // This function returns false by default.
+  virtual bool IsConnected(size_t index) const;
+
+  // Returns if the |index|th option is paired.
+  // This function returns false by default.
+  virtual bool IsPaired(size_t index) const;
+
   // Refresh the list of options.
   virtual void RefreshOptions() = 0;
 

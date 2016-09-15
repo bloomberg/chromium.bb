@@ -15104,6 +15104,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT" desc="Text of the 'Get help' link at the bottom of the chooser popup.">
         Get help
       </message>
+      <message name="IDS_DEVICE_CHOOSER_PAIRED_STATUS_TEXT" desc="The label that is used to inform the user that the device is paired.">
+        Paired
+      </message>
     </if>
 
     <if expr="is_android">
