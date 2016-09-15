@@ -302,3 +302,4 @@ crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
 crbug.com/647192 fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
+crbug.com/647192 virtual/mojo-loading/webexposed/global-interface-listing.html [ Slow ]
