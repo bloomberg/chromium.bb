@@ -42,6 +42,8 @@ SITE_CONFIG_FILE = os.path.join(SITE_CONFIG_DIR, 'config_dump.json')
 
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
                                     'config_dump.json')
+WATERFALL_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
+                                     'waterfall_layout_dump.txt')
 
 GE_BUILD_CONFIG_FILE = os.path.join(
     CHROMITE_DIR, 'cbuildbot', 'ge_build_config.json')

@@ -19,6 +19,7 @@ from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.scripts import cros_show_waterfall_layout
 
 # pylint: disable=protected-access
 
@@ -53,6 +54,23 @@ class ConfigDumpTest(GenerateChromeosConfigTestBase):
     dump = self.all_configs.SaveConfigToString()
     loaded = config_lib.LoadConfigFromString(dump)
     self.assertEqual(self.all_configs, loaded)
+
+
+class WaterfallLayoutTest(cros_test_lib.OutputTestCase):
+  """Make sure waterall_layout_dump.txt is current."""
+
+  def testWaterfallLayout(self):
+    """Make sure that watefall_layout_dump.txt is kept current."""
+    with self.OutputCapturer() as output:
+      cros_show_waterfall_layout.main(['--format', 'text'])
+
+    new_dump = output.GetStdout()
+    old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
+
+    self.assertTrue(
+        new_dump == old_dump, 'waterfall_layout_dump.txt does not match the '
+        'configs defined in chromeos_config.py. Run '
+        'bin/cros_show_waterfall_layout > cbuildbot/waterfall_layout_dump.txt')
 
 
 class ConfigPickleTest(GenerateChromeosConfigTestBase):
