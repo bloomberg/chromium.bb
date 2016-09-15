@@ -6,9 +6,6 @@ component("common") {
   output_name = "memory_coordinator_common"
 
   sources = [
-    "client_registry.cc",
-    "client_registry.h",
-    "memory_coordinator_client.h",
     "memory_coordinator_export.h",
     "memory_coordinator_features.cc",
     "memory_coordinator_features.h",

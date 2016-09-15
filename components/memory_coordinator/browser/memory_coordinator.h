@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 #define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
-#include "components/memory_coordinator/common/client_registry.h"
 #include "components/memory_coordinator/common/memory_coordinator_export.h"
 #include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,9 +19,9 @@ class MemoryCoordinatorHandleImpl;
 // MemoryCoordinator is responsible for the whole memory management accross the
 // browser and child proceeses. It dispatches memory events to its clients and
 // child processes based on its best knowledge of the memory usage.
-class MEMORY_COORDINATOR_EXPORT MemoryCoordinator : public ClientRegistry {
+class MEMORY_COORDINATOR_EXPORT MemoryCoordinator {
  public:
-  ~MemoryCoordinator() override;
+  ~MemoryCoordinator();
 
   // Singleton factory/accessor.
   static MemoryCoordinator* GetInstance();

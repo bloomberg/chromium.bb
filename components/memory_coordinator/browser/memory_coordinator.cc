@@ -4,6 +4,7 @@
 
 #include "components/memory_coordinator/browser/memory_coordinator.h"
 
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
 
 namespace memory_coordinator {

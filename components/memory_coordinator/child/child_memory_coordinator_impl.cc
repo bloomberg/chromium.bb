@@ -5,6 +5,7 @@
 #include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/synchronization/lock.h"
 
 namespace memory_coordinator {
@@ -13,6 +14,22 @@ namespace {
 
 base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 ChildMemoryCoordinatorImpl* g_child_memory_coordinator = nullptr;
+
+base::MemoryState ToBaseMemoryState(mojom::MemoryState state) {
+  switch (state) {
+    case mojom::MemoryState::UNKNOWN:
+      return base::MemoryState::UNKNOWN;
+    case mojom::MemoryState::NORMAL:
+      return base::MemoryState::NORMAL;
+    case mojom::MemoryState::THROTTLED:
+      return base::MemoryState::THROTTLED;
+    case mojom::MemoryState::SUSPENDED:
+      return base::MemoryState::SUSPENDED;
+    default:
+      NOTREACHED();
+      return base::MemoryState::UNKNOWN;
+  }
+}
 
 }  // namespace
 
@@ -40,8 +57,10 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 }
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
-  clients()->Notify(FROM_HERE, &MemoryCoordinatorClient::OnMemoryStateChange,
-                    state);
+  base::MemoryState base_state = ToBaseMemoryState(state);
+  base::MemoryCoordinatorClientRegistry::GetInstance()->clients()->Notify(
+      FROM_HERE, &base::MemoryCoordinatorClient::OnMemoryStateChange,
+      base_state);
 }
 
 #if !defined(OS_ANDROID)

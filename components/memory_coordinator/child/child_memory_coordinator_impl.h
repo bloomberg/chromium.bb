@@ -6,8 +6,7 @@
 #define COMPONENTS_MEMORY_COORDINATOR_CHILD_CHILD_MEMORY_COORDINATOR_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "components/memory_coordinator/common/client_registry.h"
-#include "components/memory_coordinator/common/memory_coordinator_client.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "components/memory_coordinator/common/memory_coordinator_export.h"
 #include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/memory_coordinator/public/interfaces/child_memory_coordinator.mojom.h"
@@ -28,8 +27,7 @@ class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorDelegate {
 // It lives in child processes and is responsible for dispatching memory events
 // to its clients.
 class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImpl
-    : public ClientRegistry,
-      NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
+    : NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:
   // Returns the instance of ChildMemoryCoordinatorImpl. Could be nullptr.
   static ChildMemoryCoordinatorImpl* GetInstance();

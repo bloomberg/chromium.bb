@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -50,12 +51,12 @@ class ChildMemoryCoordinatorImplTest : public testing::Test,
     loop.RunUntilIdle();
   }
 
-  void RegisterClient(MemoryCoordinatorClient* client) {
-    coordinator_impl_->RegisterClient(client);
+  void RegisterClient(base::MemoryCoordinatorClient* client) {
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Register(client);
   }
 
-  void UnregisterClient(MemoryCoordinatorClient* client) {
-    coordinator_impl_->UnregisterClient(client);
+  void UnregisterClient(base::MemoryCoordinatorClient* client) {
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(client);
   }
 
   mojom::ChildMemoryCoordinatorPtr& coordinator() {
@@ -90,37 +91,36 @@ class ChildMemoryCoordinatorImplTest : public testing::Test,
 
 namespace {
 
-class MockMemoryCoordinatorClient final : public MemoryCoordinatorClient {
+class MockMemoryCoordinatorClient final : public base::MemoryCoordinatorClient {
 public:
-  void OnMemoryStateChange(mojom::MemoryState state) override {
+  void OnMemoryStateChange(base::MemoryState state) override {
     last_state_ = state;
   }
 
-  mojom::MemoryState last_state() const { return last_state_; }
+  base::MemoryState last_state() const { return last_state_; }
 
  private:
-  mojom::MemoryState last_state_ = mojom::MemoryState::UNKNOWN;
+  base::MemoryState last_state_ = base::MemoryState::UNKNOWN;
 };
 
 class MemoryCoordinatorTestThread : public base::Thread,
-                                    public MemoryCoordinatorClient {
+                                    public base::MemoryCoordinatorClient {
  public:
   MemoryCoordinatorTestThread(
-      const std::string& name,
-      ChildMemoryCoordinatorImpl& coordinator)
-      : Thread(name), coordinator_(coordinator) {}
+      const std::string& name)
+      : Thread(name) {}
   ~MemoryCoordinatorTestThread() override { Stop(); }
 
   void Init() override {
-    coordinator_.RegisterClient(this);
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   }
 
-  void OnMemoryStateChange(mojom::MemoryState state) override {
+  void OnMemoryStateChange(base::MemoryState state) override {
     EXPECT_EQ(message_loop(), base::MessageLoop::current());
     last_state_ = state;
   }
 
-  void CheckLastState(mojom::MemoryState state) {
+  void CheckLastState(base::MemoryState state) {
     task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&MemoryCoordinatorTestThread::CheckLastStateInternal,
@@ -128,14 +128,13 @@ class MemoryCoordinatorTestThread : public base::Thread,
   }
 
  private:
-  void CheckLastStateInternal(mojom::MemoryState state) {
+  void CheckLastStateInternal(base::MemoryState state) {
     base::RunLoop loop;
     loop.RunUntilIdle();
     EXPECT_EQ(state, last_state_);
   }
 
-  ChildMemoryCoordinatorImpl& coordinator_;
-  mojom::MemoryState last_state_ = mojom::MemoryState::UNKNOWN;
+  base::MemoryState last_state_ = base::MemoryState::UNKNOWN;
 };
 
 TEST_F(ChildMemoryCoordinatorImplTest, SingleClient) {
@@ -143,30 +142,30 @@ TEST_F(ChildMemoryCoordinatorImplTest, SingleClient) {
   RegisterClient(&client);
 
   ChangeState(mojom::MemoryState::THROTTLED);
-  EXPECT_EQ(mojom::MemoryState::THROTTLED, client.last_state());
+  EXPECT_EQ(base::MemoryState::THROTTLED, client.last_state());
 
   ChangeState(mojom::MemoryState::NORMAL);
-  EXPECT_EQ(mojom::MemoryState::NORMAL, client.last_state());
+  EXPECT_EQ(base::MemoryState::NORMAL, client.last_state());
 
   UnregisterClient(&client);
   ChangeState(mojom::MemoryState::THROTTLED);
-  EXPECT_TRUE(mojom::MemoryState::THROTTLED != client.last_state());
+  EXPECT_TRUE(base::MemoryState::THROTTLED != client.last_state());
 }
 
 TEST_F(ChildMemoryCoordinatorImplTest, MultipleClients) {
-  MemoryCoordinatorTestThread t1("thread 1", coordinator_impl());
-  MemoryCoordinatorTestThread t2("thread 2", coordinator_impl());
+  MemoryCoordinatorTestThread t1("thread 1");
+  MemoryCoordinatorTestThread t2("thread 2");
 
   t1.StartAndWaitForTesting();
   t2.StartAndWaitForTesting();
 
   ChangeState(mojom::MemoryState::THROTTLED);
-  t1.CheckLastState(mojom::MemoryState::THROTTLED);
-  t2.CheckLastState(mojom::MemoryState::THROTTLED);
+  t1.CheckLastState(base::MemoryState::THROTTLED);
+  t2.CheckLastState(base::MemoryState::THROTTLED);
 
   ChangeState(mojom::MemoryState::NORMAL);
-  t1.CheckLastState(mojom::MemoryState::NORMAL);
-  t2.CheckLastState(mojom::MemoryState::NORMAL);
+  t1.CheckLastState(base::MemoryState::NORMAL);
+  t2.CheckLastState(base::MemoryState::NORMAL);
 
   t1.Stop();
   t2.Stop();

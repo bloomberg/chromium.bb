@@ -4,17 +4,12 @@
 
 module memory_coordinator.mojom;
 
-// MemoryState is an indicator that processes can use to guide their memory
-// allocation policies. For example, a process that receives the suspended
-// state can use that as as signal to drop memory caches.
+// See base/memory/memory_coordinator_client.h for the definitions of these
+// states.
 enum MemoryState {
-  // The state is unknown.
   UNKNOWN = -1,
-  // No memory constraints.
   NORMAL = 0,
-  // Running and interactive but allocation should be throttled.
   THROTTLED = 1,
-  // Still resident in memory but core processing logic has been suspended.
   SUSPENDED = 2,
 };
 

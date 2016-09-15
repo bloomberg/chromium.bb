@@ -32,7 +32,6 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/visit_tracker.h"
-#include "components/memory_coordinator/common/memory_coordinator_client.h"
 #include "sql/init_status.h"
 
 class HistoryURLProvider;
@@ -103,8 +102,7 @@ class QueuedHistoryDBTask {
 // functions in the history service. These functions are not documented
 // here, see the history service for behavior.
 class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
-                       public HistoryBackendNotifier,
-                       public memory_coordinator::MemoryCoordinatorClient {
+                       public HistoryBackendNotifier {
  public:
   // Interface implemented by the owner of the HistoryBackend object. Normally,
   // the history service implements this to send stuff back to the main thread.
@@ -480,9 +478,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   base::Time GetFirstRecordedTimeForTest() { return first_recorded_time_; }
 
-  // memory_coordinator::MemoryCoordinatorClient implementation:
-  void OnMemoryStateChange(memory_coordinator::MemoryState state) override;
-
  protected:
   ~HistoryBackend() override;
 
@@ -583,9 +578,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Does the work of Init.
   void InitImpl(const HistoryDatabaseParams& history_database_params);
-
-  // Asks database to trim memory.
-  void TrimMemory(bool trim_aggressively);
 
   // Called when the system is under memory pressure.
   void OnMemoryPressure(
