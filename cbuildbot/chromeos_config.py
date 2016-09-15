@@ -1382,7 +1382,9 @@ def CreateBuilderTemplates(site_config):
 
   ### Release AFDO configs.
 
-  release_afdo = site_config.templates.release.derive(
+  site_config.AddTemplate(
+      'release_afdo',
+      site_config.templates.release,
       trybot_list=False,
       hw_tests=(
           HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
@@ -1395,7 +1397,7 @@ def CreateBuilderTemplates(site_config):
 
   site_config.AddTemplate(
       'release_afdo_generate',
-      release_afdo,
+      site_config.templates.release_afdo,
       afdo_generate_min=True,
       afdo_use=False,
       afdo_update_ebuild=True,
@@ -1411,7 +1413,7 @@ def CreateBuilderTemplates(site_config):
 
   site_config.AddTemplate(
       'release_afdo_use',
-      release_afdo,
+      site_config.templates.release_afdo,
       afdo_use=True,
   )
 
@@ -1477,7 +1479,8 @@ def CreateBuilderTemplates(site_config):
       sign_types=['factory'],
   )
 
-  _firmware = config_lib.BuildConfig(
+  site_config.AddTemplate(
+      'firmware_base',
       site_config.templates.no_vmtest_builder,
       images=[],
       factory_toolkit=False,
@@ -1501,7 +1504,7 @@ def CreateBuilderTemplates(site_config):
   site_config.AddTemplate(
       'firmware',
       site_config.templates.release,
-      _firmware,
+      site_config.templates.firmware_base,
       description='Firmware Canary',
       manifest=constants.DEFAULT_MANIFEST,
       afdo_use=False,
@@ -1516,7 +1519,7 @@ def CreateBuilderTemplates(site_config):
       'depthcharge_full_firmware',
       site_config.templates.full,
       site_config.templates.internal,
-      _firmware,
+      site_config.templates.firmware_base,
       useflags=append_useflags(['depthcharge']),
       description='Firmware Informational',
   )
@@ -1539,6 +1542,27 @@ def CreateBuilderTemplates(site_config):
 
       upload_hw_test_artifacts=False,
   )
+
+  site_config.AddTemplate(
+      'kernel',
+      site_config.templates.no_vmtest_builder,
+      build_type=constants.ANDROID_PFQ_TYPE,
+      images=[],
+      factory_toolkit=False,
+      usepkg_build_packages=True,
+      sync_chrome=False,
+      chrome_sdk=False,
+      unittests=False,
+      hw_tests=[],
+      dev_installer_prebuilts=False,
+      upload_hw_test_artifacts=True,
+      upload_symbols=True,
+      signer_tests=False,
+      trybot_list=False,
+      paygen=False,
+      image_test=False,
+  )
+
 
 
 def _GetConfig(site_config, ge_build_config):
@@ -2946,29 +2970,6 @@ def _GetConfig(site_config, ge_build_config):
 
   _AddFirmwareConfigs()
 
-
-  def _AddKernelTemplate(version):
-    build_config = config_lib.BuildConfig(
-      site_config.templates.no_vmtest_builder,
-      build_type=constants.ANDROID_PFQ_TYPE,
-      images=[],
-      factory_toolkit=False,
-      packages=['sys-kernel/chromeos-kernel-%s' % version],
-      usepkg_build_packages=True,
-      sync_chrome=False,
-      chrome_sdk=False,
-      unittests=False,
-      hw_tests=[],
-      dev_installer_prebuilts=False,
-      upload_hw_test_artifacts=True,
-      upload_symbols=True,
-      signer_tests=False,
-      trybot_list=False,
-      paygen=False,
-      image_test=False)
-    return site_config.AddTemplate(
-      'kernel-%s' % version, build_config)
-
   _kernel_boards_versions = {
       'smaug-kasan': ['3_18'],
   }
@@ -2977,11 +2978,12 @@ def _GetConfig(site_config, ge_build_config):
     """Add kernel configs."""
     for board in _kernel_boards_versions:
       for version in _kernel_boards_versions[board]:
-        site_config.Add(
+        # AddWithoutTemplate, since the builder isn't named after the template.
+        site_config.AddWithoutTemplate(
             '%s-kernel-%s' % (board, version),
-            _AddKernelTemplate(version),
+            site_config.templates.kernel,
             _base_configs[board],
-            site_config.templates.no_vmtest_builder,
+            packages=['sys-kernel/chromeos-kernel-%s' % version],
         )
 
   _AddKernelConfigs()
