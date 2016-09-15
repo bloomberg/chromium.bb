@@ -20,6 +20,7 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -159,6 +160,21 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  GURL url(request->url());
+
+  // Block top-level navigations to blob: or filesystem: URLs with extension
+  // origin from non-extension processes.  See https://crbug.com/645028.
+  bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
+  bool is_navigation =
+      info && content::IsResourceTypeFrame(info->GetResourceType());
+  if (is_nested_url && is_navigation && info->IsMainFrame() &&
+      url::Origin(url).scheme() == extensions::kExtensionScheme &&
+      !extension_info_map_->process_map().Contains(info->GetChildID())) {
+    return net::ERR_ABORTED;
+  }
+
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(), request, callback, new_url);
 }
