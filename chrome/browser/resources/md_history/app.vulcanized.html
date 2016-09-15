@@ -1284,8 +1284,6 @@ paper-icon-button {
     </defs>
   </svg>
 </iron-iconset-svg>
-
-
 <dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/" css-build="shadow">
   <template>
     <style scope="iron-a11y-announcer">:host {
@@ -3226,7 +3224,7 @@ paper-tabs {
           </template>
         </div>
       </cr-toolbar>
-      <template is="history-lazy-render" id="syncNotice">
+      <template is="cr-lazy-render" id="syncNotice">
         <iron-dropdown vertical-align="top" horizontal-align="right" allow-outside-scroll="">
           <div class="dropdown-content">
             $i18nRaw{hasSyncedResults}
@@ -4422,7 +4420,7 @@ dialog .body {
       </template>
     </iron-pages>
 
-    <template is="history-lazy-render" id="dialog">
+    <template is="cr-lazy-render" id="dialog">
       <dialog is="cr-dialog">
         <div class="title">$i18n{removeSelected}</div>
         <div class="body">$i18n{deleteWarning}</div>
@@ -4437,7 +4435,7 @@ dialog .body {
       </dialog>
     </template>
 
-    <template is="history-lazy-render" id="sharedMenu">
+    <template is="cr-lazy-render" id="sharedMenu">
       <cr-shared-menu>
         <paper-item id="menuMoreButton" class="menu-item" on-tap="onMoreFromSiteTap_">
           $i18n{moreFromSite}
@@ -4844,7 +4842,7 @@ paper-spinner {
       </paper-button>
     </div>
 
-    <template is="history-lazy-render" id="menu">
+    <template is="cr-lazy-render" id="menu">
       <cr-shared-menu>
         <paper-item id="menuOpenButton" class="menu-item" on-tap="onOpenAllTap_">
           $i18n{openAll}

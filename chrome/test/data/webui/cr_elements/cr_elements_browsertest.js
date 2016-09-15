@@ -37,6 +37,25 @@ CrElementsBrowserTest.prototype = {
   },
 };
 
+function CrElementsLazyRenderTest() {}
+
+CrElementsLazyRenderTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_lazy_render_tests.js'
+  ]),
+};
+
+TEST_F('CrElementsLazyRenderTest', 'All', function() {
+  mocha.run();
+});
+
 function CrElementsProfileAvatarSelectorTest() {}
 
 CrElementsProfileAvatarSelectorTest.prototype = {

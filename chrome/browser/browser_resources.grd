@@ -245,8 +245,6 @@
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML" file="resources\md_history\history_toolbar.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_JS" file="resources\md_history\history_toolbar.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_ICONS_HTML" file="resources\md_history\icons.html" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_LAZY_RENDER_HTML" file="resources\md_history\lazy_render.html" type="BINDATA" />
-            <include name="IDR_MD_HISTORY_LAZY_RENDER_JS" file="resources\md_history\lazy_render.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_LIST_CONTAINER_HTML" file="resources\md_history\list_container.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_LIST_CONTAINER_JS" file="resources\md_history\list_container.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_SEARCHED_LABEL_HTML" file="resources\md_history\searched_label.html" type="BINDATA" />

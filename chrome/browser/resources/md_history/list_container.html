@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
@@ -7,7 +8,6 @@
 <link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/grouped_list.html">
 <link rel="import" href="chrome://history/history_list.html">
-<link rel="import" href="chrome://history/lazy_render.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-list-container">
@@ -42,7 +42,7 @@
       </template>
     </iron-pages>
 
-    <template is="history-lazy-render" id="dialog">
+    <template is="cr-lazy-render" id="dialog">
       <dialog is="cr-dialog">
         <div class="title">$i18n{removeSelected}</div>
         <div class="body">$i18n{deleteWarning}</div>
@@ -58,7 +58,7 @@
       </dialog>
     </template>
 
-    <template is="history-lazy-render" id="sharedMenu">
+    <template is="cr-lazy-render" id="sharedMenu">
       <cr-shared-menu>
         <paper-item id="menuMoreButton" class="menu-item"
             on-tap="onMoreFromSiteTap_">

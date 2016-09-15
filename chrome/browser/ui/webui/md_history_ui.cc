@@ -159,10 +159,6 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddResourcePath("history_toolbar.js",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
   source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
-  source->AddResourcePath("lazy_render.html",
-                          IDR_MD_HISTORY_LAZY_RENDER_HTML);
-  source->AddResourcePath("lazy_render.js",
-                          IDR_MD_HISTORY_LAZY_RENDER_JS);
   source->AddResourcePath("list_container.html",
                           IDR_MD_HISTORY_LIST_CONTAINER_HTML);
   source->AddResourcePath("list_container.js",

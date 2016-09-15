@@ -2,9 +2,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://history/lazy_render.html">
 <link rel="import" href="chrome://history/shared_style.html">
 <link rel="import" href="chrome://history/synced_device_card.html">
 
@@ -89,7 +89,7 @@
       </paper-button>
     </div>
 
-    <template is="history-lazy-render" id="menu">
+    <template is="cr-lazy-render" id="menu">
       <cr-shared-menu>
         <paper-item id="menuOpenButton" class="menu-item"
             on-tap="onOpenAllTap_">

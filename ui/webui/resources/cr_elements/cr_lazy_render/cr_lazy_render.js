@@ -4,10 +4,10 @@
 
 /**
  * @fileoverview
- * history-lazy-render is a simple variant of dom-if designed for lazy rendering
+ * cr-lazy-render is a simple variant of dom-if designed for lazy rendering
  * of elements that are accessed imperatively.
  * Usage:
- *   <template is="history-lazy-render" id="menu">
+ *   <template is="cr-lazy-render" id="menu">
  *     <heavy-menu></heavy-menu>
  *   </template>
  *
@@ -16,8 +16,32 @@
  *   });
  */
 
+/**
+ * A template instance created by Polymer.Templatizer.
+ * @constructor
+ * @extends {PolymerElement}
+ */
+var TemplateInstance = function() {};
+
+/** @type {Array<Element>} */
+TemplateInstance.prototype._children;
+
+/**
+ * @param {string} prop
+ * @param {Object} value
+ * @param {boolean} quiet
+ */
+TemplateInstance.prototype.__setProperty = function(prop, value, quiet) {};
+
+/**
+ * @param {string} path
+ * @param {Object} value
+ * @param {boolean} quiet
+ */
+TemplateInstance.prototype._notifyPath = function(path, value, quiet) {};
+
 Polymer({
-  is: 'history-lazy-render',
+  is: 'cr-lazy-render',
   extends: 'template',
 
   behaviors: [

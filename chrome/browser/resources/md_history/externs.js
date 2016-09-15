@@ -32,27 +32,3 @@ var DomRepeatClickEvent = function() {};
 
 /** @type {Object} */
 DomRepeatClickEvent.prototype.model;
-
-/**
- * A template instance created by Polymer.Templatizer.
- * @constructor
- * @extends {PolymerElement}
- */
-var TemplateInstance = function() {};
-
-/** @type {Array<Element>} */
-TemplateInstance.prototype._children;
-
-/**
- * @param {string} prop
- * @param {Object} value
- * @param {boolean} quiet
- */
-TemplateInstance.prototype.__setProperty = function(prop, value, quiet) {};
-
-/**
- * @param {string} path
- * @param {Object} value
- * @param {boolean} quiet
- */
-TemplateInstance.prototype._notifyPath = function(path, value, quiet) {};

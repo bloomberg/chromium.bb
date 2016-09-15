@@ -5380,6 +5380,53 @@ Polymer({
   }
 });
 
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+Polymer({
+  is: 'cr-lazy-render',
+  "extends": 'template',
+  behaviors: [ Polymer.Templatizer ],
+  _renderPromise: null,
+  _instance: null,
+  get: function() {
+    if (!this._renderPromise) {
+      this._renderPromise = new Promise(function(resolve) {
+        this._debounceTemplate(function() {
+          this._render();
+          this._renderPromise = null;
+          resolve(this.getIfExists());
+        }.bind(this));
+      }.bind(this));
+    }
+    return this._renderPromise;
+  },
+  getIfExists: function() {
+    if (this._instance) {
+      var children = this._instance._children;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].nodeType == Node.ELEMENT_NODE) return children[i];
+      }
+    }
+    return null;
+  },
+  _render: function() {
+    if (!this.ctor) this.templatize(this);
+    var parentNode = this.parentNode;
+    if (parentNode && !this._instance) {
+      this._instance = this.stamp({});
+      var root = this._instance.root;
+      parentNode.insertBefore(root, this);
+    }
+  },
+  _forwardParentProp: function(prop, value) {
+    if (this._instance) this._instance.__setProperty(prop, value, true);
+  },
+  _forwardParentPath: function(path, value) {
+    if (this._instance) this._instance._notifyPath(path, value, true);
+  }
+});
+
 (function() {
   'use strict';
   Polymer.IronA11yAnnouncer = Polymer({
@@ -6037,53 +6084,6 @@ Polymer({
   },
   onMenuTap_: function(e) {
     this.fire('cr-menu-tap');
-  }
-});
-
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-Polymer({
-  is: 'history-lazy-render',
-  "extends": 'template',
-  behaviors: [ Polymer.Templatizer ],
-  _renderPromise: null,
-  _instance: null,
-  get: function() {
-    if (!this._renderPromise) {
-      this._renderPromise = new Promise(function(resolve) {
-        this._debounceTemplate(function() {
-          this._render();
-          this._renderPromise = null;
-          resolve(this.getIfExists());
-        }.bind(this));
-      }.bind(this));
-    }
-    return this._renderPromise;
-  },
-  getIfExists: function() {
-    if (this._instance) {
-      var children = this._instance._children;
-      for (var i = 0; i < children.length; i++) {
-        if (children[i].nodeType == Node.ELEMENT_NODE) return children[i];
-      }
-    }
-    return null;
-  },
-  _render: function() {
-    if (!this.ctor) this.templatize(this);
-    var parentNode = this.parentNode;
-    if (parentNode && !this._instance) {
-      this._instance = this.stamp({});
-      var root = this._instance.root;
-      parentNode.insertBefore(root, this);
-    }
-  },
-  _forwardParentProp: function(prop, value) {
-    if (this._instance) this._instance.__setProperty(prop, value, true);
-  },
-  _forwardParentPath: function(path, value) {
-    if (this._instance) this._instance._notifyPath(path, value, true);
   }
 });
 

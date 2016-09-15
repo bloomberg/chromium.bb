@@ -92,19 +92,13 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'lazy_render',
-      'dependencies': [
-        'externs',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'list_container',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
+        'externs',
         'grouped_list',
         'history_list',
         'history_list_behavior',
-        'lazy_render',
         '<(EXTERNS_GYP):chrome_send',
         '../history/compiled_resources2.gyp:externs',
       ],
@@ -151,9 +145,9 @@
     {
       'target_name': 'synced_device_manager',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         'browser_service',
-        'lazy_render',
         'synced_device_card',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
