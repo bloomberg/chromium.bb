@@ -78,6 +78,8 @@ void TrayAudioChromeOs::OnDisplayRemoved(const display::Display& old_display) {
 
 void TrayAudioChromeOs::OnDisplayMetricsChanged(const display::Display& display,
                                                 uint32_t changed_metrics) {
+  TrayAudio::OnDisplayMetricsChanged(display, changed_metrics);
+
   // The event could be triggered multiple times during the HDMI display
   // transition, we don't need to restart HDMI re-discovering grace period
   // it is already started earlier.
