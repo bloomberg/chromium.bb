@@ -33,9 +33,9 @@
 #include <wayland-egl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#endif
 
 #include "weston-egl-ext.h"
+#endif
 
 #ifdef  __cplusplus
 extern "C" {
