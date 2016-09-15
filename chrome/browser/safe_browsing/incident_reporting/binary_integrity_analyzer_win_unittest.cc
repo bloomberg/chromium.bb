@@ -59,7 +59,7 @@ class BinaryIntegrityAnalyzerWinTest : public ::testing::Test {
 
 BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest() {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::CreateDirectory(temp_dir_.path().AppendASCII(CHROME_VERSION_STRING));
+  base::CreateDirectory(temp_dir_.GetPath().AppendASCII(CHROME_VERSION_STRING));
 
   // We retrieve DIR_TEST_DATA here because it is based on DIR_EXE and we are
   // about to override the path to the latter.
@@ -67,22 +67,26 @@ BinaryIntegrityAnalyzerWinTest::BinaryIntegrityAnalyzerWinTest() {
     NOTREACHED();
 
   exe_dir_override_.reset(
-      new base::ScopedPathOverride(base::DIR_EXE, temp_dir_.path()));
+      new base::ScopedPathOverride(base::DIR_EXE, temp_dir_.GetPath()));
 }
 
 TEST_F(BinaryIntegrityAnalyzerWinTest, GetCriticalBinariesPath) {
   // Expected paths.
   std::vector<base::FilePath> critical_binaries_path_expected;
   critical_binaries_path_expected.push_back(
-      temp_dir_.path().Append(kChromeExe));
+      temp_dir_.GetPath().Append(kChromeExe));
   critical_binaries_path_expected.push_back(
-      temp_dir_.path().AppendASCII(CHROME_VERSION_STRING).Append(kChromeDll));
+      temp_dir_.GetPath()
+          .AppendASCII(CHROME_VERSION_STRING)
+          .Append(kChromeDll));
   critical_binaries_path_expected.push_back(
-      temp_dir_.path().AppendASCII(CHROME_VERSION_STRING).Append(
-          kChromeChildDll));
+      temp_dir_.GetPath()
+          .AppendASCII(CHROME_VERSION_STRING)
+          .Append(kChromeChildDll));
   critical_binaries_path_expected.push_back(
-      temp_dir_.path().AppendASCII(CHROME_VERSION_STRING).Append(
-          kChromeElfDll));
+      temp_dir_.GetPath()
+          .AppendASCII(CHROME_VERSION_STRING)
+          .Append(kChromeElfDll));
 
   std::vector<base::FilePath> critical_binaries_path =
       GetCriticalBinariesPath();
@@ -97,7 +101,7 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
   signed_binary_path =
       signed_binary_path.Append(L"safe_browsing").Append(kSignedBinaryDll);
 
-  base::FilePath chrome_elf_path(temp_dir_.path());
+  base::FilePath chrome_elf_path(temp_dir_.GetPath());
   chrome_elf_path =
       chrome_elf_path.Append(TEXT(CHROME_VERSION_STRING)).Append(kChromeElfDll);
 

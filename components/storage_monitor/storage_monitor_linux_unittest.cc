@@ -167,7 +167,8 @@ class StorageMonitorLinuxTest : public testing::Test {
   void SetUp() override {
     // Create and set up a temp dir with files for the test.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    base::FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
+    base::FilePath test_dir =
+        scoped_temp_dir_.GetPath().AppendASCII("test_etc");
     ASSERT_TRUE(base::CreateDirectory(test_dir));
     mtab_file_ = test_dir.AppendASCII("test_mtab");
     MtabTestData initial_test_data[] = {
@@ -232,7 +233,7 @@ class StorageMonitorLinuxTest : public testing::Test {
 
   void RemoveDCIMDirFromMountPoint(const std::string& dir) {
     base::FilePath dcim =
-        scoped_temp_dir_.path().AppendASCII(dir).Append(kDCIMDirectoryName);
+        scoped_temp_dir_.GetPath().AppendASCII(dir).Append(kDCIMDirectoryName);
     base::DeleteFile(dcim, false);
   }
 
@@ -259,7 +260,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   // Returns the full path to the created directory on success, or an empty
   // path on failure.
   base::FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir) {
-    base::FilePath return_path(scoped_temp_dir_.path());
+    base::FilePath return_path(scoped_temp_dir_.GetPath());
     return_path = return_path.AppendASCII(dir);
     base::FilePath path(return_path);
     if (with_dcim_dir)

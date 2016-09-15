@@ -1382,8 +1382,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
   browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory,
-      downloads_directory_.path());
+      prefs::kDownloadDefaultDirectory, downloads_directory_.GetPath());
 
   // Visit a non-dangerous page.
   ui_test_utils::NavigateToURL(browser(), url_non_dangerous);

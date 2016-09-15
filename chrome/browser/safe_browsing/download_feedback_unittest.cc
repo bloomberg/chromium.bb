@@ -113,7 +113,7 @@ class DownloadFeedbackTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    upload_file_path_ = temp_dir_.path().AppendASCII("test file");
+    upload_file_path_ = temp_dir_.GetPath().AppendASCII("test file");
     upload_file_data_ = "data";
     ASSERT_EQ(static_cast<int>(upload_file_data_.size()),
               base::WriteFile(upload_file_path_, upload_file_data_.data(),

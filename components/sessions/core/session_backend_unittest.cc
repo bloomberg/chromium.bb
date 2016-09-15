@@ -40,7 +40,7 @@ class SessionBackendTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
+    path_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("SessionTestDirs"));
     base::CreateDirectory(path_);
   }
 

@@ -106,7 +106,7 @@ void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
   DCHECK(path);
   ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
               scoped_temp_dir_.CreateUniqueTempDir());
-  *path = scoped_temp_dir_.path().AppendASCII(
+  *path = scoped_temp_dir_.GetPath().AppendASCII(
       base::IntToString(next_unique_file_suffix++));
 }
 

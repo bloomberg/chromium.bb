@@ -77,7 +77,7 @@ class V4DatabaseTest : public PlatformTest {
 
     // Setup a database in a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    database_dirname_ = temp_dir_.path().AppendASCII("V4DatabaseTest");
+    database_dirname_ = temp_dir_.GetPath().AppendASCII("V4DatabaseTest");
 
     created_but_not_called_back_ = false;
     created_and_called_back_ = false;

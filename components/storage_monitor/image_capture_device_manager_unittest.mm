@@ -358,7 +358,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
 
   // Test that a nonexistent file we ask to be downloaded will
   // return us a not-found error.
-  base::FilePath temp_file = temp_dir.path().Append("tempfile");
+  base::FilePath temp_file = temp_dir.GetPath().Append("tempfile");
   [camera downloadFile:std::string("nonexistent") localPath:temp_file];
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1U, listener_.downloads().size());
@@ -405,7 +405,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath temp_file = temp_dir.path().Append("tempfile");
+  base::FilePath temp_file = temp_dir.GetPath().Append("tempfile");
 
   [camera downloadFile:("dir/" + kTestFileName) localPath:temp_file];
   base::RunLoop().RunUntilIdle();

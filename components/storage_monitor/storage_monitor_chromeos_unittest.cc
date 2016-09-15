@@ -237,7 +237,7 @@ uint64_t StorageMonitorCrosTest::GetDeviceStorageSize(
 
 base::FilePath StorageMonitorCrosTest::CreateMountPoint(
     const std::string& dir, bool with_dcim_dir) {
-  base::FilePath return_path(scoped_temp_dir_.path());
+  base::FilePath return_path(scoped_temp_dir_.GetPath());
   return_path = return_path.AppendASCII(dir);
   base::FilePath path(return_path);
   if (with_dcim_dir)

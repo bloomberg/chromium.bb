@@ -693,7 +693,7 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
     return 0;
 
   base::FilePath app_name = GetShortcutBasename();
-  base::FilePath staging_path = scoped_temp_dir.path().Append(app_name);
+  base::FilePath staging_path = scoped_temp_dir.GetPath().Append(app_name);
   if (!BuildShortcut(staging_path))
     return 0;
 

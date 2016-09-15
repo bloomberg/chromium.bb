@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
                           "\": { \"type\": \"string\"}}}";
 
   const std::string schema_file = "schema.json";
-  base::FilePath schema_path = temp_dir_.path().AppendASCII(schema_file);
+  base::FilePath schema_path = temp_dir_.GetPath().AppendASCII(schema_file);
   base::WriteFile(schema_path, json_data.data(), json_data.size());
 
   // Build extension that contains the policy schema.
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
       .Set("storage", storage.Build());
 
   extensions::ExtensionBuilder builder;
-  builder.SetPath(temp_dir_.path());
+  builder.SetPath(temp_dir_.GetPath());
   builder.SetManifest(manifest.Build());
 
   // Install extension.

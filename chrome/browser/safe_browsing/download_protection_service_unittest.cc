@@ -278,7 +278,7 @@ class DownloadProtectionServiceTest : public testing::Test {
 
     // Setup a profile
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
-    profile_.reset(new TestingProfile(profile_dir_.path()));
+    profile_.reset(new TestingProfile(profile_dir_.GetPath()));
     ASSERT_TRUE(profile_->CreateHistoryService(true /* delete_file */,
                                                false /* no_db */));
 
@@ -410,8 +410,8 @@ class DownloadProtectionServiceTest : public testing::Test {
       const std::string& referrer_url,
       const base::FilePath::StringType& tmp_path_literal,
       const base::FilePath::StringType& final_path_literal) {
-    base::FilePath tmp_path = temp_dir_.path().Append(tmp_path_literal);
-    base::FilePath final_path = temp_dir_.path().Append(final_path_literal);
+    base::FilePath tmp_path = temp_dir_.GetPath().Append(tmp_path_literal);
+    base::FilePath final_path = temp_dir_.GetPath().Append(final_path_literal);
 
     PrepareBasicDownloadItemWithFullPaths(item, url_chain_items, referrer_url,
       tmp_path, final_path);
@@ -1325,10 +1325,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   {
     // In this case, it only contains a text file.
     ASSERT_EQ(static_cast<int>(file_contents.size()),
-              base::WriteFile(
-                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.txt")),
-                  file_contents.data(), file_contents.size()));
-    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+              base::WriteFile(zip_source_dir.GetPath().Append(
+                                  FILE_PATH_LITERAL("file.txt")),
+                              file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path_, false));
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1342,10 +1342,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   {
     // Now check with an executable in the zip file as well.
     ASSERT_EQ(static_cast<int>(file_contents.size()),
-              base::WriteFile(
-                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.exe")),
-                  file_contents.data(), file_contents.size()));
-    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+              base::WriteFile(zip_source_dir.GetPath().Append(
+                                  FILE_PATH_LITERAL("file.exe")),
+                              file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path_, false));
     EXPECT_CALL(*sb_service_->mock_database_manager(),
                 MatchDownloadWhitelistUrl(_))
         .WillRepeatedly(Return(false));
@@ -1390,10 +1390,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
     // Repeat the test with an archive inside the zip file in addition to the
     // executable.
     ASSERT_EQ(static_cast<int>(file_contents.size()),
-              base::WriteFile(
-                  zip_source_dir.path().Append(FILE_PATH_LITERAL("file.rar")),
-                  file_contents.data(), file_contents.size()));
-    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+              base::WriteFile(zip_source_dir.GetPath().Append(
+                                  FILE_PATH_LITERAL("file.rar")),
+                              file_contents.data(), file_contents.size()));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path_, false));
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1409,9 +1409,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   }
   {
     // Repeat the test with just the archive inside the zip file.
-    ASSERT_TRUE(
-        base::DeleteFile(zip_source_dir.path().AppendASCII("file.exe"), false));
-    ASSERT_TRUE(zip::Zip(zip_source_dir.path(), tmp_path_, false));
+    ASSERT_TRUE(base::DeleteFile(
+        zip_source_dir.GetPath().AppendASCII("file.exe"), false));
+    ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path_, false));
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -2352,8 +2352,8 @@ TEST_F(DownloadProtectionServiceFlagTest,
       &item, {"http://www.evil.com/a.exe"},  // url_chain
       "http://www.google.com/",              // referrer
       testdata_path_.AppendASCII(
-          "zipfile_one_unsigned_binary.zip"),                // tmp_path
-      temp_dir_.path().Append(FILE_PATH_LITERAL("a.zip")));  // final_path
+          "zipfile_one_unsigned_binary.zip"),                   // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.zip")));  // final_path
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))

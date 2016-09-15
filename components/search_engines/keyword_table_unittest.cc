@@ -28,7 +28,7 @@ class KeywordTableTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
+    file_ = temp_dir_.GetPath().AppendASCII("TestWebDatabase");
 
     table_.reset(new KeywordTable);
     db_.reset(new WebDatabase);

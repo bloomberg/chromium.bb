@@ -2159,7 +2159,7 @@ class LaunchBrowserWithNonAsciiUserDatadir : public BrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+    base::FilePath tmp_profile = temp_dir_.GetPath().AppendASCII("tmp_profile");
     tmp_profile = tmp_profile.Append(L"Test Chrome G\u00E9raldine");
 
     ASSERT_TRUE(base::CreateDirectory(tmp_profile));
@@ -2190,7 +2190,7 @@ class LaunchBrowserWithTrailingSlashDatadir : public BrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+    base::FilePath tmp_profile = temp_dir_.GetPath().AppendASCII("tmp_profile");
     tmp_profile = tmp_profile.Append(L"Test Chrome\\");
 
     ASSERT_TRUE(base::CreateDirectory(tmp_profile));

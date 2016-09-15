@@ -279,8 +279,8 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
-                                             &temp_file));
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file));
   base::ScopedFILE temp_file_handle(base::OpenFile(temp_file, "w"));
   ASSERT_TRUE(temp_file_handle);
 

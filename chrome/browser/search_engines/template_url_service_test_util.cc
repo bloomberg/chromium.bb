@@ -47,10 +47,10 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
       search_terms_data_(NULL) {
   // Make unique temp directory.
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  profile_.reset(new TestingProfile(temp_dir_.path()));
+  profile_.reset(new TestingProfile(temp_dir_.GetPath()));
 
   scoped_refptr<WebDatabaseService> web_database_service =
-      new WebDatabaseService(temp_dir_.path().AppendASCII("webdata"),
+      new WebDatabaseService(temp_dir_.GetPath().AppendASCII("webdata"),
                              base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
   web_database_service->AddTable(

@@ -21,7 +21,7 @@ namespace {
 base::FilePath GetTempRoot() {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath temp_root = temp_dir.path();
+  base::FilePath temp_root = temp_dir.GetPath();
   while (temp_root.DirName() != temp_root)
     temp_root = temp_root.DirName();
   return temp_root;

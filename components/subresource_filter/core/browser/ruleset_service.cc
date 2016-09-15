@@ -317,7 +317,7 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
 
   static_assert(sizeof(uint8_t) == sizeof(char), "Expected char = byte.");
   const int data_size_in_chars = base::checked_cast<int>(indexed_ruleset_size);
-  if (base::WriteFile(GetRulesetDataFilePath(scratch_dir.path()),
+  if (base::WriteFile(GetRulesetDataFilePath(scratch_dir.GetPath()),
                       reinterpret_cast<const char*>(indexed_ruleset_data),
                       data_size_in_chars) != data_size_in_chars) {
     return IndexAndWriteRulesetResult::FAILED_WRITING_RULESET_DATA;
@@ -325,7 +325,7 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
 
   if (base::PathExists(license_source_path) &&
       !base::CopyFile(license_source_path,
-                      GetLicenseFilePath(scratch_dir.path()))) {
+                      GetLicenseFilePath(scratch_dir.GetPath()))) {
     return IndexAndWriteRulesetResult::FAILED_WRITING_LICENSE;
   }
 
@@ -343,8 +343,8 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   }
 
   base::File::Error error;
-  if (!(*g_replace_file_func)(scratch_dir.path(), indexed_ruleset_version_dir,
-                              &error)) {
+  if (!(*g_replace_file_func)(scratch_dir.GetPath(),
+                              indexed_ruleset_version_dir, &error)) {
     // While enumerators of base::File::Error all have negative values, the
     // histogram records the absolute values.
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",

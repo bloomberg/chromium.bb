@@ -69,7 +69,7 @@ class SubresourceFilterContentRulesetDistributorTest : public ::testing::Test {
   content::TestBrowserContext* browser_context() { return &browser_context_; }
 
   base::FilePath scoped_temp_file() const {
-    return scoped_temp_dir_.path().AppendASCII("data");
+    return scoped_temp_dir_.GetPath().AppendASCII("data");
   }
 
   void AssertSetRulesetForProcessMessageWithContent(

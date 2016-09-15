@@ -255,7 +255,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     // Setup a database in a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     database_filename_ =
-        temp_dir_.path().AppendASCII("SafeBrowsingTestDatabase");
+        temp_dir_.GetPath().AppendASCII("SafeBrowsingTestDatabase");
 
     ResetAndReloadFullDatabase();
   }

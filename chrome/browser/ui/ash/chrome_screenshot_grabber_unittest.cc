@@ -116,7 +116,7 @@ TEST_F(ChromeScreenshotGrabberTest, DISABLED_TakeScreenshot) {
 
   screenshot_grabber()->TakeScreenshot(
       Shell::GetPrimaryRootWindow(), gfx::Rect(0, 0, 100, 100),
-      directory.path().AppendASCII("Screenshot.png"));
+      directory.GetPath().AppendASCII("Screenshot.png"));
 
   EXPECT_FALSE(screenshot_grabber()->CanTakeScreenshot());
 

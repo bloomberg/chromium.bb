@@ -123,10 +123,10 @@ TEST_F(StorageMonitorMacTest, UpdateVolumeName) {
 TEST_F(StorageMonitorMacTest, DCIM) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ASSERT_TRUE(base::CreateDirectory(
-      temp_dir.path().Append(kDCIMDirectoryName)));
+  ASSERT_TRUE(
+      base::CreateDirectory(temp_dir.GetPath().Append(kDCIMDirectoryName)));
 
-  base::FilePath mount_point = temp_dir.path();
+  base::FilePath mount_point = temp_dir.GetPath();
   std::string device_id = StorageInfo::MakeDeviceId(
       StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
   StorageInfo info = CreateStorageInfo(device_id, "", mount_point, kTestSize);

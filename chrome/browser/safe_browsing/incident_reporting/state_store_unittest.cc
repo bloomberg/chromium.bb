@@ -124,7 +124,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
 
  private:
   base::FilePath GetPrefsPath() {
-    return temp_dir_.path().AppendASCII("prefs");
+    return temp_dir_.GetPath().AppendASCII("prefs");
   }
 
   extensions::QuotaService::ScopedDisablePurgeForTesting

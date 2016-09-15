@@ -296,7 +296,7 @@ class FakePWGRasterConverter : public PWGRasterConverter {
 
     initialized_ = true;
 
-    path_ = temp_dir_.path().AppendASCII("output.pwg");
+    path_ = temp_dir_.GetPath().AppendASCII("output.pwg");
     std::string data_str(data->front_as<char>(), data->size());
     int written = WriteFile(path_, data_str.c_str(), data_str.size());
     if (written != static_cast<int>(data_str.size())) {

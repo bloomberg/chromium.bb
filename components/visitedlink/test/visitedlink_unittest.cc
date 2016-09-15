@@ -232,7 +232,7 @@ class VisitedLinkTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    history_dir_ = temp_dir_.path().AppendASCII("VisitedLinkTest");
+    history_dir_ = temp_dir_.GetPath().AppendASCII("VisitedLinkTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));

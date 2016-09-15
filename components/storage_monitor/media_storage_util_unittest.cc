@@ -52,12 +52,12 @@ class MediaStorageUtilTest : public testing::Test {
  protected:
   // Create mount point for the test device.
   base::FilePath CreateMountPoint(bool create_dcim_dir) {
-    base::FilePath path(scoped_temp_dir_.path());
+    base::FilePath path(scoped_temp_dir_.GetPath());
     if (create_dcim_dir)
       path = path.Append(kDCIMDirectoryName);
     if (!base::CreateDirectory(path))
       return base::FilePath();
-    return scoped_temp_dir_.path();
+    return scoped_temp_dir_.GetPath();
   }
 
   void SetUp() override {

@@ -291,7 +291,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }
   const base::FilePath& executable_path() const { return executable_path_; }
   const base::FilePath& bundle_path() const { return bundle_path_; }
-  const base::FilePath& GetTempDirPath() const { return temp_dir_.path(); }
+  const base::FilePath& GetTempDirPath() const { return temp_dir_.GetPath(); }
 
   base::SingleThreadTaskRunner* GetIOTaskRunner() {
     return io_thread_.task_runner().get();

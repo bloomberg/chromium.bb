@@ -242,7 +242,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   MockRulesetDistributor* mock_distributor() { return mock_distributor_; }
 
   virtual base::FilePath effective_temp_dir() const {
-    return scoped_temp_dir_.path();
+    return scoped_temp_dir_.GetPath();
   }
 
   TestRulesetCreator* test_ruleset_creator() { return &ruleset_creator_; }

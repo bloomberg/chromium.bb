@@ -247,7 +247,7 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedBundleTest) {
 
   base::FilePath orig_path = testdata_path_.AppendASCII("modified-bundle.app");
   base::FilePath copied_path =
-      temp_dir_.path().AppendASCII("modified-bundle.app");
+      temp_dir_.GetPath().AppendASCII("modified-bundle.app");
   CHECK(base::CopyDirectory(orig_path, copied_path, true));
 
   // Setup the extended attributes, which don't persist in the git repo.

@@ -145,7 +145,7 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const std::string& extension_id = LoadUnpackedThemeAt(temp_dir.path());
+  const std::string& extension_id = LoadUnpackedThemeAt(temp_dir.GetPath());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
   EXPECT_EQ(extension_id, theme_service->GetThemeID());
 
@@ -173,7 +173,7 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
 
   // 1) Installing a theme should disable the previously active theme.
-  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.path());
+  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.GetPath());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
@@ -181,7 +181,7 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   // Show an infobar to prevent the current theme from being uninstalled.
   theme_service->OnInfobarDisplayed();
 
-  const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
+  const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.GetPath());
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
   EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
@@ -235,8 +235,8 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
 
-  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.path());
-  const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
+  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.GetPath());
+  const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.GetPath());
 
   // Test the initial state.
   EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
@@ -337,7 +337,7 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
   base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
 
-  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.path());
+  const std::string& extension1_id = LoadUnpackedThemeAt(temp_dir1.GetPath());
   ASSERT_EQ(extension1_id, theme_service->GetThemeID());
 
   // Show an infobar.
@@ -348,13 +348,13 @@ TEST_F(ThemeServiceTest, UninstallThemeOnThemeChangeNotification) {
   // NOTIFICATION_BROWSER_THEME_CHANGED notification.
   {
     InfobarDestroyerOnThemeChange destroyer(profile_.get());
-    const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
+    const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.GetPath());
     ASSERT_EQ(extension2_id, theme_service->GetThemeID());
     ASSERT_FALSE(service_->GetInstalledExtension(extension1_id));
   }
 
   // Check that it is possible to reinstall extension1.
-  ASSERT_EQ(extension1_id, LoadUnpackedThemeAt(temp_dir1.path()));
+  ASSERT_EQ(extension1_id, LoadUnpackedThemeAt(temp_dir1.GetPath()));
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
 }
 

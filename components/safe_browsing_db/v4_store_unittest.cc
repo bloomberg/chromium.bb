@@ -29,7 +29,7 @@ class V4StoreTest : public PlatformTest {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    store_path_ = temp_dir_.path().AppendASCII("V4StoreTest.store");
+    store_path_ = temp_dir_.GetPath().AppendASCII("V4StoreTest.store");
     DVLOG(1) << "store_path_: " << store_path_.value();
   }
 

@@ -108,7 +108,7 @@ TEST(TraceConfigFileTest, ValidContent) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -131,7 +131,7 @@ TEST(TraceConfigFileTest, ValidContentWithOnlyTraceConfig) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -152,7 +152,7 @@ TEST(TraceConfigFileTest, ContentWithAbsoluteResultFilePath) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   const base::FilePath result_file_path =
-      temp_dir.path().Append(FILE_PATH_LITERAL("trace_result_file.log"));
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("trace_result_file.log"));
   ASSERT_TRUE(result_file_path.IsAbsolute());
 
   std::string result_file_path_str = result_file_path.AsUTF8Unsafe();
@@ -167,7 +167,7 @@ TEST(TraceConfigFileTest, ContentWithAbsoluteResultFilePath) {
 
   base::FilePath trace_config_file;
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -185,7 +185,7 @@ TEST(TraceConfigFileTest, ContentWithNegtiveDuration) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -209,7 +209,7 @@ TEST(TraceConfigFileTest, ContentWithoutTraceConfig) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -226,7 +226,7 @@ TEST(TraceConfigFileTest, InvalidContent) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   ASSERT_NE(-1, base::WriteFile(
       trace_config_file, content.c_str(), (int)content.length()));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
@@ -241,7 +241,7 @@ TEST(TraceConfigFileTest, EmptyContent) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir.path(), &trace_config_file));
+      base::CreateTemporaryFileInDir(temp_dir.GetPath(), &trace_config_file));
   base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
       switches::kTraceConfigFile, trace_config_file);
 

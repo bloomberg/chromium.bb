@@ -110,7 +110,7 @@ class PrefixSetTest : public PlatformTest {
     if (!temp_dir_.IsValid() && !temp_dir_.CreateUniqueTempDir())
       return false;
 
-    base::FilePath filename = temp_dir_.path().AppendASCII("PrefixSetTest");
+    base::FilePath filename = temp_dir_.GetPath().AppendASCII("PrefixSetTest");
 
     PrefixSetBuilder builder(shared_prefixes_);
     if (!builder.GetPrefixSetNoHashes()->WriteFile(filename))

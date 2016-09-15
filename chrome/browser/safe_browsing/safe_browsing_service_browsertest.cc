@@ -1497,7 +1497,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   // Add a new Profile. SBS should keep running.
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   std::unique_ptr<Profile> profile2(Profile::CreateProfile(
-      temp_profile_dir_.path(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS));
+      temp_profile_dir_.GetPath(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile2);
   StartupTaskRunnerServiceFactory::GetForProfile(profile2.get())->
       StartDeferredTaskRunners();
@@ -1596,7 +1596,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   profile_manager->CreateProfileAsync(
-      temp_profile_dir_.path(),
+      temp_profile_dir_.GetPath(),
       base::Bind(&SafeBrowsingServiceShutdownTest::OnUnblockOnProfileCreation,
                  base::Unretained(this)),
       base::string16(), std::string(), std::string());

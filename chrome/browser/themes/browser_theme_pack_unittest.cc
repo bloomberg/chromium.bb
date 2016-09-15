@@ -616,7 +616,7 @@ TEST_F(BrowserThemePackTest, TestNonExistantImages) {
 TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.path().AppendASCII("data.pak");
+  base::FilePath file = dir.GetPath().AppendASCII("data.pak");
 
   // Part 1: Build the pack from an extension.
   {
@@ -640,7 +640,7 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
 TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.path().AppendASCII("theme_data.pak");
+  base::FilePath file = dir.GetPath().AppendASCII("theme_data.pak");
 
   // Part 1: Build the pack from an extension.
   {

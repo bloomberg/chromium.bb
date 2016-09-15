@@ -107,7 +107,7 @@ class SearchHistoryTest : public testing::Test {
   void CreateHistory() {
     const char kStoreDataFileName[] = "app-launcher-test";
     const base::FilePath data_file =
-        temp_dir_.path().AppendASCII(kStoreDataFileName);
+        temp_dir_.GetPath().AppendASCII(kStoreDataFileName);
     scoped_refptr<DictionaryDataStore> dictionary_data_store(
         new DictionaryDataStore(data_file, worker_pool_owner_->pool().get()));
     history_.reset(new History(scoped_refptr<HistoryDataStore>(

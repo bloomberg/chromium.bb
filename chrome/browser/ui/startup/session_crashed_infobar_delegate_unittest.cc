@@ -34,7 +34,7 @@ class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
     // Make sure we have a Profile Manager.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new ProfileManagerWithoutInit(temp_dir_.path()));
+        new ProfileManagerWithoutInit(temp_dir_.GetPath()));
   }
 
   void TearDown() override {

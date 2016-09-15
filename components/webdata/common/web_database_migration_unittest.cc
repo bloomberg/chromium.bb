@@ -88,7 +88,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   base::FilePath GetDatabasePath() {
     const base::FilePath::CharType kWebDatabaseFilename[] =
         FILE_PATH_LITERAL("TestWebDatabase.sqlite3");
-    return temp_dir_.path().Append(base::FilePath(kWebDatabaseFilename));
+    return temp_dir_.GetPath().Append(base::FilePath(kWebDatabaseFilename));
   }
 
   // The textual contents of |file| are read from

@@ -56,7 +56,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    filename_ = temp_dir_.path();
+    filename_ = temp_dir_.GetPath();
     filename_ = filename_.AppendASCII("SafeBrowsingTestStore");
 
     store_.reset(new SafeBrowsingStoreFile(task_runner_));

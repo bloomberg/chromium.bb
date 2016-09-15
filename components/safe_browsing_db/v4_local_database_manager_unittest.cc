@@ -42,10 +42,10 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-    DVLOG(1) << "base_dir_: " << base_dir_.path().value();
+    DVLOG(1) << "base_dir_: " << base_dir_.GetPath().value();
 
     v4_local_database_manager_ =
-        make_scoped_refptr(new V4LocalDatabaseManager(base_dir_.path()));
+        make_scoped_refptr(new V4LocalDatabaseManager(base_dir_.GetPath()));
     v4_local_database_manager_->SetTaskRunnerForTest(task_runner_);
 
     SetupLocalDatabaseManager();

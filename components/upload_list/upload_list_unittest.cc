@@ -57,7 +57,7 @@ class UploadListTest : public testing::Test,
     return worker_pool_owner_.pool();
   }
   base::FilePath log_path() {
-    return temp_dir_.path().Append(FILE_PATH_LITERAL("uploads.log"));
+    return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("uploads.log"));
   }
 
  private:
