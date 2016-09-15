@@ -9,6 +9,8 @@
 #include "base/time/time.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display.h"
+#include "services/ui/ws/drag_controller.h"
+#include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -123,35 +125,17 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   if (window && modal_window_controller_.IsWindowBlocked(window))
     return false;
 
+  // If we're currently performing a drag and drop, reject setting the capture
+  // window.
+  if (drag_controller_)
+    return false;
+
   if (capture_window_) {
     // Stop observing old capture window. |pointer_targets_| are cleared on
     // initial setting of a capture window.
     UnobserveWindow(capture_window_);
   } else {
-    // Cancel implicit capture to all other windows.
-    for (const auto& pair : pointer_targets_) {
-      ServerWindow* target = pair.second.window;
-      if (!target)
-        continue;
-      UnobserveWindow(target);
-      if (target == window)
-        continue;
-
-      ui::EventType event_type = pair.second.is_mouse_event
-                                     ? ui::ET_POINTER_EXITED
-                                     : ui::ET_POINTER_CANCELLED;
-      ui::EventPointerType pointer_type =
-          pair.second.is_mouse_event ? ui::EventPointerType::POINTER_TYPE_MOUSE
-                                     : ui::EventPointerType::POINTER_TYPE_TOUCH;
-      // TODO(jonross): Track previous location in PointerTarget for sending
-      // cancels.
-      ui::PointerEvent event(
-          event_type, gfx::Point(), gfx::Point(), ui::EF_NONE, pair.first,
-          0 /* changed_button_flags */, ui::PointerDetails(pointer_type),
-          ui::EventTimeForNow());
-      DispatchToPointerTarget(pair.second, event);
-    }
-    pointer_targets_.clear();
+    CancelImplicitCaptureExcept(window);
   }
 
   // Set the capture before changing native capture; otherwise, the callback
@@ -177,6 +161,29 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
   }
 
   return true;
+}
+
+void EventDispatcher::SetDragDropSourceWindow(
+    DragSource* drag_source,
+    ServerWindow* window,
+    DragTargetConnection* source_connection,
+    int32_t drag_pointer,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
+    uint32_t drag_operations) {
+  CancelImplicitCaptureExcept(nullptr);
+  drag_controller_ = base::MakeUnique<DragController>(
+      drag_source, window, source_connection, drag_pointer,
+      std::move(mime_data), drag_operations);
+}
+
+void EventDispatcher::EndDragDrop() {
+  drag_controller_.reset();
+}
+
+void EventDispatcher::OnWillDestroyDragTargetConnection(
+    DragTargetConnection* connection) {
+  if (drag_controller_)
+    drag_controller_->OnWillDestroyDragTargetConnection(connection);
 }
 
 void EventDispatcher::AddSystemModalWindow(ServerWindow* window) {
@@ -287,6 +294,11 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
                                       AcceleratorMatchPhase match_phase) {
   Accelerator* post_target =
       FindAccelerator(event, ui::mojom::AcceleratorPhase::POST_TARGET);
+  if (drag_controller_ && event.type() == ui::ET_KEY_PRESSED &&
+      event.key_code() == ui::VKEY_ESCAPE) {
+    drag_controller_->Cancel();
+    return;
+  }
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
   if (focused_window) {
@@ -326,6 +338,12 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
       mouse_button_down_ = true;
     else if (is_pointer_going_up)
       mouse_button_down_ = false;
+  }
+
+  if (drag_controller_) {
+    const PointerTarget target = PointerTargetForEvent(event);
+    if (drag_controller_->DispatchPointerEvent(event, target.window))
+      return;
   }
 
   if (capture_window_) {
@@ -533,6 +551,32 @@ ServerWindow* EventDispatcher::FindDeepestVisibleWindowForEvents(
     return nullptr;
 
   return ui::ws::FindDeepestVisibleWindowForEvents(root, location);
+}
+
+void EventDispatcher::CancelImplicitCaptureExcept(ServerWindow* window) {
+  for (const auto& pair : pointer_targets_) {
+    ServerWindow* target = pair.second.window;
+    if (!target)
+      continue;
+    UnobserveWindow(target);
+    if (target == window)
+      continue;
+
+    ui::EventType event_type = pair.second.is_mouse_event
+                                   ? ui::ET_POINTER_EXITED
+                                   : ui::ET_POINTER_CANCELLED;
+    ui::EventPointerType pointer_type =
+        pair.second.is_mouse_event ? ui::EventPointerType::POINTER_TYPE_MOUSE
+                                   : ui::EventPointerType::POINTER_TYPE_TOUCH;
+    // TODO(jonross): Track previous location in PointerTarget for sending
+    // cancels.
+    ui::PointerEvent event(event_type, gfx::Point(), gfx::Point(), ui::EF_NONE,
+                           pair.first, 0 /* changed_button_flags */,
+                           ui::PointerDetails(pointer_type),
+                           ui::EventTimeForNow());
+    DispatchToPointerTarget(pair.second, event);
+  }
+  pointer_targets_.clear();
 }
 
 void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,

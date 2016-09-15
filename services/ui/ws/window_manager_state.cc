@@ -155,6 +155,22 @@ void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
   event_dispatcher_.ReleaseCaptureBlockedByAnyModalWindow();
 }
 
+void WindowManagerState::SetDragDropSourceWindow(
+    DragSource* drag_source,
+    ServerWindow* window,
+    DragTargetConnection* source_connection,
+    int32_t drag_pointer,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    uint32_t drag_operation) {
+  event_dispatcher_.SetDragDropSourceWindow(
+      drag_source, window, source_connection, drag_pointer,
+      std::move(drag_data), drag_operation);
+}
+
+void WindowManagerState::EndDragDrop() {
+  event_dispatcher_.EndDragDrop();
+}
+
 void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
   DCHECK(!window->transient_parent());
   event_dispatcher_.AddSystemModalWindow(window);
@@ -165,6 +181,8 @@ const UserId& WindowManagerState::user_id() const {
 }
 
 void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
+  event_dispatcher_.OnWillDestroyDragTargetConnection(tree);
+
   if (tree_awaiting_input_ack_ != tree)
     return;
 

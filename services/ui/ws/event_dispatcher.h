@@ -26,8 +26,12 @@ class LocatedEvent;
 namespace ws {
 
 class Accelerator;
+class DragController;
+class DragSource;
+class DragTargetConnection;
 class EventDispatcherDelegate;
 class ServerWindow;
+class WindowTree;
 
 namespace test {
 class EventDispatcherTestApi;
@@ -74,6 +78,17 @@ class EventDispatcher : public ServerWindowObserver {
   ClientSpecificId capture_window_client_id() const {
     return capture_window_client_id_;
   }
+
+  void SetDragDropSourceWindow(
+      DragSource* drag_source,
+      ServerWindow* window,
+      DragTargetConnection* source_connection,
+      int32_t drag_pointer,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
+      uint32_t drag_operations);
+  void EndDragDrop();
+
+  void OnWillDestroyDragTargetConnection(DragTargetConnection* connection);
 
   // Adds a system modal window. The window remains modal to system until it is
   // destroyed. There can exist multiple system modal windows, in which case the
@@ -204,6 +219,10 @@ class EventDispatcher : public ServerWindowObserver {
 
   ServerWindow* FindDeepestVisibleWindowForEvents(gfx::Point* location);
 
+  // Clears the implicit captures in |pointer_targets_|, with the exception of
+  // |window|. |window| may be null.
+  void CancelImplicitCaptureExcept(ServerWindow* window);
+
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,
                                    ServerWindow* new_parent,
@@ -215,6 +234,8 @@ class EventDispatcher : public ServerWindowObserver {
 
   ServerWindow* capture_window_;
   ClientSpecificId capture_window_client_id_;
+
+  std::unique_ptr<DragController> drag_controller_;
 
   ModalWindowController modal_window_controller_;
 

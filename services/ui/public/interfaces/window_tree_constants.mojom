@@ -47,6 +47,12 @@ enum EventResult {
   UNHANDLED,
 };
 
+// A bitfield of what drag operations are possible.
+const uint32 kDropEffectNone = 0;
+const uint32 kDropEffectMove = 1;
+const uint32 kDropEffectCopy = 2;
+const uint32 kDropEffectLink = 4;
+
 // When this flag is set in a call to Embed(), the embedder (i.e. the client
 // that is making the call to Embed()) will receive events that are targeted to
 // the embedded client. The embedded client will not receive any input events

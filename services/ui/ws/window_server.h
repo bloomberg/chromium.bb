@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/clipboard/clipboard_impl.h"
@@ -220,6 +221,15 @@ class WindowServer : public ServerWindowDelegate,
   gfx::Rect GetCurrentMoveLoopRevertBounds();
   bool in_move_loop() const { return !!current_move_loop_; }
 
+  void StartDragLoop(uint32_t change_id,
+                     ServerWindow* window,
+                     WindowTree* initiator);
+  void EndDragLoop();
+  uint32_t GetCurrentDragLoopChangeId();
+  ServerWindow* GetCurrentDragLoopWindow();
+  WindowTree* GetCurrentDragLoopInitiator();
+  bool in_drag_loop() const { return !!current_drag_loop_; }
+
   void OnDisplayReady(Display* display, bool is_first);
   void OnNoMoreDisplays();
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
@@ -234,6 +244,7 @@ class WindowServer : public ServerWindowDelegate,
 
  private:
   struct CurrentMoveLoopState;
+  struct CurrentDragLoopState;
   friend class Operation;
 
   using WindowTreeMap =
@@ -346,6 +357,7 @@ class WindowServer : public ServerWindowDelegate,
 
   std::unique_ptr<DisplayManager> display_manager_;
 
+  std::unique_ptr<CurrentDragLoopState> current_drag_loop_;
   std::unique_ptr<CurrentMoveLoopState> current_move_loop_;
 
   // Set of WindowTrees.

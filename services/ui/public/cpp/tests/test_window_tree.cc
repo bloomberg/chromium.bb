@@ -58,6 +58,9 @@ void TestWindowTree::SetClientArea(
 void TestWindowTree::SetHitTestMask(uint32_t window_id,
                                     const base::Optional<gfx::Rect>& mask) {}
 
+void TestWindowTree::SetCanAcceptDrops(uint32_t window_id, bool accepts_drops) {
+}
+
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          uint32_t window_id,
                                          bool visible) {
@@ -167,6 +170,13 @@ void TestWindowTree::GetCursorLocationMemory(
     const GetCursorLocationMemoryCallback& callback) {
   callback.Run(mojo::ScopedSharedBufferHandle());
 }
+
+void TestWindowTree::PerformDragDrop(
+    uint32_t change_id,
+    uint32_t source_window_id,
+    int32_t drag_pointer,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    uint32_t drag_operation) {}
 
 void TestWindowTree::PerformWindowMove(uint32_t change_id,
                                        uint32_t window_id,

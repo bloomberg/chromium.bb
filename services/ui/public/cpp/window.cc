@@ -447,6 +447,14 @@ void Window::SetCanFocus(bool can_focus) {
     client_->SetCanFocus(server_id_, can_focus);
 }
 
+void Window::SetCanAcceptDrops(WindowDropTarget* drop_target) {
+  if (drop_target_ == drop_target)
+    return;
+  drop_target_ = drop_target;
+  if (client_)
+    client_->SetCanAcceptDrops(server_id_, !!drop_target_);
+}
+
 void Window::SetCanAcceptEvents(bool can_accept_events) {
   if (can_accept_events_ == can_accept_events)
     return;
@@ -471,6 +479,17 @@ void Window::Embed(ui::mojom::WindowTreeClientPtr client,
 void Window::RequestClose() {
   if (client_)
     client_->RequestClose(this);
+}
+
+void Window::PerformDragDrop(
+    int drag_pointer,
+    const std::map<std::string, std::vector<uint8_t>>& drag_data,
+    int drag_operation,
+    const gfx::Point& cursor_location,
+    const SkBitmap& bitmap,
+    const base::Callback<void(bool)>& callback) {
+  client_->PerformDragDrop(this, drag_pointer, drag_data, drag_operation,
+                           cursor_location, bitmap, callback);
 }
 
 void Window::PerformWindowMove(mojom::MoveLoopSource source,

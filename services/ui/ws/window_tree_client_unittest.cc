@@ -371,6 +371,36 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                                        mojom::Cursor cursor_id) override {
     tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
   }
+
+  void OnDragDropStart(
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data) override {
+    NOTIMPLEMENTED();
+  }
+
+  void OnDragEnter(uint32_t window,
+                   uint32_t key_state,
+                   const gfx::Point& position,
+                   uint32_t effect_bitmask,
+                   const OnDragEnterCallback& callback) override {
+    NOTIMPLEMENTED();
+  }
+  void OnDragOver(uint32_t window,
+                  uint32_t key_state,
+                  const gfx::Point& position,
+                  uint32_t effect_bitmask,
+                  const OnDragOverCallback& callback) override {
+    NOTIMPLEMENTED();
+  }
+  void OnDragLeave(uint32_t window) override { NOTIMPLEMENTED(); }
+  void OnCompleteDrop(uint32_t window,
+                      uint32_t key_state,
+                      const gfx::Point& position,
+                      uint32_t effect_bitmask,
+                      const OnCompleteDropCallback& callback) override {
+    NOTIMPLEMENTED();
+  }
+  void OnDragDropDone() override { NOTIMPLEMENTED(); }
+
   void OnChangeCompleted(uint32_t change_id, bool success) override {
     if (waiting_change_id_ == change_id && change_completed_run_loop_) {
       on_change_completed_result_ = success;

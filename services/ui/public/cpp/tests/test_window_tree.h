@@ -48,6 +48,7 @@ class TestWindowTree : public mojom::WindowTree {
                      mojo::Array<gfx::Rect> additional_client_areas) override;
   void SetHitTestMask(uint32_t window_id,
                       const base::Optional<gfx::Rect>& mask) override;
+  void SetCanAcceptDrops(uint32_t window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;
@@ -102,6 +103,11 @@ class TestWindowTree : public mojom::WindowTree {
       override;
   void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
       override;
+  void PerformDragDrop(uint32_t change_id,
+                       uint32_t source_window_id,
+                       int32_t drag_pointer,
+                       mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+                       uint32_t drag_operation) override;
   void PerformWindowMove(uint32_t change_id,
                          uint32_t window_id,
                          mojom::MoveLoopSource source,

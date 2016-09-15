@@ -352,6 +352,32 @@ void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
   tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
 }
 
+void TestWindowTreeClient::OnDragDropStart(
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {}
+
+void TestWindowTreeClient::OnDragEnter(uint32_t window,
+                                       uint32_t key_state,
+                                       const gfx::Point& position,
+                                       uint32_t effect_bitmask,
+                                       const OnDragEnterCallback& callback) {}
+
+void TestWindowTreeClient::OnDragOver(uint32_t window,
+                                      uint32_t key_state,
+                                      const gfx::Point& position,
+                                      uint32_t effect_bitmask,
+                                      const OnDragOverCallback& callback) {}
+
+void TestWindowTreeClient::OnDragLeave(uint32_t window) {}
+
+void TestWindowTreeClient::OnCompleteDrop(
+    uint32_t window,
+    uint32_t key_state,
+    const gfx::Point& position,
+    uint32_t effect_bitmask,
+    const OnCompleteDropCallback& callback) {}
+
+void TestWindowTreeClient::OnDragDropDone() {}
+
 void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   if (record_on_change_completed_)
     tracker_.OnChangeCompleted(change_id, success);

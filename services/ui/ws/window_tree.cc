@@ -1388,6 +1388,16 @@ void WindowTree::SetHitTestMask(Id transport_window_id,
     window->ClearHitTestMask();
 }
 
+void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  if (!window || !access_policy_->CanSetAcceptDrops(window)) {
+    DVLOG(1) << "SetAcceptsDrops failed";
+    return;
+  }
+
+  window->SetCanAcceptDrops(accepts_drops);
+}
+
 void WindowTree::Embed(Id transport_window_id,
                        mojom::WindowTreeClientPtr client,
                        uint32_t flags,
@@ -1453,6 +1463,50 @@ void WindowTree::GetCursorLocationMemory(
       GetCursorLocationMemory());
 }
 
+void WindowTree::PerformDragDrop(
+    uint32_t change_id,
+    Id source_window_id,
+    int32_t drag_pointer,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+    uint32_t drag_operation) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(source_window_id));
+  bool success = window && access_policy_->CanInitiateDragLoop(window);
+  if (!success || !ShouldRouteToWindowManager(window)) {
+    // We need to fail this move loop change, otherwise the client will just be
+    // waiting for |change_id|.
+    DVLOG(1) << "PerformDragDrop failed (access denied).";
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root) {
+    // The window isn't parented. There's nothing to do.
+    DVLOG(1) << "PerformDragDrop failed (window unparented).";
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  if (window_server_->in_move_loop() || window_server_->in_drag_loop()) {
+    // Either the window manager is servicing a window drag or we're servicing
+    // a drag and drop operation. We can't start a second drag.
+    DVLOG(1) << "PerformDragDrop failed (already performing a drag).";
+    OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  // TODO(erg): Dealing with |drag_representation| is hard, so we're going to
+  // deal with that later.
+
+  // Here, we need to dramatically change how the mouse pointer works. Once
+  // we've started a drag drop operation, cursor events don't go to windows as
+  // normal.
+  WindowManagerState* wms = display_root->window_manager_state();
+  window_server_->StartDragLoop(change_id, window, this);
+  wms->SetDragDropSourceWindow(this, window, this, drag_pointer,
+                               std::move(drag_data), drag_operation);
+}
+
 void WindowTree::PerformWindowMove(uint32_t change_id,
                                    Id window_id,
                                    ui::mojom::MoveLoopSource source,
@@ -1462,6 +1516,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   if (!success || !ShouldRouteToWindowManager(window)) {
     // We need to fail this move loop change, otherwise the client will just be
     // waiting for |change_id|.
+    DVLOG(1) << "PerformWindowMove failed (access denied).";
     OnChangeCompleted(change_id, false);
     return;
   }
@@ -1469,13 +1524,15 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
   if (!display_root) {
     // The window isn't parented. There's nothing to do.
+    DVLOG(1) << "PerformWindowMove failed (window unparented).";
     OnChangeCompleted(change_id, false);
     return;
   }
 
-  if (window_server_->in_move_loop()) {
-    // A window manager is already servicing a move loop; we can't start a
-    // second one.
+  if (window_server_->in_move_loop() || window_server_->in_drag_loop()) {
+    // Either the window manager is servicing a window drag or we're servicing
+    // a drag and drop operation. We can't start a second drag.
+    DVLOG(1) << "PerformWindowMove failed (already performing a drag).";
     OnChangeCompleted(change_id, false);
     return;
   }
@@ -1680,6 +1737,105 @@ bool WindowTree::IsWindowRootOfAnotherTreeForAccessPolicy(
     const ServerWindow* window) const {
   WindowTree* tree = window_server_->GetTreeWithRoot(window);
   return tree && tree != this;
+}
+
+void WindowTree::OnDragCompleted(bool success) {
+  DCHECK(window_server_->in_drag_loop());
+
+  if (window_server_->GetCurrentDragLoopInitiator() != this)
+    return;
+
+  uint32_t change_id = window_server_->GetCurrentDragLoopChangeId();
+  ServerWindow* window = window_server_->GetCurrentDragLoopWindow();
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root)
+    return;
+
+  window_server_->EndDragLoop();
+  WindowManagerState* wms = display_root->window_manager_state();
+  wms->EndDragDrop();
+
+  client()->OnChangeCompleted(change_id, success);
+}
+
+ServerWindow* WindowTree::GetWindowById(const WindowId& id) {
+  return GetWindow(id);
+}
+
+DragTargetConnection* WindowTree::GetDragTargetForWindow(
+    const ServerWindow* window) {
+  if (!window)
+    return nullptr;
+  DragTargetConnection* connection = window_server_->GetTreeWithRoot(window);
+  if (connection)
+    return connection;
+  return window_server_->GetTreeWithId(window->id().client_id);
+}
+
+void WindowTree::PerformOnDragDropStart(
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {
+  client()->OnDragDropStart(std::move(mime_data));
+}
+
+void WindowTree::PerformOnDragEnter(
+    const ServerWindow* window,
+    uint32_t event_flags,
+    const gfx::Point& cursor_offset,
+    uint32_t effect_bitmask,
+    const base::Callback<void(uint32_t)>& callback) {
+  ClientWindowId client_window_id;
+  if (!IsWindowKnown(window, &client_window_id)) {
+    NOTREACHED();
+    callback.Run(0);
+    return;
+  }
+  client()->OnDragEnter(client_window_id.id, event_flags, cursor_offset,
+                        effect_bitmask, callback);
+}
+
+void WindowTree::PerformOnDragOver(
+    const ServerWindow* window,
+    uint32_t event_flags,
+    const gfx::Point& cursor_offset,
+    uint32_t effect_bitmask,
+    const base::Callback<void(uint32_t)>& callback) {
+  ClientWindowId client_window_id;
+  if (!IsWindowKnown(window, &client_window_id)) {
+    NOTREACHED();
+    callback.Run(0);
+    return;
+  }
+  client()->OnDragOver(client_window_id.id, event_flags, cursor_offset,
+                       effect_bitmask, callback);
+}
+
+void WindowTree::PerformOnDragLeave(const ServerWindow* window) {
+  ClientWindowId client_window_id;
+  if (!IsWindowKnown(window, &client_window_id)) {
+    NOTREACHED();
+    return;
+  }
+  client()->OnDragLeave(client_window_id.id);
+}
+
+void WindowTree::PerformOnCompleteDrop(
+    const ServerWindow* window,
+    uint32_t event_flags,
+    const gfx::Point& cursor_offset,
+    uint32_t effect_bitmask,
+    const base::Callback<void(uint32_t)>& callback) {
+  ClientWindowId client_window_id;
+  if (!IsWindowKnown(window, &client_window_id)) {
+    NOTREACHED();
+    callback.Run(0);
+    return;
+  }
+  client()->OnCompleteDrop(client_window_id.id, event_flags, cursor_offset,
+                           effect_bitmask, callback);
+}
+
+void WindowTree::PerformOnDragDropDone() {
+  client()->OnDragDropDone();
 }
 
 }  // namespace ws

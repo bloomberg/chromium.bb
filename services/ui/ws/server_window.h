@@ -86,6 +86,9 @@ class ServerWindow {
   void SetHitTestMask(const gfx::Rect& mask);
   void ClearHitTestMask();
 
+  bool can_accept_drops() const { return accepts_drops_; }
+  void SetCanAcceptDrops(bool accepts_drags);
+
   int32_t cursor() const { return static_cast<int32_t>(cursor_id_); }
   int32_t non_client_cursor() const {
     return static_cast<int32_t>(non_client_cursor_id_);
@@ -240,6 +243,10 @@ class ServerWindow {
   // Mouse events outside the hit test mask don't hit the window. An empty mask
   // means all events miss the window. If null there is no mask.
   std::unique_ptr<gfx::Rect> hit_test_mask_;
+
+  // Whether this window can be the target in a drag and drop
+  // operation. Clients must opt-in to this.
+  bool accepts_drops_ = false;
 
   base::ObserverList<ServerWindowObserver> observers_;
 

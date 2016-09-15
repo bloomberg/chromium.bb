@@ -32,6 +32,7 @@ enum class ChangeType {
   BOUNDS,
   CAPTURE,
   DELETE_WINDOW,
+  DRAG_LOOP,
   FOCUS,
   MOVE_LOOP,
   NEW_TOP_LEVEL_WINDOW,
@@ -144,16 +145,16 @@ class InFlightBoundsChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
 };
 
-class InFlightMoveLoopChange : public InFlightChange {
+class InFlightDragChange : public InFlightChange {
  public:
-  explicit InFlightMoveLoopChange(Window* window);
+  InFlightDragChange(Window* window, ChangeType type);
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
   void Revert() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InFlightMoveLoopChange);
+  DISALLOW_COPY_AND_ASSIGN(InFlightDragChange);
 };
 
 // Inflight change that crashes on failure. This is useful for changes that are

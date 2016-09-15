@@ -21,6 +21,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/access_policy_delegate.h"
+#include "services/ui/ws/drag_source.h"
+#include "services/ui/ws/drag_target_connection.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_tree_binding.h"
@@ -40,6 +42,7 @@ namespace ws {
 class AccessPolicy;
 class DisplayManager;
 class Display;
+class DragTargetConnection;
 class EventMatcher;
 class ServerWindow;
 class TargetedEvent;
@@ -63,7 +66,9 @@ class WindowTreeTestApi;
 // See ids.h for details on how WindowTree handles identity of windows.
 class WindowTree : public mojom::WindowTree,
                    public AccessPolicyDelegate,
-                   public mojom::WindowManagerClient {
+                   public mojom::WindowManagerClient,
+                   public DragSource,
+                   public DragTargetConnection {
  public:
   WindowTree(WindowServer* window_server,
              const UserId& user_id,
@@ -418,6 +423,7 @@ class WindowTree : public mojom::WindowTree,
       Id transport_window_id,
       const gfx::Insets& insets,
       mojo::Array<gfx::Rect> transport_additional_client_areas) override;
+  void SetCanAcceptDrops(Id window_id, bool accepts_drops) override;
   void SetHitTestMask(Id transport_window_id,
                       const base::Optional<gfx::Rect>& mask) override;
   void GetWindowManagerClient(
@@ -425,6 +431,11 @@ class WindowTree : public mojom::WindowTree,
       override;
   void GetCursorLocationMemory(const GetCursorLocationMemoryCallback& callback)
       override;
+  void PerformDragDrop(uint32_t change_id,
+                       Id source_window_id,
+                       int32_t drag_pointer,
+                       mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+                       uint32_t drag_operation) override;
   void PerformWindowMove(uint32_t change_id,
                          Id window_id,
                          ui::mojom::MoveLoopSource source,
@@ -459,6 +470,36 @@ class WindowTree : public mojom::WindowTree,
   bool IsWindowKnownForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const override;
+
+  // DragSource:
+  void OnDragCompleted(bool success) override;
+  ServerWindow* GetWindowById(const WindowId& id) override;
+  DragTargetConnection* GetDragTargetForWindow(
+      const ServerWindow* window) override;
+
+  // DragTargetConnection:
+  void PerformOnDragDropStart(
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+  void PerformOnDragEnter(
+      const ServerWindow* window,
+      uint32_t event_flags,
+      const gfx::Point& cursor_offset,
+      uint32_t effect_bitmask,
+      const base::Callback<void(uint32_t)>& callback) override;
+  void PerformOnDragOver(
+      const ServerWindow* window,
+      uint32_t event_flags,
+      const gfx::Point& cursor_offset,
+      uint32_t effect_bitmask,
+      const base::Callback<void(uint32_t)>& callback) override;
+  void PerformOnDragLeave(const ServerWindow* window) override;
+  void PerformOnCompleteDrop(
+      const ServerWindow* window,
+      uint32_t event_flags,
+      const gfx::Point& cursor_offset,
+      uint32_t effect_bitmask,
+      const base::Callback<void(uint32_t)>& callback) override;
+  void PerformOnDragDropDone() override;
 
   WindowServer* window_server_;
 

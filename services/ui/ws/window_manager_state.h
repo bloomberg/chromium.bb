@@ -61,6 +61,15 @@ class WindowManagerState : public EventDispatcherDelegate {
   void ReleaseCaptureBlockedByModalWindow(const ServerWindow* modal_window);
   void ReleaseCaptureBlockedByAnyModalWindow();
 
+  void SetDragDropSourceWindow(
+      DragSource* drag_source,
+      ServerWindow* window,
+      DragTargetConnection* source_connection,
+      int32_t drag_pointer,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+      uint32_t drag_operation);
+  void EndDragDrop();
+
   void AddSystemModalWindow(ServerWindow* window);
 
   // TODO(sky): EventDispatcher is really an implementation detail and should

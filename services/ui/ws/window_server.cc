@@ -38,6 +38,12 @@ struct WindowServer::CurrentMoveLoopState {
   gfx::Rect revert_bounds;
 };
 
+struct WindowServer::CurrentDragLoopState {
+  uint32_t change_id;
+  ServerWindow* window;
+  WindowTree* initiator;
+};
+
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
       surfaces_state_(new SurfacesState()),
@@ -482,6 +488,35 @@ gfx::Rect WindowServer::GetCurrentMoveLoopRevertBounds() {
   if (current_move_loop_)
     return current_move_loop_->revert_bounds;
   return gfx::Rect();
+}
+
+void WindowServer::StartDragLoop(uint32_t change_id,
+                                 ServerWindow* window,
+                                 WindowTree* initiator) {
+  current_drag_loop_.reset(
+      new CurrentDragLoopState{change_id, window, initiator});
+}
+
+void WindowServer::EndDragLoop() {
+  current_drag_loop_.reset();
+}
+
+uint32_t WindowServer::GetCurrentDragLoopChangeId() {
+  if (current_drag_loop_)
+    return current_drag_loop_->change_id;
+  return 0u;
+}
+
+ServerWindow* WindowServer::GetCurrentDragLoopWindow() {
+  if (current_drag_loop_)
+    return current_drag_loop_->window;
+  return nullptr;
+}
+
+WindowTree* WindowServer::GetCurrentDragLoopInitiator() {
+  if (current_drag_loop_)
+    return current_drag_loop_->initiator;
+  return nullptr;
 }
 
 void WindowServer::OnDisplayReady(Display* display, bool is_first) {

@@ -138,6 +138,11 @@ bool WindowManagerAccessPolicy::CanSetHitTestMask(
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool WindowManagerAccessPolicy::CanSetAcceptDrops(
+    const ServerWindow* window) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::CanSetAcceptEvents(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||
@@ -145,6 +150,12 @@ bool WindowManagerAccessPolicy::CanSetAcceptEvents(
 }
 
 bool WindowManagerAccessPolicy::CanSetCursorProperties(
+    const ServerWindow* window) const {
+  return WasCreatedByThisClient(window) ||
+         delegate_->HasRootForAccessPolicy(window);
+}
+
+bool WindowManagerAccessPolicy::CanInitiateDragLoop(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||
          delegate_->HasRootForAccessPolicy(window);

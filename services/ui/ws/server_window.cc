@@ -187,6 +187,10 @@ void ServerWindow::ClearHitTestMask() {
   hit_test_mask_.reset();
 }
 
+void ServerWindow::SetCanAcceptDrops(bool accepts_drops) {
+  accepts_drops_ = accepts_drops;
+}
+
 const ServerWindow* ServerWindow::GetRoot() const {
   return delegate_->GetRootWindow(this);
 }

@@ -50,8 +50,10 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetFocus(const ServerWindow* window) const override;
   bool CanSetClientArea(const ServerWindow* window) const override;
   bool CanSetHitTestMask(const ServerWindow* window) const override;
+  bool CanSetAcceptDrops(const ServerWindow* window) const override;
   bool CanSetAcceptEvents(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
+  bool CanInitiateDragLoop(const ServerWindow* window) const override;
   bool CanInitiateMoveLoop(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerWindow* window,

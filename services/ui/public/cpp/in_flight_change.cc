@@ -39,18 +39,16 @@ void InFlightBoundsChange::Revert() {
   WindowPrivate(window()).LocalSetBounds(window()->bounds(), revert_bounds_);
 }
 
-// InFlightMoveLoopChange -----------------------------------------------------
+// InFlightDragChange -----------------------------------------------------
 
-InFlightMoveLoopChange::InFlightMoveLoopChange(Window* window)
-    : InFlightChange(window, ChangeType::MOVE_LOOP) {}
-
-void InFlightMoveLoopChange::SetRevertValueFrom(const InFlightChange& change) {}
-
-void InFlightMoveLoopChange::Revert() {
-  // Reverting bounds happens in the window server in the error case; it cannot
-  // happen in the client because this could conflict with a
-  // InFlightBoundsChange.
+InFlightDragChange::InFlightDragChange(Window* window, ChangeType type)
+    : InFlightChange(window, type) {
+  DCHECK(type == ChangeType::MOVE_LOOP || type == ChangeType::DRAG_LOOP);
 }
+
+void InFlightDragChange::SetRevertValueFrom(const InFlightChange& change) {}
+
+void InFlightDragChange::Revert() {}
 
 // CrashInFlightChange --------------------------------------------------------
 

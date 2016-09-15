@@ -30,6 +30,7 @@ class ServiceProviderImpl;
 class WindowObserver;
 class WindowSurface;
 class WindowSurfaceBinding;
+class WindowDropTarget;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
 
@@ -209,6 +210,11 @@ class Window {
   bool HasFocus() const;
   void SetCanFocus(bool can_focus);
 
+  // Sets whether this window accepts drags. Passing a non-null |drop_target|
+  // will enable acceptance of drops. Passing null will disable it.
+  void SetCanAcceptDrops(WindowDropTarget* drop_target);
+  WindowDropTarget* drop_target() { return drop_target_; }
+
   // Sets whether this window accepts events.
   void SetCanAcceptEvents(bool can_accept_events);
 
@@ -224,6 +230,15 @@ class Window {
   // TODO(sky): this API is only applicable to the WindowManager. Move it
   // to a better place.
   void RequestClose();
+
+  // Starts an inter-process drag and drop operation.
+  void PerformDragDrop(
+      int drag_pointer,
+      const std::map<std::string, std::vector<uint8_t>>& drag_data,
+      int drag_operation,
+      const gfx::Point& cursor_location,
+      const SkBitmap& bitmap,
+      const base::Callback<void(bool)>& callback);
 
   // Tells the window manager to take control of moving the window. Returns
   // true if the move wasn't canceled.
@@ -341,6 +356,10 @@ class Window {
   bool visible_;
   float opacity_;
   int64_t display_id_;
+
+  // The client supplied delegate that receives drag events for this
+  // window (weak ptr).
+  WindowDropTarget* drop_target_ = nullptr;
 
   // Whether this window can accept events. Initialized to true to
   // match ServerWindow.

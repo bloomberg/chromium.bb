@@ -15,6 +15,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
+#include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_factory.h"
@@ -217,6 +218,25 @@ class WindowManagerStateTestApi {
 
 // -----------------------------------------------------------------------------
 
+class DragControllerTestApi {
+ public:
+  explicit DragControllerTestApi(DragController* op) : op_(op) {}
+  ~DragControllerTestApi() {}
+
+  size_t GetSizeOfQueueForWindow(ServerWindow* window) {
+    return op_->GetSizeOfQueueForWindow(window);
+  }
+
+  ServerWindow* GetCurrentTarget() { return op_->current_target_window_; }
+
+ private:
+  DragController* op_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragControllerTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
 // Factory that always embeds the new WindowTree as the root user id.
 class TestDisplayBinding : public DisplayBinding {
  public:
@@ -411,6 +431,25 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
                                        mojom::Cursor cursor_id) override;
+  void OnDragDropStart(
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+  void OnDragEnter(uint32_t window,
+                   uint32_t key_state,
+                   const gfx::Point& position,
+                   uint32_t effect_bitmask,
+                   const OnDragEnterCallback& callback) override;
+  void OnDragOver(uint32_t window,
+                  uint32_t key_state,
+                  const gfx::Point& position,
+                  uint32_t effect_bitmask,
+                  const OnDragOverCallback& callback) override;
+  void OnDragLeave(uint32_t window) override;
+  void OnCompleteDrop(uint32_t window,
+                      uint32_t key_state,
+                      const gfx::Point& position,
+                      uint32_t effect_bitmask,
+                      const OnCompleteDropCallback& callback) override;
+  void OnDragDropDone() override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(uint32_t window_id) override;
   void GetWindowManager(

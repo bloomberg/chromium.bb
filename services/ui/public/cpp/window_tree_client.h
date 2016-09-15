@@ -108,6 +108,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void ClearHitTestMask(Id window_id);
   void SetFocus(Window* window);
   void SetCanFocus(Id window_id, bool can_focus);
+  void SetCanAcceptDrops(Id window_id, bool can_accept_drops);
   void SetCanAcceptEvents(Id window_id, bool can_accept_events);
   void SetPredefinedCursor(Id window_id, ui::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
@@ -175,6 +176,15 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
+  void PerformDragDrop(
+      Window* window,
+      int drag_pointer,
+      const std::map<std::string, std::vector<uint8_t>>& drag_data,
+      int drag_operation,
+      const gfx::Point& cursor_location,
+      const SkBitmap& bitmap,
+      const base::Callback<void(bool)>& callback);
+
   // Performs a window move. |callback| will be asynchronously called with the
   // whether the move loop completed successfully.
   void PerformWindowMove(Window* window,
@@ -206,6 +216,8 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
  private:
   friend class WindowTreeClientPrivate;
+
+  struct CurrentDragState;
 
   enum class NewWindowType {
     CHILD,
@@ -308,6 +320,25 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;
+  void OnDragDropStart(
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+  void OnDragEnter(Id window_id,
+                   uint32_t event_flags,
+                   const gfx::Point& position,
+                   uint32_t effect_bitmask,
+                   const OnDragEnterCallback& callback) override;
+  void OnDragOver(Id window_id,
+                  uint32_t event_flags,
+                  const gfx::Point& position,
+                  uint32_t effect_bitmask,
+                  const OnDragOverCallback& callback) override;
+  void OnDragLeave(Id window_id) override;
+  void OnCompleteDrop(Id window_id,
+                      uint32_t event_flags,
+                      const gfx::Point& position,
+                      uint32_t effect_bitmask,
+                      const OnCompleteDropCallback& callback) override;
+  void OnDragDropDone() override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(uint32_t window_id) override;
   void GetWindowManager(
@@ -413,13 +444,26 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // The current change id for the client.
   uint32_t current_move_loop_change_ = 0u;
 
+  // Callback executed when a move loop initiated by PerformWindowMove() is
+  // completed.
+  base::Callback<void(bool)> on_current_move_finished_;
+
   // The current change id for the window manager.
   uint32_t current_wm_move_loop_change_ = 0u;
   Id current_wm_move_loop_window_id_ = 0u;
 
-  // Callback executed when a move loop initiated by PerformWindowMove() is
-  // completed.
-  base::Callback<void(bool)> on_current_move_finished_;
+  // State related to being the initiator of a drag started with
+  // PerformDragDrop().
+  std::unique_ptr<CurrentDragState> current_drag_state_;
+
+  // The mus server sends the mime drag data once per connection; we cache this
+  // and are responsible for sending it to all of our windows.
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_drag_data_;
+
+  // A set of window ids for windows that we received an OnDragEnter() message
+  // for. We maintain this set so we know who to send OnDragFinish() messages
+  // at the end of the drag.
+  std::set<Id> drag_entered_windows_;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
