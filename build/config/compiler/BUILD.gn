@@ -434,7 +434,13 @@ config("compiler") {
   if (!is_debug && (allow_posix_link_time_opt || is_cfi) && !is_nacl) {
     if (use_thin_lto) {
       cflags += [ "-flto=thin" ]
-      ldflags += [ "-flto=thin" ]
+      ldflags += [
+        "-flto=thin",
+
+        # Limit the parallelism to the sweet spot on most of the machines.
+        # As of now, ThinLTO does not scale beyond 16 cores anyway.
+        "-Wl,-plugin-opt,jobs=16",
+      ]
     } else {
       # Note: ThinLTO does not currently have this feature implemented
       # For Full LTO, it provides a measurable runtime speedup of Chrome.
