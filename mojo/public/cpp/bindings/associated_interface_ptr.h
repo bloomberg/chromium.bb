@@ -231,8 +231,9 @@ template <typename Interface>
 void GetDummyProxyForTesting(AssociatedInterfacePtr<Interface>* proxy) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router =
-      new internal::MultiplexRouter(false, std::move(pipe.handle0),
-                                    base::ThreadTaskRunnerHandle::Get());
+      new internal::MultiplexRouter(std::move(pipe.handle0),
+                                    internal::MultiplexRouter::MULTI_INTERFACE,
+                                    false, base::ThreadTaskRunnerHandle::Get());
   std::unique_ptr<AssociatedGroup> group = router->CreateAssociatedGroup();
   GetProxy(proxy, group.get());
 }

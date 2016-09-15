@@ -12,36 +12,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 
 namespace mojo {
-
-namespace {
-
-// Similar to base::AutoLock, except that it does nothing if |lock| passed into
-// the constructor is null.
-class MayAutoLock {
- public:
-  explicit MayAutoLock(base::Lock* lock) : lock_(lock) {
-    if (lock_)
-      lock_->Acquire();
-  }
-
-  ~MayAutoLock() {
-    if (lock_) {
-      lock_->AssertAcquired();
-      lock_->Release();
-    }
-  }
-
- private:
-  base::Lock* lock_;
-  DISALLOW_COPY_AND_ASSIGN(MayAutoLock);
-};
-
-}  // namespace
-
-// ----------------------------------------------------------------------------
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      ConnectorConfig config,
@@ -73,7 +47,7 @@ void Connector::CloseMessagePipe() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CancelWait();
-  MayAutoLock locker(lock_.get());
+  internal::MayAutoLock locker(lock_.get());
   message_pipe_.reset();
 
   base::AutoLock lock(connected_lock_);
@@ -84,7 +58,7 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CancelWait();
-  MayAutoLock locker(lock_.get());
+  internal::MayAutoLock locker(lock_.get());
   ScopedMessagePipeHandle message_pipe = std::move(message_pipe_);
 
   base::AutoLock lock(connected_lock_);
@@ -149,7 +123,7 @@ bool Connector::Accept(Message* message) {
   if (error_)
     return false;
 
-  MayAutoLock locker(lock_.get());
+  internal::MayAutoLock locker(lock_.get());
 
   if (!message_pipe_.is_valid() || drop_writes_)
     return true;
@@ -331,7 +305,7 @@ void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
 
   if (force_pipe_reset) {
     CancelWait();
-    MayAutoLock locker(lock_.get());
+    internal::MayAutoLock locker(lock_.get());
     message_pipe_.reset();
     MessagePipe dummy_pipe;
     message_pipe_ = std::move(dummy_pipe.handle0);

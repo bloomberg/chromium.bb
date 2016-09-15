@@ -345,7 +345,8 @@ class InterfacePtrState<Interface, true> {
     if (!handle_.is_valid())
       return;
 
-    router_ = new MultiplexRouter(true, std::move(handle_), runner_);
+    router_ = new MultiplexRouter(
+        std::move(handle_), MultiplexRouter::MULTI_INTERFACE, true, runner_);
     router_->SetMasterInterfaceName(Interface::Name_);
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,

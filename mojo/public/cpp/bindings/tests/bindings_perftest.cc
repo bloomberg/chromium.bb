@@ -217,11 +217,13 @@ TEST_F(MojoBindingsPerftest, RouterPingPong) {
 TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0(
-      new internal::MultiplexRouter(true, std::move(pipe.handle0),
-                                    base::ThreadTaskRunnerHandle::Get()));
+      new internal::MultiplexRouter(std::move(pipe.handle0),
+                                    internal::MultiplexRouter::SINGLE_INTERFACE,
+                                    true, base::ThreadTaskRunnerHandle::Get()));
   scoped_refptr<internal::MultiplexRouter> router1(
-      new internal::MultiplexRouter(false, std::move(pipe.handle1),
-                                    base::ThreadTaskRunnerHandle::Get()));
+      new internal::MultiplexRouter(
+          std::move(pipe.handle1), internal::MultiplexRouter::SINGLE_INTERFACE,
+          false, base::ThreadTaskRunnerHandle::Get()));
 
   PingPongPaddle paddle0(nullptr);
   PingPongPaddle paddle1(nullptr);
@@ -302,7 +304,8 @@ TEST_F(MojoBindingsPerftest, RouterDispatchCost) {
 TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router(new internal::MultiplexRouter(
-      true, std::move(pipe.handle0), base::ThreadTaskRunnerHandle::Get()));
+      std::move(pipe.handle0), internal::MultiplexRouter::SINGLE_INTERFACE,
+      true, base::ThreadTaskRunnerHandle::Get()));
   CounterReceiver receiver;
   InterfaceEndpointClient client(
       router->CreateLocalEndpointHandle(kMasterInterfaceId), &receiver, nullptr,

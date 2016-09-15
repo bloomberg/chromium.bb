@@ -146,7 +146,8 @@ void MultiplexedBindingState::BindInternal(
     uint32_t interface_version) {
   DCHECK(!router_);
 
-  router_ = new internal::MultiplexRouter(false, std::move(handle), runner);
+  router_ = new MultiplexRouter(
+      std::move(handle), MultiplexRouter::MULTI_INTERFACE, false, runner);
   router_->SetMasterInterfaceName(interface_name);
 
   endpoint_client_.reset(new InterfaceEndpointClient(

@@ -113,9 +113,11 @@ class AssociatedInterfaceTest : public testing::Test {
   void CreateRouterPair(scoped_refptr<MultiplexRouter>* router0,
                         scoped_refptr<MultiplexRouter>* router1) {
     MessagePipe pipe;
-    *router0 = new MultiplexRouter(true, std::move(pipe.handle0),
+    *router0 = new MultiplexRouter(std::move(pipe.handle0),
+                                   MultiplexRouter::MULTI_INTERFACE, true,
                                    base::ThreadTaskRunnerHandle::Get());
-    *router1 = new MultiplexRouter(false, std::move(pipe.handle1),
+    *router1 = new MultiplexRouter(std::move(pipe.handle1),
+                                   MultiplexRouter::MULTI_INTERFACE, false,
                                    base::ThreadTaskRunnerHandle::Get());
   }
 
