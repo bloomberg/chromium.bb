@@ -15,6 +15,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_checker.h"
@@ -102,7 +103,8 @@ struct ImageDecodeControllerKeyHash {
 
 class CC_EXPORT SoftwareImageDecodeController
     : public ImageDecodeController,
-      public base::trace_event::MemoryDumpProvider {
+      public base::trace_event::MemoryDumpProvider,
+      public base::MemoryCoordinatorClient {
  public:
   using ImageKey = ImageDecodeControllerKey;
   using ImageKeyHash = ImageDecodeControllerKeyHash;
@@ -263,6 +265,9 @@ class CC_EXPORT SoftwareImageDecodeController
   void DumpImageMemoryForCache(const ImageMRUCache& cache,
                                const char* cache_name,
                                base::trace_event::ProcessMemoryDump* pmd) const;
+
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
       pending_image_tasks_;

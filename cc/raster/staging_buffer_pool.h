@@ -12,6 +12,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -50,7 +51,8 @@ struct StagingBuffer {
 };
 
 class CC_EXPORT StagingBufferPool
-    : public base::trace_event::MemoryDumpProvider {
+    : public base::trace_event::MemoryDumpProvider,
+      public base::MemoryCoordinatorClient {
  public:
   ~StagingBufferPool() final;
 
@@ -86,6 +88,9 @@ class CC_EXPORT StagingBufferPool
       const;
   void StagingStateAsValueInto(
       base::trace_event::TracedValue* staging_state) const;
+
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ContextProvider* const worker_context_provider_;

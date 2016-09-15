@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
@@ -22,7 +23,8 @@
 
 namespace cc {
 
-class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
+class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
+                               public base::MemoryCoordinatorClient {
  public:
   // Delay before a resource is considered expired.
   static base::TimeDelta kDefaultExpirationDelay;
@@ -155,6 +157,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   void EvictResourcesNotUsedSince(base::TimeTicks time_limit);
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
+
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   ResourceProvider* resource_provider_;
   bool use_gpu_memory_buffers_;

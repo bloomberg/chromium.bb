@@ -11,6 +11,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
@@ -97,7 +98,8 @@ class ContextProvider;
 //
 class CC_EXPORT GpuImageDecodeController
     : public ImageDecodeController,
-      public base::trace_event::MemoryDumpProvider {
+      public base::trace_event::MemoryDumpProvider,
+      public base::MemoryCoordinatorClient {
  public:
   explicit GpuImageDecodeController(ContextProvider* context,
                                     ResourceFormat decode_format,
@@ -300,6 +302,9 @@ class CC_EXPORT GpuImageDecodeController
   void UploadImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data);
   void DeletePendingImages();
+
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   const ResourceFormat format_;
   ContextProvider* context_;

@@ -13,6 +13,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -180,6 +181,8 @@ SoftwareImageDecodeController::SoftwareImageDecodeController(
         this, "cc::SoftwareImageDecodeController",
         base::ThreadTaskRunnerHandle::Get());
   }
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
@@ -189,6 +192,8 @@ SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+  // Unregister this component with memory_coordinator::ClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 bool SoftwareImageDecodeController::GetTaskForImageAndRef(
@@ -1076,6 +1081,26 @@ void SoftwareImageDecodeController::MemoryBudget::ResetUsage() {
 size_t SoftwareImageDecodeController::MemoryBudget::GetCurrentUsageSafe()
     const {
   return current_usage_bytes_.ValueOrDie();
+}
+
+void SoftwareImageDecodeController::OnMemoryStateChange(
+    base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      // TODO(tasak): go back to normal state.
+      break;
+    case base::MemoryState::THROTTLED:
+      // TODO(tasak): make the limits of this component's caches smaller to
+      // save memory usage.
+      break;
+    case base::MemoryState::SUSPENDED:
+      // TODO(tasak): free this component's caches as much as possible before
+      // suspending renderer.
+      break;
+    case base::MemoryState::UNKNOWN:
+      // NOT_REACHED.
+      break;
+  }
 }
 
 }  // namespace cc

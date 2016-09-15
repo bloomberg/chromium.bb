@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -71,11 +72,16 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
+
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 ResourcePool::~ResourcePool() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+  // Unregister this component with memory_coordinator::ClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
   DCHECK_EQ(0u, in_use_resources_.size());
 
@@ -451,6 +457,25 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
   }
   return true;
+}
+
+void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      // TODO(tasak): go back to normal state.
+      break;
+    case base::MemoryState::THROTTLED:
+      // TODO(tasak): make the limits of this component's caches smaller to
+      // save memory usage.
+      break;
+    case base::MemoryState::SUSPENDED:
+      // TODO(tasak): free this component's caches as much as possible before
+      // suspending renderer.
+      break;
+    case base::MemoryState::UNKNOWN:
+      // NOT_REACHED.
+      break;
+  }
 }
 
 }  // namespace cc

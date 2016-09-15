@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -348,6 +349,8 @@ GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
         this, "cc::GpuImageDecodeController",
         base::ThreadTaskRunnerHandle::Get());
   }
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 GpuImageDecodeController::~GpuImageDecodeController() {
@@ -358,6 +361,8 @@ GpuImageDecodeController::~GpuImageDecodeController() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+  // Unregister this component with memory_coordinator::ClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 bool GpuImageDecodeController::GetTaskForImageAndRef(
@@ -1172,6 +1177,25 @@ bool GpuImageDecodeController::DiscardableIsLockedForTesting(
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   return image_data->decode.is_locked();
+}
+
+void GpuImageDecodeController::OnMemoryStateChange(base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      // TODO(tasak): go back to normal state.
+      break;
+    case base::MemoryState::THROTTLED:
+      // TODO(tasak): make the limits of this component's caches smaller to
+      // save memory usage.
+      break;
+    case base::MemoryState::SUSPENDED:
+      // TODO(tasak): free this component's caches as much as possible before
+      // suspending renderer.
+      break;
+    case base::MemoryState::UNKNOWN:
+      // NOT_REACHED.
+      break;
+  }
 }
 
 }  // namespace cc
