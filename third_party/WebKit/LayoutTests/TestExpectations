@@ -1247,6 +1247,7 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # Tests added from W3C auto import bot
+
 crbug.com/626703 [ Win10 ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure ]
 
 # Skip the test for drawing text on canvases with no browsing context on Mac.
