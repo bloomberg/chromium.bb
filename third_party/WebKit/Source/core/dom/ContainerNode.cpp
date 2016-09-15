@@ -63,7 +63,7 @@ static void dispatchChildRemovalEvents(Node&);
 
 // This dispatches various events; DOM mutation events, blur events, IFRAME
 // unload events, etc.
-static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& exceptionState)
+static inline void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& exceptionState)
 {
     if (node.isDocumentFragment()) {
         DocumentFragment& fragment = toDocumentFragment(node);
@@ -158,13 +158,11 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
     return true;
 }
 
-void ContainerNode::collectChildrenAndRemoveFromOldParentWithCheck(const Node* next, const Node* oldChild, Node& newChild, NodeVector& newChildren, ExceptionState& exceptionState) const
+bool ContainerNode::collectChildrenAndRemoveFromOldParentWithCheck(const Node* next, const Node* oldChild, Node& newChild, NodeVector& newChildren, ExceptionState& exceptionState) const
 {
     collectChildrenAndRemoveFromOldParent(newChild, newChildren, exceptionState);
-    if (exceptionState.hadException())
-        return;
-    if (newChildren.isEmpty())
-        return;
+    if (exceptionState.hadException() || newChildren.isEmpty())
+        return false;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent()
     // can fire various events.
@@ -172,16 +170,16 @@ void ContainerNode::collectChildrenAndRemoveFromOldParentWithCheck(const Node* n
         if (child->parentNode()) {
             // A new child was added to another parent before adding to this
             // node.  Firefox and Edge don't throw in this case.
-            newChildren.clear();
-            return;
+            return false;
         }
         if (!checkAcceptChildGuaranteedNodeTypes(*child, oldChild, exceptionState))
-            return;
+            return false;
     }
     if (next && next->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node before which the new node is to be inserted is not a child of this node.");
-        return;
+        return false;
     }
+    return true;
 }
 
 template <typename Functor>
@@ -240,16 +238,12 @@ public:
 Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState& exceptionState)
 {
     // insertBefore(node, 0) is equivalent to appendChild(node)
-    if (!refChild) {
+    if (!refChild)
         return appendChild(newChild, exceptionState);
-    }
 
     // Make sure adding the new child is OK.
-    if (!checkAcceptChild(newChild, 0, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
+    if (!checkAcceptChild(newChild, 0, exceptionState))
         return newChild;
-    }
     DCHECK(newChild);
 
     // NotFoundError: Raised if refChild is not a child of this node
@@ -262,25 +256,21 @@ Node* ContainerNode::insertBefore(Node* newChild, Node* refChild, ExceptionState
     if (refChild->previousSibling() == newChild || refChild == newChild)
         return newChild;
 
-    Node* next = refChild;
-
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParentWithCheck(next, nullptr, *newChild, targets, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-    if (targets.isEmpty())
+    if (!collectChildrenAndRemoveFromOldParentWithCheck(refChild, nullptr, *newChild, targets, exceptionState))
         return newChild;
 
     ChildListMutationScope mutation(*this);
-    insertNodeVector(targets, next, AdoptAndInsertBefore());
+    insertNodeVector(targets, refChild, AdoptAndInsertBefore());
     return newChild;
 }
 
 void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
 {
-    EventDispatchForbiddenScope assertNoEventDispatch;
-    ScriptForbiddenScope forbidScript;
-
+#if DCHECK_IS_ON()
+    DCHECK(EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
+    DCHECK(ScriptForbiddenScope::isScriptForbidden());
     DCHECK(!newChild.parentNode()); // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
     DCHECK(!newChild.nextSibling());
     DCHECK(!newChild.previousSibling());
@@ -304,15 +294,18 @@ void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
 
 void ContainerNode::appendChildCommon(Node& child)
 {
-    child.setParentOrShadowHostNode(this);
+#if DCHECK_IS_ON()
+    DCHECK(EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
+    DCHECK(ScriptForbiddenScope::isScriptForbidden());
 
+    child.setParentOrShadowHostNode(this);
     if (m_lastChild) {
         child.setPreviousSibling(m_lastChild);
         m_lastChild->setNextSibling(&child);
     } else {
         setFirstChild(&child);
     }
-
     setLastChild(&child);
 }
 
@@ -354,8 +347,7 @@ void ContainerNode::parserInsertBefore(Node* newChild, Node& nextChild)
         EventDispatchForbiddenScope assertNoEventDispatch;
         ScriptForbiddenScope forbidScript;
 
-        treeScope().adoptIfNeeded(*newChild);
-        insertBeforeCommon(nextChild, *newChild);
+        AdoptAndInsertBefore()(*this, *newChild, &nextChild);
         DCHECK_EQ(newChild->connectedSubframeCount(), 0u);
         ChildListMutationScope(*this).childAdded(*newChild);
     }
@@ -373,52 +365,40 @@ Node* ContainerNode::replaceChild(Node* newChild, Node* oldChild, ExceptionState
         return nullptr;
     }
 
-    Node* child = oldChild;
-
     // Make sure replacing the old child with the new is OK.
-    if (!checkAcceptChild(newChild, child, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
-        return child;
-    }
+    if (!checkAcceptChild(newChild, oldChild, exceptionState))
+        return oldChild;
 
     // NotFoundError: Raised if oldChild is not a child of this node.
-    if (child->parentNode() != this) {
+    if (oldChild->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node to be replaced is not a child of this node.");
         return nullptr;
     }
 
     ChildListMutationScope mutation(*this);
-
-    Node* next = child->nextSibling();
+    Node* next = oldChild->nextSibling();
 
     // Remove the node we're replacing.
-    removeChild(child, exceptionState);
+    removeChild(oldChild, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
     if (next && (next->previousSibling() == newChild || next == newChild)) // nothing to do
-        return child;
+        return oldChild;
 
     // Does this one more time because removeChild() fires a MutationEvent.
-    if (!checkAcceptChild(newChild, child, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
-        return child;
-    }
+    if (!checkAcceptChild(newChild, oldChild, exceptionState))
+        return oldChild;
 
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParentWithCheck(next, child, *newChild, targets, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-    if (targets.isEmpty())
-        return child;
+    if (!collectChildrenAndRemoveFromOldParentWithCheck(next, oldChild, *newChild, targets, exceptionState))
+        return oldChild;
 
     if (next)
         insertNodeVector(targets, next, AdoptAndInsertBefore());
     else
         insertNodeVector(targets, nullptr, AdoptAndAppendChild());
-    return child;
+    return oldChild;
 }
 
 void ContainerNode::willRemoveChild(Node& child)
@@ -619,23 +599,16 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
 
 Node* ContainerNode::appendChild(Node* newChild, ExceptionState& exceptionState)
 {
-
     // Make sure adding the new child is ok
-    if (!checkAcceptChild(newChild, 0, exceptionState)) {
-        if (exceptionState.hadException())
-            return nullptr;
+    if (!checkAcceptChild(newChild, 0, exceptionState))
         return newChild;
-    }
     DCHECK(newChild);
 
     if (newChild == m_lastChild) // nothing to do
         return newChild;
 
     NodeVector targets;
-    collectChildrenAndRemoveFromOldParentWithCheck(nullptr, nullptr, *newChild, targets, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-    if (targets.isEmpty())
+    if (!collectChildrenAndRemoveFromOldParentWithCheck(nullptr, nullptr, *newChild, targets, exceptionState))
         return newChild;
 
     ChildListMutationScope mutation(*this);
@@ -665,8 +638,7 @@ void ContainerNode::parserAppendChild(Node* newChild)
         EventDispatchForbiddenScope assertNoEventDispatch;
         ScriptForbiddenScope forbidScript;
 
-        treeScope().adoptIfNeeded(*newChild);
-        appendChildCommon(*newChild);
+        AdoptAndAppendChild()(*this, *newChild, nullptr);
         DCHECK_EQ(newChild->connectedSubframeCount(), 0u);
         ChildListMutationScope(*this).childAdded(*newChild);
     }
@@ -1099,8 +1071,7 @@ HTMLCollection* ContainerNode::children()
 unsigned ContainerNode::countChildren() const
 {
     unsigned count = 0;
-    Node* n;
-    for (n = firstChild(); n; n = n->nextSibling())
+    for (Node* node = firstChild(); node; node = node->nextSibling())
         count++;
     return count;
 }
