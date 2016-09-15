@@ -66,15 +66,16 @@ class NET_EXPORT_PRIVATE FilterSourceStream : public SourceStream {
   // ERR_IO_PENDING). If an unrecoverable error occurred, this should return
   // ERR_CONTENT_DECODING_FAILED or a more specific error code.
   //
-  // FilterData() will be repeatedly invoked with the same |input_buffer| until
-  // FilterData() returns 0 or an error. If FilterData() returns 0,
-  // |input_buffer| must be fully drained. Upstream EOF is reached when
-  // FilterData() is called with |upstream_eof_reached| = true.
+  // If FilterData() returns 0, *|consumed_bytes| must be equal to
+  // |input_buffer_size|. Upstream EOF is reached when FilterData() is called
+  // with |upstream_eof_reached| = true.
   // TODO(xunjieli): consider allowing asynchronous response via callback
   // to support off-thread decompression.
   virtual int FilterData(IOBuffer* output_buffer,
                          int output_buffer_size,
-                         DrainableIOBuffer* input_buffer,
+                         IOBuffer* input_buffer,
+                         int input_buffer_size,
+                         int* consumed_bytes,
                          bool upstream_eof_reached) = 0;
 
   // Returns a string representation of the type of this FilterSourceStream.

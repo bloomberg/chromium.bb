@@ -126,15 +126,24 @@ int FilterSourceStream::DoFilterData() {
   DCHECK(output_buffer_);
   DCHECK(drainable_input_buffer_);
 
-  int bytes_output =
-      FilterData(output_buffer_.get(), output_buffer_size_,
-                 drainable_input_buffer_.get(), upstream_end_reached_);
+  int consumed_bytes = 0;
+  int bytes_output = FilterData(output_buffer_.get(), output_buffer_size_,
+                                drainable_input_buffer_.get(),
+                                drainable_input_buffer_->BytesRemaining(),
+                                &consumed_bytes, upstream_end_reached_);
+  DCHECK_LE(consumed_bytes, drainable_input_buffer_->BytesRemaining());
+  DCHECK(bytes_output != 0 ||
+         consumed_bytes == drainable_input_buffer_->BytesRemaining());
+
   if (bytes_output == ERR_CONTENT_DECODING_FAILED) {
     UMA_HISTOGRAM_ENUMERATION("Net.ContentDecodingFailed.FilterType", type(),
                               TYPE_MAX);
   }
   // FilterData() is not allowed to return ERR_IO_PENDING.
   DCHECK_NE(ERR_IO_PENDING, bytes_output);
+
+  if (consumed_bytes > 0)
+    drainable_input_buffer_->DidConsume(consumed_bytes);
 
   // Received data or encountered an error.
   if (bytes_output != 0)

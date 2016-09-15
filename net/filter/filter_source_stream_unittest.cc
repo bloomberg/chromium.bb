@@ -66,12 +66,14 @@ class NeedsAllInputFilterSourceStream : public TestFilterSourceStreamBase {
         expected_input_bytes_(expected_input_bytes) {}
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool upstream_eof_reached) override {
-    buffer_.append(input_buffer->data(), input_buffer->BytesRemaining());
-    EXPECT_GE(expected_input_bytes_, input_buffer->BytesRemaining());
-    expected_input_bytes_ -= input_buffer->BytesRemaining();
-    input_buffer->DidConsume(input_buffer->BytesRemaining());
+    buffer_.append(input_buffer->data(), input_buffer_size);
+    EXPECT_GE(expected_input_bytes_, input_buffer_size);
+    expected_input_bytes_ -= input_buffer_size;
+    *consumed_bytes = input_buffer_size;
     if (!upstream_eof_reached) {
       // Keep returning 0 bytes read until all input has been consumed.
       return 0;
@@ -96,13 +98,15 @@ class MultiplySourceStream : public TestFilterSourceStreamBase {
         multiplier_(multiplier) {}
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool /*upstream_eof_reached*/) override {
-    for (int i = 0; i < input_buffer->BytesRemaining(); i++) {
+    for (int i = 0; i < input_buffer_size; i++) {
       for (int j = 0; j < multiplier_; j++)
         buffer_.append(input_buffer->data() + i, 1);
     }
-    input_buffer->DidConsume(input_buffer->BytesRemaining());
+    *consumed_bytes = input_buffer_size;
     return WriteBufferToOutput(output_buffer, output_buffer_size);
   }
 
@@ -119,10 +123,12 @@ class PassThroughFilterSourceStream : public TestFilterSourceStreamBase {
       : TestFilterSourceStreamBase(std::move(upstream)) {}
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool /*upstream_eof_reached*/) override {
-    buffer_.append(input_buffer->data(), input_buffer->BytesRemaining());
-    input_buffer->DidConsume(input_buffer->BytesRemaining());
+    buffer_.append(input_buffer->data(), input_buffer_size);
+    *consumed_bytes = input_buffer_size;
     return WriteBufferToOutput(output_buffer, output_buffer_size);
   }
 
@@ -138,10 +144,12 @@ class ThrottleSourceStream : public TestFilterSourceStreamBase {
       : TestFilterSourceStreamBase(std::move(upstream)) {}
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool /*upstream_eof_reached*/) override {
-    buffer_.append(input_buffer->data(), input_buffer->BytesRemaining());
-    input_buffer->DidConsume(input_buffer->BytesRemaining());
+    buffer_.append(input_buffer->data(), input_buffer_size);
+    *consumed_bytes = input_buffer_size;
     int bytes_to_read = std::min(1, static_cast<int>(buffer_.size()));
     memcpy(output_buffer->data(), buffer_.data(), bytes_to_read);
     buffer_.erase(0, bytes_to_read);
@@ -162,10 +170,12 @@ class NoOutputSourceStream : public TestFilterSourceStreamBase {
         consumed_all_input_(false) {}
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool /*upstream_eof_reached*/) override {
-    expected_input_size_ -= input_buffer->BytesRemaining();
-    input_buffer->DidConsume(input_buffer->BytesRemaining());
+    expected_input_size_ -= input_buffer_size;
+    *consumed_bytes = input_buffer_size;
     EXPECT_LE(0, expected_input_size_);
     consumed_all_input_ = (expected_input_size_ == 0);
     return OK;
@@ -189,7 +199,9 @@ class ErrorFilterSourceStream : public FilterSourceStream {
 
   int FilterData(IOBuffer* output_buffer,
                  int output_buffer_size,
-                 DrainableIOBuffer* input_buffer,
+                 IOBuffer* input_buffer,
+                 int input_buffer_size,
+                 int* consumed_bytes,
                  bool /*upstream_eof_reached*/) override {
     return ERR_CONTENT_DECODING_FAILED;
   }
