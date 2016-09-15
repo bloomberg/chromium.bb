@@ -347,7 +347,7 @@ deps_os = {
      Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
     'src/ios/third_party/material_text_accessibility_ios/src':
-     Var('chromium_git') + '/external/github.com/google/material-text-accessibility-ios.git' + '@' + '5b7c4f6382d7241a05caf82e749abf5bc92faa86',
+     Var('chromium_git') + '/external/github.com/google/material-text-accessibility-ios.git' + '@' + '5a8cb31cf26d661f4b0f5fbcc9119cf3930ed098',
 
     'src/ios/third_party/ochamcrest/src':
      Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + 'd7ee4ecfb6bd13c3c8d364682b6228ccd86e1e1a',
