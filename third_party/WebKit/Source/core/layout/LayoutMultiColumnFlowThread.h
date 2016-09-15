@@ -199,7 +199,7 @@ public:
 
     int inlineBlockBaseline(LineDirectionMode) const override;
 
-    LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const final;
+    LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit, PageBoundaryRule) const final;
 
     void layoutColumns(SubtreeLayoutScope&);
 

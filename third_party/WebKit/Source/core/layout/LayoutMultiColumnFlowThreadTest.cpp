@@ -281,16 +281,23 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffset)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
     LayoutMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithFormerPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithLatterPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithLatterPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithFormerPage), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithLatterPage), firstRow); // bottom of last line in first row.
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithLatterPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithLatterPage), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithLatterPage), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799), LayoutBox::AssociateWithLatterPage), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithFormerPage), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithLatterPage), thirdRow); // overflow
 }
 
 TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalRl)
@@ -299,16 +306,23 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalRl)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
     LayoutMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithFormerPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithLatterPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithLatterPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithFormerPage), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithLatterPage), firstRow); // bottom of last line in first row.
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithLatterPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithLatterPage), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithLatterPage), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799), LayoutBox::AssociateWithLatterPage), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithFormerPage), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithLatterPage), thirdRow); // overflow
 }
 
 TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
@@ -317,16 +331,23 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscsc");
     LayoutMultiColumnSet* firstRow = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000)), firstRow); // negative overflow
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit()), firstRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499)), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithFormerPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(-10000), LayoutBox::AssociateWithLatterPage), firstRow); // negative overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(), LayoutBox::AssociateWithLatterPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithFormerPage), firstRow); // bottom of last line in first row.
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(499), LayoutBox::AssociateWithLatterPage), firstRow); // bottom of last line in first row.
     LayoutMultiColumnSet* secondRow = firstRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500)), secondRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699)), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithFormerPage), firstRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(500), LayoutBox::AssociateWithLatterPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(699), LayoutBox::AssociateWithLatterPage), secondRow);
     LayoutMultiColumnSet* thirdRow = secondRow->nextSiblingMultiColumnSet();
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700)), thirdRow);
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799)), thirdRow); // bottom of last row
-    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000)), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithFormerPage), secondRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(700), LayoutBox::AssociateWithLatterPage), thirdRow);
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(799), LayoutBox::AssociateWithLatterPage), thirdRow); // bottom of last row
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithFormerPage), thirdRow); // overflow
+    EXPECT_EQ(flowThread->columnSetAtBlockOffset(LayoutUnit(10000), LayoutBox::AssociateWithLatterPage), thirdRow); // overflow
 }
 
 class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {

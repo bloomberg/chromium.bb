@@ -130,7 +130,7 @@ bool LayoutFlowThread::nodeAtPoint(HitTestResult& result, const HitTestLocation&
 
 LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 {
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset, AssociateWithLatterPage);
     if (!columnSet)
         return LayoutUnit();
 
@@ -139,7 +139,7 @@ LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 
 LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule)
 {
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offset, pageBoundaryRule);
     if (!columnSet)
         return LayoutUnit();
 
@@ -157,7 +157,7 @@ void LayoutFlowThread::generateColumnSetIntervalTree()
 
 LayoutUnit LayoutFlowThread::nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const
 {
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(flowThreadOffset);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(flowThreadOffset, AssociateWithLatterPage);
     if (!columnSet)
         return flowThreadOffset;
     return columnSet->nextLogicalTopForUnbreakableContent(flowThreadOffset, contentLogicalHeight);

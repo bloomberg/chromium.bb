@@ -307,7 +307,7 @@ LayoutUnit LayoutMultiColumnFlowThread::maxColumnLogicalHeight() const
 
 LayoutUnit LayoutMultiColumnFlowThread::tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const
 {
-    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offsetInFlowThread))
+    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offsetInFlowThread, AssociateWithLatterPage))
         return multicolSet->tallestUnbreakableLogicalHeight();
     return LayoutUnit();
 }
@@ -336,7 +336,7 @@ LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(LayoutUnit
 {
     if (!hasValidColumnSetInfo())
         return LayoutSize(0, 0);
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread, rule);
     if (!columnSet)
         return LayoutSize(0, 0);
     return columnSet->flowThreadTranslationAtOffset(offsetInFlowThread, rule, mode);
@@ -374,15 +374,16 @@ LayoutPoint LayoutMultiColumnFlowThread::visualPointToFlowThreadPoint(const Layo
 int LayoutMultiColumnFlowThread::inlineBlockBaseline(LineDirectionMode lineDirection) const
 {
     LayoutUnit baselineInFlowThread = LayoutUnit(LayoutFlowThread::inlineBlockBaseline(lineDirection));
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(baselineInFlowThread);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(baselineInFlowThread, AssociateWithLatterPage);
     if (!columnSet)
         return baselineInFlowThread.toInt();
     return (baselineInFlowThread - columnSet->pageLogicalTopForOffset(baselineInFlowThread)).ceil();
 }
 
-LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset) const
+LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset, PageBoundaryRule pageBoundaryRule) const
 {
-    if (LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn) {
+    LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn;
+    if (columnSet) {
         // Layout in progress. We are calculating the set heights as we speak, so the column set range
         // information is not up to date.
         while (columnSet->logicalTopInFlowThread() > offset) {
@@ -394,22 +395,29 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
                 break;
             columnSet = previousSet;
         }
-        return columnSet;
+    } else {
+        DCHECK(!m_columnSetsInvalidated);
+        if (m_multiColumnSetList.isEmpty())
+            return nullptr;
+        if (offset < LayoutUnit())
+            return m_multiColumnSetList.first();
+
+        MultiColumnSetSearchAdapter adapter(offset);
+        m_multiColumnSetIntervalTree.allOverlapsWithAdapter<MultiColumnSetSearchAdapter>(adapter);
+
+        // If no set was found, the offset is in the flow thread overflow.
+        if (!adapter.result() && !m_multiColumnSetList.isEmpty())
+            return m_multiColumnSetList.last();
+        columnSet = adapter.result();
     }
-
-    ASSERT(!m_columnSetsInvalidated);
-    if (m_multiColumnSetList.isEmpty())
-        return nullptr;
-    if (offset < LayoutUnit())
-        return m_multiColumnSetList.first();
-
-    MultiColumnSetSearchAdapter adapter(offset);
-    m_multiColumnSetIntervalTree.allOverlapsWithAdapter<MultiColumnSetSearchAdapter>(adapter);
-
-    // If no set was found, the offset is in the flow thread overflow.
-    if (!adapter.result() && !m_multiColumnSetList.isEmpty())
-        return m_multiColumnSetList.last();
-    return adapter.result();
+    if (pageBoundaryRule == AssociateWithFormerPage && columnSet && offset == columnSet->logicalTopInFlowThread()) {
+        // The column set that we found starts at the exact same flow thread offset as we specified.
+        // Since we are to associate offsets at boundaries with the former fragmentainer, the
+        // fragmentainer we're looking for is in the previous column set.
+        if (LayoutMultiColumnSet* previousSet = columnSet->previousSiblingMultiColumnSet())
+            return previousSet;
+    }
+    return columnSet;
 }
 
 void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
@@ -515,12 +523,7 @@ void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(LayoutUnit
         // Its height is indefinite for now.
         return;
     }
-    // TODO(mstensho): If pageBoundaryRule is AssociateWithFormerPage, offsetInFlowThread is an
-    // endpoint-exclusive offset, i.e. the offset just after the bottom of some object. So, ideally,
-    // columnSetAtBlockOffset() should be informed about this (i.e. take a PageBoundaryRule
-    // argument). This is not the only place with this issue; see also
-    // pageRemainingLogicalHeightForOffset().
-    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread);
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread, pageBoundaryRule);
     if (columnSet->isInitialHeightCalculated()) {
         // We only insert additional fragmentainer groups in the initial layout pass. We only want
         // to balance columns in the last fragmentainer group (if we need to balance at all), so we

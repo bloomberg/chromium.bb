@@ -127,7 +127,7 @@ public:
     virtual LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const = 0;
     virtual LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const = 0;
 
-    virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
+    virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit, PageBoundaryRule) const = 0;
 
     virtual const char* name() const = 0;
 
