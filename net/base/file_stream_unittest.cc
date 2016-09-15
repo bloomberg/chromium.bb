@@ -16,8 +16,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -727,10 +727,12 @@ TEST_F(FileStreamTest, WriteClose) {
 }
 
 TEST_F(FileStreamTest, OpenAndDelete) {
-  base::SequencedWorkerPoolOwner pool_owner(1, "StreamTest");
+  base::Thread worker_thread("StreamTest");
+  ASSERT_TRUE(worker_thread.Start());
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
-  std::unique_ptr<FileStream> stream(new FileStream(pool_owner.pool()));
+  std::unique_ptr<FileStream> stream(
+      new FileStream(worker_thread.task_runner()));
   int flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
               base::File::FLAG_ASYNC;
   TestCompletionCallback open_callback;
@@ -741,8 +743,9 @@ TEST_F(FileStreamTest, OpenAndDelete) {
   // complete. Should be safe.
   stream.reset();
 
-  // Force an operation through the pool.
-  std::unique_ptr<FileStream> stream2(new FileStream(pool_owner.pool()));
+  // Force an operation through the worker.
+  std::unique_ptr<FileStream> stream2(
+      new FileStream(worker_thread.task_runner()));
   TestCompletionCallback open_callback2;
   rv = stream2->Open(temp_file_path(), flags, open_callback2.callback());
   EXPECT_THAT(open_callback2.GetResult(rv), IsOk());

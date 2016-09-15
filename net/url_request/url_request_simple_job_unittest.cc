@@ -5,14 +5,16 @@
 #include "net/url_request/url_request_simple_job.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/sequenced_worker_pool_owner.h"
-#include "base/threading/worker_pool.h"
+#include "base/threading/thread.h"
 #include "net/base/request_priority.h"
 #include "net/test/gtest_util.h"
 #include "net/url_request/url_request_job.h"
@@ -43,10 +45,10 @@ class MockSimpleJob : public URLRequestSimpleJob {
   MockSimpleJob(URLRequest* request,
                 NetworkDelegate* network_delegate,
                 scoped_refptr<base::TaskRunner> task_runner,
-                std::string data)
+                base::StringPiece data)
       : URLRequestSimpleJob(request, network_delegate),
-        data_(data),
-        task_runner_(task_runner) {}
+        data_(data.as_string()),
+        task_runner_(std::move(task_runner)) {}
 
  protected:
   // URLRequestSimpleJob implementation:
@@ -69,7 +71,7 @@ class MockSimpleJob : public URLRequestSimpleJob {
 
   const std::string data_;
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::TaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSimpleJob);
 };
@@ -105,7 +107,7 @@ class SimpleJobProtocolHandler :
     public URLRequestJobFactory::ProtocolHandler {
  public:
   SimpleJobProtocolHandler(scoped_refptr<base::TaskRunner> task_runner)
-      : task_runner_(task_runner) {}
+      : task_runner_(std::move(task_runner)) {}
   URLRequestJob* MaybeCreateJob(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
@@ -118,21 +120,19 @@ class SimpleJobProtocolHandler :
   ~SimpleJobProtocolHandler() override {}
 
  private:
-  scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::TaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleJobProtocolHandler);
 };
 
 class URLRequestSimpleJobTest : public ::testing::Test {
  public:
   URLRequestSimpleJobTest()
-      : worker_pool_owner_(1, "URLRequestSimpleJobTest"),
-        task_runner_(worker_pool_owner_.pool()
-                         ->GetSequencedTaskRunnerWithShutdownBehavior(
-                             worker_pool_owner_.pool()
-                                 ->GetSequenceToken(),
-                             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
-        context_(true) {
+      : worker_thread_("URLRequestSimpleJobTest"), context_(true) {
+    EXPECT_TRUE(worker_thread_.Start());
+
     job_factory_.SetProtocolHandler(
-        "data", base::MakeUnique<SimpleJobProtocolHandler>(task_runner_));
+        "data", base::MakeUnique<SimpleJobProtocolHandler>(task_runner()));
     context_.set_job_factory(&job_factory_);
     context_.Init();
 
@@ -150,13 +150,18 @@ class URLRequestSimpleJobTest : public ::testing::Test {
     EXPECT_FALSE(request_->is_pending());
   }
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner() {
+    return worker_thread_.task_runner();
+  }
+
  protected:
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::Thread worker_thread_;
   TestURLRequestContext context_;
   URLRequestJobFactoryImpl job_factory_;
   TestDelegate delegate_;
   std::unique_ptr<URLRequest> request_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestSimpleJobTest);
 };
 
 }  // namespace
@@ -240,7 +245,7 @@ TEST_F(URLRequestSimpleJobTest, CancelAfterFirstReadStarted) {
   // Feed a dummy task to the SequencedTaskRunner to make sure that the
   // callbacks which are invoked in ReadRawData have completed safely.
   base::RunLoop run_loop;
-  EXPECT_TRUE(task_runner_->PostTaskAndReply(
+  EXPECT_TRUE(task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
   run_loop.Run();
 
