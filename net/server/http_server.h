@@ -82,8 +82,6 @@ class HttpServer {
  private:
   friend class HttpServerTest;
 
-  typedef std::map<int, HttpConnection*> IdToConnectionMap;
-
   void DoAcceptLoop();
   void OnAcceptCompleted(int rv);
   int HandleAcceptResult(int rv);
@@ -114,7 +112,7 @@ class HttpServer {
   HttpServer::Delegate* const delegate_;
 
   int last_id_;
-  IdToConnectionMap id_to_connection_;
+  std::map<int, std::unique_ptr<HttpConnection>> id_to_connection_;
 
   base::WeakPtrFactory<HttpServer> weak_ptr_factory_;
 
