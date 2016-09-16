@@ -25,7 +25,7 @@ class WebContentsImpl;
 // of a WebContents. See WebContentsFrameBindingSet<T> below.
 class CONTENT_EXPORT WebContentsBindingSet {
  protected:
-  class Binder {
+  class CONTENT_EXPORT Binder {
    public:
     virtual ~Binder() {}
 

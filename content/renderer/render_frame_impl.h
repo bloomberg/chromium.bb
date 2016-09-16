@@ -390,6 +390,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // RenderFrame implementation:
   RenderView* GetRenderView() override;

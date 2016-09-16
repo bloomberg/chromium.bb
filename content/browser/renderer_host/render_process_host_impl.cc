@@ -838,6 +838,10 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
+  // Ensure that the RouteProvider proxy is re-initialized on next access since
+  // it's associated with a specific Channel instance.
+  remote_route_provider_.reset();
+
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
   // process.
