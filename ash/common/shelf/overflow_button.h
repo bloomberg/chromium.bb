@@ -21,15 +21,18 @@ class OverflowButton : public views::CustomButton {
   ~OverflowButton() override;
 
   void OnShelfAlignmentChanged();
+  void OnOverflowBubbleShown();
+  void OnOverflowBubbleHidden();
 
   // Sets alpha value of the background and schedules a paint.
   void SetBackgroundAlpha(int alpha);
 
  private:
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
-
   // views::CustomButton:
+  void OnPaint(gfx::Canvas* canvas) override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
+  bool ShouldShowInkDropHighlight() const override;
   void NotifyClick(const ui::Event& event) override;
 
   // Helper functions to paint the background and foreground of the button
@@ -41,10 +44,10 @@ class OverflowButton : public views::CustomButton {
   // current shelf state.
   // TODO(tdanderson): Remove this once the material design shelf is enabled
   // by default. See crbug.com/614453.
-  int NonMaterialBackgroundImageId();
+  int NonMaterialBackgroundImageId() const;
 
   // Calculates the bounds of the overflow button based on the shelf alignment.
-  gfx::Rect CalculateButtonBounds();
+  gfx::Rect CalculateButtonBounds() const;
 
   // Used for bottom shelf alignment. |bottom_image_| points to
   // |bottom_image_md_| for material design, otherwise it is points to a

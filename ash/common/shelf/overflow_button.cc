@@ -11,6 +11,7 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 
 namespace ash {
 
@@ -35,6 +37,10 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
       background_alpha_(0) {
   DCHECK(shelf_view_);
   if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    set_ink_drop_base_color(kShelfInkDropBaseColor);
+    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    set_hide_ink_drop_when_showing_context_menu(false);
     bottom_image_md_ =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
     bottom_image_ = &bottom_image_md_;
@@ -53,6 +59,18 @@ void OverflowButton::OnShelfAlignmentChanged() {
   SchedulePaint();
 }
 
+void OverflowButton::OnOverflowBubbleShown() {
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    SchedulePaint();
+}
+
+void OverflowButton::OnOverflowBubbleHidden() {
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    SchedulePaint();
+}
+
 void OverflowButton::SetBackgroundAlpha(int alpha) {
   background_alpha_ = alpha;
   SchedulePaint();
@@ -62,6 +80,24 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = CalculateButtonBounds();
   PaintBackground(canvas, bounds);
   PaintForeground(canvas, bounds);
+}
+
+std::unique_ptr<views::InkDropRipple> OverflowButton::CreateInkDropRipple()
+    const {
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      CalculateButtonBounds(), GetInkDropCenterBasedOnLastEvent(),
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
+}
+
+bool OverflowButton::ShouldEnterPushedState(const ui::Event& event) {
+  if (shelf_view_->IsShowingOverflowBubble())
+    return false;
+
+  return CustomButton::ShouldEnterPushedState(event);
+}
+
+bool OverflowButton::ShouldShowInkDropHighlight() const {
+  return false;
 }
 
 void OverflowButton::NotifyClick(const ui::Event& event) {
@@ -77,14 +113,6 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
     background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
                           background_paint);
-
-    if (shelf_view_->IsShowingOverflowBubble()) {
-      SkPaint highlight_paint;
-      highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
-      highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
-      canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
-                            highlight_paint);
-    }
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* background =
@@ -122,7 +150,7 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                        bounds.y() + ((bounds.height() - image->height()) / 2));
 }
 
-int OverflowButton::NonMaterialBackgroundImageId() {
+int OverflowButton::NonMaterialBackgroundImageId() const {
   if (shelf_view_->IsShowingOverflowBubble())
     return IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
   else if (wm_shelf_->IsDimmed())
@@ -130,7 +158,7 @@ int OverflowButton::NonMaterialBackgroundImageId() {
   return IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
 }
 
-gfx::Rect OverflowButton::CalculateButtonBounds() {
+gfx::Rect OverflowButton::CalculateButtonBounds() const {
   ShelfAlignment alignment = wm_shelf_->GetAlignment();
   gfx::Rect bounds(GetContentsBounds());
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

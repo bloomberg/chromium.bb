@@ -19,6 +19,7 @@ class View;
 
 namespace ash {
 class OverflowBubbleView;
+class OverflowButton;
 class ShelfView;
 class WmShelf;
 
@@ -31,15 +32,12 @@ class OverflowBubble : public views::PointerWatcher,
   explicit OverflowBubble(WmShelf* wm_shelf);
   ~OverflowBubble() override;
 
-  // Shows an bubble pointing to |anchor| with |shelf_view| as its content.
-  // This |shelf_view| is different than the main shelf's view and only contains
-  // the overflow items.
-  void Show(views::View* anchor, ShelfView* shelf_view);
+  // Shows an bubble pointing to |overflow_button| with |shelf_view| as its
+  // content.  This |shelf_view| is different than the main shelf's view and
+  // only contains the overflow items.
+  void Show(OverflowButton* overflow_button, ShelfView* shelf_view);
 
   void Hide();
-
-  // Hides the bubble and schedules paint for overflow button.
-  void HideBubbleAndRefreshButton();
 
   bool IsShowing() const { return !!bubble_; }
   ShelfView* shelf_view() { return shelf_view_; }
@@ -57,8 +55,8 @@ class OverflowBubble : public views::PointerWatcher,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   WmShelf* wm_shelf_;
-  OverflowBubbleView* bubble_;  // Owned by views hierarchy.
-  views::View* anchor_;         // Owned by ShelfView.
+  OverflowBubbleView* bubble_;       // Owned by views hierarchy.
+  OverflowButton* overflow_button_;  // Owned by ShelfView.
 
   // ShelfView containing the overflow items. Owned by |bubble_|.
   ShelfView* shelf_view_;

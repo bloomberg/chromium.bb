@@ -470,8 +470,13 @@ void CustomButton::NotifyClick(const ui::Event& event) {
 }
 
 void CustomButton::OnClickCanceled(const ui::Event& event) {
-  AnimateInkDrop(views::InkDropState::HIDDEN,
-                 ui::LocatedEvent::FromIfValid(&event));
+  if (ink_drop()->GetTargetInkDropState() ==
+          views::InkDropState::ACTION_PENDING ||
+      ink_drop()->GetTargetInkDropState() ==
+          views::InkDropState::ALTERNATE_ACTION_PENDING) {
+    AnimateInkDrop(views::InkDropState::HIDDEN,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
   Button::OnClickCanceled(event);
 }
 

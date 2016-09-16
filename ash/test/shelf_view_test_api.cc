@@ -68,8 +68,17 @@ bool ShelfViewTestAPI::IsOverflowButtonVisible() {
 }
 
 void ShelfViewTestAPI::ShowOverflowBubble() {
-  if (!shelf_view_->IsShowingOverflowBubble())
-    shelf_view_->ToggleOverflowBubble();
+  DCHECK(!shelf_view_->IsShowingOverflowBubble());
+  shelf_view_->ToggleOverflowBubble();
+}
+
+void ShelfViewTestAPI::HideOverflowBubble() {
+  DCHECK(shelf_view_->IsShowingOverflowBubble());
+  shelf_view_->ToggleOverflowBubble();
+}
+
+bool ShelfViewTestAPI::IsShowingOverflowBubble() const {
+  return shelf_view_->IsShowingOverflowBubble();
 }
 
 const gfx::Rect& ShelfViewTestAPI::GetBoundsByIndex(int index) {
@@ -108,6 +117,10 @@ void ShelfViewTestAPI::CloseMenu() {
 
 OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
   return shelf_view_->overflow_bubble_.get();
+}
+
+OverflowButton* ShelfViewTestAPI::overflow_button() const {
+  return shelf_view_->overflow_button_;
 }
 
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {

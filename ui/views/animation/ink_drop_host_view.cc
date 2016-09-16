@@ -58,6 +58,8 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
     InkDropState ink_drop_state = InkDropState::HIDDEN;
     switch (event->type()) {
       case ui::ET_GESTURE_TAP_DOWN:
+        if (current_ink_drop_state == InkDropState::ACTIVATED)
+          return;
         ink_drop_state = InkDropState::ACTION_PENDING;
         // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so
         // that
@@ -65,16 +67,17 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
         event->SetHandled();
         break;
       case ui::ET_GESTURE_LONG_PRESS:
+        if (current_ink_drop_state == InkDropState::ACTIVATED)
+          return;
         ink_drop_state = InkDropState::ALTERNATE_ACTION_PENDING;
         break;
       case ui::ET_GESTURE_LONG_TAP:
         ink_drop_state = InkDropState::ALTERNATE_ACTION_TRIGGERED;
         break;
       case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_SCROLL_BEGIN:
         if (current_ink_drop_state == InkDropState::ACTIVATED)
           return;
-      // Fall through to ui::ET_GESTURE_SCROLL_BEGIN case.
-      case ui::ET_GESTURE_SCROLL_BEGIN:
         ink_drop_state = InkDropState::HIDDEN;
         break;
       default:

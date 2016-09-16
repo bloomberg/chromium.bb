@@ -25,6 +25,7 @@ class InkDrop;
 
 namespace ash {
 class OverflowBubble;
+class OverflowButton;
 class ShelfButton;
 class ShelfButtonPressedMetricTracker;
 class ShelfDelegate;
@@ -61,6 +62,12 @@ class ShelfViewTestAPI {
   // Makes shelf view show its overflow bubble.
   void ShowOverflowBubble();
 
+  // Makes shelf view hide its overflow bubble.
+  void HideOverflowBubble();
+
+  // Returns true if the overflow bubble is visible.
+  bool IsShowingOverflowBubble() const;
+
   // Sets animation duration in milliseconds for test.
   void SetAnimationDuration(int duration_ms);
 
@@ -78,6 +85,9 @@ class ShelfViewTestAPI {
 
   // An accessor for overflow bubble.
   OverflowBubble* overflow_bubble();
+
+  // An accessor for overflow button.
+  OverflowButton* overflow_button() const;
 
   // Returns the preferred size of |shelf_view_|.
   gfx::Size GetPreferredSize();

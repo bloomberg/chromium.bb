@@ -12,6 +12,7 @@
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
+#include "ash/common/shelf/overflow_button.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_menu_model.h"
@@ -42,6 +43,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/test/user_action_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -593,8 +595,7 @@ class ShelfViewTest : public AshTestBase {
 
   void TestDraggingAnItemFromOverflowToShelf(bool cancel) {
     test_api_->ShowOverflowBubble();
-    ASSERT_TRUE(test_api_->overflow_bubble() &&
-                test_api_->overflow_bubble()->IsShowing());
+    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
     ShelfViewTestAPI test_api_for_overflow(
         test_api_->overflow_bubble()->shelf_view());
@@ -674,6 +675,7 @@ class ShelfViewTest : public AshTestBase {
       EXPECT_EQ(second_last_visible_item_id_in_overflow,
                 GetItemId(test_api_for_overflow.GetLastVisibleIndex()));
     }
+    test_api_->HideOverflowBubble();
   }
 
   // Returns the item's ShelfID at |index|.
@@ -1012,8 +1014,7 @@ TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
     // orientation.
     AddButtonsUntilOverflow();
     test_api_->ShowOverflowBubble();
-    ASSERT_TRUE(test_api_->overflow_bubble() &&
-                test_api_->overflow_bubble()->IsShowing());
+    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
     EXPECT_EQ(kArrows[i], test_api_->overflow_bubble()->bubble_view()->arrow());
     OverflowBubbleViewTestAPI bubble_view_api(
@@ -1586,8 +1587,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_for_overflow_view(
       test_api_->overflow_bubble()->shelf_view());
@@ -1613,8 +1613,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   // Check the overflow bubble size when an item is ripped off.
   EXPECT_EQ(bubble_size.width() - item_width,
             test_for_overflow_view.GetPreferredSize().width());
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   // Re-insert an item into the overflow bubble.
   int first_index = test_for_overflow_view.GetFirstVisibleIndex();
@@ -1642,8 +1641,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   int item_width = test_api_->GetButtonSize() + test_api_->GetButtonSpacing();
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
@@ -1655,8 +1653,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
          (bubble_view->GetContentsBounds().width() + 3 * item_width))
     AddAppShortcut();
 
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_for_overflow_view(
       test_api_->overflow_bubble()->shelf_view());
@@ -1706,8 +1703,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Test #1: Test drag insertion bounds of primary shelf.
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
-  ASSERT_TRUE(test_api_->overflow_bubble() &&
-              test_api_->overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_api_for_overflow_view(
       test_api_->overflow_bubble()->shelf_view());
@@ -1727,8 +1723,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Test #2: Test drag insertion bounds of secondary shelf.
   // Show overflow bubble.
   test_api_for_secondary.ShowOverflowBubble();
-  ASSERT_TRUE(test_api_for_secondary.overflow_bubble() &&
-              test_api_for_secondary.overflow_bubble()->IsShowing());
+  ASSERT_TRUE(test_api_for_secondary.IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_api_for_overflow_view_of_secondary(
       test_api_for_secondary.overflow_bubble()->shelf_view());
@@ -2132,8 +2127,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   ~ShelfViewInkDropTest() override {}
 
   void SetUp() override {
-    shell_delegate_ = new TestAppListShellDelegate;
-    ash_test_helper()->set_test_shell_delegate(shell_delegate_);
+    ash_test_helper()->set_test_shell_delegate(CreateTestShellDelegate());
 
     set_material_mode(ash::MaterialDesignController::MATERIAL_EXPERIMENTAL);
 
@@ -2141,26 +2135,36 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
  protected:
+  // Gives subclasses a chance to return a custom test shell delegate to install
+  // before calling base class's SetUp(). Shell will take ownership of the
+  // returned object.
+  virtual TestShellDelegate* CreateTestShellDelegate() {
+    shell_delegate_ = new TestAppListShellDelegate;
+    return shell_delegate_;
+  }
+
   void InitAppListButtonInkDrop() {
     app_list_button_ = shelf_view_->GetAppListButton();
 
-    views::InkDropImpl* ink_drop_impl =
-        new views::InkDropImpl(app_list_button_);
-    app_list_button_ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
+    auto app_list_button_ink_drop = base::MakeUnique<InkDropSpy>(
+        base::MakeUnique<views::InkDropImpl>(app_list_button_));
+    app_list_button_ink_drop_ = app_list_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(app_list_button_)
-        .SetInkDrop(base::WrapUnique(app_list_button_ink_drop_), false);
+        .SetInkDrop(std::move(app_list_button_ink_drop), false);
   }
 
   void InitBrowserButtonInkDrop() {
     browser_button_ = test_api_->GetButton(browser_index_);
 
-    views::InkDropImpl* ink_drop_impl = new views::InkDropImpl(browser_button_);
-    browser_button_ink_drop_ = new InkDropSpy(base::WrapUnique(ink_drop_impl));
+    auto browser_button_ink_drop = base::MakeUnique<InkDropSpy>(
+        base::MakeUnique<views::InkDropImpl>(browser_button_));
+    browser_button_ink_drop_ = browser_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(browser_button_)
-        .SetInkDrop(base::WrapUnique(browser_button_ink_drop_));
+        .SetInkDrop(std::move(browser_button_ink_drop));
   }
 
   void ShowAppList() {
+    DCHECK(shelf_delegate_);
     shell_delegate_->app_list_presenter()->Show(0);
     // Similar to real AppListPresenter, notify button that the app list is
     // shown.
@@ -2168,6 +2172,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
   void DismissAppList() {
+    DCHECK(shelf_delegate_);
     shell_delegate_->app_list_presenter()->Dismiss();
     // Similar to real AppListPresenter, notify button that the app list is
     // dismissed.
@@ -2175,6 +2180,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
   void FinishAppListVisibilityChange() {
+    DCHECK(shelf_delegate_);
     shell_delegate_->app_list_presenter()->FinishVisibilityChange();
   }
 
@@ -2280,9 +2286,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
               IsEmpty());
 }
 
-#if !defined(OS_WIN)
 // There is no ink drop effect for gesture events on Windows.
-
+#if !defined(OS_WIN)
 // Tests that when the app list is hidden, tapping on the app list button
 // transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
@@ -2575,6 +2580,601 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
               ElementsAre(views::InkDropState::ACTIVATED,
                           views::InkDropState::DEACTIVATED));
 }
+
+namespace {
+
+// An empty menu model for shell context menu just to have a menu.
+class TestShellMenuModel : public ui::SimpleMenuModel,
+                           public ui::SimpleMenuModel::Delegate {
+ public:
+  TestShellMenuModel() : ui::SimpleMenuModel(this) {}
+  ~TestShellMenuModel() override {}
+
+ private:
+  // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdChecked(int command_id) const override { return false; }
+  bool IsCommandIdEnabled(int command_id) const override { return true; }
+  void ExecuteCommand(int command_id, int event_flags) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestShellMenuModel);
+};
+
+// A test ShellDelegate implementation for overflow button tests that returns a
+// TestShelfMenuModel for the shell context menu.
+class TestOverflowButtonShellDelegate : public TestShellDelegate {
+ public:
+  TestOverflowButtonShellDelegate() {}
+  ~TestOverflowButtonShellDelegate() override {}
+
+  // TestShellDelegate:
+  ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+                                   const ShelfItem* item) override {
+    // Caller takes ownership of the returned object.
+    return new TestShellMenuModel;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestOverflowButtonShellDelegate);
+};
+
+// A scoped wrapper around TestMockTimeTaskRunner that replaces message loop's
+// task runner with a TestMockTimeTaskRunner and resets it back at the end of
+// the scope.
+class ScopedMockTaskRunnerWrapper {
+ public:
+  ScopedMockTaskRunnerWrapper() {
+    mock_task_runner_ = new base::TestMockTimeTaskRunner;
+    previous_task_runner_ = base::MessageLoop::current()->task_runner();
+    base::MessageLoop::current()->SetTaskRunner(mock_task_runner_);
+  }
+
+  ~ScopedMockTaskRunnerWrapper() {
+    DCHECK_EQ(mock_task_runner_, base::MessageLoop::current()->task_runner());
+    mock_task_runner_->ClearPendingTasks();
+    base::MessageLoop::current()->SetTaskRunner(previous_task_runner_);
+  }
+
+  void FastForwardUntilNoTasksRemain() {
+    mock_task_runner_->FastForwardUntilNoTasksRemain();
+  }
+
+ private:
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> previous_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMockTaskRunnerWrapper);
+};
+
+}  // namespace
+
+// Test fixture for testing material design ink drop on overflow button.
+class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
+ public:
+  OverflowButtonInkDropTest() {}
+  ~OverflowButtonInkDropTest() override {}
+
+  void SetUp() override {
+    ShelfViewInkDropTest::SetUp();
+
+    overflow_button_ = test_api_->overflow_button();
+
+    auto overflow_button_ink_drop = base::MakeUnique<InkDropSpy>(
+        base::MakeUnique<views::InkDropImpl>(overflow_button_));
+    overflow_button_ink_drop_ = overflow_button_ink_drop.get();
+    views::test::InkDropHostViewTestApi(overflow_button_)
+        .SetInkDrop(std::move(overflow_button_ink_drop));
+
+    AddButtonsUntilOverflow();
+    EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
+    EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  }
+
+ protected:
+  gfx::Point GetScreenPointInsideOverflowButton() const {
+    return overflow_button_->GetBoundsInScreen().CenterPoint();
+  }
+
+  gfx::Point GetScreenPointOutsideOverflowButton() const {
+    gfx::Point point = GetScreenPointInsideOverflowButton();
+    point.Offset(overflow_button_->width(), 0);
+    return point;
+  }
+
+  // Overridden from ShelfViewInkDropTest:
+  TestShellDelegate* CreateTestShellDelegate() override {
+    return new TestOverflowButtonShellDelegate;
+  }
+
+  OverflowButton* overflow_button_ = nullptr;
+  InkDropSpy* overflow_button_ink_drop_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverflowButtonInkDropTest);
+};
+
+// Tests ink drop state transitions for the overflow button when the overflow
+// bubble is shown or hidden.
+TEST_F(OverflowButtonInkDropTest, OnOverflowBubbleShowHide) {
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  test_api_->HideOverflowBubble();
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+}
+
+// Tests ink drop state transitions for the overflow button when the user clicks
+// on it.
+TEST_F(OverflowButtonInkDropTest, MouseActivate) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point mouse_location = GetScreenPointInsideOverflowButton();
+  generator.MoveMouseTo(mouse_location);
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user
+// presses left mouse button on it and drags it out of the button bounds.
+TEST_F(OverflowButtonInkDropTest, MouseDragOut) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user
+// presses left mouse button on it and drags it out of the button bounds and
+// back.
+TEST_F(OverflowButtonInkDropTest, MouseDragOutAndBack) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user right
+// clicks on the button to show the context menu.
+TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressRightButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseRightButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// There is no ink drop effect for gesture events on Windows.
+#if !defined(OS_WIN)
+// Tests ink drop state transitions for the overflow button when the user taps
+// on it.
+TEST_F(OverflowButtonInkDropTest, TouchActivate) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTIVATED));
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user taps
+// down on it and drags it out of the button bounds.
+TEST_F(OverflowButtonInkDropTest, TouchDragOut) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user taps
+// down on it and drags it out of the button bounds and back.
+TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
+
+  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::HIDDEN));
+
+  generator.MoveTouch(GetScreenPointInsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when the user long
+// presses on the button to show the context menu.
+TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  RunAllPendingInMessageLoop();
+  {
+    ScopedMockTaskRunnerWrapper mock_task_runner;
+
+    generator.PressTouch();
+    EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                ElementsAre(views::InkDropState::ACTION_PENDING));
+
+    mock_task_runner.FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(views::InkDropState::HIDDEN,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                ElementsAre(views::InkDropState::ALTERNATE_ACTION_PENDING,
+                            views::InkDropState::HIDDEN));
+
+    generator.ReleaseTouch();
+    EXPECT_EQ(views::InkDropState::HIDDEN,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                IsEmpty());
+
+    EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  }
+}
+
+#endif  // !defined(OS_WIN)
+
+// Test fixture for testing material design ink drop on overflow button when it
+// is active.
+class OverflowButtonActiveInkDropTest : public OverflowButtonInkDropTest {
+ public:
+  OverflowButtonActiveInkDropTest() {}
+  ~OverflowButtonActiveInkDropTest() override {}
+
+  void SetUp() override {
+    OverflowButtonInkDropTest::SetUp();
+
+    test_api_->ShowOverflowBubble();
+    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+    EXPECT_EQ(views::InkDropState::ACTIVATED,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                ElementsAre(views::InkDropState::ACTIVATED));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverflowButtonActiveInkDropTest);
+};
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user clicks on it.
+TEST_F(OverflowButtonActiveInkDropTest, MouseDeactivate) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user presses left mouse button on it and drags it out of the button
+// bounds.
+TEST_F(OverflowButtonActiveInkDropTest, MouseDragOut) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user presses left mouse button on it and drags it out of the button
+// bounds and back.
+TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveMouseTo(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED));
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user right clicks on the button to show the context menu.
+TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
+
+  generator.PressRightButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseRightButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// There is no ink drop effect for gesture events on Windows.
+#if !defined(OS_WIN)
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user taps on it.
+TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::DEACTIVATED,
+                          views::InkDropState::HIDDEN));
+
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user taps down on it and drags it out of the button bounds.
+TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user taps down on it and drags it out of the button bounds and back.
+TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveTouch(GetScreenPointOutsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.MoveTouch(GetScreenPointInsideOverflowButton());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+// Tests ink drop state transitions for the overflow button when it is active
+// and the user long presses on the button to show the context menu.
+TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(GetScreenPointInsideOverflowButton());
+
+  RunAllPendingInMessageLoop();
+  {
+    ScopedMockTaskRunnerWrapper mock_task_runner;
+
+    generator.PressTouch();
+    EXPECT_EQ(views::InkDropState::ACTIVATED,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                IsEmpty());
+
+    mock_task_runner.FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(views::InkDropState::ACTIVATED,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                IsEmpty());
+
+    generator.ReleaseTouch();
+    EXPECT_EQ(views::InkDropState::ACTIVATED,
+              overflow_button_ink_drop_->GetTargetInkDropState());
+    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+                IsEmpty());
+
+    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  }
+}
+
+#endif  // !defined(OS_WIN)
 
 }  // namespace test
 }  // namespace ash
