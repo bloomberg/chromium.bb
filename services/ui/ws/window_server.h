@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
@@ -137,8 +136,6 @@ class WindowServer : public ServerWindowDelegate,
 
   void OnFirstWindowManagerWindowTreeFactoryReady();
 
-  clipboard::ClipboardImpl* GetClipboardForUser(const UserId& user_id);
-
   UserActivityMonitor* GetUserActivityMonitorForUser(const UserId& user_id);
 
   WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set() {
@@ -251,8 +248,6 @@ class WindowServer : public ServerWindowDelegate,
       std::map<ClientSpecificId, std::unique_ptr<WindowTree>>;
   using UserActivityMonitorMap =
       std::map<UserId, std::unique_ptr<UserActivityMonitor>>;
-  using UserClipboardMap =
-      std::map<UserId, std::unique_ptr<ui::clipboard::ClipboardImpl>>;
 
   struct InFlightWindowManagerChange {
     // Identifies the client that initiated the change.
@@ -382,7 +377,6 @@ class WindowServer : public ServerWindowDelegate,
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   UserActivityMonitorMap activity_monitor_map_;
-  UserClipboardMap clipboard_map_;
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
 

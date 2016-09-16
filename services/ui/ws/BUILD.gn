@@ -129,7 +129,6 @@ static_library("lib") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/tracing/public/cpp",
-    "//services/ui/clipboard:lib",
     "//services/ui/common:mus_common",
     "//services/ui/display",
     "//services/ui/public/interfaces",

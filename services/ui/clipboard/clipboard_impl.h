@@ -26,7 +26,7 @@ namespace clipboard {
 class ClipboardImpl : public mojom::Clipboard {
  public:
   // mojom::Clipboard exposes three possible clipboards.
-  static const int kNumClipboards = 3;
+  static const int kNumClipboards = 2;
 
   ClipboardImpl();
   ~ClipboardImpl() override;

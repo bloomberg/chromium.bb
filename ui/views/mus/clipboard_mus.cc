@@ -24,7 +24,8 @@ ui::mojom::Clipboard::Type GetType(ui::ClipboardType type) {
     case ui::CLIPBOARD_TYPE_SELECTION:
       return ui::mojom::Clipboard::Type::SELECTION;
     case ui::CLIPBOARD_TYPE_DRAG:
-      return ui::mojom::Clipboard::Type::DRAG;
+      // Only OSX uses a drag clipboard.
+      break;
   }
 
   NOTREACHED();

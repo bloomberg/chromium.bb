@@ -15,8 +15,7 @@ const string kMimeTypeURL = "text/url";
 interface Clipboard {
   enum Type {
     COPY_PASTE = 0,
-    SELECTION = 1,
-    DRAG = 2
+    SELECTION = 1
   };
 
   // Returns a sequence number which uniquely identifies clipboard state.

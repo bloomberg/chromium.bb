@@ -76,6 +76,7 @@ struct Service::PendingRequest {
 };
 
 struct Service::UserState {
+  std::unique_ptr<clipboard::ClipboardImpl> clipboard;
   std::unique_ptr<ws::AccessibilityManager> accessibility;
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
@@ -269,8 +270,10 @@ void Service::Create(const shell::Identity& remote_identity,
 
 void Service::Create(const shell::Identity& remote_identity,
                      mojom::ClipboardRequest request) {
-  const ws::UserId& user_id = remote_identity.user_id();
-  window_server_->GetClipboardForUser(user_id)->AddBinding(std::move(request));
+  UserState* user_state = GetUserState(remote_identity);
+  if (!user_state->clipboard)
+    user_state->clipboard.reset(new clipboard::ClipboardImpl);
+  user_state->clipboard->AddBinding(std::move(request));
 }
 
 void Service::Create(const shell::Identity& remote_identity,

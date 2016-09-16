@@ -248,12 +248,6 @@ void WindowServer::OnFirstWindowManagerWindowTreeFactoryReady() {
   delegate_->CreateDefaultDisplays();
 }
 
-ui::clipboard::ClipboardImpl* WindowServer::GetClipboardForUser(
-    const UserId& user_id) {
-  DCHECK_GT(clipboard_map_.count(user_id), 0u);
-  return clipboard_map_[user_id].get();
-}
-
 UserActivityMonitor* WindowServer::GetUserActivityMonitorForUser(
     const UserId& user_id) {
   DCHECK_GT(activity_monitor_map_.count(user_id), 0u);
@@ -825,12 +819,10 @@ void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
 
 void WindowServer::OnUserIdAdded(const UserId& id) {
   activity_monitor_map_[id] = base::MakeUnique<UserActivityMonitor>(nullptr);
-  clipboard_map_[id] = base::MakeUnique<clipboard::ClipboardImpl>();
 }
 
 void WindowServer::OnUserIdRemoved(const UserId& id) {
   activity_monitor_map_.erase(id);
-  clipboard_map_.erase(id);
 }
 
 }  // namespace ws
