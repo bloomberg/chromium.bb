@@ -131,10 +131,15 @@ TEST(WebSocketExtensionParserTest, InvalidPatterns) {
       "foo; bar=\"\"",        // quoted empty parameter value
       "foo; bar=\"baz",       // unterminated quoted string
       "foo; bar=\"baz \"",    // space in quoted string
-      "foo; bar baz",         // mising '='
+      "foo; bar baz",         // missing '='
       "foo; bar - baz",  // '-' instead of '=' (note: "foo; bar-baz" is valid).
       "foo; bar=\r\nbaz",   // CRNL not followed by a space
       "foo; bar=\r\n baz",  // CRNL followed by a space
+      "f\xFFpp",            // 8-bit character in extension name
+      "foo; b\xFFr=baz"     // 8-bit character in parameter name
+      "foo; bar=b\xFF"      // 8-bit character in parameter value
+      "foo; bar=\"b\xFF\""  // 8-bit character in quoted parameter value
+      "foo; bar=\"baz\\"    // ends with backslash
   };
 
   for (size_t i = 0; i < arraysize(patterns); ++i) {
@@ -153,6 +158,13 @@ TEST(WebSocketExtensionParserTest, QuotedParameterValue) {
 
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
+}
+
+// This is a regression test for crbug.com/647156
+TEST(WebSocketExtensionParserTest, InvalidToken) {
+  static const char kInvalidInput[] = "\304;\304!*777\377=\377\254\377";
+  WebSocketExtensionParser parser;
+  EXPECT_FALSE(parser.Parse(kInvalidInput));
 }
 
 }  // namespace
