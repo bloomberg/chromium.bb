@@ -83,11 +83,7 @@ const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;
-#if defined(OS_CHROMEOS)
 const int kPreferredRows = 4;
-#else
-const int kPreferredRows = 3;
-#endif  // defined(OS_CHROMEOS)
 const int kGridIconDimension = 48;
 
 // Preferred search result icon sizes.
