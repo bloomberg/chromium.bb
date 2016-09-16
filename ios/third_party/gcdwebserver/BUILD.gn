@@ -23,7 +23,7 @@ config("private_config") {
   # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
   # when minimum iOS version support is increased to iOS 9 and up.
   # This should be removed once all deprecation violations have been fixed.
-  cflags = [ "-Wno-deprecated-declarations" ]
+  cflags = [ "-Wno-error=deprecated-declarations" ]
 }
 
 source_set("gcdwebserver") {
