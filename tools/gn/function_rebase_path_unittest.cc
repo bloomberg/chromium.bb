@@ -51,9 +51,7 @@ TEST(RebasePath, Strings) {
   EXPECT_EQ("foo/", RebaseOne(scope, "//foo/", "//", "//"));
   EXPECT_EQ("../../foo/bar", RebaseOne(scope, "//foo/bar", "//out/Debug", "."));
   EXPECT_EQ("./", RebaseOne(scope, "//foo/", "//foo/", "//"));
-  // Thie one is technically correct but could be simplified to "." if
-  // necessary.
-  EXPECT_EQ("../foo", RebaseOne(scope, "//foo", "//foo", "//"));
+  EXPECT_EQ(".", RebaseOne(scope, "//foo", "//foo", "//"));
 
   // Test slash conversion.
   EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", "."));

@@ -98,13 +98,23 @@ Value ConvertOnePath(const Scope* scope,
         scope->settings()->build_settings()->root_path_utf8());
     MakeSlashEndingMatchInput(string_value, &result.string_value());
   } else {
-    result.string_value() = RebasePath(
+    SourceFile resolved_file =
         from_dir.ResolveRelativeFile(value, err,
-            scope->settings()->build_settings()->root_path_utf8()).value(),
-        to_dir,
-        scope->settings()->build_settings()->root_path_utf8());
+            scope->settings()->build_settings()->root_path_utf8());
     if (err->has_error())
       return Value();
+    // Special case:
+    //   rebase_path("//foo", "//bar") ==> "../foo"
+    //   rebase_path("//foo", "//foo") ==> "." and not "../foo"
+    if (resolved_file.value() ==
+        to_dir.value().substr(0, to_dir.value().size() - 1)) {
+      result.string_value() = ".";
+    } else {
+      result.string_value() = RebasePath(
+          resolved_file.value(),
+          to_dir,
+          scope->settings()->build_settings()->root_path_utf8());
+    }
   }
 
   return result;
