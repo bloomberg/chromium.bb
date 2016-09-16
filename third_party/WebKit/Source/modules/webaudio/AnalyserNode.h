@@ -32,6 +32,7 @@
 namespace blink {
 
 class BaseAudioContext;
+class AnalyserOptions;
 class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
@@ -52,6 +53,8 @@ public:
 
     void setMaxDecibels(double k, ExceptionState&);
     double maxDecibels() const { return m_analyser.maxDecibels(); }
+
+    void setMinMaxDecibels(double min, double max, ExceptionState&);
 
     void setSmoothingTimeConstant(double k, ExceptionState&);
     double smoothingTimeConstant() const { return m_analyser.smoothingTimeConstant(); }
@@ -77,6 +80,7 @@ class AnalyserNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AnalyserNode* create(BaseAudioContext&, ExceptionState&);
+    static AnalyserNode* create(BaseAudioContext*, const AnalyserOptions&, ExceptionState&);
 
     unsigned fftSize() const;
     void setFftSize(unsigned size, ExceptionState&);
@@ -95,6 +99,8 @@ public:
 private:
     AnalyserNode(BaseAudioContext&);
     AnalyserHandler& analyserHandler() const;
+
+    void setMinMaxDecibels(double min, double max, ExceptionState&);
 };
 
 } // namespace blink

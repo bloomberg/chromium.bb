@@ -31,6 +31,7 @@
 namespace blink {
 
 class BaseAudioContext;
+class ChannelSplitterOptions;
 
 class ChannelSplitterHandler final : public AudioHandler {
 public:
@@ -48,6 +49,7 @@ class ChannelSplitterNode final : public AudioNode {
 public:
     static ChannelSplitterNode* create(BaseAudioContext&, ExceptionState&);
     static ChannelSplitterNode* create(BaseAudioContext&, unsigned numberOfOutputs, ExceptionState&);
+    static ChannelSplitterNode* create(BaseAudioContext*, const ChannelSplitterOptions&, ExceptionState&);
 
 private:
     ChannelSplitterNode(BaseAudioContext&, unsigned numberOfOutputs);

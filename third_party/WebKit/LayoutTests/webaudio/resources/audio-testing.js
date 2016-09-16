@@ -491,28 +491,30 @@ var Should = (function () {
     }
 
     // Internal methods starting with a underscore.
-    ShouldModel.prototype._testPassed = function (msg) {
+    ShouldModel.prototype._testPassed = function (msg, addNewline) {
         this._success = true;
+        var newLine = addNewline ? '\n' : '';
         if (TESTHARNESS) {
             // Using testharness.js
             test(function () {
                 assert_true(true);
-                }, this.desc + ' ' + msg + '.');
+                }, this.desc + ' ' + msg + '.' + newLine);
         } else {
             // Using js-test.js
-            testPassed(this.desc + ' ' + msg + '.');
+            testPassed(this.desc + ' ' + msg + '.' + newLine);
         }
     };
 
-    ShouldModel.prototype._testFailed = function (msg) {
+    ShouldModel.prototype._testFailed = function (msg, addNewline) {
         this._success = false;
         var that = this;
+        var newLine = addNewline ? '\n' : '';
         if (TESTHARNESS) {
             test(function () {
-                assert_true(false, that.desc + ' ' + msg + '.');
+                assert_true(false, that.desc + ' ' + msg + '.' + newLine);
                 }, this.desc);
         } else {
-            testFailed(this.desc + ' ' + msg + '.');
+            testFailed(this.desc + ' ' + msg + '.' + newLine);
         }
     };
 
@@ -651,8 +653,8 @@ var Should = (function () {
     // "PASS One is not equal to 0."
     ShouldModel.prototype.notBeEqualTo = function (value) {
         var type = typeof value;
-        this._assert(type === 'number' || type === 'string',
-            'value should be number or string for', value);
+        this._assert(type === 'number' || type === 'string' || type === "boolean",
+            'value should be number, string, or boolean for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -1165,10 +1167,12 @@ var Should = (function () {
     // "PASS Summary1: passed1."
     // "FAIL Summary2: failed2."
     ShouldModel.prototype.summarize = function (pass, fail) {
+        // It's really nice to have blank lines after the summary, but
+        // testharness thinks the whole testsuite fails if we do that.
         if (this.target)
-            this._testPassed(pass);
+            this._testPassed(pass, false);
         else
-            this._testFailed(fail);
+            this._testFailed(fail, false);
         return this._success;
     }
 

@@ -22,6 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#DelayNode
+[
+    Constructor(BaseAudioContext context, optional DelayOptions options),
+    RaisesException=Constructor,
+]
 interface DelayNode : AudioNode {
     readonly attribute AudioParam delayTime;
 };

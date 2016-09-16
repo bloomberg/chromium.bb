@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: BiquadFilter</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new BiquadFilterNode()", function () {
+          node = new BiquadFilterNode();
+        }).throw("TypeError");
+        success = Should("new BiquadFilterNode(1)", function () {
+          node = new BiquadFilterNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new BiquadFilterNode(context, 42)", function () {
+          node = new BiquadFilterNode(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new BiquadFilterNode(context)", function () {
+          node = new BiquadFilterNode(context);
+        }).notThrow();
+        success = Should("node instanceof BiquadFilterNode", node instanceof BiquadFilterNode)
+          .beEqualTo(true) && success;
+
+        // Test if attributes are set correctly to the defaults
+        success = Should("node.type", node.type)
+          .beEqualTo("lowpass") && success;
+        success = Should("node.Q.value", node.Q.value)
+          .beEqualTo(1) && success;
+        success = Should("node.detune.value", node.detune.value)
+          .beEqualTo(0) && success;
+        success = Should("node.frequency.value", node.frequency.value)
+          .beEqualTo(350) &&
+          success;
+        success = Should("node.gain.value", node.gain.value)
+          .beEqualTo(0) && success;
+
+        Should("new BiquadFilterNode(context)", success)
+          .summarize(
+            "constructed node with correct attributes",
+            "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "BiquadFilterNode");
+        taskDone();
+      });
+
+      audit.defineTask("construct with options", function (taskDone) {
+        var node;
+        var success = true;
+        var options = {
+          type: "highpass",
+          frequency: 512,
+          detune: 1,
+          Q: 5,
+          gain: 3,
+        };
+
+        success = Should("node = new BiquadFilterNode(..., " + JSON.stringify(options) + ")", function () {
+          node = new BiquadFilterNode(context, options);
+        }).notThrow();
+
+        // Test that attributes are set according to the option values.
+        success = Should("node.type", node.type)
+          .beEqualTo(options.type) && success;
+        success = Should("node.frequency.value", node.frequency.value)
+          .beEqualTo(options.frequency) &&
+          success;
+        success = Should("node.detuen.value", node.detune.value)
+          .beEqualTo(options.detune) &&
+          success;
+        success = Should("node.Q.value", node.Q.value)
+          .beEqualTo(options.Q) && success;
+        success = Should("node.gain.value", node.gain.value)
+          .beEqualTo(options.gain) && success;
+
+        Should("new BiquadFilterNode() with options", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

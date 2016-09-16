@@ -23,7 +23,10 @@
  */
 
 // A cached (non-streamed), memory-resident audio source
+// See https://webaudio.github.io/web-audio-api/#AudioBufferSourceNode
 [
+    Constructor(BaseAudioContext context, optional AudioBufferSourceOptions options),
+    RaisesException=Constructor,
     ActiveScriptWrappable,
 ]
 interface AudioBufferSourceNode : AudioSourceNode {

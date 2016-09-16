@@ -4290,6 +4290,34 @@ interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted
     method constructor
+interface PannerNode : AudioNode
+    attribute @@toStringTag
+    getter coneInnerAngle
+    getter coneOuterAngle
+    getter coneOuterGain
+    getter distanceModel
+    getter maxDistance
+    getter orientationX
+    getter orientationY
+    getter orientationZ
+    getter panningModel
+    getter positionX
+    getter positionY
+    getter positionZ
+    getter refDistance
+    getter rolloffFactor
+    method constructor
+    method setOrientation
+    method setPosition
+    method setVelocity
+    setter coneInnerAngle
+    setter coneOuterAngle
+    setter coneOuterGain
+    setter distanceModel
+    setter maxDistance
+    setter panningModel
+    setter refDistance
+    setter rolloffFactor
 interface PasswordCredential : SiteBoundCredential
     attribute @@toStringTag
     getter additionalData
@@ -6132,6 +6160,10 @@ interface StaticRange
     setter endOffset
     setter startContainer
     setter startOffset
+interface StereoPannerNode : AudioNode
+    attribute @@toStringTag
+    getter pan
+    method constructor
 interface Storage
     attribute @@toStringTag
     getter length

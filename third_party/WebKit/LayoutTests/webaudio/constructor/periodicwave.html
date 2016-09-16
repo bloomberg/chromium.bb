@@ -1,0 +1,293 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: PeriodicWave</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new PeriodicWave()", function () {
+          node = new PeriodicWave();
+        }).throw("TypeError");
+        success = Should("new PeriodicWave(1)", function () {
+          node = new PeriodicWave(1) && success;
+        }).throw("TypeError");
+        success = Should("new PeriodicWave(context, 42)", function () {
+          node = new PeriodicWave(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new PeriodicWave(context)", function () {
+          node = new PeriodicWave(context);
+        }).throw("InvalidStateError");
+
+        taskDone();
+      });
+
+      audit.defineTask("constructor with options", function (taskDone) {
+        var node;
+        var success = true;
+
+        var options = {
+          real: [1, 1]
+        };
+        success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PeriodicWave(context, options);
+          }).notThrow();
+        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+          .beEqualTo(true) && success;
+
+        options = {
+          imag: [1, 1]
+        };
+        success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PeriodicWave(context, options);
+          }).notThrow();
+        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+          .beEqualTo(true) && success;
+
+        options = {
+          real: [1, 2],
+          imag: [1, 1]
+        };
+        success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PeriodicWave(context, options);
+          }).notThrow();
+        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+          .beEqualTo(true) && success;
+
+        Should("new PeriodicWave() with options", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+      
+      // The following test that the correct waveforms are produced when various
+      // possible PeriodicWave options are used.  These are needed because it's
+      // the only way to tell if the various options were correctly applied.
+
+      // TODO(rtoy): These functionality tests should be moved out to a separate
+      // file.
+      audit.defineTask("1: real periodicwave test", function (taskDone) {
+        waveTest({
+            real: [0, 2]
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            var normalizationFactor = 0.5;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = Math.cos(omega * k);
+            }
+            return expected;
+          },
+          2.7106e-5).then(taskDone);
+      });
+
+      audit.defineTask("2: real periodicwave test", function (taskDone) {
+        waveTest({
+            real: [0, 2],
+            disableNormalization: false
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = Math.cos(omega * k);
+            }
+            return expected;
+          },
+          2.7106e-5).then(taskDone);
+      }),
+
+      audit.defineTask("3: real periodicwave test", function (taskDone) {
+
+      waveTest({
+          real: [0, 2],
+          disableNormalization: true
+        }, function (length, freq, sampleRate) {
+          var expected = new Float32Array(length);
+          var omega = 2 * Math.PI * freq / sampleRate;
+          for (var k = 0; k < length; ++k) {
+            expected[k] = 2 * Math.cos(omega * k);
+          }
+          return expected;
+        },
+        5.4211e-5).then(taskDone);
+      });
+
+      audit.defineTask("1: imag periodicwave test", function (taskDone) {
+        waveTest({
+            imag: [0, 2]
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = Math.sin(omega * k);
+            }
+            return expected;
+          },
+          2.7232e-5).then(taskDone);
+      });
+
+      audit.defineTask("2: imag periodicwave test", function (taskDone) {
+        waveTest({
+            imag: [0, 2],
+            disableNormalization: false
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = Math.sin(omega * k);
+            }
+            return expected;
+          },
+          2.7232e-5).then(taskDone);
+      });
+
+      audit.defineTask("3: imag periodicwave test", function (taskDone) {
+        waveTest({
+            imag: [0, 2],
+            disableNormalization: true
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = 2 * Math.sin(omega * k);
+            }
+            return expected;
+          },
+          5.4464e-5).then(taskDone);
+      });
+
+      audit.defineTask("1: real/imag periodicwave test", function (taskDone) {
+        waveTest({
+            real: [0, 1],
+            imag: [0, 1],
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            var normalizationFactor = Math.SQRT1_2;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = normalizationFactor * (Math.sin(omega * k) + Math.cos(omega * k));
+            }
+            return expected;
+          },
+          3.8371e-5).then(taskDone);
+      });
+
+      audit.defineTask("2: real/imag periodicwave test", function (taskDone) {
+        waveTest({
+            real: [0, 1],
+            imag: [0, 1],
+            disableNormalization: false
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            var normalizationFactor = Math.SQRT1_2;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = normalizationFactor * (Math.sin(omega * k) + Math.cos(omega * k));
+            }
+            return expected;
+          },
+          2.7165e-5).then(taskDone);
+      });
+
+      audit.defineTask("3: real/imag periodicwave test", function (taskDone) {
+        waveTest({
+            real: [0, 1],
+            imag: [0, 1],
+            disableNormalization: true
+          }, function (length, freq, sampleRate) {
+            var expected = new Float32Array(length);
+            var omega = 2 * Math.PI * freq / sampleRate;
+            for (var k = 0; k < length; ++k) {
+              expected[k] = Math.sin(omega * k) + Math.cos(omega * k);
+            }
+            return expected;
+          },
+          3.8416e-5).then(taskDone);
+      });
+
+      function waveTest(waveOptions, expectedFunction, threshold) {
+        var node;
+        var success = true;
+
+        // Rather arbitrary sample rate and render length. Length doesn't have
+        // to be very long.
+        var sampleRate = 48000;
+        var renderLength = 0.25;
+        var testContext = new OfflineAudioContext(1, renderLength * sampleRate, sampleRate);
+
+        var options = {
+          periodicWave: new PeriodicWave(testContext, waveOptions)
+        };
+        node = new OscillatorNode(testContext, options);
+
+        // Create the graph
+        node.connect(testContext.destination);
+        node.start();
+
+        return testContext.startRendering().then(function (resultBuffer) {
+          var actual = resultBuffer.getChannelData(0);
+          var expected = expectedFunction(actual.length,
+            node.frequency.value,
+            testContext.sampleRate);
+          // Actual must match expected to within the (experimentally)
+          // determined threshold.
+          var message = "";
+          if (waveOptions.disableNormalization != undefined)
+            message = "disableNormalization: " + waveOptions.disableNormalization;
+          if (waveOptions.real) {
+            if (message.length > 0)
+              message += ", "
+            message += "real: [" + waveOptions.real + "]";
+          }
+          if (waveOptions.imag) {
+            if (message.length > 0)
+              message += ", "
+            message += "imag: [" + waveOptions.imag + "]";
+          }
+          Should("Oscillator with periodicWave {" + message + "}", actual)
+            .beCloseToArray(expected, threshold);
+        });
+      }
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

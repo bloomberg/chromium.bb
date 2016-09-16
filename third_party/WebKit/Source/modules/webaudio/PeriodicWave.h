@@ -40,6 +40,7 @@ namespace blink {
 
 class BaseAudioContext;
 class ExceptionState;
+class PeriodicWaveOptions;
 
 class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,10 +53,21 @@ public:
     // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
     static PeriodicWave* create(
         BaseAudioContext&,
+        size_t realLength,
+        const float* real,
+        size_t imagLength,
+        const float* imag,
+        bool normalize,
+        ExceptionState&);
+
+    static PeriodicWave* create(
+        BaseAudioContext&,
         DOMFloat32Array* real,
         DOMFloat32Array* imag,
         bool normalize,
         ExceptionState&);
+
+    static PeriodicWave* create(BaseAudioContext*, const PeriodicWaveOptions&, ExceptionState&);
 
     virtual ~PeriodicWave();
 

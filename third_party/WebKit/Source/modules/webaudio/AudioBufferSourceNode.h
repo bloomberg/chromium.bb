@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class AudioBufferSourceOptions;
 class BaseAudioContext;
 
 // AudioBufferSourceNode is an AudioNode representing an audio source from an in-memory audio asset represented by an AudioBuffer.
@@ -142,6 +143,7 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBufferSourceNode* create(BaseAudioContext&, ExceptionState&);
+    static AudioBufferSourceNode* create(BaseAudioContext*, AudioBufferSourceOptions&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     AudioBufferSourceHandler& audioBufferSourceHandler() const;
 

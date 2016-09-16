@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AnalyserOptions.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
@@ -100,6 +101,20 @@ void AnalyserHandler::setMaxDecibels(double k, ExceptionState& exceptionState)
     }
 }
 
+void AnalyserHandler::setMinMaxDecibels(double minDecibels, double maxDecibels, ExceptionState& exceptionState)
+{
+    if (minDecibels >= maxDecibels) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "maxDecibels (" + String::number(maxDecibels)
+            + ") must be greater than or equal to minDecibels "
+            + "( " + String::number(minDecibels) + ").");
+        return;
+    }
+    m_analyser.setMinDecibels(minDecibels);
+    m_analyser.setMaxDecibels(maxDecibels);
+}
+
 void AnalyserHandler::setSmoothingTimeConstant(double k, ExceptionState& exceptionState)
 {
     if (k >= 0 && k <= 1) {
@@ -129,6 +144,30 @@ AnalyserNode* AnalyserNode::create(BaseAudioContext& context, ExceptionState& ex
     }
 
     return new AnalyserNode(context);
+}
+
+AnalyserNode* AnalyserNode::create(BaseAudioContext* context, const AnalyserOptions& options, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    AnalyserNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasFftSize())
+        node->setFftSize(options.fftSize(), exceptionState);
+
+    if (options.hasSmoothingTimeConstant())
+        node->setSmoothingTimeConstant(options.smoothingTimeConstant(), exceptionState);
+
+    // minDecibels and maxDecibels have default values.  Set both of the values
+    // at once.
+    node->setMinMaxDecibels(options.minDecibels(), options.maxDecibels(), exceptionState);
+
+    return node;
 }
 
 AnalyserHandler& AnalyserNode::analyserHandler() const
@@ -164,6 +203,11 @@ double AnalyserNode::minDecibels() const
 void AnalyserNode::setMaxDecibels(double max, ExceptionState& exceptionState)
 {
     analyserHandler().setMaxDecibels(max, exceptionState);
+}
+
+void AnalyserNode::setMinMaxDecibels(double min, double max, ExceptionState& exceptionState)
+{
+    analyserHandler().setMinMaxDecibels(min, max, exceptionState);
 }
 
 double AnalyserNode::maxDecibels() const

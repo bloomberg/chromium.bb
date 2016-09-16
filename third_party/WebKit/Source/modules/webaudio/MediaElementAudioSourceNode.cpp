@@ -29,6 +29,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/MediaElementAudioSourceOptions.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
@@ -233,6 +234,18 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(BaseAudioContex
     }
 
     return node;
+}
+
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(BaseAudioContext* context, const MediaElementAudioSourceOptions& options, ExceptionState& exceptionState)
+{
+    if (!options.hasMediaElement()) {
+        exceptionState.throwDOMException(
+            NotFoundError,
+            "mediaElement member is required.");
+        return nullptr;
+    }
+
+    return create(*context, *options.mediaElement(), exceptionState);
 }
 
 DEFINE_TRACE(MediaElementAudioSourceNode)

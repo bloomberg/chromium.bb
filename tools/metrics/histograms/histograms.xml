@@ -81295,6 +81295,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1558" label="VRGetDisplays"/>
   <int value="1559" label="VRPresent"/>
   <int value="1560" label="VRDeprecatedGetPose"/>
+  <int value="1561" label="WebAudioAnalyserNode"/>
+  <int value="1562" label="WebAudioAudioBuffer"/>
+  <int value="1563" label="WebAudioAudioBufferSourceNode"/>
+  <int value="1564" label="WebAudioBiquadFilterNode"/>
+  <int value="1565" label="WebAudioChannelMergerNode"/>
+  <int value="1566" label="WebAudioChannelSplitterNode"/>
+  <int value="1567" label="WebAudioConvolverNode"/>
+  <int value="1568" label="WebAudioDelayNode"/>
+  <int value="1569" label="WebAudioDynamicsCompressorNode"/>
+  <int value="1570" label="WebAudioGainNode"/>
+  <int value="1571" label="WebAudioIIRFilterNode"/>
+  <int value="1572" label="WebAudioMediaElementAudioSourceNode"/>
+  <int value="1573" label="WebAudioOscillatorNode"/>
+  <int value="1574" label="WebAudioPannerNode"/>
+  <int value="1575" label="WebAudioPeriodicWave"/>
+  <int value="1576" label="WebAudioStereoPannerNode"/>
+  <int value="1577" label="WebAudioWaveShaperNode"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

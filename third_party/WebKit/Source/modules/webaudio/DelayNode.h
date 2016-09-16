@@ -30,6 +30,7 @@
 namespace blink {
 
 class BaseAudioContext;
+class DelayOptions;
 class ExceptionState;
 
 class DelayNode final : public AudioNode {
@@ -37,6 +38,7 @@ class DelayNode final : public AudioNode {
 public:
     static DelayNode* create(BaseAudioContext&, ExceptionState&);
     static DelayNode* create(BaseAudioContext&, double maxDelayTime, ExceptionState&);
+    static DelayNode* create(BaseAudioContext*, const DelayOptions&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     AudioParam* delayTime();
 

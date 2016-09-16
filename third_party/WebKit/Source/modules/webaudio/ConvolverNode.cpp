@@ -28,6 +28,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/ConvolverNode.h"
+#include "modules/webaudio/ConvolverOptions.h"
 #include "platform/audio/Reverb.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -183,6 +184,23 @@ ConvolverNode* ConvolverNode::create(BaseAudioContext& context, ExceptionState& 
     }
 
     return new ConvolverNode(context);
+}
+
+ConvolverNode* ConvolverNode::create(BaseAudioContext* context, const ConvolverOptions& options, ExceptionState& exceptionState)
+{
+    ConvolverNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    // It is important to set normalize first because setting the buffer will
+    // examing the normalize attribute to see if normalization needs to be done.
+    node->setNormalize(!options.disableNormalization());
+    if (options.hasBuffer())
+        node->setBuffer(options.buffer(), exceptionState);
+    return node;
 }
 
 ConvolverHandler& ConvolverNode::convolverHandler() const

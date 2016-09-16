@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// WebAudio spec: https://webaudio.github.io/web-audio-api/#BaseAudioContext
+// See https://webaudio.github.io/web-audio-api/#BaseAudioContext
 enum AudioContextState {
     "suspended",
     "running",

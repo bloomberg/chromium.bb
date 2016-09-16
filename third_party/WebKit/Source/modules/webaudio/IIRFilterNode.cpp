@@ -9,6 +9,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/IIRFilterOptions.h"
 #include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"
 
@@ -115,6 +116,35 @@ IIRFilterNode* IIRFilterNode::create(
     }
 
     return new IIRFilterNode(context, feedforwardCoef, feedbackCoef);
+}
+
+IIRFilterNode* IIRFilterNode::create(
+    BaseAudioContext* context,
+    const IIRFilterOptions& options,
+    ExceptionState& exceptionState)
+{
+    if (!options.hasFeedforward()) {
+        exceptionState.throwDOMException(
+            NotFoundError,
+            "IIRFilterOptions: feedforward is required.");
+        return nullptr;
+    }
+
+    if (!options.hasFeedback()) {
+        exceptionState.throwDOMException(
+            NotFoundError,
+            "IIRFilterOptions: feedback is required.");
+        return nullptr;
+    }
+
+    IIRFilterNode* node = create(*context, options.feedforward(), options.feedback(), exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    return node;
 }
 
 DEFINE_TRACE(IIRFilterNode)

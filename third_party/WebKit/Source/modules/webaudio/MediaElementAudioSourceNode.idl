@@ -22,6 +22,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#MediaElementAudioSourceNode
+[
+    // TODO(rtoy): This should be AudioContext, not BaseAudioContext.
+    Constructor(BaseAudioContext context, MediaElementAudioSourceOptions options),
+    RaisesException=Constructor,
+]
 interface MediaElementAudioSourceNode : AudioSourceNode {
     readonly attribute HTMLMediaElement mediaElement;
 };

@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: AudioBufferSource</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new AudioBufferSourceNode()", function () {
+          node = new AudioBufferSourceNode();
+        }).throw("TypeError");
+        success = Should("new AudioBufferSourceNode(1)", function () {
+          node = new AudioBufferSourceNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new AudioBufferSourceNode(c, 42)", function () {
+          node = new AudioBufferSourceNode(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new AudioBufferSourceNode(c)", function () {
+          node = new AudioBufferSourceNode(context);
+        }).notThrow() && success;
+
+        success = Should("node instanceof AudioBufferSourceNode",
+          node instanceof AudioBufferSourceNode).beEqualTo(true) && success;
+
+        success = Should("node.buffer === null", node.buffer === null)
+          .beEqualTo(true) && success;
+
+        // This node using the factory method is used as a reference for the
+        // defautl values.
+        var factoryNode = context.createBufferSource();
+
+        var testAttributes = ["buffer", "detune", "loop", "loopEnd", "loopStart",
+        "playbackRate"];
+
+        for (var index in testAttributes) {
+          var name = testAttributes[index];
+
+          if (node[name] instanceof AudioParam) {
+            success = Should("node." + name + ".value", node[name].value)
+              .beEqualTo(factoryNode[name].value) && success;
+          } else {
+          success = Should("node." + name, node[name])
+          .beEqualTo(factoryNode[name]) && success;
+          }
+        }
+
+        Should("AudioBufferSourceNode constructed", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("constructor options", function (taskDone) {
+        var node;
+        var success = true;
+
+        var buffer = context.createBuffer(2, 1000, context.sampleRate);
+
+        var options = {
+          buffer: buffer,
+          detune: .5,
+          loop: true,
+          loopEnd: (buffer.length / 2) / context.sampleRate,
+          loopStart: 5 / context.sampleRate,
+          playbackRate: .75
+        };
+
+        message = "node = new AudioBufferSourceNode(c, " + JSON.stringify(options) + ")";
+
+        success = Should(message, function () {
+          node = new AudioBufferSourceNode(context, options);
+        }).notThrow();
+
+        // Use the factory method to create an equivalent node and compare the
+        // results from the constructor against this node.
+        var factoryNode = context.createBufferSource();
+        factoryNode.buffer = options.buffer;
+        factoryNode.detune.value = options.detune;
+        factoryNode.loop = options.loop;
+        factoryNode.loopEnd = options.loopEnd;
+        factoryNode.loopStart = options.loopStart;
+        factoryNode.playbackRate.value = options.playbackRate;
+
+        success = Should("node.buffer === buffer", node.buffer === buffer)
+          .beEqualTo(true) && success;
+        success = Should("node.detune.value", node.detune.value)
+          .beEqualTo(factoryNode.detune.value) && success;
+        success = Should("node.loop", node.loop)
+          .beEqualTo(factoryNode.loop) && success;
+        success = Should("node.loopEnd", node.loopEnd)
+          .beEqualTo(factoryNode.loopEnd) && success;
+        success = Should("node.loopStart", node.loopStart)
+          .beEqualTo(factoryNode.loopStart) && success;
+        success = Should("node.playbackRate.value", node.playbackRate.value)
+          .beEqualTo(factoryNode.playbackRate.value) && success;
+
+        Should("AudioBufferSource with options cosntructed", success)
+          .summarize("correctly", "incorrectly");
+        
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

@@ -28,6 +28,7 @@
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/WaveShaperNode.h"
+#include "modules/webaudio/WaveShaperOptions.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -52,26 +53,60 @@ WaveShaperNode* WaveShaperNode::create(BaseAudioContext& context, ExceptionState
     return new WaveShaperNode(context);
 }
 
+WaveShaperNode* WaveShaperNode::create(BaseAudioContext* context, const WaveShaperOptions& options, ExceptionState& exceptionState)
+{
+    WaveShaperNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasCurve())
+        node->setCurve(options.curve(), exceptionState);
+    if (options.hasOversample())
+        node->setOversample(options.oversample());
+
+    return node;
+}
 WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const
 {
     return static_cast<WaveShaperProcessor*>(static_cast<AudioBasicProcessorHandler&>(handler()).processor());
+}
+
+void WaveShaperNode::setCurveImpl(
+    const float* curveData, unsigned curveLength, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (curveData && curveLength < 2) {
+        exceptionState.throwDOMException(
+            InvalidAccessError,
+            ExceptionMessages::indexExceedsMinimumBound<unsigned>(
+                "curve length",
+                curveLength,
+                2));
+        return;
+    }
+
+    getWaveShaperProcessor()->setCurve(curveData, curveLength);
 }
 
 void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
 
-    if (curve && curve->length() < 2) {
-        exceptionState.throwDOMException(
-            InvalidAccessError,
-            ExceptionMessages::indexExceedsMinimumBound<unsigned>(
-                "curve length",
-                curve->length(),
-                2));
-        return;
-    }
+    if (curve)
+        setCurveImpl(curve->data(), curve->length(), exceptionState);
+    else
+        setCurveImpl(nullptr, 0, exceptionState);
+}
 
-    getWaveShaperProcessor()->setCurve(curve);
+void WaveShaperNode::setCurve(const Vector<float>& curve, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    setCurveImpl(curve.data(), curve.size(), exceptionState);
 }
 
 DOMFloat32Array* WaveShaperNode::curve()

@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#the-oscillatornode-interface
 enum OscillatorType {
     "sine",
     "square",
@@ -32,7 +33,9 @@ enum OscillatorType {
 
 // OscillatorNode is an audio generator of periodic waveforms.
 [
-    ActiveScriptWrappable,
+    Constructor(BaseAudioContext context, optional OscillatorOptions options),
+    RaisesException=Constructor,
+    ActiveScriptWrappable,    
 ]
 interface OscillatorNode : AudioSourceNode {
 

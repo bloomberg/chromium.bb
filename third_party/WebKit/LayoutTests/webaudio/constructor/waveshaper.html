@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: WaveShaper</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("Construct Offline context", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+        taskDone();
+      });
+
+      audit.defineTask("incorrect construction", function (taskDone) {
+        var success = true;
+
+        success = Should("new WaveShaperNode()", function () {
+            new WaveShaperNode();
+          }).throw("TypeError");
+        success = Should("new WaveShaperNode(1)", function () {
+            new WaveShaperNode(1);
+          }).throw("TypeError") && success;
+        success = Should("new WaveShaperNode(context, 42)", function () {
+            new WaveShaperNode(context, 42);
+          }).throw("TypeError") && success;
+
+        success = Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+        taskDone();
+      });
+
+      audit.defineTask("valid default construction", function (taskDone) {
+        var node;
+
+        success = Should("node = new WaveShaperNode(context)", function () {
+          node = new WaveShaperNode(context);
+        }).notThrow();
+        success = Should("node.curve", node.curve).beEqualTo(null) && success;
+        success = Should("node.oversample", node.oversample).beEqualTo("none") && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        Should("new WaveShaperNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "WaveShaperNode");
+        taskDone();
+      });
+
+      audit.defineTask("valid non-default", function (taskDone) {
+        // Construct an WaveShaperNode with options
+        var options = {
+          curve: Float32Array.from([1,2,3]),
+          oversample: "4x"
+        };
+        var node;
+
+        var message = "node = new WaveShaperNode(, " + JSON.stringify(options) + ")";
+        success = Should(message, function () {
+            node = new WaveShaperNode(context, options);
+          }).notThrow();
+        success = Should("node.curve", node.curve)
+          .beEqualToArray(options.curve) && success;
+        success = Should("node.oversample", node.oversample)
+          .beEqualTo(options.oversample) && success;
+
+        Should("new WaveShaper() with options", success)
+            .summarize(
+                "constructed with correct attributes",
+                "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

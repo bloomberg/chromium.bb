@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#AudioDestinationNode
 interface AudioDestinationNode : AudioNode {
     readonly attribute unsigned long maxChannelCount;
 };

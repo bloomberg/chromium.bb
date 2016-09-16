@@ -34,6 +34,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/ChannelMergerOptions.h"
 
 
 namespace blink {
@@ -156,6 +157,18 @@ ChannelMergerNode* ChannelMergerNode::create(BaseAudioContext& context, unsigned
     }
 
     return new ChannelMergerNode(context, numberOfInputs);
+}
+
+ChannelMergerNode* ChannelMergerNode::create(BaseAudioContext* context, const ChannelMergerOptions& options, ExceptionState& exceptionState)
+{
+    ChannelMergerNode* node = create(*context, options.numberOfInputs(), exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    return node;
 }
 
 } // namespace blink

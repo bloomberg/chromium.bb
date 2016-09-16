@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: Oscillator</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new OscillatorNode()", function () {
+          node = new OscillatorNode();
+        }).throw("TypeError");
+        success = Should("new OscillatorNode(1)", function () {
+          node = new OscillatorNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new OscillatorNode(context, 42)", function () {
+          node = new OscillatorNode(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new OscillatorNode(context)", function () {
+          node = new OscillatorNode(context);
+        }).notThrow();
+        success = Should("node instanceof OscillatorNode", node instanceof OscillatorNode)
+          .beEqualTo(true) && success;
+
+        success = Should("node.type", node.type)
+          .beEqualTo("sine") && success;
+        success = Should("node.detune.value", node.detune.value)
+          .beEqualTo(0) && success;
+        success = Should("node.frequency.value", node.frequency.value)
+          .beEqualTo(440) && success;
+      
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        Should("new OscillatorNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "OscillatorNode");
+        taskDone();
+      });
+
+      audit.defineTask("constructor options", function (taskDone) {
+        var node;
+        var success = true;
+        var options = {
+          type: "sawtooth",
+          detune: 7,
+          frequency: 918
+        };
+
+        success = Should("node = new OscillatorNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new OscillatorNode(context, options);
+          }).notThrow();
+
+        success = Should("node.type", node.type)
+          .beEqualTo(options.type) && success;
+        success = Should("node.detune.value", node.detune.value)
+          .beEqualTo(options.detune) && success;
+        success = Should("node.frequency.value", node.frequency.value)
+          .beEqualTo(options.frequency) && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        // Test that type and periodicWave options work as described.
+        options = {
+          type: "sine",
+          periodicWave: new PeriodicWave(context, {
+            real: [1, 1]
+          })
+        };
+        success = Should("new OscillatorNode(c, " + JSON.stringify(options) + ")",
+            function () {
+              node = new OscillatorNode(context, options);
+            })
+          .throw("InvalidStateError") && success;
+
+        options = {
+          type: "custom"
+        };
+        success = Should("new OscillatorNode(c, " + JSON.stringify(options) + ")",
+            function () {
+              node = new OscillatorNode(context, options);
+            })
+          .throw("InvalidStateError") && success;
+
+        options = {
+          type: "custom",
+          periodicWave: new PeriodicWave(context, {
+            real: [1, 1]
+          })
+        };
+        success = Should("new OscillatorNode(, " + JSON.stringify(options) + ")",
+            function () {
+              node = new OscillatorNode(context, options);
+            })
+          .notThrow() && success;
+
+        Should("new OscillatorNode() with options", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

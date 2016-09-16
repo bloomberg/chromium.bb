@@ -25,6 +25,7 @@
 #include "modules/webaudio/GainNode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/GainOptions.h"
 #include "platform/audio/AudioBus.h"
 
 namespace blink {
@@ -136,6 +137,21 @@ GainNode* GainNode::create(BaseAudioContext& context, ExceptionState& exceptionS
     }
 
     return new GainNode(context);
+}
+
+GainNode* GainNode::create(BaseAudioContext* context, const GainOptions& options, ExceptionState& exceptionState)
+{
+    GainNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasGain())
+        node->gain()->setValue(options.gain());
+
+    return node;
 }
 
 AudioParam* GainNode::gain() const

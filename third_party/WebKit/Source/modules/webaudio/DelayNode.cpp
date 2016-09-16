@@ -27,6 +27,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/DelayNode.h"
+#include "modules/webaudio/DelayOptions.h"
 #include "modules/webaudio/DelayProcessor.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
@@ -81,6 +82,22 @@ DelayNode* DelayNode::create(BaseAudioContext& context, double maxDelayTime, Exc
     }
 
     return new DelayNode(context, maxDelayTime);
+}
+
+DelayNode* DelayNode::create(BaseAudioContext* context, const DelayOptions& options, ExceptionState& exceptionState)
+{
+    // maxDelayTime has a default value specified.
+    DelayNode* node = create(*context, options.maxDelayTime(), exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasDelayTime())
+        node->delayTime()->setValue(options.delayTime());
+
+    return node;
 }
 
 AudioParam* DelayNode::delayTime()

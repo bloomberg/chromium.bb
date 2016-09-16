@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#the-biquadfilternode-interface
 enum BiquadFilterType {
     "lowpass",
     "highpass",
@@ -33,6 +34,10 @@ enum BiquadFilterType {
     "allpass"
 };
 
+[
+    Constructor(BaseAudioContext context, optional BiquadFilterOptions options),
+    RaisesException=Constructor,
+]
 interface BiquadFilterNode : AudioNode {
     attribute BiquadFilterType type;
 

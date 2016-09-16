@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: ChannelMerger</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new ChannelMergerNode()", function () {
+          node = new ChannelMergerNode();
+        }).throw("TypeError");
+        success = Should("new ChannelMergerNode(1)", function () {
+          node = new ChannelMergerNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new ChannelMergerNode(context, 42)", function () {
+          node = new ChannelMergerNode(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new ChannelMergerNode(context)", function () {
+          node = new ChannelMergerNode(context);
+        }).notThrow();
+        success = Should("node instanceof ChannelMergerNode", node instanceof ChannelMergerNode)
+          .beEqualTo(true) && success;
+
+        success = Should("node.numberOfInputs", node.numberOfInputs)
+          .beEqualTo(6) && success;
+        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+          .beEqualTo(1) && success;
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(1) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("explicit") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        Should("new ChannelMergerNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "ChannelMergerNode", {
+          expectedChannelCount: {
+            value: 1,
+            isFixed: true,
+            errorType: "InvalidStateError"
+          },
+          expectedChannelCountMode: {
+            value: "explicit",
+            isFixed: true,
+            errorType: "InvalidStateError"
+          }
+        });
+        taskDone();
+      });
+
+      audit.defineTask("constructor options", function (taskDone) {
+        var node;
+        var success = true;
+        var options = {
+          numberOfInputs: 3,
+          numberOfOutputs: 9,
+          channelInterpretation: "discrete"
+        };
+
+        success = Should("node = new ChannelMergerNode(context, " + JSON.stringify(options) +
+          ")",
+          function () {
+            node = new ChannelMergerNode(context, options);
+          }).notThrow();
+
+        success = Should("node.numberOfInputs", node.numberOfInputs)
+          .beEqualTo(options.numberOfInputs) && success;
+        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+          .beEqualTo(1) && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo(options.channelInterpretation) && success;
+
+        options = {
+          numberOfInputs: 99
+        };
+        success = Should("new ChannelMergerNode(c, " + JSON.stringify(options) + ")",
+            function () {
+              node = new ChannelMergerNode(context, options);
+            })
+          .throw("IndexSizeError") && success;
+
+        options = {
+          channelCount: 3
+        };
+        success = Should("new ChannelMergerNode(c, " + JSON.stringify(options) + ")",
+            function () {
+              node = new ChannelMergerNode(context, options);
+            })
+          .throw("InvalidStateError") && success;
+
+        options = {
+          channelCountMode: "max"
+        };
+        success = Should("new ChannelMergerNode(c, " + JSON.stringify(options) + ")",
+            function () {
+              node = new ChannelMergerNode(context, options);
+            })
+          .throw("InvalidStateError") && success;
+
+        Should("new ChannelMergerNode() with options", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

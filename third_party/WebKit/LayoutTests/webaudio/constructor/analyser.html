@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: AnalyserNode</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new AnalyserNode()", function () {
+          node = new AnalyserNode();
+        }).throw("TypeError");
+        success = Should("new AnalyserNode(1)", function () {
+          node = new AnalyserNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new AnalyserNode(c, 42)", function () {
+          node = new AnalyserNode(context, 42) && success; 
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new AnalyserNode(c)", function () {
+          node = new AnalyserNode(context);
+        }).notThrow();
+        success = Should("node instanceof AnalyserNode", node instanceof AnalyserNode)
+          .beEqualTo(true) && success;
+        success = Should("node.fftSize", node.fftSize).beEqualTo(2048) && success;
+        success = Should("node.frequencyBinCount",
+          node.frequencyBinCount).beEqualTo(1024) && success;
+        success = Should("node.minDecibels", node.minDecibels).beEqualTo(-100) && success;
+        success = Should("node.maxDecibels", node.maxDecibels).beEqualTo(-30) && success;
+        // All AudioParams are stored as single precision values.  Compare
+        // against the single-precision float value.
+        success = Should("node.smoothingTimeConstant", node.smoothingTimeConstant)
+          .beEqualTo(Math.fround(0.8)) && success;
+
+        Should("new AnalyserNode(c)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "AnalyserNode");
+        taskDone();
+      });
+
+      audit.defineTask("constructor with options", function (taskDone) {
+        var options = {
+          fftSize: 32,
+          maxDecibels: 1,
+          minDecibels: -13,
+          // Choose a value that can be represented the same as a float and as a
+          // double.
+          smoothingTimeConstant: 0.125
+        };
+
+        var node;
+        var success = true;
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")", function () {
+          node = new AnalyserNode(context, options);
+        }).notThrow();
+
+        success = Should("node instanceof AnalyserNode", node instanceof AnalyserNode)
+          .beEqualTo(true) && success;
+        success = Should("node.fftSize", node.fftSize)
+          .beEqualTo(options.fftSize) && success;
+        success = Should("node.maxDecibels", node.maxDecibels)
+          .beEqualTo(options.maxDecibels) && success;
+        success = Should("node.minDecibels", node.minDecibels)
+          .beEqualTo(options.minDecibels) && success;
+        success = Should("node.smoothingTimeConstant", node.smoothingTimeConstant)
+          .beEqualTo(options.smoothingTimeConstant) && success;
+
+        Should("new AnalyserNode() with options", success)
+            .summarize(
+                "constructed with correct attributes",
+                "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.defineTask("construct invalid options", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new AnalyserNode(c, { fftSize: 33 })", function () {
+          node = new AnalyserNode(context, {
+            fftSize: 33
+          });
+        }).throw("IndexSizeError") && success;
+        success = Should("node = new AnalyserNode(c, { maxDecibels: -500 })", function () {
+          node = new AnalyserNode(context, {
+            maxDecibels: -500
+          });
+        }).throw("IndexSizeError") && success;
+        success = Should("node = new AnalyserNode(c, { minDecibels: -10 })", function () {
+          node = new AnalyserNode(context, {
+            minDecibels: -10
+          });
+        }).throw("IndexSizeError") && success;
+        success = Should("node = new AnalyserNode(c, { smoothingTimeConstant: 2 })", function () {
+          node = new AnalyserNode(context, {
+            smoothingTimeConstant: 2
+          });
+        }).throw("IndexSizeError") && success;
+        success = Should("node = new AnalyserNode(c, { frequencyBinCount: 33 })", function () {
+          node = new AnalyserNode(context, {
+            frequencyBinCount: 33
+          });
+        }).notThrow() && success;
+        success = Should("node.frequencyBinCount", node.frequencyBinCount).beEqualTo(1024) &&
+          success;
+
+        Should("new AnalyserNode() with invalid option values", success)
+            .summarize(
+                "correctly handled",
+                "was not correctly handled");
+
+        taskDone();
+      });
+
+      audit.defineTask("setting min/max", function (taskDone) {
+        var node;
+        var success = true;
+
+        // Recall the default values of minDecibels and maxDecibels are -100,
+        // and -30, respectively.  Setting both values in the constructor should
+        // not signal an error in any of the following cases.
+        var options = {
+          minDecibels: -10,
+          maxDecibels: 20
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).notThrow() && success;
+
+        options = {
+          maxDecibels: 20,
+          minDecibels: -10
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).notThrow() && success;
+
+        options = {
+          minDecibels: -200,
+          maxDecibels: -150
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).notThrow() && success;
+
+        options = {
+          maxDecibels: -150,
+          minDecibels: -200
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).notThrow() && success;
+
+        // But these should signal because minDecibel > maxDecibel
+        options = {
+          maxDecibels: -150,
+          minDecibels: -10
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).throw("IndexSizeError") && success;
+
+        options = {
+          minDecibels: -10,
+          maxDecibels: -150
+        };
+        success = Should("node = new AnalyserNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new AnalyserNode(context, options);
+          }).throw("IndexSizeError") && success;
+
+        Should("new AnalyserNode with minDecibels/maxDecibels options values", success)
+          .summarize(
+            "correctly handled",
+            "incorrectly handled");
+
+        taskDone();
+      });
+      audit.runTasks();
+    </script>
+  </body>
+</html>

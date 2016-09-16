@@ -53,7 +53,7 @@ public:
 
     void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
-    void setCurve(DOMFloat32Array*);
+    void setCurve(const float* curveData, unsigned curveLength);
     Vector<float>* curve() const { return m_curve.get(); };
 
     void setOversample(OverSampleType);

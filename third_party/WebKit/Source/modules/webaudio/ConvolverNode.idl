@@ -23,6 +23,11 @@
  */
 
 // A linear convolution effect
+// See https://webaudio.github.io/web-audio-api/#ConvolverNode
+[
+    Constructor(BaseAudioContext context, optional ConvolverOptions options),
+    RaisesException=Constructor,
+]
 interface ConvolverNode : AudioNode {
     [RaisesException=Setter] attribute AudioBuffer? buffer;
     attribute boolean normalize;

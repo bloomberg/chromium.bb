@@ -31,6 +31,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/PannerOptions.h"
 #include "platform/Histogram.h"
 #include "platform/audio/HRTFPanner.h"
 #include "wtf/MathExtras.h"
@@ -666,6 +667,50 @@ PannerNode* PannerNode::create(BaseAudioContext& context, ExceptionState& except
     }
 
     return new PannerNode(context);
+}
+
+PannerNode* PannerNode::create(BaseAudioContext* context, const PannerOptions& options, ExceptionState& exceptionState)
+{
+    PannerNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasPanningModel())
+        node->setPanningModel(options.panningModel());
+    if (options.hasDistanceModel())
+        node->setDistanceModel(options.distanceModel());
+
+    if (options.hasPositionX())
+        node->positionX()->setValue(options.positionX());
+    if (options.hasPositionY())
+        node->positionY()->setValue(options.positionY());
+    if (options.hasPositionZ())
+        node->positionZ()->setValue(options.positionZ());
+
+    if (options.hasOrientationX())
+        node->orientationX()->setValue(options.orientationX());
+    if (options.hasOrientationY())
+        node->orientationY()->setValue(options.orientationY());
+    if (options.hasOrientationZ())
+        node->orientationZ()->setValue(options.orientationZ());
+
+    if (options.hasRefDistance())
+        node->setRefDistance(options.refDistance());
+    if (options.hasMaxDistance())
+        node->setMaxDistance(options.maxDistance());
+    if (options.hasRolloffFactor())
+        node->setRolloffFactor(options.rolloffFactor());
+    if (options.hasConeInnerAngle())
+        node->setConeInnerAngle(options.coneInnerAngle());
+    if (options.hasConeOuterAngle())
+        node->setConeOuterAngle(options.coneOuterAngle());
+    if (options.hasConeOuterGain())
+        node->setConeOuterGain(options.coneOuterGain());
+
+    return node;
 }
 
 PannerHandler& PannerNode::pannerHandler() const

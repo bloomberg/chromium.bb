@@ -22,6 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#the-analysernode-interface
+[
+    Constructor(BaseAudioContext context, optional AnalyserOptions options),
+    RaisesException=Constructor,
+]
 interface AnalyserNode : AudioNode {
     [RaisesException=Setter] attribute unsigned long fftSize;
     readonly attribute unsigned long frequencyBinCount;

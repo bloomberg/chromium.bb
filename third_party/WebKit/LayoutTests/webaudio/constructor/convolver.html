@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: Convolver</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        succes = Should("new ConvolverNode()", function () {
+          node = new ConvolverNode();
+        }).throw("TypeError");
+        success = Should("new ConvolverNode(1)", function () {
+          node = new ConvolverNode(1);
+        }).throw("TypeError") && success;
+        success = Should("new ConvolverNode(context, 42)", function () {
+          node = new ConvolverNode(context, 42);
+        }).throw("TypeError") && success;
+
+        Should("Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new ConvolverNode(context)", function () {
+          node = new ConvolverNode(context);
+        }).notThrow();
+        success = Should("node instanceOf ConvolverNode", node instanceof ConvolverNode)
+          .beEqualTo(true) && success;
+        success = Should("node.normalize", node.normalize)
+          .beEqualTo(true) && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("clamped-max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        success = Should("new AnalyserNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "ConvolverNode");
+        taskDone();
+      });
+
+      audit.defineTask("construct with options", function (taskDone) {
+        var buf = context.createBuffer(1, 1, context.sampleRate);
+        var options = {
+          buffer: buf,
+          disableNormalization: false
+        };
+
+        var message = "node = new ConvolverNode(c, " + JSON.stringify(options) + ")";
+
+        var node;
+        success = Should(message, function () {
+          node = new ConvolverNode(context, options);
+        }).notThrow();
+
+        success = Should("node instanceOf ConvolverNode", node instanceof ConvolverNode)
+          .beEqualTo(true) && success;
+        success = Should("node.buffer === <buf>", node.buffer ===
+        options.buffer)
+          .beEqualTo(true) && success;
+        success = Should("node.normalize", node.normalize)
+          .beEqualTo(!options.disableNormalization) && success;
+
+        options.buffer = null;
+        options.disableNormalization = true;
+
+        message = "node = new ConvolverNode(, " + JSON.stringify(options) + ")";
+
+        success = Should(message, function () {
+          node = new ConvolverNode(context, options);
+        }).notThrow() && success;
+        success = Should("node.buffer", node.buffer).beEqualTo(null) && success;
+        success = Should("node.normalize", node.normalize)
+          .beEqualTo(!options.disableNormalization) && success;
+
+        options.disableNormalization = false;
+        message = "node = new ConvolverNode(context, " + JSON.stringify(options) + ")";
+
+        success = Should(message, function () {
+          node = new ConvolverNode(context, options);
+        }).notThrow() && success;
+        success = Should("node.buffer", node.buffer).beEqualTo(null) && success;
+        success = Should("node.normalize", node.normalize)
+          .beEqualTo(!options.disableNormalization) && success;
+
+        Should("new ConvolverNode() with options", success)
+            .summarize(
+                "constructed with correct attributes",
+                "was not constructed correctly");
+          
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: AudioBuffer</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new AudioBuffer()", function () {
+          node = new AudioBuffer();
+        }).throw("TypeError");
+        success = Should("new AudioBuffer(1)", function () {
+          node = new AudioBuffer(1) && success;
+        }).throw("TypeError");
+        success = Should("new AudioBuffer(context, 42)", function () {
+          node = new AudioBuffer(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+          .summarize(
+            "correctly threw errors",
+            "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("required options", function (taskDone) {
+        var success = true;
+
+        success = Should("new AudioBuffer(context, {})", function () {
+          var buffer = new AudioBuffer(context, {});
+        }).throw("NotFoundError");
+
+        success = Should("new AudioBuffer(context, {numberOfChannels: 1}",
+          function () {
+            var buffer = new AudioBuffer(context, {
+              numberOfChannels: 1
+            });
+          }).throw("NotFoundError") && success;
+
+        // The sampleRate isn't required, but numberOfChannels and length are.
+        success = Should(
+          "new AudioBuffer(context, {numberOfChannels: 1, length: 1}",
+          function () {
+            var buffer = new AudioBuffer(context, {
+              numberOfChannels: 1,
+              length: 1
+            });
+          }).notThrow() && success;
+
+        success = Should(
+          "new AudioBuffer(context, {numberOfChannels: 1, length: 1, sampleRate: 48000}",
+          function () {
+            var buffer = new AudioBuffer(context, {
+              numberOfChannels: 1,
+              length: 1,
+              sampleRate: 48000
+            });
+          }).notThrow() && success;
+
+        Should("Missing option values handled", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid option values", function (taskDone) {
+        var success = true;
+
+        var options = {
+          numberOfChannels: 0,
+          length: 1
+        };
+        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(context, options);
+        }).throw("NotSupportedError");
+
+        options = {
+          numberOfChannels: 99,
+          length: 0
+        };
+        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(context, options);
+        }).throw("NotSupportedError") && success;
+
+        options = {
+          numberOfChannels: 1,
+          length: 0
+        };
+        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(context, options);
+        }).throw("NotSupportedError") && success;
+
+        options = {
+          numberOfChannels: 1,
+          length: 1,
+          sampleRate: 100
+        };
+        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(context, options);
+        }).throw("NotSupportedError") && success;
+
+        Should("Invalid option values handled", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var buffer;
+        var success = true;
+
+        var options = {
+          numberOfChannels: 5,
+          length: 17
+        };
+        success = Should(
+          "buffer = new AudioBuffer(c, " + JSON.stringify(options) + ")",
+          function () {
+            buffer = new AudioBuffer(context, options);
+          }).notThrow();
+
+        success = Should("buffer.numberOfChannels", buffer.numberOfChannels)
+          .beEqualTo(options.numberOfChannels) && success;
+        success = Should("buffer.length", buffer.length)
+          .beEqualTo(options.length) && success;
+        success = Should("buffer.sampleRate", buffer.sampleRate)
+          .beEqualTo(context.sampleRate) && success;
+
+        Should("Default constructor values set", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.defineTask("valid constructor", function (taskDone) {
+        var buffer;
+        var success = true;
+
+        var options = {
+          numberOfChannels: 3,
+          length: 42,
+          sampleRate: 54321
+        };
+
+        var message = "new AudioBuffer(c, {" + JSON.stringify(options) + ")";
+        success = Should(message, function () {
+          buffer = new AudioBuffer(context, options);
+        }).notThrow();
+
+        success = Should("buffer.numberOfChannels", buffer.numberOfChannels)
+          .beEqualTo(options.numberOfChannels) && success;
+
+        success = Should("buffer.length", buffer.length)
+          .beEqualTo(options.length) && success;
+
+        success = Should("buffer.sampleRate", buffer.sampleRate)
+          .beEqualTo(options.sampleRate) && success;
+
+        // Verify that we actually got the right number of channels
+        for (var k = 0; k < options.numberOfChannels; ++k) {
+          var data;
+          var message = "buffer.getChannelData(" + k + ")";
+          success = Should(message, function () {
+            data = buffer.getChannelData(k);
+          }).notThrow() && success;
+
+          success = Should(message + " length", data.length)
+            .beEqualTo(options.length) && success;
+        }
+
+        Should("buffer.getChannelData(" + options.numberOfChannels + ")",
+          function () {
+            buffer.getChannelData(options.numberOfChannels);
+          }).throw("IndexSizeError") && success;
+
+        Should("AudioBuffer constructed", success)
+          .summarize("correctly", "incorrectly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

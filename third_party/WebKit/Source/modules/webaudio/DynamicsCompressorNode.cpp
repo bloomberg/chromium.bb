@@ -25,6 +25,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/DynamicsCompressorNode.h"
+#include "modules/webaudio/DynamicsCompressorOptions.h"
 #include "platform/audio/DynamicsCompressor.h"
 #include "wtf/PtrUtil.h"
 
@@ -154,6 +155,29 @@ DynamicsCompressorNode* DynamicsCompressorNode::create(BaseAudioContext& context
     }
 
     return new DynamicsCompressorNode(context);
+}
+
+DynamicsCompressorNode* DynamicsCompressorNode::create(BaseAudioContext* context, const DynamicsCompressorOptions& options, ExceptionState& exceptionState)
+{
+    DynamicsCompressorNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasAttack())
+        node->attack()->setValue(options.attack());
+    if (options.hasKnee())
+        node->knee()->setValue(options.knee());
+    if (options.hasRatio())
+        node->ratio()->setValue(options.ratio());
+    if (options.hasRelease())
+        node->release()->setValue(options.release());
+    if (options.hasThreshold())
+        node->threshold()->setValue(options.threshold());
+
+    return node;
 }
 
 DEFINE_TRACE(DynamicsCompressorNode)

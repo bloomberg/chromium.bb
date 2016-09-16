@@ -35,6 +35,7 @@
 namespace blink {
 
 class BaseAudioContext;
+class ChannelMergerOptions;
 
 class ChannelMergerHandler final : public AudioHandler {
 public:
@@ -53,6 +54,7 @@ class ChannelMergerNode final : public AudioNode {
 public:
     static ChannelMergerNode* create(BaseAudioContext&, ExceptionState&);
     static ChannelMergerNode* create(BaseAudioContext&, unsigned numberOfInputs, ExceptionState&);
+    static ChannelMergerNode* create(BaseAudioContext*, const ChannelMergerOptions&, ExceptionState&);
 
 private:
     ChannelMergerNode(BaseAudioContext&, unsigned numberOfInputs);

@@ -10,6 +10,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/StereoPannerOptions.h"
 #include "platform/audio/StereoPanner.h"
 #include "wtf/MathExtras.h"
 
@@ -151,6 +152,21 @@ StereoPannerNode* StereoPannerNode::create(BaseAudioContext& context, ExceptionS
     }
 
     return new StereoPannerNode(context);
+}
+
+StereoPannerNode* StereoPannerNode::create(BaseAudioContext* context, const StereoPannerOptions& options, ExceptionState& exceptionState)
+{
+    StereoPannerNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasPan())
+        node->pan()->setValue(options.pan());
+
+    return node;
 }
 
 DEFINE_TRACE(StereoPannerNode)

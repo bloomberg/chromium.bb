@@ -13,6 +13,7 @@ namespace blink {
 
 class BaseAudioContext;
 class ExceptionState;
+class IIRFilterOptions;
 
 class IIRFilterNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
@@ -22,6 +23,8 @@ public:
         const Vector<double> feedforward,
         const Vector<double> feedback,
         ExceptionState&);
+
+    static IIRFilterNode* create(BaseAudioContext*, const IIRFilterOptions&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 

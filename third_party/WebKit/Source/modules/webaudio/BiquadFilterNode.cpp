@@ -25,6 +25,7 @@
 #include "modules/webaudio/BiquadFilterNode.h"
 
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "modules/webaudio/BiquadFilterOptions.h"
 #include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"
 
@@ -64,6 +65,29 @@ BiquadFilterNode* BiquadFilterNode::create(BaseAudioContext& context, ExceptionS
     }
 
     return new BiquadFilterNode(context);
+}
+
+BiquadFilterNode* BiquadFilterNode::create(BaseAudioContext* context, const BiquadFilterOptions& options, ExceptionState& exceptionState)
+{
+    BiquadFilterNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasType())
+        node->setType(options.type());
+    if (options.hasQ())
+        node->q()->setValue(options.Q());
+    if (options.hasDetune())
+        node->detune()->setValue(options.detune());
+    if (options.hasFrequency())
+        node->frequency()->setValue(options.frequency());
+    if (options.hasGain())
+        node->gain()->setValue(options.gain());
+
+    return node;
 }
 
 DEFINE_TRACE(BiquadFilterNode)

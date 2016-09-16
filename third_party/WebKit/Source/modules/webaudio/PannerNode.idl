@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#the-pannernode-interface
 enum PanningModelType {
     "equalpower",
     "HRTF"
@@ -34,7 +35,8 @@ enum DistanceModelType {
 };
 
 [
-    NoInterfaceObject,
+    Constructor(BaseAudioContext context, optional PannerOptions options),
+    RaisesException=Constructor,
 ] interface PannerNode : AudioNode {
     // Default model for stereo is equalpower.
     attribute PanningModelType panningModel;

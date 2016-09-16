@@ -46,19 +46,21 @@ std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel()
     return wrapUnique(new WaveShaperDSPKernel(this));
 }
 
-void WaveShaperProcessor::setCurve(DOMFloat32Array* curve)
+void WaveShaperProcessor::setCurve(const float* curveData, unsigned curveLength)
 {
+    DCHECK(isMainThread());
+
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);
 
-    // Copy the curve data, if any, to our internal buffer.
-    if (!curve) {
+    if (curveLength == 0 || !curveData) {
         m_curve = nullptr;
         return;
     }
 
-    m_curve = wrapUnique(new Vector<float>(curve->length()));
-    memcpy(m_curve->data(), curve->data(), sizeof(float)*curve->length());
+    // Copy the curve data, if any, to our internal buffer.
+    m_curve = wrapUnique(new Vector<float>(curveLength));
+    memcpy(m_curve->data(), curveData, sizeof(float)*curveLength);
 }
 
 void WaveShaperProcessor::setOversample(OverSampleType oversample)

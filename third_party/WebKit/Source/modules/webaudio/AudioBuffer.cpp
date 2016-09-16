@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AudioBufferOptions.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
@@ -102,6 +103,37 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
     }
 
     return audioBuffer;
+}
+
+AudioBuffer* AudioBuffer::create(BaseAudioContext* context, const AudioBufferOptions& options, ExceptionState& exceptionState)
+{
+    unsigned numberOfChannels;
+    size_t numberOfFrames;
+    float sampleRate;
+
+    if (!options.hasNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            NotFoundError,
+            "AudioBufferOptions: numberOfChannels is required.");
+        return nullptr;
+    }
+
+    if (!options.hasLength()) {
+        exceptionState.throwDOMException(
+            NotFoundError,
+            "AudioBufferOptions: length is required.");
+        return nullptr;
+    }
+
+    numberOfChannels = options.numberOfChannels();
+    numberOfFrames = options.length();
+
+    if (options.hasSampleRate())
+        sampleRate = options.sampleRate();
+    else
+        sampleRate = context->sampleRate();
+
+    return create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
 AudioBuffer* AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)

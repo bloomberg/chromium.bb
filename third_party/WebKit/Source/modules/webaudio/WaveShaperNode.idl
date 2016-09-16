@@ -22,12 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#WaveShaperNode
 enum OverSampleType {
     "none",
     "2x",
     "4x"
 };
 
+[
+    Constructor(BaseAudioContext context, optional WaveShaperOptions options),
+    RaisesException=Constructor,
+]
 interface WaveShaperNode : AudioNode {
     [RaisesException=Setter] attribute Float32Array? curve;
     attribute OverSampleType oversample;

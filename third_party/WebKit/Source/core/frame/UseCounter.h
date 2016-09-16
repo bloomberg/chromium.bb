@@ -1299,6 +1299,23 @@ public:
         VRGetDisplays = 1558,
         VRPresent = 1559,
         VRDeprecatedGetPose = 1560,
+        WebAudioAnalyserNode = 1561,
+        WebAudioAudioBuffer = 1562,
+        WebAudioAudioBufferSourceNode = 1563,
+        WebAudioBiquadFilterNode = 1564,
+        WebAudioChannelMergerNode = 1565,
+        WebAudioChannelSplitterNode = 1566,
+        WebAudioConvolverNode = 1567,
+        WebAudioDelayNode = 1568,
+        WebAudioDynamicsCompressorNode = 1569,
+        WebAudioGainNode = 1570,
+        WebAudioIIRFilterNode = 1571,
+        WebAudioMediaElementAudioSourceNode = 1572,
+        WebAudioOscillatorNode = 1573,
+        WebAudioPannerNode = 1574,
+        WebAudioPeriodicWave = 1575,
+        WebAudioStereoPannerNode = 1576,
+        WebAudioWaveShaperNode = 1577,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

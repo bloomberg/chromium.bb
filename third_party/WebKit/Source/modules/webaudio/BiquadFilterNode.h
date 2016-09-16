@@ -33,6 +33,7 @@ namespace blink {
 
 class BaseAudioContext;
 class AudioParam;
+class BiquadFilterOptions;
 
 class BiquadFilterNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
@@ -50,6 +51,7 @@ public:
     };
 
     static BiquadFilterNode* create(BaseAudioContext&, ExceptionState&);
+    static BiquadFilterNode* create(BaseAudioContext*, const BiquadFilterOptions&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 

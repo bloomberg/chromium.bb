@@ -354,6 +354,48 @@ OscillatorNode* OscillatorNode::create(BaseAudioContext& context, ExceptionState
     return new OscillatorNode(context);
 }
 
+OscillatorNode* OscillatorNode::create(BaseAudioContext* context, const OscillatorOptions& options, ExceptionState& exceptionState)
+{
+    OscillatorNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    if (options.hasType()) {
+        if (options.type() == "custom" && !options.hasPeriodicWave()) {
+            exceptionState.throwDOMException(
+                InvalidStateError,
+                "'type' cannot be set to 'custom' without also specifying 'periodicWave'");
+            return nullptr;
+        }
+        if (options.type() != "custom" && options.hasPeriodicWave()) {
+            exceptionState.throwDOMException(
+                InvalidStateError,
+                "'type' MUST be 'custom' instead of '"
+                + options.type()
+                + "' if 'periodicWave' is also given");
+            return nullptr;
+        }
+
+        // At this both type and periodicWave are consistently defined.  In that
+        // case, don't set the type if periodicWave is specified because that
+        // will cause an (incorrect) error to be signaled.
+        if (options.type() != "custom")
+            node->setType(options.type(), exceptionState);
+    }
+    if (options.hasDetune())
+        node->detune()->setValue(options.detune());
+    if (options.hasFrequency())
+        node->frequency()->setValue(options.frequency());
+
+    if (options.hasPeriodicWave())
+        node->setPeriodicWave(options.periodicWave());
+
+    return node;
+}
+
 DEFINE_TRACE(OscillatorNode)
 {
     visitor->trace(m_frequency);

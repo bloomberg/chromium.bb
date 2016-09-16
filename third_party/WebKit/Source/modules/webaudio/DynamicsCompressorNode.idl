@@ -22,6 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// See https://webaudio.github.io/web-audio-api/#the-dynamicscompressornode-interface
+[
+    Constructor(BaseAudioContext context, optional DynamicsCompressorOptions options),
+    RaisesException=Constructor,
+]
 interface DynamicsCompressorNode : AudioNode {
     readonly attribute AudioParam threshold; // in Decibels
     readonly attribute AudioParam knee; // in Decibels

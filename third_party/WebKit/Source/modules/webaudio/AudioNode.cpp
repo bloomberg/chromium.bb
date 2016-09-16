@@ -27,6 +27,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InstanceCounters.h"
 #include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOptions.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioParam.h"
 #include "modules/webaudio/BaseAudioContext.h"
@@ -590,6 +591,18 @@ DEFINE_TRACE(AudioNode)
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
     EventTargetWithInlineData::trace(visitor);
+}
+
+void AudioNode::handleChannelOptions(const AudioNodeOptions& options, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (options.hasChannelCount())
+        setChannelCount(options.channelCount(), exceptionState);
+    if (options.hasChannelCountMode())
+        setChannelCountMode(options.channelCountMode(), exceptionState);
+    if (options.hasChannelInterpretation())
+        setChannelInterpretation(options.channelInterpretation(), exceptionState);
 }
 
 BaseAudioContext* AudioNode::context() const

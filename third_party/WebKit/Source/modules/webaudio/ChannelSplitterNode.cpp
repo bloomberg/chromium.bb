@@ -29,6 +29,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "modules/webaudio/ChannelSplitterOptions.h"
 
 namespace blink {
 
@@ -111,6 +112,18 @@ ChannelSplitterNode* ChannelSplitterNode::create(BaseAudioContext& context, unsi
     }
 
     return new ChannelSplitterNode(context, numberOfOutputs);
+}
+
+ChannelSplitterNode* ChannelSplitterNode::create(BaseAudioContext* context, const ChannelSplitterOptions& options, ExceptionState& exceptionState)
+{
+    ChannelSplitterNode* node = create(*context, options.numberOfOutputs(), exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    node->handleChannelOptions(options, exceptionState);
+
+    return node;
 }
 
 } // namespace blink

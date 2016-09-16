@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: Panner</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (taskDone) {
+        Should("context = new OfflineAudioContext(...)", function () {
+          context = new OfflineAudioContext(1, 1, 48000);
+        }).notThrow();
+
+        taskDone();
+      });
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new PannerNode()", function () {
+          node = new PannerNode();
+        }).throw("TypeError");
+        success = Should("new PannerNode(1)", function () {
+          node = new PannerNode(1) && success;
+        }).throw("TypeError");
+        success = Should("new PannerNode(context, 42)", function () {
+          node = new PannerNode(context, 42) && success;
+        }).throw("TypeError");
+
+        Should("Invalid constructors", success)
+            .summarize(
+                "correctly threw errors",
+                "did not throw errors in all cases");
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new PannerNode(context)", function () {
+          node = new PannerNode(context);
+        }).notThrow();
+        success = Should("node instanceof PannerNode", node instanceof PannerNode)
+          .beEqualTo(true) && success;
+
+        success = Should("node.panningModel", node.panningModel)
+          .beEqualTo("equalpower") && success;
+        success = Should("node.positionX.value", node.positionX.value)
+          .beEqualTo(0) && success;
+        success = Should("node.positionY.value", node.positionY.value)
+          .beEqualTo(0) && success;
+        success = Should("node.positionZ.value", node.positionZ.value)
+          .beEqualTo(0) && success;
+        success = Should("node.orientationX.value", node.orientationX.value)
+          .beEqualTo(1) && success;
+        success = Should("node.orientationY.value", node.orientationY.value)
+          .beEqualTo(0) && success;
+        success = Should("node.orientationZ.value", node.orientationZ.value)
+          .beEqualTo(0) && success;
+        success = Should("node.distanceModel", node.distanceModel)
+          .beEqualTo("inverse") && success;
+        success = Should("node.refDistance", node.refDistance)
+          .beEqualTo(1) && success;
+        success = Should("node.maxDistance", node.maxDistance)
+          .beEqualTo(10000) && success;
+        success = Should("node.rolloffFactor", node.rolloffFactor)
+          .beEqualTo(1) && success;
+        success = Should("node.coneInnerAngle", node.coneInnerAngle)
+          .beEqualTo(360) && success;
+        success = Should("node.coneOuterAngle", node.coneOuterAngle)
+          .beEqualTo(360) && success;
+        success = Should("node.coneOuterGain", node.coneOuterGain)
+          .beEqualTo(0) && success;
+
+        // Test the listener too, while we're at it.
+        success = Should("context.listener.positionX.value", context.listener.positionX.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.positionY.value", context.listener.positionY.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.positionZ.value", context.listener.positionZ.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.forwardX.value", context.listener.forwardX.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.forwardY.value", context.listener.forwardY.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.forwardZ.value", context.listener.forwardZ.value)
+          .beEqualTo(-1) && success;
+        success = Should("context.listener.upX.value", context.listener.upX.value)
+          .beEqualTo(0) && success;
+        success = Should("context.listener.upY.value", context.listener.upY.value)
+          .beEqualTo(1) && success;
+        success = Should("context.listener.upZ.value", context.listener.upZ.value)
+          .beEqualTo(0) && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("clamped-max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        Should("new PannerNode(context)", success)
+            .summarize(
+                "constructed node with correct attributes",
+                "did not construct correct node correctly")
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        // Can't use testAudioNodeOptions because the constraints for this node
+        // are not supported there.
+        var node;
+        var success = true;
+
+        // Test that we can set the channel count to 1 or 2.
+        var options = {
+          channelCount: 1
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(options.channelCount) && success;
+
+        options = {
+          channelCount: 2
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(options.channelCount) && success;
+
+        // Test that other channel counts throw an error
+        options = {
+          channelCount: 0
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("NotSupportedError") && success;
+
+        options = {
+          channelCount: 3
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("NotSupportedError") && success;
+
+        options = {
+          channelCount: 99
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("NotSupportedError") && success;
+
+        // Test channelCountMode.  A mode of "max" is illegal, but others are
+        // ok.
+        options = {
+          channelCountMode: "clamped-max"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo(options.channelCountMode) && success;
+
+        options = {
+          channelCountMode: "explicit"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo(options.channelCountMode);
+
+        options = {
+          channelCountMode: "max"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("NotSupportedError") && success;
+
+        options = {
+          channelCountMode: "foobar"
+        };
+        success = Should('new PannerNode(c, " + JSON.stringify(options) + ")',
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("TypeError") && success;
+
+        // Test channelInterpretation.
+        options = {
+          channelInterpretation: "speakers"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo(options.channelInterpretation) && success;
+
+        options = {
+          channelInterpretation: "discrete"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).notThrow() && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo(options.channelInterpretation) && success;
+
+        options = {
+          channelInterpretation: "foobar"
+        };
+        success = Should("new PannerNode(c, " + JSON.stringify(options) + ")",
+          function () {
+            node = new PannerNode(context, options);
+          }).throw("TypeError") && success;
+
+        Should("AudioNodeOptions for PannerNode", success)
+          .summarize(
+            "were correctly handled",
+            "were not correctly handled");
+
+        taskDone();
+      });
+
+      audit.defineTask("constructor with options", function (taskDone) {
+        var node;
+        var success = true;
+        var options = {
+          panningModel: "HRTF",
+          positionX: 3,
+          positionY: 4,
+          positionZ: 5,
+          orientationX: -3,
+          orientationY: -4,
+          orientationZ: -5,
+          distanceModel: "linear",
+          refDistance: 42,
+          maxDistance: 99,
+          rolloffFactor: .25,
+          coneInnerAngle: 10,
+          coneOuterAngle: 50,
+          coneOuterGain: .25
+        };
+
+        success = Should("node = new PannerNode(c, " + JSON.stringify(options) + ")", function () {
+          node = new PannerNode(context, options);
+        }).notThrow();
+        success = Should("node instanceof PannerNode", node instanceof PannerNode)
+          .beEqualTo(true) && success;
+
+        success = Should("node.panningModel", node.panningModel)
+          .beEqualTo(options.panningModel) && success;
+        success = Should("node.positionX.value", node.positionX.value)
+          .beEqualTo(options.positionX) && success;
+        success = Should("node.positionY.value", node.positionY.value)
+          .beEqualTo(options.positionY) && success;
+        success = Should("node.positionZ.value", node.positionZ.value)
+          .beEqualTo(options.positionZ) && success;
+        success = Should("node.orientationX.value", node.orientationX.value)
+          .beEqualTo(options.orientationX) && success;
+        success = Should("node.orientationY.value", node.orientationY.value)
+          .beEqualTo(options.orientationY) && success;
+        success = Should("node.orientationZ.value", node.orientationZ.value)
+          .beEqualTo(options.orientationZ) && success;
+        success = Should("node.distanceModel", node.distanceModel)
+          .beEqualTo(options.distanceModel) && success;
+        success = Should("node.refDistance", node.refDistance)
+          .beEqualTo(options.refDistance) && success;
+        success = Should("node.maxDistance", node.maxDistance)
+          .beEqualTo(options.maxDistance) && success;
+        success = Should("node.rolloffFactor", node.rolloffFactor)
+          .beEqualTo(options.rolloffFactor) && success;
+        success = Should("node.coneInnerAngle", node.coneInnerAngle)
+          .beEqualTo(options.coneInnerAngle) && success;
+        success = Should("node.coneOuterAngle", node.coneOuterAngle)
+          .beEqualTo(options.coneOuterAngle) && success;
+        success = Should("node.coneOuterGain", node.coneOuterGain)
+          .beEqualTo(options.coneOuterGain) && success;
+
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("clamped-max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        Should("new PannerNode() with options", success)
+          .summarize(
+            "constructed with correct attributes",
+            "was not constructed correctly");
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

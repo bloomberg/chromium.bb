@@ -36,6 +36,7 @@ namespace blink {
 
 class BaseAudioContext;
 class HTMLMediaElement;
+class MediaElementAudioSourceOptions;
 
 class MediaElementAudioSourceHandler final : public AudioHandler {
 public:
@@ -101,6 +102,8 @@ class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSo
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
     static MediaElementAudioSourceNode* create(BaseAudioContext&, HTMLMediaElement&, ExceptionState&);
+    static MediaElementAudioSourceNode* create(BaseAudioContext*, const MediaElementAudioSourceOptions&, ExceptionState&);
+
     DECLARE_VIRTUAL_TRACE();
     MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
 

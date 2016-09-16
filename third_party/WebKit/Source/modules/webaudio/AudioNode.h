@@ -41,6 +41,7 @@ namespace blink {
 
 class BaseAudioContext;
 class AudioNode;
+class AudioNodeOptions;
 class AudioNodeInput;
 class AudioNodeOutput;
 class AudioParam;
@@ -292,6 +293,8 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
 public:
     DECLARE_VIRTUAL_TRACE();
     AudioHandler& handler() const;
+
+    void handleChannelOptions(const AudioNodeOptions&, ExceptionState&);
 
     virtual AudioNode* connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     void connect(AudioParam*, unsigned outputIndex, ExceptionState&);

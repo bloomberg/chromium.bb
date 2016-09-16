@@ -27,6 +27,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
+#include "modules/webaudio/AudioBufferSourceOptions.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
@@ -611,6 +612,31 @@ AudioBufferSourceNode* AudioBufferSourceNode::create(BaseAudioContext& context, 
     }
 
     return new AudioBufferSourceNode(context);
+}
+
+AudioBufferSourceNode* AudioBufferSourceNode::create(BaseAudioContext* context, AudioBufferSourceOptions& options, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    AudioBufferSourceNode* node = create(*context, exceptionState);
+
+    if (!node)
+        return nullptr;
+
+    if (options.hasBuffer())
+        node->setBuffer(options.buffer(), exceptionState);
+    if (options.hasDetune())
+        node->detune()->setValue(options.detune());
+    if (options.hasLoop())
+        node->setLoop(options.loop());
+    if (options.hasLoopEnd())
+        node->setLoopEnd(options.loopEnd());
+    if (options.hasLoopStart())
+        node->setLoopStart(options.loopStart());
+    if (options.hasPlaybackRate())
+        node->playbackRate()->setValue(options.playbackRate());
+
+    return node;
 }
 
 DEFINE_TRACE(AudioBufferSourceNode)

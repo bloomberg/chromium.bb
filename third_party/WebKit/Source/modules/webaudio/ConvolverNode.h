@@ -35,6 +35,7 @@
 namespace blink {
 
 class AudioBuffer;
+class ConvolverOptions;
 class ExceptionState;
 class Reverb;
 
@@ -76,6 +77,7 @@ class MODULES_EXPORT ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ConvolverNode* create(BaseAudioContext&, ExceptionState&);
+    static ConvolverNode* create(BaseAudioContext*, const ConvolverOptions&, ExceptionState&);
 
     AudioBuffer* buffer() const;
     void setBuffer(AudioBuffer*, ExceptionState&);
