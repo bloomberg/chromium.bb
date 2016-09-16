@@ -2551,8 +2551,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleGeolocationDialogSuppressedMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
-    (*handlers)["document.retitled"] =
-        @selector(handleDocumentRetitledMessage:context:);
     (*handlers)["document.submit"] =
         @selector(handleDocumentSubmitMessage:context:);
     (*handlers)["externalRequest"] =
