@@ -3725,6 +3725,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_EMULATE_ABS_INT_FUNCTION;
   if (workarounds().rewrite_texelfetchoffset_to_texelfetch)
     driver_bug_workarounds |= SH_REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH;
+  if (workarounds().add_and_true_to_loop_condition)
+    driver_bug_workarounds |= SH_ADD_AND_TRUE_TO_LOOP_CONDITION;
 
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;

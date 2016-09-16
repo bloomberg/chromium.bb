@@ -131,6 +131,8 @@
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
          reverse_point_sprite_coord_origin)                  \
+  GPU_OP(ADD_AND_TRUE_TO_LOOP_CONDITION,                     \
+         add_and_true_to_loop_condition)                     \
   GPU_OP(REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH,             \
          rewrite_texelfetchoffset_to_texelfetch)             \
   GPU_OP(SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS,             \
