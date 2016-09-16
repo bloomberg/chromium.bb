@@ -246,7 +246,7 @@ public:
 
     void ensure16Bit();
 
-    void truncate(unsigned len);
+    void truncate(unsigned length);
     void remove(unsigned start, unsigned length = 1);
 
     String substring(unsigned pos, unsigned len = UINT_MAX) const;

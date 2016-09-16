@@ -338,6 +338,8 @@ public:
     // FIXME: Do we need fill(char) or can we just do the right thing if UChar is ASCII?
     PassRefPtr<StringImpl> foldCase();
 
+    PassRefPtr<StringImpl> truncate(unsigned length);
+
     PassRefPtr<StringImpl> stripWhiteSpace();
     PassRefPtr<StringImpl> stripWhiteSpace(IsWhiteSpaceFunctionPtr);
     PassRefPtr<StringImpl> simplifyWhiteSpace(StripBehavior = StripExtraWhiteSpace);

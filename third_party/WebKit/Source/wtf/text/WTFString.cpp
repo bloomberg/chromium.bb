@@ -231,21 +231,10 @@ void String::ensure16Bit()
         m_impl = StringImpl::empty16Bit();
 }
 
-void String::truncate(unsigned position)
+void String::truncate(unsigned length)
 {
-    if (position >= length())
-        return;
-    if (m_impl->is8Bit()) {
-        LChar* data;
-        RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(position, data);
-        memcpy(data, m_impl->characters8(), position * sizeof(LChar));
-        m_impl = newImpl.release();
-    } else {
-        UChar* data;
-        RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(position, data);
-        memcpy(data, m_impl->characters16(), position * sizeof(UChar));
-        m_impl = newImpl.release();
-    }
+    if (m_impl)
+        m_impl = m_impl->truncate(length);
 }
 
 void String::remove(unsigned start, unsigned lengthToRemove)

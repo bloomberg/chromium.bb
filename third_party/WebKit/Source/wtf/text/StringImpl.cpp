@@ -897,6 +897,15 @@ PassRefPtr<StringImpl> StringImpl::foldCase()
     return newImpl.release();
 }
 
+PassRefPtr<StringImpl> StringImpl::truncate(unsigned length)
+{
+    if (length >= m_length)
+        return this;
+    if (is8Bit())
+        return create(characters8(), length);
+    return create(characters16(), length);
+}
+
 template <class UCharPredicate>
 inline PassRefPtr<StringImpl> StringImpl::stripMatchedCharacters(UCharPredicate predicate)
 {
