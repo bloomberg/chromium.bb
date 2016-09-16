@@ -151,6 +151,7 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
                         mixer_rendering_delay));
   int MaxReadSize() override { return max_read_size_; }
   MOCK_METHOD2(GetResampledData, void(::media::AudioBus* dest, int frames));
+  MOCK_METHOD0(OnSkipped, void());
   MOCK_METHOD1(AfterWriteFrames,
                void(const MediaPipelineBackendAlsa::RenderingDelay&
                         mixer_rendering_delay));
@@ -376,6 +377,7 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   // to ALSA.
   inputs[1]->SetPrimary(false);
   inputs[1]->SetMaxReadSize(0);
+  EXPECT_CALL(*inputs[1], OnSkipped());
   inputs[2]->SetPrimary(false);
   for (auto* input : inputs) {
     if (input != inputs[1])
@@ -654,6 +656,7 @@ TEST_F(StreamMixerAlsaTest, StuckStreamWithUnderrun) {
   EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
   EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
   EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
+  EXPECT_CALL(*inputs[1], OnSkipped());
   EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
 
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
@@ -688,6 +691,7 @@ TEST_F(StreamMixerAlsaTest, StuckStreamWithLowBuffer) {
   EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
   EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
   EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
+  EXPECT_CALL(*inputs[1], OnSkipped());
   EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
 
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);

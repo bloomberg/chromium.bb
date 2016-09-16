@@ -120,6 +120,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
                       mixer_rendering_delay) override;
   int MaxReadSize() override;
   void GetResampledData(::media::AudioBus* dest, int frames) override;
+  void OnSkipped() override;
   void AfterWriteFrames(const MediaPipelineBackendAlsa::RenderingDelay&
                             mixer_rendering_delay) override;
   void SignalError(StreamMixerAlsaInput::MixerError error) override;

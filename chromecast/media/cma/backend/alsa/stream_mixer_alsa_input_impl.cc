@@ -235,6 +235,14 @@ void StreamMixerAlsaInputImpl::DidQueueData(bool end_of_stream) {
   mixer_->OnFramesQueued();
 }
 
+void StreamMixerAlsaInputImpl::OnSkipped() {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  if (state_ == kStateNormalPlayback) {
+    // Fade in once this input starts providing data again.
+    fade_frames_remaining_ = NormalFadeFrames();
+  }
+}
+
 void StreamMixerAlsaInputImpl::AfterWriteFrames(
     const MediaPipelineBackendAlsa::RenderingDelay& mixer_rendering_delay) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());

@@ -93,6 +93,11 @@ class StreamMixerAlsa {
     // MaxReadSize(), and |dest->frames()| shall be >= |frames|.
     virtual void GetResampledData(::media::AudioBus* dest, int frames) = 0;
 
+    // Called when this input has been skipped for output due to not having any
+    // data available. This indicates that there will be a gap in the playback
+    // from this stream.
+    virtual void OnSkipped() = 0;
+
     // This is called for every InputQueue when the mixer writes data to ALSA
     // for any of its input streams.
     virtual void AfterWriteFrames(

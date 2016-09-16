@@ -785,6 +785,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
           frames_in_buffer < min_frames_in_buffer) {
         // If there has been (or soon will be) an underrun, continue without the
         // empty primary input stream.
+        input->OnSkipped();
         continue;
       }
 
@@ -793,16 +794,13 @@ bool StreamMixerAlsa::TryWriteFrames() {
           FROM_HERE, base::TimeDelta::FromMilliseconds(kMinBufferedDataMs / 2),
           base::Bind(&StreamMixerAlsa::WriteFrames, base::Unretained(this)));
       return false;
+    } else {
+      input->OnSkipped();
     }
   }
 
   if (active_inputs.empty()) {
-    // No inputs have any data to provide.
-    if (!inputs_.empty()) {
-      return false;  // If there are some inputs, don't fill with silence.
-    }
-
-    // If we have no inputs, fill with silence to avoid underrun.
+    // No inputs have any data to provide. Fill with silence to avoid underrun.
     chunk_size = kPreventUnderrunChunkSize;
     if (!mixed_ || mixed_->frames() < chunk_size) {
       mixed_ = ::media::AudioBus::Create(kNumOutputChannels, chunk_size);
