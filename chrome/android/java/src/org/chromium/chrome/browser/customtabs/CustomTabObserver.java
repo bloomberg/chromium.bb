@@ -5,15 +5,20 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.TimeUnit;
@@ -25,6 +30,7 @@ class CustomTabObserver extends EmptyTabObserver {
     private final CustomTabsConnection mCustomTabsConnection;
     private final CustomTabsSessionToken mSession;
     private final boolean mOpenedByChrome;
+    private float mScaleForNavigationInfo = 1f;
 
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
@@ -42,6 +48,15 @@ class CustomTabObserver extends EmptyTabObserver {
             mCustomTabsConnection = CustomTabsConnection.getInstance(application);
         }
         mSession = session;
+        if (!openedByChrome && mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) {
+            float desiredWidth = application.getResources().getDimensionPixelSize(
+                    R.dimen.custom_tabs_screenshot_width);
+            float desiredHeight = application.getResources().getDimensionPixelSize(
+                    R.dimen.custom_tabs_screenshot_height);
+            Rect bounds = ExternalPrerenderHandler.estimateContentSize(application, false);
+            mScaleForNavigationInfo = (bounds.width() == 0 || bounds.height() == 0) ? 1f :
+                    Math.min(desiredWidth / bounds.width(), desiredHeight / bounds.height());
+        }
         mOpenedByChrome = openedByChrome;
         resetPageLoadTracking();
     }
@@ -113,6 +128,7 @@ class CustomTabObserver extends EmptyTabObserver {
                     TimeUnit.MILLISECONDS, 100);
         }
         resetPageLoadTracking();
+        captureNavigationInfo(tab);
     }
 
     @Override
@@ -137,5 +153,20 @@ class CustomTabObserver extends EmptyTabObserver {
     private void resetPageLoadTracking() {
         mCurrentState = STATE_RESET;
         mIntentReceivedTimestamp = -1;
+    }
+
+    private void captureNavigationInfo(final Tab tab) {
+        if (mCustomTabsConnection == null) return;
+        if (!mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) return;
+
+        ContentBitmapCallback callback = new ContentBitmapCallback() {
+            @Override
+            public void onFinishGetBitmap(Bitmap bitmap, int response) {
+                mCustomTabsConnection.sendNavigationInfo(
+                        mSession, tab.getUrl(), tab.getTitle(), bitmap);
+            }
+        };
+        tab.getWebContents().getContentBitmapAsync(
+                Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
     }
 }

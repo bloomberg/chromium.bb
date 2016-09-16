@@ -317,6 +317,8 @@
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
     <dimen name="custom_tabs_bottom_bar_max_height">60dp</dimen>
+    <dimen name="custom_tabs_screenshot_height">300dp</dimen>
+    <dimen name="custom_tabs_screenshot_width">190dp</dimen>
 
     <!-- Favicon dimensions -->
     <dimen name="default_favicon_size">16dp</dimen>

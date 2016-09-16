@@ -57,6 +57,7 @@ class ClientManager {
         public boolean mIgnoreFragments;
         private boolean mShouldHideDomain;
         private boolean mShouldPrerenderOnCellular;
+        private boolean mShouldSendNavigationInfo;
         private ServiceConnection mKeepAliveConnection;
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
@@ -248,6 +249,23 @@ class ClientManager {
     public synchronized void setHideDomainForSession(CustomTabsSessionToken session, boolean hide) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mShouldHideDomain = hide;
+    }
+
+    /**
+     * @return Whether navigation info should be recorded and shared for the session.
+     */
+    public synchronized boolean shouldSendNavigationInfoForSession(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mShouldSendNavigationInfo : false;
+    }
+
+    /**
+     * Sets whether navigation info should be recorded and shared for the session.
+     */
+    public synchronized void setSendNavigationInfoForSession(
+            CustomTabsSessionToken session, boolean save) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldSendNavigationInfo = save;
     }
 
     /**

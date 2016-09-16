@@ -480,6 +480,11 @@ public class CustomTabsConnection {
         return mClientManager.shouldPrerenderOnCellularForSession(session);
     }
 
+    /** @see ClientManager#shouldSendNavigationInfoForSession(CustomTabsSessionToken) */
+    public boolean shouldSendNavigationInfoForSession(CustomTabsSessionToken session) {
+        return mClientManager.shouldSendNavigationInfoForSession(session);
+    }
+
     /** See {@link ClientManager#getClientPackageNameForSession(CustomTabsSessionToken)} */
     public String getClientPackageNameForSession(CustomTabsSessionToken session) {
         return mClientManager.getClientPackageNameForSession(session);
@@ -522,6 +527,16 @@ public class CustomTabsConnection {
      * @param resultOK Whether first run was successful.
      */
     public void sendFirstRunCallbackIfNecessary(Intent intent, boolean resultOK) { }
+
+    /**
+     * Sends the navigation info that was captured to the client callback.
+     * @param session The session to use for getting client callback.
+     * @param url The current url for the tab.
+     * @param title The current title for the tab.
+     * @param screenshot A screenshot of the tab contents.
+     */
+    public void sendNavigationInfo(
+            CustomTabsSessionToken session, String url, String title, Bitmap screenshot) { }
 
     /**
      * Notifies the application of a navigation event.
