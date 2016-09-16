@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "wtf/text/CString.h"
 
 #include "wtf/ASCIICType.h"
@@ -35,14 +34,17 @@ using namespace std;
 
 namespace WTF {
 
-PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
+PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length, char*& data)
 {
+    // TODO(esprehn): This doesn't account for the NUL.
     RELEASE_ASSERT(length < (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
 
     // The +1 is for the terminating NUL character.
     size_t size = sizeof(CStringBuffer) + length + 1;
-    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringBuffer)));
-    return adoptRef(new (stringBuffer) CStringBuffer(length));
+    CStringBuffer* buffer = static_cast<CStringBuffer*>(Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(CStringBuffer)));
+    data = reinterpret_cast<char*>(buffer + 1);
+    data[length] = '\0';
+    return adoptRef(new (buffer) CStringBuffer(length));
 }
 
 void CStringBuffer::operator delete(void* ptr)
@@ -50,60 +52,15 @@ void CStringBuffer::operator delete(void* ptr)
     Partitions::bufferFree(ptr);
 }
 
-CString::CString(const char* str)
+CString::CString(const char* chars, size_t length)
 {
-    if (!str)
-        return;
-
-    init(str, strlen(str));
-}
-
-CString::CString(const char* str, size_t length)
-{
-    if (!str) {
-        ASSERT(!length);
+    if (!chars) {
+        DCHECK_EQ(length, 0u);
         return;
     }
-
-    init(str, length);
-}
-
-void CString::init(const char* str, size_t length)
-{
-    ASSERT(str);
-
-    m_buffer = CStringBuffer::createUninitialized(length);
-    memcpy(m_buffer->mutableData(), str, length);
-    m_buffer->mutableData()[length] = '\0';
-}
-
-char* CString::mutableData()
-{
-    copyBufferIfNeeded();
-    if (!m_buffer)
-        return 0;
-    return m_buffer->mutableData();
-}
-
-CString CString::newUninitialized(size_t length, char*& characterBuffer)
-{
-    CString result;
-    result.m_buffer = CStringBuffer::createUninitialized(length);
-    char* bytes = result.m_buffer->mutableData();
-    bytes[length] = '\0';
-    characterBuffer = bytes;
-    return result;
-}
-
-void CString::copyBufferIfNeeded()
-{
-    if (!m_buffer || m_buffer->hasOneRef())
-        return;
-
-    RefPtr<CStringBuffer> buffer = m_buffer.release();
-    size_t length = buffer->length();
-    m_buffer = CStringBuffer::createUninitialized(length);
-    memcpy(m_buffer->mutableData(), buffer->data(), length + 1);
+    char* data;
+    m_buffer = CStringBuffer::createUninitialized(length, data);
+    memcpy(data, chars, length);
 }
 
 bool CString::isSafeToSendToAnotherThread() const

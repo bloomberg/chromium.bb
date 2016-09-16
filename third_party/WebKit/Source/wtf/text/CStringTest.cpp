@@ -111,18 +111,6 @@ TEST(CStringTest, ZeroTerminated)
     EXPECT_EQ(0, stringWithLength.data()[3]);
 }
 
-TEST(CStringTest, CopyOnWrite)
-{
-    const char* initialString = "Webkit";
-    CString string(initialString);
-    CString copy = string;
-
-    string.mutableData()[3] = 'K';
-    EXPECT_TRUE(string != copy);
-    EXPECT_STREQ("WebKit", string.data());
-    EXPECT_STREQ(initialString, copy.data());
-}
-
 TEST(CStringTest, Comparison)
 {
     // Comparison with another CString.
