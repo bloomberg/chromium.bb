@@ -16004,6 +16004,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.NetworkDelayStartup" units="ms">
+  <obsolete>
+    Never used. Added to source 06/2012. Removed from source and added here
+    09/2016.
+  </obsolete>
+  <summary>
+    Delay of network requests due to waiting for extension declarativeWebRequest
+    rules to be loaded from disk at startup.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.NonWebstoreLocation" enum="ExtensionLocation">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>

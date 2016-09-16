@@ -1614,15 +1614,11 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
         linked_ptr<helpers::EventResponseDelta>(delta));
   }
 
-  base::TimeDelta block_time =
-      base::Time::Now() - blocked_request.blocking_time;
   if (!extension_id.empty()) {
+    base::TimeDelta block_time =
+        base::Time::Now() - blocked_request.blocking_time;
     request_time_tracker_->IncrementExtensionBlockTime(
         extension_id, request_id, block_time);
-  } else {
-    // |extension_id| is empty for requests blocked on startup waiting for the
-    // declarative rules to be read from disk.
-    UMA_HISTOGRAM_TIMES("Extensions.NetworkDelayStartup", block_time);
   }
 
   if (num_handlers_blocking == 0) {
