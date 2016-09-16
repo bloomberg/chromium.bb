@@ -21,14 +21,7 @@ InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
     callback = InspectorTest.safeWrap(callback);
 
     var consoleView = WebInspector.ConsoleView.instance();
-    consoleView.visible = true;
-    consoleView._prompt.setText(code);
-    var event = new KeyboardEvent("keydown", {
-        key: "Enter",
-        bubbles: true,
-        cancelable: true
-    });
-    consoleView._prompt.proxyElementForTests().dispatchEvent(event);
+    consoleView._appendCommand(code, true);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
         callback(commandResult.toMessageElement().deepTextContent());
     });
