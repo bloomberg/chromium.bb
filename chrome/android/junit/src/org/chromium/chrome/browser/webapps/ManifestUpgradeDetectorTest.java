@@ -42,7 +42,7 @@ public class ManifestUpgradeDetectorTest {
     private static final String WEBAPK_NAME = "Long Name";
     private static final String WEBAPK_SHORT_NAME = "Short Name";
     private static final String WEBAPK_ICON_URL = "/icon.png";
-    private static final long WEBAPK_ICON_MURMUR2_HASH = 3L;
+    private static final String WEBAPK_ICON_MURMUR2_HASH = "3";
     private static final int WEBAPK_DISPLAY_MODE = WebDisplayMode.Standalone;
     private static final int WEBAPK_ORIENTATION = ScreenOrientationValues.LANDSCAPE;
     private static final long WEBAPK_THEME_COLOR = 1L;
@@ -180,7 +180,7 @@ public class ManifestUpgradeDetectorTest {
     }
 
     private Bundle createBundleWithMetadata(
-            String manifestUrl, String startUrl, String iconUrl, long iconMurmur2Hash) {
+            String manifestUrl, String startUrl, String iconUrl, String iconMurmur2Hash) {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, manifestUrl);
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
@@ -260,7 +260,7 @@ public class ManifestUpgradeDetectorTest {
     @Test
     public void testHomescreenIconChangeShouldUpgrade() {
         FetchedManifestData fetchedData = createDefaultFetchedManifestData();
-        fetchedData.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH + 1;
+        fetchedData.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH + "1";
         fetchedData.icon = createBitmap(Color.BLUE);
         TestCallback callback = new TestCallback();
         TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
@@ -285,24 +285,5 @@ public class ManifestUpgradeDetectorTest {
         detector.start();
         Assert.assertTrue(callback.mWasCalled);
         Assert.assertTrue(callback.mIsUpgraded);
-    }
-
-    /**
-     * Test that an upgrade is not requested when:
-     * - WebAPK was generated using icon at {@link WEBAPK_ICON_URL} from Web Manifest.
-     * - Web Manifest was updated and now does not contain any icon URLs.
-     */
-    @Test
-    public void testHomescreenIconUrlsRemovedShouldNotUpgrade() {
-        FetchedManifestData fetchedData = createDefaultFetchedManifestData();
-        fetchedData.iconUrl = "";
-        fetchedData.iconMurmur2Hash = 0L;
-        fetchedData.icon = null;
-
-        TestCallback callback = new TestCallback();
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
-        detector.start();
-        Assert.assertTrue(callback.mWasCalled);
-        Assert.assertFalse(callback.mIsUpgraded);
     }
 }

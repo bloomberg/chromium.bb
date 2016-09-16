@@ -40,7 +40,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
 
         // Hash of untransformed icon bytes. The hash should have been taken prior to any
         // encoding/decoding.
-        public long iconMurmur2Hash;
+        public String iconMurmur2Hash;
 
         public Bitmap icon;
         public int displayMode;
@@ -59,7 +59,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     private String mManifestUrl;
     private String mStartUrl;
     private String mIconUrl;
-    private long mIconMurmur2Hash;
+    private String mIconMurmur2Hash;
 
     /**
      * Fetches the WebAPK's Web Manifest from the web.
@@ -68,22 +68,21 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     private Callback mCallback;
 
     /**
-     * Gets the long value from a Bundle. The long should be terminated with 'L'.
-     * According to https://developer.android.com/guide/topics/manifest/meta-data-element.html
-     * numeric <meta-data> values can only be retrieved via {@link Bundle#getInt()} and
-     * {@link Bundle#getFloat()}. We cannot use {@link Bundle#getFloat()} due to loss of precision.
-     * Returns 0 if the value cannot be parsed.
+     * Gets the Murmur2 hash from a Bundle. Returns an empty string if the value could not be
+     * parsed.
      */
-    private static long getLongFromBundle(Bundle bundle, String key) {
-        String value = IntentUtils.safeGetString(bundle, key);
+    private static String getMurmur2HashFromBundle(Bundle bundle) {
+        String value = bundle.getString(WebApkMetaDataKeys.ICON_MURMUR2_HASH);
+
+        // The Murmur2 hash should be terminated with 'L' to force the value to be a string.
+        // According to https://developer.android.com/guide/topics/manifest/meta-data-element.html
+        // numeric <meta-data> values can only be retrieved via {@link Bundle#getInt()} and
+        // {@link Bundle#getFloat()}. We cannot use {@link Bundle#getFloat()} due to loss of
+        // precision.
         if (value == null || !value.endsWith("L")) {
-            return 0;
+            return "";
         }
-        try {
-            return Long.parseLong(value.substring(0, value.length() - 1));
-        } catch (NumberFormatException e) {
-        }
-        return 0;
+        return value.substring(0, value.length() - 1);
     }
 
     /**
@@ -137,7 +136,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         mManifestUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.WEB_MANIFEST_URL);
         mStartUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.START_URL);
         mIconUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.ICON_URL);
-        mIconMurmur2Hash = getLongFromBundle(metadata, WebApkMetaDataKeys.ICON_MURMUR2_HASH);
+        mIconMurmur2Hash = getMurmur2HashFromBundle(metadata);
     }
 
     /**
@@ -155,7 +154,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      */
     @Override
     public void onGotManifestData(String startUrl, String scopeUrl, String name, String shortName,
-            String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
+            String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
             int orientation, long themeColor, long backgroundColor) {
         mFetcher.destroy();
         mFetcher = null;
@@ -187,15 +186,9 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Checks whether the WebAPK needs to be upgraded provided the fetched manifest data.
      */
     private boolean requireUpgrade(FetchedManifestData fetchedData) {
-        /**
-         * Only check whether icon URL differs if Chrome was able to fetch the bitmap at the icon
-         * URL (no 404).
-         */
-        if (fetchedData.icon != null) {
-            if (!TextUtils.equals(mIconUrl, fetchedData.iconUrl)
-                    || mIconMurmur2Hash != fetchedData.iconMurmur2Hash) {
-                return true;
-            }
+        if (!TextUtils.equals(mIconUrl, fetchedData.iconUrl)
+                || !mIconMurmur2Hash.equals(fetchedData.iconMurmur2Hash)) {
+            return true;
         }
 
         boolean scopeMatch = mWebappInfo.scopeUri().toString().equals(fetchedData.scopeUrl);

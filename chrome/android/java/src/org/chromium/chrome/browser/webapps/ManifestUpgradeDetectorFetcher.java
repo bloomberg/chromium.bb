@@ -21,9 +21,9 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      * Called once the Web Manifest has been downloaded.
      */
     public interface Callback {
-        public void onGotManifestData(String startUrl, String scopeUrl, String name,
-                String shortName, String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap,
-                int displayMode, int orientation, long themeColor, long backgroundColor);
+        void onGotManifestData(String startUrl, String scopeUrl, String name, String shortName,
+                String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
+                int orientation, long themeColor, long backgroundColor);
     }
 
     /**
@@ -86,7 +86,7 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      */
     @CalledByNative
     private void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
-            String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
+            String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
             int orientation, long themeColor, long backgroundColor) {
         mCallback.onGotManifestData(startUrl, scopeUrl, name, shortName, iconUrl, iconMurmur2Hash,
                 iconBitmap, displayMode, orientation, themeColor, backgroundColor);

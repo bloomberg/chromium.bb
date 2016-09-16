@@ -50,7 +50,7 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
 
         @Override
         public void onGotManifestData(String startUrl, String scopeUrl, String name,
-                String shortName, String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap,
+                String shortName, String iconUrl, String iconMurmur2Hash, Bitmap iconBitmap,
                 int displayMode, int orientation, long themeColor, long backgroundColor) {
             assertNull(mName);
             mName = name;

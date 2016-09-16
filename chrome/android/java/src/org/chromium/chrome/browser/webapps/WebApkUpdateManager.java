@@ -114,7 +114,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     public void updateAsync(ManifestUpgradeDetector.FetchedManifestData data) {
         String packageName = mUpgradeDetector.getWebApkPackageName();
         nativeUpdateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.iconUrl,
-                Long.toString(data.iconMurmur2Hash), data.icon, data.displayMode, data.orientation,
+                data.iconMurmur2Hash, data.icon, data.displayMode, data.orientation,
                 data.themeColor, data.backgroundColor, mUpgradeDetector.getManifestUrl(),
                 packageName, mVersionCode);
     }

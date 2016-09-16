@@ -9,7 +9,9 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/shortcut_info.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 struct Manifest;
@@ -17,9 +19,8 @@ class WebContents;
 }
 
 class GURL;
-class SkBitmap;
 struct InstallableData;
-struct ShortcutInfo;
+class WebApkIconHasher;
 
 // ManifestUpgradeDetectorFetcher is the C++ counterpart of
 // org.chromium.chrome.browser's ManifestUpgradeDetectorFetcher in Java. It is
@@ -58,7 +59,12 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   // Called once the installable data has been fetched.
   void OnDidGetInstallableData(const InstallableData& installable_data);
 
-  void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon);
+  // Called with the computed Murmur2 hash for the app icon.
+  void OnGotIconMurmur2Hash(const std::string& icon_murmur2_hash);
+
+  void OnDataAvailable(const ShortcutInfo& info,
+                       const std::string& icon_murmur2_hash,
+                       const SkBitmap& icon);
 
   // Points to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
@@ -68,6 +74,13 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
 
   // The WebAPK's Web Manifest URL that the detector is looking for.
   const GURL web_manifest_url_;
+
+  // Downloads app icon and computes Murmur2 hash.
+  std::unique_ptr<WebApkIconHasher> icon_hasher_;
+
+  // Downloaded data for |web_manifest_url_|.
+  ShortcutInfo info_;
+  SkBitmap icon_;
 
   base::WeakPtrFactory<ManifestUpgradeDetectorFetcher> weak_ptr_factory_;
 
