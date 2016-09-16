@@ -36,6 +36,9 @@ ImageEditor.Mode.Resize = function() {
   /** @private {HTMLElement} */
   this.heightInputElement_ = null;
 
+  /** @private {HTMLElement} */
+  this.lockIcon_ = null;
+
   /** @private {number} */
   this.ratio_ = 0;
 
