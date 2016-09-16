@@ -1,9 +1,6 @@
 Tests that origins with failed requests are shown correctly in the security panel origins list.
 
 Group: Main Origin
-<SPAN class=title >
-Reload to view details
-</SPAN>
 Group: Secure Origins
 <SPAN class=title >
 https://foo.test

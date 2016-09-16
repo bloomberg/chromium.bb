@@ -1,7 +1,7 @@
 Tests that the sidebar origin list disappears and appers when an interstitial is shown or hidden.
 
 Before interstitial is shown:
-<DIV class=sidebar-tree >
+<DIV >
     <#document-fragment >
         <STYLE type=text/css >
         </STYLE>
@@ -11,26 +11,18 @@ Before interstitial is shown:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=sidebar-tree-item security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected >
                     <DIV class=selection fill >
                     </DIV>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
-                    <DIV class=status >
-                    </DIV>
-                    <DIV class=titles no-subtitle >
-                        <SPAN class=title-container >
-                            <SPAN class=title >
+                    <SPAN class=title >
 Overview
-                            </SPAN>
-                        </SPAN>
-                        <SPAN class=subtitle >
-                        </SPAN>
-                    </DIV>
+                    </SPAN>
                 </LI>
                 <OL class=children >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -38,27 +30,17 @@ Main Origin
                     </SPAN>
                 </LI>
                 <OL class=children expanded >
-                    <LI class=sidebar-tree-item security-main-view-reload-message >
+                    <LI class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
-                        <DIV class=icon >
-                        </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=tree-element-title >
 Reload to view details
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -67,7 +49,7 @@ Non-Secure Origins
                 </LI>
                 <OL class=children expanded hidden >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -75,46 +57,30 @@ Secure Origins
                     </SPAN>
                 </LI>
                 <OL class=children expanded >
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://foo.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://bar.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -132,7 +98,7 @@ Unknown / Canceled
     </#document-fragment>
 </DIV>
 After interstitial is shown:
-<DIV class=sidebar-tree >
+<DIV >
     <#document-fragment >
         <STYLE type=text/css >
         </STYLE>
@@ -142,26 +108,18 @@ After interstitial is shown:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=sidebar-tree-item security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected >
                     <DIV class=selection fill >
                     </DIV>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
-                    <DIV class=status >
-                    </DIV>
-                    <DIV class=titles no-subtitle >
-                        <SPAN class=title-container >
-                            <SPAN class=title >
+                    <SPAN class=title >
 Overview
-                            </SPAN>
-                        </SPAN>
-                        <SPAN class=subtitle >
-                        </SPAN>
-                    </DIV>
+                    </SPAN>
                 </LI>
                 <OL class=children >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -169,27 +127,17 @@ Main Origin
                     </SPAN>
                 </LI>
                 <OL class=children expanded hidden >
-                    <LI class=sidebar-tree-item security-main-view-reload-message >
+                    <LI class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
-                        <DIV class=icon >
-                        </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=tree-element-title >
 Reload to view details
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -198,7 +146,7 @@ Non-Secure Origins
                 </LI>
                 <OL class=children expanded hidden >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -206,46 +154,30 @@ Secure Origins
                     </SPAN>
                 </LI>
                 <OL class=children expanded hidden >
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://foo.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://bar.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section hidden >
+                <LI class=parent expanded security-sidebar-origins hidden >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -263,7 +195,7 @@ Unknown / Canceled
     </#document-fragment>
 </DIV>
 After interstitial is hidden:
-<DIV class=sidebar-tree >
+<DIV >
     <#document-fragment >
         <STYLE type=text/css >
         </STYLE>
@@ -273,26 +205,18 @@ After interstitial is hidden:
         </STYLE>
         <DIV class=tree-outline-disclosure >
             <OL class=tree-outline tabindex=0 >
-                <LI class=sidebar-tree-item security-main-view-sidebar-tree-item selected >
+                <LI class=security-main-view-sidebar-tree-item selected >
                     <DIV class=selection fill >
                     </DIV>
                     <DIV class=icon lock-icon lock-icon-unknown >
                     </DIV>
-                    <DIV class=status >
-                    </DIV>
-                    <DIV class=titles no-subtitle >
-                        <SPAN class=title-container >
-                            <SPAN class=title >
+                    <SPAN class=title >
 Overview
-                            </SPAN>
-                        </SPAN>
-                        <SPAN class=subtitle >
-                        </SPAN>
-                    </DIV>
+                    </SPAN>
                 </LI>
                 <OL class=children >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -300,27 +224,17 @@ Main Origin
                     </SPAN>
                 </LI>
                 <OL class=children expanded >
-                    <LI class=sidebar-tree-item security-main-view-reload-message >
+                    <LI class=security-main-view-reload-message >
                         <DIV class=selection fill >
                         </DIV>
-                        <DIV class=icon >
-                        </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=tree-element-title >
 Reload to view details
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -329,7 +243,7 @@ Non-Secure Origins
                 </LI>
                 <OL class=children expanded >
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -337,46 +251,30 @@ Secure Origins
                     </SPAN>
                 </LI>
                 <OL class=children expanded >
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://foo.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
-                    <LI class=sidebar-tree-item security-sidebar-tree-item >
+                    <LI class=security-sidebar-tree-item >
                         <DIV class=selection fill >
                         </DIV>
                         <DIV class=icon security-property security-property-secure >
                         </DIV>
-                        <DIV class=status >
-                        </DIV>
-                        <DIV class=titles no-subtitle >
-                            <SPAN class=title-container >
-                                <SPAN class=title >
+                        <SPAN class=title >
 https://bar.test
-                                </SPAN>
-                            </SPAN>
-                            <SPAN class=subtitle >
-                            </SPAN>
-                        </DIV>
+                        </SPAN>
                     </LI>
                     <OL class=children >
                     </OL>
                 </OL>
-                <LI class=parent expanded security-sidebar-origins sidebar-tree-section >
+                <LI class=parent expanded security-sidebar-origins >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >

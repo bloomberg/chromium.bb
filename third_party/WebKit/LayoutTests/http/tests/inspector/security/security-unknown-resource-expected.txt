@@ -1,9 +1,6 @@
 Tests that requests to unresolved origins result in unknown security state and show up in the sidebar origin list.
 
 Group: Main Origin
-<SPAN class=title >
-Reload to view details
-</SPAN>
 Group: Unknown / Canceled
 <SPAN class=title >
 http://unknown
