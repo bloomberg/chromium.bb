@@ -128,7 +128,7 @@ __gCrWeb['plugin'] = {};
    * @param {string} message The message to show in the placeholder.
    */
   __gCrWeb['plugin']['addPluginPlaceholders'] = function(message) {
-    var plugins = __gCrWeb['placeholderTargetPlugins'];
+    var i, plugins = __gCrWeb['placeholderTargetPlugins'];
     for (i = 0; i < plugins.length; i++) {
       var plugin = plugins[i];
       if (!__gCrWeb['plugin'].isSignificantPlugin_(plugin)) {
