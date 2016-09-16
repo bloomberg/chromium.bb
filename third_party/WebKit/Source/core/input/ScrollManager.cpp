@@ -433,6 +433,9 @@ bool ScrollManager::isScrollbarHandlingGestures() const
 
 bool ScrollManager::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent)
 {
+    if (gestureEvent.source() != PlatformGestureSourceTouchscreen)
+        return false;
+
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
         PaintLayer* layer = eventTarget->layoutObject() ? eventTarget->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->rootFrameToContents(gestureEvent.position());
