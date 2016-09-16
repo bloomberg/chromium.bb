@@ -118,8 +118,13 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
-    public void getSuggestionVisited(
-            SnippetArticle suggestion, Callback<Boolean> callback) {
+    public void dismissCategory(@CategoryInt int category) {
+        assert mNativeSnippetsBridge != 0;
+        nativeDismissCategory(mNativeSnippetsBridge, category);
+    }
+
+    @Override
+    public void getSuggestionVisited(SnippetArticle suggestion, Callback<Boolean> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeGetURLVisited(mNativeSnippetsBridge, callback, suggestion.mUrl);
     }
@@ -232,6 +237,7 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeFetchSuggestionImage(
             long nativeNTPSnippetsBridge, String suggestionId, Callback<Bitmap> callback);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String suggestionId);
+    private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);
     private native void nativeGetURLVisited(
             long nativeNTPSnippetsBridge, Callback<Boolean> callback, String url);
     private native void nativeOnPageShown(

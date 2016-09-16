@@ -96,8 +96,12 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
-    public void fetchSuggestionImage(
-            SnippetArticle suggestion, Callback<Bitmap> callback) {
+    public void dismissCategory(@CategoryInt int category) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         if (mThumbnails.containsKey(suggestion.mId)) {
             callback.onResult(mThumbnails.get(suggestion.mId));
         }

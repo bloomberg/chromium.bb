@@ -23,6 +23,7 @@ class ActionItem implements NewTabPageItem {
     // The position (index) of this item within its section, for logging purposes.
     private int mPosition;
     private boolean mImpressionTracked = false;
+    private boolean mDismissable;
 
     public ActionItem(int category) {
         mCategory = category;
@@ -43,6 +44,7 @@ class ActionItem implements NewTabPageItem {
 
     public static class ViewHolder extends CardViewHolder {
         private ActionItem mActionListItem;
+
 
         public ViewHolder(NewTabPageRecyclerView recyclerView, final NewTabPageManager manager,
                 UiConfig uiConfig) {
@@ -81,6 +83,11 @@ class ActionItem implements NewTabPageItem {
             });
         }
 
+        @Override
+        public boolean isDismissable() {
+            return mActionListItem.mDismissable;
+        }
+
         public void onBindViewHolder(ActionItem item) {
             mActionListItem = item;
         }
@@ -90,5 +97,10 @@ class ActionItem implements NewTabPageItem {
     public void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
         ((ViewHolder) holder).onBindViewHolder(this);
+    }
+
+    /** Set whether this item can be dismissed.*/
+    public void setDismissable(boolean dismissable) {
+        this.mDismissable = dismissable;
     }
 }

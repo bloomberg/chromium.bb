@@ -162,6 +162,16 @@ void ContentSuggestionsService::DismissSuggestion(
                   << " OnNewSuggestions in response to DismissSuggestion.";
 }
 
+void ContentSuggestionsService::DismissCategory(Category category) {
+  auto providers_it = providers_by_category_.find(category);
+  if (providers_it == providers_by_category_.end())
+    return;
+
+  providers_by_category_.erase(providers_it);
+  categories_.erase(
+      std::find(categories_.begin(), categories_.end(), category));
+}
+
 void ContentSuggestionsService::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -219,12 +229,10 @@ void ContentSuggestionsService::OnCategoryStatusChanged(
     suggestions_by_category_.erase(category);
   }
   if (new_status == CategoryStatus::NOT_PROVIDED) {
-    auto providers_it = providers_by_category_.find(category);
-    DCHECK(providers_it != providers_by_category_.end());
-    DCHECK_EQ(provider, providers_it->second);
-    providers_by_category_.erase(providers_it);
-    categories_.erase(
-        std::find(categories_.begin(), categories_.end(), category));
+    DCHECK(providers_by_category_.find(category) !=
+           providers_by_category_.end());
+    DCHECK_EQ(provider, providers_by_category_.find(category)->second);
+    DismissCategory(category);
   } else {
     RegisterCategoryIfRequired(provider, category);
     DCHECK_EQ(new_status, provider->GetCategoryStatus(category));

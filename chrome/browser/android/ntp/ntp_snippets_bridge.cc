@@ -215,6 +215,12 @@ void NTPSnippetsBridge::DismissSuggestion(
       ConvertJavaStringToUTF8(env, suggestion_id));
 }
 
+void NTPSnippetsBridge::DismissCategory(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        jint category) {
+  content_suggestions_service_->DismissCategory(CategoryFromIDValue(category));
+}
+
 void NTPSnippetsBridge::GetURLVisited(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj,
                                       const JavaParamRef<jobject>& jcallback,

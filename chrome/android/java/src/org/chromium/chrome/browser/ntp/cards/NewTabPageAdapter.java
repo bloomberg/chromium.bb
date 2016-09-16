@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.graphics.Canvas;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -107,12 +106,24 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
             assert viewHolder instanceof NewTabPageViewHolder;
 
+            // The item has already been removed. We have nothing more to do.
+            if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
+
+            // We use our own implementation of the dismissal animation, so we don't call the
+            // parent implementation. (by default it changes the translation-X and elevation)
             mRecyclerView.updateViewStateForDismiss(dX, viewHolder);
 
-            // The super implementation performs animation and elevation, but only the animation is
-            // needed.
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            ViewCompat.setElevation(viewHolder.itemView, 0f);
+            // If there is another item that should be animated at the same time, do the same to it.
+            int swipePos = viewHolder.getAdapterPosition();
+            SuggestionsSection section = (SuggestionsSection) getGroup(swipePos);
+            int siblingPosDelta = section.getDismissSiblingPosDelta(getItems().get(swipePos));
+            if (siblingPosDelta == 0) return;
+
+            ViewHolder siblingViewHolder =
+                    mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
+            if (siblingViewHolder != null) {
+                mRecyclerView.updateViewStateForDismiss(dX, siblingViewHolder);
+            }
         }
     }
 
@@ -353,7 +364,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             mGroups.add(mBottomSpacer);
         }
 
-        // TODO(bauerb): Notify about a smaller range.
+        // TODO(bauerb): Notify about a smaller range: https://crbug.com/627512
         notifyDataSetChanged();
     }
 
@@ -372,13 +383,34 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public void dismissItem(int position) {
+        NewTabPageItem item = getItems().get(position);
+        if (item instanceof SnippetArticle) {
+            dismissSuggestion(position);
+        } else {
+            // We assume that the item being dismissed is the status card (and/or the more button,
+            // when it's displayed with the status card). In that case we just dismiss the section
+            // and it will show up on new NTPs after the status has changed.
+            ItemGroup group = getGroup(position);
+            assert group instanceof SuggestionsSection;
+            dismissSection((SuggestionsSection) group);
+        }
+    }
+
+    private void dismissSection(SuggestionsSection section) {
+        mSuggestionsSource.dismissCategory(section.getCategory());
+
+        mSections.remove(section.getCategory());
+        updateGroups();
+    }
+
+    private void dismissSuggestion(int position) {
         SnippetArticle suggestion = (SnippetArticle) getItems().get(position);
         mSuggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
                 NewTabPageUma.recordSnippetAction(result
-                                ? NewTabPageUma.SNIPPETS_ACTION_DISMISSED_VISITED
-                                : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
+                        ? NewTabPageUma.SNIPPETS_ACTION_DISMISSED_VISITED
+                        : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
             }
         });
 

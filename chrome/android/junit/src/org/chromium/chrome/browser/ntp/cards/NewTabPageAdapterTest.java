@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -653,6 +655,46 @@ public class NewTabPageAdapterTest {
         assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(2)));
         assertEquals(SuggestionsSection.class, groups.get(3).getClass());
         assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(3)));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testDismissSibling() {
+        List<SnippetArticle> snippets = createDummySuggestions(3);
+        SuggestionsSection section;
+
+        // Part 1: ShowMoreButton = true
+        section = new SuggestionsSection(42,
+                new SuggestionsCategoryInfo("", ContentSuggestionsCardLayout.FULL_CARD, true, true),
+                null);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        assertNotNull(section.getActionItem());
+
+        // 1.1: Without snippets
+        assertEquals(-1, section.getDismissSiblingPosDelta(section.getActionItem()));
+        assertEquals(1, section.getDismissSiblingPosDelta(section.getStatusItem()));
+
+        // 1.2: With snippets
+        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        assertEquals(0, section.getDismissSiblingPosDelta(section.getActionItem()));
+        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
+        assertEquals(0, section.getDismissSiblingPosDelta(snippets.get(0)));
+
+        // Part 2: ShowMoreButton = false
+        section = new SuggestionsSection(42,
+                new SuggestionsCategoryInfo("", ContentSuggestionsCardLayout.FULL_CARD, false,
+                                                 true),
+                null);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        assertNull(section.getActionItem());
+
+        // 2.1: Without snippets
+        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
+
+        // 2.2: With snippets
+        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
+        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
+        assertEquals(0, section.getDismissSiblingPosDelta(snippets.get(0)));
     }
 
     private List<SnippetArticle> createDummySuggestions(int count) {

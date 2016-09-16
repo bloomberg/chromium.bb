@@ -459,12 +459,14 @@ public class NewTabPageRecyclerView extends RecyclerView {
     /**
      * Update the view's state as it is being swiped away. Any changes to the animation here should
      * be reflected also in {@link #dismissItemWithAnimation(SnippetArticle)} and reset in
-     * {@link CardViewHolder#onBindViewHolder(NewTabPageItem)}.
+     * {@link CardViewHolder#onBindViewHolder()}.
      * @param dX The amount of horizontal displacement caused by user's action.
      * @param viewHolder The view holder containing the view to be updated.
      */
     public void updateViewStateForDismiss(float dX, ViewHolder viewHolder) {
         if (!((NewTabPageViewHolder) viewHolder).isDismissable()) return;
+
+        viewHolder.itemView.setTranslationX(dX);
 
         float input = Math.abs(dX) / viewHolder.itemView.getMeasuredWidth();
         float alpha = 1 - DISMISS_INTERPOLATOR.getInterpolation(input);

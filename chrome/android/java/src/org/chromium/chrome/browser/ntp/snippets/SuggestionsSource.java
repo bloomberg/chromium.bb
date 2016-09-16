@@ -70,6 +70,11 @@ public interface SuggestionsSource {
     void dismissSuggestion(SnippetArticle suggestion);
 
     /**
+     * Tells the source to dismiss the category.
+     */
+    void dismissCategory(@CategoryInt int category);
+
+    /**
      * Checks whether a content suggestion has been visited. The callback is never called
      * synchronously.
      */

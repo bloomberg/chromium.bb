@@ -62,6 +62,10 @@ class NTPSnippetsBridge
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& suggestion_id);
 
+  void DismissCategory(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       jint category);
+
   // Checks if the URL has been visited. The callback will not be called
   // synchronously.
   void GetURLVisited(JNIEnv* env,

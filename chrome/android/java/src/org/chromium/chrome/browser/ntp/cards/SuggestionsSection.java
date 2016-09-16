@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.cards.StatusItem.ActionDelegate;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
@@ -63,6 +64,7 @@ public class SuggestionsSection implements ItemGroup {
 
     public void removeSuggestion(SnippetArticle suggestion) {
         mSuggestions.remove(suggestion);
+        if (mMoreButton != null) mMoreButton.setDismissable(!hasSuggestions());
     }
 
     public void removeSuggestionById(String suggestionId) {
@@ -116,4 +118,41 @@ public class SuggestionsSection implements ItemGroup {
             suggestion.setThumbnailBitmap(mSuggestions.get(index).getThumbnailBitmap());
         }
     }
+
+    /**
+     * The dismiss sibling is an item that should be dismissed at the same time as the provided
+     * one. For example, if we want to dismiss a status card that has a More button attached, the
+     * button is the card's dismiss sibling. This function return the adapter position delta to
+     * apply to get to the sibling from the provided item. For the previous example, it would return
+     * {@code +1}, as the button comes right after the status card.
+     *
+     * @return a position delta to apply to the position of the provided item to get the adapter
+     * position of the item to animate. Returns {@code 0} if there is no dismiss sibling.
+     */
+    public int getDismissSiblingPosDelta(NewTabPageItem item) {
+        // The only dismiss siblings we have so far are the More button and the status card.
+        // Exit early if there is no More button.
+        if (mMoreButton == null) return 0;
+
+        // When there are suggestions we won't have contiguous status and action items.
+        if (hasSuggestions()) return 0;
+
+        // The sibling of the more button is the status card, that should be right above.
+        if (item == mMoreButton) return -1;
+
+        // The sibling of the status card is the more button when it exists, should be right below.
+        if (item == mStatus) return 1;
+
+        return 0;
+    }
+
+    @VisibleForTesting
+    ActionItem getActionItem() {
+        return mMoreButton;
+    }
+
+    @VisibleForTesting
+    StatusItem getStatusItem() {
+        return mStatus;
+    };
 }

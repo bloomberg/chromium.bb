@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
  * - Cards will get some lateral margins when the viewport is sufficiently wide.
  *   (see {@link UiConfig#DISPLAY_STYLE_WIDE})
  *
- * Note: If a subclass overrides {@link #onBindViewHolder(NewTabPageItem)}, it should call the
+ * Note: If a subclass overrides {@link #onBindViewHolder()}, it should call the
  * parent implementation to reset the private state when a card is recycled.
  */
 public class CardViewHolder extends NewTabPageViewHolder {

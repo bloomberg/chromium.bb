@@ -121,6 +121,10 @@ class ContentSuggestionsService : public KeyedService,
   // This will not trigger an update through the observers.
   void DismissSuggestion(const std::string& suggestion_id);
 
+  // Dismisses the given |category|, if it exists.
+  // This will not trigger an update through the observers.
+  void DismissCategory(Category category);
+
   // Observer accessors.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

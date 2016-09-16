@@ -67,6 +67,11 @@ public abstract class StatusItem implements NewTabPageItem {
                 mActionView.setVisibility(View.GONE);
             }
         }
+
+        @Override
+        public boolean isDismissable() {
+            return true;
+        }
     }
 
     private static class NoBookmarks extends StatusItem {
