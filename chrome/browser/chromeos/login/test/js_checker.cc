@@ -86,9 +86,8 @@ void JSChecker::ExpectNE(const std::string& expression,
 
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
   CHECK(web_contents_);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents_,
-                                                   "!!" + WrapSend(expression),
-                                                   result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents_, WrapSend("!!(" + expression + ")"), result));
 }
 
 void JSChecker::GetIntImpl(const std::string& expression, int* result) {
