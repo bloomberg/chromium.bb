@@ -341,5 +341,81 @@ TEST_F(DocumentLoadingRenderingTest, ShouldContinuePaintingWhenSheetsStartedAfte
     EXPECT_TRUE(document().isRenderingReady());
 }
 
+// Regression test for crbug.com/646323
+TEST_F(DocumentLoadingRenderingTest, ShouldNotPerformRepeatedLayoutWithPendingImport)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+    mainResource.write("<!DOCTYPE html><div>foo bar.</div>");
+    compositor().beginFrame();
+
+    // Insert a pending sheet with @import.
+    mainResource.write("<style>@import url('test.css')</style>");
+
+    // Do a layout with pending sheet.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+    // HTML import is required.
+    mainResource.write("<link rel=import>");
+
+    // Perform two subsequent updateStyleAndLayoutIgnorePendingStylesheets().
+    // The second one should be a no-op.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    unsigned styleCountBeforeSecondLayout = document().styleEngine().styleForElementCount();
+
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    EXPECT_EQ(styleCountBeforeSecondLayout, document().styleEngine().styleForElementCount());
+
+    // The content of the pending sheet doesn't matter.
+    cssResource.complete("");
+    mainResource.finish();
+}
+
+// Regression test for a wrong fix to crbug.com/646323, which simply stops
+// updateStyleAndLayoutIgnorePendingStylesheets from forcing layout when there
+// are nodes with placeholder style.
+TEST_F(DocumentLoadingRenderingTest, ShouldClearPlaceholderStyleWhenIgnoringPendingStylesheet)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+    mainResource.write("<!DOCTYPE html>");
+
+    // Insert a render blocking pending stylesheet. Do not let it finish.
+    mainResource.write("<link rel=stylesheet href=test.css>");
+
+    // Insert a non-empty body.
+    mainResource.write("foo");
+
+    // Do a layout with the pending sheet ignored, so that <body> does not get a
+    // placeholder style.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    EXPECT_FALSE(document().hasNodesWithPlaceholderStyle());
+
+    // Insert a <div>, which should get a placeholder style later.
+    mainResource.write("<div>bar</div>");
+    EXPECT_TRUE(document().needsLayoutTreeUpdate());
+
+    // <div> gets a placeholder style if the pending sheet is not ignored.
+    document().updateStyleAndLayout();
+    EXPECT_TRUE(document().hasNodesWithPlaceholderStyle());
+    EXPECT_FALSE(document().needsLayoutTreeUpdate());
+
+    // updateStyleAndLayoutIgnorePendingStylesheets should clear the placeholder
+    // style and redo layout, even if called on clean layout tree.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    EXPECT_FALSE(document().hasNodesWithPlaceholderStyle());
+
+    // The content of the pending sheet doesn't matter.
+    cssResource.complete("");
+    mainResource.finish();
+}
 
 } // namespace blink
