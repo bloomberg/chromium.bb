@@ -118,6 +118,9 @@ class Database(object):
     # Mapping reviewers to the preceding comment per file in the OWNERS files.
     self.comments = {}
 
+    # Cache of compiled regexes for _fnmatch()
+    self._fnmatch_cache = {}
+
     # Set of paths that stop us from looking above them for owners.
     # (This is implicitly true for the root directory).
     self._stop_looking = set([''])
@@ -197,13 +200,13 @@ class Database(object):
         dirpath = self.os_path.dirname(dirpath)
 
   def _should_stop_looking(self, objname):
-    return any(fnmatch.fnmatch(objname, stop_looking)
+    return any(self._fnmatch(objname, stop_looking)
                for stop_looking in self._stop_looking)
 
   def _owners_for(self, objname):
     obj_owners = set()
     for owned_path, path_owners in self._paths_to_owners.iteritems():
-      if fnmatch.fnmatch(objname, owned_path):
+      if self._fnmatch(objname, owned_path):
         obj_owners |= path_owners
     return obj_owners
 
@@ -338,6 +341,14 @@ class Database(object):
         dirname = self.os_path.dirname(dirname)
         distance += 1
     return all_possible_owners
+
+  def _fnmatch(self, filename, pattern):
+    """Same as fnmatch.fnmatch(), but interally caches the compiled regexes."""
+    matcher = self._fnmatch_cache.get(pattern)
+    if matcher is None:
+      matcher = re.compile(fnmatch.translate(pattern)).match
+      self._fnmatch_cache[pattern] = matcher
+    return matcher(filename)
 
   @staticmethod
   def total_costs_by_owner(all_possible_owners, dirs):
