@@ -184,6 +184,9 @@ Polymer({
    * @private
    */
   handleSyncStatus_: function(syncStatus) {
+    if (!this.syncStatus && syncStatus && !syncStatus.signedIn) {
+      chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
+    }
     this.syncStatus = syncStatus;
   },
 

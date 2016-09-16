@@ -214,6 +214,10 @@ cr.define('options', function() {
       // Sync (Sign in) section.
       this.updateSyncState_(/** @type {options.SyncStatus} */(
           loadTimeData.getValue('syncData')));
+      if (!$('sync-overview').hidden) {
+        chrome.send('metricsHandler:recordAction',
+                    ['Signin_Impression_FromSettings']);
+      }
 
       $('start-stop-sync').onclick = function(event) {
         if (self.signedIn_) {
