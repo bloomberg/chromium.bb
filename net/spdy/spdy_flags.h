@@ -13,6 +13,8 @@ NET_EXPORT_PRIVATE extern bool
     FLAGS_chromium_http2_flag_spdy_framer_use_new_methods4;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_chromium_http2_flag_use_new_spdy_header_block_header_joining;
+NET_EXPORT_PRIVATE extern bool
+    FLAGS_chromium_reloadable_flag_increase_hpack_table_size;
 NET_EXPORT_PRIVATE extern bool FLAGS_use_nested_spdy_framer_decoder;
 
 }  // namespace net
