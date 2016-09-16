@@ -431,7 +431,6 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   SetStatusAreaVisible(true);
   host_->StartSignInScreen(context);
   smooth_show_timer_.Stop();
-  oobe_ui_ = nullptr;
   login_screen_started_ = true;
 }
 

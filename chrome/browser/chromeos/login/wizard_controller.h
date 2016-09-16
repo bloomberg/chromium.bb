@@ -372,7 +372,7 @@ class WizardController : public BaseScreenDelegate,
 
   base::OneShotTimer smooth_show_timer_;
 
-  OobeUI* oobe_ui_ = nullptr;
+  OobeUI* const oobe_ui_;
 
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
