@@ -2317,9 +2317,12 @@ Polymer({
     // Ensures that conditionally templated elements have finished stamping.
     this.async(function() {
       var headerHeight = this.header.offsetHeight;
+      // Unlike the other elements whose heights are fixed, the first-run-flow
+      // element can have a fractional height. So we use getBoundingClientRect()
+      // to avoid rounding errors.
       var firstRunFlowHeight = this.$$('#first-run-flow') &&
           this.$$('#first-run-flow').style.display != 'none' ?
-              this.$$('#first-run-flow').offsetHeight : 0;
+              this.$$('#first-run-flow').getBoundingClientRect().height : 0;
       var issueHeight = this.$$('#issue-banner') &&
           this.$$('#issue-banner').style.display != 'none' ?
               this.$$('#issue-banner').offsetHeight : 0;
