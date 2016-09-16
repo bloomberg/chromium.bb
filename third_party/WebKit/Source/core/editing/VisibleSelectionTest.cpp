@@ -65,9 +65,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     VisibleSelectionInFlatTree selectionInFlatTree;
 
     // From a position at distributed node
-    selection = VisibleSelection(createVisiblePosition(Position(one, 1)));
+    selection = VisibleSelection(createVisiblePositionDeprecated(Position(one, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(one, 1)));
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePositionDeprecated(PositionInFlatTree(one, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(one, 1), selection.base());
@@ -81,9 +81,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(five, 5), selectionInFlatTree.end());
 
     // From a position at distributed node
-    selection = VisibleSelection(createVisiblePosition(Position(two, 1)));
+    selection = VisibleSelection(createVisiblePositionDeprecated(Position(two, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(two, 1)));
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePositionDeprecated(PositionInFlatTree(two, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(two, 1), selection.base());
@@ -97,9 +97,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(three, 1)));
+    selection = VisibleSelection(createVisiblePositionDeprecated(Position(three, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(three, 1)));
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePositionDeprecated(PositionInFlatTree(three, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(three, 1), selection.base());
@@ -113,9 +113,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(four, 1)));
+    selection = VisibleSelection(createVisiblePositionDeprecated(Position(four, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(four, 1)));
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePositionDeprecated(PositionInFlatTree(four, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(four, 1), selection.base());
@@ -129,9 +129,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(five, 1)));
+    selection = VisibleSelection(createVisiblePositionDeprecated(Position(five, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(five, 1)));
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePositionDeprecated(PositionInFlatTree(five, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(five, 1), selection.base());

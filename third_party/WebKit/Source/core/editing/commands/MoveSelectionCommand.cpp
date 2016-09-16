@@ -66,7 +66,7 @@ void MoveSelectionCommand::doApply(EditingState* editingState)
     if (!pos.isConnected())
         pos = endingSelection().start();
 
-    cleanupAfterDeletion(editingState, createVisiblePosition(pos));
+    cleanupAfterDeletion(editingState, createVisiblePositionDeprecated(pos));
     if (editingState->isAborted())
         return;
 

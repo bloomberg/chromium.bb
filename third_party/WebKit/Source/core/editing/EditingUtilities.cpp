@@ -533,12 +533,12 @@ PositionInFlatTree previousVisuallyDistinctCandidate(const PositionInFlatTree& p
 
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode& highestRoot)
 {
-    return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+    return createVisiblePositionDeprecated(firstEditablePositionAfterPositionInRoot(position, highestRoot));
 }
 
 VisiblePositionInFlatTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree& position, ContainerNode& highestRoot)
 {
-    return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+    return createVisiblePositionDeprecated(firstEditablePositionAfterPositionInRoot(position, highestRoot));
 }
 
 template <typename Strategy>
@@ -588,12 +588,12 @@ PositionInFlatTree firstEditablePositionAfterPositionInRoot(const PositionInFlat
 
 VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& position, ContainerNode& highestRoot)
 {
-    return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+    return createVisiblePositionDeprecated(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
 VisiblePositionInFlatTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree& position, ContainerNode& highestRoot)
 {
-    return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+    return createVisiblePositionDeprecated(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
 template <typename Strategy>
@@ -982,8 +982,8 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
             break;
         if (isSpecialHTMLElement(runner)) {
             HTMLElement* specialElement = toHTMLElement(&runner);
-            VisiblePosition vPos = createVisiblePosition(pos);
-            VisiblePosition firstInElement = createVisiblePosition(firstPositionInOrBeforeNode(specialElement));
+            VisiblePosition vPos = createVisiblePositionDeprecated(pos);
+            VisiblePosition firstInElement = createVisiblePositionDeprecated(firstPositionInOrBeforeNode(specialElement));
             if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == nextPositionOf(firstInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == firstInElement.deepEquivalent())
@@ -1001,8 +1001,8 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
             break;
         if (isSpecialHTMLElement(runner)) {
             HTMLElement* specialElement = toHTMLElement(&runner);
-            VisiblePosition vPos = createVisiblePosition(pos);
-            VisiblePosition lastInElement = createVisiblePosition(lastPositionInOrAfterNode(specialElement));
+            VisiblePosition vPos = createVisiblePositionDeprecated(pos);
+            VisiblePosition lastInElement = createVisiblePositionDeprecated(lastPositionInOrAfterNode(specialElement));
             if (isDisplayInsideTable(specialElement) && vPos.deepEquivalent() == previousPositionOf(lastInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == lastInElement.deepEquivalent())
@@ -1118,7 +1118,7 @@ Node* nextAtomicLeafNode(const Node& start)
 VisiblePosition visiblePositionBeforeNode(Node& node)
 {
     if (node.hasChildren())
-        return createVisiblePosition(firstPositionInOrBeforeNode(&node));
+        return createVisiblePositionDeprecated(firstPositionInOrBeforeNode(&node));
     DCHECK(node.parentNode()) << node;
     DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
     return VisiblePosition::inParentBeforeNode(node);
@@ -1128,7 +1128,7 @@ VisiblePosition visiblePositionBeforeNode(Node& node)
 VisiblePosition visiblePositionAfterNode(Node& node)
 {
     if (node.hasChildren())
-        return createVisiblePosition(lastPositionInOrAfterNode(&node));
+        return createVisiblePositionDeprecated(lastPositionInOrAfterNode(&node));
     DCHECK(node.parentNode()) << node.parentNode();
     DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
     return VisiblePosition::inParentAfterNode(node);
@@ -1320,8 +1320,8 @@ Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
     if (!listChildNode || !isStartOfParagraph(visiblePos) || !isEndOfParagraph(visiblePos))
         return 0;
 
-    VisiblePosition firstInListChild = createVisiblePosition(firstPositionInOrBeforeNode(listChildNode));
-    VisiblePosition lastInListChild = createVisiblePosition(lastPositionInOrAfterNode(listChildNode));
+    VisiblePosition firstInListChild = createVisiblePositionDeprecated(firstPositionInOrBeforeNode(listChildNode));
+    VisiblePosition lastInListChild = createVisiblePositionDeprecated(lastPositionInOrAfterNode(listChildNode));
 
     if (firstInListChild.deepEquivalent() != visiblePos.deepEquivalent() || lastInListChild.deepEquivalent() != visiblePos.deepEquivalent())
         return 0;
@@ -1348,7 +1348,7 @@ HTMLElement* outermostEnclosingList(Node* node, HTMLElement* rootList)
 // while ignoring whitespaces and unrendered nodes
 static bool isVisiblyAdjacent(const Position& first, const Position& second)
 {
-    return createVisiblePosition(first).deepEquivalent() == createVisiblePosition(mostBackwardCaretPosition(second)).deepEquivalent();
+    return createVisiblePositionDeprecated(first).deepEquivalent() == createVisiblePositionDeprecated(mostBackwardCaretPosition(second)).deepEquivalent();
 }
 
 bool canMergeLists(Element* firstList, Element* secondList)
@@ -1491,7 +1491,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
 
     Element* fromRootEditableElement = rootEditableElement(*position.anchorNode());
 
-    bool atStartOfLine = isStartOfLine(createVisiblePosition(position, affinity));
+    bool atStartOfLine = isStartOfLine(createVisiblePositionDeprecated(position, affinity));
     bool rendered = isVisuallyEquivalentCandidate(position);
 
     Position currentPos = position;
@@ -1550,7 +1550,7 @@ Position trailingWhitespacePosition(const Position& position, TextAffinity, Whit
     if (position.isNull())
         return Position();
 
-    VisiblePosition visiblePosition = createVisiblePosition(position);
+    VisiblePosition visiblePosition = createVisiblePositionDeprecated(position);
     UChar characterAfterVisiblePosition = characterAfter(visiblePosition);
     bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpaceCharacter) : isCollapsibleWhitespace(characterAfterVisiblePosition);
     // The space must not be in another paragraph and it must be editable.
@@ -1759,7 +1759,7 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
     // TextIteratorEmitsCharactersBetweenAllVisiblePositions.
     if (range.isNull())
         return VisiblePosition();
-    return createVisiblePosition(range.startPosition());
+    return createVisiblePositionDeprecated(range.startPosition());
 }
 
 // Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.
@@ -1769,11 +1769,11 @@ bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange)
     if (selectedRange.isNodeFullyContained(node))
         return true;
 
-    bool startIsVisuallySame = visiblePositionBeforeNode(node).deepEquivalent() == createVisiblePosition(selectedRange.startPosition()).deepEquivalent();
+    bool startIsVisuallySame = visiblePositionBeforeNode(node).deepEquivalent() == createVisiblePositionDeprecated(selectedRange.startPosition()).deepEquivalent();
     if (startIsVisuallySame && comparePositions(Position::inParentAfterNode(node), selectedRange.endPosition()) < 0)
         return true;
 
-    bool endIsVisuallySame = visiblePositionAfterNode(node).deepEquivalent() == createVisiblePosition(selectedRange.endPosition()).deepEquivalent();
+    bool endIsVisuallySame = visiblePositionAfterNode(node).deepEquivalent() == createVisiblePositionDeprecated(selectedRange.endPosition()).deepEquivalent();
     if (endIsVisuallySame && comparePositions(selectedRange.startPosition(), Position::inParentBeforeNode(node)) < 0)
         return true;
 
@@ -1836,7 +1836,7 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
     // It is important to skip certain irrelevant content at the start of the selection, so we do not wind up
     // with a spurious "mixed" style.
 
-    VisiblePosition visiblePosition = createVisiblePosition(selection.start());
+    VisiblePosition visiblePosition = createVisiblePositionDeprecated(selection.start());
     if (visiblePosition.isNull())
         return Position();
 

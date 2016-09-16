@@ -187,7 +187,7 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atLeftBoundaryOfBidiRun()) {
         if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight())
             && base.isEquivalent(extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
-            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtLeftBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(base.positionAtLeftBoundaryOfBiDiRun()));
             return;
         }
         return;
@@ -196,19 +196,19 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atRightBoundaryOfBidiRun()) {
         if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft())
             && base.isEquivalent(extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
-            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtRightBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(base.positionAtRightBoundaryOfBiDiRun()));
             return;
         }
         return;
     }
 
     if (extent.atLeftBoundaryOfBidiRun() && extent.isEquivalent(base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
-        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtLeftBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(extent.positionAtLeftBoundaryOfBiDiRun()));
         return;
     }
 
     if (extent.atRightBoundaryOfBidiRun() && extent.isEquivalent(base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
-        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtRightBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(extent.positionAtRightBoundaryOfBiDiRun()));
         return;
     }
 }
@@ -219,10 +219,10 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionIn
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
     const PositionInFlatTree basePosition = m_originalBaseInFlatTree.deepEquivalent();
-    const VisiblePositionInFlatTree originalBase = basePosition.isConnected() ? createVisiblePosition(basePosition) : VisiblePositionInFlatTree();
-    const VisiblePositionInFlatTree base = originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
+    const VisiblePositionInFlatTree originalBase = basePosition.isConnected() ? createVisiblePositionDeprecated(basePosition) : VisiblePositionInFlatTree();
+    const VisiblePositionInFlatTree base = originalBase.isNotNull() ? originalBase : createVisiblePositionDeprecated(newSelection.base());
     VisiblePositionInFlatTree newBase = base;
-    const VisiblePositionInFlatTree extent = createVisiblePosition(newSelection.extent());
+    const VisiblePositionInFlatTree extent = createVisiblePositionDeprecated(newSelection.extent());
     VisiblePositionInFlatTree newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
@@ -745,7 +745,7 @@ bool FrameSelection::contains(const LayoutPoint& point)
     if (!innerNode || !innerNode->layoutObject())
         return false;
 
-    const VisiblePositionInFlatTree& visiblePos = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
+    const VisiblePositionInFlatTree& visiblePos = createVisiblePositionDeprecated(fromPositionInDOMTree<EditingInFlatTreeStrategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
     if (visiblePos.isNull())
         return false;
 
@@ -802,8 +802,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
 
     // Create compute positions before and after the element.
     unsigned ownerElementNodeIndex = ownerElement->nodeIndex();
-    VisiblePosition beforeOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex));
-    VisiblePosition afterOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE);
+    VisiblePosition beforeOwnerElement = createVisiblePositionDeprecated(Position(ownerElementParent, ownerElementNodeIndex));
+    VisiblePosition afterOwnerElement = createVisiblePositionDeprecated(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE);
 
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
@@ -1167,7 +1167,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = LayoutRect(absoluteCaretBounds());
         break;
     case RangeSelection:
-        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(createVisiblePosition(extent())) : enclosingIntRect(unclippedBounds()));
+        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(createVisiblePositionDeprecated(extent())) : enclosingIntRect(unclippedBounds()));
         break;
     }
 

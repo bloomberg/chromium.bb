@@ -173,8 +173,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
     Node* firstNode = m_start.nodeAsRangeFirstNode();
-    const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePosition(m_start);
-    const VisiblePositionTemplate<Strategy> visibleEnd = createVisiblePosition(m_end);
+    const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePositionDeprecated(m_start);
+    const VisiblePositionTemplate<Strategy> visibleEnd = createVisiblePositionDeprecated(m_end);
     if (shouldAnnotate() && needInterchangeNewlineAfter(visibleStart)) {
         markupAccumulator.appendInterchangeNewline();
         if (visibleStart.deepEquivalent() == previousPositionOf(visibleEnd).deepEquivalent())

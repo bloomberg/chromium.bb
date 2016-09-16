@@ -143,7 +143,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
             atEnd = true;
 
         rangeForParagraphSplittingTextNodesIfNeeded(endOfCurrentParagraph, start, end);
-        endOfCurrentParagraph = createVisiblePosition(end);
+        endOfCurrentParagraph = createVisiblePositionDeprecated(end);
 
         Node* enclosingCell = enclosingNodeOfType(start, &isTableCell);
         VisiblePosition endOfNextParagraph = endOfNextParagrahSplittingTextNodesIfNeeded(endOfCurrentParagraph, start, end);
@@ -208,7 +208,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         // TODO(yosin) We should use |PositionMoveType::CodePoint| for
         // |previousPositionOf()|.
         if (startStyle->preserveNewline() && isNewLineAtPosition(start) && !isNewLineAtPosition(previousPositionOf(start, PositionMoveType::CodeUnit)) && start.offsetInContainerNode() > 0)
-            start = startOfParagraph(createVisiblePosition(previousPositionOf(end, PositionMoveType::CodeUnit))).deepEquivalent();
+            start = startOfParagraph(createVisiblePositionDeprecated(previousPositionOf(end, PositionMoveType::CodeUnit))).deepEquivalent();
 
         // If start is in the middle of a text node, split.
         if (!startStyle->collapseWhiteSpace() && start.offsetInContainerNode() > 0) {
@@ -295,7 +295,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
         }
     }
 
-    return createVisiblePosition(Position(text, position.offsetInContainerNode() - 1));
+    return createVisiblePositionDeprecated(Position(text, position.offsetInContainerNode() - 1));
 }
 
 HTMLElement* ApplyBlockElementCommand::createBlockElement() const

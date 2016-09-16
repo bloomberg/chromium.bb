@@ -96,7 +96,7 @@ static bool isSpellCheckingEnabledFor(const VisibleSelection& selection)
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
 {
     DCHECK(range.isNotNull());
-    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
+    const VisiblePosition& visibleEnd = createVisiblePositionDeprecated(range.endPosition());
     DCHECK(visibleEnd.isNotNull());
     const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
     // TODO(xiaochengh): |sentenceEnd < range.endPosition()| is possible,
@@ -108,7 +108,7 @@ static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
 static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
 {
     DCHECK(range.isNotNull());
-    const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
+    const VisiblePosition& visibleStart = createVisiblePositionDeprecated(range.startPosition());
     DCHECK(visibleStart.isNotNull());
     const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
     // TODO(xiaochengh): |sentenceStart > range.startPosition()| is possible,
@@ -264,7 +264,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // next word so we start checking at a word boundary. Going back by one char
     // and then forward by a word does the trick.
     if (startedWithSelection) {
-        VisiblePosition oneBeforeStart = previousPositionOf(createVisiblePosition(spellingSearchStart));
+        VisiblePosition oneBeforeStart = previousPositionOf(createVisiblePositionDeprecated(spellingSearchStart));
         if (oneBeforeStart.isNotNull() && rootEditableElementOf(oneBeforeStart) == rootEditableElementOf(spellingSearchStart))
             spellingSearchStart = endOfWord(oneBeforeStart).toParentAnchoredPosition();
         // else we were already at the start of the editable node
@@ -387,7 +387,7 @@ void SpellChecker::markMisspellingsAfterTypingCommand(const TypingCommand& cmd)
     // Since the word containing the current selection is never marked, this does a check to
     // see if typing made a new word that is not in the current selection. Basically, you
     // get this by being at the end of a word and typing a space.
-    VisiblePosition start = createVisiblePosition(cmd.endingSelection().start(), cmd.endingSelection().affinity());
+    VisiblePosition start = createVisiblePositionDeprecated(cmd.endingSelection().start(), cmd.endingSelection().affinity());
     VisiblePosition previous = previousPositionOf(start);
 
     VisiblePosition wordStartOfPrevious = startOfWord(previous, LeftWordIfOnBoundary);
@@ -945,10 +945,10 @@ std::pair<String, int> SpellChecker::findFirstMisspelling(const Position& start,
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    Position paragraphStart = startOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
+    Position paragraphStart = startOfParagraph(createVisiblePositionDeprecated(start)).toParentAnchoredPosition();
     Position paragraphEnd = end;
     int totalRangeLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
-    paragraphEnd = endOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
+    paragraphEnd = endOfParagraph(createVisiblePositionDeprecated(start)).toParentAnchoredPosition();
 
     int rangeStartOffset = TextIterator::rangeLength(paragraphStart, start);
     int totalLengthProcessed = 0;
@@ -960,7 +960,7 @@ std::pair<String, int> SpellChecker::findFirstMisspelling(const Position& start,
         int currentLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
         int currentStartOffset = firstIteration ? rangeStartOffset : 0;
         int currentEndOffset = currentLength;
-        if (inSameParagraph(createVisiblePosition(paragraphStart), createVisiblePosition(end))) {
+        if (inSameParagraph(createVisiblePositionDeprecated(paragraphStart), createVisiblePositionDeprecated(end))) {
             // Determine the character offset from the end of the original search range to the end of the paragraph,
             // since we will want to ignore results in this area.
             currentEndOffset = TextIterator::rangeLength(paragraphStart, end);
@@ -997,7 +997,7 @@ std::pair<String, int> SpellChecker::findFirstMisspelling(const Position& start,
         }
         if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
             break;
-        VisiblePosition newParagraphStart = startOfNextParagraph(createVisiblePosition(paragraphEnd));
+        VisiblePosition newParagraphStart = startOfNextParagraph(createVisiblePositionDeprecated(paragraphEnd));
         paragraphStart = newParagraphStart.toParentAnchoredPosition();
         paragraphEnd = endOfParagraph(newParagraphStart).toParentAnchoredPosition();
         firstIteration = false;

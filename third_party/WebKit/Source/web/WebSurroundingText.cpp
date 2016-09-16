@@ -52,7 +52,7 @@ void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& node
     if (!node || !node->layoutObject())
         return;
 
-    m_private.reset(new SurroundingText(createVisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
+    m_private.reset(new SurroundingText(createVisiblePositionDeprecated(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
 }
 
 void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame, size_t maxLength)

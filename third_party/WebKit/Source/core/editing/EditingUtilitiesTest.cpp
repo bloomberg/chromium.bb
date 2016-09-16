@@ -106,16 +106,16 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore)
     EXPECT_EQ(table, tableElementJustBefore(VisiblePositionInFlatTree::afterNode(table)));
 
     EXPECT_EQ(table, tableElementJustBefore(VisiblePosition::lastPositionInNode(table)));
-    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePositionDeprecated(PositionInFlatTree::lastPositionInNode(table))));
 
-    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position(host, 2))));
-    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree(host, 2))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePositionDeprecated(Position(host, 2))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePositionDeprecated(PositionInFlatTree(host, 2))));
 
     EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePosition::afterNode(host)));
     EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePositionInFlatTree::afterNode(host)));
 
     EXPECT_EQ(nullptr, tableElementJustBefore(VisiblePosition::lastPositionInNode(host)));
-    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(host))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePositionDeprecated(PositionInFlatTree::lastPositionInNode(host))));
 }
 
 TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot)

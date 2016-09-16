@@ -26,14 +26,14 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes)
     Element* five = shadowRoot->querySelector("#s5");
 
     EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
-    EXPECT_EQ(Position(one->firstChild(), 0), createVisiblePosition(Position(one, 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 0), createVisiblePositionDeprecated(Position(one, 0)).deepEquivalent());
     EXPECT_EQ(Position(one->firstChild(), 2), canonicalPositionOf(Position(two, 0)));
-    EXPECT_EQ(Position(one->firstChild(), 2), createVisiblePosition(Position(two, 0)).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 2), createVisiblePositionDeprecated(Position(two, 0)).deepEquivalent());
 
     EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), canonicalPositionOf(PositionInFlatTree(one, 0)));
-    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), createVisiblePosition(PositionInFlatTree(one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), createVisiblePositionDeprecated(PositionInFlatTree(one, 0)).deepEquivalent());
     EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), canonicalPositionOf(PositionInFlatTree(two, 0)));
-    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), createVisiblePosition(PositionInFlatTree(two, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), createVisiblePositionDeprecated(PositionInFlatTree(two, 0)).deepEquivalent());
 }
 
 } // namespace blink

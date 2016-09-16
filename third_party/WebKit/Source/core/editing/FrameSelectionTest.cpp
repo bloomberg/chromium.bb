@@ -142,7 +142,7 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
 
     // Simulate to type "Hello, World!".
     DisableCompositingQueryAsserts disabler;
-    selection().moveTo(createVisiblePosition(selection().end(), selection().affinity()), NotUserTriggered);
+    selection().moveTo(createVisiblePositionDeprecated(selection().end(), selection().affinity()), NotUserTriggered);
     selection().setCaretRectNeedsUpdate();
     EXPECT_TRUE(selection().isCaretBoundsDirty());
     EXPECT_FALSE(isPreviousCaretDirtyForTesting());
@@ -152,7 +152,7 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
 
     // Simulate to remove all except for "H".
     text->replaceWholeText("H");
-    selection().moveTo(createVisiblePosition(selection().end(), selection().affinity()), NotUserTriggered);
+    selection().moveTo(createVisiblePositionDeprecated(selection().end(), selection().affinity()), NotUserTriggered);
     selection().setCaretRectNeedsUpdate();
     EXPECT_TRUE(selection().isCaretBoundsDirty());
     // "H" remains so early previousCaret invalidation isn't needed.
@@ -183,15 +183,15 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition)
     // "Foo Bar  Baz,"
     Text* text = appendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
     // "Fo|o Bar  Baz,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 2))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePositionDeprecated(Position(text, 2))));
     EXPECT_EQ_SELECTED_TEXT("Foo");
     // "Foo| Bar  Baz,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 3))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePositionDeprecated(Position(text, 3))));
     EXPECT_EQ_SELECTED_TEXT("Foo");
     // "Foo Bar | Baz,"
-    EXPECT_FALSE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 13))));
+    EXPECT_FALSE(selection().selectWordAroundPosition(createVisiblePositionDeprecated(Position(text, 13))));
     // "Foo Bar  Baz|,"
-    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 22))));
+    EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePositionDeprecated(Position(text, 22))));
     EXPECT_EQ_SELECTED_TEXT("Baz");
 }
 
@@ -238,16 +238,16 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
     EXPECT_EQ_SELECTED_TEXT("a");
 
     // "Foo B|ar B>az," with the Character granularity.
-    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 9)), CharacterGranularity);
+    selection().moveRangeSelection(createVisiblePositionDeprecated(Position(text, 5)), createVisiblePositionDeprecated(Position(text, 9)), CharacterGranularity);
     EXPECT_EQ_SELECTED_TEXT("ar B");
     // "Foo B|ar B>az," with the Word granularity.
-    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 9)), WordGranularity);
+    selection().moveRangeSelection(createVisiblePositionDeprecated(Position(text, 5)), createVisiblePositionDeprecated(Position(text, 9)), WordGranularity);
     EXPECT_EQ_SELECTED_TEXT("Bar Baz");
     // "Fo<o B|ar Baz," with the Character granularity.
-    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 2)), CharacterGranularity);
+    selection().moveRangeSelection(createVisiblePositionDeprecated(Position(text, 5)), createVisiblePositionDeprecated(Position(text, 2)), CharacterGranularity);
     EXPECT_EQ_SELECTED_TEXT("o B");
     // "Fo<o B|ar Baz," with the Word granularity.
-    selection().moveRangeSelection(createVisiblePosition(Position(text, 5)), createVisiblePosition(Position(text, 2)), WordGranularity);
+    selection().moveRangeSelection(createVisiblePositionDeprecated(Position(text, 5)), createVisiblePositionDeprecated(Position(text, 2)), WordGranularity);
     EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 

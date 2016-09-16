@@ -81,7 +81,7 @@ void FrameCaret::updateAppearance()
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
     // the FrameSelection will paint a blinking caret as usual).
-    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePosition(caretPosition()));
+    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePositionDeprecated(caretPosition()));
 
     bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
@@ -196,9 +196,9 @@ IntRect FrameCaret::absoluteCaretBounds()
             if (isVisuallyEquivalentCandidate(caretPosition().position()))
                 updateCaretRect(caretPosition());
             else
-                updateCaretRect(createVisiblePosition(caretPosition()));
+                updateCaretRect(createVisiblePositionDeprecated(caretPosition()));
         } else {
-            updateCaretRect(createVisiblePosition(caretPosition()));
+            updateCaretRect(createVisiblePositionDeprecated(caretPosition()));
         }
     }
     return absoluteBoundsForLocalRect(caretPosition().position().anchorNode(), localCaretRectWithoutUpdate());

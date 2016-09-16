@@ -26,7 +26,7 @@ TEST_F(RelocatablePositionTest, position)
     Position expectedPosition(boldface, PositionAnchorType::AfterAnchor);
     Position trackedPosition = relocatablePosition.position();
     EXPECT_TRUE(trackedPosition.anchorNode()->isConnected());
-    EXPECT_EQ(createVisiblePosition(expectedPosition).deepEquivalent(), createVisiblePosition(trackedPosition).deepEquivalent());
+    EXPECT_EQ(createVisiblePositionDeprecated(expectedPosition).deepEquivalent(), createVisiblePositionDeprecated(trackedPosition).deepEquivalent());
 }
 
 } // namespace blink

@@ -114,7 +114,7 @@ bool canMouseDownStartSelect(Node* node)
 
 VisiblePositionInFlatTree visiblePositionOfHitTestResult(const HitTestResult& hitTestResult)
 {
-    return createVisiblePosition(
+    return createVisiblePositionDeprecated(
         fromPositionInDOMTree<EditingInFlatTreeStrategy>(hitTestResult.innerNode()->layoutObject()->positionForPoint(hitTestResult.localPoint())));
 }
 
@@ -144,14 +144,14 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
 
     VisiblePositionInFlatTree visiblePos = visiblePositionOfHitTestResult(event.hitTestResult());
     if (visiblePos.isNull())
-        visiblePos = createVisiblePosition(PositionInFlatTree::firstPositionInOrBeforeNode(innerNode));
+        visiblePos = createVisiblePositionDeprecated(PositionInFlatTree::firstPositionInOrBeforeNode(innerNode));
     PositionInFlatTree pos = visiblePos.deepEquivalent();
 
     VisibleSelectionInFlatTree newSelection = selection().visibleSelection<EditingInFlatTreeStrategy>();
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && !newSelection.isNone()) {
-        const VisibleSelectionInFlatTree selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionInFlatTree(createVisiblePosition(pos))));
+        const VisibleSelectionInFlatTree selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionInFlatTree(createVisiblePositionDeprecated(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)
                 pos = selectionInUserSelectAll.start();
@@ -199,7 +199,7 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
         return;
 
     const PositionWithAffinity& rawTargetPosition = positionRespectingEditingBoundary(selection().selection().start(), hitTestResult.localPoint(), target);
-    VisiblePositionInFlatTree targetPosition = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
+    VisiblePositionInFlatTree targetPosition = createVisiblePositionDeprecated(fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;

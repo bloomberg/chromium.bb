@@ -140,7 +140,7 @@ static Position positionAvoidingPrecedingNodes(Position pos)
 
         if (nextPosition == pos
             || enclosingBlock(nextPosition.computeContainerNode()) != enclosingBlockElement
-            || createVisiblePosition(pos).deepEquivalent() != createVisiblePosition(nextPosition).deepEquivalent())
+            || createVisiblePositionDeprecated(pos).deepEquivalent() != createVisiblePositionDeprecated(nextPosition).deepEquivalent())
             break;
     }
     return pos;
@@ -704,7 +704,7 @@ void ReplaceSelectionCommand::moveElementOutOfAncestor(Element* element, Element
     if (!hasEditableStyle(*ancestor->parentNode()))
         return;
 
-    VisiblePosition positionAtEndOfNode = createVisiblePosition(lastPositionInOrAfterNode(element));
+    VisiblePosition positionAtEndOfNode = createVisiblePositionDeprecated(lastPositionInOrAfterNode(element));
     VisiblePosition lastPositionInParagraph = VisiblePosition::lastPositionInNode(ancestor);
     if (positionAtEndOfNode.deepEquivalent() == lastPositionInParagraph.deepEquivalent()) {
         removeNode(element, editingState);
@@ -764,17 +764,17 @@ VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent() const
     // not editable, or SELECT element is an atomic on editing.
     HTMLSelectElement* enclosingSelect = toHTMLSelectElement(enclosingElementWithTag(m_endOfInsertedContent, selectTag));
     if (enclosingSelect)
-        return createVisiblePosition(lastPositionInOrAfterNode(enclosingSelect));
+        return createVisiblePositionDeprecated(lastPositionInOrAfterNode(enclosingSelect));
     if (m_endOfInsertedContent.isOrphan())
         return VisiblePosition();
-    return createVisiblePosition(m_endOfInsertedContent);
+    return createVisiblePositionDeprecated(m_endOfInsertedContent);
 }
 
 VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent() const
 {
     if (m_startOfInsertedContent.isOrphan())
         return VisiblePosition();
-    return createVisiblePosition(m_startOfInsertedContent);
+    return createVisiblePositionDeprecated(m_startOfInsertedContent);
 }
 
 static void removeHeadContents(ReplacementFragment& fragment)
@@ -1149,7 +1149,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     // If the start was in a Mail blockquote, we will have already handled
     // adjusting |enclosingBlockOfInsertionPos| above.
     if (m_preventNesting && enclosingBlockOfInsertionPos && enclosingBlockOfInsertionPos != currentRoot && !isTableCell(enclosingBlockOfInsertionPos) && !startIsInsideMailBlockquote) {
-        VisiblePosition visibleInsertionPos = createVisiblePosition(insertionPos);
+        VisiblePosition visibleInsertionPos = createVisiblePositionDeprecated(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
             insertionPos = Position::inParentAfterNode(*enclosingBlockOfInsertionPos);
         else if (isStartOfBlock(visibleInsertionPos))
@@ -1280,7 +1280,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (enclosingBlockOfInsertionPos && !enclosingBlockOfInsertionPos->isConnected())
         enclosingBlockOfInsertionPos = nullptr;
 
-    VisiblePosition startOfInsertedContent = createVisiblePosition(firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted()));
+    VisiblePosition startOfInsertedContent = createVisiblePositionDeprecated(firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted()));
 
     // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and the content before the enclosingBlockOfInsertionPos wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
@@ -1651,8 +1651,8 @@ Node* ReplaceSelectionCommand::insertAsListItems(HTMLElement* listElement, Eleme
     while (listElement->hasOneChild() && isHTMLListElement(listElement->firstChild()))
         listElement = toHTMLElement(listElement->firstChild());
 
-    bool isStart = isStartOfParagraph(createVisiblePosition(insertPos));
-    bool isEnd = isEndOfParagraph(createVisiblePosition(insertPos));
+    bool isStart = isStartOfParagraph(createVisiblePositionDeprecated(insertPos));
+    bool isEnd = isEndOfParagraph(createVisiblePositionDeprecated(insertPos));
     bool isMiddle = !isStart && !isEnd;
     Node* lastNode = insertionBlock;
 

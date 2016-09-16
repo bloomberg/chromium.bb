@@ -35,12 +35,12 @@ namespace blink {
 
 static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range)
 {
-    const VisiblePosition& start = createVisiblePosition(range.startPosition());
+    const VisiblePosition& start = createVisiblePositionDeprecated(range.startPosition());
     DCHECK(start.isNotNull()) << range.startPosition();
     const Position& paragraphStart = startOfParagraph(start).deepEquivalent();
     DCHECK(paragraphStart.isNotNull()) << range.startPosition();
 
-    const VisiblePosition& end = createVisiblePosition(range.endPosition());
+    const VisiblePosition& end = createVisiblePositionDeprecated(range.endPosition());
     DCHECK(end.isNotNull()) << range.endPosition();
     const Position& paragraphEnd = endOfParagraph(end).deepEquivalent();
     DCHECK(paragraphEnd.isNotNull()) << range.endPosition();
@@ -88,7 +88,7 @@ TextCheckingParagraph::~TextCheckingParagraph()
 void TextCheckingParagraph::expandRangeToNextEnd()
 {
     DCHECK(m_checkingRange.isNotNull());
-    setParagraphRange(EphemeralRange(paragraphRange().startPosition(), endOfParagraph(startOfNextParagraph(createVisiblePosition(paragraphRange().startPosition()))).deepEquivalent()));
+    setParagraphRange(EphemeralRange(paragraphRange().startPosition(), endOfParagraph(startOfNextParagraph(createVisiblePositionDeprecated(paragraphRange().startPosition()))).deepEquivalent()));
     invalidateParagraphRangeValues();
 }
 

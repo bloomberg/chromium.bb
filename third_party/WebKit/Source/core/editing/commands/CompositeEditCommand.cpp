@@ -732,8 +732,8 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(Text* textNode, in
     if (!length)
         return;
 
-    VisiblePosition visibleUpstreamPos = createVisiblePosition(Position(textNode, upstream));
-    VisiblePosition visibleDownstreamPos = createVisiblePosition(Position(textNode, downstream));
+    VisiblePosition visibleUpstreamPos = createVisiblePositionDeprecated(Position(textNode, upstream));
+    VisiblePosition visibleDownstreamPos = createVisiblePositionDeprecated(Position(textNode, downstream));
 
     String string = text.substring(upstream, length);
     // FIXME: Because of the problem mentioned at the top of this function, we
@@ -772,7 +772,7 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
     deleteInsignificantText(upstreamPos, mostForwardCaretPosition(position));
     position = mostForwardCaretPosition(upstreamPos);
 
-    VisiblePosition visiblePos = createVisiblePosition(position);
+    VisiblePosition visiblePos = createVisiblePositionDeprecated(position);
     VisiblePosition previousVisiblePos = previousPositionOf(visiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(previousVisiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(visiblePos);
@@ -907,7 +907,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
 
 void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos)
 {
-    Position end = mostForwardCaretPosition(nextPositionOf(createVisiblePosition(pos, VP_DEFAULT_AFFINITY)).deepEquivalent());
+    Position end = mostForwardCaretPosition(nextPositionOf(createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY)).deepEquivalent());
     deleteInsignificantText(pos, end);
 }
 
@@ -996,7 +996,7 @@ HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(co
 
     // It's strange that this function is responsible for verifying that pos has not been invalidated
     // by an earlier call to this function.  The caller, applyBlockStyle, should do this.
-    VisiblePosition visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+    VisiblePosition visiblePos = createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY);
     VisiblePosition visibleParagraphStart = startOfParagraph(visiblePos);
     VisiblePosition visibleParagraphEnd = endOfParagraph(visiblePos);
     VisiblePosition next = nextPositionOf(visibleParagraphEnd);
@@ -1046,7 +1046,7 @@ HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(co
 
     // Inserting default paragraph element can change visible position. We
     // should update visible positions before use them.
-    visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+    visiblePos = createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY);
     visibleParagraphStart = startOfParagraph(visiblePos);
     visibleParagraphEnd = endOfParagraph(visiblePos);
     moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition::firstPositionInNode(newBlock), editingState);
@@ -1258,12 +1258,12 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     // Must recononicalize these two VisiblePositions after the pruning above.
     // TODO(yosin): We should abort when |beforeParagraph| is a orphan when
     // we have a sample.
-    beforeParagraph = createVisiblePosition(beforeParagraph.deepEquivalent());
+    beforeParagraph = createVisiblePositionDeprecated(beforeParagraph.deepEquivalent());
     if (afterParagraph.isOrphan()) {
         editingState->abort();
         return;
     }
-    afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
+    afterParagraph = createVisiblePositionDeprecated(afterParagraph.deepEquivalent());
 
     if (beforeParagraph.isNotNull() && !isDisplayInsideTable(beforeParagraph.deepEquivalent().anchorNode())
         && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
@@ -1357,8 +1357,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // Imagine moving 'bar' to ^. 'bar' will be deleted and its div pruned. That would
     // cause 'baz' to collapse onto the line with 'foobar' unless we insert a br.
     // Must recononicalize these two VisiblePositions after the pruning above.
-    VisiblePosition beforeParagraph = createVisiblePosition(beforeParagraphPosition.position());
-    VisiblePosition afterParagraph = createVisiblePosition(afterParagraphPosition.position());
+    VisiblePosition beforeParagraph = createVisiblePositionDeprecated(beforeParagraphPosition.position());
+    VisiblePosition afterParagraph = createVisiblePositionDeprecated(afterParagraphPosition.position());
     if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
@@ -1571,7 +1571,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
     if (original.isNull())
         return original;
 
-    VisiblePosition visiblePos = createVisiblePosition(original);
+    VisiblePosition visiblePos = createVisiblePositionDeprecated(original);
     Element* enclosingAnchor = enclosingAnchorElement(original);
     Position result = original;
 
@@ -1648,7 +1648,7 @@ Node* CompositeEditCommand::splitTreeToNode(Node* start, Node* end, bool shouldS
             break;
         // Do not split a node when doing so introduces an empty node.
         VisiblePosition positionInParent = VisiblePosition::firstPositionInNode(parentElement);
-        VisiblePosition positionInNode = createVisiblePosition(firstPositionInOrBeforeNode(node));
+        VisiblePosition positionInNode = createVisiblePositionDeprecated(firstPositionInOrBeforeNode(node));
         if (positionInParent.deepEquivalent() != positionInNode.deepEquivalent())
             splitElement(parentElement, node);
     }

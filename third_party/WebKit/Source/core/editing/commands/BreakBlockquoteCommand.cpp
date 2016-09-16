@@ -137,7 +137,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     }
 
     // Adjust the position so we don't split at the beginning of a quote.
-    while (isFirstVisiblePositionInNode(createVisiblePosition(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))) {
+    while (isFirstVisiblePositionInNode(createVisiblePositionDeprecated(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))) {
         pos = previousPositionOf(pos, PositionMoveType::GraphemeCluster);
     }
 
@@ -163,7 +163,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
 
     // If there's nothing inside topBlockquote to move, we're finished.
     if (!startNode->isDescendantOf(topBlockquote)) {
-        setEndingSelection(VisibleSelection(createVisiblePosition(firstPositionInOrBeforeNode(startNode)), endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(createVisiblePositionDeprecated(firstPositionInOrBeforeNode(startNode)), endingSelection().isDirectional()));
         return;
     }
 

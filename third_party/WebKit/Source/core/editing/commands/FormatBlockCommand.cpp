@@ -68,7 +68,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
 
 void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, HTMLElement*& blockElement, EditingState* editingState)
 {
-    Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
+    Element* refElement = enclosingBlockFlowElement(createVisiblePositionDeprecated(end));
     Element* root = rootEditableElementOf(start);
     // Root is null for elements with contenteditable=false.
     if (!root || !refElement)
@@ -79,8 +79,8 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     Node* nodeAfterInsertionPosition = outerBlock;
     Range* range = Range::create(document(), start, endOfSelection);
 
-    if (isElementForFormatBlock(refElement->tagQName()) && createVisiblePosition(start).deepEquivalent() == startOfBlock(createVisiblePosition(start)).deepEquivalent()
-        && (createVisiblePosition(end).deepEquivalent() == endOfBlock(createVisiblePosition(end)).deepEquivalent() || isNodeVisiblyContainedWithin(*refElement, *range))
+    if (isElementForFormatBlock(refElement->tagQName()) && createVisiblePositionDeprecated(start).deepEquivalent() == startOfBlock(createVisiblePositionDeprecated(start)).deepEquivalent()
+        && (createVisiblePositionDeprecated(end).deepEquivalent() == endOfBlock(createVisiblePositionDeprecated(end)).deepEquivalent() || isNodeVisiblyContainedWithin(*refElement, *range))
         && refElement != root && !root->isDescendantOf(refElement)) {
         // Already in a block element that only contains the current paragraph
         if (refElement->hasTagName(tagName()))
@@ -98,9 +98,9 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     }
 
     Position lastParagraphInBlockNode = blockElement->lastChild() ? Position::afterNode(blockElement->lastChild()) : Position();
-    bool wasEndOfParagraph = isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode));
+    bool wasEndOfParagraph = isEndOfParagraph(createVisiblePositionDeprecated(lastParagraphInBlockNode));
 
-    moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), blockElement, outerBlock, editingState);
+    moveParagraphWithClones(createVisiblePositionDeprecated(start), createVisiblePositionDeprecated(end), blockElement, outerBlock, editingState);
     if (editingState->isAborted())
         return;
 
@@ -108,7 +108,7 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     if (outerBlock != nodeAfterInsertionPosition && toHTMLElement(nodeAfterInsertionPosition)->hasAttribute(styleAttr))
         blockElement->setAttribute(styleAttr, toHTMLElement(nodeAfterInsertionPosition)->getAttribute(styleAttr));
 
-    if (wasEndOfParagraph && !isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode)) && !isStartOfParagraph(createVisiblePosition(lastParagraphInBlockNode)))
+    if (wasEndOfParagraph && !isEndOfParagraph(createVisiblePositionDeprecated(lastParagraphInBlockNode)) && !isStartOfParagraph(createVisiblePositionDeprecated(lastParagraphInBlockNode)))
         insertBlockPlaceholder(lastParagraphInBlockNode, editingState);
 }
 

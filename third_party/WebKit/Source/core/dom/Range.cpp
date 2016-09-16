@@ -1462,8 +1462,8 @@ void Range::didSplitTextNode(Text& oldNode)
 
 void Range::expand(const String& unit, ExceptionState& exceptionState)
 {
-    VisiblePosition start = createVisiblePosition(startPosition());
-    VisiblePosition end = createVisiblePosition(endPosition());
+    VisiblePosition start = createVisiblePositionDeprecated(startPosition());
+    VisiblePosition end = createVisiblePositionDeprecated(endPosition());
     if (unit == "word") {
         start = startOfWord(start);
         end = endOfWord(end);

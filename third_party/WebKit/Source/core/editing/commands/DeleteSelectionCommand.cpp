@@ -129,7 +129,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
         if (!startSpecialContainer && !endSpecialContainer)
             break;
 
-        if (createVisiblePosition(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || createVisiblePosition(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
+        if (createVisiblePositionDeprecated(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || createVisiblePositionDeprecated(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
             break;
 
         // If we're going to expand to include the startSpecialContainer, it must be fully selected.
@@ -158,8 +158,8 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& start, const Position& end)
 {
     bool isBaseFirst = startingSelection().isBaseFirst();
-    VisiblePosition newBase = createVisiblePosition(isBaseFirst ? start : end);
-    VisiblePosition newExtent = createVisiblePosition(isBaseFirst ? end : start);
+    VisiblePosition newBase = createVisiblePositionDeprecated(isBaseFirst ? start : end);
+    VisiblePosition newExtent = createVisiblePositionDeprecated(isBaseFirst ? end : start);
     setStartingSelection(VisibleSelection(newBase, newExtent, startingSelection().isDirectional()));
 }
 
@@ -202,7 +202,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     // Usually the start and the end of the selection to delete are pulled together as a result of the deletion.
     // Sometimes they aren't (like when no merge is requested), so we must choose one position to hold the caret
     // and receive the placeholder after deletion.
-    VisiblePosition visibleEnd = createVisiblePosition(m_downstreamEnd);
+    VisiblePosition visibleEnd = createVisiblePositionDeprecated(m_downstreamEnd);
     if (m_mergeBlocksAfterDelete && !isEndOfParagraph(visibleEnd))
         m_endingPosition = m_downstreamEnd;
     else
@@ -215,7 +215,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     // Only apply this rule if the endingSelection is a range selection.  If it is a caret, then other operations have created
     // the selection we're deleting (like the process of creating a selection to delete during a backspace), and the user isn't in the situation described above.
     if (numEnclosingMailBlockquotes(start) != numEnclosingMailBlockquotes(end)
-        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(createVisiblePosition(start))
+        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(createVisiblePositionDeprecated(start))
         && endingSelection().isRange()) {
         m_mergeBlocksAfterDelete = false;
         m_pruneStartBlockIfNecessary = true;
@@ -228,7 +228,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     if (m_smartDelete) {
 
         // skip smart delete if the selection to delete already starts or ends with whitespace
-        Position pos = createVisiblePosition(m_upstreamStart, m_selectionToDelete.affinity()).deepEquivalent();
+        Position pos = createVisiblePositionDeprecated(m_upstreamStart, m_selectionToDelete.affinity()).deepEquivalent();
         bool skipSmartDelete = trailingWhitespacePosition(pos, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete)
             skipSmartDelete = leadingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull();
@@ -236,7 +236,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
         // extend selection upstream if there is whitespace there
         bool hasLeadingWhitespaceBeforeAdjustment = leadingWhitespacePosition(m_upstreamStart, m_selectionToDelete.affinity(), ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete && hasLeadingWhitespaceBeforeAdjustment) {
-            VisiblePosition visiblePos = previousPositionOf(createVisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY));
+            VisiblePosition visiblePos = previousPositionOf(createVisiblePositionDeprecated(m_upstreamStart, VP_DEFAULT_AFFINITY));
             pos = visiblePos.deepEquivalent();
             // Expand out one character upstream for smart delete and recalculate
             // positions based on this change.
@@ -252,7 +252,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
         if (!skipSmartDelete && !hasLeadingWhitespaceBeforeAdjustment && trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull()) {
             // Expand out one character downstream for smart delete and recalculate
             // positions based on this change.
-            pos = nextPositionOf(createVisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY)).deepEquivalent();
+            pos = nextPositionOf(createVisiblePositionDeprecated(m_downstreamEnd, VP_DEFAULT_AFFINITY)).deepEquivalent();
             m_upstreamEnd = mostBackwardCaretPosition(pos);
             m_downstreamEnd = mostForwardCaretPosition(pos);
             m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
@@ -645,8 +645,8 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     if (m_upstreamStart == m_downstreamEnd)
         return;
 
-    VisiblePosition startOfParagraphToMove = createVisiblePosition(m_downstreamEnd);
-    VisiblePosition mergeDestination = createVisiblePosition(m_upstreamStart);
+    VisiblePosition startOfParagraphToMove = createVisiblePositionDeprecated(m_downstreamEnd);
+    VisiblePosition mergeDestination = createVisiblePositionDeprecated(m_upstreamStart);
 
     // m_downstreamEnd's block has been emptied out by deletion.  There is no content inside of it to
     // move, so just remove it.
@@ -661,7 +661,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
         insertNodeAt(HTMLBRElement::create(document()), m_upstreamStart, editingState);
         if (editingState->isAborted())
             return;
-        mergeDestination = createVisiblePosition(m_upstreamStart);
+        mergeDestination = createVisiblePositionDeprecated(m_upstreamStart);
     }
 
     if (mergeDestination.deepEquivalent() == startOfParagraphToMove.deepEquivalent())
@@ -864,7 +864,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(createVisiblePosition(m_upstreamStart)));
+    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(createVisiblePositionDeprecated(m_upstreamStart)));
 
     // Delete any text that may hinder our ability to fixup whitespace after the
     // delete
@@ -900,7 +900,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         return;
 
     if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
-        VisiblePosition visualEnding = createVisiblePosition(m_endingPosition);
+        VisiblePosition visualEnding = createVisiblePositionDeprecated(m_endingPosition);
         bool hasPlaceholder = lineBreakExistsAtVisiblePosition(visualEnding)
             && nextPositionOf(visualEnding, CannotCrossEditingBoundary).isNull();
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;

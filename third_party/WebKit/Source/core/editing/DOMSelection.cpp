@@ -243,7 +243,7 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
         return;
     }
 
-    m_frame->selection().moveTo(createVisiblePosition(selection.end()));
+    m_frame->selection().moveTo(createVisiblePositionDeprecated(selection.end()));
 }
 
 void DOMSelection::collapseToStart(ExceptionState& exceptionState)
@@ -258,7 +258,7 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState)
         return;
     }
 
-    m_frame->selection().moveTo(createVisiblePosition(selection.start()));
+    m_frame->selection().moveTo(createVisiblePositionDeprecated(selection.start()));
 }
 
 void DOMSelection::empty()
@@ -289,8 +289,8 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
     if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
         return;
 
-    VisiblePosition visibleBase = createVisiblePosition(createPosition(baseNode, baseOffset));
-    VisiblePosition visibleExtent = createVisiblePosition(createPosition(extentNode, extentOffset));
+    VisiblePosition visibleBase = createVisiblePositionDeprecated(createPosition(baseNode, baseOffset));
+    VisiblePosition visibleExtent = createVisiblePositionDeprecated(createPosition(extentNode, extentOffset));
     const bool selectionHasDirection = true;
     m_frame->selection().setSelection(VisibleSelection(visibleBase, visibleExtent, selectionHasDirection));
 }

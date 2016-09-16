@@ -283,8 +283,8 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
         // If the entire list is selected, then convert the whole list.
         if (switchListType && isNodeVisiblyContainedWithin(*listElement, currentSelection)) {
-            bool rangeStartIsInList = visiblePositionBeforeNode(*listElement).deepEquivalent() == createVisiblePosition(currentSelection.startPosition()).deepEquivalent();
-            bool rangeEndIsInList = visiblePositionAfterNode(*listElement).deepEquivalent() == createVisiblePosition(currentSelection.endPosition()).deepEquivalent();
+            bool rangeStartIsInList = visiblePositionBeforeNode(*listElement).deepEquivalent() == createVisiblePositionDeprecated(currentSelection.startPosition()).deepEquivalent();
+            bool rangeEndIsInList = visiblePositionAfterNode(*listElement).deepEquivalent() == createVisiblePositionDeprecated(currentSelection.endPosition()).deepEquivalent();
 
             HTMLElement* newList = createHTMLElement(document(), listTag);
             insertNodeBefore(newList, listElement, editingState);
@@ -489,7 +489,7 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
     if (insertionPos == startPos)
         moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement, editingState);
     else
-        moveParagraphOverPositionIntoEmptyListItem(createVisiblePosition(startPos), listItemElement, editingState);
+        moveParagraphOverPositionIntoEmptyListItem(createVisiblePositionDeprecated(startPos), listItemElement, editingState);
     if (editingState->isAborted())
         return;
 

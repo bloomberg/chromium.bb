@@ -256,8 +256,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
         end = swap;
     }
 
-    VisiblePosition visibleStart = createVisiblePosition(start);
-    VisiblePosition visibleEnd = createVisiblePosition(end);
+    VisiblePosition visibleStart = createVisiblePositionDeprecated(start);
+    VisiblePosition visibleEnd = createVisiblePositionDeprecated(end);
 
     if (visibleStart.isNull() || visibleStart.isOrphan() || visibleEnd.isNull() || visibleEnd.isOrphan())
         return;
@@ -287,7 +287,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
                 if (newBlock) {
                     block = newBlock;
                     if (paragraphStart.isOrphan())
-                        paragraphStart = createVisiblePosition(Position::firstPositionInNode(newBlock));
+                        paragraphStart = createVisiblePositionDeprecated(Position::firstPositionInNode(newBlock));
                 }
                 DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
             }
