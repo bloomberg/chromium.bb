@@ -648,6 +648,24 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
     {IDS_FLAGS_SSL_VERSION_MAX_TLS13, switches::kSSLVersionMax, "tls1.3"},
 };
 
+#if defined(OS_MACOSX)
+const FeatureEntry::Choice kSecurityVerboseChoices[] = {
+    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DEFAULT, "", ""},
+    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_ANIMATED,
+     switches::kMaterialSecurityVerbose,
+     switches::kMaterialSecurityVerboseShowAllAnimated},
+    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_NONANIMATED,
+     switches::kMaterialSecurityVerbose,
+     switches::kMaterialSecurityVerboseShowAllNonAnimated},
+    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_ANIMATED,
+     switches::kMaterialSecurityVerbose,
+     switches::kMaterialSecurityVerboseShowNonSecureAnimated},
+    {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_NONANIMATED,
+     switches::kMaterialSecurityVerbose,
+     switches::kMaterialSecurityVerboseShowNonSecureNonAnimated},
+};
+#endif  // defined(OS_MACOSX)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -756,12 +774,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
-     {"cs-now-on-tap-bar-integration",
-      IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION,
-      IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION_DESCRIPTION,
-      kOsAndroid,
-      SINGLE_VALUE_TYPE(
-          switches::kEnableContextualSearchNowOnTapBarIntegration)},
+    {"cs-now-on-tap-bar-integration",
+     IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION,
+     IDS_FLAGS_CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION_DESCRIPTION,
+     kOsAndroid, SINGLE_VALUE_TYPE(
+                     switches::kEnableContextualSearchNowOnTapBarIntegration)},
 #endif
     {"show-autofill-type-predictions",
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
@@ -2034,8 +2051,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_NAME,
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV1)},
-    {"scan-cards-in-web-payments",
-     IDS_FLAGS_SCAN_CARDS_IN_WEB_PAYMENTS_NAME,
+    {"scan-cards-in-web-payments", IDS_FLAGS_SCAN_CARDS_IN_WEB_PAYMENTS_NAME,
      IDS_FLAGS_SCAN_CARDS_IN_WEB_PAYMENTS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kScanCardsInWebPayments)},
 #endif
@@ -2089,9 +2105,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-use-auth-endpoint", IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_NAME,
      IDS_FLAGS_ARC_USE_AUTH_ENDPOINT_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE_AND_VALUE(
-       chromeos::switches::kArcUseAuthEndpoint,
-       "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/" \
-       "ExchangeToken")},
+         chromeos::switches::kArcUseAuthEndpoint,
+         "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/"
+         "ExchangeToken")},
+#endif
+#if defined(OS_MACOSX)
+    {"material-security-verbose", IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME,
+     IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsMac,
+     MULTI_VALUE_TYPE(kSecurityVerboseChoices)},
 #endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

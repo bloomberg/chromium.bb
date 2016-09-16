@@ -315,7 +315,17 @@ class LocationBarViewMac : public LocationBar,
   // Indicates whether or not the location bar is currently visible.
   bool location_bar_visible_;
 
-  bool is_width_narrow_;
+  // True if the HTTPS (non EV cert) state should be displayed on the security
+  // state decoration.
+  bool should_show_secure_verbose_;
+
+  // True if the security state decoration should be animated for changes in
+  // the security level.
+  bool should_animate_security_verbose_;
+
+  // True if there's enough room for the omnibox to show the security verbose.
+  // If the verbose is displaying the EV cert, then this should always be true.
+  bool is_width_available_for_security_verbose_;
 
   // The security level of the location bar icon.
   security_state::SecurityStateModel::SecurityLevel security_level_;

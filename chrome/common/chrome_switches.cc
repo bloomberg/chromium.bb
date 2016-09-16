@@ -1185,6 +1185,15 @@ const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
 
+const char kMaterialSecurityVerbose[] = "material-security-verbose";
+const char kMaterialSecurityVerboseShowAllAnimated[] = "show-all-animated";
+const char kMaterialSecurityVerboseShowAllNonAnimated[] =
+    "show-all-nonanimated";
+const char kMaterialSecurityVerboseShowNonSecureAnimated[] =
+    "show-nonsecure-animated";
+const char kMaterialSecurityVerboseShowNonSecureNonAnimated[] =
+    "show-nonsecure-nonanimated";
+
 // This is how the metrics client ID is passed from the browser process to its
 // children. With Crashpad, the metrics client ID is distinct from the crash
 // client ID.

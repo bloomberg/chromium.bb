@@ -43,6 +43,9 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   void AnimateIn(bool image_fade = true);
   void AnimateOut();
 
+  // Shows the chip without animation.
+  void ShowWithoutAnimation();
+
   // Returns true if the chip has fully animated in.
   bool HasAnimatedIn() const;
 

@@ -6909,6 +6909,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Group history by website domain (i.e. google.com) on chrome://history.
       </message>
 
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME" desc="Title of the flag to set the animation and visibility of the material security verbose">
+        Material Security Verbose
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION" desc="Description of the 'Material Security Verbose' in the Omnibox">
+        Sets the animation and visibility of the security verbose in Material Design.
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DEFAULT">
+        Default
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_ANIMATED">
+        Show all, animated
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_NONANIMATED">
+        Show all, non-animated
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_ANIMATED">
+        Show only non-secure, animated
+      </message>
+      <message name="IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_NONSECURE_NONANIMATED">
+        Show only non-secure, non-animated
+      </message>
+
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">
         WebRTC logs

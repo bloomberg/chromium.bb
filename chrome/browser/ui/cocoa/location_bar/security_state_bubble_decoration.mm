@@ -123,6 +123,10 @@ void SecurityStateBubbleDecoration::AnimateOut() {
   animation_.Hide();
 }
 
+void SecurityStateBubbleDecoration::ShowWithoutAnimation() {
+  animation_.Reset(1.0);
+}
+
 bool SecurityStateBubbleDecoration::HasAnimatedIn() const {
   return animation_.IsShowing() && animation_.GetCurrentValue() == 1.0;
 }

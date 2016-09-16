@@ -121,6 +121,9 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       location_bar_visible_(true),
+      should_show_secure_verbose_(false),
+      should_animate_security_verbose_(false),
+      is_width_available_for_security_verbose_(false),
       weak_ptr_factory_(this) {
   ScopedVector<ContentSettingImageModel> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -141,6 +144,24 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
 
   [[field_ cell] setIsPopupMode:
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kMaterialSecurityVerbose)) {
+    std::string security_verbose_flag =
+        command_line->GetSwitchValueASCII(switches::kMaterialSecurityVerbose);
+
+    should_show_secure_verbose_ =
+        security_verbose_flag ==
+            switches::kMaterialSecurityVerboseShowAllAnimated ||
+        security_verbose_flag ==
+            switches::kMaterialSecurityVerboseShowAllNonAnimated;
+
+    should_animate_security_verbose_ =
+        security_verbose_flag ==
+            switches::kMaterialSecurityVerboseShowAllAnimated ||
+        security_verbose_flag ==
+            switches::kMaterialSecurityVerboseShowNonSecureAnimated;
+  }
 
   // Sets images for the decorations, and performs a layout. This call ensures
   // that this class is in a consistent state after initialization.
@@ -483,25 +504,19 @@ void LocationBarViewMac::Layout() {
     base::string16 label(GetToolbarModel()->GetEVCertName());
     security_state_bubble_decoration_->SetFullLabel(
         base::SysUTF16ToNSString(label));
+
+    // This is true for EV certificate since the certificate should be
+    // displayed, even if the width is narrow.
+    is_width_available_for_security_verbose_ = true;
   } else if (ShouldShowSecurityState()) {
-    // TODO(spqchan): Clean up location_bar_view_mac so that animation
-    // code isn't in Layout(). See crbug.com/642977.
-    bool is_security_state_visible = true;
     CGFloat available_width =
         [cell availableWidthInFrame:[[cell controlView] frame]];
-
-    if (available_width < kMinURLWidth) {
-      // If there's not enough space, animate out the security state bubble.
-      // Show it until it has finished animating out.
-      is_security_state_visible =
-          security_state_bubble_decoration_->AnimatingOut();
-      if (security_state_bubble_decoration_->HasAnimatedIn())
-        security_state_bubble_decoration_->AnimateOut();
-    } else if (security_state_bubble_decoration_->HasAnimatedOut()) {
-      // If there's enough space, but the secure state bubble had animated
-      // out, animate it back in.
-      security_state_bubble_decoration_->AnimateIn(false);
-    }
+    is_width_available_for_security_verbose_ = available_width >= kMinURLWidth;
+    bool is_security_state_visible =
+        is_width_available_for_security_verbose_ ||
+        security_state_bubble_decoration_->AnimatingOut();
+    location_icon_decoration_->SetVisible(!is_security_state_visible);
+    security_state_bubble_decoration_->SetVisible(is_security_state_visible);
 
     // Don't change the label if the bubble is in the process of animating
     // out the old one.
@@ -510,9 +525,6 @@ void LocationBarViewMac::Layout() {
       security_state_bubble_decoration_->SetFullLabel(
           base::SysUTF16ToNSString(label));
     }
-
-    location_icon_decoration_->SetVisible(!is_security_state_visible);
-    security_state_bubble_decoration_->SetVisible(is_security_state_visible);
   }
 
   // These need to change anytime the layout changes.
@@ -587,6 +599,7 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   UpdateSaveCreditCardIcon();
   UpdateTranslateDecoration();
   UpdateZoomDecoration(/*default_zoom_changed=*/false);
+  UpdateSecurityState(contents);
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   if (contents)
@@ -595,11 +608,6 @@ void LocationBarViewMac::Update(const WebContents* contents) {
     omnibox_view_->Update();
 
   OnChanged();
-
-  // To avoid animating the security state bubble decoration if it
-  // should be hidden for a narrow omnibox, call UpdateSecurityState() after
-  // OnChanged().
-  UpdateSecurityState(contents);
 }
 
 void LocationBarViewMac::UpdateWithoutTabRestore() {
@@ -660,6 +668,7 @@ void LocationBarViewMac::OnChanged() {
     Layout();
     return;
   }
+  UpdateSecurityState(false);
   UpdateLocationIcon();
 }
 
@@ -677,15 +686,16 @@ WebContents* LocationBarViewMac::GetWebContents() {
 
 bool LocationBarViewMac::ShouldShowEVBubble() const {
   return (GetToolbarModel()->GetSecurityLevel(false) ==
-          security_state::SecurityStateModel::EV_SECURE);
+          security_state::SecurityStateModel::EV_SECURE) &&
+         should_show_secure_verbose_;
 }
 
 bool LocationBarViewMac::ShouldShowSecurityState() const {
   security_state::SecurityStateModel::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
   bool has_verbose_for_security =
-      IsSecureConnection(security) ||
-      security == security_state::SecurityStateModel::SECURITY_ERROR;
+      security == security_state::SecurityStateModel::SECURITY_ERROR ||
+      (IsSecureConnection(security) && should_show_secure_verbose_);
 
   return ui::MaterialDesignController::IsModeMaterial() &&
          has_verbose_for_security && !omnibox_view_->IsEditingOrEmpty() &&
@@ -873,24 +883,32 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
 }
 
 void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
-  // If the security level has changed, check if the verbose state decoration
-  // needs to be animated. If we need to show it, animate it in. Otherwise,
-  // animate it out if it's already fully displayed.
+  if (!ShouldShowSecurityState())
+    return;
+
   security_state::SecurityStateModel::SecurityLevel new_security_level =
       GetToolbarModel()->GetSecurityLevel(false);
   bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
                              IsSecureConnection(security_level_);
-  if (ShouldShowSecurityState() &&
-      security_state_bubble_decoration_->IsVisible()) {
-    // Animate the verbose if we entered a new connection state on the current
-    // tab. If it had animated out (from a narrow width).
-    if (!tab_changed &&
-        (security_level_ != new_security_level && !is_secure_to_secure)) {
-      security_state_bubble_decoration_->AnimateIn();
-    }
-  }
-
+  bool is_new_security_level =
+      security_level_ != new_security_level && !is_secure_to_secure;
   security_level_ = new_security_level;
+
+  // If there's enough space, but the secure state decoration had animated
+  // out, animate it back in. Otherwise, if the security state has changed,
+  // animate the decoration if animation is enabled and the state changed is
+  // not from a tab switch.
+  if (is_width_available_for_security_verbose_) {
+    if (security_state_bubble_decoration_->HasAnimatedOut())
+      security_state_bubble_decoration_->AnimateIn(false);
+    else if (!should_animate_security_verbose_ || tab_changed)
+      security_state_bubble_decoration_->ShowWithoutAnimation();
+    else if (is_new_security_level)
+      security_state_bubble_decoration_->AnimateIn();
+  } else {
+    // Animate the decoration out if there's not enough space.
+    security_state_bubble_decoration_->AnimateOut();
+  }
 }
 
 bool LocationBarViewMac::IsSecureConnection(
