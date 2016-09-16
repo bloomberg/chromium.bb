@@ -5,7 +5,9 @@
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/V8ImageData.h"
 #include "core/dom/DOMArrayBufferBase.h"
+#include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/AutoReset.h"
 
@@ -83,6 +85,22 @@ void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionSt
     }
 }
 
+bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, ExceptionState& exceptionState)
+{
+    const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
+    if (wrapperTypeInfo == &V8ImageData::wrapperTypeInfo) {
+        ImageData* imageData = wrappable->toImpl<ImageData>();
+        DOMUint8ClampedArray* pixels = imageData->data();
+        writeTag(ImageDataTag);
+        writeUint32(imageData->width());
+        writeUint32(imageData->height());
+        writeUint32(pixels->length());
+        writeRawBytes(pixels->data(), pixels->length());
+        return true;
+    }
+    return false;
+}
+
 void V8ScriptValueSerializer::ThrowDataCloneError(v8::Local<v8::String> v8Message)
 {
     DCHECK(m_exceptionState);
@@ -91,6 +109,29 @@ void V8ScriptValueSerializer::ThrowDataCloneError(v8::Local<v8::String> v8Messag
     v8::Local<v8::Value> exception = V8ThrowException::createDOMException(
         m_scriptState->isolate(), DataCloneError, message);
     V8ThrowException::throwException(m_scriptState->isolate(), exception);
+}
+
+v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(v8::Isolate* isolate, v8::Local<v8::Object> object)
+{
+    DCHECK(m_exceptionState);
+    DCHECK_EQ(isolate, m_scriptState->isolate());
+    ExceptionState exceptionState(
+        isolate, m_exceptionState->context(),
+        m_exceptionState->interfaceName(), m_exceptionState->propertyName());
+
+    if (!V8DOMWrapper::isWrapper(isolate, object)) {
+        exceptionState.throwDOMException(DataCloneError, "An object could not be cloned.");
+        return v8::Nothing<bool>();
+    }
+    ScriptWrappable* wrappable = toScriptWrappable(object);
+    bool wroteDOMObject = writeDOMObject(wrappable, exceptionState);
+    if (wroteDOMObject) {
+        DCHECK(!exceptionState.hadException());
+        return v8::Just(true);
+    }
+    if (!exceptionState.hadException())
+        exceptionState.throwDOMException(DataCloneError, "An object could not be cloned.");
+    return v8::Nothing<bool>();
 }
 
 } // namespace blink

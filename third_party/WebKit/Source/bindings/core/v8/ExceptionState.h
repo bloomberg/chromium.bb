@@ -127,6 +127,7 @@ public:
     // This method clears out the exception which |this| has.
     void reject(ScriptPromiseResolver*);
 
+    ContextType context() const { return m_context; }
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 

@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -19,7 +20,8 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(RefPtr<ScriptState> scriptS
         reinterpret_cast<const uint8_t*>(
             m_serializedScriptValue->data().ensure16Bit(),
             m_serializedScriptValue->data().characters16()),
-        m_serializedScriptValue->data().length() * 2)
+        m_serializedScriptValue->data().length() * 2,
+        this)
 {
     DCHECK(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled());
     m_deserializer.SetSupportsLegacyWireFormat(true);
@@ -76,6 +78,48 @@ void V8ScriptValueDeserializer::transfer()
             }
         }
     }
+}
+
+ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
+{
+    switch (tag) {
+    case ImageDataTag: {
+        uint32_t width = 0, height = 0, pixelLength = 0;
+        const void* pixels = nullptr;
+        if (!readUint32(&width)
+            || !readUint32(&height)
+            || !readUint32(&pixelLength)
+            || !readRawBytes(pixelLength, &pixels))
+            return nullptr;
+        ImageData* imageData = ImageData::create(IntSize(width, height));
+        DOMUint8ClampedArray* pixelArray = imageData->data();
+        if (pixelArray->length() < pixelLength)
+            return nullptr;
+        memcpy(pixelArray->data(), pixels, pixelLength);
+        return imageData;
+    }
+    default:
+        break;
+    }
+    return nullptr;
+}
+
+v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(v8::Isolate* isolate)
+{
+    DCHECK_EQ(isolate, m_scriptState->isolate());
+    ExceptionState exceptionState(isolate, ExceptionState::UnknownContext, nullptr, nullptr);
+    ScriptWrappable* wrappable = nullptr;
+    SerializationTag tag = PaddingTag;
+    if (readTag(&tag))
+        wrappable = readDOMObject(tag);
+    if (!wrappable) {
+        exceptionState.throwDOMException(DataCloneError, "Unable to deserialize cloned data.");
+        return v8::MaybeLocal<v8::Object>();
+    }
+    v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
+    v8::Local<v8::Value> wrapper = toV8(wrappable, creationContext, isolate);
+    DCHECK(wrapper->IsObject());
+    return wrapper.As<v8::Object>();
 }
 
 } // namespace blink

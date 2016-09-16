@@ -6,7 +6,9 @@
 #define V8ScriptValueDeserializer_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -22,7 +24,7 @@ namespace blink {
 //
 // A deserializer cannot be used multiple times; it is expected that its
 // deserialize method will be invoked exactly once.
-class V8ScriptValueDeserializer {
+class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT V8ScriptValueDeserializer : public v8::ValueDeserializer::Delegate {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
 public:
@@ -30,10 +32,26 @@ public:
     v8::Local<v8::Value> deserialize();
 
 protected:
+    virtual ScriptWrappable* readDOMObject(SerializationTag);
+
     uint32_t version() const { return m_version; }
+    bool readTag(SerializationTag* tag)
+    {
+        const void* tagBytes = nullptr;
+        if (!m_deserializer.ReadRawBytes(1, &tagBytes))
+            return false;
+        *tag = static_cast<SerializationTag>(*reinterpret_cast<const uint8_t*>(tagBytes));
+        return true;
+    }
+    bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
+    bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
+    bool readRawBytes(size_t size, const void** data) { return m_deserializer.ReadRawBytes(size, data); }
 
 private:
     void transfer();
+
+    // v8::ValueDeserializer::Delegate
+    v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
 
     RefPtr<ScriptState> m_scriptState;
     RefPtr<SerializedScriptValue> m_serializedScriptValue;

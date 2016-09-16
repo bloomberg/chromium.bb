@@ -236,6 +236,7 @@ bindings_unittest_files =
                     "core/v8/V8BindingForTesting.h",
                     "core/v8/V8BindingTest.cpp",
                     "core/v8/V8ScriptRunnerTest.cpp",
+                    "core/v8/serialization/V8ScriptValueSerializerTest.cpp",
                   ],
                   "abspath")
 bindings_unittest_files += bindings_modules_v8_unittest_files

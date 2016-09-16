@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 
+#include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
 
 namespace blink {
@@ -37,7 +38,9 @@ V8TestingScope::V8TestingScope()
     , m_handleScope(isolate())
     , m_context(getScriptState()->context())
     , m_contextScope(context())
+    , m_tryCatch(isolate())
 {
+    frame().settings()->setScriptEnabled(true);
 }
 
 ScriptState* V8TestingScope::getScriptState() const

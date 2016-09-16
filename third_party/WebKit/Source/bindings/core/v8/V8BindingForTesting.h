@@ -49,6 +49,7 @@ private:
     v8::HandleScope m_handleScope;
     v8::Local<v8::Context> m_context;
     v8::Context::Scope m_contextScope;
+    v8::TryCatch m_tryCatch;
     TrackExceptionState m_exceptionState;
 };
 
