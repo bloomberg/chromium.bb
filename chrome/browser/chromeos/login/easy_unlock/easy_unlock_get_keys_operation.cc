@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -30,6 +32,20 @@ EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {
 }
 
 void EasyUnlockGetKeysOperation::Start() {
+  // Register for asynchronous notification of cryptohome being ready.
+  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+      base::Bind(&EasyUnlockGetKeysOperation::OnCryptohomeAvailable,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockGetKeysOperation::OnCryptohomeAvailable(bool available) {
+  if (!available) {
+    PA_LOG(ERROR) << "Failed to wait for cryptohome to become available";
+    callback_.Run(false, EasyUnlockDeviceKeyDataList());
+    return;
+  }
+
+  // Start the asynchronous key fetch.
   // TODO(xiyuan): Use ListKeyEx.
   key_index_ = 0;
   GetKeyData();
@@ -42,7 +58,6 @@ void EasyUnlockGetKeysOperation::GetKeyData() {
       EasyUnlockKeyManager::GetKeyLabel(key_index_),
       base::Bind(&EasyUnlockGetKeysOperation::OnGetKeyData,
                  weak_ptr_factory_.GetWeakPtr()));
-
 }
 
 void EasyUnlockGetKeysOperation::OnGetKeyData(
