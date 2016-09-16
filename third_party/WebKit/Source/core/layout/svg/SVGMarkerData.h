@@ -20,7 +20,6 @@
 #ifndef SVGMarkerData_h
 #define SVGMarkerData_h
 
-#include "platform/FloatConversion.h"
 #include "platform/graphics/Path.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
@@ -111,14 +110,14 @@ private:
         case StartMarker:
             if (m_autoStartReverse)
                 outAngle += 180;
-            return narrowPrecisionToFloat(outAngle);
+            return clampTo<float>(outAngle);
         case MidMarker:
             // WK193015: Prevent bugs due to angles being non-continuous.
             if (fabs(inAngle - outAngle) > 180)
                 inAngle += 360;
-            return narrowPrecisionToFloat((inAngle + outAngle) / 2);
+            return clampTo<float>((inAngle + outAngle) / 2);
         case EndMarker:
-            return narrowPrecisionToFloat(inAngle);
+            return clampTo<float>(inAngle);
         }
 
         ASSERT_NOT_REACHED();

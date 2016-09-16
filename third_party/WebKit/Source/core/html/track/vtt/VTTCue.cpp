@@ -47,7 +47,6 @@
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/html/track/vtt/VTTScanner.h"
 #include "core/layout/LayoutVTTCue.h"
-#include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
@@ -333,7 +332,7 @@ void VTTCue::setLine(const DoubleOrAutoKeyword& position)
         floatPosition = std::numeric_limits<float>::quiet_NaN();
     } else {
         DCHECK(position.isDouble());
-        floatPosition = narrowPrecisionToFloat(position.getAsDouble());
+        floatPosition = clampTo<float>(position.getAsDouble());
         if (m_linePosition == floatPosition)
             return;
     }
@@ -372,7 +371,7 @@ void VTTCue::setPosition(const DoubleOrAutoKeyword& position, ExceptionState& ex
         DCHECK(position.isDouble());
         if (isInvalidPercentage(position.getAsDouble(), exceptionState))
             return;
-        floatPosition = narrowPrecisionToFloat(position.getAsDouble());
+        floatPosition = clampTo<float>(position.getAsDouble());
         if (m_textPosition == floatPosition)
             return;
     }
@@ -391,7 +390,7 @@ void VTTCue::setSize(double size, ExceptionState& exceptionState)
         return;
 
     // Otherwise, set the WebVTT cue size to the new value.
-    float floatSize = narrowPrecisionToFloat(size);
+    float floatSize = clampTo<float>(size);
     if (m_cueSize == floatSize)
         return;
 

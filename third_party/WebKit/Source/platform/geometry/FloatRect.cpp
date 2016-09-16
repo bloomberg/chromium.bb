@@ -26,7 +26,6 @@
 
 #include "platform/geometry/FloatRect.h"
 
-#include "platform/FloatConversion.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -60,7 +59,7 @@ void FloatRect::move(const IntSize& delta)
 
 FloatRect FloatRect::narrowPrecision(double x, double y, double width, double height)
 {
-    return FloatRect(narrowPrecisionToFloat(x), narrowPrecisionToFloat(y), narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));
+    return FloatRect(clampTo<float>(x), clampTo<float>(y), clampTo<float>(width), clampTo<float>(height));
 }
 
 #if ENABLE(ASSERT)

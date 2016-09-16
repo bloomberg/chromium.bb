@@ -31,7 +31,6 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGMaskPainter.h"
-#include "platform/FloatConversion.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {

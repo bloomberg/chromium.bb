@@ -51,10 +51,10 @@
 #include "core/svg/SVGViewElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/animation/SMILTimeContainer.h"
-#include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -542,7 +542,7 @@ bool SVGSVGElement::animationsPaused() const
 
 float SVGSVGElement::getCurrentTime() const
 {
-    return narrowPrecisionToFloat(m_timeContainer->elapsed());
+    return clampTo<float>(m_timeContainer->elapsed());
 }
 
 void SVGSVGElement::setCurrentTime(float seconds)

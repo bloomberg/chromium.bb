@@ -26,7 +26,6 @@
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/CPU.h"
 #include "wtf/MathExtras.h"

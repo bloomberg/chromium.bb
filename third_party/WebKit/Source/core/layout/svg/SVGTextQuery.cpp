@@ -27,7 +27,6 @@
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 #include <algorithm>
@@ -398,7 +397,7 @@ static bool rotationOfCharacterCallback(QueryData* queryData, const SVGTextFragm
     } else {
         AffineTransform fragmentTransform = fragment.buildFragmentTransform(SVGTextFragment::TransformIgnoringTextLength);
         fragmentTransform.scale(1 / fragmentTransform.xScale(), 1 / fragmentTransform.yScale());
-        data->rotation = narrowPrecisionToFloat(rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
+        data->rotation = clampTo<float>(rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
     }
     return true;
 }

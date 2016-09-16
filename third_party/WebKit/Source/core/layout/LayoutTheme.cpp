@@ -46,7 +46,6 @@
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/FileMetadata.h"
-#include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Theme.h"
 #include "platform/fonts/FontSelector.h"

@@ -4,7 +4,7 @@
 
 #include "modules/webaudio/IIRDSPKernel.h"
 
-#include "platform/FloatConversion.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -30,7 +30,7 @@ void IIRDSPKernel::getFrequencyResponse(int nFrequencies, const float* frequency
     // Convert from frequency in Hz to normalized frequency (0 -> 1),
     // with 1 equal to the Nyquist frequency.
     for (int k = 0; k < nFrequencies; ++k)
-        frequency[k] = narrowPrecisionToFloat(frequencyHz[k] / nyquist);
+        frequency[k] = clampTo<float>(frequencyHz[k] / nyquist);
 
     m_iir.getFrequencyResponse(nFrequencies, frequency.data(), magResponse, phaseResponse);
 }

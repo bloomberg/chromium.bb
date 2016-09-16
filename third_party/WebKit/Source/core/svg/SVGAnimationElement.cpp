@@ -33,7 +33,6 @@
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -244,12 +243,12 @@ float SVGAnimationElement::getStartTime(ExceptionState& exceptionState) const
         exceptionState.throwDOMException(InvalidStateError, "No current interval.");
         return 0;
     }
-    return narrowPrecisionToFloat(startTime.value());
+    return clampTo<float>(startTime.value());
 }
 
 float SVGAnimationElement::getCurrentTime() const
 {
-    return narrowPrecisionToFloat(elapsed().value());
+    return clampTo<float>(elapsed().value());
 }
 
 float SVGAnimationElement::getSimpleDuration(ExceptionState& exceptionState) const
@@ -259,7 +258,7 @@ float SVGAnimationElement::getSimpleDuration(ExceptionState& exceptionState) con
         exceptionState.throwDOMException(NotSupportedError, "No simple duration defined.");
         return 0;
     }
-    return narrowPrecisionToFloat(duration.value());
+    return clampTo<float>(duration.value());
 }
 
 void SVGAnimationElement::beginElement()
@@ -459,7 +458,7 @@ float SVGAnimationElement::calculatePercentForSpline(float percent, unsigned spl
     SMILTime duration = simpleDuration();
     if (!duration.isFinite())
         duration = 100.0;
-    return narrowPrecisionToFloat(bezier.SolveWithEpsilon(percent, solveEpsilon(duration.value())));
+    return clampTo<float>(bezier.SolveWithEpsilon(percent, solveEpsilon(duration.value())));
 }
 
 float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const

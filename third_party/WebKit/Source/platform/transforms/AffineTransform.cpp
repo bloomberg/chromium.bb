@@ -27,7 +27,6 @@
 
 #include "platform/transforms/AffineTransform.h"
 
-#include "platform/FloatConversion.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
@@ -283,7 +282,7 @@ FloatPoint AffineTransform::mapPoint(const FloatPoint& point) const
     double x2, y2;
     map(point.x(), point.y(), x2, y2);
 
-    return FloatPoint(narrowPrecisionToFloat(x2), narrowPrecisionToFloat(y2));
+    return FloatPoint(clampTo<float>(x2), clampTo<float>(y2));
 }
 
 IntSize AffineTransform::mapSize(const IntSize& size) const
@@ -299,7 +298,7 @@ FloatSize AffineTransform::mapSize(const FloatSize& size) const
     double width2 = size.width() * xScale();
     double height2 = size.height() * yScale();
 
-    return FloatSize(narrowPrecisionToFloat(width2), narrowPrecisionToFloat(height2));
+    return FloatSize(clampTo<float>(width2), clampTo<float>(height2));
 }
 
 IntRect AffineTransform::mapRect(const IntRect &rect) const
@@ -314,7 +313,7 @@ FloatRect AffineTransform::mapRect(const FloatRect& rect) const
             return rect;
 
         FloatRect mappedRect(rect);
-        mappedRect.move(narrowPrecisionToFloat(m_transform[4]), narrowPrecisionToFloat(m_transform[5]));
+        mappedRect.move(clampTo<float>(m_transform[4]), clampTo<float>(m_transform[5]));
         return mappedRect;
     }
 
@@ -330,7 +329,7 @@ FloatQuad AffineTransform::mapQuad(const FloatQuad& q) const
 {
     if (isIdentityOrTranslation()) {
         FloatQuad mappedQuad(q);
-        mappedQuad.move(narrowPrecisionToFloat(m_transform[4]), narrowPrecisionToFloat(m_transform[5]));
+        mappedQuad.move(clampTo<float>(m_transform[4]), clampTo<float>(m_transform[5]));
         return mappedQuad;
     }
 

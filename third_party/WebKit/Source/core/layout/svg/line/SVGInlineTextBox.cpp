@@ -26,7 +26,7 @@
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
-#include "platform/FloatConversion.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -81,7 +81,7 @@ int SVGInlineTextBox::offsetForPositionInFragment(const SVGTextFragment& fragmen
     // FIXME: Handle vertical text.
     if (fragment.isTransformed()) {
         AffineTransform fragmentTransform = fragment.buildFragmentTransform();
-        textRun.setHorizontalGlyphStretch(narrowPrecisionToFloat(fragmentTransform.xScale()));
+        textRun.setHorizontalGlyphStretch(clampTo<float>(fragmentTransform.xScale()));
     }
 
     return fragment.characterOffset - start() + lineLayoutItem.scaledFont().offsetForPosition(textRun, position * scalingFactor, includePartialGlyphs);

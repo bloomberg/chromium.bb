@@ -42,6 +42,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/StrokeData.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -509,7 +510,7 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject*
     AffineTransform ctm = deprecatedCalculateTransformToLayer(layoutObject) * SubtreeContentTransformScope::currentContentTransformation();
     ctm.scale(layoutObject->document().frameHost()->deviceScaleFactorDeprecated());
 
-    return narrowPrecisionToFloat(sqrt((ctm.xScaleSquared() + ctm.yScaleSquared()) / 2));
+    return clampTo<float>(sqrt((ctm.xScaleSquared() + ctm.yScaleSquared()) / 2));
 }
 
 static inline bool compareCandidateDistance(const SearchCandidate& r1, const SearchCandidate& r2)

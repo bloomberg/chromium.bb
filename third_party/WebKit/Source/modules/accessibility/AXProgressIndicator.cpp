@@ -23,7 +23,7 @@
 #include "core/html/HTMLProgressElement.h"
 #include "core/layout/LayoutProgress.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/FloatConversion.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ float AXProgressIndicator::valueForRange() const
         return getAttribute(aria_valuenowAttr).toFloat();
 
     if (element()->position() >= 0)
-        return narrowPrecisionToFloat(element()->value());
+        return clampTo<float>(element()->value());
     // Indeterminate progress bar should return 0.
     return 0.0f;
 }
@@ -67,7 +67,7 @@ float AXProgressIndicator::maxValueForRange() const
     if (hasAttribute(aria_valuemaxAttr))
         return getAttribute(aria_valuemaxAttr).toFloat();
 
-    return narrowPrecisionToFloat(element()->max());
+    return clampTo<float>(element()->max());
 }
 
 float AXProgressIndicator::minValueForRange() const

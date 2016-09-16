@@ -29,7 +29,6 @@
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
-#include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
@@ -315,7 +314,7 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
                 double sample2 = source[readIndex2];
                 double sample = (1.0 - interpolationFactor) * sample1 + interpolationFactor * sample2;
 
-                destination[writeIndex] = narrowPrecisionToFloat(sample);
+                destination[writeIndex] = clampTo<float>(sample);
             }
             writeIndex++;
 

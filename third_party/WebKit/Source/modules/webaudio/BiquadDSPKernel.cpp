@@ -23,8 +23,8 @@
  */
 
 #include "modules/webaudio/BiquadDSPKernel.h"
-#include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
+#include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 #include <limits.h>
 
@@ -149,7 +149,7 @@ void BiquadDSPKernel::getFrequencyResponse(int nFrequencies, const float* freque
     // Convert from frequency in Hz to normalized frequency (0 -> 1),
     // with 1 equal to the Nyquist frequency.
     for (int k = 0; k < nFrequencies; ++k)
-        frequency[k] = narrowPrecisionToFloat(frequencyHz[k] / nyquist);
+        frequency[k] = clampTo<float>(frequencyHz[k] / nyquist);
 
     float cutoffFrequency;
     float Q;

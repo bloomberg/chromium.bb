@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/FloatConversion.h"
-#include "platform/audio/AudioChannel.h"
 #include "platform/audio/HRTFKernel.h"
+
+#include "platform/audio/AudioChannel.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>
@@ -57,7 +57,7 @@ static float extractAverageGroupDelay(AudioChannel* channel, size_t analysisFFTS
     FFTFrame estimationFrame(analysisFFTSize);
     estimationFrame.doFFT(impulseP);
 
-    float frameDelay = narrowPrecisionToFloat(estimationFrame.extractAverageGroupDelay());
+    float frameDelay = clampTo<float>(estimationFrame.extractAverageGroupDelay());
     estimationFrame.doInverseFFT(impulseP);
 
     return frameDelay;

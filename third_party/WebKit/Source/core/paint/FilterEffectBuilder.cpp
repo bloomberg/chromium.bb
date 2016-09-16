@@ -31,7 +31,6 @@
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/filters/FEBoxReflect.h"
@@ -73,19 +72,19 @@ Vector<float> grayscaleMatrix(double amount)
     Vector<float> matrix;
     matrix.reserveInitialCapacity(20);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.2126 + 0.7874 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.7152 - 0.7152 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.0722 - 0.0722 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.2126 + 0.7874 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.7152 - 0.7152 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.0722 - 0.0722 * oneMinusAmount));
     endMatrixRow(matrix);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.2126 - 0.2126 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.7152 + 0.2848 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.0722 - 0.0722 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.2126 - 0.2126 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.7152 + 0.2848 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.0722 - 0.0722 * oneMinusAmount));
     endMatrixRow(matrix);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.2126 - 0.2126 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.7152 - 0.7152 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.0722 + 0.9278 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.2126 - 0.2126 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.7152 - 0.7152 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.0722 + 0.9278 * oneMinusAmount));
     endMatrixRow(matrix);
 
     lastMatrixRow(matrix);
@@ -101,19 +100,19 @@ Vector<float> sepiaMatrix(double amount)
     Vector<float> matrix;
     matrix.reserveInitialCapacity(20);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.393 + 0.607 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.769 - 0.769 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.189 - 0.189 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.393 + 0.607 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.769 - 0.769 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.189 - 0.189 * oneMinusAmount));
     endMatrixRow(matrix);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.349 - 0.349 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.686 + 0.314 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.168 - 0.168 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.349 - 0.349 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.686 + 0.314 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.168 - 0.168 * oneMinusAmount));
     endMatrixRow(matrix);
 
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.272 - 0.272 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.534 - 0.534 * oneMinusAmount));
-    matrix.uncheckedAppend(narrowPrecisionToFloat(0.131 + 0.869 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.272 - 0.272 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.534 - 0.534 * oneMinusAmount));
+    matrix.uncheckedAppend(clampTo<float>(0.131 + 0.869 * oneMinusAmount));
     endMatrixRow(matrix);
 
     lastMatrixRow(matrix);
@@ -174,13 +173,13 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         }
         case FilterOperation::SATURATE: {
             Vector<float> inputParameters;
-            inputParameters.append(narrowPrecisionToFloat(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
+            inputParameters.append(clampTo<float>(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
             effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_SATURATE, inputParameters);
             break;
         }
         case FilterOperation::HUE_ROTATE: {
             Vector<float> inputParameters;
-            inputParameters.append(narrowPrecisionToFloat(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
+            inputParameters.append(clampTo<float>(toBasicColorMatrixFilterOperation(filterOperation)->amount()));
             effect = FEColorMatrix::create(parentFilter, FECOLORMATRIX_TYPE_HUEROTATE, inputParameters);
             break;
         }
@@ -189,8 +188,8 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             ComponentTransferFunction transferFunction;
             transferFunction.type = FECOMPONENTTRANSFER_TYPE_TABLE;
             Vector<float> transferParameters;
-            transferParameters.append(narrowPrecisionToFloat(componentTransferOperation->amount()));
-            transferParameters.append(narrowPrecisionToFloat(1 - componentTransferOperation->amount()));
+            transferParameters.append(clampTo<float>(componentTransferOperation->amount()));
+            transferParameters.append(clampTo<float>(1 - componentTransferOperation->amount()));
             transferFunction.tableValues = transferParameters;
 
             ComponentTransferFunction nullFunction;
@@ -202,7 +201,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             transferFunction.type = FECOMPONENTTRANSFER_TYPE_TABLE;
             Vector<float> transferParameters;
             transferParameters.append(0);
-            transferParameters.append(narrowPrecisionToFloat(toBasicComponentTransferFilterOperation(filterOperation)->amount()));
+            transferParameters.append(clampTo<float>(toBasicComponentTransferFilterOperation(filterOperation)->amount()));
             transferFunction.tableValues = transferParameters;
 
             ComponentTransferFunction nullFunction;
@@ -212,7 +211,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         case FilterOperation::BRIGHTNESS: {
             ComponentTransferFunction transferFunction;
             transferFunction.type = FECOMPONENTTRANSFER_TYPE_LINEAR;
-            transferFunction.slope = narrowPrecisionToFloat(toBasicComponentTransferFilterOperation(filterOperation)->amount());
+            transferFunction.slope = clampTo<float>(toBasicComponentTransferFilterOperation(filterOperation)->amount());
             transferFunction.intercept = 0;
 
             ComponentTransferFunction nullFunction;
@@ -222,7 +221,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         case FilterOperation::CONTRAST: {
             ComponentTransferFunction transferFunction;
             transferFunction.type = FECOMPONENTTRANSFER_TYPE_LINEAR;
-            float amount = narrowPrecisionToFloat(toBasicComponentTransferFilterOperation(filterOperation)->amount());
+            float amount = clampTo<float>(toBasicComponentTransferFilterOperation(filterOperation)->amount());
             transferFunction.slope = amount;
             transferFunction.intercept = -0.5 * amount + 0.5;
 

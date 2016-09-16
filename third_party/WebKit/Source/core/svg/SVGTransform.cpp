@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGTransform.h"
 
-#include "platform/FloatConversion.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -202,8 +201,8 @@ String SVGTransform::valueAsString() const
         double angleInRad = deg2rad(m_angle);
         double cosAngle = cos(angleInRad);
         double sinAngle = sin(angleInRad);
-        float cx = narrowPrecisionToFloat(cosAngle != 1 ? (m_matrix.e() * (1 - cosAngle) - m_matrix.f() * sinAngle) / (1 - cosAngle) / 2 : 0);
-        float cy = narrowPrecisionToFloat(cosAngle != 1 ? (m_matrix.e() * sinAngle / (1 - cosAngle) + m_matrix.f()) / 2 : 0);
+        float cx = clampTo<float>(cosAngle != 1 ? (m_matrix.e() * (1 - cosAngle) - m_matrix.f() * sinAngle) / (1 - cosAngle) / 2 : 0);
+        float cy = clampTo<float>(cosAngle != 1 ? (m_matrix.e() * sinAngle / (1 - cosAngle) + m_matrix.f()) / 2 : 0);
         if (cx || cy) {
             arguments[argumentCount++] = cx;
             arguments[argumentCount++] = cy;

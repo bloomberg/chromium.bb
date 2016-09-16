@@ -43,7 +43,6 @@
 #include "core/paint/SVGTextPainter.h"
 #include "core/style/ShadowList.h"
 #include "core/svg/SVGTextElement.h"
-#include "platform/FloatConversion.h"
 #include "platform/geometry/FloatQuad.h"
 
 namespace blink {

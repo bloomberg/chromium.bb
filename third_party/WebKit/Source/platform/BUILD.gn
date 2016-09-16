@@ -234,7 +234,6 @@ component("platform") {
     "FileMetadata.cpp",
     "FileMetadata.h",
     "FileSystemType.h",
-    "FloatConversion.h",
     "Histogram.cpp",
     "Histogram.h",
     "HostWindow.h",
