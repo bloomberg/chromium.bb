@@ -15,8 +15,8 @@ CONSOLE WARNING: line 387: BiquadFilter.frequency.value -1 outside nominal range
 CONSOLE WARNING: line 396: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
 CONSOLE WARNING: line 387: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
 CONSOLE WARNING: line 396: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 439: 'AudioListener.dopplerFactor' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
-CONSOLE WARNING: line 439: 'AudioListener.speedOfSound' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
+CONSOLE WARNING: line 439: 'AudioListener.dopplerFactor' is deprecated and will be removed in M55, around December 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
+CONSOLE WARNING: line 439: 'AudioListener.speedOfSound' is deprecated and will be removed in M55, around December 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
 CONSOLE WARNING: line 316: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 317: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 318: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.

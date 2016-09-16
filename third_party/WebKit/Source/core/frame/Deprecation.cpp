@@ -31,9 +31,15 @@ const char* milestoneString(int milestone)
     case 54:
         return "M54, around October 2016";
     case 55:
-        return "M55, around November 2016";
+        return "M55, around December 2016";
     case 56:
         return "M56, around January 2017";
+    case 57:
+        return "M57, around March 2017";
+    case 58:
+        return "M58, around April 2017";
+    case 59:
+        return "M59, around June 2017";
     }
 
     ASSERT_NOT_REACHED();
