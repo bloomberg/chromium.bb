@@ -37,7 +37,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
         kSpecificsHash("somehash"),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),
-        entity_(new WorkerEntityTracker(kServerId, kClientTagHash)) {
+        entity_(new WorkerEntityTracker("", kClientTagHash)) {
     specifics.mutable_preference()->set_name(kClientTag);
     specifics.mutable_preference()->set_value("pref.value");
   }
@@ -86,8 +86,10 @@ class WorkerEntityTrackerTest : public ::testing::Test {
 // Construct a new entity from a server update.  Then receive another update.
 TEST_F(WorkerEntityTrackerTest, FromUpdateResponse) {
   EXPECT_FALSE(entity_->HasPendingCommit());
-  entity_->ReceiveUpdate(20);
+  EXPECT_EQ("", entity_->id());
+  entity_->ReceiveUpdate(MakeUpdateResponseData(20));
   EXPECT_FALSE(entity_->HasPendingCommit());
+  EXPECT_EQ(kServerId, entity_->id());
 }
 
 // Construct a new entity from a commit request.  Then serialize it.
@@ -96,11 +98,12 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   const int64_t kBaseVersion = 33;
   CommitRequestData data = MakeCommitRequestData(kSequenceNumber, kBaseVersion);
   entity_->RequestCommit(data);
+  EXPECT_EQ("", entity_->id());
 
   ASSERT_TRUE(entity_->HasPendingCommit());
   sync_pb::SyncEntity pb_entity;
   entity_->PopulateCommitProto(&pb_entity);
-  EXPECT_EQ(kServerId, pb_entity.id_string());
+  EXPECT_EQ("", pb_entity.id_string());
   EXPECT_EQ(kClientTagHash, pb_entity.client_defined_unique_tag());
   EXPECT_EQ(kBaseVersion, pb_entity.version());
   EXPECT_EQ(kCtime, syncer::ProtoTimeToTime(pb_entity.ctime()));
@@ -119,6 +122,13 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   EXPECT_EQ(kSequenceNumber, ack.sequence_number);
   EXPECT_EQ(kSpecificsHash, ack.specifics_hash);
   EXPECT_FALSE(entity_->HasPendingCommit());
+
+  EXPECT_EQ(kServerId, entity_->id());
+  CommitRequestData data2 =
+      MakeCommitRequestData(kSequenceNumber + 1, ack.response_version);
+  entity_->RequestCommit(data2);
+  entity_->PopulateCommitProto(&pb_entity);
+  EXPECT_EQ(kServerId, pb_entity.id_string());
 }
 
 // Start with a server initiated entity.  Commit over top of it.
@@ -130,7 +140,7 @@ TEST_F(WorkerEntityTrackerTest, RequestCommit) {
 // Start with a server initiated entity.  Fail to request a commit because of
 // an out of date base version.
 TEST_F(WorkerEntityTrackerTest, RequestCommitFailure) {
-  entity_->ReceiveUpdate(10);
+  entity_->ReceiveUpdate(MakeUpdateResponseData(10));
   EXPECT_FALSE(entity_->HasPendingCommit());
   entity_->RequestCommit(
       MakeCommitRequestData(23, 5 /* base_version 5 < 10 */));
@@ -144,7 +154,7 @@ TEST_F(WorkerEntityTrackerTest, UpdateClobbersCommit) {
 
   EXPECT_TRUE(entity_->HasPendingCommit());
 
-  entity_->ReceiveUpdate(400);  // Version 400 > 33.
+  entity_->ReceiveUpdate(MakeUpdateResponseData(400));  // Version 400 > 33.
   EXPECT_FALSE(entity_->HasPendingCommit());
 }
 
@@ -156,7 +166,7 @@ TEST_F(WorkerEntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
 
   EXPECT_TRUE(entity_->HasPendingCommit());
 
-  entity_->ReceiveUpdate(33);  // Version 33 == 33.
+  entity_->ReceiveUpdate(MakeUpdateResponseData(33));  // Version 33 == 33.
   EXPECT_TRUE(entity_->HasPendingCommit());
 }
 

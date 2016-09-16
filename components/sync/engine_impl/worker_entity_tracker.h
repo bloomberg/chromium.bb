@@ -56,7 +56,7 @@ class WorkerEntityTracker {
   void ReceiveCommitResponse(CommitResponseData* ack);
 
   // Handles receipt of an update from the server.
-  void ReceiveUpdate(int64_t version);
+  void ReceiveUpdate(const UpdateResponseData& update);
 
   // Handles the receipt of an encrypted update from the server.
   //
@@ -92,7 +92,7 @@ class WorkerEntityTracker {
   std::string id_;
 
   // The hashed client tag for this entry.
-  std::string client_tag_hash_;
+  const std::string client_tag_hash_;
 
   // The highest version seen in a commit response for this entry.
   int64_t highest_commit_response_version_;

@@ -162,7 +162,7 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   syncer::NudgeHandler* nudge_handler_;
 
-  // A map of per-entity information known to this object.
+  // A map of per-entity information, keyed by client_tag_hash.
   //
   // When commits are pending, their information is stored here. This
   // information is dropped from memory when the commit succeeds or gets
@@ -170,9 +170,7 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   //
   // This also stores some information related to received server state in
   // order to implement reflection blocking and conflict detection. This
-  // information is kept in memory indefinitely. With a bit more coordination
-  // with the model thread, we could optimize this to reduce memory usage in
-  // the steady state.
+  // information is kept in memory indefinitely.
   EntityMap entities_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so

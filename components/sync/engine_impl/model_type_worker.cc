@@ -148,17 +148,17 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     // Check if specifics are encrypted and try to decrypt if so.
     if (!specifics.has_encrypted()) {
       // No encryption.
-      entity->ReceiveUpdate(update_entity->version());
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
+      entity->ReceiveUpdate(response_data);
       pending_updates_.push_back(response_data);
     } else if (specifics.has_encrypted() && cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted, but we know the key.
       if (DecryptSpecifics(cryptographer_.get(), specifics, &data.specifics)) {
-        entity->ReceiveUpdate(update_entity->version());
         response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
+        entity->ReceiveUpdate(response_data);
         pending_updates_.push_back(response_data);
       }
     } else if (specifics.has_encrypted() &&

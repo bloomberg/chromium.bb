@@ -131,11 +131,14 @@ void NonBlockingDataTypeController::OnProcessorStarted(
 void NonBlockingDataTypeController::RegisterWithBackend(
     sync_driver::BackendDataTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
+  if (activated_)
+    return;
   DCHECK(configurer);
   DCHECK(activation_context_);
   DCHECK_EQ(MODEL_LOADED, state_);
   configurer->ActivateNonBlockingDataType(type(),
                                           std::move(activation_context_));
+  activated_ = true;
 }
 
 void NonBlockingDataTypeController::StartAssociating(
@@ -165,7 +168,9 @@ void NonBlockingDataTypeController::DeactivateDataType(
     sync_driver::BackendDataTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
+  DCHECK(activated_);
   configurer->DeactivateNonBlockingDataType(type());
+  activated_ = false;
 }
 
 void NonBlockingDataTypeController::Stop() {

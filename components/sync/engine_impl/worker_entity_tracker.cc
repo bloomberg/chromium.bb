@@ -34,7 +34,6 @@ bool WorkerEntityTracker::HasPendingCommit() const {
 void WorkerEntityTracker::PopulateCommitProto(
     sync_pb::SyncEntity* commit_entity) const {
   DCHECK(HasPendingCommit());
-  DCHECK(!client_tag_hash_.empty());
 
   if (!id_.empty()) {
     commit_entity->set_id_string(id_);
@@ -125,11 +124,12 @@ void WorkerEntityTracker::ReceiveCommitResponse(CommitResponseData* ack) {
   ClearPendingCommit();
 }
 
-void WorkerEntityTracker::ReceiveUpdate(int64_t version) {
-  if (version <= highest_gu_response_version_)
+void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
+  if (update.response_version <= highest_gu_response_version_)
     return;
 
-  highest_gu_response_version_ = version;
+  highest_gu_response_version_ = update.response_version;
+  id_ = update.entity->id;
 
   // Got an applicable update newer than any pending updates.  It must be safe
   // to discard the old encrypted update, if there was one.

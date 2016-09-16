@@ -12,12 +12,18 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_components_factory_impl.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync/api/fake_model_type_service.h"
 
 using browser_sync::ChromeSyncClient;
 using syncer_v2::FakeModelTypeService;
 using syncer_v2::ModelTypeService;
 using syncer_v2::SharedModelTypeProcessor;
+
+const char kKey1[] = "key1";
+const char kValue1[] = "value1";
+const char kValue2[] = "value2";
+const char kResolutionValue[] = "RESOLVED";
 
 // A ChromeSyncClient that provides a ModelTypeService for PREFERENCES.
 class TestSyncClient : public ChromeSyncClient {
@@ -62,6 +68,13 @@ class TestModelTypeService : public FakeModelTypeService {
                                          db().CreateMetadataBatch());
   }
 
+  syncer_v2::ConflictResolution ResolveConflict(
+      const syncer_v2::EntityData& local_data,
+      const syncer_v2::EntityData& remote_data) const override {
+    return syncer_v2::ConflictResolution::UseNew(
+        GenerateEntityData(local_data.non_unique_name, kResolutionValue));
+  }
+
   void AddObserver(Observer* observer) { observers_.insert(observer); }
   void RemoveObserver(Observer* observer) { observers_.erase(observer); }
 
@@ -103,35 +116,73 @@ class KeyChecker : public StatusChangeChecker,
   const std::string key_;
 };
 
-// Wait for a key to be present.
-class KeyPresentChecker : public KeyChecker {
+// Wait for data for a key to have a certain value.
+class DataChecker : public KeyChecker {
  public:
-  KeyPresentChecker(TestModelTypeService* service, const std::string& key)
-      : KeyChecker(service, key) {}
-  ~KeyPresentChecker() override {}
+  DataChecker(TestModelTypeService* service,
+              const std::string& key,
+              const std::string& value)
+      : KeyChecker(service, key), value_(value) {}
+  ~DataChecker() override {}
 
   bool IsExitConditionSatisfied() override {
-    return service_->db().HasData(key_);
+    const auto& db = service_->db();
+    return db.HasData(key_) && db.GetValue(key_) == value_;
   }
 
   std::string GetDebugMessage() const override {
-    return "Waiting for key '" + key_ + "' to be present.";
+    return "Waiting for data for key '" + key_ + "' to be '" + value_ + "'.";
   }
+
+ private:
+  const std::string value_;
 };
 
-// Wait for a key to be absent.
-class KeyAbsentChecker : public KeyChecker {
+// Wait for data for a key to be absent.
+class DataAbsentChecker : public KeyChecker {
  public:
-  KeyAbsentChecker(TestModelTypeService* service, const std::string& key)
+  DataAbsentChecker(TestModelTypeService* service, const std::string& key)
       : KeyChecker(service, key) {}
-  ~KeyAbsentChecker() override {}
+  ~DataAbsentChecker() override {}
 
   bool IsExitConditionSatisfied() override {
     return !service_->db().HasData(key_);
   }
 
   std::string GetDebugMessage() const override {
-    return "Waiting for key '" + key_ + "' to be absent.";
+    return "Waiting for data for key '" + key_ + "' to be absent.";
+  }
+};
+
+// Wait for metadata for a key to be present.
+class MetadataPresentChecker : public KeyChecker {
+ public:
+  MetadataPresentChecker(TestModelTypeService* service, const std::string& key)
+      : KeyChecker(service, key) {}
+  ~MetadataPresentChecker() override {}
+
+  bool IsExitConditionSatisfied() override {
+    return service_->db().HasMetadata(key_);
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for metadata for key '" + key_ + "' to be present.";
+  }
+};
+
+// Wait for metadata for a key to be absent.
+class MetadataAbsentChecker : public KeyChecker {
+ public:
+  MetadataAbsentChecker(TestModelTypeService* service, const std::string& key)
+      : KeyChecker(service, key) {}
+  ~MetadataAbsentChecker() override {}
+
+  bool IsExitConditionSatisfied() override {
+    return !service_->db().HasMetadata(key_);
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for metadata for key '" + key_ + "' to be absent.";
   }
 };
 
@@ -176,6 +227,7 @@ class TwoClientUssSyncTest : public SyncTest {
   std::vector<TestSyncClient*> clients_;
   bool first_client_ignored_ = false;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientUssSyncTest);
 };
 
@@ -186,10 +238,67 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Sanity) {
   TestModelTypeService* model1 = GetModelTypeService(0);
   TestModelTypeService* model2 = GetModelTypeService(1);
 
-  model1->WriteItem("foo", "bar");
-  ASSERT_TRUE(KeyPresentChecker(model2, "foo").Wait());
-  EXPECT_EQ("bar", model2->db().GetValue("foo"));
+  // Add an entity.
+  model1->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model2, kKey1, kValue1).Wait());
 
-  model1->DeleteItem("foo");
-  ASSERT_TRUE(KeyAbsentChecker(model2, "foo").Wait());
+  // Update an entity.
+  model1->WriteItem(kKey1, kValue2);
+  ASSERT_TRUE(DataChecker(model2, kKey1, kValue2).Wait());
+
+  // Delete an entity.
+  model1->DeleteItem(kKey1);
+  ASSERT_TRUE(DataAbsentChecker(model2, kKey1).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
+  ASSERT_TRUE(SetupSync());
+  TestModelTypeService* model1 = GetModelTypeService(0);
+  TestModelTypeService* model2 = GetModelTypeService(1);
+
+  // Add an entity to test with.
+  model1->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model2, kKey1, kValue1).Wait());
+  ASSERT_EQ(1U, model1->db().data_count());
+  ASSERT_EQ(1U, model1->db().metadata_count());
+  ASSERT_EQ(1U, model2->db().data_count());
+  ASSERT_EQ(1U, model2->db().metadata_count());
+
+  // Disable PREFERENCES.
+  syncer::ModelTypeSet types = syncer::UserSelectableTypes();
+  types.Remove(syncer::PREFERENCES);
+  GetSyncService(0)->OnUserChoseDatatypes(false, types);
+
+  // Wait for it to take effect and remove the metadata.
+  ASSERT_TRUE(MetadataAbsentChecker(model1, kKey1).Wait());
+  ASSERT_EQ(1U, model1->db().data_count());
+  ASSERT_EQ(0U, model1->db().metadata_count());
+  // Model 2 should not be affected.
+  ASSERT_EQ(1U, model2->db().data_count());
+  ASSERT_EQ(1U, model2->db().metadata_count());
+
+  // Re-enable PREFERENCES.
+  GetSyncService(0)->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+
+  // Wait for metadata to be re-added.
+  ASSERT_TRUE(MetadataPresentChecker(model1, kKey1).Wait());
+  ASSERT_EQ(1U, model1->db().data_count());
+  ASSERT_EQ(1U, model1->db().metadata_count());
+  ASSERT_EQ(1U, model2->db().data_count());
+  ASSERT_EQ(1U, model2->db().metadata_count());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
+  ASSERT_TRUE(SetupSync());
+  TestModelTypeService* model1 = GetModelTypeService(0);
+  TestModelTypeService* model2 = GetModelTypeService(1);
+
+  // Write conflicting entities.
+  model1->WriteItem(kKey1, kValue1);
+  model2->WriteItem(kKey1, kValue2);
+
+  // Wait for them to be resolved to kResolutionValue by the custom conflict
+  // resolution logic in TestModelTypeService.
+  ASSERT_TRUE(DataChecker(model1, kKey1, kResolutionValue).Wait());
+  ASSERT_TRUE(DataChecker(model2, kKey1, kResolutionValue).Wait());
 }

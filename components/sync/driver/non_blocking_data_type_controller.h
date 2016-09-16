@@ -97,6 +97,12 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // callback and must temporarily own it until ActivateDataType is called.
   std::unique_ptr<syncer_v2::ActivationContext> activation_context_;
 
+  // This is a hack to prevent reconfigurations from crashing, because USS
+  // activation is not idempotent. RegisterWithBackend only needs to actually do
+  // something the first time after the type is enabled.
+  // TODO(crbug.com/647505): Remove this once the DTM handles things better.
+  bool activated_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };
 
