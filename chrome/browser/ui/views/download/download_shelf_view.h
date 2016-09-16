@@ -21,6 +21,7 @@
 
 class Browser;
 class BrowserView;
+class DownloadItemView;
 
 namespace content {
 class DownloadItem;
@@ -103,7 +104,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.
-  void AddDownloadView(views::View* view);
+  void AddDownloadView(DownloadItemView* view);
 
   // Paints the border.
   void OnPaintBorder(gfx::Canvas* canvas) override;
@@ -124,10 +125,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // the shelf have been opened.
   bool CanAutoClose();
 
-  // Gets the |DownloadItem| for the i^th download view. TODO(estade): this
-  // shouldn't be necessary after we only have one type of DownloadItemView.
-  content::DownloadItem* GetDownloadItemForView(size_t i);
-
   // Returns the color of text for the shelf (used for deriving icon color).
   SkColor GetTextColorForIconMd();
 
@@ -142,17 +139,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
-  std::vector<views::View*> download_views_;
+  std::vector<DownloadItemView*> download_views_;
 
-  // An image displayed on the right of the "Show all downloads..." link.
-  // TODO(estade): not shown in MD; remove.
-  views::ImageView* arrow_image_;
-
-  // Link for showing all downloads. For MD this is a system style button.
-  views::View* show_all_view_;
-
-  // This is the same as |show_all_view_|, but only valid in MD mode.
-  views::MdTextButton* show_all_view_md_;
+  // Button for showing all downloads (chrome://downloads).
+  views::MdTextButton* show_all_view_;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.

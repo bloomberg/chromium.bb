@@ -53,7 +53,7 @@
                         <button id="24" customClass="DownloadShowAllButton">
                             <rect key="frame" x="2" y="6" width="189" height="34"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                            <buttonCell key="cell" type="square" title="^IDS_SHOW_ALL" bezelStyle="shadowlessSquare" imagePosition="left" alignment="center" imageScaling="proportionallyDown" inset="2" id="25" customClass="DownloadShowAllCell">
+                            <buttonCell key="cell" type="square" title="^IDS_SHOW_ALL_DOWNLOADS" bezelStyle="shadowlessSquare" imagePosition="left" alignment="center" imageScaling="proportionallyDown" inset="2" id="25" customClass="DownloadShowAllCell">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>

@@ -1599,8 +1599,6 @@ split_static_library("ui") {
         "views/download/download_in_progress_dialog_view.h",
         "views/download/download_item_view.cc",
         "views/download/download_item_view.h",
-        "views/download/download_item_view_md.cc",
-        "views/download/download_item_view_md.h",
         "views/download/download_shelf_context_menu_view.cc",
         "views/download/download_shelf_context_menu_view.h",
         "views/download/download_shelf_view.cc",
