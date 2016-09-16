@@ -77,7 +77,7 @@
       }
 
       .page-menu div {
-        -webkit-margin-start: 24px;
+        -webkit-padding-start: 24px;
         align-items: center;
         display: flex;
         font-size: 13px;
@@ -138,9 +138,10 @@
       <paper-submenu class="page-menu" id="advancedPage" actionable
           opened="{{advancedOpened_}}"
           hidden="[[!pageVisibility.advancedSettings]]">
-        <div class="menu-trigger" on-tap="ripple_">
+        <div class="menu-trigger">
           <span>$i18n{advancedPageTitle}</span>
           <iron-icon icon="[[arrowState_(advancedOpened_)]]"></iron-icon>
+          <paper-ripple></paper-ripple>
         </div>
         <paper-menu attr-for-selected="data-path" class="menu-content"
             id="advancedMenu" selected="[[currentRoute.path]]">

@@ -70,20 +70,6 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  ripple_: function(event) {
-    var ripple = document.createElement('paper-ripple');
-    ripple.addEventListener('transitionend', function() {
-      ripple.remove();
-    });
-    event.currentTarget.appendChild(ripple);
-    ripple.downAction();
-    ripple.upAction();
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
   openPage_: function(event) {
     var route = settings.getRouteForPath(event.currentTarget.dataset.path);
     assert(route, 'settings-menu has an an entry with an invalid path');
