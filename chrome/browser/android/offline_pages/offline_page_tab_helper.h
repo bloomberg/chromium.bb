@@ -35,6 +35,10 @@ class OfflinePageTabHelper :
   // Whether the page is an offline preview.
   bool is_offline_preview() const { return is_offline_preview_; }
 
+  // Returns provisional offline page since actual navigation does not happen
+  // during unit tests.
+  const OfflinePageItem* GetOfflinePageForTest() const;
+
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
 
@@ -52,6 +56,11 @@ class OfflinePageTabHelper :
   // tab. This can be used to by the Tab to synchronously ask about the offline
   // info.
   std::unique_ptr<OfflinePageItem> offline_page_;
+  // Potential new offline page copy. This is reset to nullptr at the start
+  // of every navigation and set by network request interceptor. If the
+  // interceptor decided to not use offline page for the navigation or was not
+  // even invoked (as in case with fragment navigation), this stays nullptr.
+  std::unique_ptr<OfflinePageItem> provisional_offline_page_;
 
   bool reloading_url_on_net_error_ = false;
 

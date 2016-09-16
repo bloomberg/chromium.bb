@@ -41,10 +41,8 @@ void OfflinePageTabHelper::DidStartNavigation(
   // operations.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // Since this is a new navigation, we will reset the cached offline page,
-  offline_page_ = nullptr;
+  provisional_offline_page_ = nullptr;
   is_offline_preview_ = false;
-
   reloading_url_on_net_error_ = false;
 }
 
@@ -53,6 +51,16 @@ void OfflinePageTabHelper::DidFinishNavigation(
   // Skips non-main frame.
   if (!navigation_handle->IsInMainFrame())
     return;
+
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  if (navigation_handle->IsSamePage()) {
+    return;
+  }
+
+  offline_page_ = std::move(provisional_offline_page_);
+  provisional_offline_page_ = nullptr;
 
   // We might be reloading the URL in order to fetch the offline page.
   // * If successful, nothing to do.
@@ -121,10 +129,16 @@ void OfflinePageTabHelper::SelectPageForOnlineURLDone(
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
+// This is a callback from network request interceptor. It happens between
+// DidStartNavigation and DidFinishNavigation calls on this tab helper.
 void OfflinePageTabHelper::SetOfflinePage(const OfflinePageItem& offline_page,
                                           bool is_offline_preview) {
-  offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
+  provisional_offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
   is_offline_preview_ = is_offline_preview;
+}
+
+const OfflinePageItem* OfflinePageTabHelper::GetOfflinePageForTest() const {
+  return provisional_offline_page_.get();
 }
 
 }  // namespace offline_pages
