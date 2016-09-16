@@ -89,7 +89,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
 class MapsPage(gpu_test_base.PageBase):
   def __init__(self, story_set, base_dir, expectations):
     super(MapsPage, self).__init__(
-        url='http://localhost:8000/performance.html',
+        url='http://map-test/performance.html',
         page_set=story_set,
         base_dir=base_dir,
         name='Maps.maps_004',
@@ -112,11 +112,23 @@ class Maps(cloud_storage_test_base.CloudStorageTestBase):
   width and height query args were set to 800 by 600. The WPR was
   recorded with:
 
-  tools/perf/record_wpr smoothness_maps --browser=system --upload
+  tools/perf/record_wpr smoothness_maps --browser=system
 
-  Then the maps_???.wpr.sha1 and maps.json were copied from
-  tools/perf/page_sets/data into content/test/gpu/page_sets/data. The
-  same sha1 file and json file need to be copied into both of these
+  This would produce maps_???.wpr and maps.json were copied from
+  tools/perf/page_sets/data into content/test/gpu/page_sets/data.
+  It worths noting that telemetry no longer allows replaying URL that has form
+  of local host. If the recording was created for locahost URL, ones can update
+  the host name by running:
+    web-page-replay/httparchive.py remap-host maps_004.wpr \
+    localhost:10020 map-test
+  (web-page-replay/ can be found in third_party/catapult/telemetry/third_party/)
+  After update the host name in WPR archive, please remember to update the host
+  URL in content/test/gpu/gpu_tests/maps.py as well.
+
+  To upload the maps_???.wpr to cloud storage, one would run:
+    depot_tools/upload_to_google_storage.py --bucket=chromium-telemetry \
+    maps_???.wpr
+  The same sha1 file and json file need to be copied into both of these
   directories in any CL which updates the recording."""
   test = MapsValidator
 
