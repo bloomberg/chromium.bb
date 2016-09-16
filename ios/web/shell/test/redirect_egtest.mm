@@ -8,8 +8,8 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/html_response_provider.h"
 #include "ios/web/public/test/response_providers/html_response_provider_impl.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 #include "net/http/http_status_code.h"
 
@@ -50,7 +50,7 @@ using web::webViewContainingText;
   web::test::SetUpHttpServer(std::move(provider));
 
   // Load first URL and expect destination URL to load.
-  web::shell_test_util::LoadUrl(firstRedirectURL);
+  [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]
@@ -74,7 +74,7 @@ using web::webViewContainingText;
   web::test::SetUpHttpServer(std::move(provider));
 
   // Load first URL and expect destination URL to load.
-  web::shell_test_util::LoadUrl(firstRedirectURL);
+  [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]
@@ -98,7 +98,7 @@ using web::webViewContainingText;
   web::test::SetUpHttpServer(std::move(provider));
 
   // Load first URL and expect destination URL to load.
-  web::shell_test_util::LoadUrl(firstRedirectURL);
+  [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:addressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:webViewContainingText(kFinalPageContent)]

@@ -13,11 +13,11 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 #include "ios/web/shell/test/app/web_view_interaction_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
 #import "ios/web/shell/test/earl_grey/shell_actions.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -49,7 +49,7 @@ using testing::elementToDismissContextMenu;
       "</span></body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  web::shell_test_util::LoadUrl(initialURL);
+  [ShellEarlGrey loadURL:initialURL];
 
   [[EarlGrey selectElementWithMatcher:web::webView()]
       performAction:web::longPressElementForContextMenu(
@@ -86,7 +86,7 @@ using testing::elementToDismissContextMenu;
                           "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  web::shell_test_util::LoadUrl(initialURL);
+  [ShellEarlGrey loadURL:initialURL];
 
   [[EarlGrey selectElementWithMatcher:web::webView()]
       performAction:web::longPressElementForContextMenu(
@@ -117,7 +117,7 @@ using testing::elementToDismissContextMenu;
       "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  web::shell_test_util::LoadUrl(initialURL);
+  [ShellEarlGrey loadURL:initialURL];
 
   [[EarlGrey selectElementWithMatcher:web::webView()]
       performAction:web::longPressElementForContextMenu(
@@ -149,7 +149,7 @@ using testing::elementToDismissContextMenu;
       "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  web::shell_test_util::LoadUrl(initialURL);
+  [ShellEarlGrey loadURL:initialURL];
 
   [[EarlGrey selectElementWithMatcher:web::webView()]
       performAction:web::longPressElementForContextMenu(

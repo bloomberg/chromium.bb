@@ -11,8 +11,8 @@
 #include "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 #include "url/gurl.h"
 
@@ -30,7 +30,7 @@ void LoadPage(const std::string& page_content) {
   const GURL url = web::test::HttpServer::MakeUrl("http://plugin");
   std::map<GURL, std::string> responses{{url, page_content}};
   web::test::SetUpSimpleHttpServer(responses);
-  web::shell_test_util::LoadUrl(url);
+  [ShellEarlGrey loadURL:url];
 }
 
 }  // namespace

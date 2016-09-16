@@ -8,8 +8,8 @@
 #include "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -66,7 +66,7 @@ using web::webViewContainingText;
   responses[destinationURL] = kDestinationPage;
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::shell_test_util::LoadUrl(originURL);
+  [ShellEarlGrey loadURL:originURL];
 
   // Wait for redirect.
   base::test::ios::SpinRunLoopWithMinDelay(

@@ -11,9 +11,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #include "ios/web/shell/test/app/web_view_interaction_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,7 +33,7 @@
       "http://ios/web/shell/test/http_server_files/basic_navigation_test.html");
   web::test::SetUpFileBasedHttpServer();
 
-  web::shell_test_util::LoadUrl(URL);
+  [ShellEarlGrey loadURL:URL];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];
 
@@ -58,13 +58,13 @@
 
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::shell_test_util::LoadUrl(URL1);
+  [ShellEarlGrey loadURL:URL1];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1.spec())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
-  web::shell_test_util::LoadUrl(URL2);
+  [ShellEarlGrey loadURL:URL2];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2.spec())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
@@ -97,7 +97,7 @@
 
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::shell_test_util::LoadUrl(URL1);
+  [ShellEarlGrey loadURL:URL1];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1.spec())]
       assertWithMatcher:grey_notNil()];
 
@@ -135,7 +135,7 @@
 
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::shell_test_util::LoadUrl(URL);
+  [ShellEarlGrey loadURL:URL];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];
 
@@ -167,7 +167,7 @@
 
   web::test::SetUpSimpleHttpServer(responses);
 
-  web::shell_test_util::LoadUrl(URL);
+  [ShellEarlGrey loadURL:URL];
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];
 

@@ -9,9 +9,9 @@
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,7 +53,6 @@ id<GREYMatcher> webViewWithPdf() {
 
 }  // namespace
 
-using web::shell_test_util::LoadUrl;
 using web::test::HttpServer;
 
 // PDF test cases for the web shell.
@@ -65,7 +64,7 @@ using web::test::HttpServer;
 // Tests MIME type of the loaded PDF document.
 - (void)testMIMEType {
   web::test::SetUpFileBasedHttpServer();
-  LoadUrl(HttpServer::MakeUrl(kTestPDFURL));
+  [ShellEarlGrey loadURL:HttpServer::MakeUrl(kTestPDFURL)];
   [[EarlGrey selectElementWithMatcher:webViewWithPdf()]
       assertWithMatcher:grey_notNil()];
 }
