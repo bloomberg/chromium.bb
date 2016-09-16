@@ -49,7 +49,7 @@ import javax.annotation.concurrent.GuardedBy;
 @VisibleForTesting
 public final class CronetUrlRequest implements UrlRequest {
     private static final RequestFinishedInfo.Metrics EMPTY_METRICS =
-            new RequestFinishedInfo.Metrics(null, null, null, null);
+            new CronetMetrics(null, null, null, null);
     private final boolean mAllowDirectExecutor;
 
     /* Native adapter object, owned by UrlRequest. */
@@ -700,10 +700,11 @@ public final class CronetUrlRequest implements UrlRequest {
     }
 
     RequestFinishedInfo getRequestFinishedInfo() {
+        // TODO(mgersh): fill in real values for finishedReason and exception
         return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations,
                 (mRequestMetricsAccumulator != null ? mRequestMetricsAccumulator.getRequestMetrics()
                                                     : EMPTY_METRICS),
-                mResponseInfo);
+                RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
     }
 
     private final class UrlRequestMetricsAccumulator {
@@ -715,7 +716,7 @@ public final class CronetUrlRequest implements UrlRequest {
         private Long mTotalTimeMs;
 
         private RequestFinishedInfo.Metrics getRequestMetrics() {
-            return new RequestFinishedInfo.Metrics(mTtfbMs, mTotalTimeMs,
+            return new CronetMetrics(mTtfbMs, mTotalTimeMs,
                     null, // TODO(klm): Compute sentBytesCount.
                     (mResponseInfo != null ? mResponseInfo.getReceivedBytesCount() : 0));
         }

@@ -1,0 +1,219 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.net.impl;
+
+import android.support.annotation.Nullable;
+
+import org.chromium.base.VisibleForTesting;
+import org.chromium.net.RequestFinishedInfo;
+
+import java.util.Date;
+
+/**
+ * Implementation of {@link RequestFinishedInfo.Metrics}.
+ */
+@VisibleForTesting
+public final class CronetMetrics extends RequestFinishedInfo.Metrics {
+    private final long mRequestStartMs;
+    private final long mDnsStartMs;
+    private final long mDnsEndMs;
+    private final long mConnectStartMs;
+    private final long mConnectEndMs;
+    private final long mSslStartMs;
+    private final long mSslEndMs;
+    private final long mSendingStartMs;
+    private final long mSendingEndMs;
+    private final long mPushStartMs;
+    private final long mPushEndMs;
+    private final long mResponseStartMs;
+    private final long mResponseEndMs;
+    private final boolean mSocketReused;
+
+    // TODO(mgersh): Delete after the switch to the new API http://crbug.com/629194
+    @Nullable
+    private final Long mTtfbMs;
+    // TODO(mgersh): Delete after the switch to the new API http://crbug.com/629194
+    @Nullable
+    private final Long mTotalTimeMs;
+    @Nullable
+    private final Long mSentBytesCount;
+    @Nullable
+    private final Long mReceivedBytesCount;
+
+    @Nullable
+    private static Date toDate(long timestamp) {
+        if (timestamp != -1) {
+            return new Date(timestamp);
+        }
+        return null;
+    }
+
+    private static boolean checkOrder(long start, long end) {
+        // If end doesn't exist, start can be anything, including also not existing
+        // If end exists, start must also exist and be before end
+        return (end >= start && start != -1) || end == -1;
+    }
+
+    /**
+     * Old-style constructor
+     * TODO(mgersh): Delete after the switch to the new API http://crbug.com/629194
+     */
+    public CronetMetrics(@Nullable Long ttfbMs, @Nullable Long totalTimeMs,
+            @Nullable Long sentBytesCount, @Nullable Long receivedBytesCount) {
+        mTtfbMs = ttfbMs;
+        mTotalTimeMs = totalTimeMs;
+        mSentBytesCount = sentBytesCount;
+        mReceivedBytesCount = receivedBytesCount;
+
+        // Everything else is -1 (translates to null) for now
+        mRequestStartMs = -1;
+        mDnsStartMs = -1;
+        mDnsEndMs = -1;
+        mConnectStartMs = -1;
+        mConnectEndMs = -1;
+        mSslStartMs = -1;
+        mSslEndMs = -1;
+        mSendingStartMs = -1;
+        mSendingEndMs = -1;
+        mPushStartMs = -1;
+        mPushEndMs = -1;
+        mResponseStartMs = -1;
+        mResponseEndMs = -1;
+        mSocketReused = false;
+    }
+
+    /**
+     * New-style constructor
+     */
+    public CronetMetrics(long requestStartMs, long dnsStartMs, long dnsEndMs, long connectStartMs,
+            long connectEndMs, long sslStartMs, long sslEndMs, long sendingStartMs,
+            long sendingEndMs, long pushStartMs, long pushEndMs, long responseStartMs,
+            long responseEndMs, boolean socketReused, long sentBytesCount,
+            long receivedBytesCount) {
+        // Check that no end times are before corresponding start times,
+        // or exist when start time doesn't.
+        assert checkOrder(dnsStartMs, dnsEndMs);
+        assert checkOrder(connectStartMs, connectEndMs);
+        assert checkOrder(sslStartMs, sslEndMs);
+        assert checkOrder(sendingStartMs, sendingEndMs);
+        assert checkOrder(pushStartMs, pushEndMs);
+        assert checkOrder(responseStartMs, responseEndMs);
+        // Spot-check some of the other orderings
+        assert dnsStartMs >= requestStartMs || dnsStartMs == -1;
+        assert sendingStartMs >= requestStartMs || sendingStartMs == -1;
+        assert sslStartMs >= connectStartMs || sslStartMs == -1;
+        assert responseStartMs >= sendingStartMs || responseStartMs == -1;
+        mRequestStartMs = requestStartMs;
+        mDnsStartMs = dnsStartMs;
+        mDnsEndMs = dnsEndMs;
+        mConnectStartMs = connectStartMs;
+        mConnectEndMs = connectEndMs;
+        mSslStartMs = sslStartMs;
+        mSslEndMs = sslEndMs;
+        mSendingStartMs = sendingStartMs;
+        mSendingEndMs = sendingEndMs;
+        mPushStartMs = pushStartMs;
+        mPushEndMs = pushEndMs;
+        mResponseStartMs = responseStartMs;
+        mResponseEndMs = responseEndMs;
+        mSocketReused = socketReused;
+        mSentBytesCount = sentBytesCount;
+        mReceivedBytesCount = receivedBytesCount;
+
+        // Don't care about these anymore
+        mTtfbMs = null;
+        mTotalTimeMs = null;
+    }
+
+    @Nullable
+    public Date getRequestStart() {
+        return toDate(mRequestStartMs);
+    }
+
+    @Nullable
+    public Date getDnsStart() {
+        return toDate(mDnsStartMs);
+    }
+
+    @Nullable
+    public Date getDnsEnd() {
+        return toDate(mDnsEndMs);
+    }
+
+    @Nullable
+    public Date getConnectStart() {
+        return toDate(mConnectStartMs);
+    }
+
+    @Nullable
+    public Date getConnectEnd() {
+        return toDate(mConnectEndMs);
+    }
+
+    @Nullable
+    public Date getSslStart() {
+        return toDate(mSslStartMs);
+    }
+
+    @Nullable
+    public Date getSslEnd() {
+        return toDate(mSslEndMs);
+    }
+
+    @Nullable
+    public Date getSendingStart() {
+        return toDate(mSendingStartMs);
+    }
+
+    @Nullable
+    public Date getSendingEnd() {
+        return toDate(mSendingEndMs);
+    }
+
+    @Nullable
+    public Date getPushStart() {
+        return toDate(mPushStartMs);
+    }
+
+    @Nullable
+    public Date getPushEnd() {
+        return toDate(mPushEndMs);
+    }
+
+    @Nullable
+    public Date getResponseStart() {
+        return toDate(mResponseStartMs);
+    }
+
+    @Nullable
+    public Date getResponseEnd() {
+        return toDate(mResponseEndMs);
+    }
+
+    @Nullable
+    public boolean getSocketReused() {
+        return mSocketReused;
+    }
+
+    @Nullable
+    public Long getTtfbMs() {
+        return mTtfbMs;
+    }
+
+    @Nullable
+    public Long getTotalTimeMs() {
+        return mTotalTimeMs;
+    }
+
+    @Nullable
+    public Long getSentBytesCount() {
+        return mSentBytesCount;
+    }
+
+    @Nullable
+    public Long getReceivedBytesCount() {
+        return mReceivedBytesCount;
+    }
+}

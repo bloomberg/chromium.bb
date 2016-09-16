@@ -9,9 +9,11 @@ import static org.chromium.base.CollectionUtil.newHashSet;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.impl.CronetMetrics;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -258,5 +260,46 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNull("RequestFinishedInfo.Listener must not be called",
                 requestFinishedListener.mRequestInfo);
         mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testMetricsGetters() throws Exception {
+        long requestStart = 1;
+        long dnsStart = 2;
+        long dnsEnd = -1;
+        long connectStart = 4;
+        long connectEnd = 5;
+        long sslStart = 6;
+        long sslEnd = 7;
+        long sendingStart = 8;
+        long sendingEnd = 9;
+        long pushStart = 10;
+        long pushEnd = 11;
+        long responseStart = 12;
+        long responseEnd = 13;
+        boolean socketReused = true;
+        long sentBytesCount = 14;
+        long receivedBytesCount = 15;
+        // Make sure nothing gets reordered inside the Metrics class
+        RequestFinishedInfo.Metrics metrics = new CronetMetrics(requestStart, dnsStart, dnsEnd,
+                connectStart, connectEnd, sslStart, sslEnd, sendingStart, sendingEnd, pushStart,
+                pushEnd, responseStart, responseEnd, socketReused, sentBytesCount,
+                receivedBytesCount);
+        assertEquals(new Date(requestStart), metrics.getRequestStart());
+        // -1 timestamp should translate to null
+        assertNull(metrics.getDnsEnd());
+        assertEquals(new Date(dnsStart), metrics.getDnsStart());
+        assertEquals(new Date(connectStart), metrics.getConnectStart());
+        assertEquals(new Date(connectEnd), metrics.getConnectEnd());
+        assertEquals(new Date(sslStart), metrics.getSslStart());
+        assertEquals(new Date(sslEnd), metrics.getSslEnd());
+        assertEquals(new Date(pushStart), metrics.getPushStart());
+        assertEquals(new Date(pushEnd), metrics.getPushEnd());
+        assertEquals(new Date(responseStart), metrics.getResponseStart());
+        assertEquals(new Date(responseEnd), metrics.getResponseEnd());
+        assertEquals(socketReused, metrics.getSocketReused());
+        assertEquals(sentBytesCount, (long) metrics.getSentBytesCount());
+        assertEquals(receivedBytesCount, (long) metrics.getReceivedBytesCount());
     }
 }
