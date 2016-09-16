@@ -47,6 +47,7 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
  private:
   friend class PartialMagnificationControllerTestApi;
 
+  class BorderRenderer;
   class ContentMask;
 
   // ui::EventHandler:
@@ -84,6 +85,11 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
   std::unique_ptr<ui::Layer> zoom_layer_;
   // Draws an outline that is overlayed on top of |zoom_layer_|.
   std::unique_ptr<ui::Layer> border_layer_;
+  // Draws a multicolored black/white/black border on top of |border_layer_|.
+  // This must be ordered after |border_layer_| so that it gets destroyed after
+  // |border_layer_|, otherwise |border_layer_| will have a pointer to a deleted
+  // delegate.
+  std::unique_ptr<BorderRenderer> border_renderer_;
   // Masks the content of |zoom_layer_| so that only a circle is magnified.
   std::unique_ptr<ContentMask> zoom_mask_;
   // Masks the content of |border_layer_| so that only a circle outline is
