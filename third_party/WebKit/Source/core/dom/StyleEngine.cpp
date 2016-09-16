@@ -533,7 +533,7 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
     DCHECK(styleSheet);
     if (!e->isInShadowTree()) {
         styleSheet->setTitle(e->title());
-        setPreferredStylesheetSetNameIfNotSet(e->title());
+        setPreferredStylesheetSetNameIfNotSet(e->title(), DontUpdateActiveSheets);
     }
     return styleSheet;
 }
@@ -761,7 +761,7 @@ void StyleEngine::setStatsEnabled(bool enabled)
         m_styleResolverStats->reset();
 }
 
-void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name)
+void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name, ActiveSheetsUpdate activeSheetsUpdate)
 {
     if (!m_preferredStylesheetSetName.isEmpty())
         return;
@@ -770,10 +770,16 @@ void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name)
     // has been previously set by through Document.selectedStylesheetSet. Our
     // current implementation ignores the effect of Document.selectedStylesheetSet
     // and either only collects persistent style, or additionally preferred
-    // style when present. We are currently not marking the document scope dirty
-    // because preferred style is updated during active stylesheet update which
-    // would make this method re-entrant. Will need to change for async update.
+    // style when present.
     m_selectedStylesheetSetName = name;
+
+    // TODO(rune@opera.com): For async stylesheet update, we should always mark
+    // the TreeScope dirty here, and the synchronous active stylesheet update
+    // (resolverChanged) should go away.
+    if (activeSheetsUpdate == UpdateActiveSheets) {
+        markDocumentDirty();
+        resolverChanged(AnalyzedStyleUpdate);
+    }
 }
 
 void StyleEngine::setSelectedStylesheetSetName(const String& name)
@@ -788,9 +794,7 @@ void StyleEngine::setSelectedStylesheetSetName(const String& name)
 
 void StyleEngine::setHttpDefaultStyle(const String& content)
 {
-    setPreferredStylesheetSetNameIfNotSet(content);
-    markDocumentDirty();
-    resolverChanged(FullStyleUpdate);
+    setPreferredStylesheetSetNameIfNotSet(content, UpdateActiveSheets);
 }
 
 void StyleEngine::ensureFullscreenUAStyle()

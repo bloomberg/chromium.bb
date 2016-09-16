@@ -98,9 +98,10 @@ public:
     void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
     void updateActiveStyleSheets(StyleResolverUpdateMode);
 
+    enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
     String selectedStylesheetSetName() const { return m_selectedStylesheetSetName; }
-    void setPreferredStylesheetSetNameIfNotSet(const String&);
+    void setPreferredStylesheetSetNameIfNotSet(const String&, ActiveSheetsUpdate);
     void setSelectedStylesheetSetName(const String&);
     void setHttpDefaultStyle(const String&);
 
