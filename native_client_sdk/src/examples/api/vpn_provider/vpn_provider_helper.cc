@@ -8,6 +8,10 @@
 
 #include "ppapi/cpp/var_dictionary.h"
 
+#ifdef WIN32
+#  undef PostMessage
+#endif
+
 VpnProviderHelper::VpnProviderHelper(pp::Instance* instance)
     : instance_(instance),
       thread_(pp::InstanceHandle(instance)),
