@@ -6705,10 +6705,6 @@ cr.define('md_history', function() {
         type: Boolean,
         reflectToAttribute: true
       },
-      isFirstItem: {
-        type: Boolean,
-        reflectToAttribute: true
-      },
       isCardStart: {
         type: Boolean,
         reflectToAttribute: true
@@ -8051,9 +8047,6 @@ Polymer({
   isCardEnd_: function(item, i, length) {
     if (length == 0 || i > length - 1) return false;
     return i == length - 1 || this.historyData_[i].dateRelativeDay != this.historyData_[i + 1].dateRelativeDay;
-  },
-  isFirstItem_: function(index) {
-    return index == 0;
   },
   notifyListScroll_: function() {
     this.fire('history-list-scrolled');

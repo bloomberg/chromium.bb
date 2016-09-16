@@ -153,15 +153,6 @@ Polymer({
   },
 
   /**
-   * @param {number} index
-   * @return {boolean}
-   * @private
-   */
-  isFirstItem_: function(index) {
-    return index == 0;
-  },
-
-  /**
    * @private
    */
   notifyListScroll_: function() {

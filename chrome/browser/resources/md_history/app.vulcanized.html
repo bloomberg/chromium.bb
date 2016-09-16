@@ -3706,10 +3706,6 @@ button.more-vert-button div {
   margin: var(--card-sizing_-_margin); max-width: var(--card-sizing_-_max-width); min-width: var(--card-sizing_-_min-width); padding: var(--card-sizing_-_padding); width: var(--card-sizing_-_width);
 }
 
-:host([is-first-item]) #main-container {
-  margin-top: var(--first-card-padding-top);
-}
-
 :host([is-card-end]) #main-container {
   margin-bottom: var(--card-padding-between);
 }
@@ -4233,8 +4229,10 @@ button.more-vert-button div {
 }
 
 :host {
-  display: block;
+  box-sizing: border-box;
+        display: block;
         overflow: auto;
+        padding-top: var(--first-card-padding-top);
 }
 
 history-item {
@@ -4247,7 +4245,7 @@ history-item {
     </div>
     <iron-list items="{{historyData_}}" as="item" id="infinite-list" hidden$="[[!hasResults(historyData_.length)]]">
       <template>
-        <history-item item="[[item]]" selected="{{item.selected}}" is-first-item="[[isFirstItem_(index)]]" is-card-start="[[isCardStart_(item, index, historyData_.length)]]" is-card-end="[[isCardEnd_(item, index, historyData_.length)]]" has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]" search-term="[[searchedTerm]]" number-of-items="[[historyData_.length]]" path="[[pathForItem_(index)]]" index="[[index]]">
+        <history-item item="[[item]]" selected="{{item.selected}}" is-card-start="[[isCardStart_(item, index, historyData_.length)]]" is-card-end="[[isCardEnd_(item, index, historyData_.length)]]" has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]" search-term="[[searchedTerm]]" number-of-items="[[historyData_.length]]" path="[[pathForItem_(index)]]" index="[[index]]">
         </history-item>
       </template>
     </iron-list>

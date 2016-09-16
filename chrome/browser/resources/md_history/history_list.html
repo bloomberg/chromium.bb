@@ -10,8 +10,10 @@
   <template>
     <style include="shared-style">
       :host {
+        box-sizing: border-box;
         display: block;
         overflow: auto;
+        padding-top: var(--first-card-padding-top);
       }
 
       history-item {
@@ -27,7 +29,6 @@
       <template>
         <history-item item="[[item]]"
             selected="{{item.selected}}"
-            is-first-item="[[isFirstItem_(index)]]"
             is-card-start="[[isCardStart_(item, index, historyData_.length)]]"
             is-card-end="[[isCardEnd_(item, index, historyData_.length)]]"
             has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]"
