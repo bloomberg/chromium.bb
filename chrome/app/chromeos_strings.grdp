@@ -1563,6 +1563,9 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_GAIA_LOADING_MESSAGE" desc="Message on the OOBE gaia loading screen">
     Please wait...
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING_MESSAGE" desc="Message to show while enrollment is in progress">
+    Please wait...
+  </message>
   <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
     Let's get started
   </message>

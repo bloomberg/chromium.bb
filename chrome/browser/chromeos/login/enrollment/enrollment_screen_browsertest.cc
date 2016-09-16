@@ -3,13 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -121,6 +128,37 @@ IN_PROC_BROWSER_TEST_F(AttestationAuthEnrollmentScreenTest, TestCancel) {
 
   static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
       WizardController::default_controller();
+}
+
+IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
+  WizardController* wcontroller = WizardController::default_controller();
+  ASSERT_TRUE(wcontroller);
+
+  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(wcontroller);
+  ASSERT_TRUE(enrollment_screen);
+
+  EnrollmentScreenActor* actor = enrollment_screen->GetActor();
+  ASSERT_TRUE(actor);
+
+  test::JSChecker checker(
+      LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents());
+
+  // Run through the flow
+  actor->Show();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  checker.ExpectTrue(
+      "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
+      "signin')).display !== 'none'");
+
+  actor->ShowEnrollmentSpinnerScreen();
+  checker.ExpectTrue(
+      "window.getComputedStyle(document.getElementById('oauth-enroll-step-"
+      "working')).display !== 'none'");
+
+  actor->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
+  checker.ExpectTrue(
+      "window.getComputedStyle(document.getElementById('oauth-enroll-step-abe-"
+      "success')).display !== 'none'");
 }
 
 class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
