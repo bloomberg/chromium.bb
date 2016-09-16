@@ -307,8 +307,7 @@ void MediaControls::reset()
 
     refreshCastButtonVisibilityWithoutUpdate();
 
-    if (RuntimeEnabledFeatures::mediaControlsDownloadButtonEnabled())
-        m_downloadButton->setIsWanted(m_downloadButton->shouldDisplayDownloadButton());
+    m_downloadButton->setIsWanted(m_downloadButton->shouldDisplayDownloadButton());
 }
 
 LayoutObject* MediaControls::layoutObjectForTextTrackLayout()
