@@ -2358,7 +2358,7 @@ GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const
     }
 }
 
-bool PaintLayer::shouldPaintBackgroundOntoScrollingContentsLayer() const
+bool PaintLayer::canPaintBackgroundOntoScrollingContentsLayer() const
 {
     return !isRootLayer()
         && scrollsOverflow()

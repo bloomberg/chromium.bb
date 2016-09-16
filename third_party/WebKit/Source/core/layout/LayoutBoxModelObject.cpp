@@ -137,11 +137,6 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const
     if (!style()->hasAutoClip())
         return false;
 
-    // TODO(flackr): We should be able to paint locally attached borders with a border-radius
-    // but these currently do not paint correctly. https://crbug.com/645949
-    if (style()->hasBorderRadius())
-        return false;
-
     // TODO(flackr): Remove this when box shadows are still painted correctly when painting
     // into the composited scrolling contents layer. https://crbug.com/646464
     if (style()->boxShadow())

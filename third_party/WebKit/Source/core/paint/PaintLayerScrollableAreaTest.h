@@ -17,10 +17,10 @@ public:
         : RenderingTest(SingleChildFrameLoaderClient::create())
     { }
 
-    bool shouldPaintBackgroundOntoScrollingContentsLayer(const char* elementId)
+    bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId)
     {
         PaintLayer* paintLayer = toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
-        return paintLayer->shouldPaintBackgroundOntoScrollingContentsLayer();
+        return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
     }
 
 private:

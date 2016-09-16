@@ -1497,7 +1497,7 @@ static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode 
     // use integer scroll offsets locally when !layer->compositor()->preferCompositingToLCDTextEnabled(),
     // we do not check offsets accumulated from the root (including translates). crbug.com/644833
     bool backgroundSupportsLCDText = RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled()
-        && layer->shouldPaintBackgroundOntoScrollingContentsLayer()
+        && layer->canPaintBackgroundOntoScrollingContentsLayer()
         && layer->backgroundIsKnownToBeOpaqueInRect(toLayoutBox(layer->layoutObject())->paddingBoxRect());
     if (mode == PaintLayerScrollableArea::ConsiderLCDText
         && !layer->compositor()->preferCompositingToLCDTextEnabled()

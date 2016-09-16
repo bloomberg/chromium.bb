@@ -300,7 +300,12 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
 
 void CompositedLayerMapping::updateBackgroundPaintsOntoScrollingContentsLayer()
 {
-    bool shouldPaintOntoScrollingContentsLayer = m_owningLayer.shouldPaintBackgroundOntoScrollingContentsLayer();
+    // We can only paint the background onto the scrolling contents layer if
+    // it would be visually correct and we are using composited scrolling meaning we
+    // have a scrolling contents layer to paint it into.
+    bool shouldPaintOntoScrollingContentsLayer =
+        m_owningLayer.canPaintBackgroundOntoScrollingContentsLayer()
+        && m_owningLayer.getScrollableArea()->usesCompositedScrolling();
     if (shouldPaintOntoScrollingContentsLayer != backgroundPaintsOntoScrollingContentsLayer()) {
         m_backgroundPaintsOntoScrollingContentsLayer = shouldPaintOntoScrollingContentsLayer;
         // If the background is no longer painted onto the scrolling contents

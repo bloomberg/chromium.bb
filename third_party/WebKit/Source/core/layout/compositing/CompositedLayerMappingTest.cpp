@@ -647,6 +647,25 @@ TEST_F(CompositedLayerMappingTest, ScrollingContentsAndForegroundLayerPaintingPh
     EXPECT_FALSE(mapping->foregroundLayer());
 }
 
+TEST_F(CompositedLayerMappingTest, BackgroundPaintedIntoGraphicsLayerIfNotCompositedScrolling)
+{
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    setBodyInnerHTML(
+        "<div id='container' style='overflow: scroll; width: 300px; height: 300px; border-radius: 5px; background: white; will-change: transform;'>"
+        "    <div style='background-color: blue; width: 2000px; height: 2000px;'></div>"
+        "</div>");
+
+    PaintLayer* layer = toLayoutBlock(getLayoutObjectByElementId("container"))->layer();
+    EXPECT_TRUE(layer->canPaintBackgroundOntoScrollingContentsLayer());
+
+    // We currently don't use composited scrolling when the container has a border-radius
+    // so even though we can paint the background onto the scrolling contents layer we
+    // don't have a scrolling contents layer to paint into in this case.
+    CompositedLayerMapping* mapping = layer->compositedLayerMapping();
+    EXPECT_FALSE(mapping->hasScrollingLayer());
+    EXPECT_FALSE(mapping->backgroundPaintsOntoScrollingContentsLayer());
+}
+
 // Make sure that clipping layers are removed or their masking bit turned off
 // when they're an ancestor of the root scroller element.
 TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped)
