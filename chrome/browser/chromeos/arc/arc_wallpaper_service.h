@@ -7,10 +7,7 @@
 
 #include <stdint.h>
 
-#include <memory>
-#include <set>
-#include <vector>
-
+#include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/arc/arc_service.h"
@@ -25,6 +22,7 @@ namespace arc {
 // Lives on the UI thread.
 class ArcWallpaperService
     : public ArcService,
+      public ash::WallpaperControllerObserver,
       public ImageDecoder::ImageRequest,
       public InstanceHolder<mojom::WallpaperInstance>::Observer,
       public mojom::WallpaperHost {
@@ -34,6 +32,7 @@ class ArcWallpaperService
 
   // InstanceHolder<mojom::WallpaperInstance>::Observer overrides.
   void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // mojom::WallpaperHost overrides.
   // TODO(muyuanli): change callback prototype when use_new_wrapper_types is
@@ -45,7 +44,12 @@ class ArcWallpaperService
   void OnImageDecoded(const SkBitmap& bitmap) override;
   void OnDecodeImageFailed() override;
 
+  // WallpaperControllerObserver implementation.
+  void OnWallpaperDataChanged() override;
+
  private:
+  mojom::WallpaperInstance* GetWallpaperInstance(uint32_t min_version);
+
   mojo::Binding<mojom::WallpaperHost> binding_;
   DISALLOW_COPY_AND_ASSIGN(ArcWallpaperService);
 };

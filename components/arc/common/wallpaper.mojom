@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -18,8 +18,11 @@ interface WallpaperHost {
 };
 
 // Connects with container side to publish wallpaper related intents.
-// Next method ID:1
+// Next method ID:2
 interface WallpaperInstance {
   // Establishes communication with the container side.
   Init@0(WallpaperHost host_ptr);
+
+  // Notifies ArcWallpaperManagerService that wallpaper is changed.
+  [MinVersion=1] OnWallpaperChanged@1();
 };

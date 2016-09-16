@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/arc_wallpaper_service.h"
 
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
@@ -31,6 +29,7 @@ namespace arc {
 
 namespace {
 
+constexpr uint32_t kMinOnWallpaperChangedVersion = 1;
 constexpr char kAndroidWallpaperFilename[] = "android.jpg";
 
 // Sets a decoded bitmap as the wallpaper.
@@ -69,6 +68,13 @@ std::vector<uint8_t> EncodeImagePng(const gfx::ImageSkia image) {
   return result;
 }
 
+ash::WallpaperController* GetWallpaperController() {
+  ash::WmShell* wm_shell = ash::WmShell::Get();
+  if (!wm_shell)
+    return nullptr;
+  return wm_shell->wallpaper_controller();
+}
+
 }  // namespace
 
 ArcWallpaperService::ArcWallpaperService(ArcBridgeService* bridge_service)
@@ -81,6 +87,9 @@ ArcWallpaperService::~ArcWallpaperService() {
   // Make sure the callback is never called after destruction. It is safe to
   // call Cancel() even when there is no in-flight request.
   ImageDecoder::Cancel(this);
+  ash::WallpaperController* wc = GetWallpaperController();
+  if (wc)
+    wc->RemoveObserver(this);
   arc_bridge_service()->wallpaper()->RemoveObserver(this);
 }
 
@@ -94,6 +103,14 @@ void ArcWallpaperService::OnInstanceReady() {
     return;
   }
   wallpaper_instance->Init(binding_.CreateInterfacePtrAndBind());
+  ash::WmShell::Get()->wallpaper_controller()->AddObserver(this);
+}
+
+void ArcWallpaperService::OnInstanceClosed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ash::WallpaperController* wc = GetWallpaperController();
+  if (wc)
+    wc->RemoveObserver(this);
 }
 
 void ArcWallpaperService::SetWallpaper(mojo::Array<uint8_t> png_data) {
@@ -120,6 +137,31 @@ void ArcWallpaperService::OnImageDecoded(const SkBitmap& bitmap) {
 void ArcWallpaperService::OnDecodeImageFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOG(ERROR) << "Failed to decode wallpaper image.";
+}
+
+void ArcWallpaperService::OnWallpaperDataChanged() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  mojom::WallpaperInstance* instance =
+      GetWallpaperInstance(kMinOnWallpaperChangedVersion);
+  if (!instance)
+    return;
+  instance->OnWallpaperChanged();
+}
+
+mojom::WallpaperInstance* ArcWallpaperService::GetWallpaperInstance(
+    uint32_t min_version) {
+  uint32_t version = arc_bridge_service()->wallpaper()->version();
+  if (version < min_version) {
+    VLOG(1) << "ARC wallpaper instance is too old. required: " << min_version
+            << ", actual: " << version;
+    return nullptr;
+  }
+
+  mojom::WallpaperInstance* instance =
+      arc_bridge_service()->wallpaper()->instance();
+  if (!instance)
+    VLOG(2) << "ARC wallpaper instance is not ready.";
+  return instance;
 }
 
 }  // namespace arc
