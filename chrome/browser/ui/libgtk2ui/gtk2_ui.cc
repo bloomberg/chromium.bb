@@ -243,7 +243,11 @@ const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 
 #if GTK_MAJOR_VERSION == 3
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
-#endif
+
+// The size of the rendered toolbar image.
+const int kToolbarImageWidth = 64;
+const int kToolbarImageHeight = 128;
+#endif  // GTK_MAJOR_VERSION == 3
 
 // Picks a button tint from a set of background colors. While
 // |accent_color| will usually be the same color through a theme, this

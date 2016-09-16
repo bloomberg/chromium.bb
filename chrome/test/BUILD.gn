@@ -573,7 +573,11 @@ if (!is_android) {
           ]
           if (!use_ozone) {
             sources += [ "../browser/ui/libgtk2ui/select_file_dialog_interactive_uitest.cc" ]
-            configs += [ "//build/config/linux/gtk2:gtk2_internal_config" ]
+            if (use_gtk3) {
+              configs += [ "//build/config/linux/gtk3:gtk3_internal_config" ]
+            } else {
+              configs += [ "//build/config/linux/gtk2:gtk2_internal_config" ]
+            }
           }
         }
       }
