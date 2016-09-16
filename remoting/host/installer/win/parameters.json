@@ -18,6 +18,7 @@
     "remoting_native_messaging_host.exe",
     "remoting_start_host.exe",
     "remote_assistance_host.exe",
+    "remote_assistance_host_uiaccess.exe",
     "remote_security_key.exe"
   ],
   "source": "chromoting.wxs",
