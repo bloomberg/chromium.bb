@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
+import("//build/toolchain/toolchain.gni")
 import("//ppapi/native_client/nacl_test_data.gni")
 
 group("nacl") {
@@ -553,6 +554,19 @@ if (is_linux && is_clang) {
       # .exidx sections without this flag.
       "-fno-unwind-tables",
     ]
+
+    # Workaround against LLVM bug.
+    # In short, an LTO optimization pass might recognize
+    # naive implementations of builtins (such as memset)
+    # and replace them with references to the real builtins,
+    # which, in the case of -nostdlib, might cause the binary
+    # to get undefined references to those symbols.
+    #
+    # See more details:
+    # https://llvm.org/bugs/show_bug.cgi?id=30403
+    if (use_thin_lto) {
+      ldflags = [ "-Wl,-plugin-opt,O0" ]
+    }
   }
 
   executable("nonsfi_libc_free_nexe") {
