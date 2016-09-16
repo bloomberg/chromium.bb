@@ -2151,6 +2151,107 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkChangeDisconnectedPauseBeforeConnectedMultipleSessions) {
+  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(ASYNC, OK);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+
+  socket_data2.AddWrite(ASYNC, OK);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.2", "");
+
+  // Create request and QuicHttpStream to create session1.
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(OK, request1.Request(server1, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                 callback_.callback()));
+  std::unique_ptr<QuicHttpStream> stream1 = request1.CreateStream();
+  EXPECT_TRUE(stream1.get());
+
+  // Create request and QuicHttpStream to create session2.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url2_, "GET",
+                                 net_log_, callback_.callback()));
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  QuicChromiumClientSession* session1 = GetActiveSession(server1);
+  QuicChromiumClientSession* session2 = GetActiveSession(server2);
+  EXPECT_NE(session1, session2);
+
+  // Cause QUIC stream to be created and send GET so session1 has an open
+  // stream.
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = url_;
+  EXPECT_EQ(OK, stream1->InitializeStream(&request_info1, DEFAULT_PRIORITY,
+                                          net_log_, CompletionCallback()));
+  HttpResponseInfo response1;
+  HttpRequestHeaders request_headers1;
+  EXPECT_EQ(OK, stream1->SendRequest(request_headers1, &response1,
+                                     callback_.callback()));
+
+  // Cause QUIC stream to be created and send GET so session2 has an open
+  // stream.
+  HttpRequestInfo request_info2;
+  request_info2.method = "GET";
+  request_info2.url = url_;
+  EXPECT_EQ(OK, stream2->InitializeStream(&request_info2, DEFAULT_PRIORITY,
+                                          net_log_, CompletionCallback()));
+  HttpResponseInfo response2;
+  HttpRequestHeaders request_headers2;
+  EXPECT_EQ(OK, stream2->SendRequest(request_headers2, &response2,
+                                     callback_.callback()));
+
+  // Cause both sessions to be paused due to DISCONNECTED.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  // Ensure that both sessions are paused but alive.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session1));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  // Add new sockets to use post migration.
+  MockConnect connect_result =
+      MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
+  SequencedSocketData socket_data3(connect_result, nullptr, 0, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data3);
+  SequencedSocketData socket_data4(connect_result, nullptr, 0, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data4);
+
+  // Add a new network and cause migration to bad sockets, causing sessions to
+  // close.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->SetConnectedNetworksList({kNewNetworkForTests});
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkConnected(kNewNetworkForTests);
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session1));
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   InitializeConnectionMigrationTest(
       {kDefaultNetworkForTests, kNewNetworkForTests});

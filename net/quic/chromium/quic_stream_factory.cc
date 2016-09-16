@@ -1283,8 +1283,12 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   status_ = OPEN;
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkConnected");
-  for (auto session : all_sessions_) {
-    session.first->OnNetworkConnected(network, scoped_event_log.net_log());
+  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  // Sessions may be deleted while iterating through the map.
+  while (it != all_sessions_.end()) {
+    QuicChromiumClientSession* session = it->first;
+    ++it;
+    session->OnNetworkConnected(network, scoped_event_log.net_log());
   }
 }
 
