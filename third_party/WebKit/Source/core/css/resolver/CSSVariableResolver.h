@@ -25,15 +25,17 @@ class CSSVariableResolver {
     STACK_ALLOCATED();
 public:
     static void resolveVariableDefinitions(const StyleResolverState&);
-    static const CSSValue* resolvePendingSubstitutions(StyleResolverState&, CSSPropertyID, const CSSPendingSubstitutionValue&);
 
     // Shorthand properties are not supported.
-    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
+    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSValue&);
 
     DECLARE_TRACE();
 
 private:
     CSSVariableResolver(const StyleResolverState&);
+
+    static const CSSValue* resolvePendingSubstitutions(const StyleResolverState&, CSSPropertyID, const CSSPendingSubstitutionValue&);
+    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
 
     // These return false if we encounter a reference to an invalid variable with no fallback
 

@@ -17,13 +17,13 @@ namespace blink {
 
 class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 public:
-    static std::unique_ptr<ResolvedVariableChecker> create(CSSPropertyID property, const CSSVariableReferenceValue* variableReference, const CSSValue* resolvedValue)
+    static std::unique_ptr<ResolvedVariableChecker> create(CSSPropertyID property, const CSSValue* variableReference, const CSSValue* resolvedValue)
     {
         return wrapUnique(new ResolvedVariableChecker(property, variableReference, resolvedValue));
     }
 
 private:
-    ResolvedVariableChecker(CSSPropertyID property, const CSSVariableReferenceValue* variableReference, const CSSValue* resolvedValue)
+    ResolvedVariableChecker(CSSPropertyID property, const CSSValue* variableReference, const CSSValue* resolvedValue)
         : m_property(property)
         , m_variableReference(variableReference)
         , m_resolvedValue(resolvedValue)
@@ -37,9 +37,15 @@ private:
     }
 
     CSSPropertyID m_property;
-    Persistent<const CSSVariableReferenceValue> m_variableReference;
+    Persistent<const CSSValue> m_variableReference;
     Persistent<const CSSValue> m_resolvedValue;
 };
+
+CSSInterpolationType::CSSInterpolationType(CSSPropertyID property)
+    : InterpolationType(PropertyHandle(property))
+{
+    DCHECK(!isShorthandProperty(cssProperty()));
+}
 
 InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
@@ -49,13 +55,9 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecif
     if (!value)
         return maybeConvertNeutral(underlying, conversionCheckers);
 
-    // TODO(alancutter): Support animation of var() in shorthand properties.
-    if (value->isPendingSubstitutionValue())
-        return nullptr;
-
-    if (value->isVariableReferenceValue() && !isShorthandProperty(cssProperty())) {
-        resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state(), cssProperty(), toCSSVariableReferenceValue(*value));
-        conversionCheckers.append(ResolvedVariableChecker::create(cssProperty(), toCSSVariableReferenceValue(value), resolvedCSSValueOwner));
+    if (value->isVariableReferenceValue() || value->isPendingSubstitutionValue()) {
+        resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state(), cssProperty(), *value);
+        conversionCheckers.append(ResolvedVariableChecker::create(cssProperty(), value, resolvedCSSValueOwner));
         value = resolvedCSSValueOwner;
     }
 

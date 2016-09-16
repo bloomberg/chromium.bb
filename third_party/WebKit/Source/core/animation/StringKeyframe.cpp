@@ -55,8 +55,7 @@ PropertyHandleSet StringKeyframe::properties() const
     PropertyHandleSet properties;
     for (unsigned i = 0; i < m_cssPropertyMap->propertyCount(); ++i) {
         StylePropertySet::PropertyReference propertyReference = m_cssPropertyMap->propertyAt(i);
-        DCHECK(
-            !isShorthandProperty(propertyReference.id()) || propertyReference.value().isVariableReferenceValue())
+        DCHECK(!isShorthandProperty(propertyReference.id()))
             << "Web Animations: Encountered unexpanded shorthand CSS property (" << propertyReference.id() << ").";
         properties.add(PropertyHandle(propertyReference.id(), false));
     }

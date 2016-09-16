@@ -48,6 +48,7 @@
 #include "core/animation/SVGRectInterpolationType.h"
 #include "core/animation/SVGTransformListInterpolationType.h"
 #include "core/animation/SVGValueInterpolationType.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 

@@ -7,15 +7,12 @@
 
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InterpolationType.h"
-#include "core/css/CSSPropertyMetadata.h"
 
 namespace blink {
 
 class CSSInterpolationType : public InterpolationType {
 protected:
-    CSSInterpolationType(CSSPropertyID property)
-        : InterpolationType(PropertyHandle(property))
-    { }
+    CSSInterpolationType(CSSPropertyID);
 
     CSSPropertyID cssProperty() const { return getProperty().cssProperty(); }
 

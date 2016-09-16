@@ -112,9 +112,7 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, co
     if (id != CSSPropertyVariable
         && (value.isVariableReferenceValue() || value.isPendingSubstitutionValue())) {
 
-        const CSSValue* resolvedValue = value.isVariableReferenceValue() ?
-            CSSVariableResolver::resolveVariableReferences(state, id, toCSSVariableReferenceValue(value)) :
-            CSSVariableResolver::resolvePendingSubstitutions(state, id, toCSSPendingSubstitutionValue(value));
+        const CSSValue* resolvedValue = CSSVariableResolver::resolveVariableReferences(state, id, value);
         applyProperty(id, state, *resolvedValue);
 
         if (!state.style()->hasVariableReferenceFromNonInheritedProperty() && !CSSPropertyMetadata::isInheritedProperty(id))

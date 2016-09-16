@@ -84,12 +84,12 @@ StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(const Stri
     return m_customPropertySetsForApplyAtRule.get(string);
 }
 
-HeapHashMap<CSSPropertyID, Member<const CSSValue>>& StyleResolverState::parsedPropertiesForPendingSubstitution(const CSSPendingSubstitutionValue& value)
+HeapHashMap<CSSPropertyID, Member<const CSSValue>>& StyleResolverState::parsedPropertiesForPendingSubstitutionCache(const CSSPendingSubstitutionValue& value) const
 {
-    HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map = m_parsedPropertiesForPendingSubstitution.get(&value);
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map = m_parsedPropertiesForPendingSubstitutionCache.get(&value);
     if (!map) {
         map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
-        m_parsedPropertiesForPendingSubstitution.set(&value, map);
+        m_parsedPropertiesForPendingSubstitutionCache.set(&value, map);
     }
     return *map;
 }

@@ -153,10 +153,22 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     return success;
 }
 
-const CSSValue* CSSVariableResolver::resolveVariableReferences(const StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
+const CSSValue* CSSVariableResolver::resolveVariableReferences(const StyleResolverState& state, CSSPropertyID id, const CSSValue& value)
 {
     ASSERT(!isShorthandProperty(id));
 
+    if (value.isPendingSubstitutionValue())
+        return resolvePendingSubstitutions(state, id, toCSSPendingSubstitutionValue(value));
+
+    if (value.isVariableReferenceValue())
+        return resolveVariableReferences(state, id, toCSSVariableReferenceValue(value));
+
+    NOTREACHED();
+    return nullptr;
+}
+
+const CSSValue* CSSVariableResolver::resolveVariableReferences(const StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
+{
     CSSVariableResolver resolver(state);
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
@@ -167,10 +179,10 @@ const CSSValue* CSSVariableResolver::resolveVariableReferences(const StyleResolv
     return result;
 }
 
-const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(StyleResolverState& state, CSSPropertyID id, const CSSPendingSubstitutionValue& pendingValue)
+const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(const StyleResolverState& state, CSSPropertyID id, const CSSPendingSubstitutionValue& pendingValue)
 {
     // Longhands from shorthand references follow this path.
-    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& propertyCache = state.parsedPropertiesForPendingSubstitution(pendingValue);
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& propertyCache = state.parsedPropertiesForPendingSubstitutionCache(pendingValue);
 
     const CSSValue* value = propertyCache.get(id);
     if (!value) {

@@ -161,7 +161,7 @@ public:
     void setCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
     StylePropertySet* customPropertySetForApplyAtRule(const String&);
 
-    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& parsedPropertiesForPendingSubstitution(const CSSPendingSubstitutionValue&);
+    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& parsedPropertiesForPendingSubstitutionCache(const CSSPendingSubstitutionValue&) const;
 
 private:
     ElementResolveContext m_elementContext;
@@ -190,7 +190,7 @@ private:
 
     HeapHashMap<String, Member<StylePropertySet>> m_customPropertySetsForApplyAtRule;
 
-    HeapHashMap<Member<const CSSPendingSubstitutionValue>, Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>> m_parsedPropertiesForPendingSubstitution;
+    mutable HeapHashMap<Member<const CSSPendingSubstitutionValue>, Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>> m_parsedPropertiesForPendingSubstitutionCache;
 
 };
 
