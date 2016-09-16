@@ -120,6 +120,7 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
+#include "content/browser/time_zone_monitor.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -1240,6 +1241,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }
 
+  // BrowserMainLoop, which owns TimeZoneMonitor, is alive for the lifetime of
+  // Mojo communication (see BrowserMainLoop::ShutdownThreadsAndCleanUp(),
+  // which shuts down Mojo). Hence, passing that TimeZoneMonitor instance as
+  // a raw pointer here is safe.
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&TimeZoneMonitor::Bind,
+                 base::Unretained(
+                     BrowserMainLoop::GetInstance()->time_zone_monitor())));
+
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   registry->AddInterface(base::Bind(&MimeRegistryImpl::Create),
@@ -1311,10 +1322,6 @@ int RenderProcessHostImpl::GetNextRoutingID() {
 void RenderProcessHostImpl::ResumeDeferredNavigation(
     const GlobalRequestID& request_id) {
   widget_helper_->ResumeDeferredNavigation(request_id);
-}
-
-void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
-  Send(new ViewMsg_TimezoneChange(zone_id));
 }
 
 shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {

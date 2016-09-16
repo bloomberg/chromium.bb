@@ -23,7 +23,7 @@ class TimeZoneMonitorChromeOS
 
   // chromeos::system::TimezoneSettings::Observer implementation.
   void TimezoneChanged(const icu::TimeZone& time_zone) override {
-    NotifyRenderers();
+    NotifyClients();
   }
 
  private:

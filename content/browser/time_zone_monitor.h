@@ -8,6 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace content {
 
@@ -28,22 +31,28 @@ namespace content {
 //    localtime in renderer processes with custom code that calls
 //    localtime in the browser process via Chrome IPC.
 
-class TimeZoneMonitor {
+class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
  public:
   // Returns a new TimeZoneMonitor object (likely a subclass) specific to the
   // platform.
   static std::unique_ptr<TimeZoneMonitor> Create();
 
-  virtual ~TimeZoneMonitor();
+  ~TimeZoneMonitor() override;
+
+  void Bind(device::mojom::TimeZoneMonitorRequest request);
 
  protected:
   TimeZoneMonitor();
 
-  // Loop over all renderers and notify them that the system time zone may
-  // have changed.
-  void NotifyRenderers();
+  // Notify all callbacks that the system time zone may have changed.
+  void NotifyClients();
 
  private:
+  // device::mojom::device::mojom::TimeZoneMonitor:
+  void AddClient(device::mojom::TimeZoneMonitorClientPtr client) override;
+
+  mojo::BindingSet<device::mojom::TimeZoneMonitor> bindings_;
+  mojo::InterfacePtrSet<device::mojom::TimeZoneMonitorClient> clients_;
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitor);
 };
 

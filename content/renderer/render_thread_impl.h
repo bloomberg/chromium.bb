@@ -32,7 +32,9 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
+#include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -151,6 +153,8 @@ class CONTENT_EXPORT RenderThreadImpl
       public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
+      // TODO(blundell): Separate this impl out into Blink.
+      NON_EXPORTED_BASE(public device::mojom::TimeZoneMonitorClient),
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -501,7 +505,9 @@ class CONTENT_EXPORT RenderThreadImpl
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps);
   void OnGetAccessibilityTree();
-  void OnUpdateTimezone(const std::string& zoneId);
+
+  // device::mojom::TimeZoneClient:
+  void OnTimeZoneChange(const std::string& zoneId) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 #if defined(OS_ANDROID)
@@ -571,6 +577,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 #endif
+
+  mojo::Binding<device::mojom::TimeZoneMonitorClient>
+      time_zone_monitor_binding_;
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;

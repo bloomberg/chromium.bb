@@ -31,9 +31,7 @@ class TimeZoneMonitorLinux : public TimeZoneMonitor {
   TimeZoneMonitorLinux();
   ~TimeZoneMonitorLinux() override;
 
-  void NotifyRenderersFromImpl() {
-    NotifyRenderers();
-  }
+  void NotifyClientsFromImpl() { NotifyClients(); }
 
  private:
   scoped_refptr<TimeZoneMonitorLinuxImpl> impl_;
@@ -119,7 +117,7 @@ class TimeZoneMonitorLinuxImpl
   void OnTimeZoneFileChangedOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (owner_) {
-      owner_->NotifyRenderersFromImpl();
+      owner_->NotifyClientsFromImpl();
     }
   }
 

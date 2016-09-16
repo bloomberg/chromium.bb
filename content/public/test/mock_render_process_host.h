@@ -93,7 +93,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  void NotifyTimezoneChange(const std::string& zone_id) override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;

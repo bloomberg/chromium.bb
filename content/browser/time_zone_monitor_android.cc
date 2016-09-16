@@ -31,7 +31,7 @@ bool TimeZoneMonitorAndroid::Register(JNIEnv* env) {
 void TimeZoneMonitorAndroid::TimeZoneChangedFromJava(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  NotifyRenderers();
+  NotifyClients();
 }
 
 // static

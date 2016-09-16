@@ -31,7 +31,7 @@ class TimeZoneMonitorWin : public TimeZoneMonitor {
       return;
     }
 
-    NotifyRenderers();
+    NotifyClients();
   }
 
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;

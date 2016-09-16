@@ -18,6 +18,7 @@ include_rules = [
   "+device/geolocation",
   "+device/power_save_blocker",
   "+device/sensors/public",
+  "+device/time_zone_monitor/public",
   "+device/vibration",  # For Vibration API
   "+device/vr",  # For WebVR API
   "+gin/v8_initializer.h",

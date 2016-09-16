@@ -131,6 +131,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
+  TimeZoneMonitor* time_zone_monitor() const {
+    return time_zone_monitor_.get();
+  }
   media::midi::MidiManager* midi_manager() const { return midi_manager_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 

@@ -10,6 +10,7 @@ include_rules = [
   "+content/child",
   "+device/battery",  # For battery status service.
   "+device/sensors/public",
+  "+device/time_zone_monitor/public",
   "+device/usb/public",
   "+device/vibration",
   "+gin",

@@ -258,10 +258,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // transferring it to a new renderer process.
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
-  // Notifies the renderer that the timezone configuration of the system might
-  // have changed.
-  virtual void NotifyTimezoneChange(const std::string& zone_id) = 0;
-
   // Returns the shell::InterfaceProvider the browser process can use to bind
   // interfaces exposed to it from the renderer.
   virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;

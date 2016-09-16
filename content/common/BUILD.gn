@@ -572,6 +572,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//device/sensors/public/interfaces",
+    "//device/time_zone_monitor/public/interfaces",
     "//services/shell/public/interfaces",
     "//services/ui/public/interfaces",
     "//skia/public/interfaces",

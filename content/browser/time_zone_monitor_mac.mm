@@ -18,7 +18,7 @@ class TimeZoneMonitorMac : public TimeZoneMonitor {
                         object:nil
                          queue:nil
                     usingBlock:^(NSNotification* notification) {
-                        NotifyRenderers();
+                      NotifyClients();
                     }];
   }
 

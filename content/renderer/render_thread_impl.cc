@@ -584,6 +584,7 @@ RenderThreadImpl::RenderThreadImpl(
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
+      time_zone_monitor_binding_(this),
       categorized_worker_pool_(new CategorizedWorkerPool()) {
   Init(resource_task_queue);
 }
@@ -599,6 +600,7 @@ RenderThreadImpl::RenderThreadImpl(
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
+      time_zone_monitor_binding_(this),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
@@ -850,6 +852,11 @@ void RenderThreadImpl::Init(
 
   GetRemoteInterfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));
+
+  device::mojom::TimeZoneMonitorPtr time_zone_monitor;
+  GetRemoteInterfaces()->GetInterface(mojo::GetProxy(&time_zone_monitor));
+  time_zone_monitor->AddClient(
+      time_zone_monitor_binding_.CreateInterfacePtrAndBind());
 
   is_renderer_suspended_ = false;
 }
@@ -1684,7 +1691,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkConnectionChanged,
                         OnNetworkConnectionChanged)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
-    IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
                         OnSetWebKitSharedTimersSuspended)
@@ -2011,7 +2017,7 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
       NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
 }
 
-void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {
+void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {
   if (!blink_platform_impl_)
     return;
   if (!zone_id.empty()) {

@@ -168,7 +168,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  void NotifyTimezoneChange(const std::string& timezone) override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
