@@ -123,10 +123,7 @@ Polymer({
    * @private
    */
   sendEnterPin_: function(event) {
-    var guid = this.networkProperties && this.networkProperties.GUID;
-    if (!guid)
-      return;
-
+    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var pin = this.$.enterPin.value;
     if (!this.validatePin_(pin))
       return;
@@ -167,10 +164,7 @@ Polymer({
    * @private
    */
   sendChangePin_: function(event) {
-    var guid = this.networkProperties && this.networkProperties.GUID;
-    if (!guid)
-      return;
-
+    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var newPin = this.$.changePinNew1.value;
     if (!this.validatePin_(newPin, this.$.changePinNew2.value))
       return;
@@ -208,9 +202,7 @@ Polymer({
    * @private
    */
   sendUnlockPin_: function(event) {
-    var guid = this.networkProperties && this.networkProperties.GUID;
-    if (!guid)
-      return;
+    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var pin = this.$.unlockPin.value;
     if (!this.validatePin_(pin))
       return;
@@ -245,10 +237,7 @@ Polymer({
    * @private
    */
   sendUnlockPuk_: function(event) {
-    var guid = this.networkProperties && this.networkProperties.GUID;
-    if (!guid)
-      return;
-
+    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var puk = this.$.unlockPuk.value;
     if (!this.validatePuk_(puk))
       return;

@@ -23,6 +23,11 @@
         margin-bottom: 10px;
       }
 
+      /* Use .middle spacing but no flex. */
+      .settings-box .middle {
+        flex: none;
+      }
+
       #exceptionsDiv {
         padding: 10px 0;
       }
@@ -63,10 +68,10 @@
     </div>
 
     <!-- Autoconfiguration (PAC) -->
-    <div class="settings-box continuation indented"
+    <div class="settings-box continuation"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.PAC)]]">
-      <div class="start">$i18n{networkProxyAutoConfig}</div>
-      <paper-input  no-label-float class="flex" value="{{proxy.PAC}}"
+      <div>$i18n{networkProxyAutoConfig}</div>
+      <paper-input no-label-float class="middle" value="{{proxy.PAC}}"
           disabled="[[isNetworkPolicyEnforced(
                     networkProperties.ProxySettings.PAC)]]"
           on-blur="onProxyInputChange_">
@@ -74,14 +79,14 @@
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
-    <div class="settings-box continuation indented"
+    <div class="settings-box continuation"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.WPAD)]]">
-      <div class="start">$i18n{networkSectionWpad}</div>
-      <div>[[WPAD]]</div>
+      <div>$i18n{networkSectionWpad}</div>
+      <div class="middle">[[WPAD]]</div>
     </div>
 
     <!-- Manual -->
-    <div id="proxyDiv" class="settings-box continuation single-column indented"
+    <div id="proxyDiv" class="settings-box continuation single-column"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.MANUAL)]]">
       <paper-checkbox checked="{{useSameProxy_}}">
         $i18n{networkProxyUseSame}

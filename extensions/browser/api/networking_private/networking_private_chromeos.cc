@@ -36,7 +36,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using chromeos::DeviceState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
@@ -93,7 +92,7 @@ bool GetPrimaryUserIdHash(content::BrowserContext* browser_context,
 
 void AppendDeviceState(
     const std::string& type,
-    const DeviceState* device,
+    const chromeos::DeviceState* device,
     NetworkingPrivateDelegate::DeviceStateList* device_state_list) {
   DCHECK(!type.empty());
   NetworkTypePattern pattern =
@@ -197,6 +196,22 @@ base::DictionaryValue* GetThirdPartyVPNDictionary(
   base::DictionaryValue* third_party_vpn = nullptr;
   vpn_dict->GetDictionary(::onc::vpn::kThirdPartyVpn, &third_party_vpn);
   return third_party_vpn;
+}
+
+const chromeos::DeviceState* GetCellularDeviceState(const std::string& guid) {
+  const chromeos::NetworkState* network_state = nullptr;
+  if (!guid.empty())
+    network_state = GetStateHandler()->GetNetworkStateFromGuid(guid);
+  const chromeos::DeviceState* device_state = nullptr;
+  if (network_state) {
+    device_state =
+        GetStateHandler()->GetDeviceState(network_state->device_path());
+  }
+  if (!device_state) {
+    device_state =
+        GetStateHandler()->GetDeviceStateByType(NetworkTypePattern::Cellular());
+  }
+  return device_state;
 }
 
 }  // namespace
@@ -484,14 +499,7 @@ void NetworkingPrivateChromeOS::UnlockCellularSim(
     const std::string& puk,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
-  const chromeos::NetworkState* network_state =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
-  if (!network_state) {
-    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
-    return;
-  }
-  const chromeos::DeviceState* device_state =
-      GetStateHandler()->GetDeviceState(network_state->device_path());
+  const chromeos::DeviceState* device_state = GetCellularDeviceState(guid);
   if (!device_state) {
     failure_callback.Run(networking_private::kErrorNetworkUnavailable);
     return;
@@ -522,14 +530,7 @@ void NetworkingPrivateChromeOS::SetCellularSimState(
     const std::string& new_pin,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
-  const chromeos::NetworkState* network_state =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
-  if (!network_state) {
-    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
-    return;
-  }
-  const chromeos::DeviceState* device_state =
-      GetStateHandler()->GetDeviceState(network_state->device_path());
+  const chromeos::DeviceState* device_state = GetCellularDeviceState(guid);
   if (!device_state) {
     failure_callback.Run(networking_private::kErrorNetworkUnavailable);
     return;
@@ -574,7 +575,7 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
   NetworkHandler::Get()->network_state_handler()->GetDeviceList(&devices);
 
   std::unique_ptr<DeviceStateList> device_state_list(new DeviceStateList);
-  for (const DeviceState* device : devices) {
+  for (const chromeos::DeviceState* device : devices) {
     std::string onc_type =
         chromeos::network_util::TranslateShillTypeToONC(device->type());
     AppendDeviceState(onc_type, device, device_state_list.get());

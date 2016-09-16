@@ -13,8 +13,6 @@
       #container {
         align-self: stretch;
         border: 1px solid lightgrey;
-        display: flex;
-        flex-direction: column;
         height: 100px;
         margin-top: 10px;
         overflow-y: auto;
@@ -23,10 +21,11 @@
     </style>
     <div id="container">
       <template is="dom-repeat" items="[[exclusions]]">
-        <div class="layout horizontal center">
+        <div class="layout horizontal center" tabindex="0" >
           <div class="flex">[[item]]</div>
           <iron-icon class="favicon-image" icon="cr:clear"
-              on-tap="onRemoveTap_"></iron-icon>
+              on-tap="onRemoveTap_" tabindex="0">
+          </iron-icon>
         </div>
       </template>
     </div>

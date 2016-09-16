@@ -404,6 +404,9 @@ Polymer({
   /** @private */
   onForgetTap_: function() {
     this.networkingPrivate.forgetNetwork(this.guid);
+    // A forgotten WiFi network can still be configured, but not other types.
+    if (this.networkProperties.Type != CrOnc.Type.WI_FI)
+      this.close_();
   },
 
   /** @private */
@@ -678,8 +681,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasAdvancedOrDeviceFields_: function() {
-    return this.hasAdvancedFields_() || this.hasDeviceFields_();
+  showAdvanced_: function() {
+    return this.hasAdvancedFields_() || this.hasDeviceFields_() ||
+        this.isRememberedOrConnected_();
   },
 
   /**

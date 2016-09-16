@@ -1009,6 +1009,7 @@ namespace networkingPrivate {
     //   operation succeeds (|puk| is valid), the PIN will be set to |pin|.
     //   (If |pin| is empty or invalid the operation will fail).
     // |networkGuid|: The GUID of the cellular network to unlock.
+    //     If empty, the default cellular device will be used.
     // |pin|: The current SIM PIN, or the new PIN if PUK is provided.
     // |puk|: The operator provided PUK for unblocking a blocked SIM.
     // |callback|: Called when the operation has completed.
@@ -1025,6 +1026,7 @@ namespace networkingPrivate {
     // unlocked with unlockCellularSim() before this can be called (otherwise it
     // will fail and chrome.runtime.lastError will be set to Error.SimLocked).
     // |networkGuid|: The GUID of the cellular network to set the SIM state of.
+    //     If empty, the default cellular device will be used.
     // |simState|: The SIM state to set.
     // |callback|: Called when the operation has completed.
     static void setCellularSimState(DOMString networkGuid,

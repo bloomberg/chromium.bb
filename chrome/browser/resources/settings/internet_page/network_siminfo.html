@@ -35,10 +35,19 @@
       .puk {
         min-width: 200px;
       }
+
+      /* Siminfo is embedded; remove the padding. */
+      .settings-box {
+        padding: 0;
+      }
+
+      .settings-box:first-of-type {
+        border-top: none;
+      }
     </style>
 
     <!-- SIM missing UI -->
-    <div class="settings-box"
+    <div class="settings-box two-line"
         hidden$="[[networkProperties.Cellular.SIMPresent]]">
       <div class="start layout horizontal center">
         <iron-icon icon="settings:sim-card-alert"></iron-icon>
@@ -47,7 +56,8 @@
     </div>
 
     <!-- SIM locked -->
-    <div class="settings-box" hidden$="[[!showSimLocked_(networkProperties)]]">
+    <div class="settings-box two-line"
+        hidden$="[[!showSimLocked_(networkProperties)]]">
       <div class="start layout horizontal center">
         <iron-icon icon="settings:lock"></iron-icon>
         <div class="error">$i18n{networkSimCardLocked}</div>
@@ -60,7 +70,7 @@
     </div>
 
     <!-- SIM unlocked -->
-    <div class="settings-box"
+    <div class="settings-box two-line"
         hidden$="[[!showSimUnlocked_(networkProperties)]]">
       <paper-checkbox class="start" on-change="onSimLockEnabledChange_"
           checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]">

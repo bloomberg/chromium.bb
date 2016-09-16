@@ -9,7 +9,7 @@
   <template>
     <style include="internet-shared">
     </style>
-    <div class="settings-box">
+    <div class="settings-box first">
       <div class="start">$i18n{networkSectionAccessPoint}</div>
       <paper-dropdown-menu-light vertical-align="auto" no-label-float>
         <paper-listbox id="selectApn"
@@ -32,7 +32,7 @@
           edit-field-types="[[otherApnEditTypes_]]" prefix="Cellular.APN.">
       </network-property-list>
       <paper-button on-tap="onSaveOtherTap_">
-        ${networkButtonSaveApn}
+        $i18n{networkButtonSaveApn}
       </paper-button>
     </div>
   </template>

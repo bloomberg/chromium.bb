@@ -1,22 +1,29 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="network_siminfo.html">
 
 <dom-module name="network-summary-item">
   <template>
     <style include="settings-shared">
       paper-spinner {
         height: 20px;
-        margin: 0 20px;
+        margin: 0 var(--settings-box-row-padding);
         width: 20px;
       }
 
+      network-siminfo {
+        padding: 0 var(--settings-box-row-padding);
+      }
+      
       .button-row {
         align-items: center;
         display: flex;
@@ -25,6 +32,16 @@
 
       #buttons {
         align-items: center;
+      }
+
+      #details {
+        align-items: center;
+        display: flex;
+        flex: auto;
+      }
+
+      #details[no-flex] {
+        flex: none;
       }
 
       #deviceEnabledButton {
@@ -37,15 +54,30 @@
       }
     </style>
     <div class="settings-box two-line">
-      <div id="details" actionable class="start layout horizontal center"
-          on-tap="onDetailsTap_">
-        <cr-network-list-item class="flex" item="[[activeNetworkState]]">
+      <div id="details" selectable
+          no-flex$="[[showSimInfo_(deviceState)]]"
+          on-tap="onDetailsTap_" tabindex$="[[getTabIndex_(deviceState)]]">
+        <cr-network-list-item item="[[activeNetworkState]]">
         </cr-network-list-item>
-        <paper-spinner active="[[showScanning_(deviceState, expanded_)]]">
+        <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
+            hidden$="[[!scanningIsVisible_(deviceState)]]">
         </paper-spinner>
       </div>
+
+      <template is="dom-if" if="[[showSimInfo_(deviceState)]]">
+        <network-siminfo editable class="flex"
+            network-properties="[[getCellularState_(deviceState)]]"
+            networking-private="[[networkingPrivate]]">
+        </network-siminfo>
+      </template>
+
       <div>
         <div id="buttons" class="layout horizontal">
+          <template is="dom-if"
+              if="[[showDetailsIsVisible_(deviceState, networkStateList)]]">
+            <paper-icon-button icon="cr:settings" on-tap="onShowDetailsTap_">
+            </paper-icon-button>
+          </template>
           <template is="dom-if"
               if="[[expandIsVisible_(deviceState, networkStateList)]]">
             <cr-expand-button id="expandListButton" expanded="{{expanded_}}">

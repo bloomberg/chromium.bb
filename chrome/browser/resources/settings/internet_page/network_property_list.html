@@ -13,10 +13,20 @@
         margin-bottom: -12px;
         margin-top: -8px;
       }
+
+      /* Property lists are embedded; stretch the box and remove the padding. */
+      .settings-box {
+        align-items: stretch;
+        padding: 0;
+      }
+
+      .settings-box:first-of-type {
+        border-top: none;
+      }
     </style>
     <template is="dom-repeat" items="[[fields]]"
         filter="[[computeFilter_(propertyDict, editFieldTypes)]]">
-      <div class="settings-box single-column">
+      <div class="settings-box single-column two-line">
         <!-- Propety label -->
         <div>[[getPropertyLabel_(item, prefix)]]</div>
         <!-- Uneditable property value -->

@@ -9,7 +9,7 @@
   <template>
     <style include="internet-shared">
     </style>
-    <div class="settings-box">
+    <div class="settings-box first">
       <div class="start">$i18n{networkSectionNameservers}</div>
       <paper-dropdown-menu-light vertical-align="auto" no-label-float>
         <paper-listbox class="dropdown-content" on-iron-activate="onTypeChange_"
@@ -23,7 +23,7 @@
       </paper-dropdown-menu-light>
     </div>
 
-    <div class="settings-box continuation single-column indented"
+    <div class="settings-box continuation single-column"
         hidden$="[[!nameservers_.length]]">
       <template is="dom-repeat" items="[[nameservers_]]">
         <paper-input-container no-label-float>

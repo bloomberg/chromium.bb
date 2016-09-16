@@ -61,7 +61,8 @@
         @apply(--cr-actionable);
       }
 
-      [selectable] :focus {
+      [selectable]:focus,
+      [selectable] > :focus {
         @apply(--cr-selectable-focus);
       }
       [selectable] > * {
