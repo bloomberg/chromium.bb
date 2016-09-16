@@ -365,8 +365,11 @@ class FileLabels {
 
   // Whether this file has been trashed.
   bool is_trashed() const { return trashed_; }
+  // Whether this file is starred by the user.
+  bool is_starred() const { return starred_; }
 
   void set_trashed(bool trashed) { trashed_ = trashed; }
+  void set_starred(bool starred) { starred_ = starred; }
 
  private:
   friend class FileResource;
@@ -376,6 +379,7 @@ class FileLabels {
   bool Parse(const base::Value& value);
 
   bool trashed_;
+  bool starred_;
 };
 
 // ImageMediaMetadata represents image metadata for a file.

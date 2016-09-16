@@ -134,6 +134,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("application/octet-stream", file1.mime_type());
 
   EXPECT_FALSE(file1.labels().is_trashed());
+  EXPECT_FALSE(file1.labels().is_starred());
   EXPECT_FALSE(file1.shared());
 
   EXPECT_EQ(640, file1.image_media_metadata().width());
@@ -171,6 +172,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("application/vnd.google-apps.document", file2.mime_type());
 
   EXPECT_TRUE(file2.labels().is_trashed());
+  EXPECT_TRUE(file2.labels().is_starred());
   EXPECT_TRUE(file2.shared());
 
   EXPECT_EQ(-1, file2.image_media_metadata().width());
