@@ -419,6 +419,11 @@ enum BuiltIn {
     BuiltInSubgroupLocalInvocationId = 41,
     BuiltInVertexIndex = 42,
     BuiltInInstanceIndex = 43,
+    BuiltInSubgroupEqMaskKHR = 4416,
+    BuiltInSubgroupGeMaskKHR = 4417,
+    BuiltInSubgroupGtMaskKHR = 4418,
+    BuiltInSubgroupLeMaskKHR = 4419,
+    BuiltInSubgroupLtMaskKHR = 4420,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -594,6 +599,7 @@ enum Capability {
     CapabilityStorageImageReadWithoutFormat = 55,
     CapabilityStorageImageWriteWithoutFormat = 56,
     CapabilityMultiViewport = 57,
+    CapabilitySubgroupBallotKHR = 4423,
     CapabilityMax = 0x7fffffff,
 };
 
@@ -892,6 +898,8 @@ enum Op {
     OpAtomicFlagTestAndSet = 318,
     OpAtomicFlagClear = 319,
     OpImageSparseRead = 320,
+    OpSubgroupBallotKHR = 4421,
+    OpSubgroupFirstInvocationKHR = 4422,
     OpMax = 0x7fffffff,
 };
 

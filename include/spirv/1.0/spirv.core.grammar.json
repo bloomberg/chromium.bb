@@ -3007,6 +3007,26 @@
         { "kind" : "ImageOperands", "quantifier" : "?" }
       ],
       "capabilities" : [ "SparseResidency" ]
+    },
+    {
+      "opname" : "OpSubgroupBallotKHR",
+      "opcode" : 4421,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef", "name" : "'Predicate'" }
+      ],
+      "capabilities" : [ "SubgroupBallotKHR" ]
+    },
+    {
+      "opname" : "OpSubgroupFirstInvocationKHR",
+      "opcode" : 4422,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef", "name" : "'Value'" }
+      ],
+      "capabilities" : [ "SubgroupBallotKHR" ]
     }
   ],
   "operand_kinds" : [
@@ -3190,10 +3210,6 @@
           "value" : "0x0000"
         },
         {
-          "enumerant" : "SequentiallyConsistent",
-          "value" : "0x0010"
-        },
-        {
           "enumerant" : "Acquire",
           "value" : "0x0002"
         },
@@ -3204,6 +3220,10 @@
         {
           "enumerant" : "AcquireRelease",
           "value" : "0x0008"
+        },
+        {
+          "enumerant" : "SequentiallyConsistent",
+          "value" : "0x0010"
         },
         {
           "enumerant" : "UniformMemory",
@@ -4691,6 +4711,31 @@
           "enumerant" : "InstanceIndex",
           "value" : 43,
           "capabilities" : [ "Shader" ]
+        },
+        {
+          "enumerant" : "SubgroupEqMaskKHR",
+          "value" : 4416,
+          "capabilities" : [ "SubgroupBallotKHR" ]
+        },
+        {
+          "enumerant" : "SubgroupGeMaskKHR",
+          "value" : 4417,
+          "capabilities" : [ "SubgroupBallotKHR" ]
+        },
+        {
+          "enumerant" : "SubgroupGtMaskKHR",
+          "value" : 4418,
+          "capabilities" : [ "SubgroupBallotKHR" ]
+        },
+        {
+          "enumerant" : "SubgroupLeMaskKHR",
+          "value" : 4419,
+          "capabilities" : [ "SubgroupBallotKHR" ]
+        },
+        {
+          "enumerant" : "SubgroupLtMaskKHR",
+          "value" : 4420,
+          "capabilities" : [ "SubgroupBallotKHR" ]
         }
       ]
     },
@@ -5034,6 +5079,11 @@
           "enumerant" : "MultiViewport",
           "value" : 57,
           "capabilities" : [ "Geometry" ]
+        },
+        {
+          "enumerant" : "SubgroupBallotKHR",
+          "value" : 4423,
+          "extensions" : [ "SPV_KHR_shader_ballot" ]
         }
       ]
     },

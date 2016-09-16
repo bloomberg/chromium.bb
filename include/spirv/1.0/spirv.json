@@ -461,7 +461,12 @@
                     "SubgroupId": 40,
                     "SubgroupLocalInvocationId": 41,
                     "VertexIndex": 42,
-                    "InstanceIndex": 43
+                    "InstanceIndex": 43,
+                    "SubgroupEqMaskKHR": 4416,
+                    "SubgroupGeMaskKHR": 4417,
+                    "SubgroupGtMaskKHR": 4418,
+                    "SubgroupLeMaskKHR": 4419,
+                    "SubgroupLtMaskKHR": 4420
                 }
             },
             {
@@ -620,7 +625,8 @@
                     "GeometryStreams": 54,
                     "StorageImageReadWithoutFormat": 55,
                     "StorageImageWriteWithoutFormat": 56,
-                    "MultiViewport": 57
+                    "MultiViewport": 57,
+                    "SubgroupBallotKHR": 4423
                 }
             },
             {
@@ -921,7 +927,9 @@
                     "OpNoLine": 317,
                     "OpAtomicFlagTestAndSet": 318,
                     "OpAtomicFlagClear": 319,
-                    "OpImageSparseRead": 320
+                    "OpImageSparseRead": 320,
+                    "OpSubgroupBallotKHR": 4421,
+                    "OpSubgroupFirstInvocationKHR": 4422
                 }
             }
         ]
