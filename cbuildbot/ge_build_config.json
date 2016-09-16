@@ -8,7 +8,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -19,7 +20,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "arkham"
+          "board_group": "arkham",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -30,7 +32,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -41,7 +44,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -52,7 +56,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -63,7 +68,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -74,7 +80,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -85,7 +92,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -96,7 +104,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -107,7 +116,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -118,7 +128,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -129,7 +140,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "sandybridge"
+          "board_group": "sandybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -140,7 +152,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -151,7 +164,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -162,7 +176,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -173,7 +188,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -184,7 +200,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -195,7 +212,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -206,7 +224,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -217,7 +236,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -228,7 +248,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "daisy"
+          "board_group": "daisy",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -239,7 +260,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "daisy"
+          "board_group": "daisy",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -250,7 +272,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "daisy"
+          "board_group": "daisy",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -261,7 +284,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -272,7 +296,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "oak"
+          "board_group": "oak",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -283,7 +308,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -294,7 +320,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -305,7 +332,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -316,7 +344,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -327,7 +356,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "gale"
+          "board_group": "gale",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -338,7 +368,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -349,7 +380,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": true,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -360,7 +392,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -371,7 +404,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -382,7 +416,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -393,7 +428,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -404,7 +440,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "gru"
+          "board_group": "gru",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -415,7 +452,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "jecht"
+          "board_group": "jecht",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -426,7 +464,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -437,7 +476,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -448,7 +488,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -459,7 +500,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "jecht"
+          "board_group": "jecht",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -470,7 +512,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -481,7 +524,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "gru"
+          "board_group": "gru",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -492,7 +536,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "gru"
+          "board_group": "gru",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -503,7 +548,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -514,7 +560,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "kunimitsu"
+          "board_group": "kunimitsu",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -525,7 +572,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -536,7 +584,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -547,7 +596,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "kunimitsu"
+          "board_group": "kunimitsu",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -558,7 +608,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -569,7 +620,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "ivybridge"
+          "board_group": "ivybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -580,7 +632,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -591,7 +644,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "auron"
+          "board_group": "auron",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -602,7 +656,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "sandybridge"
+          "board_group": "sandybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -613,7 +668,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -624,7 +680,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -635,7 +692,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -646,7 +704,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "nyan"
+          "board_group": "nyan",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -657,7 +716,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "nyan"
+          "board_group": "nyan",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -668,7 +728,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "nyan"
+          "board_group": "nyan",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -679,7 +740,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -690,7 +752,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "nyan"
+          "board_group": "nyan",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -701,7 +764,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "oak"
+          "board_group": "oak",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -712,7 +776,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -723,7 +788,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -734,7 +800,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "sandybridge"
+          "board_group": "sandybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -745,7 +812,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "ivybridge"
+          "board_group": "ivybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -756,7 +824,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "glados"
+          "board_group": "glados",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -767,7 +836,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "peach"
+          "board_group": "peach",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -778,7 +848,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "peach"
+          "board_group": "peach",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -789,7 +860,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -800,7 +872,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -811,7 +884,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -822,7 +896,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": true,
-          "board_group": "reef"
+          "board_group": "reef",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -833,7 +908,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -844,7 +920,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -855,7 +932,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "jecht"
+          "board_group": "jecht",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -866,7 +944,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -877,7 +956,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "kunimitsu"
+          "board_group": "kunimitsu",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -888,7 +968,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -899,7 +980,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -910,7 +992,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": ""
+          "board_group": "",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -921,7 +1004,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -932,7 +1016,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": true,
-          "board_group": "whirlwind"
+          "board_group": "whirlwind",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -943,7 +1028,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "ivybridge"
+          "board_group": "ivybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -954,7 +1040,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -965,7 +1052,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "sandybridge"
+          "board_group": "sandybridge",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -976,7 +1064,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -987,7 +1076,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -998,7 +1088,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1009,7 +1100,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "jecht"
+          "board_group": "jecht",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1020,7 +1112,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1031,7 +1124,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1042,7 +1136,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1053,7 +1148,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1064,7 +1160,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1075,7 +1172,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1086,7 +1184,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1097,7 +1196,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1108,7 +1208,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1119,7 +1220,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -1130,7 +1232,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -1141,7 +1244,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -1152,7 +1256,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1163,7 +1268,8 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "veyron"
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1174,7 +1280,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "whirlwind"
+          "board_group": "whirlwind",
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -1185,7 +1292,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "rambi"
+          "board_group": "rambi",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1196,7 +1304,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "strago"
+          "board_group": "strago",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1207,7 +1316,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1218,7 +1328,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "pineview"
+          "board_group": "pineview",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1229,7 +1340,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "pineview"
+          "board_group": "pineview",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1240,7 +1352,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": true,
-          "board_group": "pineview"
+          "board_group": "pineview",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1251,7 +1364,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "pineview"
+          "board_group": "pineview",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1262,7 +1376,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "pineview"
+          "board_group": "pineview",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
@@ -1273,7 +1388,8 @@
           "builder": "RELEASE",
           "experimental": false,
           "leader_board": false,
-          "board_group": "slippy"
+          "board_group": "slippy",
+          "arch": "X86_INTERNAL"
         }
       ]
     }
