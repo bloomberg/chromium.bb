@@ -44,9 +44,8 @@ def main_run(args):
       gtest_args.extend([
           '--no-xvfb',
           '--run-python-script', os.path.join(
-              args.paths['checkout'], 'build', 'android', 'test_runner.py'),
-          'gtest', '--release',
-          '--suite', test_suite,
+              args.paths['checkout'], 'out', args.build_config_fs, 'bin',
+              'run_%s' % test_suite),
           '--verbose',
       ])
     else:
