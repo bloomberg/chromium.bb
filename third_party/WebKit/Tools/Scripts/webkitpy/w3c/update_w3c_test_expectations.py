@@ -18,6 +18,7 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
+from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 
 _log = logging.getLogger(__name__)
 
@@ -256,38 +257,31 @@ class W3CExpectationsLineAdder(object):
     def write_to_test_expectations(self, line_list):
         """Writes to TestExpectations.
 
-        Writes the test expectations lines in |line_list| to the test
-        expectations file.
-
         The place in the file where the new lines are inserted is after a
         marker comment line. If this marker comment line is not found, it will
         be added to the end of the file.
 
         Args:
-            line_list: A list of w3c test expectations lines.
+            line_list: A list of lines to add to the TestExpectations file.
         """
         _log.debug('Lines to write to TestExpectations: %r', line_list)
         port = self.host.port_factory.get()
-        expectations_file = port.path_to_generic_test_expectations_file()
-        comment_line = '# Tests added from W3C auto import bot'
-        file_contents = self.host.filesystem.read_text_file(expectations_file)
-        w3c_comment_line_index = file_contents.find(comment_line)
-        all_lines = ''
-        for line in line_list:
-            end_bracket_index = line.split().index(']')
-            test_name = line.split()[end_bracket_index + 1]
-            if test_name in file_contents:
-                continue
-            all_lines += str(line) + '\n'
-        all_lines = all_lines[:-1]
-        if w3c_comment_line_index == -1:
-            file_contents += '\n%s\n' % comment_line
-            file_contents += all_lines
+        expectations_file_path = port.path_to_generic_test_expectations_file()
+        marker_comment = '# Tests added from W3C auto import bot'
+        file_contents = self.host.filesystem.read_text_file(expectations_file_path)
+        marker_comment_index = file_contents.find(marker_comment)
+        line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
+        if marker_comment_index == -1:
+            file_contents += '\n%s\n' % marker_comment
+            file_contents += '\n'.join(line_list)
         else:
-            end_of_comment_line = (file_contents[w3c_comment_line_index:].find('\n')) + w3c_comment_line_index
-            new_data = file_contents[: end_of_comment_line + 1] + all_lines + file_contents[end_of_comment_line:]
-            file_contents = new_data
-        self.host.filesystem.write_text_file(expectations_file, file_contents)
+            end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
+            file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
+        self.host.filesystem.write_text_file(expectations_file_path, file_contents)
+
+    @staticmethod
+    def _test_name_from_expectation_string(expectation_string):
+        return TestExpectationLine.tokenize_line(filename='', expectation_string=expectation_string, line_number=0).name
 
     def get_expected_txt_files(self, tests_results):
         """Fetches new baseline files for tests that should be rebaselined.
