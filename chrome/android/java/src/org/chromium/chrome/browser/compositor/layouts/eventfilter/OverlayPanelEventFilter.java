@@ -171,6 +171,11 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
             return super.onInterceptTouchEventInternal(e, isKeyboardShowing);
         }
 
+        // TODO(mdjones): Speculative fix for crbug.com/613069. In the event that the panel is
+        // closed while recording events, clear the cache and reset.
+        mRecordedEvents.clear();
+        reset();
+
         return false;
     }
 
