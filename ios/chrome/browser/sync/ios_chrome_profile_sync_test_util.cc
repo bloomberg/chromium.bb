@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "components/browser_sync/browser/profile_sync_service_mock.h"
-#include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/signin_manager_wrapper.h"

@@ -63,7 +63,7 @@ test("components_unittests") {
     "//components/base32:unit_tests",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
-    "//components/browser_sync/browser:unit_tests",
+    "//components/browser_sync:unit_tests",
     "//components/browsing_data/core:unit_tests",
     "//components/browsing_data_ui:unit_tests",
     "//components/bubble:unit_tests",

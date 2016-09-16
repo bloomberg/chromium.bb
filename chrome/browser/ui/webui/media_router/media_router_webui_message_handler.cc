@@ -28,7 +28,7 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

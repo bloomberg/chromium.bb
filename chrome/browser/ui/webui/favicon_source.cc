@@ -15,7 +15,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"

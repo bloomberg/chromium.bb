@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 
 #include <memory>
 #include <utility>
@@ -22,8 +22,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/browser_sync/browser/profile_sync_test_util.h"
-#include "components/browser_sync/common/browser_sync_switches.h"
+#include "components/browser_sync/browser_sync_switches.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -133,7 +133,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
  public:
   explicit SyncBackendHostMockCollectDeleteDirParam(
       std::vector<bool>* delete_dir_param)
-     : delete_dir_param_(delete_dir_param) {}
+      : delete_dir_param_(delete_dir_param) {}
 
   void Initialize(
       sync_driver::SyncFrontend* frontend,
@@ -277,9 +277,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_->Initialize();
   }
 
-  void InitializeForFirstSync() {
-    service_->Initialize();
-  }
+  void InitializeForFirstSync() { service_->Initialize(); }
 
   void TriggerPassphraseRequired() {
     service_->OnPassphraseRequired(syncer::REASON_DECRYPTION,
@@ -328,7 +326,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncBackendHostCreationCollectDeleteDir(
-      int times, std::vector<bool> *delete_dir_param) {
+      int times,
+      std::vector<bool>* delete_dir_param) {
     EXPECT_CALL(*component_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(times)
         .WillRepeatedly(
@@ -365,9 +364,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return profile_sync_service_bundle_.auth_service();
   }
 
-  ProfileSyncService* service() {
-    return service_.get();
-  }
+  ProfileSyncService* service() { return service_.get(); }
 
   syncable_prefs::TestingPrefServiceSyncable* prefs() {
     return profile_sync_service_bundle_.pref_service();
@@ -545,7 +542,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
 // things that deal with concepts like "signing out" and policy.
-#if !defined (OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   CreateService(ProfileSyncService::AUTO_START);
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());

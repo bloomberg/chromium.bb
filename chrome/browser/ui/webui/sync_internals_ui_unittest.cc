@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/browser_sync/browser/profile_sync_service_mock.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/sync/js/js_arg_list.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"

@@ -4,8 +4,8 @@
 
 // Defines all the command-line switches used by //components/browser_sync.
 
-#ifndef COMPONENTS_BROWSER_SYNC_COMMON_BROWSER_SYNC_SWITCHES_H_
-#define COMPONENTS_BROWSER_SYNC_COMMON_BROWSER_SYNC_SWITCHES_H_
+#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
+#define COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
 
 namespace switches {
 
@@ -15,4 +15,4 @@ extern const char kEnableWifiCredentialSync[];
 
 }  // namespace switches
 
-#endif  // COMPONENTS_BROWSER_SYNC_COMMON_BROWSER_SYNC_SWITCHES_H_
+#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_

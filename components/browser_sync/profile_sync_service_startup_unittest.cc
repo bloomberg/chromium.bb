@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -86,8 +86,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     sync_service_->Shutdown();
   }
 
-  void CreateSyncService(
-      ProfileSyncService::StartBehavior start_behavior) {
+  void CreateSyncService(ProfileSyncService::StartBehavior start_behavior) {
     component_factory_ = profile_sync_service_bundle_.component_factory();
     browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
@@ -110,10 +109,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   void SetError(DataTypeManager::ConfigureResult* result) {
     sync_driver::DataTypeStatusTable::TypeErrorMap errors;
     errors[syncer::BOOKMARKS] =
-        syncer::SyncError(FROM_HERE,
-                          syncer::SyncError::UNRECOVERABLE_ERROR,
-                          "Error",
-                          syncer::BOOKMARKS);
+        syncer::SyncError(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
+                          "Error", syncer::BOOKMARKS);
     result->data_type_status_table.UpdateFailedDataTypes(errors);
   }
 
@@ -194,9 +191,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Then start things up.
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
-  EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::CONFIGURED)).
-      WillOnce(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillOnce(Return(DataTypeManager::CONFIGURED))
+      .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -268,8 +265,8 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 
   // Update the credentials, unstalling the backend.
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   auto sync_blocker = sync_service_->GetSetupInProgressHandle();
@@ -304,8 +301,8 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop());
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -324,8 +321,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -341,8 +338,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   pref_service()->ClearPref(sync_driver::prefs::kSyncKeepEverythingSynced);
   syncer::ModelTypeSet user_types = syncer::UserTypes();
-  for (syncer::ModelTypeSet::Iterator iter = user_types.First();
-       iter.Good(); iter.Inc()) {
+  for (syncer::ModelTypeSet::Iterator iter = user_types.First(); iter.Good();
+       iter.Inc()) {
     pref_service()->ClearPref(
         sync_driver::SyncPrefs::GetPrefNameForDataType(iter.Get()));
   }
@@ -354,8 +351,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -381,8 +378,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   IssueTestTokens(account_id);
@@ -423,8 +420,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 
   // The service should stop when switching to managed mode.
   Mock::VerifyAndClearExpectations(data_type_manager);
-  EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   pref_service()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
   EXPECT_FALSE(sync_service_->IsBackendInitialized());
@@ -448,9 +445,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
-  DataTypeManager::ConfigureResult result(
-      status,
-      syncer::ModelTypeSet());
+  DataTypeManager::ConfigureResult result(status, syncer::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _))
       .WillRepeatedly(
           DoAll(InvokeOnConfigureStart(sync_service_.get()),
@@ -459,8 +454,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
                     base::Bind(&ProfileSyncServiceStartupTest::SetError,
                                base::Unretained(this)),
                     result)));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::STOPPED));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillOnce(Return(DataTypeManager::STOPPED));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   IssueTestTokens(account_id);
   sync_service_->Initialize();

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/test_http_bridge_factory.h"
+#include "components/browser_sync/test_http_bridge_factory.h"
 
 namespace browser_sync {
 
-bool TestHttpBridge::MakeSynchronousPost(int* error_code,
-                                         int* response_code) {
+bool TestHttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
   return false;
 }
 
@@ -20,12 +19,11 @@ const char* TestHttpBridge::GetResponseContent() const {
 }
 
 const std::string TestHttpBridge::GetResponseHeaderValue(
-    const std::string &) const {
+    const std::string&) const {
   return std::string();
 }
 
-void TestHttpBridge::Abort() {
-}
+void TestHttpBridge::Abort() {}
 
 TestHttpBridgeFactory::TestHttpBridgeFactory() {}
 

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/prefs/pref_member.h"
 

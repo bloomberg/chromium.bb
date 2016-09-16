@@ -23,8 +23,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/browser_sync/browser/abstract_profile_sync_service_test.h"
-#include "components/browser_sync/browser/test_profile_sync_service.h"
+#include "components/browser_sync/abstract_profile_sync_service_test.h"
+#include "components/browser_sync/test_profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
@@ -71,16 +71,18 @@ class HistoryBackendMock : public HistoryBackend {
     return time.ToInternalValue() == EXPIRED_VISIT;
   }
   MOCK_METHOD1(GetAllTypedURLs, bool(history::URLRows* entries));
-  MOCK_METHOD3(GetMostRecentVisitsForURL, bool(history::URLID id,
-                                               int max_visits,
-                                               history::VisitVector* visits));
+  MOCK_METHOD3(GetMostRecentVisitsForURL,
+               bool(history::URLID id,
+                    int max_visits,
+                    history::VisitVector* visits));
   MOCK_METHOD2(UpdateURL, bool(history::URLID id, const history::URLRow& url));
-  MOCK_METHOD3(AddVisits, bool(const GURL& url,
-                               const std::vector<history::VisitInfo>& visits,
-                               history::VisitSource visit_source));
+  MOCK_METHOD3(AddVisits,
+               bool(const GURL& url,
+                    const std::vector<history::VisitInfo>& visits,
+                    history::VisitSource visit_source));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
-  MOCK_METHOD2(SetPageTitle, void(const GURL& url,
-                                  const base::string16& title));
+  MOCK_METHOD2(SetPageTitle,
+               void(const GURL& url, const base::string16& title));
   MOCK_METHOD1(DeleteURL, void(const GURL& url));
 
  private:
@@ -100,9 +102,8 @@ class HistoryServiceMock : public history::HistoryService {
     // evaluate task.release() before the arguments for the first Bind().
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&HistoryServiceMock::RunTaskOnDBThread,
-                   base::Unretained(this), task_raw),
+        FROM_HERE, base::Bind(&HistoryServiceMock::RunTaskOnDBThread,
+                              base::Unretained(this), task_raw),
         base::Bind(&base::DeletePointer<history::HistoryDBTask>,
                    task.release()));
     return base::CancelableTaskTracker::kBadTaskId;  // unused
@@ -313,13 +314,9 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                   const history::URLRow& row) {
     base::Time visit_time;
     history::RedirectList redirects;
-    SendNotification(
-        base::Bind(&HistoryBackendNotifier::NotifyURLVisited,
-                   base::Unretained(history_backend_.get()),
-                   transition,
-                   row,
-                   redirects,
-                   visit_time));
+    SendNotification(base::Bind(&HistoryBackendNotifier::NotifyURLVisited,
+                                base::Unretained(history_backend_.get()),
+                                transition, row, redirects, visit_time));
   }
 
   void SendNotificationURLsModified(const history::URLRows& rows) {
@@ -361,12 +358,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     history::URLRow history_url(gurl, ++unique_url_id);
     history_url.set_title(base::UTF8ToUTF16(title));
     history_url.set_typed_count(typed_count);
-    history_url.set_last_visit(
-        base::Time::FromInternalValue(last_visit));
+    history_url.set_last_visit(base::Time::FromInternalValue(last_visit));
     history_url.set_hidden(hidden);
-    visits->push_back(history::VisitRow(
-        history_url.id(), history_url.last_visit(), 0,
-        ui::PAGE_TRANSITION_TYPED, 0));
+    visits->push_back(history::VisitRow(history_url.id(),
+                                        history_url.last_visit(), 0,
+                                        ui::PAGE_TRANSITION_TYPED, 0));
     history_url.set_visit_count(visits->size());
     return history_url;
   }
@@ -394,9 +390,8 @@ void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
   test->CreateRoot(syncer::TYPED_URLS);
   for (size_t i = 0; i < entries.size(); ++i) {
     history::VisitVector visits;
-    visits.push_back(history::VisitRow(
-        entries[i].id(), entries[i].last_visit(), 0,
-        ui::PageTransitionFromInt(0), 0));
+    visits.push_back(history::VisitRow(entries[i].id(), entries[i].last_visit(),
+                                       0, ui::PageTransitionFromInt(0), 0));
     test->AddTypedUrlSyncNode(entries[i], visits);
   }
 }
@@ -418,8 +413,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   history::URLRows entries;
   history::VisitVector visits;
-  entries.push_back(MakeTypedUrlEntry("http://foo.com", "bar",
-                                      2, 15, false, &visits));
+  entries.push_back(
+      MakeTypedUrlEntry("http://foo.com", "bar", 2, 15, false, &visits));
 
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
@@ -439,10 +434,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeErrorReadingVisits) {
   history::URLRows entries;
   history::VisitVector visits;
-  history::URLRow native_entry1(MakeTypedUrlEntry("http://foo.com", "bar",
-                                                  2, 15, false, &visits));
-  history::URLRow native_entry2(MakeTypedUrlEntry("http://foo2.com", "bar",
-                                                  3, 15, false, &visits));
+  history::URLRow native_entry1(
+      MakeTypedUrlEntry("http://foo.com", "bar", 2, 15, false, &visits));
+  history::URLRow native_entry2(
+      MakeTypedUrlEntry("http://foo2.com", "bar", 3, 15, false, &visits));
   entries.push_back(native_entry1);
   entries.push_back(native_entry2);
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
@@ -467,10 +462,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithBlankEmptySync) {
   std::vector<history::URLRow> entries;
   history::VisitVector visits;
   // Add an empty URL.
-  entries.push_back(MakeTypedUrlEntry("", "bar",
-                                      2, 15, false, &visits));
-  entries.push_back(MakeTypedUrlEntry("http://foo.com", "bar",
-                                      2, 15, false, &visits));
+  entries.push_back(MakeTypedUrlEntry("", "bar", 2, 15, false, &visits));
+  entries.push_back(
+      MakeTypedUrlEntry("http://foo.com", "bar", 2, 15, false, &visits));
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
@@ -490,8 +484,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
   history::VisitVector sync_visits;
   history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
                                                  2, 15, false, &native_visits));
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
-                                               3, 16, false, &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry", 3,
+                                               16, false, &sync_visits));
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
@@ -526,9 +520,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeExpiredSync) {
   history::VisitVector sync_visits;
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
-                                               3, EXPIRED_VISIT, false,
-                                               &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry(
+      "http://sync.com", "entry", 3, EXPIRED_VISIT, false, &sync_visits));
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
 
@@ -545,15 +538,15 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
   history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
                                                  2, 15, false, &native_visits));
   history::VisitVector sync_visits;
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://native.com", "name",
-                                               1, 17, false, &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://native.com", "name", 1,
+                                               17, false, &sync_visits));
   history::VisitVector merged_visits;
-  merged_visits.push_back(history::VisitRow(
-      sync_entry.id(), base::Time::FromInternalValue(15), 0,
-      ui::PageTransitionFromInt(0), 0));
+  merged_visits.push_back(
+      history::VisitRow(sync_entry.id(), base::Time::FromInternalValue(15), 0,
+                        ui::PageTransitionFromInt(0), 0));
 
-  history::URLRow merged_entry(MakeTypedUrlEntry("http://native.com", "name",
-                                                 2, 17, false, &merged_visits));
+  history::URLRow merged_entry(MakeTypedUrlEntry("http://native.com", "name", 2,
+                                                 17, false, &merged_visits));
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
@@ -584,8 +577,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithErrorHasSyncMerge) {
   history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "native",
                                                  2, 15, false, &native_visits));
   history::VisitVector sync_visits;
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://native.com", "sync",
-                                               1, 17, false, &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://native.com", "sync", 1,
+                                               17, false, &sync_visits));
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
@@ -615,8 +608,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithErrorHasSyncMerge) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   history::VisitVector added_visits;
-  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
-                                                2, 15, false, &added_visits));
+  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry", 2,
+                                                15, false, &added_visits));
 
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
@@ -638,10 +631,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
   history::VisitVector added_visits;
-  history::URLRow empty_entry(MakeTypedUrlEntry("", "entry",
-                                                2, 15, false, &added_visits));
-  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
-                                                2, 15, false, &added_visits));
+  history::URLRow empty_entry(
+      MakeTypedUrlEntry("", "entry", 2, 15, false, &added_visits));
+  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry", 2,
+                                                15, false, &added_visits));
 
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
@@ -664,9 +657,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   history::VisitVector original_visits;
-  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                   2, 15, false,
-                                                   &original_visits));
+  history::URLRow original_entry(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits));
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
@@ -678,9 +670,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
-  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  7, 17, false,
-                                                  &updated_visits));
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry", 7,
+                                                  17, false, &updated_visits));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(updated_visits), Return(true)));
 
@@ -696,8 +687,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
   history::VisitVector added_visits;
-  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
-                                                2, 15, false, &added_visits));
+  history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry", 2,
+                                                15, false, &added_visits));
 
   EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
@@ -717,9 +708,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   history::VisitVector original_visits;
-  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                   2, 15, false,
-                                                   &original_visits));
+  history::URLRow original_entry(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits));
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
@@ -731,9 +721,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
-  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  7, 17, false,
-                                                  &updated_visits));
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry", 7,
+                                                  17, false, &updated_visits));
   EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(updated_visits), Return(true)));
 
@@ -747,9 +736,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   history::VisitVector original_visits;
-  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                   2, 15, false,
-                                                   &original_visits));
+  history::URLRow original_entry(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits));
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
@@ -766,9 +754,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   EXPECT_TRUE(URLsEqual(original_entry, new_sync_entries[0]));
 
   history::VisitVector updated_visits;
-  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  7, 15, false,
-                                                  &updated_visits));
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry", 7,
+                                                  15, false, &updated_visits));
 
   // Should ignore this change because it's not TYPED.
   SendNotificationURLVisited(ui::PAGE_TRANSITION_RELOAD, updated_entry);
@@ -780,9 +767,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
 
   // Now, try updating it with a large number of visits not divisible by 10
   // (should ignore this visit).
-  history::URLRow twelve_visits(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  12, 15, false,
-                                                  &updated_visits));
+  history::URLRow twelve_visits(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 12, 15, false, &updated_visits));
   SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, twelve_visits);
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
@@ -792,9 +778,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
 
   // Now, try updating it with a large number of visits that is divisible by 10
   // (should *not* be ignored).
-  history::URLRow twenty_visits(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                  20, 15, false,
-                                                  &updated_visits));
+  history::URLRow twenty_visits(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 20, 15, false, &updated_visits));
   SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, twenty_visits);
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
@@ -804,14 +789,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   history::VisitVector original_visits1;
-  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                    2, 15, false,
-                                                    &original_visits1));
+  history::URLRow original_entry1(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits1));
   history::VisitVector original_visits2;
-  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
-                                                    "entry2",
-                                                    3, 15, false,
-                                                    &original_visits2));
+  history::URLRow original_entry2(MakeTypedUrlEntry(
+      "http://mine2.com", "entry2", 3, 15, false, &original_visits2));
   history::URLRows original_entries;
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
@@ -835,14 +817,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   history::VisitVector original_visits1;
-  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                    2, 15, false,
-                                                    &original_visits1));
+  history::URLRow original_entry1(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits1));
   history::VisitVector original_visits2;
-  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
-                                                    "entry2",
-                                                    3, 15, false,
-                                                    &original_visits2));
+  history::URLRow original_entry2(MakeTypedUrlEntry(
+      "http://mine2.com", "entry2", 3, 15, false, &original_visits2));
   history::URLRows original_entries;
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
@@ -867,14 +846,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   history::VisitVector original_visits1;
-  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
-                                                    2, 15, false,
-                                                    &original_visits1));
+  history::URLRow original_entry1(MakeTypedUrlEntry(
+      "http://mine.com", "entry", 2, 15, false, &original_visits1));
   history::VisitVector original_visits2;
-  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
-                                                    "entry2",
-                                                    3, 15, false,
-                                                    &original_visits2));
+  history::URLRow original_entry2(MakeTypedUrlEntry(
+      "http://mine2.com", "entry2", 3, 15, false, &original_visits2));
   history::URLRows original_entries;
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
@@ -903,8 +879,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   history::VisitVector sync_visits;
   history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
                                                  2, 15, false, &native_visits));
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
-                                               3, 16, false, &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry", 3,
+                                               16, false, &sync_visits));
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
@@ -940,8 +916,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   history::VisitVector sync_visits;
   history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
                                                  2, 15, false, &native_visits));
-  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
-                                               3, 16, false, &sync_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry", 3,
+                                               16, false, &sync_visits));
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
@@ -965,12 +941,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
 TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
   history::VisitVector original_visits;
   // Create http and file url.
-  history::URLRow url_entry(MakeTypedUrlEntry("http://yey.com",
-                                              "yey", 12, 15, false,
-                                              &original_visits));
-  history::URLRow file_entry(MakeTypedUrlEntry("file:///kitty.jpg",
-                                               "kitteh", 12, 15, false,
-                                               &original_visits));
+  history::URLRow url_entry(MakeTypedUrlEntry("http://yey.com", "yey", 12, 15,
+                                              false, &original_visits));
+  history::URLRow file_entry(MakeTypedUrlEntry(
+      "file:///kitty.jpg", "kitteh", 12, 15, false, &original_visits));
 
   history::URLRows original_entries;
   original_entries.push_back(url_entry);
@@ -987,15 +961,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
 
   history::VisitVector updated_visits;
   // Create updates for the previous urls + a new file one.
-  history::URLRow updated_url_entry(MakeTypedUrlEntry("http://yey.com",
-                                                      "yey", 20, 15, false,
-                                                      &updated_visits));
-  history::URLRow updated_file_entry(MakeTypedUrlEntry("file:///cat.jpg",
-                                                       "cat", 20, 15, false,
-                                                       &updated_visits));
-  history::URLRow new_file_entry(MakeTypedUrlEntry("file:///dog.jpg",
-                                                   "dog", 20, 15, false,
-                                                   &updated_visits));
+  history::URLRow updated_url_entry(MakeTypedUrlEntry(
+      "http://yey.com", "yey", 20, 15, false, &updated_visits));
+  history::URLRow updated_file_entry(MakeTypedUrlEntry(
+      "file:///cat.jpg", "cat", 20, 15, false, &updated_visits));
+  history::URLRow new_file_entry(MakeTypedUrlEntry("file:///dog.jpg", "dog", 20,
+                                                   15, false, &updated_visits));
 
   history::URLRows changed_urls;
   changed_urls.push_back(updated_url_entry);
@@ -1015,12 +986,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
 TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalhostURL) {
   history::VisitVector original_visits;
   // Create http and localhost url.
-  history::URLRow url_entry(MakeTypedUrlEntry("http://yey.com",
-                                              "yey", 12, 15, false,
-                                              &original_visits));
-  history::URLRow localhost_entry(MakeTypedUrlEntry("http://localhost",
-                                              "localhost", 12, 15, false,
-                                              &original_visits));
+  history::URLRow url_entry(MakeTypedUrlEntry("http://yey.com", "yey", 12, 15,
+                                              false, &original_visits));
+  history::URLRow localhost_entry(MakeTypedUrlEntry(
+      "http://localhost", "localhost", 12, 15, false, &original_visits));
 
   history::URLRows original_entries;
   original_entries.push_back(url_entry);
@@ -1037,16 +1006,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalhostURL) {
 
   history::VisitVector updated_visits;
   // Update the previous entries and add a new localhost.
-  history::URLRow updated_url_entry(MakeTypedUrlEntry("http://yey.com",
-                                                  "yey", 20, 15, false,
-                                                  &updated_visits));
+  history::URLRow updated_url_entry(MakeTypedUrlEntry(
+      "http://yey.com", "yey", 20, 15, false, &updated_visits));
   history::URLRow updated_localhost_entry(MakeTypedUrlEntry(
-                                                  "http://localhost:80",
-                                                  "localhost", 20, 15, false,
-                                                  &original_visits));
-  history::URLRow localhost_ip_entry(MakeTypedUrlEntry("http://127.0.0.1",
-                                                  "localhost", 12, 15, false,
-                                                  &original_visits));
+      "http://localhost:80", "localhost", 20, 15, false, &original_visits));
+  history::URLRow localhost_ip_entry(MakeTypedUrlEntry(
+      "http://127.0.0.1", "localhost", 12, 15, false, &original_visits));
 
   history::URLRows changed_urls;
   changed_urls.push_back(updated_url_entry);
@@ -1072,9 +1037,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreModificationWithoutValidVisit) {
   StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
-  history::URLRow updated_url_entry(MakeTypedUrlEntry("http://yey.com",
-                                                  "yey", 20, 0, false,
-                                                  &updated_visits));
+  history::URLRow updated_url_entry(MakeTypedUrlEntry(
+      "http://yey.com", "yey", 20, 0, false, &updated_visits));
 
   history::URLRows changed_urls;
   changed_urls.push_back(updated_url_entry);

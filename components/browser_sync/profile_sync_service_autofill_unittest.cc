@@ -38,9 +38,9 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/browser_sync/browser/abstract_profile_sync_service_test.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/browser_sync/browser/test_profile_sync_service.h"
+#include "components/browser_sync/abstract_profile_sync_service_test.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync/core/read_node.h"
@@ -152,13 +152,10 @@ class AutofillTableMock : public AutofillTable {
   MOCK_METHOD1(UpdateAutofillEntries,
                bool(const std::vector<AutofillEntry>&));  // NOLINT
   MOCK_METHOD1(GetAutofillProfiles,
-               bool(std::vector<AutofillProfile*>*));  // NOLINT
-  MOCK_METHOD1(UpdateAutofillProfile,
-               bool(const AutofillProfile&));  // NOLINT
-  MOCK_METHOD1(AddAutofillProfile,
-               bool(const AutofillProfile&));  // NOLINT
-  MOCK_METHOD1(RemoveAutofillProfile,
-               bool(const std::string&));  // NOLINT
+               bool(std::vector<AutofillProfile*>*));                 // NOLINT
+  MOCK_METHOD1(UpdateAutofillProfile, bool(const AutofillProfile&));  // NOLINT
+  MOCK_METHOD1(AddAutofillProfile, bool(const AutofillProfile&));     // NOLINT
+  MOCK_METHOD1(RemoveAutofillProfile, bool(const std::string&));      // NOLINT
 };
 
 MATCHER_P(MatchProfiles, profile, "") {
@@ -209,17 +206,17 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
 
 class ProfileSyncServiceAutofillTest;
 
-template<class AutofillProfile>
+template <class AutofillProfile>
 syncer::ModelType GetModelType() {
   return syncer::UNSPECIFIED;
 }
 
-template<>
+template <>
 syncer::ModelType GetModelType<AutofillEntry>() {
   return AUTOFILL;
 }
 
-template<>
+template <>
 syncer::ModelType GetModelType<AutofillProfile>() {
   return AUTOFILL_PROFILE;
 }
@@ -266,16 +263,14 @@ class WebDataServiceFake : public AutofillWebDataService {
         db_thread_(db_thread),
         ui_thread_(ui_thread) {}
 
-  void SetDatabase(WebDatabase* web_database) {
-    web_database_ = web_database;
-  }
+  void SetDatabase(WebDatabase* web_database) { web_database_ = web_database; }
 
   void StartSyncableService() {
     // The |autofill_profile_syncable_service_| must be constructed on the DB
     // thread.
-    const base::Closure& on_changed_callback = base::Bind(
-        &WebDataServiceFake::NotifyAutofillMultipleChangedOnUIThread,
-        AsWeakPtr());
+    const base::Closure& on_changed_callback =
+        base::Bind(&WebDataServiceFake::NotifyAutofillMultipleChangedOnUIThread,
+                   AsWeakPtr());
     const base::Callback<void(syncer::ModelType)> on_sync_started_callback =
         base::Bind(&WebDataServiceFake::NotifySyncStartedOnUIThread,
                    AsWeakPtr());
@@ -306,8 +301,7 @@ class WebDataServiceFake : public AutofillWebDataService {
 
     base::Closure notify_cb =
         base::Bind(&AutocompleteSyncableService::AutofillEntriesChanged,
-                   base::Unretained(autocomplete_syncable_service_),
-                   changes);
+                   base::Unretained(autocomplete_syncable_service_), changes);
     db_thread_->PostTask(FROM_HERE,
                          base::Bind(&RunAndSignal, notify_cb, &event));
     event.Wait();
@@ -317,10 +311,9 @@ class WebDataServiceFake : public AutofillWebDataService {
     WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    base::Closure notify_cb =
-        base::Bind(&AutocompleteSyncableService::AutofillProfileChanged,
-                   base::Unretained(autofill_profile_syncable_service_),
-                   changes);
+    base::Closure notify_cb = base::Bind(
+        &AutocompleteSyncableService::AutofillProfileChanged,
+        base::Unretained(autofill_profile_syncable_service_), changes);
     db_thread_->PostTask(FROM_HERE,
                          base::Bind(&RunAndSignal, notify_cb, &event));
     event.Wait();
@@ -371,12 +364,8 @@ class WebDataServiceFake : public AutofillWebDataService {
 };
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
-  return new sync_driver::DataTypeManagerImpl(
-      debug_listener,
-      arg1,
-      arg2,
-      arg3,
-      arg4);
+  return new sync_driver::DataTypeManagerImpl(debug_listener, arg1, arg2, arg3,
+                                              arg4);
 }
 
 class MockPersonalDataManager : public PersonalDataManager {
@@ -388,15 +377,17 @@ class MockPersonalDataManager : public PersonalDataManager {
   MOCK_METHOD0(Refresh, void());
 };
 
-template <class T> class AddAutofillHelper;
+template <class T>
+class AddAutofillHelper;
 
 class ProfileSyncServiceAutofillTest
     : public AbstractProfileSyncServiceTest,
       public syncer::DataTypeDebugInfoListener {
  public:
   // DataTypeDebugInfoListener implementation.
-  void OnDataTypeConfigureComplete(const std::vector<
-      syncer::DataTypeConfigurationStats>& configuration_stats) override {
+  void OnDataTypeConfigureComplete(
+      const std::vector<syncer::DataTypeConfigurationStats>&
+          configuration_stats) override {
     ASSERT_EQ(1u, configuration_stats.size());
     association_stats_ = configuration_stats[0].association_stats;
   }
@@ -502,8 +493,8 @@ class ProfileSyncServiceAutofillTest
     }
     EXPECT_EQ(association_stats_.num_sync_items_after_association,
               association_stats_.num_sync_items_before_association +
-              association_stats_.num_sync_items_added -
-              association_stats_.num_sync_items_deleted);
+                  association_stats_.num_sync_items_added -
+                  association_stats_.num_sync_items_deleted);
   }
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
@@ -560,8 +551,8 @@ class ProfileSyncServiceAutofillTest
         std::vector<Time> timestamps;
         int timestamps_count = autofill.usage_timestamp_size();
         for (int i = 0; i < timestamps_count; ++i) {
-          timestamps.push_back(Time::FromInternalValue(
-              autofill.usage_timestamp(i)));
+          timestamps.push_back(
+              Time::FromInternalValue(autofill.usage_timestamp(i)));
         }
         entries->push_back(
             AutofillEntry(key, timestamps.front(), timestamps.back()));
@@ -593,11 +584,11 @@ class ProfileSyncServiceAutofillTest
 
       const sync_pb::AutofillProfileSpecifics& autofill(
           child_node.GetEntitySpecifics().autofill_profile());
-        AutofillProfile p;
-        p.set_guid(autofill.guid());
-        AutofillProfileSyncableService::OverwriteProfileWithServerData(autofill,
-                                                                       &p);
-        profiles->push_back(p);
+      AutofillProfile p;
+      p.set_guid(autofill.guid());
+      AutofillProfileSyncableService::OverwriteProfileWithServerData(autofill,
+                                                                     &p);
+      profiles->push_back(p);
       child_id = child_node.GetSuccessorId();
     }
     return true;
@@ -674,9 +665,10 @@ class AddAutofillHelper {
   AddAutofillHelper(ProfileSyncServiceAutofillTest* test,
                     const std::vector<T>& entries)
       : callback_(base::Bind(&AddAutofillHelper::AddAutofillCallback,
-                             base::Unretained(this), test, entries)),
-        success_(false) {
-  }
+                             base::Unretained(this),
+                             test,
+                             entries)),
+        success_(false) {}
 
   const base::Closure& callback() const { return callback_; }
   bool success() { return success_; }
@@ -699,7 +691,7 @@ class AddAutofillHelper {
 };
 
 // Overload write transaction to use custom NotifyTransactionComplete
-class WriteTransactionTest: public WriteTransaction {
+class WriteTransactionTest : public WriteTransaction {
  public:
   WriteTransactionTest(const tracked_objects::Location& from_here,
                        WriterTag writer,
@@ -795,13 +787,11 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     }
   }
 
-  void WaitForUpdateCompletion() {
-    is_finished_.Wait();
-  }
+  void WaitForUpdateCompletion() { is_finished_.Wait(); }
 
  private:
   friend class base::RefCountedThreadSafe<FakeServerUpdater>;
-  ~FakeServerUpdater() { }
+  ~FakeServerUpdater() {}
 
   AutofillEntry entry_;
   TestProfileSyncService* service_;
@@ -862,11 +852,10 @@ TEST_F(ProfileSyncServiceAutofillTest, HasProfileEmptySync) {
   std::vector<AutofillProfile> expected_profiles;
   // Owned by GetAutofillProfiles caller.
   AutofillProfile* profile0 = new AutofillProfile;
-  autofill::test::SetProfileInfoWithGuid(profile0,
-      "54B3F9AA-335E-4F71-A27D-719C41564230", "Billing",
-      "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  autofill::test::SetProfileInfoWithGuid(
+      profile0, "54B3F9AA-335E-4F71-A27D-719C41564230", "Billing", "Mitchell",
+      "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+      "Hollywood", "CA", "91601", "US", "12345678910");
   profiles.push_back(profile0);
   expected_profiles.push_back(*profile0);
   EXPECT_CALL(autofill_table(), GetAutofillProfiles(_))
@@ -930,8 +919,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                           &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   std::set<AutofillEntry> new_sync_entries_set(new_sync_entries.begin(),
                                                new_sync_entries.end());
 
@@ -961,25 +950,24 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                           &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(merged_entry == new_sync_entries[0]);
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   AutofillProfile sync_profile;
-  autofill::test::SetProfileInfoWithGuid(&sync_profile,
-      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
-      "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
 
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill::test::SetProfileInfoWithGuid(native_profile,
-      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+      "Orlando", "FL", "32801", "US", "19482937549");
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -998,8 +986,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   ASSERT_TRUE(add_autofill.success());
 
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
-      &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
   EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
 }
@@ -1235,19 +1223,17 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSync_DifferentPrimaryInfo) {
 TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   AutofillProfile sync_profile;
 
-  autofill::test::SetProfileInfoWithGuid(&sync_profile,
-      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
-      "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
   sync_profile.set_use_count(20);
   sync_profile.set_use_date(base::Time::FromTimeT(1234));
 
   std::string native_guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill::test::SetProfileInfoWithGuid(native_profile,
-      native_guid.c_str(), "Billing",
-      "Mitchell", "Morrison",
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, native_guid.c_str(), "Billing", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
   native_profile->set_use_count(5);
@@ -1270,8 +1256,8 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   ASSERT_TRUE(add_autofill.success());
 
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
-      &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
   // Check that the profiles were merged.
   ASSERT_EQ(1U, new_sync_profiles.size());
   EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
@@ -1306,8 +1292,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                           &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(added_entry == new_sync_entries[0]);
 }
@@ -1321,18 +1307,18 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   ASSERT_TRUE(create_root.success());
 
   AutofillProfile added_profile;
-  autofill::test::SetProfileInfoWithGuid(&added_profile,
-      "D6ADA912-D374-4C0A-917D-F5C8EBE43011", "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  autofill::test::SetProfileInfoWithGuid(
+      &added_profile, "D6ADA912-D374-4C0A-917D-F5C8EBE43011", "Josephine",
+      "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+      "Orlando", "FL", "32801", "US", "19482937549");
 
-  AutofillProfileChange change(
-      AutofillProfileChange::ADD, added_profile.guid(), &added_profile);
+  AutofillProfileChange change(AutofillProfileChange::ADD, added_profile.guid(),
+                               &added_profile);
   web_data_service()->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
-      &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
   EXPECT_EQ(0, added_profile.Compare(new_sync_profiles[0]));
 }
@@ -1357,18 +1343,17 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
                       Return(true)));
 
   AutofillChangeList changes;
-  changes.push_back(AutofillChange(AutofillChange::UPDATE,
-                                   updated_entry.key()));
+  changes.push_back(
+      AutofillChange(AutofillChange::UPDATE, updated_entry.key()));
   web_data_service()->OnAutofillEntriesChanged(changes);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                           &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(updated_entry == new_sync_entries[0]);
 }
-
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   AutofillEntry original_entry(MakeAutofillEntry("my", "entry", 1));
@@ -1383,28 +1368,28 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   ASSERT_TRUE(create_root.success());
 
   AutofillChangeList changes;
-  changes.push_back(AutofillChange(AutofillChange::REMOVE,
-                                   original_entry.key()));
+  changes.push_back(
+      AutofillChange(AutofillChange::REMOVE, original_entry.key()));
   web_data_service()->OnAutofillEntriesChanged(changes);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
-                                           &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
   ASSERT_EQ(0U, new_sync_entries.size());
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   AutofillProfile sync_profile;
-  autofill::test::SetProfileInfoWithGuid(&sync_profile,
-      "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine",
+      "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+      "Orlando", "FL", "32801", "US", "19482937549");
   AutofillProfile* native_profile = new AutofillProfile;
-  autofill::test::SetProfileInfoWithGuid(native_profile,
-      "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine",
+      "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+      "Orlando", "FL", "32801", "US", "19482937549");
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1418,13 +1403,13 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   StartSyncService(add_autofill.callback(), false, AUTOFILL_PROFILE);
   ASSERT_TRUE(add_autofill.success());
 
-  AutofillProfileChange change(
-      AutofillProfileChange::REMOVE, sync_profile.guid(), NULL);
+  AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                               sync_profile.guid(), NULL);
   web_data_service()->OnAutofillProfileChanged(change);
 
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
-      &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
   ASSERT_EQ(0U, new_sync_profiles.size());
 }
 
@@ -1481,7 +1466,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
   EXPECT_EQ(3U, sync_entries.size());
   EXPECT_EQ(0U, sync_profiles.size());
   for (size_t i = 0; i < sync_entries.size(); i++) {
-    DVLOG(1) << "Entry " << i << ": " << sync_entries[i].key().name()
-             << ", " << sync_entries[i].key().value();
+    DVLOG(1) << "Entry " << i << ": " << sync_entries[i].key().name() << ", "
+             << sync_entries[i].key().value();
   }
 }

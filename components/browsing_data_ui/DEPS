@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/browser_sync/browser",
+  "+components/browser_sync",
   "+components/history/core/browser",
   "+components/history/core/test",
   "+components/signin",

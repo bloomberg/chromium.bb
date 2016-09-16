@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_H_
-#define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_H_
+#ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
+#define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 
 #include <memory>
 #include <set>
@@ -192,25 +192,25 @@ class ProfileSyncService : public sync_driver::SyncService,
   typedef browser_sync::SyncBackendHost::Status Status;
   typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
 
-  enum SyncEventCodes  {
+  enum SyncEventCodes {
     MIN_SYNC_EVENT_CODE = 0,
 
     // Events starting the sync service.
-    START_FROM_NTP = 1,      // Sync was started from the ad in NTP
-    START_FROM_WRENCH = 2,   // Sync was started from the Wrench menu.
-    START_FROM_OPTIONS = 3,  // Sync was started from Wrench->Options.
+    START_FROM_NTP = 1,               // Sync was started from the ad in NTP
+    START_FROM_WRENCH = 2,            // Sync was started from the Wrench menu.
+    START_FROM_OPTIONS = 3,           // Sync was started from Wrench->Options.
     START_FROM_BOOKMARK_MANAGER = 4,  // Sync was started from Bookmark manager.
     START_FROM_PROFILE_MENU = 5,  // Sync was started from multiprofile menu.
-    START_FROM_URL = 6,  // Sync was started from a typed URL.
+    START_FROM_URL = 6,           // Sync was started from a typed URL.
 
     // Events regarding cancellation of the signon process of sync.
-    CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting
-                                            // username and password.
-    CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
-    CANCEL_DURING_CONFIGURE = 12,           // Cancelled before choosing data
-                                            // types and clicking OK.
+    CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,  // Cancelled before submitting
+                                           // username and password.
+    CANCEL_DURING_SIGNON = 11,             // Cancelled after auth.
+    CANCEL_DURING_CONFIGURE = 12,          // Cancelled before choosing data
+                                           // types and clicking OK.
     // Events resulting in the stoppage of sync service.
-    STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
+    STOP_FROM_OPTIONS = 20,          // Sync was stopped from Wrench->Options.
     STOP_FROM_ADVANCED_DIALOG = 21,  // Sync was stopped via advanced settings.
 
     // Miscellaneous events caused by sync service.
@@ -497,8 +497,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // If it is running, the DataTypeManager will be instructed to reconfigure
   // the sync backend so that exactly these datatypes are actively synced.  See
   // class comment for more on what it means for a datatype to be Preferred.
-  virtual void ChangePreferredDataTypes(
-      syncer::ModelTypeSet preferred_types);
+  virtual void ChangePreferredDataTypes(syncer::ModelTypeSet preferred_types);
 
   // Returns the set of types which are enforced programmatically and can not
   // be disabled by the user.
@@ -620,10 +619,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Helper for OnUnrecoverableError.
   // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
   // and in SyncBackendHost::Shutdown.
-  void OnUnrecoverableErrorImpl(
-      const tracked_objects::Location& from_here,
-      const std::string& message,
-      bool delete_sync_database);
+  void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
+                                const std::string& message,
+                                bool delete_sync_database);
 
   // This is a cache of the last authentication response we received from the
   // sync server. The UI queries this to display appropriate messaging to the
@@ -1026,8 +1024,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 
-bool ShouldShowActionOnUI(
-    const syncer::SyncProtocolError& error);
+bool ShouldShowActionOnUI(const syncer::SyncProtocolError& error);
 
-
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_H_
+#endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_

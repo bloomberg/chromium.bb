@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_TEST_UTIL_H_
-#define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_TEST_UTIL_H_
+#ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
+#define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/time/time.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -183,4 +183,4 @@ class ProfileSyncServiceBundle {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_TEST_UTIL_H_
+#endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_

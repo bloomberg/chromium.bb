@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/sync/driver/invalidation_helper.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"

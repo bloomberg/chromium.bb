@@ -467,7 +467,7 @@ split_static_library("ui") {
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
-    "//components/browser_sync/browser",
+    "//components/browser_sync",
     "//components/browsing_data/core",
     "//components/browsing_data_ui",
     "//components/bubble:bubble",

@@ -32,7 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_change_processor_wrapper_for_test.h"

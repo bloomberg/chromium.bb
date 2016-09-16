@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_MOCK_H_
-#define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_MOCK_H_
+#ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
+#define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/driver/change_processor.h"
@@ -31,19 +31,19 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   virtual ~ProfileSyncServiceMock();
 
-  MOCK_METHOD4(OnBackendInitialized,
+  MOCK_METHOD4(
+      OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
            const std::string&,
            bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD2(OnUserChoseDatatypes,
-               void(bool sync_everything,
-                    syncer::ModelTypeSet chosen_types));
+               void(bool sync_everything, syncer::ModelTypeSet chosen_types));
 
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
-               const std::string& message));
+                    const std::string& message));
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
   MOCK_METHOD0(RequestStart, void());
   MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
@@ -92,10 +92,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
 
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
-  MOCK_METHOD2(SetEncryptionPassphrase, void(const std::string& passphrase,
-                                             PassphraseType type));
+  MOCK_METHOD2(SetEncryptionPassphrase,
+               void(const std::string& passphrase, PassphraseType type));
 
   MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
 };
 
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_MOCK_H_
+#endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

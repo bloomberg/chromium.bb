@@ -25,7 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"

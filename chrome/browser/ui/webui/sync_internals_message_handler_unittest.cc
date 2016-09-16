@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/common/browser_sync_switches.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/site_instance.h"

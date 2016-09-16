@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/test_profile_sync_service.h"
+#include "components/browser_sync/test_profile_sync_service.h"
 
 #include <utility>
 

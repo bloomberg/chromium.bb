@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/browser_sync/profile_sync_test_util.h"
+
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -22,20 +24,19 @@ namespace {
 
 class BundleSyncClient : public sync_driver::FakeSyncClient {
  public:
-  BundleSyncClient(
-      sync_driver::SyncApiComponentFactory* factory,
-      PrefService* pref_service,
-      sync_sessions::SyncSessionsClient* sync_sessions_client,
-      autofill::PersonalDataManager* personal_data_manager,
-      const base::Callback<base::WeakPtr<syncer::SyncableService>(
-          syncer::ModelType type)>& get_syncable_service_callback,
-      const base::Callback<sync_driver::SyncService*(void)>&
-          get_sync_service_callback,
-      const base::Callback<bookmarks::BookmarkModel*(void)>&
-          get_bookmark_model_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-      history::HistoryService* history_service);
+  BundleSyncClient(sync_driver::SyncApiComponentFactory* factory,
+                   PrefService* pref_service,
+                   sync_sessions::SyncSessionsClient* sync_sessions_client,
+                   autofill::PersonalDataManager* personal_data_manager,
+                   const base::Callback<base::WeakPtr<syncer::SyncableService>(
+                       syncer::ModelType type)>& get_syncable_service_callback,
+                   const base::Callback<sync_driver::SyncService*(void)>&
+                       get_sync_service_callback,
+                   const base::Callback<bookmarks::BookmarkModel*(void)>&
+                       get_bookmark_model_callback,
+                   scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+                   scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+                   history::HistoryService* history_service);
 
   ~BundleSyncClient() override;
 

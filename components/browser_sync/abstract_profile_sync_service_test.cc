@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/abstract_profile_sync_service_test.h"
+#include "components/browser_sync/abstract_profile_sync_service_test.h"
 
 #include <utility>
 
@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "components/browser_sync/browser/test_http_bridge_factory.h"
-#include "components/browser_sync/browser/test_profile_sync_service.h"
+#include "components/browser_sync/test_http_bridge_factory.h"
+#include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/core/test/sync_manager_factory_for_profile_sync_test.h"
 #include "components/sync/core/test/test_internal_components_factory.h"
 #include "components/sync/core/test/test_user_share.h"
@@ -219,11 +219,9 @@ CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,
                            base::Unretained(this))),
       test_(test),
       model_type_(model_type),
-      success_(false) {
-}
+      success_(false) {}
 
-CreateRootHelper::~CreateRootHelper() {
-}
+CreateRootHelper::~CreateRootHelper() {}
 
 const base::Closure& CreateRootHelper::callback() const {
   return callback_;

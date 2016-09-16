@@ -36,7 +36,7 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
-#include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/sync_error.h"

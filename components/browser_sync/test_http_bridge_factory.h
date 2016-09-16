@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_TEST_HTTP_BRIDGE_FACTORY_H_
-#define COMPONENTS_BROWSER_SYNC_BROWSER_TEST_HTTP_BRIDGE_FACTORY_H_
+#ifndef COMPONENTS_BROWSER_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
+#define COMPONENTS_BROWSER_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
+
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "components/sync/core/http_post_provider_factory.h"
@@ -49,4 +51,4 @@ class TestHttpBridgeFactory : public syncer::HttpPostProviderFactory {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_TEST_HTTP_BRIDGE_FACTORY_H_
+#endif  // COMPONENTS_BROWSER_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_

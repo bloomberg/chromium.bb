@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
-#define COMPONENTS_BROWSER_SYNC_BROWSER_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
+#ifndef COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
+#define COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/test_message_loop.h"
-#include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,4 +104,4 @@ class CreateRootHelper {
   DISALLOW_COPY_AND_ASSIGN(CreateRootHelper);
 };
 
-#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
+#endif  // COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_

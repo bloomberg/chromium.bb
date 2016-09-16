@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/browser/signin_confirmation_helper.h"
+#include "components/browser_sync/signin_confirmation_helper.h"
+
+#include <memory>
 
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
