@@ -11,5 +11,17 @@ console-stack-overflow.html:6 Uncaught RangeError: Maximum call stack size excee
     at overflow (console-stack-overflow.html:8)
     at overflow (console-stack-overflow.html:8)
     at overflow (console-stack-overflow.html:8)
-    at overflow (console-stack-overflow.html:8)overflow @ console-stack-overflow.html:6overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-st
+    at overflow (console-stack-overflow.html:8)
+overflow @ console-stack-overflow.html:6
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow @ console-stack-overflow.html:8
+overflow 
 

@@ -36,8 +36,10 @@ Tests that console logging dumps proper messages.
 console-tests.html:9 log console-message-wrapper console-log-level > console-message
 console-tests.html:10 debug console-message-wrapper console-debug-level > console-message
 console-tests.html:11 info console-message-wrapper console-info-level > console-message
-console-tests.html:12 warnonload @ console-tests.html:12 console-message-wrapper console-warning-level > console-message
-console-tests.html:13 erroronload @ console-tests.html:13 console-message-wrapper console-error-level > console-message
+console-tests.html:12 warn
+onload @ console-tests.html:12 console-message-wrapper console-warning-level > console-message
+console-tests.html:13 error
+onload @ console-tests.html:13 console-message-wrapper console-error-level > console-message
 5console-tests.html:15 repeated console-message-wrapper console-log-level > console-message repeated-message
 console-tests.html:17 count: 1 console-message-wrapper console-debug-level > console-message
 console-tests.html:17 count: 2 console-message-wrapper console-debug-level > console-message

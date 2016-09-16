@@ -13,7 +13,9 @@ table = "local in iframe"
 clear = 
 x: = VM:1 Uncaught SyntaxError: Unexpected end of input
     at Object.pauseInsideIframe (<anonymous>:6:5)
-    at testFunction (debugger-eval-on-call-frame-inside-iframe.html:35)pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:35
+    at testFunction (debugger-eval-on-call-frame-inside-iframe.html:35)
+pauseInsideIframe @ VM:6
+testFunction @ debugger-eval-on-call-frame-inside-iframe.html:35
 
 === Evaluating on top frame ===
 dir() = undefined
@@ -22,5 +24,7 @@ table =
 clear = "local in top frame"
 x: = VM:1 Uncaught SyntaxError: Unexpected end of input
     at Object.pauseInsideIframe (<anonymous>:6:5)
-    at testFunction (debugger-eval-on-call-frame-inside-iframe.html:35)pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:35
+    at testFunction (debugger-eval-on-call-frame-inside-iframe.html:35)
+pauseInsideIframe @ VM:6
+testFunction @ debugger-eval-on-call-frame-inside-iframe.html:35
 

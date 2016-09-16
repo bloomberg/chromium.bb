@@ -9,5 +9,8 @@ Tests exception message from eval on worker context in console contains stack tr
                 foo();
             }
             boo();
-VM:3 Uncaught Objecta: 239__proto__: Objectfoo @ VM:3boo @ VM:7(anonymous) @ VM:9
+VM:3 Uncaught Objecta: 239__proto__: Object
+foo @ VM:3
+boo @ VM:7
+(anonymous) @ VM:9
 

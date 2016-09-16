@@ -35,7 +35,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Timer InstalledPromise @ setTimeoutFunction.js:");
+                checkStringContains(causes, "Timer Installed\nPromise @ setTimeoutFunction.js:");
                 next();
             }
         },
@@ -62,7 +62,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Animation Frame RequestedPromise @ requestAnimationFrameFunction.js:");
+                checkStringContains(causes, "Animation Frame Requested\nPromise @ requestAnimationFrameFunction.js:");
                 next();
             }
         },
@@ -91,7 +91,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "First InvalidatedstyleRecalcFunction @ styleRecalcFunction.js:");
+                checkStringContains(causes, "First Invalidated\nstyleRecalcFunction @ styleRecalcFunction.js:");
                 next();
             }
         },
@@ -120,8 +120,8 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Layout ForcedlayoutFunction @ layoutFunction.js:");
-                checkStringContains(causes, "First Layout InvalidationlayoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "Layout Forced\nlayoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "First Layout Invalidation\nlayoutFunction @ layoutFunction.js:");
                 next();
             }
         }

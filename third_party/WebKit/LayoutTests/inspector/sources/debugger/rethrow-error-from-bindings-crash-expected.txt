@@ -13,19 +13,28 @@ Set timer for test function.
 rethrow-error-from-bindings-crash.html:11 Console was cleared
 rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
     at f2 (rethrow-error-from-bindings-crash.html:25)
-    at testFunction (rethrow-error-from-bindings-crash.html:15)f2 @ rethrow-error-from-bindings-crash.html:25testFunction @ rethrow-error-from-bindings-crash.html:15
+    at testFunction (rethrow-error-from-bindings-crash.html:15)
+f2 @ rethrow-error-from-bindings-crash.html:25
+testFunction @ rethrow-error-from-bindings-crash.html:15
 rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
-    at f1 (rethrow-error-from-bindings-crash.html:20)f1 @ rethrow-error-from-bindings-crash.html:20
+    at f1 (rethrow-error-from-bindings-crash.html:20)
+f1 @ rethrow-error-from-bindings-crash.html:20
 rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
-    at f2 (rethrow-error-from-bindings-crash.html:25)f2 @ rethrow-error-from-bindings-crash.html:25
+    at f2 (rethrow-error-from-bindings-crash.html:25)
+f2 @ rethrow-error-from-bindings-crash.html:25
 rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
-    at f1 (rethrow-error-from-bindings-crash.html:20)f1 @ rethrow-error-from-bindings-crash.html:20
+    at f1 (rethrow-error-from-bindings-crash.html:20)
+f1 @ rethrow-error-from-bindings-crash.html:20
 rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
-    at f2 (rethrow-error-from-bindings-crash.html:25)f2 @ rethrow-error-from-bindings-crash.html:25
+    at f2 (rethrow-error-from-bindings-crash.html:25)
+f2 @ rethrow-error-from-bindings-crash.html:25
 rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
-    at f1 (rethrow-error-from-bindings-crash.html:20)f1 @ rethrow-error-from-bindings-crash.html:20
+    at f1 (rethrow-error-from-bindings-crash.html:20)
+f1 @ rethrow-error-from-bindings-crash.html:20
 rethrow-error-from-bindings-crash.html:25 Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
-    at f2 (rethrow-error-from-bindings-crash.html:25)f2 @ rethrow-error-from-bindings-crash.html:25
+    at f2 (rethrow-error-from-bindings-crash.html:25)
+f2 @ rethrow-error-from-bindings-crash.html:25
 rethrow-error-from-bindings-crash.html:20 Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
-    at f1 (rethrow-error-from-bindings-crash.html:20)f1 @ rethrow-error-from-bindings-crash.html:20
+    at f1 (rethrow-error-from-bindings-crash.html:20)
+f1 @ rethrow-error-from-bindings-crash.html:20
 

@@ -13,5 +13,6 @@ name2:2 Uncaught SyntaxError: Unexpected token }
 
 Running: testConsoleErrorHighlight
 Line Message was added: name3 Error '42':1:10
-name3:2 42(anonymous) @ name3:2
+name3:2 42
+(anonymous) @ name3:2
 
