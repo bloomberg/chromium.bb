@@ -100,29 +100,29 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     if (exceptionState.hadException())
         return nullptr;
 
-    Notification* notification = new Notification(context, data);
+    Notification* notification = new Notification(context, Type::NonPersistent, data);
     notification->schedulePrepareShow();
-    notification->suspendIfNeeded();
 
+    notification->suspendIfNeeded();
     return notification;
 }
 
 Notification* Notification::create(ExecutionContext* context, const String& notificationId, const WebNotificationData& data, bool showing)
 {
-    Notification* notification = new Notification(context, data);
+    Notification* notification = new Notification(context, Type::Persistent, data);
+    notification->setState(showing ? State::Showing : State::Closed);
     notification->setNotificationId(notificationId);
-    notification->setState(showing ? NotificationStateShowing : NotificationStateClosed);
-    notification->suspendIfNeeded();
 
+    notification->suspendIfNeeded();
     return notification;
 }
 
-Notification::Notification(ExecutionContext* context, const WebNotificationData& data)
+Notification::Notification(ExecutionContext* context, Type type, const WebNotificationData& data)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
+    , m_type(type)
+    , m_state(State::Loading)
     , m_data(data)
-    , m_state(NotificationStateIdle)
-    , m_prepareShowMethodRunner(AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow))
 {
     DCHECK(notificationManager());
 }
@@ -133,15 +133,16 @@ Notification::~Notification()
 
 void Notification::schedulePrepareShow()
 {
-    DCHECK_EQ(m_state, NotificationStateIdle);
-    DCHECK(!m_prepareShowMethodRunner->isActive());
+    DCHECK_EQ(m_state, State::Loading);
+    DCHECK(!m_prepareShowMethodRunner);
 
+    m_prepareShowMethodRunner = AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow);
     m_prepareShowMethodRunner->runAsync();
 }
 
 void Notification::prepareShow()
 {
-    DCHECK_EQ(m_state, NotificationStateIdle);
+    DCHECK_EQ(m_state, State::Loading);
     if (NotificationManager::from(getExecutionContext())->permissionStatus() != mojom::blink::PermissionStatus::GRANTED) {
         dispatchErrorEvent();
         return;
@@ -161,28 +162,30 @@ void Notification::didLoadResources(NotificationResourcesLoader* loader)
     notificationManager()->show(WebSecurityOrigin(origin), m_data, loader->getResources(), this);
     m_loader.clear();
 
-    m_state = NotificationStateShowing;
+    m_state = State::Showing;
 }
 
 void Notification::close()
 {
-    if (m_state != NotificationStateShowing)
+    if (m_state != State::Showing)
         return;
 
-    if (m_notificationId.isNull()) {
-        // Fire the close event asynchronously.
+    // Schedule the "close" event to be fired for non-persistent notifications.
+    // Persistent notifications won't get such events for programmatic closes.
+    if (m_type == Type::NonPersistent) {
         getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, wrapPersistent(this)));
+        m_state = State::Closing;
 
-        m_state = NotificationStateClosing;
         notificationManager()->close(this);
-    } else {
-        m_state = NotificationStateClosed;
-
-        SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
-        DCHECK(origin);
-
-        notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag, m_notificationId);
+        return;
     }
+
+    m_state = State::Closed;
+
+    SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
+    DCHECK(origin);
+
+    notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag, m_notificationId);
 }
 
 void Notification::dispatchShowEvent()
@@ -206,10 +209,10 @@ void Notification::dispatchCloseEvent()
 {
     // The notification will be showing when the user initiated the close, or it will be
     // closing if the developer initiated the close.
-    if (m_state != NotificationStateShowing && m_state != NotificationStateClosing)
+    if (m_state != State::Showing && m_state != State::Closing)
         return;
 
-    m_state = NotificationStateClosed;
+    m_state = State::Closed;
     dispatchEvent(Event::create(EventTypeNames::close));
 }
 
@@ -376,9 +379,10 @@ void Notification::stop()
 {
     notificationManager()->notifyDelegateDestroyed(this);
 
-    m_state = NotificationStateClosed;
+    m_state = State::Closed;
 
-    m_prepareShowMethodRunner->stop();
+    if (m_prepareShowMethodRunner)
+        m_prepareShowMethodRunner->stop();
 
     if (m_loader)
         m_loader->stop();
@@ -386,7 +390,12 @@ void Notification::stop()
 
 bool Notification::hasPendingActivity() const
 {
-    return m_state == NotificationStateShowing || m_prepareShowMethodRunner->isActive() || m_loader;
+    // Non-persistent notification can receive events until they've been closed.
+    // Persistent notifications should be subject to regular garbage collection.
+    if (m_type == Type::NonPersistent)
+        return m_state != State::Closed;
+
+    return false;
 }
 
 DEFINE_TRACE(Notification)
