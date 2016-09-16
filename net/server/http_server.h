@@ -96,7 +96,9 @@ class HttpServer {
 
   // Expects the raw data to be stored in recv_data_. If parsing is successful,
   // will remove the data parsed from recv_data_, leaving only the unused
-  // recv data.
+  // recv data. If all data has been consumed successfully, but the headers are
+  // not fully parsed, *pos will be set to zero. Returns false if an error is
+  // encountered while parsing, true otherwise.
   bool ParseHeaders(const char* data,
                     size_t data_len,
                     HttpServerRequestInfo* info,

@@ -232,6 +232,13 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
     size_t pos = 0;
     if (!ParseHeaders(read_buf->StartOfBuffer(), read_buf->GetSize(),
                       &request, &pos)) {
+      // An error has occured. Close the connection.
+      Close(connection->id());
+      return ERR_CONNECTION_CLOSED;
+    } else if (!pos) {
+      // If pos is 0, all the data in read_buf has been consumed, but the
+      // headers have not been fully parsed yet. Continue parsing when more data
+      // rolls in.
       break;
     }
 
@@ -405,8 +412,10 @@ bool HttpServer::ParseHeaders(const char* data,
           buffer.clear();
           break;
         case ST_PROTO:
-          // TODO(mbelshe): Deal better with parsing protocol.
-          DCHECK(buffer == "HTTP/1.1");
+          if (buffer != "HTTP/1.1") {
+            LOG(ERROR) << "Cannot handle request with protocol: " << buffer;
+            next_state = ST_ERR;
+          }
           buffer.clear();
           break;
         case ST_NAME:
@@ -448,8 +457,10 @@ bool HttpServer::ParseHeaders(const char* data,
       }
     }
   }
-  // No more characters, but we haven't finished parsing yet.
-  return false;
+  // No more characters, but we haven't finished parsing yet. Signal this to
+  // the caller by setting |pos| to zero.
+  pos = 0;
+  return true;
 }
 
 HttpConnection* HttpServer::FindConnection(int connection_id) {
