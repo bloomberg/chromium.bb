@@ -490,10 +490,13 @@ public class NewTabPageView extends FrameLayout
         final int scrollY = getVerticalScroll();
         final float transitionLength =
                 getResources().getDimension(R.dimen.ntp_search_box_transition_length);
+        // Tab strip height is zero on phones, nonzero on tablets.
+        int tabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
 
-        // |scrollY - searchBoxTop| gives the distance the search bar is from the top of the screen.
-        return MathUtils.clamp(
-                (scrollY - searchBoxTop + transitionLength) / transitionLength, 0f, 1f);
+        // |scrollY - searchBoxTop + tabStripHeight| gives the distance the search bar is from the
+        // top of the tab.
+        return MathUtils.clamp((scrollY - searchBoxTop + transitionLength + tabStripHeight)
+                / transitionLength, 0f, 1f);
     }
 
     private ViewGroup getWrapperView() {
