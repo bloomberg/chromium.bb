@@ -79,11 +79,15 @@ EnterpriseInstallAttributes::EnterpriseInstallAttributes(
 EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
 
 void EnterpriseInstallAttributes::Init(const base::FilePath& cache_file) {
-  DCHECK_EQ(false, device_locked_);
+  DCHECK(!device_locked_);
 
-  // The actual check happens asynchronously, thus it is ok to trigger it before
-  // Init() has completed.
-  TriggerConsistencyCheck(kDbusRetryCount * kDbusRetryIntervalInSeconds);
+  // Mark the consistency check as running to ensure that LockDevice() is
+  // blocked, but wait for the cryptohome service to be available before
+  // actually calling TriggerConsistencyCheck().
+  consistency_check_running_ = true;
+  cryptohome_client_->WaitForServiceToBeAvailable(base::Bind(
+      &EnterpriseInstallAttributes::OnCryptohomeServiceInitiallyAvailable,
+      weak_ptr_factory_.GetWeakPtr()));
 
   if (!base::PathExists(cache_file))
     return;
@@ -99,7 +103,7 @@ void EnterpriseInstallAttributes::Init(const base::FilePath& cache_file) {
 
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   if (!install_attrs_proto.ParseFromArray(buf, len)) {
-    LOG(ERROR) << "Failed to parse install attributes cache";
+    LOG(ERROR) << "Failed to parse install attributes cache.";
     return;
   }
 
@@ -356,7 +360,6 @@ DeviceMode EnterpriseInstallAttributes::GetMode() {
 }
 
 void EnterpriseInstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
-  consistency_check_running_ = true;
   cryptohome_client_->TpmIsOwned(
       base::Bind(&EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -417,6 +420,16 @@ const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
     "enterprise.user";
 const char EnterpriseInstallAttributes::kAttrConsumerKioskEnabled[] =
     "consumer.app_kiosk_enabled";
+
+void EnterpriseInstallAttributes::OnCryptohomeServiceInitiallyAvailable(
+    bool service_is_ready) {
+  if (!service_is_ready)
+    LOG(ERROR) << "Failed waiting for cryptohome D-Bus service availability.";
+
+  // Start the consistency check even if we failed to wait for availability;
+  // hopefully the service will become available eventually.
+  TriggerConsistencyCheck(kDbusRetryCount);
+}
 
 std::string EnterpriseInstallAttributes::GetDeviceModeString(DeviceMode mode) {
   switch (mode) {

@@ -139,6 +139,10 @@ class EnterpriseInstallAttributes {
   static const char kAttrEnterpriseUser[];
   static const char kAttrConsumerKioskEnabled[];
 
+  // Called by |cryptohome_client_| when the cryptohome service becomes
+  // initially available over D-Bus.
+  void OnCryptohomeServiceInitiallyAvailable(bool service_is_ready);
+
   // Translates DeviceMode constants to strings used in the lockbox.
   std::string GetDeviceModeString(DeviceMode mode);
 
