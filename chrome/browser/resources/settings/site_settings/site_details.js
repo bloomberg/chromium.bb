@@ -54,9 +54,7 @@ Polymer({
     if (!site)
       return;
     this.browserProxy.getSiteDetails(site).then(function(siteInfo) {
-      this.site = siteInfo;
-      // TODO(dschuyler): set originForDisplay for fetchUsageTotal.
-      // TODO(dschuyler): set the page title to originForDisplay.
+      this.site = this.expandSiteException(siteInfo);
     }.bind(this));
   },
 

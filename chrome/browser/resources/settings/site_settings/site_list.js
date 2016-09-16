@@ -320,25 +320,6 @@ Polymer({
   },
 
   /**
-   * Converts a string origin/pattern to a URL.
-   * @param {string} originOrPattern The origin/pattern to convert to URL.
-   * @return {URL} The URL to return (or null if origin is not a valid URL).
-   * @private
-   */
-  toUrl_: function(originOrPattern) {
-    if (originOrPattern.length == 0)
-      return null;
-    // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
-    //     JS/C++ boundary.
-    // TODO(dschuyler): I agree. This filtering should be done in one go, rather
-    // that during the sort. The URL generation should be wrapped in a try/catch
-    // as well.
-    originOrPattern = originOrPattern.replace('*://', '');
-    originOrPattern = originOrPattern.replace('[*.]', '');
-    return new URL(this.ensureUrlHasScheme(originOrPattern));
-  },
-
-  /**
    * Converts an unordered site list to an ordered array, sorted by site name
    * then protocol and de-duped (by origin).
    * @param {!Array<SiteException>} sites A list of sites to sort and de-dupe.
@@ -348,8 +329,8 @@ Polymer({
   toSiteArray_: function(sites) {
     var self = this;
     sites.sort(function(a, b) {
-      var url1 = self.toUrl_(a.origin);
-      var url2 = self.toUrl_(b.origin);
+      var url1 = self.toUrl(a.origin);
+      var url2 = self.toUrl(b.origin);
       var comparison = url1.host.localeCompare(url2.host);
       if (comparison == 0) {
         comparison = url1.protocol.localeCompare(url2.protocol);
@@ -357,8 +338,8 @@ Polymer({
           comparison = url1.port.localeCompare(url2.port);
           if (comparison == 0) {
             // Compare hosts for the embedding origins.
-            var host1 = self.toUrl_(a.embeddingOrigin);
-            var host2 = self.toUrl_(b.embeddingOrigin);
+            var host1 = self.toUrl(a.embeddingOrigin);
+            var host2 = self.toUrl(b.embeddingOrigin);
             host1 = (host1 == null) ? '' : host1.host;
             host2 = (host2 == null) ? '' : host2.host;
             return host1.localeCompare(host2);
@@ -371,34 +352,18 @@ Polymer({
     var lastOrigin = '';
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
-      var origin = sites[i].origin;
-      var originForDisplay = this.sanitizePort(this.toUrl_(origin).origin);
-
-      var embeddingOrigin = sites[i].embeddingOrigin;
-      var embeddingOriginForDisplay = '';
-      if (origin != embeddingOrigin) {
-        embeddingOriginForDisplay =
-            this.getEmbedderString(embeddingOrigin, this.category);
-      }
+      /** @type {!SiteException} */
+      var siteException = this.expandSiteException(sites[i]);
 
       // The All Sites category can contain duplicates (from other categories).
-      if (originForDisplay == lastOrigin &&
-          embeddingOriginForDisplay == lastEmbeddingOrigin) {
+      if (siteException.originForDisplay == lastOrigin &&
+          siteException.embeddingOriginForDisplay == lastEmbeddingOrigin) {
         continue;
       }
 
-      results.push({
-         origin: origin,
-         originForDisplay: originForDisplay,
-         embeddingOrigin: embeddingOrigin,
-         embeddingOriginForDisplay: embeddingOriginForDisplay,
-         incognito: sites[i].incognito,
-         setting: sites[i].setting,
-         source: sites[i].source,
-      });
-
-      lastOrigin = originForDisplay;
-      lastEmbeddingOrigin = embeddingOriginForDisplay;
+      results.push(siteException);
+      lastOrigin = siteException.originForDisplay;
+      lastEmbeddingOrigin = siteException.embeddingOriginForDisplay;
     }
     return results;
   },

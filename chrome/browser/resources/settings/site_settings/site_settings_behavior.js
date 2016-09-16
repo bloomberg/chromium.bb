@@ -441,6 +441,55 @@ var SiteSettingsBehaviorImpl = {
         setting != settings.PermissionValues.ASK :
         setting != settings.PermissionValues.BLOCK;
   },
+
+  /**
+   * Converts a string origin/pattern to a URL.
+   * @param {string} originOrPattern The origin/pattern to convert to URL.
+   * @return {URL} The URL to return (or null if origin is not a valid URL).
+   * @private
+   */
+  toUrl: function(originOrPattern) {
+    if (originOrPattern.length == 0)
+      return null;
+    // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
+    //     JS/C++ boundary.
+    // TODO(dschuyler): I agree. This filtering should be done in one go, rather
+    // that during the sort. The URL generation should be wrapped in a try/catch
+    // as well.
+    originOrPattern = originOrPattern.replace('*://', '');
+    originOrPattern = originOrPattern.replace('[*.]', '');
+    return new URL(this.ensureUrlHasScheme(originOrPattern));
+  },
+
+  /**
+   * Convert an exception (received from the C++ handler) to a full
+   * SiteException.
+   * @param {!Object} exception The raw site exception from C++.
+   * @return {SiteException} The expanded (full) SiteException.
+   * @private
+   */
+  expandSiteException: function(exception) {
+    var origin = exception.origin;
+    var originForDisplay = this.sanitizePort(this.toUrl(origin).origin);
+
+    var embeddingOrigin = exception.embeddingOrigin;
+    var embeddingOriginForDisplay = '';
+    if (origin != embeddingOrigin) {
+      embeddingOriginForDisplay =
+          this.getEmbedderString(embeddingOrigin, this.category);
+    }
+
+    return {
+      origin: origin,
+      originForDisplay: originForDisplay,
+      embeddingOrigin: embeddingOrigin,
+      embeddingOriginForDisplay: embeddingOriginForDisplay,
+      incognito: exception.incognito,
+      setting: exception.setting,
+      source: exception.source,
+    };
+  },
+
 };
 
 /** @polymerBehavior */
