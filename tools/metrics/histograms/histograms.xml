@@ -39587,14 +39587,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Input.TimeToFirstNonScroll.AfterPaint" units="ms">
+<histogram name="PageLoad.InputTiming.NavigationToFirstNonScroll.AfterPaint"
+    units="ms">
   <owner>sahel@chromium.org</owner>
   <summary>
     Measures the time to first non-scroll input after the first paint.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Input.TimeToFirstScroll.AfterPaint" units="ms">
+<histogram name="PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint"
+    units="ms">
   <owner>sahel@chromium.org</owner>
   <summary>
     Measures the time to first scroll input after the first paint.

@@ -201,9 +201,9 @@ const char kHistogramFirstMeaningfulPaintStatus[] =
     "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus";
 
 const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
-    "PageLoad.Input.TimeToFirstNonScroll.AfterPaint";
+    "PageLoad.InputTiming.NavigationToFirstNonScroll.AfterPaint";
 const char kHistogramFirstScrollInputAfterFirstPaint[] =
-    "PageLoad.Input.TimeToFirstScroll.AfterPaint";
+    "PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint";
 
 }  // namespace internal
 
