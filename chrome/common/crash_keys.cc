@@ -228,6 +228,9 @@ size_t RegisterChromeCrashKeys() {
     // Temporary for https://crbug.com/630496.
     { "swdh_get_registration_cannot_host_url", crash_keys::kLargeSize },
     { "swdh_get_registration_cannot_document_url", crash_keys::kLargeSize },
+
+    // Temporary for https://crbug.com/647068.
+    { "received_quit_message", crash_keys::kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
