@@ -10,7 +10,7 @@
 Polymer({
   is: 'site-details',
 
-  behaviors: [SiteSettingsBehavior],
+  behaviors: [SiteSettingsBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -45,12 +45,32 @@ Polymer({
   },
 
   /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @protected
+   */
+  currentRouteChanged: function(route) {
+    var site = settings.getQueryParameters().get('site');
+    if (!site)
+      return;
+    this.browserProxy.getSiteDetails(site).then(function(siteInfo) {
+      this.site = siteInfo;
+      // TODO(dschuyler): set originForDisplay for fetchUsageTotal.
+      // TODO(dschuyler): set the page title to originForDisplay.
+    }.bind(this));
+  },
+
+  /**
    * Handler for when the origin changes.
    */
   onSiteChanged_: function() {
-    // Using originForDisplay avoids the [*.] prefix that some exceptions use.
-    var url = new URL(this.ensureUrlHasScheme(this.site.originForDisplay));
-    this.$.usageApi.fetchUsageTotal(url.hostname);
+    // originForDisplay may be initially undefined if the user follows a direct
+    // link (URL) to this page.
+    if (this.site.originForDisplay !== undefined) {
+      // Using originForDisplay avoids the [*.] prefix that some exceptions use.
+      var url = new URL(this.ensureUrlHasScheme(this.site.originForDisplay));
+      this.$.usageApi.fetchUsageTotal(url.hostname);
+    }
   },
 
   /**

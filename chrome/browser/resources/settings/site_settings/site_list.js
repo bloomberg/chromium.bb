@@ -367,12 +367,12 @@ Polymer({
       }
       return comparison;
     });
-    var results = /** @type {!Array<SiteException>} */ [];
+    var results = /** @type {!Array<SiteException>} */([]);
     var lastOrigin = '';
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
       var origin = sites[i].origin;
-      var originForDisplay = this.sanitizePort(origin.replace('[*.]', ''));
+      var originForDisplay = this.sanitizePort(this.toUrl_(origin).origin);
 
       var embeddingOrigin = sites[i].embeddingOrigin;
       var embeddingOriginForDisplay = '';
@@ -393,6 +393,7 @@ Polymer({
          embeddingOrigin: embeddingOrigin,
          embeddingOriginForDisplay: embeddingOriginForDisplay,
          incognito: sites[i].incognito,
+         setting: sites[i].setting,
          source: sites[i].source,
       });
 
@@ -440,7 +441,8 @@ Polymer({
     if (this.isPolicyControlled_(this.selectedSite.source))
       return;
 
-    settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS);
+    settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS,
+        new URLSearchParams('site=' + this.selectedSite.origin));
   },
 
   /**

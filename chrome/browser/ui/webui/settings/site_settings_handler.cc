@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -155,6 +156,10 @@ void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setCategoryPermissionForOrigin",
       base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForOrigin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSiteDetails",
+      base::Bind(&SiteSettingsHandler::HandleGetSiteDetails,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "isPatternValid",
@@ -436,13 +441,15 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
       exceptions.get());
   site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, content_type, web_ui(), false, exceptions.get());
+      map, content_type, web_ui(), /*incognito=*/false, /*filter=*/nullptr,
+      exceptions.get());
 
   if (profile_->HasOffTheRecordProfile()) {
     Profile* incognito = profile_->GetOffTheRecordProfile();
     map = HostContentSettingsMapFactory::GetForProfile(incognito);
     site_settings::GetExceptionsFromHostContentSettingsMap(
-        map, content_type, web_ui(), true, exceptions.get());
+        map, content_type, web_ui(), /*incognito=*/true, /*filter=*/nullptr,
+        exceptions.get());
   }
 
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
@@ -520,6 +527,68 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
           ContentSettingsPattern::Wildcard() :
           ContentSettingsPattern::FromString(secondary_pattern),
       content_type, "", setting);
+}
+
+void SiteSettingsHandler::HandleGetSiteDetails(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  std::string site;
+  CHECK(args->GetString(1, &site));
+
+  // A subset of the ContentSettingsType enum that we show in the settings UI.
+  const ContentSettingsType kSettingsDetailTypes[] = {
+    CONTENT_SETTINGS_TYPE_COOKIES,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_FULLSCREEN,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
+    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    CONTENT_SETTINGS_TYPE_KEYGEN,
+    CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+    CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+    CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+  };
+
+  // Create a list to be consistent with existing API, we are expecting a single
+  // element (or none).
+  std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
+  for (size_t type = 0; type < arraysize(kSettingsDetailTypes); ++type) {
+    ContentSettingsType content_type = kSettingsDetailTypes[type];
+
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
+    site_settings::GetExceptionsFromHostContentSettingsMap(
+        map, content_type, web_ui(), /*incognito=*/false, /*filter=*/&site,
+        exceptions.get());
+
+    if (profile_->HasOffTheRecordProfile()) {
+      Profile* incognito = profile_->GetOffTheRecordProfile();
+      map = HostContentSettingsMapFactory::GetForProfile(incognito);
+      site_settings::GetExceptionsFromHostContentSettingsMap(
+          map, content_type, web_ui(), /*incognito=*/true, /*filter=*/&site,
+          exceptions.get());
+    }
+  }
+
+  if (!exceptions->GetSize()) {
+    RejectJavascriptCallback(*callback_id, *base::Value::CreateNullValue());
+    return;
+  }
+
+  // We only need a single response element.
+  const base::DictionaryValue* exception = nullptr;
+  exceptions->GetDictionary(0, &exception);
+  ResolveJavascriptCallback(*callback_id, *exception);
 }
 
 void SiteSettingsHandler::HandleIsPatternValid(

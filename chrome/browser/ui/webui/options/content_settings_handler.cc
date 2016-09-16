@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -948,7 +949,7 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
 
   base::ListValue exceptions;
   site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-      web_ui(), /*incognito=*/ false, &exceptions);
+      web_ui(), /*incognito=*/false, /*filter=*/nullptr, &exceptions);
 
   settings.exceptions.clear();
   for (base::ListValue::const_iterator entry = exceptions.begin();
@@ -1093,7 +1094,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-      web_ui(), /*incognito=*/ false, &exceptions);
+      web_ui(), /*incognito=*/false, /*filter=*/nullptr, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
@@ -1128,7 +1129,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
     return;
   base::ListValue exceptions;
   site_settings::GetExceptionsFromHostContentSettingsMap(otr_settings_map, type,
-      web_ui(), /*incognito=*/ true, &exceptions);
+      web_ui(), /*incognito=*/true, /*filter=*/nullptr, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setOTRExceptions",

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
+#include <functional>
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
@@ -104,6 +107,7 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
                                              ContentSettingsType type,
                                              content::WebUI* web_ui,
                                              bool incognito,
+                                             const std::string* filter,
                                              base::ListValue* exceptions) {
   ContentSettingsForOneType entries;
   map->GetSettingsForOneType(type, std::string(), &entries);
@@ -122,6 +126,9 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
     // as well as normal content settings. Here, we use the incongnito settings
     // only.
     if (map->is_off_the_record() && !i->incognito)
+      continue;
+
+    if (filter && i->primary_pattern.ToString() != *filter)
       continue;
 
     all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]

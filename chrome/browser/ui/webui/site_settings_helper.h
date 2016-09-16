@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "components/content_settings/core/common/content_settings.h"
@@ -54,11 +56,14 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 
 // Fills in |exceptions| with Values for the given |type| from |map|.
+// If |filter| is not null then only exceptions with matching primary patterns
+// will be returned.
 void GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,
     ContentSettingsType type,
     content::WebUI* web_ui,
     bool incognito,
+    const std::string* filter,
     base::ListValue* exceptions);
 
 // Returns exceptions constructed from the policy-set allowed URLs

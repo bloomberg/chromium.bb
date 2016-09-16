@@ -101,6 +101,13 @@ cr.define('settings', function() {
     getExceptionList: function(contentType) {},
 
     /**
+     * Gets the exception details for a particular site.
+     * @param {string} site The name of the site.
+     * @return {Promise<SiteException>}
+     */
+    getSiteDetails: function(site) {},
+
+    /**
      * Resets the category permission for a given origin (expressed as primary
      *    and secondary patterns).
      * @param {string} primaryPattern The origin to change (primary pattern).
@@ -262,6 +269,11 @@ cr.define('settings', function() {
     /** @override */
     getExceptionList: function(contentType) {
       return cr.sendWithPromise('getExceptionList', contentType);
+    },
+
+    /** @override */
+    getSiteDetails: function(site) {
+      return cr.sendWithPromise('getSiteDetails', site);
     },
 
     /** @override */

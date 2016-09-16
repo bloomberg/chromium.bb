@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/scoped_observer.h"
@@ -86,6 +88,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Handles setting and resetting of an origin permission.
   void HandleResetCategoryPermissionForOrigin(const base::ListValue* args);
   void HandleSetCategoryPermissionForOrigin(const base::ListValue* args);
+
+  // Return site exceptions for a single site.
+  void HandleGetSiteDetails(const base::ListValue* args);
 
   // Returns whether a given pattern is valid.
   void HandleIsPatternValid(const base::ListValue* args);
