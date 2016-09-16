@@ -81287,6 +81287,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="PresentationConnectionListConnectionAvailableEventListener"/>
   <int value="1556" label="WebAudioAutoplayCrossOriginIframe"/>
   <int value="1557" label="ScriptInvalidTypeOrLanguage"/>
+  <int value="1558" label="VRGetDisplays"/>
+  <int value="1559" label="VRPresent"/>
+  <int value="1560" label="VRDeprecatedGetPose"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

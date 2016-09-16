@@ -11,6 +11,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/vr/VRController.h"
 #include "modules/vr/VRDisplay.h"
@@ -55,6 +56,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState)
         resolver->reject(exception);
         return promise;
     }
+
+    UseCounter::count(*document, UseCounter::VRGetDisplays);
 
     controller()->getDisplays(resolver);
 

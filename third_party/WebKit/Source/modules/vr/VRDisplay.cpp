@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/Fullscreen.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
@@ -97,6 +98,10 @@ bool VRDisplay::getFrameData(VRFrameData* frameData)
 
 VRPose* VRDisplay::getPose()
 {
+    Document* document = m_navigatorVR->document();
+    if (document)
+        UseCounter::count(*document, UseCounter::VRDeprecatedGetPose);
+
     updatePose();
 
     if (!m_framePose)
@@ -254,6 +259,10 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver)
     m_isPresenting = true;
 
     updateLayerBounds();
+
+    Document* document = m_navigatorVR->document();
+    if (document)
+        UseCounter::count(*document, UseCounter::VRPresent);
 
     resolver->resolve();
     m_navigatorVR->fireVRDisplayPresentChange(this);
