@@ -638,16 +638,12 @@ void VideoResourceUpdater::CopyPlaneTexture(
                              false);
   gl->DeleteTextures(1, &src_texture_id);
 
-  // Sync point for use of frame copy.
-  gpu::SyncToken sync_token;
-  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
-  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
   // Done with the source video frame texture at this point.
   video_frame->UpdateReleaseSyncToken(&client);
 
-  TextureMailbox mailbox(resource->mailbox(), sync_token, GL_TEXTURE_2D,
+  // VideoResourceUpdater shares a context with the compositor so a
+  // sync token is not required.
+  TextureMailbox mailbox(resource->mailbox(), gpu::SyncToken(), GL_TEXTURE_2D,
                          video_frame->coded_size(), false, false);
   mailbox.set_color_space(video_frame->ColorSpace());
   external_resources->mailboxes.push_back(mailbox);
