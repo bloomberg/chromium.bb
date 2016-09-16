@@ -265,7 +265,7 @@ generate_event_interfaces("core_event_interfaces") {
     "css/FontFaceSetLoadEvent.idl",
     "css/MediaQueryListEvent.idl",
     "events/AnimationEvent.idl",
-    "events/AnimationPlayerEvent.idl",
+    "events/AnimationPlaybackEvent.idl",
     "events/ApplicationCacheErrorEvent.idl",
     "events/BeforeUnloadEvent.idl",
     "events/ClipboardEvent.idl",

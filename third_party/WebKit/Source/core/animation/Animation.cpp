@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/events/AnimationPlayerEvent.h"
+#include "core/events/AnimationPlaybackEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -835,7 +835,7 @@ bool Animation::update(TimingUpdateReason reason)
                 const AtomicString& eventType = EventTypeNames::cancel;
                 if (getExecutionContext() && hasEventListeners(eventType)) {
                     double eventCurrentTime = nullValue();
-                    m_pendingCancelledEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
+                    m_pendingCancelledEvent = AnimationPlaybackEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
                     m_pendingCancelledEvent->setTarget(this);
                     m_pendingCancelledEvent->setCurrentTarget(this);
                     m_timeline->document()->enqueueAnimationFrameEvent(m_pendingCancelledEvent);
@@ -844,7 +844,7 @@ bool Animation::update(TimingUpdateReason reason)
                 const AtomicString& eventType = EventTypeNames::finish;
                 if (getExecutionContext() && hasEventListeners(eventType)) {
                     double eventCurrentTime = currentTimeInternal() * 1000;
-                    m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
+                    m_pendingFinishedEvent = AnimationPlaybackEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
                     m_pendingFinishedEvent->setTarget(this);
                     m_pendingFinishedEvent->setCurrentTarget(this);
                     m_timeline->document()->enqueueAnimationFrameEvent(m_pendingFinishedEvent);

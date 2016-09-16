@@ -62,7 +62,7 @@ interface AnimationEvent : Event
     getter animationName
     getter elapsedTime
     method constructor
-interface AnimationPlayerEvent : Event
+interface AnimationPlaybackEvent : Event
     attribute @@toStringTag
     getter currentTime
     getter timelineTime
