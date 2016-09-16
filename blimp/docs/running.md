@@ -152,15 +152,34 @@ Here are a few gotchas:
 
 ## Linux Client
 
-The Linux client is used for development purpose while the Android client is
-shipped. The Linux client is built as part of the `blimp` target.
+The Linux client is useful for development purposes where the full Android UI is
+not required.
+
+Build with the following commands:
+```
+gn gen out-linux/Client
+ninja -C out-linux/Client blimp_shell
+```
+
+
 To run it with local logging enabled, execute:
 
 ```bash
-./out-linux/Debug/blimp_shell \
+./out-linux/Client/blimp_shell \
   --user-data-dir=/tmp/blimpclient \
   --enable-logging=stderr \
-  --vmodule="*=1"
+  --vmodule="*=1" \
+  --engine-ip=127.0.0.1 \
+  --engine-port=25467 \
+  --engine-transport=tcp \
+  --blimp-client-token-path=/tmp/blimpengine-token
+```
+
+**PS:** Create the `/tmp/blimpengine-token` file with any sequence of
+characters. For example:
+
+```
+echo "anything" > /tmp/blimpengine-token
 ```
 
 ## Running the engine
