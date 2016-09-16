@@ -55,7 +55,7 @@ WorkerBackingThread::WorkerBackingThread(const char* name, bool shouldCallGCOnSh
 }
 
 WorkerBackingThread::WorkerBackingThread(WebThread* thread, bool shouldCallGCOnShutdown)
-    : m_backingThread(WebThreadSupportingGC::createForThread(thread))
+    : m_backingThread(WebThreadSupportingGC::createForThread(thread, true))
     , m_isOwningThread(false)
     , m_shouldCallGCOnShutdown(shouldCallGCOnShutdown)
 {
