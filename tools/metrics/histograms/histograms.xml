@@ -55863,6 +55863,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Shutdown.ShutdownType" enum="ShutdownType">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>The type of the last shutdown.</summary>
+</histogram>
+
 <histogram name="Signin" enum="SigninHelperFlow">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -94934,6 +94939,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Dark resume"/>
   <int value="5" label="System update"/>
   <int value="6" label="Dark resume failed"/>
+</enum>
+
+<enum name="ShutdownType" type="int">
+  <int value="0" label="Not valid">Invalid value.</int>
+  <int value="1" label="Window close">The last browser window was closed.</int>
+  <int value="2" label="Browser exit">User clicked on the Exit menu item.</int>
+  <int value="3" label="End session">OS is logging off or shutting down.</int>
 </enum>
 
 <enum name="SideloadUIEvents" type="int">

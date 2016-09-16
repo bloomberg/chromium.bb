@@ -36,6 +36,8 @@ enum ShutdownType {
   END_SESSION
 };
 
+constexpr int kNumShutdownTypes = END_SESSION + 1;
+
 void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Called when the browser starts shutting down so that we can measure shutdown
@@ -51,6 +53,10 @@ ShutdownType GetShutdownType();
 //
 // Returns true if the session should be restarted.
 bool ShutdownPreThreadsStop();
+
+// Records the shutdown related prefs, and returns true if the browser should be
+// restarted on exit.
+bool RecordShutdownInfoPrefs();
 
 // Performs the remaining shutdown tasks after all threads but the
 // main thread have been stopped.  This includes deleting g_browser_process.

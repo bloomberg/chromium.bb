@@ -170,22 +170,7 @@ bool ShutdownPreThreadsStop() {
   if (metrics)
     metrics->RecordCompletedSessionEnd();
 
-  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
-    // Record the shutdown info so that we can put it into a histogram at next
-    // startup.
-    prefs->SetInteger(prefs::kShutdownType, g_shutdown_type);
-    prefs->SetInteger(prefs::kShutdownNumProcesses, g_shutdown_num_processes);
-    prefs->SetInteger(prefs::kShutdownNumProcessesSlow,
-                      g_shutdown_num_processes_slow);
-  }
-
-  // Check local state for the restart flag so we can restart the session below.
-  bool restart_last_session = false;
-  if (prefs->HasPrefPath(prefs::kRestartLastSessionOnShutdown)) {
-    restart_last_session =
-        prefs->GetBoolean(prefs::kRestartLastSessionOnShutdown);
-    prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
-  }
+  bool restart_last_session = RecordShutdownInfoPrefs();
 
   prefs->CommitPendingWrite();
 
@@ -195,6 +180,27 @@ bool ShutdownPreThreadsStop() {
   rlz::RLZTracker::CleanupRlz();
 #endif
 
+  return restart_last_session;
+}
+
+bool RecordShutdownInfoPrefs() {
+  PrefService* prefs = g_browser_process->local_state();
+  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
+    // Record the shutdown info so that we can put it into a histogram at next
+    // startup.
+    prefs->SetInteger(prefs::kShutdownType, g_shutdown_type);
+    prefs->SetInteger(prefs::kShutdownNumProcesses, g_shutdown_num_processes);
+    prefs->SetInteger(prefs::kShutdownNumProcessesSlow,
+                      g_shutdown_num_processes_slow);
+  }
+
+  // Check local state for the restart flag so we can restart the session later.
+  bool restart_last_session = false;
+  if (prefs->HasPrefPath(prefs::kRestartLastSessionOnShutdown)) {
+    restart_last_session =
+        prefs->GetBoolean(prefs::kRestartLastSessionOnShutdown);
+    prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
+  }
   return restart_last_session;
 }
 
@@ -326,6 +332,8 @@ void ReadLastShutdownInfo() {
   prefs->SetInteger(prefs::kShutdownType, NOT_VALID);
   prefs->SetInteger(prefs::kShutdownNumProcesses, 0);
   prefs->SetInteger(prefs::kShutdownNumProcessesSlow, 0);
+
+  UMA_HISTOGRAM_ENUMERATION("Shutdown.ShutdownType", type, kNumShutdownTypes);
 
   // Read and delete the file on the file thread.
   BrowserThread::PostTask(

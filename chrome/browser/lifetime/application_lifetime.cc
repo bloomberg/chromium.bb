@@ -307,6 +307,13 @@ void SessionEnding() {
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
+  // In a clean shutdown, browser_shutdown::OnShutdownStarting sets
+  // g_shutdown_type, and browser_shutdown::ShutdownPreThreadsStop calls
+  // RecordShutdownInfoPrefs to update the pref with the value. However, here
+  // the process is going to exit without calling ShutdownPreThreadsStop.
+  // Instead, here we call RecordShutdownInfoPrefs to record the shutdown info.
+  browser_shutdown::RecordShutdownInfoPrefs();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
