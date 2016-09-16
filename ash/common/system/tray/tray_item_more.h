@@ -32,12 +32,19 @@ class TrayItemMore : public ActionableView {
   void SetAccessibleName(const base::string16& name);
 
  private:
+  // TODO(bruthig): Re-design to inform subclasses when the style changes while
+  // avoiding virtual function calls from the constructor.
+  void UpdateStyle();
+
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
   void Layout() override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   SystemTrayItem* owner_;
   // True if |more_| should be shown.

@@ -27,6 +27,8 @@ class VIEWS_EXPORT Label : public View {
   Label(const base::string16& text, const gfx::FontList& font_list);
   ~Label() override;
 
+  static const gfx::FontList& GetDefaultFontList();
+
   // Gets or sets the fonts used by this label.
   const gfx::FontList& font_list() const { return render_text_->font_list(); }
 

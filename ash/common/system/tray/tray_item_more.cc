@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -69,6 +70,15 @@ void TrayItemMore::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
+void TrayItemMore::UpdateStyle() {
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
+  TrayPopupItemStyle style(GetNativeTheme(),
+                           TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+  style.SetupLabel(label_);
+}
+
 bool TrayItemMore::PerformAction(const ui::Event& event) {
   if (!show_more_)
     return false;
@@ -104,6 +114,19 @@ void TrayItemMore::GetAccessibleState(ui::AXViewState* state) {
   ActionableView::GetAccessibleState(state);
   if (!accessible_name_.empty())
     state->name = accessible_name_;
+}
+
+void TrayItemMore::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  ActionableView::ViewHierarchyChanged(details);
+
+  if (details.is_add && details.child == this)
+    UpdateStyle();
+}
+
+void TrayItemMore::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  ActionableView::OnNativeThemeChanged(theme);
+  UpdateStyle();
 }
 
 }  // namespace ash
