@@ -56,9 +56,8 @@ function whenDomContentLoaded() {
 
 function main() {
   Promise.all([
-    whenDomContentLoaded(), getBrowserProxy()
-  ]).then(function(results) {
-    var browserProxy = results[1];
+    getBrowserProxy(), whenDomContentLoaded()
+  ]).then(function([browserProxy]) {
     // Send "syn" so native code should reply with "ack".
     browserProxy.handleJsMessage('syn');
   });
