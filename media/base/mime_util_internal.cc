@@ -601,13 +601,9 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
       return true;
 
     case H264:
-      // The unified pipeline requires platform support for h264.
-      if (platform_info.is_unified_media_pipeline_enabled)
-        return platform_info.has_platform_decoders;
-
-      // When MediaPlayer or MediaCodec is used, h264 is always supported.
-      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
-      return true;
+      // When content is not encrypted we fall back to MediaPlayer, thus we
+      // always support H264. For EME we need MediaCodec.
+      return !is_encrypted || platform_info.has_platform_decoders;
 
     case HEVC:
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

@@ -799,10 +799,11 @@ bool UseWebMediaPlayerImpl(const GURL& url) {
 
   // Don't use WMPI if the container likely contains a codec we can't decode in
   // software and platform decoders are not available.
-  if (base::EndsWith(url.path(), ".mp4",
-                     base::CompareCase::INSENSITIVE_ASCII) &&
-      !media::HasPlatformDecoderSupport()) {
-    return false;
+  if (!media::HasPlatformDecoderSupport()) {
+    // Assume that "mp4" means H264. Without platform decoder support we cannot
+    // play it with Spitzer, thus fall back to AVDA. http://crbug.com/642988.
+    if (base::ToLowerASCII(url.spec()).find("mp4") != std::string::npos)
+      return false;
   }
 
   // Indicates if the Android MediaPlayer should be used instead of WMPI.
