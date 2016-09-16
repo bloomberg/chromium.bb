@@ -432,7 +432,6 @@ _arm_internal_release_boards = frozenset([
     'peach_pit',
     'smaug',
     'smaug-cheets',
-    'smaug-kasan',
     'storm',
     'veyron_fievel',
     'veyron_jaq',
@@ -667,9 +666,6 @@ _waterfall_config_map = {
         'gale-paladin',
         'gru-paladin',
         'lakitu_next-paladin',
-
-        # KASAN
-        'smaug-kasan-kernel-3_18',
 
         # Incremental Builders.
         'mario-incremental',
@@ -1529,27 +1525,6 @@ def CreateBuilderTemplates(site_config):
 
       upload_hw_test_artifacts=False,
   )
-
-  site_config.AddTemplate(
-      'kernel',
-      site_config.templates.no_vmtest_builder,
-      build_type=constants.ANDROID_PFQ_TYPE,
-      images=[],
-      factory_toolkit=False,
-      usepkg_build_packages=True,
-      sync_chrome=False,
-      chrome_sdk=False,
-      unittests=False,
-      hw_tests=[],
-      dev_installer_prebuilts=False,
-      upload_hw_test_artifacts=True,
-      upload_symbols=True,
-      signer_tests=False,
-      trybot_list=False,
-      paygen=False,
-      image_test=False,
-  )
-
 
 
 def _GetConfig(site_config, ge_build_config):
@@ -2954,24 +2929,6 @@ def _GetConfig(site_config, ge_build_config):
       )
 
   _AddFirmwareConfigs()
-
-  _kernel_boards_versions = {
-      'smaug-kasan': ['3_18'],
-  }
-
-  def _AddKernelConfigs():
-    """Add kernel configs."""
-    for board in _kernel_boards_versions:
-      for version in _kernel_boards_versions[board]:
-        # AddWithoutTemplate, since the builder isn't named after the template.
-        site_config.AddWithoutTemplate(
-            '%s-kernel-%s' % (board, version),
-            site_config.templates.kernel,
-            _base_configs[board],
-            packages=['sys-kernel/chromeos-kernel-%s' % version],
-        )
-
-  _AddKernelConfigs()
 
   # This is an example factory branch configuration.
   # Modify it to match your factory branch.

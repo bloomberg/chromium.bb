@@ -64,7 +64,6 @@ CONFIG_TYPE_DUMP_ORDER = (
     constants.BRANCH_UTIL_CONFIG,
     constants.PAYLOADS_TYPE,
     'cbuildbot',
-    'smaug-kasan-kernel-3_18',
     'unittest-stress',
 )
 
