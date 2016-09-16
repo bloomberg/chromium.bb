@@ -198,7 +198,8 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
     for dimension in swarming:
       waterfall['testers'][name]['swarming_dimensions'].append({
         'gpu': dimension['gpu'],
-        'os': dimension['os']
+        'os': dimension['os'],
+        'pool': 'Chrome-perf',
       })
     waterfall['testers'][name]['swarming'] = True
 
