@@ -1864,6 +1864,17 @@ String Internals::pageSizeAndMarginsInPixels(int pageNumber, int width, int heig
     return PrintContext::pageSizeAndMarginsInPixels(frame(), pageNumber, width, height, marginTop, marginRight, marginBottom, marginLeft);
 }
 
+float Internals::pageScaleFactor(ExceptionState& exceptionState)
+{
+    Document* document = contextDocument();
+    if (!document || !document->page()) {
+        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's page cannot be retrieved." : "No context document can be obtained.");
+        return 0;
+    }
+    Page* page = document->page();
+    return page->frameHost().visualViewport().pageScale();
+}
+
 void Internals::setPageScaleFactor(float scaleFactor, ExceptionState& exceptionState)
 {
     Document* document = contextDocument();

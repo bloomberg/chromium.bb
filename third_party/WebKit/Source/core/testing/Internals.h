@@ -261,6 +261,7 @@ public:
     String pageProperty(String, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
     String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
+    float pageScaleFactor(ExceptionState&);
     void setPageScaleFactor(float scaleFactor, ExceptionState&);
     void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor, ExceptionState&);
 
