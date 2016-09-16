@@ -15,33 +15,41 @@ namespace blink {
 // remove it requiring that a NGConstraintSpace is created from a
 // NGPhysicalConstraintSpace.
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGDirection direction,
                                      NGLogicalSize container_size)
     : physical_space_(new NGPhysicalConstraintSpace(
           container_size.ConvertToPhysical(writing_mode))),
       size_(container_size),
-      writing_mode_(writing_mode) {}
+      writing_mode_(writing_mode),
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGDirection direction,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
       size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
-      writing_mode_(writing_mode) {}
+      writing_mode_(writing_mode),
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGDirection direction,
                                      const NGConstraintSpace* constraint_space)
     : physical_space_(constraint_space->PhysicalSpace()),
       offset_(constraint_space->Offset()),
       size_(constraint_space->Size()),
-      writing_mode_(writing_mode) {}
+      writing_mode_(writing_mode),
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGDirection direction,
                                      const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
                                      NGLogicalSize size)
     : physical_space_(other.PhysicalSpace()),
       offset_(offset),
       size_(size),
-      writing_mode_(writing_mode) {}
+      writing_mode_(writing_mode),
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
@@ -49,7 +57,8 @@ NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
     : physical_space_(other.PhysicalSpace()),
       offset_(offset),
       size_(size),
-      writing_mode_(other.WritingMode()) {}
+      writing_mode_(other.WritingMode()),
+      direction_(other.Direction()) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -75,6 +84,7 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
 
   NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
       FromPlatformWritingMode(box.styleRef().getWritingMode()),
+      FromPlatformDirection(box.styleRef().direction()),
       NGLogicalSize(container_logical_width, container_logical_height));
   derived_constraint_space->SetOverflowTriggersScrollbar(
       box.styleRef().overflowInlineDirection() == OverflowAuto,

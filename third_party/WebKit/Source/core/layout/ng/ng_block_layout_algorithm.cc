@@ -53,6 +53,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
       content_size_ = border_and_padding_.block_start;
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
+      builder_->SetDirection(constraint_space->Direction());
+      builder_->SetWritingMode(constraint_space->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
       current_child_ = first_child_;
       state_ = kStateChildLayout;
@@ -64,7 +66,9 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         if (!current_child_->Layout(constraint_space_for_children_, &fragment))
           return false;
         NGBoxStrut child_margins = computeMargins(
-            *constraint_space_for_children_, *current_child_->Style());
+            *constraint_space_for_children_, *current_child_->Style(),
+            constraint_space_for_children_->WritingMode(),
+            constraint_space_for_children_->Direction());
 
         LayoutUnit margin_block_start = CollapseMargins(
             *constraint_space, child_margins, fragment->MarginStrut());

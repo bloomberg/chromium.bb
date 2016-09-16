@@ -25,7 +25,7 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
     NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
-        HorizontalTopBottom,
+        HorizontalTopBottom, LeftToRight,
         NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)));
     derived_constraint_space->SetOverflowTriggersScrollbar(false, false);
     derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
@@ -210,7 +210,8 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins = computeMargins(*constraintSpace, *style_);
+  NGBoxStrut margins = computeMargins(*constraintSpace, *style_,
+                                      HorizontalTopBottom, LeftToRight);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);

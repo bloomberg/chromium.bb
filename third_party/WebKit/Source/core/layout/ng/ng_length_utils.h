@@ -6,6 +6,8 @@
 #define NGLengthUtils_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_direction.h"
+#include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {
 class ComputedStyle;
@@ -52,7 +54,9 @@ CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
                                                    LayoutUnit contentSize);
 
 CORE_EXPORT NGBoxStrut computeMargins(const NGConstraintSpace&,
-                                      const ComputedStyle&);
+                                      const ComputedStyle&,
+                                      const NGWritingMode writing_mode,
+                                      const NGDirection direction);
 
 CORE_EXPORT NGBoxStrut computeBorders(const ComputedStyle&);
 

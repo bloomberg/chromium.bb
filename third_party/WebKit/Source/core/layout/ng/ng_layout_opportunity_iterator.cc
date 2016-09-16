@@ -70,6 +70,7 @@ NGConstraintSpace* NGLayoutOpportunityIterator::Next() {
   if (filtered_exclusions_.isEmpty() && current_exclusion_idx_ == 0) {
     current_exclusion_idx_++;
     return new NGConstraintSpace(constraint_space_->WritingMode(),
+                                 constraint_space_->Direction(),
                                  constraint_space_->PhysicalSpace());
   }
 

@@ -14,6 +14,47 @@ namespace blink {
 // - positioned and/or replaced calculations
 // - Take scrollbars into account
 
+namespace {
+
+// Converts physical dimensions to logical ones per
+// https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+// For now it's only used to calculate abstract values for margins.
+NGBoxStrut ToLogicalDimensions(const NGPhysicalDimensions& physical_dim,
+                               const NGWritingMode writing_mode,
+                               const NGDirection direction) {
+  bool is_ltr = direction == LeftToRight;
+  NGBoxStrut logical_dim;
+  switch (writing_mode) {
+    case VerticalRightLeft:
+    case SidewaysRightLeft:
+      logical_dim = {is_ltr ? physical_dim.top : physical_dim.bottom,
+                     is_ltr ? physical_dim.bottom : physical_dim.top,
+                     physical_dim.right, physical_dim.left};
+      break;
+    case VerticalLeftRight:
+      logical_dim = {is_ltr ? physical_dim.top : physical_dim.bottom,
+                     is_ltr ? physical_dim.bottom : physical_dim.top,
+                     physical_dim.left, physical_dim.right};
+      break;
+    case SidewaysLeftRight:
+      logical_dim = {is_ltr ? physical_dim.bottom : physical_dim.top,
+                     is_ltr ? physical_dim.top : physical_dim.bottom,
+                     physical_dim.left, physical_dim.right};
+      break;
+    default:
+      NOTREACHED();
+    /* FALLTHROUGH */
+    case HorizontalTopBottom:
+      logical_dim = {is_ltr ? physical_dim.left : physical_dim.right,
+                     is_ltr ? physical_dim.right : physical_dim.left,
+                     physical_dim.top, physical_dim.bottom};
+      break;
+  }
+  return logical_dim;
+}
+
+}  // namespace
+
 LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
                                const ComputedStyle& style,
                                const Length& length,
@@ -32,7 +73,10 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   switch (length.type()) {
     case Auto:
     case FillAvailable: {
-      NGBoxStrut margins = computeMargins(constraintSpace, style);
+      NGBoxStrut margins =
+          computeMargins(constraintSpace, style,
+                         FromPlatformWritingMode(style.getWritingMode()),
+                         FromPlatformDirection(style.direction()));
       return container_size - margins.InlineSum();
     }
     case Percent:
@@ -88,7 +132,10 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
   LayoutUnit container_size = constraintSpace.ContainerSize().block_size;
   switch (length.type()) {
     case FillAvailable: {
-      NGBoxStrut margins = computeMargins(constraintSpace, style);
+      NGBoxStrut margins =
+          computeMargins(constraintSpace, style,
+                         FromPlatformWritingMode(style.getWritingMode()),
+                         FromPlatformDirection(style.direction()));
       return container_size - margins.BlockSum();
     }
     case Percent:
@@ -178,23 +225,25 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
 }
 
 NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
-                          const ComputedStyle& style) {
+                          const ComputedStyle& style,
+                          const NGWritingMode writing_mode,
+                          const NGDirection direction) {
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
-  NGBoxStrut margins;
-  margins.inline_start =
-      resolveInlineLength(constraintSpace, style, style.marginStart(),
+  NGPhysicalDimensions physical_dim;
+  physical_dim.left =
+      resolveInlineLength(constraintSpace, style, style.marginLeft(),
                           LengthResolveType::MarginBorderPaddingSize);
-  margins.inline_end =
-      resolveInlineLength(constraintSpace, style, style.marginEnd(),
+  physical_dim.right =
+      resolveInlineLength(constraintSpace, style, style.marginRight(),
                           LengthResolveType::MarginBorderPaddingSize);
-  margins.block_start =
-      resolveInlineLength(constraintSpace, style, style.marginBefore(),
+  physical_dim.top =
+      resolveInlineLength(constraintSpace, style, style.marginTop(),
                           LengthResolveType::MarginBorderPaddingSize);
-  margins.block_end =
-      resolveInlineLength(constraintSpace, style, style.marginAfter(),
+  physical_dim.bottom =
+      resolveInlineLength(constraintSpace, style, style.marginBottom(),
                           LengthResolveType::MarginBorderPaddingSize);
-  return margins;
+  return ToLogicalDimensions(physical_dim, writing_mode, direction);
 }
 
 NGBoxStrut computeBorders(const ComputedStyle& style) {

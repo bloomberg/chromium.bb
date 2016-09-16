@@ -89,6 +89,16 @@ struct NGPixelSnappedPhysicalRect {
   int height;
 };
 
+// Struct to store physical dimensions, independent of writing mode and
+// direction.
+// See https://drafts.csswg.org/css-writing-modes-3/#abstract-box
+struct NGPhysicalDimensions {
+  LayoutUnit left;
+  LayoutUnit right;
+  LayoutUnit top;
+  LayoutUnit bottom;
+};
+
 // This struct is used for storing margins, borders or padding of a box on all
 // four edges.
 struct NGBoxStrut {

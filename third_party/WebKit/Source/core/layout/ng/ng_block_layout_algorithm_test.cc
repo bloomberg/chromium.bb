@@ -35,8 +35,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   style_->setWidth(Length(30, Fixed));
   style_->setHeight(Length(40, Fixed));
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, nullptr);
 
   EXPECT_EQ(frag->Width(), LayoutUnit(30));
@@ -64,8 +65,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
 
   first_child->SetNextSibling(second_child);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
   EXPECT_EQ(frag->Width(), LayoutUnit(kWidth));
@@ -80,6 +82,47 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   child = frag->Children()[1];
   EXPECT_EQ(child->Height(), kHeight2);
   EXPECT_EQ(child->TopOffset(), kHeight1 + kMarginTop);
+}
+
+// Verifies that a child is laid out correctly if it's writing mode is different
+// from the parent's one.
+//
+// Test case's HTML representation:
+// <div style="writing-mode: vertical-lr;">
+//   <div style="width:50px;
+//       height: 50px; margin-left: 100px;
+//       writing-mode: horizontal-tb;"></div>
+// </div>
+TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
+  const int kWidth = 50;
+  const int kHeight = 50;
+  const int kMarginLeft = 100;
+
+  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
+  div1_style->setWritingMode(LeftToRightWritingMode);
+  NGBox* div1 = new NGBox(div1_style.get());
+
+  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
+  div2_style->setHeight(Length(kHeight, Fixed));
+  div2_style->setWidth(Length(kWidth, Fixed));
+  div1_style->setWritingMode(TopToBottomWritingMode);
+  div2_style->setMarginLeft(Length(kMarginLeft, Fixed));
+  NGBox* div2 = new NGBox(div2_style.get());
+
+  div1->SetFirstChild(div2);
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+
+  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  // DIV2
+  child = static_cast<const NGPhysicalFragment*>(child)->Children()[0];
+
+  EXPECT_EQ(kHeight, child->Height());
+  EXPECT_EQ(0, child->TopOffset());
+  EXPECT_EQ(kMarginLeft, child->LeftOffset());
 }
 
 // Verifies the collapsing margins case for the next pair:
@@ -110,8 +153,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
 
   div1->SetFirstChild(div2);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   EXPECT_EQ(frag->MarginStrut(), NGMarginStrut({LayoutUnit(kDiv1MarginTop)}));
@@ -170,8 +214,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   div3->SetFirstChild(div4);
   div1->SetNextSibling(div3);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
@@ -216,8 +261,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
 
   div1->SetFirstChild(div2);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins are collapsed.
@@ -264,8 +310,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
 
   div1->SetFirstChild(div2);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins do NOT collapse.
@@ -332,8 +379,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
 
   div1->SetFirstChild(div2);
 
-  auto* space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   ASSERT_EQ(frag->Children().size(), 1UL);

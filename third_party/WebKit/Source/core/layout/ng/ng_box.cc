@@ -34,7 +34,8 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
       algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild());
     // Change the coordinate system of the constraint space.
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
-        FromPlatformWritingMode(Style()->getWritingMode()), constraint_space);
+        FromPlatformWritingMode(Style()->getWritingMode()),
+        FromPlatformDirection(Style()->direction()), constraint_space);
 
     NGPhysicalFragment* fragment = nullptr;
     if (!algorithm_->Layout(child_constraint_space, &fragment))
@@ -83,10 +84,14 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     }
     LayoutRect overflow = layout_box_->layoutOverflowRect();
     // TODO(layout-ng): This does not handle writing modes correctly (for
-    // overflow & the enums)
+    // overflow)
     NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
     builder.SetInlineSize(layout_box_->logicalWidth())
         .SetBlockSize(layout_box_->logicalHeight())
+        .SetDirection(
+            FromPlatformDirection(layout_box_->styleRef().direction()))
+        .SetWritingMode(
+            FromPlatformWritingMode(layout_box_->styleRef().getWritingMode()))
         .SetInlineOverflow(overflow.width())
         .SetBlockOverflow(overflow.height());
     fragment_ = builder.ToFragment();

@@ -12,14 +12,15 @@ namespace blink {
 namespace {
 
 TEST(NGConstraintSpaceTest, WritingMode) {
-  NGConstraintSpace* horz_space = new NGConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
+  NGConstraintSpace* horz_space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
   horz_space->SetOverflowTriggersScrollbar(true, false);
   horz_space->SetFixedSize(true, false);
   horz_space->SetFragmentationType(FragmentColumn);
 
   NGConstraintSpace* vert_space =
-      new NGConstraintSpace(VerticalRightLeft, horz_space);
+      new NGConstraintSpace(VerticalRightLeft, LeftToRight, horz_space);
 
   EXPECT_EQ(LayoutUnit(200), horz_space->ContainerSize().inline_size);
   EXPECT_EQ(LayoutUnit(200), vert_space->ContainerSize().block_size);
@@ -48,7 +49,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
   auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
 
   bool for_inline_or_bfc = true;
   auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
@@ -72,7 +74,8 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesOneExclusion) {
   physical_space->AddExclusion(NGExclusion(LayoutUnit(0), LayoutUnit(600),
                                            LayoutUnit(100), LayoutUnit(500)));
 
-  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
   bool for_inline_or_bfc = true;
   auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
 

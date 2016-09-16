@@ -26,24 +26,26 @@ class CORE_EXPORT NGConstraintSpace final
     : public GarbageCollected<NGConstraintSpace> {
  public:
   // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
-  NGConstraintSpace(NGWritingMode, NGLogicalSize);
+  NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
 
   // Constructs a constraint space based on an existing backing
   // NGPhysicalConstraintSpace.
-  NGConstraintSpace(NGWritingMode, NGPhysicalConstraintSpace*);
+  NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
-  // Constructs a constraint space with a different NGWritingMode.
-  NGConstraintSpace(NGWritingMode, const NGConstraintSpace*);
+  // Constructs a constraint space with a different NGWritingMode and
+  // NGDirection.
+  NGConstraintSpace(NGWritingMode, NGDirection, const NGConstraintSpace*);
 
   // Constructs a derived constraint space sharing the same backing
-  // NGPhysicalConstraintSpace and NGWritingMode.
+  // NGPhysicalConstraintSpace, NGWritingMode and NGDirection.
   NGConstraintSpace(const NGConstraintSpace& other,
                     NGLogicalOffset,
                     NGLogicalSize);
 
   // Constructs a derived constraint space sharing the same backing
-  // NGPhysicalConstraintSpace and a different NGWritingMode.
+  // NGPhysicalConstraintSpace, a different NGWritingMode and NGDirection.
   NGConstraintSpace(NGWritingMode,
+                    NGDirection,
                     const NGConstraintSpace& other,
                     NGLogicalOffset,
                     NGLogicalSize);
@@ -53,6 +55,8 @@ class CORE_EXPORT NGConstraintSpace final
   static NGConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
 
   NGPhysicalConstraintSpace* PhysicalSpace() const { return physical_space_; }
+
+  NGDirection Direction() const { return static_cast<NGDirection>(direction_); }
 
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
@@ -116,6 +120,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset offset_;
   NGLogicalSize size_;
   unsigned writing_mode_ : 3;
+  unsigned direction_ : 1;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,
