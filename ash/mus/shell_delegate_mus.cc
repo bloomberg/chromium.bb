@@ -170,6 +170,7 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
+  // TODO: http://crbug.com/647412.
   NOTIMPLEMENTED() << " Using the default SystemTrayDelegate implementation";
   return new DefaultSystemTrayDelegate;
 }
@@ -179,6 +180,7 @@ std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
 }
 
 SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
+  // TODO: http://crbug.com/647416.
   NOTIMPLEMENTED() << " Using a stub SessionStateDeleagte implementation";
   return new SessionStateDelegateStub;
 }
@@ -192,11 +194,13 @@ NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
 }
 
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
+  // TODO: http://crbug.com/647409.
   NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
   return new MediaDelegateStub;
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {
+  // TODO: http://crbug.com/647417.
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -207,6 +211,7 @@ ui::MenuModel* ShellDelegateMus::CreateContextMenu(WmShelf* wm_shelf,
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {
+  // TODO: http://crbug.com/647421.
   NOTIMPLEMENTED() << " Using a stub GPUSupport implementation";
   return new GPUSupportStub();
 }

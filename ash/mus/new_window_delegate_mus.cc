@@ -45,7 +45,7 @@ void NewWindowDelegateMus::RestoreTab() {
 }
 
 void NewWindowDelegateMus::ShowKeyboardOverlay() {
-  // TODO: http://crbug.com/631836.
+  // TODO: http://crbug.com/647433.
   NOTIMPLEMENTED();
 }
 
