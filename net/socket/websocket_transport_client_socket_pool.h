@@ -209,7 +209,9 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     const CompletionCallback callback;
     const BoundNetLog net_log;
   };
+
   friend class ConnectJobDelegate;
+
   typedef std::map<const ClientSocketHandle*, WebSocketTransportConnectJob*>
       PendingConnectsMap;
   // This is a list so that we can remove requests from the middle, and also
@@ -219,6 +221,10 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   typedef std::map<const ClientSocketHandle*, StalledRequestQueue::iterator>
       StalledRequestMap;
 
+  // Tries to hand out the socket connected by |job|. |result| must be (async)
+  // result of WebSocketTransportConnectJob::Connect(). Returns true iff it has
+  // handed out a socket.
+  bool TryHandOutSocket(int result, WebSocketTransportConnectJob* job);
   void OnConnectJobComplete(int result, WebSocketTransportConnectJob* job);
   void InvokeUserCallbackLater(ClientSocketHandle* handle,
                                const CompletionCallback& callback,
