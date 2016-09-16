@@ -185,21 +185,21 @@ class MessageService : public BrowserContextKeyedAPI {
   struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
-  typedef std::map<int, MessageChannel*> MessageChannelMap;
+  using MessageChannelMap = std::map<int, std::unique_ptr<MessageChannel>>;
 
-  typedef std::pair<int, Message> PendingMessage;
-  typedef std::vector<PendingMessage> PendingMessagesQueue;
+  using PendingMessage = std::pair<int, Message>;
+  using PendingMessagesQueue = std::vector<PendingMessage>;
   // A set of channel IDs waiting to complete opening, and any pending messages
   // queued to be sent on those channels.
-  typedef std::map<int, PendingMessagesQueue> PendingChannelMap;
+  using PendingChannelMap = std::map<int, PendingMessagesQueue>;
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
-  typedef std::string ExtensionID;
-  typedef std::pair<content::BrowserContext*, ExtensionID>
-      PendingLazyBackgroundPageChannel;
-  typedef std::map<int, PendingLazyBackgroundPageChannel>
-      PendingLazyBackgroundPageChannelMap;
+  using ExtensionID = std::string;
+  using PendingLazyBackgroundPageChannel =
+      std::pair<content::BrowserContext*, ExtensionID>;
+  using PendingLazyBackgroundPageChannelMap =
+      std::map<int, PendingLazyBackgroundPageChannel>;
 
   // Common implementation for opening a channel configured by |params|.
   //
@@ -226,7 +226,8 @@ class MessageService : public BrowserContextKeyedAPI {
 
   // Have MessageService take ownership of |channel|, and remove any pending
   // channels with the same id.
-  void AddChannel(MessageChannel* channel, int receiver_port_id);
+  void AddChannel(std::unique_ptr<MessageChannel> channel,
+                  int receiver_port_id);
 
   // If the channel is being opened from an incognito tab the user must allow
   // the connection.

@@ -173,6 +173,8 @@ class VpnService : public KeyedService,
   class VpnServiceProxyImpl;
 
   using StringToConfigurationMap = std::map<std::string, VpnConfiguration*>;
+  using StringToOwnedConfigurationMap =
+      std::map<std::string, std::unique_ptr<VpnConfiguration>>;
 
   // Callback used to indicate that configuration was successfully created.
   void OnCreateConfigurationSuccess(const SuccessCallback& callback,
@@ -253,8 +255,7 @@ class VpnService : public KeyedService,
 
   VpnConfiguration* active_configuration_;
 
-  // Key map owns the VpnConfigurations.
-  StringToConfigurationMap key_to_configuration_map_;
+  StringToOwnedConfigurationMap key_to_configuration_map_;
 
   // Service path does not own the VpnConfigurations.
   StringToConfigurationMap service_path_to_configuration_map_;

@@ -12,8 +12,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -265,10 +265,9 @@ class PrefMapping {
 
   PrefTransformerInterface* FindTransformerForBrowserPref(
       const std::string& browser_pref) {
-    std::map<std::string, PrefTransformerInterface*>::iterator it =
-        transformers_.find(browser_pref);
+    auto it = transformers_.find(browser_pref);
     if (it != transformers_.end())
-      return it->second;
+      return it->second.get();
     else
       return identity_transformer_.get();
   }
@@ -294,23 +293,22 @@ class PrefMapping {
     DCHECK_EQ(arraysize(kPrefMapping), mapping_.size());
     DCHECK_EQ(arraysize(kPrefMapping), event_mapping_.size());
     RegisterPrefTransformer(proxy_config::prefs::kProxy,
-                            new ProxyPrefTransformer());
+                            base::MakeUnique<ProxyPrefTransformer>());
     RegisterPrefTransformer(prefs::kBlockThirdPartyCookies,
-                            new InvertBooleanTransformer());
+                            base::MakeUnique<InvertBooleanTransformer>());
     RegisterPrefTransformer(prefs::kNetworkPredictionOptions,
-                            new NetworkPredictionTransformer());
+                            base::MakeUnique<NetworkPredictionTransformer>());
   }
 
   ~PrefMapping() {
-    base::STLDeleteContainerPairSecondPointers(transformers_.begin(),
-                                               transformers_.end());
   }
 
-  void RegisterPrefTransformer(const std::string& browser_pref,
-                               PrefTransformerInterface* transformer) {
+  void RegisterPrefTransformer(
+      const std::string& browser_pref,
+      std::unique_ptr<PrefTransformerInterface> transformer) {
     DCHECK_EQ(0u, transformers_.count(browser_pref)) <<
         "Trying to register pref transformer for " << browser_pref << " twice";
-    transformers_[browser_pref] = transformer;
+    transformers_[browser_pref] = std::move(transformer);
   }
 
   struct PrefMapData {
@@ -344,7 +342,8 @@ class PrefMapping {
   PrefMap event_mapping_;
 
   // Mapping from browser pref keys to transformers.
-  std::map<std::string, PrefTransformerInterface*> transformers_;
+  std::map<std::string, std::unique_ptr<PrefTransformerInterface>>
+      transformers_;
 
   std::unique_ptr<PrefTransformerInterface> identity_transformer_;
 
