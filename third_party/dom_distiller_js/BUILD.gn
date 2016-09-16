@@ -15,6 +15,7 @@ group("proto") {
 
 protoc_plugin_files = [
   "protoc_plugins/json_values_converter.bat",
+  "protoc_plugins/json_values_converter.py",
   "protoc_plugins/util/__init__.py",
   "protoc_plugins/util/plugin_protos.py",
   "protoc_plugins/util/types.py",
@@ -22,9 +23,9 @@ protoc_plugin_files = [
 ]
 
 if (is_win) {
-  json_converter = "protoc_plugins/json_values_converter.bat"
+  json_converter_plugin_script = "protoc_plugins/json_values_converter.bat"
 } else {
-  json_converter = "protoc_plugins/json_values_converter.py"
+  json_converter_plugin_script = "protoc_plugins/json_values_converter.py"
 }
 
 proto_library("dom_distiller_proto") {
@@ -33,10 +34,11 @@ proto_library("dom_distiller_proto") {
     "dist/proto/dom_distiller.proto",
   ]
   proto_out_dir = "third_party/dom_distiller_js"
-  json_converter = json_converter
 
-  # Depends on protoc_plugins properly
-  inputs = protoc_plugin_files
+  generator_plugin_script = json_converter_plugin_script
+  generator_plugin_script_deps = protoc_plugin_files
+  generator_plugin_suffixes = [ "_json_converter.h" ]
+  generator_plugin_options = "output_dir=:"
 }
 
 # The purpose of json_values_converter_test_proto is to test the
@@ -47,10 +49,11 @@ proto_library("json_values_converter_test_proto") {
     "test_sample.proto",
   ]
   proto_out_dir = "third_party/dom_distiller_js"
-  json_converter = json_converter
 
-  # Depends on protoc_plugins properly
-  inputs = protoc_plugin_files
+  generator_plugin_script = json_converter_plugin_script
+  generator_plugin_script_deps = protoc_plugin_files
+  generator_plugin_suffixes = [ "_json_converter.h" ]
+  generator_plugin_options = "output_dir=:"
 }
 
 action("json_values_converter_tests") {
