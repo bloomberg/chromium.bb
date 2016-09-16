@@ -882,13 +882,12 @@ bool SequencedWorkerPool::Inner::RunsTasksOnCurrentThread() const {
 
 bool SequencedWorkerPool::Inner::IsRunningSequenceOnCurrentThread(
     SequenceToken sequence_token) const {
+  DCHECK(sequence_token.IsValid());
+
   AutoLock lock(lock_);
+
   if (subtle::NoBarrier_Load(&g_all_pools_state) ==
       AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
-    // TODO(gab): This currently only verifies that the current thread is a
-    // thread on which a task bound to |sequence_token| *could* run, but it
-    // doesn't verify that the current is *currently running* a task bound to
-    // |sequence_token|.
     const auto sequenced_task_runner_it =
         sequenced_task_runner_map_.find(sequence_token.id_);
     return sequenced_task_runner_it != sequenced_task_runner_map_.end() &&
@@ -896,9 +895,7 @@ bool SequencedWorkerPool::Inner::IsRunningSequenceOnCurrentThread(
   } else {
     ThreadMap::const_iterator found =
         threads_.find(PlatformThread::CurrentId());
-    if (found == threads_.end())
-      return false;
-    return found->second->is_processing_task() &&
+    return found != threads_.end() && found->second->is_processing_task() &&
            sequence_token.Equals(found->second->task_sequence_token());
   }
 }
