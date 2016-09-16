@@ -1058,6 +1058,36 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
 });
 
 /**
+ * Displays QuickView for current selection.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['get-info'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager fileManager to use.
+   */
+  execute: function(event, fileManager) {
+    // 'get-info' command is executed by 'command' event handler in
+    // QuickViewController.
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  canExecute: function(event, fileManager) {
+    var entries = CommandUtil.getCommandEntries(event.target);
+    if (entries.length === 0) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    event.canExecute =  entries.length === 1;
+    event.command.setHidden(false);
+  }
+});
+
+/**
  * Focuses search input box.
  * @type {Command}
  */

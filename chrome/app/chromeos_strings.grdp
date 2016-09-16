@@ -451,6 +451,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ERROR_RENAMING" desc="Error message.">
     Unable to rename "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_GET_INFO_BUTTON_LABEL" desc="Label for a context menu item which shows file's metadata.">
+    Get Info
+  </message>
   <message name="IDS_FILE_BROWSER_RENAME_BUTTON_LABEL" desc="Button Label.">
     Rename
   </message>

@@ -74,6 +74,10 @@ function QuickViewController(
       this.onFileSelectionChanged_.bind(this));
   listContainer.element.addEventListener(
       'keydown', this.onKeyDownToOpen_.bind(this));
+  listContainer.element.addEventListener('command', function(event) {
+    if(event.command.id === 'get-info')
+      this.display_();
+  }.bind(this));
   quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
   quickView.addEventListener('iron-overlay-closed', function() {
     this.listContainer_.focus();
