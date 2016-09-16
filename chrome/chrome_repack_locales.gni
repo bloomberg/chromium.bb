@@ -36,6 +36,9 @@ template("chrome_repack_locales") {
       "//components/strings:components_locale_settings",
       "//components/strings:components_strings",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     if (use_ash) {
       source_patterns += [ "${root_gen_dir}/ash/common/strings/ash_strings_" ]
@@ -98,14 +101,6 @@ template("chrome_repack_locales") {
 
     if (defined(invoker.additional_source_patterns)) {
       source_patterns += invoker.additional_source_patterns
-    }
-
-    if (!defined(output_dir)) {
-      if (is_mac || is_ios) {
-        output_dir = "${root_gen_dir}/repack/locales"
-      } else {
-        output_dir = "${root_out_dir}/locales"
-      }
     }
   }
 }
