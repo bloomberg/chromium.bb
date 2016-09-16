@@ -21,6 +21,7 @@ namespace switches {
 ASH_EXPORT extern const char kAshAnimateFromBootSplashScreen[];
 ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
+ASH_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_EXPORT extern const char kAshDisableMaximizeModeWindowBackdrop[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableScreenOrientationLock[];

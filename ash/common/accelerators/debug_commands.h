@@ -23,6 +23,9 @@ ASH_EXPORT void PrintUIHierarchies();
 // Returns true if debug accelerators are enabled.
 ASH_EXPORT bool DebugAcceleratorsEnabled();
 
+// Returns true if developer accelerators are enabled.
+ASH_EXPORT bool DeveloperAcceleratorsEnabled();
+
 // Performs |action| if |action| belongs to a debug-only accelerator and debug
 // accelerators are enabled.
 ASH_EXPORT void PerformDebugActionIfEnabled(AcceleratorAction action);

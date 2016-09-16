@@ -27,6 +27,9 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// Enable keyboard shortcuts used by developers only.
+const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
+
 // Disables the window backdrops normally used in maximize mode (TouchView).
 const char kAshDisableMaximizeModeWindowBackdrop[] =
     "ash-disable-maximize-mode-window-backdrop";

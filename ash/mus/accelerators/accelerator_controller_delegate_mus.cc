@@ -31,7 +31,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
   // http://crbug.com/612331.
   switch (action) {
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
@@ -51,13 +51,13 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       return false;
 
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY: {
+    case DEV_ADD_REMOVE_DISPLAY: {
       display::mojom::DisplayControllerPtr display_controller;
       connector_->ConnectToInterface("mojo:ui", &display_controller);
       display_controller->ToggleVirtualDisplay();
       break;
     }
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
     case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:

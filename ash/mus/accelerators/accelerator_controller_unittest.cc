@@ -1155,29 +1155,30 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::set<AcceleratorAction> all_debug_actions;
   for (size_t i = 0; i < kDebugAcceleratorDataLength; ++i)
     all_debug_actions.insert(kDebugAcceleratorData[i].action);
+  std::set<AcceleratorAction> all_dev_actions;
+  for (size_t i = 0; i < kDeveloperAcceleratorDataLength; ++i)
+    all_dev_actions.insert(kDeveloperAcceleratorData[i].action);
 
   std::set<AcceleratorAction> actionsAllowedAtModalWindow;
   for (size_t k = 0; k < kActionsAllowedAtModalWindowLength; ++k)
     actionsAllowedAtModalWindow.insert(kActionsAllowedAtModalWindow[k]);
-  for (std::set<AcceleratorAction>::const_iterator it =
-           actionsAllowedAtModalWindow.begin();
-       it != actionsAllowedAtModalWindow.end(); ++it) {
-    EXPECT_TRUE(all_actions.find(*it) != all_actions.end() ||
-                all_debug_actions.find(*it) != all_debug_actions.end())
+  for (const auto& action : actionsAllowedAtModalWindow) {
+    EXPECT_TRUE(all_actions.find(action) != all_actions.end() ||
+                all_debug_actions.find(action) != all_debug_actions.end() ||
+                all_dev_actions.find(action) != all_dev_actions.end())
         << " action from kActionsAllowedAtModalWindow"
-        << " not found in kAcceleratorData or kDebugAcceleratorData. "
-        << "action: " << *it;
+        << " not found in kAcceleratorData, kDebugAcceleratorData or"
+        << " kDeveloperAcceleratorData action: " << action;
   }
   WmWindow* window =
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
   window->Activate();
   WmShell::Get()->SimulateModalWindowOpenForTesting(true);
-  for (std::set<AcceleratorAction>::const_iterator it = all_actions.begin();
-       it != all_actions.end(); ++it) {
-    if (actionsAllowedAtModalWindow.find(*it) ==
+  for (const auto& action : all_actions) {
+    if (actionsAllowedAtModalWindow.find(action) ==
         actionsAllowedAtModalWindow.end()) {
-      EXPECT_TRUE(GetController()->PerformActionIfEnabled(*it))
-          << " for action (disallowed at modal window): " << *it;
+      EXPECT_TRUE(GetController()->PerformActionIfEnabled(action))
+          << " for action (disallowed at modal window): " << action;
     }
   }
   //  Testing of top row (F5-F10) accelerators that should still work

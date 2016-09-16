@@ -238,45 +238,15 @@ const size_t kDeprecatedAcceleratorsDataLength =
 
 const AcceleratorData kDebugAcceleratorData[] = {
 #if defined(OS_CHROMEOS)
-    // Extra shortcut for debug build to control magnifier on linux desktop.
-    {true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
-     MAGNIFY_SCREEN_ZOOM_OUT},
-    {true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
-    // Extra shortcuts to lock the screen on linux desktop.
-    {true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_PRESSED},
-    {false, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_RELEASED},
-    {true, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_PRESSED},
-    {false, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_RELEASED},
-    {true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED},
-    {false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED},
-    {true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-     DEBUG_ADD_REMOVE_DISPLAY},
     {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
-    {true, ui::VKEY_J, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-     DEBUG_TOGGLE_UNIFIED_DESKTOP},
-    {true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-     TOGGLE_MIRROR_MODE},
     {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_PAD},
     {true, ui::VKEY_T, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_SCREEN},
     {true, ui::VKEY_T, kDebugModifier, DEBUG_TOGGLE_TOUCH_VIEW},
-    {true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI},
-    // Extra shortcut for display swapping as alt-f4 is taken on linux desktop.
-    {true, ui::VKEY_S, kDebugModifier, SWAP_PRIMARY_DISPLAY},
-#endif
-    // Extra shortcut to rotate/scale up/down the screen on linux desktop.
-    {true, ui::VKEY_R,
-     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN},
-    // For testing on systems where Alt-Tab is already mapped.
-    {true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
-    {true, ui::VKEY_F11, ui::EF_CONTROL_DOWN,
-     DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN},
-    {true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
+#endif  // defined(OS_CHROMEOS)
     {true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      DEBUG_TOGGLE_WALLPAPER_MODE},
-    {true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-     TOGGLE_FULLSCREEN},
     {true, ui::VKEY_L, kDebugModifier, DEBUG_PRINT_LAYER_HIERARCHY},
     {true, ui::VKEY_V, kDebugModifier, DEBUG_PRINT_VIEW_HIERARCHY},
     {true, ui::VKEY_W, kDebugModifier, DEBUG_PRINT_WINDOW_HIERARCHY},
@@ -287,6 +257,43 @@ const AcceleratorData kDebugAcceleratorData[] = {
 };
 
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
+
+const AcceleratorData kDeveloperAcceleratorData[] = {
+#if defined(OS_CHROMEOS)
+    // Extra shortcut for debug build to control magnifier on Linux desktop.
+    {true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
+     MAGNIFY_SCREEN_ZOOM_OUT},
+    {true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
+    // Extra shortcuts to lock the screen on Linux desktop.
+    {true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_PRESSED},
+    {false, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_RELEASED},
+    {true, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_PRESSED},
+    {false, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_RELEASED},
+    {true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED},
+    {false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED},
+    {true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     DEV_ADD_REMOVE_DISPLAY},
+    {true, ui::VKEY_J, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     DEV_TOGGLE_UNIFIED_DESKTOP},
+    {true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     TOGGLE_MIRROR_MODE},
+    {true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI},
+    // Extra shortcut for display swapping as Alt-F4 is taken on Linux desktop.
+    {true, ui::VKEY_S, kDebugModifier, SWAP_PRIMARY_DISPLAY},
+#endif  // defined(OS_CHROMEOS)
+    // Extra shortcut to rotate/scale up/down the screen on Linux desktop.
+    {true, ui::VKEY_R, kDebugModifier, ROTATE_SCREEN},
+    // For testing on systems where Alt-Tab is already mapped.
+    {true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
+    {true, ui::VKEY_F11, ui::EF_CONTROL_DOWN,
+     DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN},
+    {true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
+    {true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     TOGGLE_FULLSCREEN},
+};
+
+const size_t kDeveloperAcceleratorDataLength =
+    arraysize(kDeveloperAcceleratorData);
 
 const AcceleratorAction kPreferredActions[] = {
     // Window cycling accelerators.
@@ -327,10 +334,10 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
 #if defined(OS_CHROMEOS)
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
-    DEBUG_ADD_REMOVE_DISPLAY,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEBUG_TOGGLE_TOUCH_VIEW,
+    DEV_ADD_REMOVE_DISPLAY,
     DISABLE_CAPS_LOCK,
     DISABLE_GPU_WATCHDOG,
     KEYBOARD_BRIGHTNESS_DOWN,
@@ -386,9 +393,9 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
 #if defined(OS_CHROMEOS)
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
-    DEBUG_ADD_REMOVE_DISPLAY,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
+    DEV_ADD_REMOVE_DISPLAY,
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
@@ -451,7 +458,7 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
 #if defined(OS_CHROMEOS)
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
-    DEBUG_ADD_REMOVE_DISPLAY,
+    DEV_ADD_REMOVE_DISPLAY,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DISABLE_CAPS_LOCK,

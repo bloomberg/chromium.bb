@@ -686,6 +686,14 @@ void AcceleratorController::Init() {
     for (size_t i = 0; i < kDebugAcceleratorDataLength; ++i)
       reserved_actions_.insert(kDebugAcceleratorData[i].action);
   }
+
+  if (debug::DeveloperAcceleratorsEnabled()) {
+    RegisterAccelerators(kDeveloperAcceleratorData,
+                         kDeveloperAcceleratorDataLength);
+    // Developer accelerators are also reserved.
+    for (size_t i = 0; i < kDeveloperAcceleratorDataLength; ++i)
+      reserved_actions_.insert(kDeveloperAcceleratorData[i].action);
+  }
 }
 
 void AcceleratorController::RegisterAccelerators(

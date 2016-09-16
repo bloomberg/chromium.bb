@@ -57,12 +57,12 @@ enum AcceleratorAction {
   DEBUG_PRINT_LAYER_HIERARCHY,
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
-  DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN,
   DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
   DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
   DEBUG_TOGGLE_SHOW_FPS_COUNTER,
   DEBUG_TOGGLE_SHOW_PAINT_RECTS,
   DEBUG_TOGGLE_WALLPAPER_MODE,
+  DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN,
   EXIT,
   FOCUS_NEXT_PANE,
   FOCUS_PREVIOUS_PANE,
@@ -114,12 +114,12 @@ enum AcceleratorAction {
 #if defined(OS_CHROMEOS)
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-  DEBUG_ADD_REMOVE_DISPLAY,
   DEBUG_SHOW_TOAST,
   DEBUG_TOGGLE_TOUCH_PAD,
   DEBUG_TOGGLE_TOUCH_SCREEN,
   DEBUG_TOGGLE_TOUCH_VIEW,
-  DEBUG_TOGGLE_UNIFIED_DESKTOP,
+  DEV_ADD_REMOVE_DISPLAY,
+  DEV_TOGGLE_UNIFIED_DESKTOP,
   DISABLE_CAPS_LOCK,
   DISABLE_GPU_WATCHDOG,
   KEYBOARD_BRIGHTNESS_DOWN,
@@ -212,6 +212,11 @@ ASH_EXPORT extern const size_t kDeprecatedAcceleratorsDataLength;
 // are always run (similar to reserved actions).
 ASH_EXPORT extern const AcceleratorData kDebugAcceleratorData[];
 ASH_EXPORT extern const size_t kDebugAcceleratorDataLength;
+
+// Developer accelerators that are enabled only with the command-line switch
+// --ash-dev-shortcuts. They are always run similar to reserved actions.
+ASH_EXPORT extern const AcceleratorData kDeveloperAcceleratorData[];
+ASH_EXPORT extern const size_t kDeveloperAcceleratorDataLength;
 
 // Actions that should be handled very early in Ash unless the current target
 // window is full-screen.

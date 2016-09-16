@@ -131,7 +131,7 @@ void HandleToggleTouchscreen() {
   ash::WmShell::Get()->delegate()->ToggleTouchscreen();
 }
 
-void HandleToggleToggleTouchView() {
+void HandleToggleTouchView() {
   MaximizeModeController* controller =
       WmShell::Get()->maximize_mode_controller();
   controller->EnableMaximizeModeWindowManager(
@@ -156,6 +156,11 @@ bool DebugAcceleratorsEnabled() {
       switches::kAshDebugShortcuts);
 }
 
+bool DeveloperAcceleratorsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshDeveloperShortcuts);
+}
+
 void PerformDebugActionIfEnabled(AcceleratorAction action) {
   if (!DebugAcceleratorsEnabled())
     return;
@@ -174,7 +179,7 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       HandleToggleTouchscreen();
       break;
     case DEBUG_TOGGLE_TOUCH_VIEW:
-      HandleToggleToggleTouchView();
+      HandleToggleTouchView();
       break;
 #endif
     case DEBUG_TOGGLE_WALLPAPER_MODE:

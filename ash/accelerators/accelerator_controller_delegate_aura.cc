@@ -274,10 +274,10 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
   // add it to accelerator_controller.cc instead. See class comment.
   switch (action) {
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
+    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case ROTATE_SCREEN:
@@ -294,8 +294,8 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
       return true;
 
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY:
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+    case DEV_ADD_REMOVE_DISPLAY:
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
     case DISABLE_GPU_WATCHDOG:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
@@ -321,11 +321,12 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     const ui::Accelerator& previous_accelerator) {
   switch (action) {
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       return debug::DebugAcceleratorsEnabled();
+    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+      return debug::DeveloperAcceleratorsEnabled();
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return CanHandleMagnifyScreen();
@@ -346,9 +347,10 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
       return true;
 
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY:
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
-      return debug::DebugAcceleratorsEnabled();
+    case DEV_ADD_REMOVE_DISPLAY:
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
+    case TOGGLE_MIRROR_MODE:
+      return debug::DeveloperAcceleratorsEnabled();
 
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
@@ -362,7 +364,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
 #endif
@@ -381,9 +382,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
       break;
-    case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-      Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
-      break;
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
       debug::ToggleShowDebugBorders();
       break;
@@ -392,6 +390,9 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       debug::ToggleShowPaintRects();
+      break;
+    case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
+      Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
       break;
     case MAGNIFY_SCREEN_ZOOM_IN:
       HandleMagnifyScreen(1);
@@ -430,10 +431,10 @@ void AcceleratorControllerDelegateAura::PerformAction(
       accelerators::Unpin();
       break;
 #if defined(OS_CHROMEOS)
-    case DEBUG_ADD_REMOVE_DISPLAY:
+    case DEV_ADD_REMOVE_DISPLAY:
       Shell::GetInstance()->display_manager()->AddRemoveDisplay();
       break;
-    case DEBUG_TOGGLE_UNIFIED_DESKTOP:
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
       Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
           !Shell::GetInstance()->display_manager()->unified_desktop_enabled());
       break;
