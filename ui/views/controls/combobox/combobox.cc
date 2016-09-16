@@ -991,8 +991,11 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 int Combobox::GetArrowContainerWidth() const {
+  const int kMdPaddingWidth = 8;
+  int arrow_pad = UseMd() ? kMdPaddingWidth
+                          : PlatformStyle::kComboboxNormalArrowPadding;
   int padding = style_ == STYLE_NORMAL
-                    ? PlatformStyle::kComboboxNormalArrowPadding * 2
+                    ? arrow_pad * 2
                     : kActionLeftPadding + kActionRightPadding;
   return ArrowSize().width() + padding;
 }
