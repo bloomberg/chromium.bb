@@ -1842,6 +1842,9 @@ void RenderFrameHostManager::CreateOuterDelegateProxy(
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));
   proxy->set_render_frame_proxy_created(true);
+
+  // There is no longer a RenderFrame associated with this RenderFrameHost.
+  render_frame_host->SetRenderFrameCreated(false);
 }
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
