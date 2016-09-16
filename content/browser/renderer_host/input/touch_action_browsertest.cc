@@ -174,7 +174,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     if (scrollTop == 0)
       return false;
 
-    EXPECT_EQ(distance.y(), scrollTop);
+    // Allow for 1px rounding inaccuracies for some screen sizes.
+    EXPECT_NEAR(distance.y(), scrollTop, 1);
     return true;
   }
 
