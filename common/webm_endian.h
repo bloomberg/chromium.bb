@@ -13,8 +13,18 @@
 
 namespace libwebm {
 
-// Swaps unsigned 64 bit values to big endian if needed. Returns |value| if
+// Swaps unsigned 32 bit values to big endian if needed. Returns |value| if
+// architecture is big endian. Returns big endian value if architecture is
+// little endian. Returns 0 otherwise.
+uint32_t host_to_bigendian(uint32_t value);
+
+// Swaps unsigned 32 bit values to little endian if needed. Returns |value| if
 // architecture is big endian. Returns little endian value if architecture is
+// little endian. Returns 0 otherwise.
+uint32_t bigendian_to_host(uint32_t value);
+
+// Swaps unsigned 64 bit values to big endian if needed. Returns |value| if
+// architecture is big endian. Returns big endian value if architecture is
 // little endian. Returns 0 otherwise.
 uint64_t host_to_bigendian(uint64_t value);
 

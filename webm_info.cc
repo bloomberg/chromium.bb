@@ -788,6 +788,39 @@ void PrintVP8Info(const uint8_t* data, int size, FILE* o) {
           altref_frame, partition_length);
 }
 
+// Prints the partition offsets of the sub-sample encryption. |data| must point
+// to an encrypted frame just after the signal byte. Returns the number of
+// bytes read from the sub-sample partition information.
+int PrintSubSampleEncryption(const uint8_t* data, int size, FILE* o) {
+  int read_end = sizeof(uint64_t);
+
+  // Skip past IV.
+  if (size < read_end)
+    return 0;
+  data += sizeof(uint64_t);
+
+  // Read number of partitions.
+  read_end += sizeof(uint8_t);
+  if (size < read_end)
+    return 0;
+  const int num_partitions = data[0];
+  data += sizeof(uint8_t);
+
+  // Read partitions.
+  for (int i = 0; i < num_partitions; ++i) {
+    read_end += sizeof(uint32_t);
+    if (size < read_end)
+      return 0;
+    uint32_t partition_offset;
+    memcpy(&partition_offset, data, sizeof(partition_offset));
+    partition_offset = libwebm::bigendian_to_host(partition_offset);
+    fprintf(o, " off[%d]:%u", i, partition_offset);
+    data += sizeof(uint32_t);
+  }
+
+  return read_end;
+}
+
 bool OutputCluster(const mkvparser::Cluster& cluster,
                    const mkvparser::Tracks& tracks, const Options& options,
                    FILE* o, mkvparser::MkvReader* reader, Indent* indent,
@@ -883,6 +916,7 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
           fprintf(o, " size_payload: %lld", block->m_size);
 
         const uint8_t KEncryptedBit = 0x1;
+        const uint8_t kSubSampleBit = 0x2;
         const int kSignalByteSize = 1;
         bool encrypted_stream = false;
         if (options.output_encrypted_info) {
@@ -917,8 +951,10 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
               return false;
             }
 
-            const bool encrypted_frame = (data[0] & KEncryptedBit) ? 1 : 0;
+            const bool encrypted_frame = !!(data[0] & KEncryptedBit);
+            const bool sub_sample_encrypt = !!(data[0] & kSubSampleBit);
             fprintf(o, " enc: %d", encrypted_frame ? 1 : 0);
+            fprintf(o, " sub: %d", sub_sample_encrypt ? 1 : 0);
 
             if (encrypted_frame) {
               uint64_t iv;
@@ -953,24 +989,35 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
                 fprintf(o, "\n%sVP8 data     :", indent->indent_str().c_str());
 
               bool encrypted_frame = false;
+              bool sub_sample_encrypt = false;
+              int frame_size = static_cast<int>(frame.len);
+
               int frame_offset = 0;
               if (encrypted_stream) {
                 if (data[0] & KEncryptedBit) {
                   encrypted_frame = true;
+                  if (data[0] & kSubSampleBit) {
+                    sub_sample_encrypt = true;
+                    data += kSignalByteSize;
+                    frame_size -= kSignalByteSize;
+                    frame_offset =
+                        PrintSubSampleEncryption(data, frame_size, o);
+                  }
                 } else {
                   frame_offset = kSignalByteSize;
                 }
               }
 
-              if (!encrypted_frame) {
+              if (!encrypted_frame || sub_sample_encrypt) {
                 data += frame_offset;
+                frame_size -= frame_offset;
 
                 const string codec_id = track->GetCodecId();
                 if (codec_id == "V_VP8") {
-                  PrintVP8Info(data, static_cast<int>(frame.len), o);
+                  PrintVP8Info(data, frame_size, o);
                 } else if (codec_id == "V_VP9") {
-                  PrintVP9Info(data, static_cast<int>(frame.len), o, time_ns,
-                               stats, parser, level_stats);
+                  PrintVP9Info(data, frame_size, o, time_ns, stats, parser,
+                               level_stats);
                 }
               }
             }

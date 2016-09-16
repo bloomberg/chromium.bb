@@ -12,6 +12,29 @@
 
 namespace {
 
+// Swaps unsigned 32 bit values to big endian if needed. Returns |value|
+// unmodified if architecture is big endian. Returns swapped bytes of |value|
+// if architecture is little endian. Returns 0 otherwise.
+uint32_t swap32_check_little_endian(uint32_t value) {
+  // Check endianness.
+  union {
+    uint32_t val32;
+    uint8_t c[4];
+  } check;
+  check.val32 = 0x01234567U;
+
+  // Check for big endian.
+  if (check.c[3] == 0x67)
+    return value;
+
+  // Check for not little endian.
+  if (check.c[0] != 0x67)
+    return 0;
+
+  return value << 24 | ((value << 8) & 0x0000FF00U) |
+         ((value >> 8) & 0x00FF0000U) | value >> 24;
+}
+
 // Swaps unsigned 64 bit values to big endian if needed. Returns |value|
 // unmodified if architecture is big endian. Returns swapped bytes of |value|
 // if architecture is little endian. Returns 0 otherwise.
@@ -42,6 +65,14 @@ uint64_t swap64_check_little_endian(uint64_t value) {
 }  // namespace
 
 namespace libwebm {
+
+uint32_t host_to_bigendian(uint32_t value) {
+  return swap32_check_little_endian(value);
+}
+
+uint32_t bigendian_to_host(uint32_t value) {
+  return swap32_check_little_endian(value);
+}
 
 uint64_t host_to_bigendian(uint64_t value) {
   return swap64_check_little_endian(value);
