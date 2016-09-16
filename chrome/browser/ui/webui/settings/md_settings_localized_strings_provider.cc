@@ -1386,6 +1386,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"incognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO},
       {"incognitoSiteOnly", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_ONLY},
       {"embeddedIncognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED},
+      {"siteSettingsSiteDetails", IDS_SETTINGS_SITE_DETAILS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

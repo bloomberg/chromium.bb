@@ -13,10 +13,20 @@
 <dom-module id="site-details">
   <template>
     <style include="settings-shared">
+      .favicon-image {
+        margin: 2px;
+      }
+
       #storage {
         -webkit-padding-end: 0;
       }
     </style>
+    <div class="settings-box first">
+      <div class="favicon-image"
+          style$="[[computeSiteIcon(site.originForDisplay)]]">
+      </div>
+      <div class="middle">[[site.originForDisplay]]</div>
+    </div>
     <div id="usage" hidden$="[[!storedData_]]">
       <div class="settings-box first">
         <h2>$i18n{siteSettingsUsage}</h2>
@@ -30,7 +40,7 @@
         </paper-item>
       </div>
     </div>
-    <div class="settings-box">
+    <div class="settings-box first">
       <h2>$i18n{siteSettingsPermissions}</h2>
     </div>
     <div class="list-frame">

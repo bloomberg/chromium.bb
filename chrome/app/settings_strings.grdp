@@ -1770,6 +1770,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_NO_ZOOMED_SITES" desc="A label explaining that no sites have a configured zoom in/out value.">
     No sites have been zoomed in or out.
   </message>
+  <message name="IDS_SETTINGS_SITE_DETAILS" desc="A title for the site settings details subpage.">
+    Site details
+  </message>
 
   <!-- Sync / People Page -->
   <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
