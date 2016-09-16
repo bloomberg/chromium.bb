@@ -421,6 +421,9 @@ static void predict_and_reconstruct_intra_block(
     const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type);
     const int eob = av1_decode_block_tokens(xd, plane, scan_order, col, row,
                                             tx_size, r, mbmi->segment_id);
+#if CONFIG_ADAPT_SCAN
+    av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
+#endif
     inverse_transform_block_intra(xd, plane, tx_type, tx_size, dst,
                                   pd->dst.stride, eob);
   }
@@ -437,7 +440,9 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type);
   const int eob = av1_decode_block_tokens(xd, plane, scan_order, col, row,
                                           tx_size, r, mbmi->segment_id);
-
+#if CONFIG_ADAPT_SCAN
+  av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
+#endif
   inverse_transform_block_inter(
       xd, plane, tx_size, &pd->dst.buf[4 * row * pd->dst.stride + 4 * col],
       pd->dst.stride, eob, block_idx);
