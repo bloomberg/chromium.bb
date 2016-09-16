@@ -191,7 +191,8 @@
     <!-- Advanced section -->
     <iron-collapse opened="[[advancedExpanded_]]">
       <div class="layout vertical indented">
-        <div class="settings-box single-column stretch">
+        <div class="settings-box single-column stretch"
+            hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
           <!-- Advanced properties -->
           <network-property-list
               hidden$="[[!hasAdvancedFields_(networkProperties)]]"

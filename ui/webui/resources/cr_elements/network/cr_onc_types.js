@@ -314,22 +314,22 @@ CrOnc.getAutoConnect = function(properties) {
 /**
  * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
  *     properties The ONC network properties or state properties.
- * @param {!Object<function(string, ...string):string>} i18n
+ * @param {!I18nBehavior.Proto} i18nBehavior An I18nBehavior instance.
  * @return {string} The name to display for |network|.
  */
-CrOnc.getNetworkName = function(properties, i18n) {
+CrOnc.getNetworkName = function(properties, i18nBehavior) {
   if (!properties)
     return '';
   let name = CrOnc.getStateOrActiveString(properties.Name);
   let type = CrOnc.getStateOrActiveString(properties.Type);
   if (!name)
-    return i18n.call('OncType' + type);
+    return i18nBehavior.i18n('OncType' + type);
   if (type == 'VPN' && properties.VPN) {
     let vpnType = CrOnc.getStateOrActiveString(properties.VPN.Type);
     if (vpnType == 'ThirdPartyVPN' && properties.VPN.ThirdPartyVPN) {
       let providerName = properties.VPN.ThirdPartyVPN.ProviderName;
       if (providerName)
-        return i18n.call('vpnNameTemplate', providerName, name);
+        return i18nBehavior.i18n('vpnNameTemplate', providerName, name);
     }
   }
   return name;

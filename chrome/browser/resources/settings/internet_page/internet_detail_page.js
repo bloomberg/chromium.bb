@@ -164,7 +164,7 @@ Polymer({
 
     // Update the detail page title.
     this.parentNode.pageTitle =
-        CrOnc.getNetworkName(this.networkProperties, this.i18n);
+        CrOnc.getNetworkName(this.networkProperties, this);
   },
 
   /** @private */
@@ -621,13 +621,16 @@ Polymer({
           'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
     }
     if (this.networkProperties.Type == CrOnc.Type.VPN) {
-      fields.push('VPN.Host', 'VPN.Type');
-      if (this.networkProperties.VPN.Type == 'OpenVPN')
-        fields.push('VPN.OpenVPN.Username');
-      else if (this.networkProperties.VPN.Type == 'L2TP-IPsec')
-        fields.push('VPN.L2TP.Username');
-      else if (this.networkProperties.VPN.Type == 'ThirdPartyVPN')
+      let vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
+      if (vpnType == 'ThirdPartyVPN') {
         fields.push('VPN.ThirdPartyVPN.ProviderName');
+      } else {
+        fields.push('VPN.Host', 'VPN.Type');
+        if (vpnType == 'OpenVPN')
+          fields.push('VPN.OpenVPN.Username');
+        else if (vpnType == 'L2TP-IPsec')
+          fields.push('VPN.L2TP.Username');
+      }
     }
     if (this.networkProperties.Type == CrOnc.Type.WI_FI)
       fields.push('RestrictedConnectivity');
@@ -700,6 +703,14 @@ Polymer({
    */
   hasDeviceFields_: function() {
     return this.hasVisibleFields_(this.getDeviceFields_());
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasAdvancedOrDeviceFields_: function() {
+    return this.hasAdvancedFields_() || this.hasDeviceFields_();
   },
 
   /**

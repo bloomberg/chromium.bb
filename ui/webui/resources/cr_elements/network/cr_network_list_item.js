@@ -91,7 +91,7 @@ Polymer({
     }
     let network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
     if (this.isListItem)
-      return CrOnc.getNetworkName(network, this.i18n);
+      return CrOnc.getNetworkName(network, this);
     return this.i18n('OncType' + network.Type);
   },
 
@@ -117,7 +117,7 @@ Polymer({
       return this.i18n('networkListItemConnected');
     if (network.Name && network.ConnectionState) {
       return this.getConnectionStateText_(
-          network.ConnectionState, CrOnc.getNetworkName(network, this.i18n));
+          network.ConnectionState, CrOnc.getNetworkName(network, this));
     }
     return this.i18n('networkDisabled');
   },

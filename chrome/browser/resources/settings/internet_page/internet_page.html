@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -50,6 +51,14 @@
               on-tap="onAddVPNTap_">
             <div class="start add-no-icon">$i18n{internetAddVPN}</div>
           </div>
+          <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
+            <div actionable class="settings-box continuation center"
+                on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
+              <div class="start add-no-icon">
+                [[getAddThirdParrtyVpnLabel_(item)]]
+              </div>
+            </div>
+          </template>
         </template>
       </neon-animatable>
       <template is="dom-if" route-path="/networkDetail" no-search>

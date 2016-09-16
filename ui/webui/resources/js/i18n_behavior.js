@@ -67,3 +67,16 @@ var I18nBehavior = {
     return loadTimeData.valueExists(id);
   },
 };
+
+/**
+ * TODO(stevenjb): Replace with an interface. b/24294625
+ * @typedef {{
+ *   i18n: function(string, ...string): string}},
+ *   i18nAdvanced: function({
+ *     substitutions: (Array<string>|undefined),
+ *     attrs: (Object<function(Node, string):boolean>|undefined),
+ *     tags: (Array<string>|undefined)}, opts),
+ *   i18nExists: function(string)
+ * }}
+ */
+I18nBehavior.Proto;
