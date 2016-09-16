@@ -19,7 +19,8 @@ class PathBuilderDelegate {
                      const scoped_refptr<TrustAnchor>& trust_anchor,
                      const der::GeneralizedTime& time,
                      bool expected_result,
-                     const std::string& expected_errors) {
+                     const std::string& expected_errors,
+                     const std::string& test_file_path) {
     SimpleSignaturePolicy signature_policy(1024);
     ASSERT_FALSE(chain.empty());
 

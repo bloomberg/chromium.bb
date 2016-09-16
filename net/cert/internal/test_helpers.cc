@@ -101,7 +101,7 @@ der::Input SequenceValueFromString(const std::string* s) {
   return ::testing::AssertionSuccess();
 }
 
-void ReadVerifyCertChainTestFromFile(const std::string& file_name,
+void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
                                      ParsedCertificateList* chain,
                                      scoped_refptr<TrustAnchor>* trust_anchor,
                                      der::GeneralizedTime* time,
@@ -111,8 +111,7 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_name,
   *trust_anchor = nullptr;
   expected_errors->clear();
 
-  std::string file_data = ReadTestFileToString(
-      std::string("net/data/verify_certificate_chain_unittest/") + file_name);
+  std::string file_data = ReadTestFileToString(file_path_ascii);
 
   std::vector<std::string> pem_headers;
 
@@ -180,11 +179,11 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_name,
   ASSERT_TRUE(*trust_anchor);
 }
 
-std::string ReadTestFileToString(const std::string& file_name) {
+std::string ReadTestFileToString(const std::string& file_path_ascii) {
   // Compute the full path, relative to the src/ directory.
   base::FilePath src_root;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-  base::FilePath filepath = src_root.AppendASCII(file_name);
+  base::FilePath filepath = src_root.AppendASCII(file_path_ascii);
 
   // Read the full contents of the file.
   std::string file_data;

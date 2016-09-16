@@ -37,9 +37,9 @@ class TrustStoreNSSTest : public testing::Test {
     der::GeneralizedTime unused_time;
     std::string unused_errors;
 
-    ReadVerifyCertChainTestFromFile("key-rollover-oldchain.pem", &chain,
-                                    &oldroot_, &unused_time,
-                                    &unused_verify_result, &unused_errors);
+    ReadVerifyCertChainTestFromFile(
+        "net/data/verify_certificate_chain_unittest/key-rollover-oldchain.pem",
+        &chain, &oldroot_, &unused_time, &unused_verify_result, &unused_errors);
     ASSERT_EQ(2U, chain.size());
     target_ = chain[0];
     oldintermediate_ = chain[1];
@@ -48,9 +48,11 @@ class TrustStoreNSSTest : public testing::Test {
     ASSERT_TRUE(oldroot_);
 
     scoped_refptr<TrustAnchor> unused_root;
-    ReadVerifyCertChainTestFromFile("key-rollover-longrolloverchain.pem",
-                                    &chain, &unused_root, &unused_time,
-                                    &unused_verify_result, &unused_errors);
+    ReadVerifyCertChainTestFromFile(
+        "net/data/verify_certificate_chain_unittest/"
+        "key-rollover-longrolloverchain.pem",
+        &chain, &unused_root, &unused_time, &unused_verify_result,
+        &unused_errors);
     ASSERT_EQ(4U, chain.size());
     newintermediate_ = chain[1];
     newroot_ = TrustAnchor::CreateFromCertificateNoConstraints(chain[2]);
