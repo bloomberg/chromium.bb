@@ -1322,7 +1322,7 @@ void ScrollTree::OnScrollOffsetAnimated(int layer_id,
   ScrollNode* scroll_node = Node(scroll_tree_index);
   if (SetScrollOffset(layer_id,
                       ClampScrollOffsetToLimits(scroll_offset, scroll_node)))
-    layer_tree_impl->DidUpdateScrollOffset(layer_id, transform_tree_index);
+    layer_tree_impl->DidUpdateScrollOffset(layer_id);
   layer_tree_impl->DidAnimateScrollOffset();
 }
 
@@ -1470,13 +1470,13 @@ void ScrollTree::UpdateScrollOffsetMapEntry(
       synced_scroll_offset(key)->set_clobber_active_value();
     }
     if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key, kInvalidNodeId);
+      layer_tree_impl->DidUpdateScrollOffset(key);
     }
   } else {
     layer_id_to_scroll_offset_map_[key] = new_scroll_offset_map->at(key);
     changed |= synced_scroll_offset(key)->PushPendingToActive();
     if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key, kInvalidNodeId);
+      layer_tree_impl->DidUpdateScrollOffset(key);
     }
   }
 }
@@ -1604,8 +1604,7 @@ gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
   gfx::ScrollOffset new_offset =
       ClampScrollOffsetToLimits(old_offset + adjusted_scroll, scroll_node);
   if (SetScrollOffset(scroll_node->owner_id, new_offset))
-    layer_tree_impl->DidUpdateScrollOffset(scroll_node->owner_id,
-                                           scroll_node->transform_id);
+    layer_tree_impl->DidUpdateScrollOffset(scroll_node->owner_id);
 
   gfx::ScrollOffset unscrolled =
       old_offset + gfx::ScrollOffset(scroll) - new_offset;

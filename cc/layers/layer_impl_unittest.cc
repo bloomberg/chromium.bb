@@ -316,8 +316,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->layer_tree_impl()->DidUpdateScrollOffset(
-          layer->id(), layer->transform_tree_index()));
+      layer->layer_tree_impl()->DidUpdateScrollOffset(layer->id()));
   layer->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.SetScrollOffsetDeltaForTesting(layer->id(),

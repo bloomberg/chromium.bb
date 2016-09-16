@@ -830,7 +830,7 @@ void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
   if (layer_tree_impl()->property_trees()->scroll_tree.SetScrollOffset(
           id(), scroll_offset))
-    layer_tree_impl()->DidUpdateScrollOffset(id(), transform_tree_index());
+    layer_tree_impl()->DidUpdateScrollOffset(id());
 }
 
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {

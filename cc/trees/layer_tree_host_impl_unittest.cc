@@ -486,8 +486,7 @@ class LayerTreeHostImplTest : public testing::Test,
             ->property_trees()
             ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
                                                          delta))
-      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
-          layer_impl->id(), layer_impl->transform_tree_index());
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(layer_impl->id());
   }
 
   void BeginImplFrameAndAnimate(BeginFrameArgs begin_frame_args,
@@ -2879,8 +2878,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
                 host_impl_->InnerViewportScrollLayer()->id(),
                 gfx::ScrollOffset(5, 5)))
       host_impl_->active_tree()->DidUpdateScrollOffset(
-          host_impl_->InnerViewportScrollLayer()->id(),
-          host_impl_->InnerViewportScrollLayer()->transform_tree_index());
+          host_impl_->InnerViewportScrollLayer()->id());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     if (expecting_animations) {

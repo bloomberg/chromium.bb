@@ -419,7 +419,7 @@ class CC_EXPORT LayerTreeImpl {
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
-  void DidUpdateScrollOffset(int layer_id, int transform_id);
+  void DidUpdateScrollOffset(int layer_id);
   void DidUpdateScrollState(int layer_id);
 
   void ScrollAnimationAbort(bool needs_completion);

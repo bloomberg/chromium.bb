@@ -1429,8 +1429,7 @@ class LayerTreeHostScrollTestLayerStructureChange
             ->property_trees()
             ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
                                                          delta))
-      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
-          layer_impl->id(), layer_impl->transform_tree_index());
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(layer_impl->id());
   }
 
   FakeLayerScrollClient root_scroll_layer_client_;
