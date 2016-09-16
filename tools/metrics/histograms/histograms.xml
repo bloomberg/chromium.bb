@@ -81314,6 +81314,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1575" label="WebAudioPeriodicWave"/>
   <int value="1576" label="WebAudioStereoPannerNode"/>
   <int value="1577" label="WebAudioWaveShaperNode"/>
+  <int value="1578" label="CSSZoomReset"/>
+  <int value="1579" label="CSSZoomDocument"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

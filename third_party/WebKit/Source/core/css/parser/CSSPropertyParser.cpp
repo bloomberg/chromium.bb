@@ -1081,11 +1081,16 @@ static CSSValue* consumeZoom(CSSParserTokenRange& range, const CSSParserContext&
         if (!zoom)
             zoom = consumeNumber(range, ValueRangeNonNegative);
     }
-    if (zoom && context.useCounter()
-        && !(token.id() == CSSValueNormal
+    if (zoom && context.useCounter()) {
+        if (!(token.id() == CSSValueNormal
             || (token.type() == NumberToken && zoom->getDoubleValue() == 1)
             || (token.type() == PercentageToken && zoom->getDoubleValue() == 100)))
-        context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
+            context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
+        if (token.id() == CSSValueReset)
+            context.useCounter()->count(UseCounter::CSSZoomReset);
+        if (token.id() == CSSValueDocument)
+            context.useCounter()->count(UseCounter::CSSZoomDocument);
+    }
     return zoom;
 }
 
