@@ -9,8 +9,10 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/http/http_response_headers.h"
@@ -67,33 +69,28 @@ static const char kWEBPHeaderResponse[] =
 
 }  // namespace
 
-// TODO(ios): remove the static_cast<UIImage*>(nil) once all the bots have
-// Xcode 6.0 or later installed, http://crbug.com/440857
-
 class ImageFetcherTest : public PlatformTest {
  protected:
   ImageFetcherTest()
-      : pool_(new base::SequencedWorkerPool(1,
-                                            "TestPool",
-                                            base::TaskPriority::USER_VISIBLE)),
-        image_fetcher_(new ImageFetcher(pool_)),
-        result_(nil),
-        called_(false) {
-    callback_.reset(
-        [^(const GURL& original_url, int http_response_code, NSData* data) {
-            result_ = [UIImage imageWithData:data];
-            called_ = true;
-        } copy]);
+      : worker_thread_("TestThread"),
+        callback_([^(const GURL& original_url,
+                     int http_response_code,
+                     NSData * data) {
+          result_ = [UIImage imageWithData:data];
+          called_ = true;
+        } copy]) {
+    worker_thread_.Start();
+
+    image_fetcher_ =
+        base::MakeUnique<ImageFetcher>(worker_thread_.task_runner());
     image_fetcher_->SetRequestContextGetter(
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()));
   }
 
-  ~ImageFetcherTest() override { pool_->Shutdown(); }
-
   net::TestURLFetcher* SetupFetcher() {
     image_fetcher_->StartDownload(GURL(kTestUrl), callback_);
-    EXPECT_EQ(static_cast<UIImage*>(nil), result_);
+    EXPECT_EQ(nil, result_);
     EXPECT_EQ(false, called_);
     net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
@@ -101,20 +98,27 @@ class ImageFetcherTest : public PlatformTest {
     return fetcher;
   }
 
+  // Message loop for the main test thread.
   base::MessageLoop loop_;
+
+  // Worker thread used for ImageFetcher's asynchronous work.
+  base::Thread worker_thread_;
+
   base::mac::ScopedBlock<ImageFetchedCallback> callback_;
   net::TestURLFetcherFactory factory_;
-  scoped_refptr<base::SequencedWorkerPool> pool_;
   std::unique_ptr<ImageFetcher> image_fetcher_;
-  UIImage* result_;
-  bool called_;
+  UIImage* result_ = nil;
+  bool called_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageFetcherTest);
 };
 
 TEST_F(ImageFetcherTest, TestError) {
   net::TestURLFetcher* fetcher = SetupFetcher();
   fetcher->set_response_code(404);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_EQ(static_cast<UIImage*>(nil), result_);
+  EXPECT_EQ(nil, result_);
   EXPECT_TRUE(called_);
 }
 
@@ -123,7 +127,7 @@ TEST_F(ImageFetcherTest, TestJpg) {
   fetcher->set_response_code(200);
   fetcher->SetResponseString(std::string((char*)kJPGImage, sizeof(kJPGImage)));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_NE(static_cast<UIImage*>(nil), result_);
+  EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
@@ -132,7 +136,7 @@ TEST_F(ImageFetcherTest, TestPng) {
   fetcher->set_response_code(200);
   fetcher->SetResponseString(std::string((char*)kPNGImage, sizeof(kPNGImage)));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_NE(static_cast<UIImage*>(nil), result_);
+  EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
@@ -150,9 +154,9 @@ TEST_F(ImageFetcherTest, TestGoodWebP) {
       std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
   fetcher->set_response_headers(headers);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  pool_->FlushForTesting();
+  worker_thread_.FlushForTesting();
   base::RunLoop().RunUntilIdle();
-  EXPECT_NE(static_cast<UIImage*>(nil), result_);
+  EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
@@ -164,9 +168,9 @@ TEST_F(ImageFetcherTest, TestBadWebP) {
       std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
   fetcher->set_response_headers(headers);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  pool_->FlushForTesting();
+  worker_thread_.FlushForTesting();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<UIImage*>(nil), result_);
+  EXPECT_EQ(nil, result_);
   EXPECT_TRUE(called_);
 }
 
@@ -181,9 +185,9 @@ TEST_F(ImageFetcherTest, DeleteDuringWebPDecoding) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   // Delete the image fetcher, and check that the callback is not called.
   image_fetcher_.reset();
-  pool_->FlushForTesting();
+  worker_thread_.FlushForTesting();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<UIImage*>(nil), result_);
+  EXPECT_EQ(nil, result_);
   EXPECT_FALSE(called_);
 }
 
