@@ -500,6 +500,10 @@
     "label": "//services/ui/gpu:mus_gpu_unittests",
     "type": "console_test_launcher",
   },
+  "mus_demo_unittests": {
+    "label": "//services/ui/demo:mus_demo_unittests",
+    "type": "windowed_test_launcher",
+  },
   "mus_ws_unittests": {
     "label": "//services/ui/ws:mus_ws_unittests",
     "type": "windowed_test_launcher",
