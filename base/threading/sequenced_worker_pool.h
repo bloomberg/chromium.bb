@@ -172,16 +172,27 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // PostSequencedWorkerTask(). Valid tokens are always nonzero.
   static SequenceToken GetSequenceToken();
 
-  // Invoke this once on the main thread of a process, before any other threads
-  // are created and before any tasks are posted to that process'
-  // SequencedWorkerPools but after TaskScheduler was instantiated, to force all
-  // SequencedWorkerPools in that process to redirect their tasks to the
-  // TaskScheduler. Note: SequencedWorkerPool instances with |max_threads == 1|
-  // will be special cased to send all of their work as
-  // ExecutionMode::SINGLE_THREADED.
+  // Starts redirecting tasks posted to this process' SequencedWorkerPools to
+  // the registered TaskScheduler. This cannot be called after a task has been
+  // posted to a SequencedWorkerPool. This is not thread-safe; proper
+  // synchronization is required to use any SequencedWorkerPool method after
+  // calling this. There must be a registered TaskScheduler when this is called.
+  // Ideally, call this on the main thread of a process, before any other
+  // threads are created and before any tasks are posted to that process'
+  // SequencedWorkerPools.
+  // Note: SequencedWorkerPool instances with |max_threads == 1| will be special
+  // cased to send all of their work as ExecutionMode::SINGLE_THREADED.
   // TODO(gab): Remove this if http://crbug.com/622400 fails
   // (SequencedWorkerPool will be phased out completely otherwise).
-  static void RedirectSequencedWorkerPoolsToTaskSchedulerForProcess();
+  static void RedirectToTaskSchedulerForProcess();
+
+  // Stops redirecting tasks posted to this process' SequencedWorkerPools to the
+  // registered TaskScheduler and allows RedirectToTaskSchedulerForProcess() to
+  // be called even if tasks have already posted to a SequencedWorkerPool in
+  // this process. Calling this while there are active SequencedWorkerPools is
+  // not supported. This is not thread-safe; proper synchronization is required
+  // to use any SequencedWorkerPool method after calling this.
+  static void ResetRedirectToTaskSchedulerForProcessForTesting();
 
   // When constructing a SequencedWorkerPool, there must be a
   // ThreadTaskRunnerHandle on the current thread unless you plan to

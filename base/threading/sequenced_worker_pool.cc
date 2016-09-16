@@ -54,12 +54,16 @@ namespace base {
 
 namespace {
 
-// An enum representing the state of all pools. Any given process should only
-// ever transition from NONE_ACTIVE to the active states, transitions between
-// actives states are unexpected. The REDIRECTED_TO_TASK_SCHEDULER transition
-// occurs when RedirectSequencedWorkerPoolsToTaskSchedulerForProcess() is called
-// and the WORKER_CREATED transition occurs when a Worker needs to be created
-// because the first task was posted and the state is still NONE_ACTIVE.
+// An enum representing the state of all pools. Any given non-test process
+// should only ever transition from NONE_ACTIVE to one of the active states.
+// Transitions between actives states are unexpected. The
+// REDIRECTED_TO_TASK_SCHEDULER transition occurs when
+// RedirectToTaskSchedulerForProcess() is called. The WORKER_CREATED transition
+// occurs when a Worker needs to be created because the first task was posted
+// and the state is still NONE_ACTIVE. In a test process, a transition to
+// NONE_ACTIVE occurs when ResetRedirectToTaskSchedulerForProcessForTesting() is
+// called.
+//
 // |g_all_pools_state| uses relaxed atomic operations to ensure no data race
 // between reads/writes, strict memory ordering isn't required per no other
 // state being inferred from its value. Explicit synchronization (e.g. locks or
@@ -67,6 +71,7 @@ namespace {
 // NONE_ACTIVE after the first Worker was created -- this is not possible for
 // REDIRECTED_TO_TASK_SCHEDULER per its API requesting to be invoked while no
 // other threads are active).
+//
 // TODO(gab): Remove this if http://crbug.com/622400 fails (SequencedWorkerPool
 // will be phased out completely otherwise).
 enum AllPoolsState : subtle::Atomic32 {
@@ -902,6 +907,8 @@ bool SequencedWorkerPool::Inner::IsRunningSequenceOnCurrentThread(
 
 // See https://code.google.com/p/chromium/issues/detail?id=168415
 void SequencedWorkerPool::Inner::CleanupForTesting() {
+  DCHECK_NE(subtle::NoBarrier_Load(&g_all_pools_state),
+            AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER);
   DCHECK(!RunsTasksOnCurrentThread());
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   AutoLock lock(lock_);
@@ -1449,8 +1456,7 @@ SequencedWorkerPool::GetWorkerPoolForCurrentThread() {
 }
 
 // static
-void SequencedWorkerPool::
-    RedirectSequencedWorkerPoolsToTaskSchedulerForProcess() {
+void SequencedWorkerPool::RedirectToTaskSchedulerForProcess() {
   DCHECK(TaskScheduler::GetInstance());
   // Hitting this DCHECK indicates that a task was posted to a
   // SequencedWorkerPool before the TaskScheduler was initialized and
@@ -1460,6 +1466,16 @@ void SequencedWorkerPool::
             subtle::NoBarrier_Load(&g_all_pools_state));
   subtle::NoBarrier_Store(&g_all_pools_state,
                           AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER);
+}
+
+// static
+void SequencedWorkerPool::ResetRedirectToTaskSchedulerForProcessForTesting() {
+  // This can be called when the current state is REDIRECTED_TO_TASK_SCHEDULER
+  // to stop redirecting tasks. It can also be called when the current state is
+  // WORKER_CREATED to allow RedirectToTaskSchedulerForProcess() to be called
+  // (RedirectToTaskSchedulerForProcess() cannot be called after a worker has
+  // been created if this isn't called).
+  subtle::NoBarrier_Store(&g_all_pools_state, AllPoolsState::NONE_ACTIVE);
 }
 
 SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,

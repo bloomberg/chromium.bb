@@ -450,8 +450,7 @@ void MaybeInitializeTaskScheduler() {
       variation_params.find("RedirectSequencedWorkerPools");
   if (sequenced_worker_pool_param != variation_params.end() &&
       sequenced_worker_pool_param->second == "true") {
-    base::SequencedWorkerPool::
-        RedirectSequencedWorkerPoolsToTaskSchedulerForProcess();
+    base::SequencedWorkerPool::RedirectToTaskSchedulerForProcess();
   }
 }
 
