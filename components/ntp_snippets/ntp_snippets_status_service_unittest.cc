@@ -37,29 +37,21 @@ class NTPSnippetsStatusServiceTest : public ::testing::Test {
   test::NTPSnippetsTestUtils utils_;
 };
 
-TEST_F(NTPSnippetsStatusServiceTest, SigninStateCompatibility) {
-  auto service = MakeService();
-
-  // The default test setup is signed out.
-  EXPECT_EQ(DisabledReason::SIGNED_OUT, service->GetDisabledReasonFromDeps());
-
-  // Once signed in, we should be in a compatible state.
-  utils_.fake_signin_manager()->SignIn("foo@bar.com");
-  EXPECT_EQ(DisabledReason::NONE, service->GetDisabledReasonFromDeps());
-}
-
+// TODO(jkrcal): Extend the ways to override variation parameters in unit-test
+// (bug 645447), and recover the SigninStateCompatibility test that sign-in is
+// required when the parameter is overriden.
 TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
   auto service = MakeService();
 
-  // The default test setup is signed out.
-  ASSERT_EQ(DisabledReason::SIGNED_OUT, service->GetDisabledReasonFromDeps());
+  // The default test setup is signed out. The service is enabled.
+  ASSERT_EQ(DisabledReason::NONE, service->GetDisabledReasonFromDeps());
 
   // Once the enabled pref is set to false, we should be disabled.
   utils_.pref_service()->SetBoolean(prefs::kEnableSnippets, false);
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
             service->GetDisabledReasonFromDeps());
 
-  // The other dependencies shouldn't matter anymore.
+  // Signing-in shouldn't matter anymore.
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
             service->GetDisabledReasonFromDeps());

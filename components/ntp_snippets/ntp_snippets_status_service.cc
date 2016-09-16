@@ -26,16 +26,16 @@ NTPSnippetsStatusService::NTPSnippetsStatusService(
     SigninManagerBase* signin_manager,
     PrefService* pref_service)
     : disabled_reason_(DisabledReason::EXPLICITLY_DISABLED),
-      require_signin_(true),
+      require_signin_(false),
       signin_manager_(signin_manager),
       pref_service_(pref_service),
       signin_observer_(this) {
   std::string param_value_str = variations::GetVariationParamValueByFeature(
       kArticleSuggestionsFeature, kFetchingRequiresSignin);
-  if (param_value_str == kFetchingRequiresSigninDisabled) {
-    require_signin_ = false;
+  if (param_value_str == kFetchingRequiresSigninEnabled) {
+    require_signin_ = true;
   } else if (!param_value_str.empty() &&
-             param_value_str != kFetchingRequiresSigninEnabled) {
+             param_value_str != kFetchingRequiresSigninDisabled) {
     DLOG(WARNING) << "Unknow value for the variations parameter "
                   << kFetchingRequiresSignin << ": " << param_value_str;
   }

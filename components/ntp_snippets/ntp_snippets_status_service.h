@@ -43,8 +43,6 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   void Init(const DisabledReasonChangeCallback& callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest,
-                           SigninStateCompatibility);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest, DisabledViaPref);
 
   // SigninManagerBase::Observer implementation
