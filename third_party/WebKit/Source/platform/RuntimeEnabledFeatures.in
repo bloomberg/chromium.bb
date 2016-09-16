@@ -228,7 +228,7 @@ TimerThrottlingForHiddenFrames status=stable
 // Chromium sets this conditionally (eg. based on the presence of a
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
-TraceWrappables
+TraceWrappables status=test
 TrustedEventsDefaultAction status=stable
 UnsafeES3APIs
 UnsandboxedAuxiliary status=stable

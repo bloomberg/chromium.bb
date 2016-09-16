@@ -3,5 +3,5 @@ Test that all nodes from the detached DOM tree will get into one group in the he
  Took heap snapshot
 Parsed snapshot
 SUCCESS: found myEventListener
-SUCCESS: found link from HTMLBodyElement to HTMLBodyElement
+FAIL: cannot find HTMLBodyElement among retainers of (Global handles)
 

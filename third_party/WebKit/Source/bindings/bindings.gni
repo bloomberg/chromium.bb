@@ -230,6 +230,7 @@ bindings_unittest_files =
                     "core/v8/ScriptPromiseTest.cpp",
                     "core/v8/ScriptStreamerTest.cpp",
                     "core/v8/ScriptValueSerializerTest.cpp",
+                    "core/v8/ScriptWrappableVisitorTest.cpp",
                     "core/v8/SerializedScriptValueTest.cpp",
                     "core/v8/ToV8Test.cpp",
                     "core/v8/V8BindingForTesting.cpp",
