@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//testing/test.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("run_jsbundler.gni")
 
 assert(is_chromeos)
 
@@ -16,16 +17,6 @@ declare_args() {
 
 closure_library_dir =
     "//chrome/third_party/chromevox/third_party/closure-library/closure/goog"
-
-jsbundler_modules = rebase_path([
-                                  "depstree.py",
-                                  "source.py",
-                                  "treescan.py",
-                                ],
-                                ".",
-                                "$closure_library_dir/../bin/build")
-jsbundler_modules +=
-    [ "//third_party/WebKit/Source/devtools/scripts/rjsmin.py" ]
 
 # List of all modules that are included in one or more of the production
 # chromevox scripts.
@@ -258,82 +249,6 @@ group("chromevox") {
   }
 }
 
-template("run_jsbundler") {
-  assert(defined(invoker.mode))
-  assert(defined(invoker.sources))
-  if (defined(invoker.modules)) {
-    modules = invoker.modules
-  } else {
-    modules = []
-  }
-  if (defined(invoker.rewrite_rules)) {
-    rewrite_rules = invoker.rewrite_rules
-  } else {
-    rewrite_rules = []
-  }
-  action(target_name) {
-    script = "tools/jsbundler.py"
-    inputs = jsbundler_modules
-    sources = invoker.sources
-    if (defined(invoker.output_file)) {
-      if (defined(invoker.modules)) {
-        depfile = "$target_out_dir/" +
-                  get_path_info(invoker.output_file, "name") + ".d"
-      }
-      outputs = [
-        invoker.output_file,
-      ]
-    } else {
-      assert(!defined(invoker.modules))
-      stampfile = "$target_out_dir/${target_name}_copy.stamp"
-      outputs = [
-        stampfile,
-      ]
-    }
-    args = [
-      "-m",
-      invoker.mode,
-    ]
-    if (defined(depfile)) {
-      args += [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-      ]
-    }
-    if (defined(stampfile)) {
-      args += [
-        "--stampfile",
-        rebase_path(stampfile, root_build_dir),
-      ]
-    }
-    if (defined(invoker.output_file)) {
-      args += [
-        "-o",
-        rebase_path(invoker.output_file, root_build_dir),
-      ]
-    }
-    if (defined(invoker.dest_dir)) {
-      args += [
-        "-d",
-        rebase_path(invoker.dest_dir, root_build_dir),
-      ]
-    }
-    foreach(module, modules) {
-      args += [
-        "-M",
-        rebase_path(module, root_build_dir),
-      ]
-    }
-    foreach(rule, rewrite_rules) {
-      args += [
-        "-w",
-        rule,
-      ]
-    }
-    args += rebase_path(sources, root_build_dir)
-  }
-}
-
 chromevox_background_script_loader_file = "cvox2/background/loader.js"
 chromevox_content_script_loader_file = "chromevox/injected/loader.js"
 chromevox_kbexplorer_loader_file = "chromevox/background/kbexplorer_loader.js"
@@ -453,6 +368,8 @@ run_jsbundler("chromevox_copied_files") {
   ]
 }
 
+# TODO: refactor this into another file like generate_manifest.gni
+# to share with other extensions.
 template("manifest") {
   version_file = "//chrome/VERSION"
   version_script = "//build/util/version.py"

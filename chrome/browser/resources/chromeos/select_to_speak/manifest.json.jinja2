@@ -1,0 +1,23 @@
+{
+{%if key is defined %}
+  "key": "{{key}}",
+{% endif %}
+  "manifest_version": 2,
+  "name": "TODO: Translated Select to speak name",
+  "version": "{{set_version}}",
+  "description": "TODO: Translated Select to speak description",
+{% if is_guest_manifest == '1' %}
+  "incognito": "split",
+{% endif %}
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "permissions": [
+    "accessibilityPrivate"
+  ],
+  "automation": {
+    "desktop": true
+  }
+}

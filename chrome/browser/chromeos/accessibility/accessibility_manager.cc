@@ -304,6 +304,10 @@ AccessibilityManager::AccessibilityManager()
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
       base::Bind(&AccessibilityManager::PostUnloadChromeVox,
                  weak_ptr_factory_.GetWeakPtr())));
+  select_to_speak_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
+      extension_misc::kSelectToSpeakExtensionId,
+      resources_path.Append(extension_misc::kSelectToSpeakExtensionPath),
+      base::Closure()));
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -839,7 +843,12 @@ void AccessibilityManager::UpdateSelectToSpeakFromPref() {
     return;
   select_to_speak_enabled_ = enabled;
 
-  // TODO(dmazzoni): implement feature here.
+  if (enabled) {
+    select_to_speak_loader_->Load(profile_, "" /* init_script_str */,
+                                  base::Closure() /* done_cb */);
+  } else {
+    select_to_speak_loader_->Unload();
+  }
 }
 
 void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {

@@ -198,6 +198,11 @@ extern const char kChromeVoxExtensionId[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];
+// The extension id of the Select-to-speak extension.
+extern const char kSelectToSpeakExtensionId[];
+// Path to preinstalled Select-to-speak extension (relative to
+// |chrome::DIR_RESOURCES|).
+extern const char kSelectToSpeakExtensionPath[];
 // Name of the manifest file in an extension when a special manifest is used
 // for guest mode.
 extern const char kGuestManifestFilename[];

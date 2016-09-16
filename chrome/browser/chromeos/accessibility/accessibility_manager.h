@@ -406,6 +406,8 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityExtensionLoader> chromevox_loader_;
 
+  std::unique_ptr<AccessibilityExtensionLoader> select_to_speak_loader_;
+
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
