@@ -34,10 +34,14 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 }
 
 InspectorTest._mockTargetId = 1;
+InspectorTest._pageCapabilities =
+    WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.DOM |
+    WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Log |
+    WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
 
 InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
 {
-    capabilities = capabilities || (WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker);
+    capabilities = capabilities || InspectorTest._pageCapabilities;
     var MockTarget = function(name, connection, callback)
     {
         WebInspector.Target.call(this, InspectorTest.testTargetManager, name, capabilities, connection, null, callback);
