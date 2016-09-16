@@ -14,17 +14,11 @@ template("symlink") {
                              "testonly",
                              "visibility",
                            ])
-
-    # Can't use the symlink itself as an output since ninja does not properly
-    # process the symlink's mtime.
-    # https://github.com/ninja-build/ninja/issues/1186
     outputs = [
-      "$target_gen_dir/$target_name.stamp",
+      invoker.output,
     ]
     script = "//build/symlink.py"
     args = [
-      "--touch",
-      rebase_path(outputs[0], root_build_dir),
       "-f",
       rebase_path(invoker.source, get_path_info(invoker.output, "dir")),
       rebase_path(invoker.output, root_build_dir),
