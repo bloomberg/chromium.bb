@@ -53,6 +53,7 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*, compare_button>
 @interface ContentSettingBubbleController : BaseBubbleController {
  @private
   IBOutlet NSTextField* titleLabel_;
+  IBOutlet NSTextField* messageLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
 
   IBOutlet NSButton* manageButton_;

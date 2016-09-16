@@ -11,6 +11,7 @@
                 <outlet property="bubble_" destination="4" id="5"/>
                 <outlet property="doneButton_" destination="17" id="32"/>
                 <outlet property="manageButton_" destination="15" id="31"/>
+                <outlet property="messageLabel_" destination="dgF-Po-kkg" id="23a-5O-Xno"/>
                 <outlet property="titleLabel_" destination="7" id="30"/>
                 <outlet property="window" destination="1" id="3"/>
             </connections>
@@ -67,19 +68,26 @@ DQ
                                     </button>
                                 </subviews>
                             </customView>
-                            <textField verticalHuggingPriority="750" id="7">
-                                <rect key="frame" x="8" y="68" width="282" height="14"/>
+                            <textField verticalHuggingPriority="750" id="dgF-Po-kkg">
+                                <rect key="frame" x="18" y="53" width="282" height="28"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="^IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION" id="8">
+                                <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="^IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE" id="AxL-Md-rce">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    <connections>
+                                        <binding destination="-2" name="displayPatternValue1" keyPath="self.messageLabel_" id="wgi-Vp-Zyf">
+                                            <dictionary key="options">
+                                                <string key="NSDisplayPattern">%{value1}@</string>
+                                            </dictionary>
+                                        </binding>
+                                    </connections>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" id="dgF-Po-kkg">
-                                <rect key="frame" x="8" y="86" width="282" height="28"/>
+                            <textField verticalHuggingPriority="750" id="7">
+                                <rect key="frame" x="17" y="100" width="282" height="14"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="^IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE" id="AxL-Md-rce">
+                                <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="^IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION" id="8">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>

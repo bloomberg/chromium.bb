@@ -212,6 +212,7 @@ class ContentSettingBubbleWebContentsObserverBridge
                        referenceFrame:(NSRect)referenceFrame;
 - (void)initializeBlockedPluginsList;
 - (void)initializeTitle;
+- (void)initializeMessage;
 - (void)initializeRadioGroup;
 - (void)initializeItemList;
 - (void)initializeGeoLists;
@@ -327,6 +328,24 @@ const ContentTypeToNibPath kNibPaths[] = {
   NSRect titleFrame = [titleLabel_ frame];
   titleFrame.origin.y -= deltaY;
   [titleLabel_ setFrame:titleFrame];
+}
+
+- (void)initializeMessage {
+  if (!messageLabel_)
+    return;
+
+  NSString* label = base::SysUTF16ToNSString(
+      contentSettingBubbleModel_->bubble_content().message);
+  [messageLabel_ setStringValue:label];
+
+  CGFloat deltaY = [GTMUILocalizerAndLayoutTweaker
+      sizeToFitFixedWidthTextField:messageLabel_];
+  NSRect windowFrame = [[self window] frame];
+  windowFrame.size.height += deltaY;
+  [[self window] setFrame:windowFrame display:NO];
+  NSRect messageFrame = [messageLabel_ frame];
+  messageFrame.origin.y -= deltaY;
+  [messageLabel_ setFrame:messageFrame];
 }
 
 - (void)initializeRadioGroup {
@@ -769,6 +788,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   [self initManageDoneButtons];
 
   [self initializeTitle];
+  [self initializeMessage];
 
   // Note that the per-content-type methods and |initializeRadioGroup| below
   // must be kept in the correct order, as they make interdependent adjustments
