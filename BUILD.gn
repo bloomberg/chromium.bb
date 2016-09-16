@@ -1082,9 +1082,7 @@ if (is_win) {
       "//chrome/installer/setup:setup_unittests",
       "//chrome/installer/util:installer_util_unittests",
       "//chrome/test:browser_tests",
-
-      # https://crbug.com/640185
-      # "//chrome/test:chrome_app_unittests",
+      "//chrome/test:chrome_app_unittests",
       "//chrome/test:unit_tests",
       "//chrome/test/chromedriver:chromedriver_unittests",
       "//chrome_elf:chrome_elf_unittests",
