@@ -26,29 +26,6 @@ interface CompositorFrameSinkFactory {
                             CompositorFrameSinkClient client);
 };
 
-// A CompositorFrameSink is an interface for receiving CompositorFrame structs.
-// A CompositorFrame contains the complete output meant for display. Each time a
-// client has a graphical update, and receives an OnBeginFrame, it is
-// responsible for creating a CompositorFrame to update its portion of the
-// screen.
-interface CompositorFrameSink {
-  // After the submitted frame is either drawn for the first time by the display
-  // compositor or discarded, the callback will be called. Clients should use
-  // this acknowledgement to ratelimit frame submissions.
-  // TODO(fsamuel): We should support identifying the CF in the callback.
-  SubmitCompositorFrame(cc.mojom.CompositorFrame frame) => ();
-
-  // Lets the display compositor know that the client wishes to receive the next
-  // BeginFrame event.
-  SetNeedsBeginFrame(bool needs_begin_frame);
-
-  // TODO(fsamuel): ReadbackBitmap API would be useful here.
-};
-
-interface CompositorFrameSinkClient {
-  ReturnResources(array<cc.mojom.ReturnedResource> resources);
-};
-
 // This is a public interface implemented by Display clients.
 // Each client implements a single instance of the DisplayClient interface.
 interface DisplayClient {

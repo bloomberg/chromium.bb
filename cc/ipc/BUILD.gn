@@ -43,6 +43,7 @@ mojom("interfaces") {
     "compositor_frame_metadata.mojom",
     "filter_operation.mojom",
     "filter_operations.mojom",
+    "mojo_compositor_frame_sink.mojom",
     "quads.mojom",
     "render_pass.mojom",
     "render_pass_id.mojom",
