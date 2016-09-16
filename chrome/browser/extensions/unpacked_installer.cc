@@ -369,6 +369,11 @@ void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
 void UnpackedInstaller::InstallExtension() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (!service_weak_.get()) {
+    callback_.Reset();
+    return;
+  }
+
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.InitializePermissions(extension());
   perms_updater.GrantActivePermissions(extension());
