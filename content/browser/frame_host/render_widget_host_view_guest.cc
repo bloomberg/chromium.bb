@@ -550,11 +550,11 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     gesture_tap_event.y = position.y + offset.y();
     gesture_tap_event.globalX = screenPosition.x;
     gesture_tap_event.globalY = screenPosition.y;
-    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
-                                                        ui::LatencyInfo());
+    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
+        gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
     gesture_tap_event.type = blink::WebGestureEvent::GestureTapCancel;
-    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(gesture_tap_event,
-                                                        ui::LatencyInfo());
+    GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
+        gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
   }
 }
 
@@ -596,7 +596,8 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     rescaled_event.deltaY /= current_device_scale_factor();
     rescaled_event.wheelTicksX /= current_device_scale_factor();
     rescaled_event.wheelTicksY /= current_device_scale_factor();
-    host_->ForwardWheelEvent(rescaled_event);
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+    host_->ForwardWheelEventWithLatencyInfo(rescaled_event, latency_info);
     return;
   }
 
@@ -624,8 +625,9 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   }
 
   if (event->type == blink::WebInputEvent::MouseWheel) {
-    host_->ForwardWheelEvent(
-        *static_cast<const blink::WebMouseWheelEvent*>(event));
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+    host_->ForwardWheelEventWithLatencyInfo(
+        *static_cast<const blink::WebMouseWheelEvent*>(event), latency_info);
     return;
   }
 
@@ -642,10 +644,9 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
         !embedder->GetView()->HasFocus()) {
       embedder->GetView()->Focus();
     }
-
+    ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
     host_->ForwardTouchEventWithLatencyInfo(
-        *static_cast<const blink::WebTouchEvent*>(event),
-        ui::LatencyInfo());
+        *static_cast<const blink::WebTouchEvent*>(event), latency_info);
     return;
   }
 

@@ -48,6 +48,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/drop_data.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(OS_MACOSX)
@@ -457,7 +458,10 @@ void BrowserPluginGuest::ResendEventToEmbedder(
     // Mark the resend source with the browser plugin's instance id, so the
     // correct browser_plugin will know to ignore the event.
     resent_gesture_event.resendingPluginId = browser_plugin_instance_id_;
-    view->ProcessGestureEvent(resent_gesture_event, ui::LatencyInfo());
+    ui::LatencyInfo latency_info =
+        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+            resent_gesture_event);
+    view->ProcessGestureEvent(resent_gesture_event, latency_info);
   } else if (event.type == blink::WebInputEvent::MouseWheel) {
     blink::WebMouseWheelEvent resent_wheel_event;
     memcpy(&resent_wheel_event, &event, sizeof(blink::WebMouseWheelEvent));
@@ -466,7 +470,7 @@ void BrowserPluginGuest::ResendEventToEmbedder(
     resent_wheel_event.resendingPluginId = browser_plugin_instance_id_;
     // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
     // https://crbug.com/613628
-    ui::LatencyInfo latency_info;
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
     view->ProcessMouseWheelEvent(resent_wheel_event, latency_info);
   } else {
     NOTIMPLEMENTED();

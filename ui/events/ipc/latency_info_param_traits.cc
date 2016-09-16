@@ -49,6 +49,7 @@ void ParamTraits<ui::LatencyInfo>::GetSize(base::PickleSizer* s,
   }
   GetParamSize(s, p.trace_id_);
   GetParamSize(s, p.terminated_);
+  GetParamSize(s, p.source_event_type_);
 }
 
 void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
@@ -60,6 +61,7 @@ void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
   }
   WriteParam(m, p.trace_id_);
   WriteParam(m, p.terminated_);
+  WriteParam(m, p.source_event_type_);
 }
 
 bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
@@ -85,6 +87,8 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
     return false;
   if (!ReadParam(m, iter, &p->terminated_))
     return false;
+  if (!ReadParam(m, iter, &p->source_event_type_))
+    return false;
 
   return true;
 }
@@ -104,6 +108,8 @@ void ParamTraits<ui::LatencyInfo>::Log(const param_type& p,
   LogParam(p.trace_id_, l);
   l->append(" ");
   LogParam(p.terminated_, l);
+  l->append(" ");
+  LogParam(p.source_event_type_, l);
 }
 
 }  // namespace IPC

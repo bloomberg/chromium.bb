@@ -74,6 +74,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_space.h"
@@ -955,7 +956,8 @@ void RenderWidgetHostImpl::OnFirstPaintAfterLoad() {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  ForwardMouseEventWithLatencyInfo(mouse_event, ui::LatencyInfo());
+  ForwardMouseEventWithLatencyInfo(mouse_event,
+                                   ui::LatencyInfo(ui::SourceEventType::OTHER));
   if (owner_delegate_)
     owner_delegate_->RenderWidgetDidForwardMouseEvent(mouse_event);
 }
@@ -984,7 +986,8 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  ForwardWheelEventWithLatencyInfo(wheel_event, ui::LatencyInfo());
+  ForwardWheelEventWithLatencyInfo(wheel_event,
+                                   ui::LatencyInfo(ui::SourceEventType::WHEEL));
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
@@ -1011,7 +1014,10 @@ void RenderWidgetHostImpl::ForwardEmulatedGestureEvent(
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
-  ForwardGestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo());
+  ForwardGestureEventWithLatencyInfo(
+      gesture_event,
+      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+          gesture_event));
 }
 
 void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
@@ -1048,7 +1054,9 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   if (scroll_update_needs_wrapping) {
     ForwardGestureEventWithLatencyInfo(
-        CreateScrollBeginForWrapping(gesture_event), ui::LatencyInfo());
+        CreateScrollBeginForWrapping(gesture_event),
+        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+            gesture_event));
   }
 
   // Delegate must be non-null, due to |ShouldDropInputEvents()| test.
@@ -1062,15 +1070,17 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   if (scroll_update_needs_wrapping) {
     ForwardGestureEventWithLatencyInfo(
-        CreateScrollEndForWrapping(gesture_event), ui::LatencyInfo());
+        CreateScrollEndForWrapping(gesture_event),
+        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+            gesture_event));
   }
 }
 
 void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
-
-  TouchEventWithLatencyInfo touch_with_latency(touch_event);
+  ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
   DispatchInputEventWithLatencyInfo(touch_event, &touch_with_latency.latency);
   input_router_->SendTouchEvent(touch_with_latency);
 }
@@ -1159,8 +1169,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
   if (touch_emulator_ && touch_emulator_->HandleKeyboardEvent(key_event))
     return;
-
-  NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event);
+  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+  NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event,
+                                                               latency_info);
   key_event_with_latency.event.isBrowserShortcut = is_shortcut;
   DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
   input_router_->SendKeyboardEvent(key_event_with_latency);

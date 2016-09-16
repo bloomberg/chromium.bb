@@ -64,6 +64,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
 
 #if defined(USE_AURA)
@@ -255,7 +256,7 @@ void SurfaceHitTestTestHelper(
   child_event.clickCount = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &child_event);
+  router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
 
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(23, child_frame_monitor.event().x);
@@ -273,7 +274,7 @@ void SurfaceHitTestTestHelper(
   main_event.y = 1;
   main_event.clickCount = 1;
   // Ladies and gentlemen, THIS is the main_event!
-  router->RouteMouseEvent(root_view, &main_event);
+  router->RouteMouseEvent(root_view, &main_event, ui::LatencyInfo());
 
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
@@ -1225,7 +1226,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   nested_event.clickCount = 1;
   nested_frame_monitor.ResetEventReceived();
   main_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &nested_event);
+  router->RouteMouseEvent(root_view, &nested_event, ui::LatencyInfo());
 
   EXPECT_TRUE(nested_frame_monitor.EventWasReceived());
   EXPECT_EQ(21, nested_frame_monitor.event().x);
@@ -1290,7 +1291,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   child_event.clickCount = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &child_event);
+  router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_EQ(75, main_frame_monitor.event().x);
@@ -1377,7 +1378,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Send an initial MouseMove to the root view, which shouldn't affect the
   // other renderers.
-  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event,
+                                                         ui::LatencyInfo());
   EXPECT_TRUE(a_frame_monitor.EventWasReceived());
   a_frame_monitor.ResetEventReceived();
   EXPECT_FALSE(b_frame_monitor.EventWasReceived());
@@ -1388,7 +1390,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // A should receive a MouseMove event.
   mouse_event.x = point_in_b_frame.x();
   mouse_event.y = point_in_b_frame.y();
-  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event,
+                                                         ui::LatencyInfo());
   EXPECT_TRUE(a_frame_monitor.EventWasReceived());
   EXPECT_EQ(a_frame_monitor.event().type, blink::WebInputEvent::MouseMove);
   a_frame_monitor.ResetEventReceived();
@@ -1401,7 +1404,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // other RenderWidgetHostView.
   mouse_event.x = point_in_d_frame.x();
   mouse_event.y = point_in_d_frame.y();
-  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event);
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event,
+                                                         ui::LatencyInfo());
   EXPECT_TRUE(a_frame_monitor.EventWasReceived());
   EXPECT_EQ(a_frame_monitor.event().type, blink::WebInputEvent::MouseMove);
   EXPECT_TRUE(b_frame_monitor.EventWasReceived());
@@ -1464,7 +1468,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   mouse_event.clickCount = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
@@ -1479,12 +1483,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // the first time, because the first MouseMove to the child frame
   // causes a MouseMove to be sent to the main frame also, which we
   // need to ignore.
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   mouse_event.x = 1;
   mouse_event.y = 2;
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
@@ -1496,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   mouse_event.y = 75;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
@@ -1507,12 +1511,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   mouse_event.x = 1;
   mouse_event.y = 3;
   // Sending the MouseMove twice for the same reason as above.
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   mouse_event.x = 1;
   mouse_event.y = 4;
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
@@ -1523,7 +1527,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   mouse_event.y = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
@@ -1536,7 +1540,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   mouse_event.y = 75;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &mouse_event);
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
@@ -5104,8 +5108,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  web_contents()->GetInputEventRouter()->RouteMouseEvent(root_view,
-                                                         &mouse_event);
+  web_contents()->GetInputEventRouter()->RouteMouseEvent(
+      root_view, &mouse_event, ui::LatencyInfo());
 
   // CursorMessageFilter::Wait() implicitly tests whether we receive a
   // ViewHostMsg_SetCursor message from the renderer process, because it does
@@ -5630,13 +5634,13 @@ void CreateContextMenuTestHelper(
   click_event.x = point.x();
   click_event.y = point.y();
   click_event.clickCount = 1;
-  router->RouteMouseEvent(root_view, &click_event);
+  router->RouteMouseEvent(root_view, &click_event, ui::LatencyInfo());
 
   // We also need a MouseUp event, needed by Windows.
   click_event.type = blink::WebInputEvent::MouseUp;
   click_event.x = point.x();
   click_event.y = point.y();
-  router->RouteMouseEvent(root_view, &click_event);
+  router->RouteMouseEvent(root_view, &click_event, ui::LatencyInfo());
 
   context_menu_delegate.Wait();
 

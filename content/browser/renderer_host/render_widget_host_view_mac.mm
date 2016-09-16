@@ -1811,14 +1811,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       WebMouseEvent enterEvent = WebMouseEventBuilder::Build(theEvent, self);
       enterEvent.type = WebInputEvent::MouseMove;
       enterEvent.button = WebMouseEvent::Button::NoButton;
+      ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+      latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
       if (renderWidgetHostView_->ShouldRouteEvent(enterEvent)) {
         renderWidgetHostView_->render_widget_host_->delegate()
             ->GetInputEventRouter()
-            ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent);
+            ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent,
+                              latency_info);
       } else {
-        ui::LatencyInfo latency_info;
-        latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT,
-                                      0, 0);
         renderWidgetHostView_->ProcessMouseEvent(enterEvent, latency_info);
       }
     }
@@ -1849,13 +1849,13 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 
   WebMouseEvent event = WebMouseEventBuilder::Build(theEvent, self);
+  ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (renderWidgetHostView_->ShouldRouteEvent(event)) {
     renderWidgetHostView_->render_widget_host_->delegate()
         ->GetInputEventRouter()
-        ->RouteMouseEvent(renderWidgetHostView_.get(), &event);
+        ->RouteMouseEvent(renderWidgetHostView_.get(), &event, latency_info);
   } else {
-    ui::LatencyInfo latency_info;
-    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
     renderWidgetHostView_->ProcessMouseEvent(event, latency_info);
   }
 }
@@ -2186,7 +2186,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
         event, self);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    ui::LatencyInfo latency_info;
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
     renderWidgetHostView_->render_widget_host_->
         ForwardWheelEventWithLatencyInfo(webEvent, latency_info);
@@ -2357,13 +2357,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (renderWidgetHostView_->render_widget_host_) {
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
+    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
     if (renderWidgetHostView_->ShouldRouteEvent(webEvent)) {
       renderWidgetHostView_->render_widget_host_->delegate()
           ->GetInputEventRouter()
-          ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent);
+          ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent,
+                                 latency_info);
     } else {
-      ui::LatencyInfo latency_info;
-      latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
       renderWidgetHostView_->ProcessMouseWheelEvent(webEvent, latency_info);
     }
   }

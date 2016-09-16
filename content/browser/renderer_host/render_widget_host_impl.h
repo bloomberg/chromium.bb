@@ -316,9 +316,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& ui_latency) override;
-  void ForwardTouchEventWithLatencyInfo(
+  virtual void ForwardTouchEventWithLatencyInfo(
       const blink::WebTouchEvent& touch_event,
-      const ui::LatencyInfo& ui_latency);
+      const ui::LatencyInfo& ui_latency);  // Virtual for testing.
   void ForwardMouseEventWithLatencyInfo(
       const blink::WebMouseEvent& mouse_event,
       const ui::LatencyInfo& ui_latency);

@@ -433,6 +433,39 @@ class MockWindowObserver : public aura::WindowObserver {
   MOCK_METHOD2(OnDelegatedFrameDamage, void(aura::Window*, const gfx::Rect&));
 };
 
+class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
+ public:
+  MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
+                           RenderProcessHost* process,
+                           int32_t routing_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id, false) {
+    set_renderer_initialized(true);
+    lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo();
+  }
+
+  // Extracts |latency_info| for wheel event, and stores it in
+  // |lastWheelOrTouchEventLatencyInfo|.
+  void ForwardWheelEventWithLatencyInfo(
+      const blink::WebMouseWheelEvent& wheel_event,
+      const ui::LatencyInfo& ui_latency) override {
+    RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(wheel_event,
+                                                           ui_latency);
+    lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo(ui_latency);
+  }
+
+  // Extracts |latency_info| for touch event, and stores it in
+  // |lastWheelOrTouchEventLatencyInfo|.
+  void ForwardTouchEventWithLatencyInfo(
+      const blink::WebTouchEvent& touch_event,
+      const ui::LatencyInfo& ui_latency) override {
+    RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(touch_event,
+                                                           ui_latency);
+    lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo(ui_latency);
+  }
+
+  ui::LatencyInfo lastWheelOrTouchEventLatencyInfo;
+};
+
 const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
   base::PickleIterator iter(message);
   const char* data;
@@ -480,8 +513,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    widget_host_ = new RenderWidgetHostImpl(delegates_.back().get(),
-                                            process_host_, routing_id, false);
+    widget_host_ = new MockRenderWidgetHostImpl(delegates_.back().get(),
+                                                process_host_, routing_id);
     delegates_.back()->set_widget_host(widget_host_);
     widget_host_->Init();
     view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
@@ -641,7 +674,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   // Tests should set these to nullptr if they've already triggered their
   // destruction.
-  RenderWidgetHostImpl* widget_host_;
+  MockRenderWidgetHostImpl* widget_host_;
   FakeRenderWidgetHostViewAura* view_;
 
   IPC::TestSink* sink_;
@@ -2511,6 +2544,28 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   // a different scale, we should generate a surface, as the final result will
   // need to be scaled differently to the screen.
   EXPECT_NE(surface_id, view_->surface_id());
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
+  // WHEEL source exists.
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(),
+                         0, 0, 0, 0, 0, 2);
+  view_->OnScrollEvent(&scroll);
+  EXPECT_EQ(widget_host_->lastWheelOrTouchEventLatencyInfo.source_event_type(),
+            ui::SourceEventType::WHEEL);
+
+  // TOUCH source exists.
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
+                       ui::EventTimeForNow());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
+                      ui::EventTimeForNow());
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
+                         ui::EventTimeForNow());
+  view_->OnTouchEvent(&press);
+  view_->OnTouchEvent(&move);
+  EXPECT_EQ(widget_host_->lastWheelOrTouchEventLatencyInfo.source_event_type(),
+            ui::SourceEventType::TOUCH);
+  view_->OnTouchEvent(&release);
 }
 
 class RenderWidgetHostViewAuraCopyRequestTest
