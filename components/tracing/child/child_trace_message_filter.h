@@ -29,7 +29,7 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
       base::SingleThreadTaskRunner* ipc_task_runner);
 
   // IPC::MessageFilter implementation.
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 

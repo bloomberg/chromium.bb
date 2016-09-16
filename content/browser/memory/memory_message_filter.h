@@ -25,7 +25,7 @@ class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
   MemoryMessageFilter(const RenderProcessHost* render_process_host);
 
   // BrowserMessageFilter implementation.
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 

@@ -44,7 +44,6 @@ class PepperHungPluginFilter
   void EndBlockOnSyncMessage() override;
 
   // MessageFilter implementation.
-  void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
   void OnChannelError() override;
   bool OnMessageReceived(const IPC::Message& message) override;

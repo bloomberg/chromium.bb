@@ -995,8 +995,8 @@ class TestSyncMessageFilter : public SyncMessageFilter {
         worker_(worker),
         task_runner_(task_runner) {}
 
-  void OnFilterAdded(Sender* sender) override {
-    SyncMessageFilter::OnFilterAdded(sender);
+  void OnFilterAdded(Channel* channel) override {
+    SyncMessageFilter::OnFilterAdded(channel);
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TestSyncMessageFilter::SendMessageOnHelperThread, this));

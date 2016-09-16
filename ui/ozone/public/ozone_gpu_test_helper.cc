@@ -35,15 +35,12 @@ void DispatchToGpuPlatformSupportTaskOnIO(IPC::Message* msg) {
 
 }  // namespace
 
-class FakeGpuProcess : public IPC::Sender {
+class FakeGpuProcess : public IPC::Channel {
  public:
   FakeGpuProcess(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
       : ui_task_runner_(ui_task_runner) {}
   ~FakeGpuProcess() override {}
-
-  void Init() {
-  }
 
   void InitOnIO() {
     IPC::MessageFilter* filter =
@@ -53,11 +50,41 @@ class FakeGpuProcess : public IPC::Sender {
       filter->OnFilterAdded(this);
   }
 
+  // IPC::Channel implementation:
   bool Send(IPC::Message* msg) override {
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DispatchToGpuPlatformSupportHostTask, msg));
     return true;
   }
+
+  bool Connect() override {
+    NOTREACHED();
+    return false;
+  }
+
+  void Close() override { NOTREACHED(); }
+
+  base::ProcessId GetPeerPID() const override {
+    NOTREACHED();
+    return base::kNullProcessId;
+  }
+
+  base::ProcessId GetSelfPID() const override {
+    NOTREACHED();
+    return base::kNullProcessId;
+  }
+
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+  int GetClientFileDescriptor() const override {
+    NOTREACHED();
+    return 0;
+  }
+
+  base::ScopedFD TakeClientFileDescriptor() override {
+    NOTREACHED();
+    return base::ScopedFD();
+  }
+#endif
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
@@ -104,7 +131,6 @@ bool OzoneGpuTestHelper::Initialize(
   io_helper_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&FakeGpuProcess::InitOnIO,
                             base::Unretained(fake_gpu_process_.get())));
-  fake_gpu_process_->Init();
 
   fake_gpu_process_host_.reset(new FakeGpuProcessHost(
       gpu_task_runner, io_helper_thread_->task_runner()));

@@ -43,7 +43,7 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
   ~PluginMessageFilter() override;
 
   // MessageFilter implementation.
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 

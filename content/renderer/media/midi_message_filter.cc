@@ -125,9 +125,9 @@ bool MidiMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void MidiMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void MidiMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void MidiMessageFilter::OnFilterRemoved() {

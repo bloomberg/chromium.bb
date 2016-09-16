@@ -145,8 +145,8 @@ class MessageCountFilter : public IPC::MessageFilter {
         last_filter_event_(NONE),
         message_filtering_enabled_(false) {}
 
-  void OnFilterAdded(IPC::Sender* sender) override {
-    EXPECT_TRUE(sender);
+  void OnFilterAdded(IPC::Channel* channel) override {
+    EXPECT_TRUE(channel);
     EXPECT_EQ(NONE, last_filter_event_);
     last_filter_event_ = FILTER_ADDED;
   }

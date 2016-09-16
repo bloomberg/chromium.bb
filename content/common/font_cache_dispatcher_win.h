@@ -28,7 +28,7 @@ class FontCacheDispatcher : public IPC::MessageFilter, public IPC::Sender {
   ~FontCacheDispatcher() override;
 
   // IPC::MessageFilter implementation:
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelClosing() override;
 

@@ -26,8 +26,8 @@ ChildHistogramMessageFilter::ChildHistogramMessageFilter()
 ChildHistogramMessageFilter::~ChildHistogramMessageFilter() {
 }
 
-void ChildHistogramMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  sender_ = sender;
+void ChildHistogramMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  sender_ = channel;
 }
 
 void ChildHistogramMessageFilter::OnFilterRemoved() {

@@ -45,7 +45,7 @@ class CONTENT_EXPORT BrowserMessageFilter
 
   // These match the corresponding IPC::MessageFilter methods and are always
   // called on the IO thread.
-  virtual void OnFilterAdded(IPC::Sender* sender) {}
+  virtual void OnFilterAdded(IPC::Channel* channel) {}
   virtual void OnFilterRemoved() {}
   virtual void OnChannelClosing() {}
   virtual void OnChannelConnected(int32_t peer_pid) {}

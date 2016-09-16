@@ -71,9 +71,9 @@ bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void P2PSocketDispatcher::OnFilterAdded(IPC::Sender* sender) {
+void P2PSocketDispatcher::OnFilterAdded(IPC::Channel* channel) {
   DVLOG(1) << "P2PSocketDispatcher::OnFilterAdded()";
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void P2PSocketDispatcher::OnFilterRemoved() {

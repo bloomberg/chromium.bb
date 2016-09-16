@@ -305,7 +305,7 @@ class GPU_EXPORT GpuChannelMessageFilter : public IPC::MessageFilter {
   GpuChannelMessageFilter();
 
   // IPC::MessageFilter implementation.
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
@@ -333,7 +333,7 @@ class GPU_EXPORT GpuChannelMessageFilter : public IPC::MessageFilter {
   base::hash_map<int32_t, scoped_refptr<GpuChannelMessageQueue>> routes_;
   base::Lock routes_lock_;  // Protects |routes_|.
 
-  IPC::Sender* sender_;
+  IPC::Channel* channel_;
   base::ProcessId peer_pid_;
   std::vector<scoped_refptr<IPC::MessageFilter>> channel_filters_;
 

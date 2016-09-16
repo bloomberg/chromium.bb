@@ -44,8 +44,8 @@ class ManifestMessageFilter : public IPC::SyncMessageFilter {
 
   // When set up is done, OnFilterAdded is called on IO thread. Unblocks the
   // Send().
-  void OnFilterAdded(IPC::Sender* sender) override {
-    SyncMessageFilter::OnFilterAdded(sender);
+  void OnFilterAdded(IPC::Channel* channel) override {
+    SyncMessageFilter::OnFilterAdded(channel);
     connected_event_.Signal();
   }
 

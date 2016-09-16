@@ -22,8 +22,8 @@ BlobMessageFilter::BlobMessageFilter(
 
 BlobMessageFilter::~BlobMessageFilter() {}
 
-void BlobMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  sender_ = sender;
+void BlobMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  sender_ = channel;
 }
 
 void BlobMessageFilter::OnChannelClosing() {

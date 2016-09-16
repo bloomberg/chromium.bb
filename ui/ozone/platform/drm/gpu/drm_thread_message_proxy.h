@@ -41,7 +41,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
   void SetDrmThread(DrmThread* thread) override;
 
   // IPC::MessageFilter:
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:

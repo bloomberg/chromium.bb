@@ -33,11 +33,11 @@ class SyncChannel;
 // be used to send simultaneous synchronous messages from different threads.
 class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
  public:
-  // MessageSender implementation.
+  // Sender implementation.
   bool Send(Message* message) override;
 
   // MessageFilter implementation.
-  void OnFilterAdded(Sender* sender) override;
+  void OnFilterAdded(Channel* channel) override;
   void OnChannelError() override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const Message& message) override;
@@ -60,7 +60,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   void OnIOMessageLoopDestroyed();
 
   // The channel to which this filter was added.
-  Sender* sender_;
+  Channel* channel_;
 
   // The process's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;

@@ -43,7 +43,7 @@ class DOMStorageMessageFilter
   void UninitializeInSequence();
 
   // BrowserMessageFilter implementation
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;

@@ -30,8 +30,8 @@ ChildTraceMessageFilter::ChildTraceMessageFilter(
       pending_memory_dump_guid_(0) {
 }
 
-void ChildTraceMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  sender_ = sender;
+void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  sender_ = channel;
   sender_->Send(new TracingHostMsg_ChildSupportsTracing());
   ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
       this);

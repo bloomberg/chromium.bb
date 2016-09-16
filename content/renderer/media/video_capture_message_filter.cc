@@ -72,9 +72,9 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void VideoCaptureMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void VideoCaptureMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DVLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
-  sender_ = sender;
+  sender_ = channel;
 
   for (const auto& pending_delegate : pending_delegates_) {
     pending_delegate.second->OnDelegateAdded(pending_delegate.first);

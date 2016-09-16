@@ -60,11 +60,11 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void CastIPCDispatcher::OnFilterAdded(IPC::Sender* sender) {
+void CastIPCDispatcher::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(!global_instance_);
   global_instance_ = this;
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void CastIPCDispatcher::OnFilterRemoved() {

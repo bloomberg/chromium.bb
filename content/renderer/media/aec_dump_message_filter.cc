@@ -94,9 +94,9 @@ bool AecDumpMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AecDumpMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void AecDumpMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void AecDumpMessageFilter::OnFilterRemoved() {

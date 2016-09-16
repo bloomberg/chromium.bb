@@ -13,7 +13,7 @@ namespace IPC {
 
 MessageFilter::MessageFilter() {}
 
-void MessageFilter::OnFilterAdded(Sender* sender) {}
+void MessageFilter::OnFilterAdded(Channel* channel) {}
 
 void MessageFilter::OnFilterRemoved() {}
 

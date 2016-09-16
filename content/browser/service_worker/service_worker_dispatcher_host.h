@@ -51,7 +51,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
   // BrowserMessageFilter implementation
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;

@@ -37,7 +37,7 @@ class SynchronousCompositorFilter
                                   compositor_task_runner);
 
   // IPC::MessageFilter overrides.
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;

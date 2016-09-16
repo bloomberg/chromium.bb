@@ -25,9 +25,9 @@ SynchronousCompositorFilter::SynchronousCompositorFilter(
 
 SynchronousCompositorFilter::~SynchronousCompositorFilter() {}
 
-void SynchronousCompositorFilter::OnFilterAdded(IPC::Sender* sender) {
+void SynchronousCompositorFilter::OnFilterAdded(IPC::Channel* channel) {
   io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  sender_ = sender;
+  sender_ = channel;
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SynchronousCompositorFilter::FilterReadyOnCompositorThread,

@@ -39,9 +39,9 @@ bool WebRtcLoggingMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void WebRtcLoggingMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void WebRtcLoggingMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(!io_task_runner_.get() || io_task_runner_->BelongsToCurrentThread());
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void WebRtcLoggingMessageFilter::OnFilterRemoved() {

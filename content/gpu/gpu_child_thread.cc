@@ -84,9 +84,9 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
         sender_(nullptr) {}
 
   // Overridden from IPC::MessageFilter:
-  void OnFilterAdded(IPC::Sender* sender) override {
+  void OnFilterAdded(IPC::Channel* channel) override {
     DCHECK(!sender_);
-    sender_ = sender;
+    sender_ = channel;
   }
   void OnFilterRemoved() override {
     DCHECK(sender_);

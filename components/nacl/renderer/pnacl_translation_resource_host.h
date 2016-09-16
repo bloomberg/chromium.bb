@@ -54,7 +54,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
 
   // IPC::MessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
 

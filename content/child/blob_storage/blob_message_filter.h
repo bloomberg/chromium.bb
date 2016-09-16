@@ -42,7 +42,7 @@ class BlobMessageFilter : public IPC::MessageFilter {
   BlobMessageFilter(scoped_refptr<base::TaskRunner> file_runner);
 
   void OnChannelClosing() override;
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   bool GetSupportedMessageClasses(
       std::vector<uint32_t>* supported_message_classes) const override;

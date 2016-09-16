@@ -56,8 +56,6 @@ void PepperHungPluginFilter::EndBlockOnSyncMessage() {
   MayHaveBecomeUnhung();
 }
 
-void PepperHungPluginFilter::OnFilterAdded(IPC::Sender* sender) {}
-
 void PepperHungPluginFilter::OnFilterRemoved() {
   base::AutoLock lock(lock_);
   MayHaveBecomeUnhung();

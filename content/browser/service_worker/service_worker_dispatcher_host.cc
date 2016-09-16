@@ -127,7 +127,7 @@ void ServiceWorkerDispatcherHost::Init(
       render_process_id_, this, message_port_message_filter_);
 }
 
-void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
+void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
   channel_ready_ = true;

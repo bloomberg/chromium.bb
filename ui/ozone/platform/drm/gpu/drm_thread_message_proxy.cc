@@ -21,8 +21,8 @@ void DrmThreadMessageProxy::SetDrmThread(DrmThread* thread) {
   drm_thread_ = thread;
 }
 
-void DrmThreadMessageProxy::OnFilterAdded(IPC::Sender* sender) {
-  sender_ = sender;
+void DrmThreadMessageProxy::OnFilterAdded(IPC::Channel* channel) {
+  sender_ = channel;
 
   // The DRM thread needs to be started late since we need to wait for the
   // sandbox to start.

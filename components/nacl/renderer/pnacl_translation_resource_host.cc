@@ -21,9 +21,9 @@ PnaclTranslationResourceHost::~PnaclTranslationResourceHost() {
   CleanupCacheRequests();
 }
 
-void PnaclTranslationResourceHost::OnFilterAdded(IPC::Sender* sender) {
+void PnaclTranslationResourceHost::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void PnaclTranslationResourceHost::OnFilterRemoved() {

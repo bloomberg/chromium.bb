@@ -115,7 +115,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
   void OnChannelClosing() override { sender_ = NULL; }
 
-  void OnFilterAdded(IPC::Sender* sender) override { sender_ = sender; }
+  void OnFilterAdded(IPC::Channel* channel) override { sender_ = channel; }
 
   void OnFilterRemoved() override {
     // This will delete |owner_| and |this|.

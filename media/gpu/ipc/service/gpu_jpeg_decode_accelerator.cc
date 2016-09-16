@@ -126,7 +126,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
   void OnChannelClosing() override { sender_ = nullptr; }
 
-  void OnFilterAdded(IPC::Sender* sender) override { sender_ = sender; }
+  void OnFilterAdded(IPC::Channel* channel) override { sender_ = channel; }
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     const int32_t route_id = msg.routing_id();

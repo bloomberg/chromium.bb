@@ -79,7 +79,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // IPC::MessageFilter override. Called on |io_task_runner|.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
 

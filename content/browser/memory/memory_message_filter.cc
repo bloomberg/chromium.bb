@@ -26,7 +26,7 @@ MemoryMessageFilter::MemoryMessageFilter(
 
 MemoryMessageFilter::~MemoryMessageFilter() {}
 
-void MemoryMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void MemoryMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   MemoryPressureControllerImpl::GetInstance()->OnMemoryMessageFilterAdded(this);
 }
 

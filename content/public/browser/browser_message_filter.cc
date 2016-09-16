@@ -36,9 +36,9 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   ~Internal() override {}
 
   // IPC::MessageFilter implementation:
-  void OnFilterAdded(IPC::Sender* sender) override {
-    filter_->sender_ = sender;
-    filter_->OnFilterAdded(sender);
+  void OnFilterAdded(IPC::Channel* channel) override {
+    filter_->sender_ = channel;
+    filter_->OnFilterAdded(channel);
   }
 
   void OnFilterRemoved() override { filter_->OnFilterRemoved(); }

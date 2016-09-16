@@ -75,7 +75,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void ProcessRafAlignedInput(int routing_id) override;
 
   // IPC::MessageFilter methods:
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;

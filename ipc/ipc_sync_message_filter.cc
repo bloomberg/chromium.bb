@@ -167,11 +167,11 @@ bool SyncMessageFilter::Send(Message* message) {
   return pending_message.send_result;
 }
 
-void SyncMessageFilter::OnFilterAdded(Sender* sender) {
+void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   std::vector<std::unique_ptr<Message>> pending_messages;
   {
     base::AutoLock auto_lock(lock_);
-    sender_ = sender;
+    channel_ = channel;
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     shutdown_watcher_.StartWatching(
         shutdown_event_,
@@ -185,14 +185,14 @@ void SyncMessageFilter::OnFilterAdded(Sender* sender) {
 
 void SyncMessageFilter::OnChannelError() {
   base::AutoLock auto_lock(lock_);
-  sender_ = NULL;
+  channel_ = nullptr;
   shutdown_watcher_.StopWatching();
   SignalAllEvents();
 }
 
 void SyncMessageFilter::OnChannelClosing() {
   base::AutoLock auto_lock(lock_);
-  sender_ = NULL;
+  channel_ = nullptr;
   shutdown_watcher_.StopWatching();
   SignalAllEvents();
 }
@@ -218,7 +218,7 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
 }
 
 SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
-    : sender_(NULL),
+    : channel_(nullptr),
       listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(shutdown_event),
       weak_factory_(this) {
@@ -231,8 +231,8 @@ SyncMessageFilter::~SyncMessageFilter() {
 }
 
 void SyncMessageFilter::SendOnIOThread(Message* message) {
-  if (sender_) {
-    sender_->Send(message);
+  if (channel_) {
+    channel_->Send(message);
     return;
   }
 

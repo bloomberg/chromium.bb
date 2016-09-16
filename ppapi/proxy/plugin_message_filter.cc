@@ -31,8 +31,8 @@ PluginMessageFilter::PluginMessageFilter(
 PluginMessageFilter::~PluginMessageFilter() {
 }
 
-void PluginMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  sender_ = sender;
+void PluginMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  sender_ = channel;
 }
 
 void PluginMessageFilter::OnFilterRemoved() {

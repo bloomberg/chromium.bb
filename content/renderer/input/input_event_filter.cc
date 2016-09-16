@@ -138,9 +138,9 @@ void InputEventFilter::ProcessRafAlignedInput(int routing_id) {
   queue->DispatchRafAlignedInput();
 }
 
-void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
+void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
   io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void InputEventFilter::OnFilterRemoved() {

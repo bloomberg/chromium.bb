@@ -92,11 +92,11 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AudioInputMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void AudioInputMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Captures the sender for IPC.
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void AudioInputMessageFilter::OnFilterRemoved() {

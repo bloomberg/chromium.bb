@@ -156,9 +156,9 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AudioMessageFilter::OnFilterAdded(IPC::Sender* sender) {
+void AudioMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = sender;
+  sender_ = channel;
 }
 
 void AudioMessageFilter::OnFilterRemoved() {

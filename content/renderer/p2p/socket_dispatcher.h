@@ -78,7 +78,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
 
   // IPC::MessageFilter override. Called on IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
   void OnChannelConnected(int32_t peer_pid) override;
