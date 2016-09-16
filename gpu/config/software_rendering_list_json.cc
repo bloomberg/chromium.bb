@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.12",
+  "version": "11.13",
   "entries": [
     {
       "id": 1,
@@ -1253,7 +1253,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 122,
-      "description": "GPU rasterization should only be enabled on Pascal and Maxwell GPUs for now.",
+      "description": "GPU rasterization should only be enabled on NVIDIA Pascal and Maxwell and Intel Broadwell+ GPUs for now.",
       "cr_bugs": [643850],
       "os": {
         "type": "win"
@@ -1284,6 +1284,31 @@ LONG_STRING_CONST(
                         "0x1c03", "0x1c30", "0x1c70", "0x1c80", "0x1c81",
                         "0x1c82", "0x1ca7", "0x1ca8", "0x1caa", "0x1d01"]
 
+        },
+        {
+          "os": {
+            "type": "win",
+            "version": {
+              "op": ">=",
+              "value": "10.0"
+            }
+          },
+          "vendor_id": "0x8086",
+          "device_id": ["0x1602", "0x1606", "0x160a", "0x160b", "0x160d",
+                        "0x160e", "0x1612", "0x1616", "0x161a", "0x161b",
+                        "0x161d", "0x161e", "0x1622", "0x1626", "0x162a",
+                        "0x162b", "0x162d", "0x162e", "0x22b0", "0x22b1",
+                        "0x22b2", "0x22b3", "0x1902", "0x1906", "0x190a",
+                        "0x190b", "0x190e", "0x1912", "0x1913", "0x1915",
+                        "0x1916", "0x1917", "0x191a", "0x191b", "0x191d",
+                        "0x191e", "0x1921", "0x1923", "0x1926", "0x1927",
+                        "0x192a", "0x192b", "0x192d", "0x1932", "0x193a",
+                        "0x193b", "0x193d", "0x0a84", "0x1a84", "0x1a85",
+                        "0x5a84", "0x5a85", "0x5916", "0x5913", "0x5906",
+                        "0x5926", "0x5921", "0x5915", "0x590e", "0x591e",
+                        "0x5912", "0x5917", "0x5902", "0x591b", "0x593b",
+                        "0x590b", "0x591a", "0x590a", "0x591d", "0x5908",
+                        "0x5923", "0x5927"]
         }
       ]
     }
