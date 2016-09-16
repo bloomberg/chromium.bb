@@ -33,10 +33,7 @@ PASS Closing context again correctly rejected promise.
 PASS context.destination is null
 PASS offline = new OfflineAudioContext(1, 1000, 48000) did not throw exception.
 PASS offline.state is "suspended"
-PASS Closing offline context correctly rejected: InvalidAccessError: cannot close an OfflineAudioContext.
-PASS Closing offline context again correctly rejected
-PASS offline.startRendering() did not throw exception.
-PASS event.target.state is "closed"
+PASS offline.close is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

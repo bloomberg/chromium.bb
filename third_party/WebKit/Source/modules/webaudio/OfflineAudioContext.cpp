@@ -199,15 +199,6 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptStat
     return m_completeResolver->promise();
 }
 
-ScriptPromise OfflineAudioContext::closeContext(ScriptState* scriptState)
-{
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidAccessError,
-            "cannot close an OfflineAudioContext."));
-}
-
 ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState)
 {
     // This CANNOT be called on OfflineAudioContext; this is only to implement

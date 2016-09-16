@@ -47,7 +47,6 @@ public:
 
     ScriptPromise startOfflineRendering(ScriptState*);
 
-    ScriptPromise closeContext(ScriptState*) final;
     ScriptPromise suspendContext(ScriptState*, double);
     ScriptPromise resumeContext(ScriptState*) final;
 

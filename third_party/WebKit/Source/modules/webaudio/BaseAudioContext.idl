@@ -56,9 +56,6 @@ enum AudioContextState {
     [RaisesException, MeasureAs=AudioContextCreateChannelSplitter] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
     [RaisesException, MeasureAs=AudioContextCreateChannelMerger] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
 
-    // Close
-    [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
-
     // Pause/resume
     [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextResume, CallWith=ScriptState, ImplementedAs=resumeContext] Promise<void> resume();

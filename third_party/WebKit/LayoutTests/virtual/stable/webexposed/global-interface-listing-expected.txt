@@ -125,6 +125,7 @@ interface AudioBufferSourceNode : AudioSourceNode
     setter onended
 interface AudioContext : BaseAudioContext
     attribute @@toStringTag
+    method close
     method constructor
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
@@ -6236,6 +6237,7 @@ interface XSLTProcessor
     method transformToFragment
 interface webkitAudioContext : BaseAudioContext
     attribute @@toStringTag
+    method close
     method constructor
 interface webkitIDBCursor
     attribute @@toStringTag

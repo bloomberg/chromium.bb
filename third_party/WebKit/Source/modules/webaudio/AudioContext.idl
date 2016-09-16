@@ -32,6 +32,9 @@
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : BaseAudioContext {
+    // Close
+    [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
+
     // Sources
     // TODO(rtoy): The following methods should be here instead of in BaseAudioContext:
     //

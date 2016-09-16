@@ -26,7 +26,7 @@ public:
     ~AudioContext() override;
     DECLARE_VIRTUAL_TRACE();
 
-    ScriptPromise closeContext(ScriptState*) final;
+    ScriptPromise closeContext(ScriptState*);
     bool isContextClosed() const final;
 
     ScriptPromise suspendContext(ScriptState*) final;

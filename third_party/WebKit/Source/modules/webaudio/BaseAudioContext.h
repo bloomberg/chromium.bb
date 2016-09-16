@@ -176,9 +176,6 @@ public:
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const PeriodicWaveConstraints&, ExceptionState&);
 
-    // Close
-    virtual ScriptPromise closeContext(ScriptState*) = 0;
-
     // Suspend
     virtual ScriptPromise suspendContext(ScriptState*) = 0;
 

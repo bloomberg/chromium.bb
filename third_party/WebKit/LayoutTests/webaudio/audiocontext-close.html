@@ -114,47 +114,11 @@
     // Task: test offline context (1).
     audit.defineTask('test-offline-context-1', function (done) {
 
-      // For an offline context, just check that if we try to close the context,
-      // nothing happens except that the promise returned by close() is rejected.
+      // For an offline context, verify that close is not defined.
       shouldNotThrow("offline = new OfflineAudioContext(1, 1000, 48000)");
       shouldBeEqualToString("offline.state", "suspended");
-      offline.close().then(
-        function () {
-          testFailed("Closing offline context erroneously resolved");
-        },
-        function (e) {
-          if (e.name === "InvalidAccessError") {
-            testPassed("Closing offline context correctly rejected: " + e);
-          } else {
-            testFailed("Closing offline context correctly rejected but expected InvalidAccessError, not: " + e);
-          }
-        }
-      ).then(done);
-    });
-
-    // Task: test offline context (2).
-    audit.defineTask('test-offline-context-2', function (done) {
-
-      // Try closing again
-      offline.close().then(
-        function () {
-          testFailed("Closing offline context again erroneously resolved");
-        },
-        function () {
-          testPassed("Closing offline context again correctly rejected");
-        }
-      ).then(
-        function () {
-
-          // Render the context, and check for a valid state
-          offline.oncomplete = function (event) {
-            shouldBeEqualToString("event.target.state", "closed");
-            done();
-          };
-          shouldNotThrow("offline.startRendering()");
-        }
-      );
-
+      shouldBeUndefined("offline.close");
+      done();
     });
 
     audit.defineTask('finish-test', function (done) {
@@ -162,14 +126,7 @@
       finishJSTest();
     });
 
-    audit.runTasks(
-      'test-online-context-1',
-      'test-online-context-2',
-      'test-online-context-3',
-      'test-offline-context-1',
-      'test-offline-context-2',
-      'finish-test'
-    );
+    audit.runTasks();
 
     successfullyParsed = true;
   </script>
