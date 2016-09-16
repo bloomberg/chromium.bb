@@ -41,7 +41,7 @@ std::string GetDataContent(const HistoryData::Data& data) {
 
 class HistoryDataStoreTest : public testing::Test {
  public:
-  HistoryDataStoreTest() : worker_pool_owner_(1, "AppLanucherTest") {}
+  HistoryDataStoreTest() : worker_pool_owner_(2, "AppLanucherTest") {}
 
   // testing::Test overrides:
   void SetUp() override {

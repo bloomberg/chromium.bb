@@ -96,7 +96,7 @@ class SearchHistoryTest : public testing::Test {
   // testing::Test overrides:
   void SetUp() override {
     worker_pool_owner_.reset(
-        new base::SequencedWorkerPoolOwner(1, "AppLauncherTest"));
+        new base::SequencedWorkerPoolOwner(2, "AppLauncherTest"));
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     CreateHistory();
   }
