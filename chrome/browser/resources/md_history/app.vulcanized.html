@@ -2847,7 +2847,7 @@ h1 {
 }
 
 :host(:not([narrow_])) #rightContent {
-  position: var(--cr-toolbar-right-content-wide_-_position); right: var(--cr-toolbar-right-content-wide_-_right);
+  position: var(--cr-toolbar-right-content-wide_-_position); left: var(--cr-toolbar-right-content-wide_-_left); right: var(--cr-toolbar-right-content-wide_-_right);
 }
 
 :host([narrow_]) #centeredContent {
@@ -3096,7 +3096,11 @@ cr-toolbar, #overlay-buttons, #overlay-wrapper, #toolbar-container {
 cr-toolbar {
   --cr-toolbar-field-end-padding: 0;
         --cr-toolbar-field-margin: var(--side-bar-width);
-        --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_right:  0;;
+        --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_right:  0; --cr-toolbar-right-content-wide_-_left: initial;;
+}
+
+:host-context([dir=rtl]) cr-toolbar {
+  --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_left:  0; --cr-toolbar-right-content-wide_-_right: initial;;
 }
 
 :host([has-drawer]) cr-toolbar {

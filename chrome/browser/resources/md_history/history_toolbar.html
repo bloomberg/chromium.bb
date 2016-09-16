@@ -48,6 +48,13 @@
         };
       }
 
+      :host-context([dir=rtl]) cr-toolbar {
+        --cr-toolbar-right-content-wide: {
+          position: absolute;
+          left: 0;
+        };
+      }
+
       :host([has-drawer]) cr-toolbar {
         --cr-toolbar-field-margin: 0;
       }
