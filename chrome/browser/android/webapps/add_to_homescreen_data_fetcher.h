@@ -89,13 +89,16 @@ class AddToHomescreenDataFetcher
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
   const SkBitmap& shortcut_icon() const { return shortcut_icon_; }
 
-  // WebContentsObserver
-  bool OnMessageReceived(const IPC::Message& message) override;
-
  private:
   friend class base::RefCounted<AddToHomescreenDataFetcher>;
 
   ~AddToHomescreenDataFetcher() override;
+
+  // WebContentsObserver
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  // Called when InstallableManager finishes looking for a manifest and icon.
+  void OnDidPerformInstallableCheck(const InstallableData& data);
 
   // Grabs the favicon for the current URL.
   void FetchFavicon();
@@ -107,9 +110,6 @@ class AddToHomescreenDataFetcher
   // bitmap is not large enough.
   void CreateLauncherIconFromFaviconInBackground(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
-
-  // Called when InstallableManager finishes looking for a manifest and icon.
-  void OnDidPerformInstallableCheck(const InstallableData& data);
 
   // Creates the launcher icon from the given |icon|.
   void CreateLauncherIconInBackground(const SkBitmap& raw__icon);

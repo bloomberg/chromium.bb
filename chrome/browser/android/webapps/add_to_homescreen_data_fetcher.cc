@@ -96,6 +96,13 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
 }
 
+base::Closure AddToHomescreenDataFetcher::FetchSplashScreenImageCallback(
+    const std::string& webapp_id) {
+  return base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents(),
+                    splash_screen_url_, ideal_splash_image_size_in_dp_,
+                    minimum_splash_image_size_in_dp_, webapp_id);
+}
+
 void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
     const WebApplicationInfo& received_web_app_info) {
   is_waiting_for_web_application_info_ = false;
@@ -157,6 +164,27 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
                  this));
 }
 
+AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
+  DCHECK(!weak_observer_);
+}
+
+bool AddToHomescreenDataFetcher::OnMessageReceived(
+    const IPC::Message& message) {
+  if (!is_waiting_for_web_application_info_)
+    return false;
+
+  bool handled = true;
+
+  IPC_BEGIN_MESSAGE_MAP(AddToHomescreenDataFetcher, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
+                        OnDidGetWebApplicationInfo)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+
 void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   if (!web_contents() || !weak_observer_)
@@ -197,33 +225,6 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   }
 
   FetchFavicon();
-}
-
-bool AddToHomescreenDataFetcher::OnMessageReceived(
-    const IPC::Message& message) {
-  if (!is_waiting_for_web_application_info_)
-    return false;
-
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(AddToHomescreenDataFetcher, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
-                        OnDidGetWebApplicationInfo)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
-  DCHECK(!weak_observer_);
-}
-
-base::Closure AddToHomescreenDataFetcher::FetchSplashScreenImageCallback(
-    const std::string& webapp_id) {
-  return base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents(),
-                    splash_screen_url_, ideal_splash_image_size_in_dp_,
-                    minimum_splash_image_size_in_dp_, webapp_id);
 }
 
 void AddToHomescreenDataFetcher::FetchFavicon() {
