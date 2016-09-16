@@ -1390,10 +1390,6 @@ test("net_unittests") {
     sources += gypi_values.net_base_test_mac_ios_sources
   }
 
-  if (is_mac) {
-    libs = [ "Security.framework" ]
-  }
-
   if (is_chromeos) {
     sources -= [ "proxy/proxy_config_service_linux_unittest.cc" ]
   }
