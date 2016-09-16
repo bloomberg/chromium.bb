@@ -1817,21 +1817,43 @@ AXLayoutObject* AXLayoutObject::getUnignoredObjectFromNode(Node& node) const
 // Convert from an accessible object and offset to a VisiblePosition.
 static VisiblePosition toVisiblePosition(AXObject* obj, int offset)
 {
-    // First walk up until we find an accessible object with an associated node.
-    AXObject* runner = obj;
-    Node* node = nullptr;
-    while (runner && !node) {
-        node = runner->getNode();
-        runner = runner->parentObject();
-    }
-
-    if (!node)
+    if (!obj->getNode())
         return VisiblePosition();
 
-    // If it's not a text node, no conversion is necessary, just create a VisiblePosition
-    // with this node and offset.
-    if (!node->isTextNode())
-        return createVisiblePosition(Position(node, offset));
+    Node* node = obj->getNode();
+    if (!node->isTextNode()) {
+        int childCount = obj->children().size();
+
+        // Place position immediately before the container node, if there was no children.
+        if (childCount == 0) {
+            if (!obj->parentObject())
+                return VisiblePosition();
+            return toVisiblePosition(obj->parentObject(), obj->indexInParent());
+        }
+
+        // The offsets are child offsets over the AX tree. Note that we allow
+        // for the offset to equal the number of children as |Range| does.
+        if (offset < 0 || offset > childCount)
+            return VisiblePosition();
+
+        // Clamp to between 0 and child count - 1.
+        int clampedOffset =
+            static_cast<unsigned>(offset) > (obj->children().size() - 1) ? offset - 1 : offset;
+        AXObject* childObj = obj->children()[clampedOffset];
+        Node* childNode = childObj->getNode();
+        if (!childNode || !childNode->parentNode())
+            return VisiblePosition();
+
+        // The index in parent.
+        int adjustedOffset = childNode->nodeIndex();
+
+        // If we had to clamp the offset above, the client wants to select the
+        // end of the node.
+        if (clampedOffset != offset)
+            adjustedOffset++;
+
+        return createVisiblePosition(Position::editingPositionOf(childNode->parentNode(), adjustedOffset));
+    }
 
     // If it is a text node, we need to call some utility functions that use a TextIterator
     // to walk the characters of the node and figure out the position corresponding to the
@@ -1860,6 +1882,7 @@ void AXLayoutObject::setSelection(const AXRange& selection)
         return;
     }
 
+    // The selection offsets are offsets into the accessible value.
     if (anchorObject == focusObject
         && anchorObject->getLayoutObject()->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(
