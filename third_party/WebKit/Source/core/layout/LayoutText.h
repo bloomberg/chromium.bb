@@ -182,6 +182,9 @@ public:
     float hyphenWidth(const Font&, TextDirection);
 
     void applyTextTransformFromTo(int from, int len, const ComputedStyle*);
+
+    LayoutRect debugRect() const override;
+
 protected:
     void willBeDestroyed() override;
 

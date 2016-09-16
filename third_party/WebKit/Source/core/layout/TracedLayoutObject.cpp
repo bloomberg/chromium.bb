@@ -39,13 +39,7 @@ void dumpToTracedValue(const LayoutObject& object, bool traceGeometry, TracedVal
     if (traceGeometry) {
         tracedValue->setDouble("absX", object.absoluteBoundingBoxRect().x());
         tracedValue->setDouble("absY", object.absoluteBoundingBoxRect().y());
-        LayoutRect rect;
-        if (object.isText())
-            rect = LayoutRect(toLayoutText(object).linesBoundingBox());
-        else if (object.isLayoutInline())
-            rect = LayoutRect(toLayoutInline(object).linesBoundingBox());
-        else if (object.isBox())
-            rect = toLayoutBox(&object)->frameRect();
+        LayoutRect rect = object.debugRect();
         tracedValue->setDouble("relX", rect.x());
         tracedValue->setDouble("relY", rect.y());
         tracedValue->setDouble("width", rect.width());

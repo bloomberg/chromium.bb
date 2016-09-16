@@ -1361,6 +1361,9 @@ public:
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
 
+    // Returns a rect corresponding to this LayoutObject's bounds for use in debugging output
+    virtual LayoutRect debugRect() const;
+
     // Painters can use const methods only, except for these explicitly declared methods.
     class MutableForPainting {
     public:

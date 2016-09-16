@@ -424,6 +424,11 @@ protected:
     // This is necessary for now for interoperability between the old and new
     // layout code. Primarily for calling layoutPositionedObjects at the moment.
     friend class NGBox;
+
+public:
+    // TODO(lunalu): Temporary in order to ensure compatibility with existing layout test
+    // results.
+    virtual void adjustChildDebugRect(LayoutRect&) const {}
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, isLayoutBlock());

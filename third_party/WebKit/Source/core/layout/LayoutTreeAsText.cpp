@@ -183,44 +183,8 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         }
     }
 
-    LayoutBlock* cb = o.containingBlock();
-    bool adjustForTableCells = cb ? cb->isTableCell() : false;
-
-    LayoutRect r;
-    if (o.isText()) {
-        // FIXME: Would be better to dump the bounding box x and y rather than the first run's x and y, but that would involve updating
-        // many test results.
-        const LayoutText& text = toLayoutText(o);
-        IntRect linesBox = enclosingIntRect(text.linesBoundingBox());
-        r = LayoutRect(IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height()));
-        if (adjustForTableCells && !text.hasTextBoxes())
-            adjustForTableCells = false;
-    } else if (o.isLayoutInline()) {
-        // FIXME: Would be better not to just dump 0, 0 as the x and y here.
-        const LayoutInline& inlineFlow = toLayoutInline(o);
-        IntRect linesBox = enclosingIntRect(inlineFlow.linesBoundingBox());
-        r = LayoutRect(IntRect(0, 0, linesBox.width(), linesBox.height()));
-        adjustForTableCells = false;
-    } else if (o.isTableCell()) {
-        // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like
-        // to clean up the results to dump both the outer box and the intrinsic padding so that both bits of information are
-        // captured by the results.
-        const LayoutTableCell& cell = toLayoutTableCell(o);
-        r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.size().width(), cell.size().height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
-    } else if (o.isBox()) {
-        r = toLayoutBox(&o)->frameRect();
-    }
-
-    // FIXME: Temporary in order to ensure compatibility with existing layout test results.
-    if (adjustForTableCells)
-        r.move(0, -toLayoutTableCell(o.containingBlock())->intrinsicPaddingBefore());
-
-    if (o.isLayoutView()) {
-        r.setWidth(LayoutUnit(toLayoutView(o).viewWidth(IncludeScrollbars)));
-        r.setHeight(LayoutUnit(toLayoutView(o).viewHeight(IncludeScrollbars)));
-    }
-
-    ts << " " << r;
+    LayoutRect rect = o.debugRect();
+    ts << " " << rect;
 
     if (!(o.isText() && !o.isBR())) {
         if (o.isFileUploadControl())

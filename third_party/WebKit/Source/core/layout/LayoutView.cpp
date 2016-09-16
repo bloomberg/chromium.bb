@@ -998,4 +998,17 @@ ScrollResult LayoutView::scroll(ScrollGranularity granularity, const FloatSize& 
     return frameView()->getScrollableArea()->userScroll(granularity, delta);
 }
 
+LayoutRect LayoutView::debugRect() const
+{
+    LayoutRect rect;
+    LayoutBlock* block = containingBlock();
+    if (block)
+        block->adjustChildDebugRect(rect);
+
+    rect.setWidth(LayoutUnit(viewWidth(IncludeScrollbars)));
+    rect.setHeight(LayoutUnit(viewHeight(IncludeScrollbars)));
+
+    return rect;
+}
+
 } // namespace blink

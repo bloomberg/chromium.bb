@@ -4862,4 +4862,15 @@ SnapAreaSet* LayoutBox::snapAreas() const
     return m_rareData ? m_rareData->m_snapAreas.get() : nullptr;
 }
 
+LayoutRect LayoutBox::debugRect() const
+{
+    LayoutRect rect = frameRect();
+
+    LayoutBlock* block = containingBlock();
+    if (block)
+        block->adjustChildDebugRect(rect);
+
+    return rect;
+}
+
 } // namespace blink

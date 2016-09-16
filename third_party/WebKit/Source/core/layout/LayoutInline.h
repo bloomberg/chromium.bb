@@ -182,6 +182,8 @@ public:
 
     const char* name() const override { return "LayoutInline"; }
 
+    LayoutRect debugRect() const override;
+
 protected:
     void willBeDestroyed() override;
 

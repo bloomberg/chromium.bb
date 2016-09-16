@@ -205,6 +205,8 @@ public:
     // or PaintLayerScrollableArea handle the scroll.
     ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
 
+    LayoutRect debugRect() const override;
+
 private:
     void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const override;
 

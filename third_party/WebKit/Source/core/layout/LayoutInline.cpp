@@ -1376,4 +1376,11 @@ void LayoutInline::invalidateDisplayItemClients(PaintInvalidationReason invalida
         paintInvalidator.invalidateDisplayItemClient(*box, invalidationReason);
 }
 
+// TODO(lunalu): Not to just dump 0, 0 as the x and y here
+LayoutRect LayoutInline::debugRect() const
+{
+    IntRect linesBox = enclosingIntRect(linesBoundingBox());
+    return LayoutRect(IntRect(0, 0, linesBox.width(), linesBox.height()));
+}
+
 } // namespace blink

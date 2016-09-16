@@ -31,6 +31,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBox.h"
@@ -1798,6 +1799,20 @@ void LayoutText::invalidateDisplayItemClients(PaintInvalidationReason invalidati
                 paintInvalidator.invalidateDisplayItemClient(*ellipsisBox, invalidationReason);
         }
     }
+}
+
+// TODO(lunalu): Would be better to dump the bounding box x and y rather than
+// the first run's x and y, but that would involve updating many test results.
+LayoutRect LayoutText::debugRect() const
+{
+    IntRect linesBox = enclosingIntRect(linesBoundingBox());
+    LayoutRect rect =
+        LayoutRect(IntRect(firstRunX(), firstRunY(), linesBox.width(), linesBox.height()));
+    LayoutBlock* block = containingBlock();
+    if (block && hasTextBoxes())
+        block->adjustChildDebugRect(rect);
+
+    return rect;
 }
 
 } // namespace blink

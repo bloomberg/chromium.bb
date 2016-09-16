@@ -3244,6 +3244,16 @@ ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
     return *addResult.storedValue->value;
 }
 
+LayoutRect LayoutObject::debugRect() const
+{
+    LayoutRect rect;
+    LayoutBlock* block = containingBlock();
+    if (block)
+        block->adjustChildDebugRect(rect);
+
+    return rect;
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

@@ -1116,6 +1116,8 @@ private:
     void addSnapArea(const LayoutBox&);
     void removeSnapArea(const LayoutBox&);
 
+    LayoutRect debugRect() const override;
+
 protected:
     // The logical width of the element if it were to break its lines at every
     // possible opportunity.

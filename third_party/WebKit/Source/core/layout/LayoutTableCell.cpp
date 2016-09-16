@@ -1041,4 +1041,28 @@ bool LayoutTableCell::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localR
     return LayoutBlockFlow::backgroundIsKnownToBeOpaqueInRect(localRect);
 }
 
+// TODO(lunalu): Deliberately dump the "inner" box of table cells, since that
+// is what current results reflect.  We'd like to clean up the results to dump
+// both the outer box and the intrinsic padding so that both bits of
+// information are captured by the results.
+LayoutRect LayoutTableCell::debugRect() const
+{
+    LayoutRect rect = LayoutRect(
+        location().x(),
+        location().y() + intrinsicPaddingBefore(),
+        size().width(),
+        size().height() - intrinsicPaddingBefore() - intrinsicPaddingAfter());
+
+    LayoutBlock* cb = containingBlock();
+    if (cb)
+        cb->adjustChildDebugRect(rect);
+
+    return rect;
+}
+
+void LayoutTableCell::adjustChildDebugRect(LayoutRect& r) const
+{
+    r.move(0, -intrinsicPaddingBefore());
+}
+
 } // namespace blink

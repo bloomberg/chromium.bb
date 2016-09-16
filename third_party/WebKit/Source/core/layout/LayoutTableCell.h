@@ -281,6 +281,10 @@ public:
     };
     const CollapsedBorderValues* collapsedBorderValues() const { return m_collapsedBorderValues.get(); }
 
+    LayoutRect debugRect() const override;
+
+    void adjustChildDebugRect(LayoutRect&) const override;
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void computePreferredLogicalWidths() override;
