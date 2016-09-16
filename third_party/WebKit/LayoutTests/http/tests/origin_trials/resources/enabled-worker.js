@@ -1,17 +1,28 @@
 importScripts('/resources/testharness.js');
 
-// The trial should be enabled.
+// Test whether the origin-trial-enabled attributes are attached in a worker
+// where the trial is enabled.
+// This is deliberately just a minimal set of tests to ensure that trials are
+// available in a worker. The full suite of tests are in origin_trials.js.
 test(() => {
-    assert_idl_attribute(self.internals, 'frobulate');
-    assert_true(self.internals.frobulate, 'Attribute should return boolean value');
+    var testObject = self.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'throwingAttribute');
+    assert_true(testObject.throwingAttribute, 'Attribute should return boolean value');
+  }, 'Attribute should exist and not throw exception in worker');
+test(() => {
+    var testObject = self.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'normalAttribute');
+    assert_true(testObject.normalAttribute, 'Attribute should return boolean value');
   }, 'Attribute should exist and return value in worker');
 test(() => {
-    assert_idl_attribute(self.internals, 'FROBULATE_CONST');
-    assert_equals(self.internals.FROBULATE_CONST, 1, 'Constant should return integer value');
+    var testObject = self.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'CONSTANT');
+    assert_equals(testObject.CONSTANT, 1, 'Constant should return integer value');
   }, 'Constant should exist and return value in worker');
 test(() => {
-    assert_idl_attribute(self.internals, 'FROBULATE_CONST');
-    self.internals.FROBULATE_CONST = 10;
-    assert_equals(self.internals.FROBULATE_CONST, 1, 'Constant should not be modifiable');
+    var testObject = self.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'CONSTANT');
+    testObject.CONSTANT = 10;
+    assert_equals(testObject.CONSTANT, 1, 'Constant should not be modifiable');
   }, 'Constant should exist and not be modifiable in worker');
 done();

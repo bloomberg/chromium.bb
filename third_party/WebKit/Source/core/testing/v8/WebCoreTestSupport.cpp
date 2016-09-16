@@ -27,8 +27,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8Internals.h"
-#include "bindings/core/v8/V8WorkerInternals.h"
+#include "bindings/core/v8/V8OriginTrialsTest.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
@@ -103,10 +102,7 @@ void installOriginTrialsForTests(ScriptState* scriptState)
         v8::Local<v8::String> internalsName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("internals"), v8::NewStringType::kNormal).ToLocalChecked();
         v8::Local<v8::Value> v8Internals = global->Get(context, internalsName).ToLocalChecked();
         if (v8Internals->IsObject()) {
-            if (executionContext->isDocument())
-                V8Internals::installOriginTrialsSampleAPI(scriptState);
-            else if (executionContext->isWorkerGlobalScope())
-                V8WorkerInternals::installOriginTrialsSampleAPI(scriptState);
+            V8OriginTrialsTest::installOriginTrialsSampleAPI(scriptState);
             originTrialContext->setFeatureBindingsInstalled("Frobulate");
         }
     }

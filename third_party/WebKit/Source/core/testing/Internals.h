@@ -61,6 +61,7 @@ class LayerRectList;
 class LocalDOMWindow;
 class LocalFrame;
 class Node;
+class OriginTrialsTest;
 class Page;
 class PrivateScriptTest;
 class Range;
@@ -284,6 +285,7 @@ public:
     PrivateScriptTest* privateScriptTest() const;
     DictionaryTest* dictionaryTest() const;
     UnionTypesTest* unionTypesTest() const;
+    OriginTrialsTest* originTrialsTest() const;
 
     Vector<String> getReferencedFilePaths() const;
 

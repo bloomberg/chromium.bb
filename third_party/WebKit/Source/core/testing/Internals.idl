@@ -355,5 +355,7 @@
 
     ClientRect visualRect(Node node);
 
+    OriginTrialsTest originTrialsTest();
+
     void crash();
 };

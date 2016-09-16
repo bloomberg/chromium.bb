@@ -124,6 +124,7 @@
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
 #include "core/testing/MockHyphenation.h"
+#include "core/testing/OriginTrialsTest.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
@@ -1993,6 +1994,11 @@ DictionaryTest* Internals::dictionaryTest() const
 UnionTypesTest* Internals::unionTypesTest() const
 {
     return UnionTypesTest::create();
+}
+
+OriginTrialsTest* Internals::originTrialsTest() const
+{
+    return OriginTrialsTest::create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

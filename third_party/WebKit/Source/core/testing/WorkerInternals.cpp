@@ -4,6 +4,8 @@
 
 #include "core/testing/WorkerInternals.h"
 
+#include "core/testing/OriginTrialsTest.h"
+
 namespace blink {
 
 // static
@@ -18,6 +20,11 @@ WorkerInternals::~WorkerInternals()
 
 WorkerInternals::WorkerInternals(ScriptState*)
 {
+}
+
+OriginTrialsTest* WorkerInternals::originTrialsTest() const
+{
+    return OriginTrialsTest::create();
 }
 
 } // namespace blink

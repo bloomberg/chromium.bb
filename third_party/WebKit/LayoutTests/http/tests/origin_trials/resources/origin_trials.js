@@ -8,66 +8,78 @@ expect_failure = (t) => {
   tests = [{
     desc: 'Accessing attribute should throw error',
     code: () => {
-        assert_idl_attribute(window.internals, 'frobulate');
-        assert_throws("NotSupportedError", () => { window.internals.frobulate; },
+        var testObject = window.internals.originTrialsTest();
+        assert_idl_attribute(testObject, 'throwingAttribute');
+        assert_throws("NotSupportedError", () => { testObject.throwingAttribute; },
             'Accessing attribute should throw error');
       }
   }, {
     desc: 'Attribute should exist and return value, with trial disabled',
     code: () => {
-        assert_idl_attribute(window.internals, 'frobulateNoEnabledCheck');
-        assert_true(window.internals.frobulateNoEnabledCheck,
+        var testObject = window.internals.originTrialsTest();
+        assert_idl_attribute(testObject, 'unconditionalAttribute');
+        assert_true(testObject.unconditionalAttribute,
             'Attribute should return boolean value');
       }
   }, {
     desc: 'Attribute should not exist, with trial disabled',
     code: () => {
-        assert_false('frobulateBindings' in window.internals);
-        assert_not_exists(window.internals, 'frobulateBindings');
-        assert_equals(window.internals['frobulateBindings'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        assert_false('bindingsTest' in testObject);
+        assert_not_exists(testObject, 'bindingsTest');
+        assert_equals(testObject['bindingsTest'], undefined);
       }
   }, {
     desc: 'Constant should not exist, with trial disabled',
     code: () => {
-        assert_false('FROBULATE_CONST' in window.internals);
-        assert_not_exists(window.internals, 'FROBULATE_CONST');
-        assert_equals(window.internals['FROBULATE_CONST'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        var testInterface = testObject.constructor;
+        assert_false('CONSTANT' in testInterface);
+        assert_not_exists(testInterface, 'CONSTANT');
+        assert_equals(testInterface['CONSTANT'], undefined);
       }
   }, {
     desc: 'Attribute should not exist on partial interface, with trial disabled',
     code: () => {
-        assert_not_exists(window.internals, 'frobulatePartial');
-        assert_equals(window.internals['frobulatePartial'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        var testInterface = testObject.constructor;
+        assert_not_exists(testObject, 'normalAttributePartial');
+        assert_equals(testObject['normalAttributePartial'], undefined);
       }
   }, {
     desc: 'Static attribute should not exist on partial interface, with trial disabled',
     code: () => {
-        var internalsInterface = window.internals.constructor;
-        assert_false('frobulateStaticPartial' in internalsInterface);
-        assert_not_exists(internalsInterface, 'frobulateStaticPartial');
-        assert_equals(internalsInterface['frobulateStaticPartial'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        var testInterface = testObject.constructor;
+        assert_false('staticAttributePartial' in testInterface);
+        assert_not_exists(testInterface, 'staticAttributePartial');
+        assert_equals(testInterface['staticAttributePartial'], undefined);
       }
   }, {
     desc: 'Constant should not exist on partial interface, with trial disabled',
     code: () => {
-        assert_false('FROBULATE_CONST_PARTIAL' in window.internals);
-        assert_not_exists(window.internals, 'FROBULATE_CONST_PARTIAL');
-        assert_equals(window.internals['FROBULATE_CONST_PARTIAL'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        var testInterface = testObject.constructor;
+        assert_false('CONSTANT_PARTIAL' in testInterface);
+        assert_not_exists(testInterface, 'CONSTANT_PARTIAL');
+        assert_equals(testInterface['CONSTANT_PARTIAL'], undefined);
       }
   }, {
     desc: 'Method should not exist on partial interface, with trial disabled',
     code: () => {
-        assert_false('frobulateMethodPartial' in window.internals);
-        assert_not_exists(window.internals, 'frobulateMethodPartial');
-        assert_equals(window.internals['frobulateMethodPartial'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        assert_false('methodPartial' in testObject);
+        assert_not_exists(testObject, 'methodPartial');
+        assert_equals(testObject['methodPartial'], undefined);
       }
   }, {
     desc: 'Static method should not exist on partial interface, with trial disabled',
     code: () => {
-        var internalsInterface = window.internals.constructor;
-        assert_false('frobulateStaticMethodPartial' in internalsInterface);
-        assert_not_exists(internalsInterface, 'frobulateStaticMethodPartial');
-        assert_equals(internalsInterface['frobulateStaticMethodPartial'], undefined);
+        var testObject = window.internals.originTrialsTest();
+        var testInterface = testObject.constructor;
+        assert_false('staticMethodPartial' in testInterface);
+        assert_not_exists(testInterface, 'staticMethodPartial');
+        assert_equals(testInterface['staticMethodPartial'], undefined);
       }
   }];
 
@@ -85,52 +97,85 @@ expect_failure = (t) => {
 // These tests verify that the API functions correctly with an enabled trial.
 expect_success = () => {
 test(() => {
-    assert_idl_attribute(window.internals, 'frobulate');
-    assert_true(window.internals.frobulate, 'Attribute should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'throwingAttribute');
+    assert_true(testObject.throwingAttribute, 'Attribute should return boolean value');
   }, 'Attribute should exist and return value');
 
 test(() => {
-    assert_idl_attribute(window.internals, 'frobulateBindings');
-    assert_true(window.internals.frobulateBindings, 'Attribute should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'bindingsTest');
+    assert_true(testObject.bindingsTest, 'Attribute should return boolean value');
   }, 'Attribute should exist and return value');
 
 test(() => {
-    assert_idl_attribute(window.internals, 'FROBULATE_CONST');
-    assert_equals(window.internals.FROBULATE_CONST, 1, 'Constant should return integer value');
-  }, 'Constant should exist and return value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testInterface = testObject.constructor;
+    assert_exists(testInterface, 'CONSTANT');
+    assert_equals(testInterface.CONSTANT, 1, 'Constant should return integer value');
+  }, 'Constant should exist on interface and return value');
 
 test(() => {
-    assert_idl_attribute(window.internals, 'FROBULATE_CONST');
-    window.internals.FROBULATE_CONST = 10;
-    assert_equals(window.internals.FROBULATE_CONST, 1, 'Constant should not be modifiable');
-  }, 'Constant should exist and not be modifiable');
-
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testInterface = testObject.constructor;
+    assert_exists(testInterface, 'CONSTANT');
+    testInterface.CONSTANT = 10;
+    assert_equals(testInterface.CONSTANT, 1, 'Constant should not be modifiable');
+  }, 'Constant should exist on interface and not be modifiable');
 test(() => {
-    assert_idl_attribute(window.internals, 'frobulatePartial');
-    assert_true(window.internals.frobulatePartial, 'Attribute should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'normalAttributePartial');
+    assert_true(testObject.normalAttributePartial, 'Attribute should return boolean value');
   }, 'Attribute should exist on partial interface and return value');
-
 test(() => {
-    var internalsInterface = window.internals.constructor;
-    assert_exists(internalsInterface, 'frobulateStaticPartial');
-    assert_true(internalsInterface.frobulateStaticPartial, 'Static attribute should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testInterface = testObject.constructor;
+    assert_exists(testInterface, 'staticAttributePartial');
+    assert_true(testInterface.staticAttributePartial, 'Static attribute should return boolean value');
   }, 'Static attribute should exist on partial interface and return value');
 
 test(() => {
-    assert_idl_attribute(window.internals, 'FROBULATE_CONST_PARTIAL');
-    assert_equals(window.internals.FROBULATE_CONST_PARTIAL, 2, 'Constant should return integer value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testInterface = testObject.constructor;
+    assert_exists(testInterface, 'CONSTANT_PARTIAL');
+    assert_equals(testInterface.CONSTANT_PARTIAL, 2, 'Constant should return integer value');
   }, 'Constant should exist on partial interface and return value');
 
 test(() => {
-    assert_idl_attribute(window.internals, 'frobulateMethodPartial');
-    assert_true(window.internals.frobulateMethodPartial(), 'Method should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    assert_idl_attribute(testObject, 'methodPartial');
+    assert_true(testObject.methodPartial(), 'Method should return boolean value');
   }, 'Method should exist on partial interface and return value');
 
 test(() => {
-    var internalsInterface = window.internals.constructor;
-    assert_exists(internalsInterface, 'frobulateStaticMethodPartial');
-    assert_true(internalsInterface.frobulateStaticMethodPartial(), 'Static method should return boolean value');
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testObjectInterface = testObject.constructor;
+    assert_exists(testObjectInterface, 'staticMethodPartial');
+    assert_true(testObjectInterface.staticMethodPartial(), 'Static method should return boolean value');
   }, 'Static method should exist on partial interface and return value');
+test(() => {
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var test_object = window.internals.originTrialsTest();
+    assert_idl_attribute(test_object, 'normalAttribute');
+    assert_true(test_object.normalAttribute, 'Attribute should return boolean value');
+  }, 'Attribute should exist on interface and return value');
+
+test(() => {
+    assert_idl_attribute(window.internals, 'originTrialsTest');
+    var testObject = window.internals.originTrialsTest();
+    var testInterface = testObject.constructor;
+    assert_exists(testInterface, 'staticAttribute');
+    assert_true(testInterface.staticAttribute, 'Static attribute should return boolean value');
+  }, 'Static attribute should exist on interface and return value');
 
 fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
 };
