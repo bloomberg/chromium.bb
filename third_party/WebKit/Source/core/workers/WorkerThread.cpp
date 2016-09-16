@@ -121,28 +121,26 @@ public:
     void willProcessTask() override
     {
         // No tasks should get executed after we have closed.
-        DCHECK(!m_workerThread->globalScope() || !m_workerThread->globalScope()->isClosing());
+        DCHECK(!m_workerThread->globalScope()->isClosing());
+
+        if (m_workerThread->isForciblyTerminated()) {
+            // The script has been terminated forcibly, which means we need to
+            // ask objects in the thread to stop working as soon as possible.
+            m_workerThread->prepareForShutdownOnWorkerThread();
+        }
     }
 
     void didProcessTask() override
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
-        if (WorkerOrWorkletGlobalScope* global = m_workerThread->globalScope()) {
-            WorkerOrWorkletScriptController* scriptController = global->scriptController();
-            if (scriptController)
-                scriptController->getRejectedPromises()->processQueue();
-            if (global->isClosing()) {
-                // |m_workerThread| will eventually be requested to terminate.
-                m_workerThread->workerReportingProxy().didCloseWorkerGlobalScope();
+        WorkerOrWorkletGlobalScope* globalScope = m_workerThread->globalScope();
+        globalScope->scriptController()->getRejectedPromises()->processQueue();
+        if (globalScope->isClosing()) {
+            // |m_workerThread| will eventually be requested to terminate.
+            m_workerThread->workerReportingProxy().didCloseWorkerGlobalScope();
 
-                // Stop further worker tasks to run after this point.
-                m_workerThread->prepareForShutdownOnWorkerThread();
-            } else if (m_workerThread->isForciblyTerminated()) {
-                // The script has been terminated forcibly, which means we need
-                // to ask objects in the thread to stop working as soon as
-                // possible.
-                m_workerThread->prepareForShutdownOnWorkerThread();
-            }
+            // Stop further worker tasks to run after this point.
+            m_workerThread->prepareForShutdownOnWorkerThread();
         }
     }
 
