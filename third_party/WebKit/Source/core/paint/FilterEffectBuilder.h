@@ -50,10 +50,10 @@ public:
     virtual ~FilterEffectBuilder();
     DECLARE_TRACE();
 
-    static Filter* buildReferenceFilter(const ReferenceFilterOperation&, const FloatSize* zoomedReferenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint, Element&, FilterEffect* previousEffect, float zoom);
+    static Filter* buildReferenceFilter(const ReferenceFilterOperation&, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint, Element&, FilterEffect* previousEffect, float zoom);
     static Filter* buildReferenceFilter(SVGFilterElement&, const FloatRect& referenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint, FilterEffect* previousEffect, float zoom, SVGFilterGraphNodeMap* = nullptr);
 
-    bool build(Element*, const FilterOperations&, float zoom, const FloatSize* zoomedReferenceBoxSize = nullptr, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
+    bool build(Element*, const FilterOperations&, float zoom, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 
     FilterEffect* lastEffect() const
     {

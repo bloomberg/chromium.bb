@@ -2074,6 +2074,12 @@ PaintLayer* PaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, Paint
     return resultLayer;
 }
 
+FloatRect PaintLayer::boxForFilter() const
+{
+    return FloatRect(physicalBoundingBoxIncludingReflectionAndStackingChildren(
+        LayoutPoint(), PaintLayer::CalculateBoundsOptions::IncludeTransformsAndCompositedChildLayers));
+}
+
 LayoutRect PaintLayer::boxForClipPath() const
 {
     if (!layoutObject()->isBox()) {
@@ -2685,42 +2691,47 @@ bool PaintLayer::scrollsOverflow() const
 
 namespace {
 
-FilterOperations resolveReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingNode)
+FilterOperations resolveReferenceFilters(
+    const FilterOperations& filters, float effectiveZoom, Element& element, const FloatRect& zoomedReferenceBox)
 {
-    if (filters.hasReferenceFilter()) {
-        for (size_t i = 0; i < filters.size(); ++i) {
-            FilterOperation* filterOperation = filters.operations().at(i).get();
-            if (filterOperation->type() != FilterOperation::REFERENCE)
-                continue;
-            ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
-            // FIXME: Cache the Filter if it didn't change.
-            Filter* referenceFilter = FilterEffectBuilder::buildReferenceFilter(referenceOperation, nullptr, nullptr, nullptr, *toElement(enclosingNode), nullptr, effectiveZoom);
-            referenceOperation.setFilter(referenceFilter);
-        }
+    DCHECK(filters.hasReferenceFilter());
+
+    for (FilterOperation* filterOperation : filters.operations()) {
+        if (filterOperation->type() != FilterOperation::REFERENCE)
+            continue;
+        ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
+        // TODO(fs): Cache the Filter if it didn't change.
+        Filter* referenceFilter = FilterEffectBuilder::buildReferenceFilter(referenceOperation, zoomedReferenceBox, nullptr, nullptr, element, nullptr, effectiveZoom);
+        referenceOperation.setFilter(referenceFilter);
     }
     return filters;
 }
 
 } // unnamed namespace
 
-FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style) const
+FilterOperations PaintLayer::addReflectionToFilterOperations(const ComputedStyle& style) const
 {
     FilterOperations filterOperations = style.filter();
     if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection() && layoutObject()->isBox()) {
         BoxReflection reflection = boxReflectionForPaintLayer(*this, style);
         filterOperations.operations().append(BoxReflectFilterOperation::create(reflection));
     }
-    return resolveReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
+    return filterOperations;
 }
 
 CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForFilter(const ComputedStyle& style)
 {
-    return SkiaImageFilterBuilder::buildFilterOperations(computeFilterOperations(style));
+    FilterOperations filterOperations = addReflectionToFilterOperations(style);
+    if (filterOperations.hasReferenceFilter())
+        filterOperations = resolveReferenceFilters(filterOperations, style.effectiveZoom(), toElement(*enclosingNode()), boxForFilter());
+    return SkiaImageFilterBuilder::buildFilterOperations(filterOperations);
 }
 
 CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForBackdropFilter(const ComputedStyle& style)
 {
-    FilterOperations operations = resolveReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingNode());
+    FilterOperations operations = style.backdropFilter();
+    if (operations.hasReferenceFilter())
+        operations = resolveReferenceFilters(operations, style.effectiveZoom(), toElement(*enclosingNode()), boxForFilter());
     return SkiaImageFilterBuilder::buildFilterOperations(operations);
 }
 
@@ -2780,7 +2791,14 @@ FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
     filterInfo->setBuilder(FilterEffectBuilder::create());
 
     const ComputedStyle& style = layoutObject()->styleRef();
-    if (!filterInfo->builder()->build(toElement(enclosingNode()), computeFilterOperations(style), style.effectiveZoom()))
+    Element* element = toElement(enclosingNode());
+    FilterOperations operations = addReflectionToFilterOperations(style);
+    FloatRect zoomedReferenceBox;
+    if (style.filter().hasReferenceFilter()) {
+        zoomedReferenceBox = boxForFilter();
+        operations = resolveReferenceFilters(operations, style.effectiveZoom(), *element, zoomedReferenceBox);
+    }
+    if (!filterInfo->builder()->build(element, operations, style.effectiveZoom(), zoomedReferenceBox))
         filterInfo->setBuilder(nullptr);
 
     return filterInfo->builder();
@@ -2798,10 +2816,11 @@ FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const
 {
     if (!hasFilterThatMovesPixels())
         return rect;
+
     // Ensure the filter-chain is refreshed wrt reference filters.
     updateFilterEffectBuilder();
 
-    FilterOperations filterOperations = computeFilterOperations(layoutObject()->styleRef());
+    FilterOperations filterOperations = addReflectionToFilterOperations(layoutObject()->styleRef());
     return filterOperations.mapRect(rect);
 }
 

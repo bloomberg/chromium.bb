@@ -373,6 +373,7 @@ public:
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
     LayoutRect fragmentsBoundingBox(const PaintLayer* ancestorLayer) const;
 
+    FloatRect boxForFilter() const;
     LayoutRect boxForClipPath() const;
 
     LayoutRect boundingBoxForCompositingOverlapTest() const;
@@ -788,7 +789,7 @@ private:
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();
 
-    FilterOperations computeFilterOperations(const ComputedStyle&) const;
+    FilterOperations addReflectionToFilterOperations(const ComputedStyle&) const;
     void updateReflectionInfo(const ComputedStyle*);
     FilterEffectBuilder* updateFilterEffectBuilder() const;
 

@@ -318,9 +318,9 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         m_strokeStyle->applyToPaint(strokePaintForFilter);
         fillPaintForFilter.setColor(m_fillStyle->paintColor());
         strokePaintForFilter.setColor(m_strokeStyle->paintColor());
-        FloatSize floatCanvasSize(canvasSize);
+        FloatRect referenceBox((FloatPoint()), FloatSize(canvasSize));
         const double effectiveZoom = 1.0; // Deliberately ignore zoom on the canvas element
-        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &floatCanvasSize, &fillPaintForFilter, &strokePaintForFilter);
+        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, referenceBox, &fillPaintForFilter, &strokePaintForFilter);
 
         if (FilterEffect* lastEffect = filterEffectBuilder->lastEffect()) {
             m_resolvedFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);

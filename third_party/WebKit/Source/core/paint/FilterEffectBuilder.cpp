@@ -27,7 +27,6 @@
 #include "core/paint/FilterEffectBuilder.h"
 
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -119,18 +118,6 @@ Vector<float> sepiaMatrix(double amount)
     return matrix;
 }
 
-FloatRect computeReferenceBox(const Element& element, const FloatSize* zoomedReferenceBoxSize, float zoom)
-{
-    FloatRect box;
-    if (zoomedReferenceBoxSize) {
-        box = FloatRect(FloatPoint(), *zoomedReferenceBoxSize);
-    } else if (element.isConnected() && element.layoutObject() && element.layoutObject()->enclosingLayer()) {
-        box = FloatRect(element.layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint(), PaintLayer::CalculateBoundsOptions::IncludeTransformsAndCompositedChildLayers));
-    }
-    box.scale(1.0f / zoom);
-    return box;
-}
-
 } // namespace
 
 FilterEffectBuilder::FilterEffectBuilder()
@@ -146,7 +133,7 @@ DEFINE_TRACE(FilterEffectBuilder)
     visitor->trace(m_lastEffect);
 }
 
-bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatSize* zoomedReferenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
+bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
     Filter* parentFilter = Filter::create(1.0f);
@@ -156,7 +143,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            Filter* referenceFilter = buildReferenceFilter(toReferenceFilterOperation(*filterOperation), zoomedReferenceBoxSize, fillPaint, strokePaint, *element, previousEffect, zoom);
+            Filter* referenceFilter = buildReferenceFilter(toReferenceFilterOperation(*filterOperation), zoomedReferenceBox, fillPaint, strokePaint, *element, previousEffect, zoom);
             if (referenceFilter)
                 effect = referenceFilter->lastEffect();
             break;
@@ -277,7 +264,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
 
 Filter* FilterEffectBuilder::buildReferenceFilter(
     const ReferenceFilterOperation& referenceOperation,
-    const FloatSize* zoomedReferenceBoxSize,
+    const FloatRect& zoomedReferenceBox,
     const SkPaint* fillPaint,
     const SkPaint* strokePaint,
     Element& element,
@@ -287,8 +274,8 @@ Filter* FilterEffectBuilder::buildReferenceFilter(
     SVGFilterElement* filterElement = ReferenceFilterBuilder::resolveFilterReference(referenceOperation, element);
     if (!filterElement)
         return nullptr;
-
-    const FloatRect referenceBox = computeReferenceBox(element, zoomedReferenceBoxSize, zoom);
+    FloatRect referenceBox = zoomedReferenceBox;
+    referenceBox.scale(1.0f / zoom);
     return buildReferenceFilter(*filterElement, referenceBox, fillPaint, strokePaint, previousEffect, zoom);
 }
 
