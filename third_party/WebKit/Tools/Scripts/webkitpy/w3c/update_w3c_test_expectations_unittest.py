@@ -226,7 +226,6 @@ class UpdateW3CTestExpectationsTest(logtesting.LoggingTestCase):
         self.assertMultiLineEqual(
             value,
             ('# Tests added from W3C auto import bot\n'
-             '\n'
              'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n'))
 
     def test_is_js_test_true(self):

@@ -271,6 +271,8 @@ class W3CExpectationsLineAdder(object):
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
         marker_comment_index = file_contents.find(marker_comment)
         line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
+        if not line_list:
+            return
         if marker_comment_index == -1:
             file_contents += '\n%s\n' % marker_comment
             file_contents += '\n'.join(line_list)
