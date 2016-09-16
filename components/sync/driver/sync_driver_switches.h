@@ -16,11 +16,11 @@ namespace switches {
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncEnableGetUpdateAvoidance[];
-extern const char kSyncEnableUSSDeviceInfo[];
 extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];
 
 extern const base::Feature kSyncClearDataOnPassphraseEncryption;
+extern const base::Feature kSyncUSSDeviceInfo;
 
 }  // namespace switches
 

@@ -150,8 +150,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       base::Bind(&ChromeReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
-  if (channel_ == version_info::Channel::UNKNOWN &&
-      command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<UIModelTypeController>(syncer::DEVICE_INFO,
                                                 error_callback, sync_client_));

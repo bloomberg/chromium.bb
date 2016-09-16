@@ -294,9 +294,7 @@ void ProfileSyncService::Initialize() {
                  sync_enabled_weak_factory_.GetWeakPtr(),
                  syncer::ModelTypeSet(syncer::SESSIONS))));
 
-  if (channel_ == version_info::Channel::UNKNOWN &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableUSSDeviceInfo)) {
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
         blocking_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
             blocking_pool_->GetSequenceToken(),
