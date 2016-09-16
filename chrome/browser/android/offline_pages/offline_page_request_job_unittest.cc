@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_model_impl.h"
-#include "components/previews/previews_experiments.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"

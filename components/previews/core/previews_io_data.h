@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_PREVIEWS_IO_DATA_H_
-#define COMPONENTS_PREVIEWS_PREVIEWS_IO_DATA_H_
+#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_
+#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_
 
 #include <string>
 
@@ -53,4 +53,4 @@ class PreviewsIOData {
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_PREVIEWS_IO_DATA_H_
+#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_

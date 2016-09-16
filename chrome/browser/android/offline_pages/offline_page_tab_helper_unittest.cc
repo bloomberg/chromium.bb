@@ -32,7 +32,7 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_types.h"
-#include "components/previews/previews_experiments.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"

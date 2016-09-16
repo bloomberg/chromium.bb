@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/previews_ui_service.h"
+#include "components/previews/core/previews_ui_service.h"
 
-#include "components/previews/previews_io_data.h"
+#include "components/previews/core/previews_io_data.h"
 
 namespace previews {
 

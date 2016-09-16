@@ -4,7 +4,7 @@
 
 #include "chrome/browser/previews/previews_service.h"
 
-#include "components/previews/previews_ui_service.h"
+#include "components/previews/core/previews_ui_service.h"
 #include "content/public/browser/browser_thread.h"
 
 PreviewsService::PreviewsService() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_PREVIEWS_EXPERIMENTS_H_
-#define COMPONENTS_PREVIEWS_PREVIEWS_EXPERIMENTS_H_
+#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
+#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 
 namespace previews {
 
@@ -20,4 +20,4 @@ bool EnableOfflinePreviewsForTesting();
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_PREVIEWS_EXPERIMENTS_H_
+#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_

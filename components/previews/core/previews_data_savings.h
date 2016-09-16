@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_DATA_SAVINGS_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_DATA_SAVINGS_H_
+#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_DATA_SAVINGS_H_
+#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_DATA_SAVINGS_H_
 
 #include <stdint.h>
 
@@ -48,4 +48,4 @@ class PreviewsDataSavings {
 
 }  // namespace previews
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_DATA_SAVINGS_H_
+#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_DATA_SAVINGS_H_
