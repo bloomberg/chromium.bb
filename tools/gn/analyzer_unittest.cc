@@ -120,7 +120,7 @@ TEST_F(AnalyzerTest, AllWasPruned) {
   RunBasicTest(
       "{"
       "  \"files\": [ \"//d/b.cc\" ],"
-      "  \"compile_targets\": [ \"all\" ],"
+      "  \"additional_compile_targets\": [ \"all\" ],"
       "  \"test_targets\": [ ]"
       "}",
       "{"
@@ -134,7 +134,7 @@ TEST_F(AnalyzerTest, NoDependency) {
   RunBasicTest(
       "{"
       "  \"files\":[ \"//missing.cc\" ],"
-      "  \"compile_targets\": [ \"all\" ],"
+      "  \"additional_compile_targets\": [ \"all\" ],"
       "  \"test_targets\": [ \"//:a\" ]"
       "}",
       "{"
@@ -148,7 +148,7 @@ TEST_F(AnalyzerTest, NoFilesNoTargets) {
   RunBasicTest(
       "{"
       "  \"files\": [],"
-      "  \"compile_targets\": [],"
+      "  \"additional_compile_targets\": [],"
       "  \"test_targets\": []"
       "}",
       "{"
@@ -162,12 +162,41 @@ TEST_F(AnalyzerTest, OneTestTargetModified) {
   RunBasicTest(
       "{"
       "  \"files\": [ \"//a.cc\" ],"
-      "  \"compile_targets\": [],"
+      "  \"additional_compile_targets\": [],"
       "  \"test_targets\": [ \"//:a\" ]"
       "}",
       "{"
       "\"compile_targets\":[],"
       "\"status\":\"Found dependency\","
       "\"test_targets\":[\"//:a\"]"
+      "}");
+}
+
+TEST_F(AnalyzerTest, FilesArentSourceAbsolute) {
+  RunBasicTest(
+      "{"
+      "  \"files\": [ \"a.cc\" ],"
+      "  \"additional_compile_targets\": [],"
+      "  \"test_targets\": [ \"//:a\" ]"
+      "}",
+      "{"
+      "\"error\":"
+      "\"\\\"a.cc\\\" is not a source-absolute or absolute path.\","
+      "\"invalid_targets\":[]"
+      "}");
+}
+
+TEST_F(AnalyzerTest, WrongInputFields) {
+  RunBasicTest(
+      "{"
+      "  \"files\": [ \"//a.cc\" ],"
+      "  \"compile_targets\": [],"
+      "  \"test_targets\": [ \"//:a\" ]"
+      "}",
+      "{"
+      "\"error\":"
+      "\"Input does not have a key named "
+      "\\\"additional_compile_targets\\\" with a list value.\","
+      "\"invalid_targets\":[]"
       "}");
 }

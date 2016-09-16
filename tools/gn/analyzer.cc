@@ -157,7 +157,7 @@ Err JSONToInputs(const Label& default_toolchain,
     inputs->source_vec.push_back(SourceFile(s));
   }
 
-  strings = GetStringVector(*dict, "compile_targets", &err);
+  strings = GetStringVector(*dict, "additional_compile_targets", &err);
   if (err.has_error())
     return err;
 
@@ -193,7 +193,7 @@ Err JSONToInputs(const Label& default_toolchain,
 }
 
 std::string OutputsToJSON(const Outputs& outputs,
-                          const Label& default_toolchain) {
+                          const Label& default_toolchain, Err *err) {
   std::string output;
   auto value = base::MakeUnique<base::DictionaryValue>();
 
@@ -208,7 +208,8 @@ std::string OutputsToJSON(const Outputs& outputs,
     WriteLabels(default_toolchain, *value, "test_targets", outputs.test_labels);
   }
 
-  base::JSONWriter::Write(*value.get(), &output);
+  if (!base::JSONWriter::Write(*value.get(), &output))
+    *err = Err(Location(), "Failed to marshal JSON value for output");
   return output;
 }
 
@@ -237,9 +238,7 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
   Err local_err = JSONToInputs(default_toolchain_, input, &inputs);
   if (local_err.has_error()) {
     outputs.error = local_err.message();
-    if (err)
-      *err = Err();
-    return "";
+    return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
   LabelSet invalid_labels;
@@ -250,17 +249,13 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
   if (!invalid_labels.empty()) {
     outputs.error = "Invalid targets";
     outputs.invalid_labels = invalid_labels;
-    if (err)
-      *err = Err();
-    return OutputsToJSON(outputs, default_toolchain_);
+    return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
   TargetSet affected_targets = AllAffectedTargets(inputs.source_files);
   if (affected_targets.empty()) {
     outputs.status = "No dependency";
-    if (err)
-      *err = Err();
-    return OutputsToJSON(outputs, default_toolchain_);
+    return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
   // TODO: We can do smarter things when we detect changes to build files.
@@ -272,9 +267,7 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     outputs.status = "Found dependency (all)";
     outputs.compile_labels = inputs.compile_labels;
     outputs.test_labels = inputs.test_labels;
-    if (err)
-      *err = Err();
-    return OutputsToJSON(outputs, default_toolchain_);
+    return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
   TargetSet compile_targets = TargetsFor(inputs.compile_labels);
@@ -293,8 +286,7 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     outputs.status = "No dependency";
   else
     outputs.status = "Found dependency";
-  *err = Err();
-  return OutputsToJSON(outputs, default_toolchain_);
+  return OutputsToJSON(outputs, default_toolchain_, err);
 }
 
 TargetSet Analyzer::AllAffectedTargets(

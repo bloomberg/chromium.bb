@@ -259,26 +259,25 @@
 
    - "files": A list of the filenames to check.
 
-   - "compile_targets": A list of the labels targets that we wish to
-     rebuild, but aren't necessarily needed for testing. The
-     important difference between this field and "test_targets"
-     is that if an item in the compile_targets list is a group, then
+   - "test_targets": A list of the labels for targets that
+     are needed to run the tests we wish to run.
+
+   - "additional_compile_targets": A list of the labels for
+     targets that we wish to rebuild, but aren't necessarily needed
+     for testing. The important difference between this field and
+     "test_targets" is that if an item in the
+     additional_compile_targets list refers to a group, then
      any dependencies of that group will be returned if they are out
      of date, but the group itself does not need to be. If the
      dependencies themselves are groups, the same filtering is
      repeated. This filtering can be used to avoid rebuilding
      dependencies of a group that are unaffected by the input files.
-     The list may contain the string "all" to refer to a
-     pseudo-group that contains every root target in the build graph.
+     The list may also contain the string "all" to refer to a
+     pseudo-group that contains every root target in the build
+     graph.
 
      This filtering behavior is also known as "pruning" the list
      of compile targets.
-
-   - "test_targets": A list of the labels for targets that
-     are needed to run the tests we wish to run. Unlike
-     "compile_targets", this list may not contain the string "all",
-     because having a test be dependent on everything in the build
-     would be silly.
 
   output_path is a path indicating where the results of the command
   are to be written. The results will be a file containing a JSON
