@@ -519,6 +519,7 @@
     'chromium.perf.fyi': {
       'Win 10 Low-End 2 Core Perf': 'none',
       'Win 10 Low-End 4 Core Perf': 'none',
+      'Win Builder': 'gn_official_goma_minimal_symbols_x64',
     },
 
     'chromium.perf': {
