@@ -9,13 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/mojo/merge_dictionary.h"
+#include "content/common/mojo/constants.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +23,6 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "content/public/common/service_names.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
@@ -128,28 +126,15 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
 
  private:
   // catalog::ManifestProvider:
-  std::unique_ptr<base::Value> GetManifest(const std::string& name) override {
-    auto manifest_it = manifests_->find(name);
-    std::unique_ptr<base::Value> manifest_root;
-    if (manifest_it != manifests_->end())
-      manifest_root = base::JSONReader::Read(manifest_it->second);
-
-    base::DictionaryValue* manifest_dictionary = nullptr;
-    if (manifest_root && !manifest_root->GetAsDictionary(&manifest_dictionary))
-      return nullptr;
-
-    std::unique_ptr<base::Value> overlay_root =
-        GetContentClient()->browser()->GetServiceManifestOverlay(name);
-    if (overlay_root) {
-      if (!manifest_root) {
-        manifest_root = std::move(overlay_root);
-      } else {
-        base::DictionaryValue* overlay_dictionary = nullptr;
-        if (overlay_root->GetAsDictionary(&overlay_dictionary))
-          MergeDictionary(manifest_dictionary, overlay_dictionary);
-      }
+  bool GetApplicationManifest(const base::StringPiece& name,
+                              std::string* manifest_contents) override {
+    auto manifest_it = manifests_->find(name.as_string());
+    if (manifest_it != manifests_->end()) {
+      *manifest_contents = manifest_it->second;
+      DCHECK(!manifest_contents->empty());
+      return true;
     }
-    return manifest_root;
+    return false;
   }
 
   std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests_;

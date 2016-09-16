@@ -7,9 +7,7 @@
 
 #include <string>
 
-namespace base {
-class Value;
-}
+#include "base/strings/string_piece.h"
 
 namespace catalog {
 
@@ -22,7 +20,8 @@ class ManifestProvider {
   // Retrieves the raw contents of the manifest for application named |name|.
   // Returns true if |name| is known and |*manifest_contents| is populated.
   // returns false otherwise.
-  virtual std::unique_ptr<base::Value> GetManifest(const std::string& name) = 0;
+  virtual bool GetApplicationManifest(const base::StringPiece& name,
+                                      std::string* manifest_contents) = 0;
 };
 
 }  // namespace catalog
