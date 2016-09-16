@@ -132,7 +132,7 @@ class DefaultComponentInstallerTest : public testing::Test {
   void RunThreads();
 
  private:
-  static const int kNumWorkerThreads_ = 1;
+  static const int kNumWorkerThreads_ = 2;
 
   base::MessageLoopForUI message_loop_;
   base::RunLoop runloop_;
