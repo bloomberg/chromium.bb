@@ -28,7 +28,7 @@ async_test(function(t) {
     // Cast option in overflow should no longer be visible, but the other
     // options should all be.
     var buttonsWithoutCast = overflowButtonsCSS;
-    buttonsWithoutCast[1] = undefined;
+    buttonsWithoutCast[OverflowMenuButtons.CAST] = undefined;
     internals.mediaPlayerRemoteRouteAvailabilityChanged(video, false);
 
     var children = overflowList.children;
@@ -42,12 +42,12 @@ async_test(function(t) {
       }
     }
     internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
-    assert_not_equals(getComputedStyle(children[1]).display, "none");
+    assert_not_equals(getComputedStyle(children[OverflowMenuButtons.CAST]).display, "none");
 
     // Removing closed captions hides button in overflow menu
-    assert_not_equals(getComputedStyle(children[2]).display, "none");
+    assert_not_equals(getComputedStyle(children[OverflowMenuButtons.CLOSED_CAPTIONS]).display, "none");
     video.removeChild(trackElement);
-    assert_equals(getComputedStyle(children[2]).display, "none");
+    assert_equals(getComputedStyle(children[OverflowMenuButtons.CLOSED_CAPTIONS]).display, "none");
   });
 });
 </script>

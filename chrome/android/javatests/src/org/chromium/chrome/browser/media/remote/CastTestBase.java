@@ -535,7 +535,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return new Rect(left, bar.top, right, bar.bottom);
     }
 
-    private Rect downloadButton(Rect videoRect) {
+    private Rect castButton(Rect videoRect) {
         Rect bar = controlBar(videoRect);
         int right = bar.right - BUTTON_RIGHT_MARGIN;
         int left = right - BUTTON_WIDTH;
@@ -549,11 +549,11 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return new Rect(left, downloadButton.top, right, downloadButton.bottom);
     }
 
-    private Rect castButton(Rect videoRect) {
-        Rect fullscreenButton = fullscreenButton(videoRect);
-        int right = fullscreenButton.left;
+    private Rect downloadButton(Rect videoRect) {
+        Rect castButton = castButton(videoRect);
+        int right = castButton.right - BUTTON_RIGHT_MARGIN;
         int left = right - BUTTON_WIDTH;
-        return new Rect(left, fullscreenButton.top, right, fullscreenButton.bottom);
+        return new Rect(left, castButton.top, right, castButton.bottom);
     }
 
     private void tapButton(Tab tab, Rect rect) {

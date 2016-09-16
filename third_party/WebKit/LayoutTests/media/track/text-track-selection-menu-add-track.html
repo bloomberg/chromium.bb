@@ -4,7 +4,8 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
-<video controls>
+<!-- Width should be large enough to display closed captions button. -->
+<video controls style="width: 500px">
     <track src="captions-webvtt/captions.vtt" kind="captions" label="English" srclang="en" default>
 </video>
 <script>

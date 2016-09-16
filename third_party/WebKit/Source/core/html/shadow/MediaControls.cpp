@@ -223,14 +223,6 @@ void MediaControls::initializeControls()
     if (m_allowHiddenVolumeControls && preferHiddenVolumeControls(document()))
         m_volumeSlider->setIsWanted(false);
 
-    MediaControlToggleClosedCaptionsButtonElement* toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
-    m_toggleClosedCaptionsButton = toggleClosedCaptionsButton;
-    panel->appendChild(toggleClosedCaptionsButton);
-
-    MediaControlCastButtonElement* castButton = MediaControlCastButtonElement::create(*this, false);
-    m_castButton = castButton;
-    panel->appendChild(castButton);
-
     MediaControlFullscreenButtonElement* fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
     m_fullscreenButton = fullscreenButton;
     panel->appendChild(fullscreenButton);
@@ -238,6 +230,14 @@ void MediaControls::initializeControls()
     MediaControlDownloadButtonElement* downloadButton = MediaControlDownloadButtonElement::create(*this);
     m_downloadButton = downloadButton;
     panel->appendChild(downloadButton);
+
+    MediaControlCastButtonElement* castButton = MediaControlCastButtonElement::create(*this, false);
+    m_castButton = castButton;
+    panel->appendChild(castButton);
+
+    MediaControlToggleClosedCaptionsButtonElement* toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
+    m_toggleClosedCaptionsButton = toggleClosedCaptionsButton;
+    panel->appendChild(toggleClosedCaptionsButton);
 
     m_panel = panel;
     enclosure->appendChild(panel);
@@ -257,13 +257,15 @@ void MediaControls::initializeControls()
     m_overflowList = overflowList;
     appendChild(overflowList);
 
-    // The order in which we append elements to the overflow list does matter.
+    // The order in which we append elements to the overflow list is significant
+    // because it determines how the elements show up in the overflow menu relative to each other.
+    // The first item appended appears at the top of the overflow menu.
+    m_overflowList->appendChild(m_playButton->createOverflowElement(*this, MediaControlPlayButtonElement::create(*this)));
+    m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(*this, MediaControlFullscreenButtonElement::create(*this)));
+    m_overflowList->appendChild(m_downloadButton->createOverflowElement(*this, MediaControlDownloadButtonElement::create(*this)));
     m_overflowList->appendChild(m_muteButton->createOverflowElement(*this, MediaControlMuteButtonElement::create(*this)));
     m_overflowList->appendChild(m_castButton->createOverflowElement(*this, MediaControlCastButtonElement::create(*this, false)));
     m_overflowList->appendChild(m_toggleClosedCaptionsButton->createOverflowElement(*this, MediaControlToggleClosedCaptionsButtonElement::create(*this)));
-    m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(*this, MediaControlFullscreenButtonElement::create(*this)));
-    m_overflowList->appendChild(m_playButton->createOverflowElement(*this, MediaControlPlayButtonElement::create(*this)));
-    m_overflowList->appendChild(m_downloadButton->createOverflowElement(*this, MediaControlDownloadButtonElement::create(*this)));
 }
 
 void MediaControls::reset()
@@ -716,12 +718,12 @@ void MediaControls::computeWhichControlsFit()
         m_playButton.get(),
         m_fullscreenButton.get(),
         m_downloadButton.get(),
-        m_toggleClosedCaptionsButton.get(),
         m_timeline.get(),
-        m_currentTimeDisplay.get(),
-        m_volumeSlider.get(),
-        m_castButton.get(),
         m_muteButton.get(),
+        m_volumeSlider.get(),
+        m_toggleClosedCaptionsButton.get(),
+        m_castButton.get(),
+        m_currentTimeDisplay.get(),
         m_durationDisplay.get(),
     };
 
