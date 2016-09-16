@@ -190,11 +190,6 @@ target(link_target_type, "ffmpeg_internal") {
     # FFMmpeg require dead code elimination to be available in all build modes
     # and thus doesn't support wpo.
     configs += [ "//build/config/compiler:optimize_no_wpo" ]
-
-    # /analyze must be disabled for ffmpeg because of an internal compiler
-    # error in VS 2015 Update 1, fixed in Update 2.
-    # https://connect.microsoft.com/VisualStudio/feedback/details/2299303
-    configs -= [ "//build/config/win:vs_code_analysis" ]
   } else {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
