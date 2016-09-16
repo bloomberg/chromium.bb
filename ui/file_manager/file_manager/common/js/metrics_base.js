@@ -161,7 +161,7 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
   // (Source: UMA_HISTOGRAM_ENUMERATION definition in base/metrics/histogram.h)
   var metricDescr = {
     'metricName': metrics.convertName_(name),
-    'type': 'histogram-linear',
+    'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
     'min': 1,
     'max': boundaryValue,
     'buckets': boundaryValue

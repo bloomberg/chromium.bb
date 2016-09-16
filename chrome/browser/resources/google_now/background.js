@@ -277,7 +277,7 @@ var GoogleNowEvent = {
 function recordEvent(event) {
   var metricDescription = {
     metricName: 'GoogleNow.Event',
-    type: 'histogram-linear',
+    type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
     min: 1,
     max: GoogleNowEvent.EVENTS_TOTAL,
     buckets: GoogleNowEvent.EVENTS_TOTAL + 1

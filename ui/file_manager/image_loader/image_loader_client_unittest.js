@@ -6,6 +6,10 @@
 
 var chrome = {
   metricsPrivate: {
+    MetricTypeType: {
+      HISTOGRAM_LOG: 'histogram-log',
+      HISTOGRAM_LINEAR: 'histogram-linear'
+    },
     recordPercentage: function() {},
     recordValue: function() {}
   },

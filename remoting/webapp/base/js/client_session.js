@@ -603,7 +603,7 @@ function recordState(state) {
 
   var metricDescription = {
     metricName: 'Chromoting.Connections',
-    type: 'histogram-linear',
+    type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
     // According to histogram.h, minimum should be 1. Values less than minimum
     // end up in the 0th bucket.
     min: 1,

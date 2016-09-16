@@ -249,6 +249,11 @@ chromeMocks.identity;
 /** @constructor */
 chromeMocks.MetricsPrivate = function() {};
 
+chromeMocks.MetricsPrivate.prototype.MetricTypeType = {
+  HISTOGRAM_LOG: 'histogram-log',
+  HISTOGRAM_LINEAR: 'histogram-linear',
+};
+
 chromeMocks.MetricsPrivate.prototype.recordValue = function() {};
 
 /** @type {chromeMocks.MetricsPrivate} */

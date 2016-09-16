@@ -82,7 +82,7 @@ function createPlatformDelegate(strings) {
         var index = (value >= 0 && value < enumSize) ? value : enumSize;
         chrome.metricsPrivate.recordValue({
           'metricName': 'WebstoreWidgetApp.' + enumName,
-          'type': 'histogram-linear',
+          'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
           'min': 1,
           'max': enumSize,
           'buckets': enumSize + 1

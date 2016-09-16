@@ -14,7 +14,7 @@ cr.define('hotword.metrics', function() {
   function recordEnum(name, value, maxValue) {
     var metricDesc = {
       'metricName': name,
-      'type': 'histogram-linear',
+      'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
       'min': 1,
       'max': maxValue,
       'buckets': maxValue + 1

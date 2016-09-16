@@ -60,7 +60,7 @@ ImageLoaderClient.getInstance = function() {
 ImageLoaderClient.recordBinary = function(name, value) {
   chrome.metricsPrivate.recordValue(
       { metricName: 'ImageLoader.Client.' + name,
-        type: 'histogram-linear',
+        type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
         min: 1,  // According to histogram.h, this should be 1 for enums.
         max: 2,  // Maximum should be exclusive.
         buckets: 3 },  // Number of buckets: 0, 1 and overflowing 2.
