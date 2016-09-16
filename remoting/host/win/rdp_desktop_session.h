@@ -13,7 +13,7 @@
 
 #include "base/win/scoped_comptr.h"
 // chromoting_lib.h contains MIDL-generated declarations.
-#include "remoting/host/chromoting_lib.h"
+#include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/rdp_client.h"
 
 namespace remoting {

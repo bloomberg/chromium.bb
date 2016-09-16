@@ -185,6 +185,8 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
 
   executable("it2me_standalone_host_main") {
     testonly = true
+    defines = []
+    libs = []
 
     sources = [
       "it2me_standalone_host_main.cc",
@@ -201,6 +203,15 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
       } else {
         deps += [ "//build/config/linux/gtk2" ]
       }
+    }
+
+    if (is_win) {
+      defines += [ "_ALT_NO_EXCEPTIONS" ]
+
+      libs += [
+        "rpcrt4.lib",
+        "wtsapi32.lib",
+      ]
     }
   }
 }

@@ -30,8 +30,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/base/auto_thread_task_runner.h"
-// MIDL-generated declarations and definitions.
-#include "remoting/host/chromoting_lib.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/desktop_session.h"
@@ -39,6 +37,8 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/screen_resolution.h"
+// MIDL-generated declarations and definitions.
+#include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/host_service.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_session_process_delegate.h"

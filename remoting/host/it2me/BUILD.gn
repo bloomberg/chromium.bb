@@ -83,9 +83,9 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
 
       deps = [
         "//base/allocator",
-        "//remoting/host:dpi_aware_exe_manifest",
-        "//remoting/host:remoting_core",
-        "//remoting/host:remoting_windows_resources",
+        "//remoting/host/win:dpi_aware_exe_manifest",
+        "//remoting/host/win:remoting_core",
+        "//remoting/host/win:remoting_windows_resources",
       ]
 
       sources = [
@@ -109,8 +109,8 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
 
       deps = [
         "//base/allocator",
-        "//remoting/host:remoting_core",
-        "//remoting/host:remoting_windows_resources",
+        "//remoting/host/win:remoting_core",
+        "//remoting/host/win:remoting_windows_resources",
       ]
 
       sources = [
@@ -129,9 +129,9 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
       # uiAccess requires a signed build to work correctly, so only enable the
       # manifest flag when the binary will be properly signed.
       if (is_official_build) {
-        deps += [ "//remoting/host:dpi_aware_uiaccess_exe_manifest" ]
+        deps += [ "//remoting/host/win:dpi_aware_uiaccess_exe_manifest" ]
       } else {
-        deps += [ "//remoting/host:dpi_aware_exe_manifest" ]
+        deps += [ "//remoting/host/win:dpi_aware_exe_manifest" ]
       }
     }
   } else {
