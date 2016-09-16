@@ -207,11 +207,14 @@ TEST_F(GeolocationFeatureTest, MessageSendsAfterAcknowledgement) {
       .WillOnce(Invoke(
           this, &GeolocationFeatureTest_MessageSendsAfterAcknowledgement_Test::
                     ReportProcessMessageSuccess));
+
   device::Geoposition position;
   position.latitude = 1.0;
   position.longitude = 1.0;
   position.altitude = 1.0;
   position.accuracy = 1.0;
+  position.timestamp = base::Time::Now();
+
   EXPECT_CALL(*out_processor_,
               MockableProcessMessage(EqualGeoposition(1.0, 1.0, 1.0, 1.0), _));
   callback_.Run(location_provider_, position_);

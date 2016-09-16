@@ -144,9 +144,11 @@ void GeolocationFeature::SendGeolocationErrorMessage(
 void GeolocationFeature::OnSendComplete(int result) {
   am_sending_message_ = false;
   if (need_to_send_message_) {
+    device::Geoposition new_position = location_provider_->GetPosition();
+    if (new_position.Validate()) {
+      OnLocationUpdate(location_provider_.get(), new_position);
+    }
     need_to_send_message_ = false;
-    OnLocationUpdate(location_provider_.get(),
-                     location_provider_->GetPosition());
   }
 }
 
