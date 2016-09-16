@@ -37,6 +37,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   int GetResultCodeRespawnFailed() override;
 
   bool GetCrashDumpLocation(base::string16* crash_dir) override;
+  bool GetCrashMetricsLocation(base::string16* crash_dir) override;
 
   size_t RegisterCrashKeys() override;
 

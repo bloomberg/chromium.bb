@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/environment.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
@@ -53,6 +54,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool browser_process,
                                               bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
+  base::FilePath metrics_path;  // Only valid in the browser process.
   bool result = false;
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
@@ -64,6 +66,12 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     base::string16 database_path_str;
     if (crash_reporter_client->GetCrashDumpLocation(&database_path_str))
       database_path = base::FilePath(database_path_str);
+
+    base::string16 metrics_path_str;
+    if (crash_reporter_client->GetCrashMetricsLocation(&metrics_path_str)) {
+      metrics_path = base::FilePath(metrics_path_str);
+      CHECK(base::CreateDirectoryAndGetError(metrics_path, nullptr));
+    }
 
     std::map<std::string, std::string> process_annotations;
     GetPlatformCrashpadAnnotations(&process_annotations);
@@ -109,7 +117,8 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     }
 
     result = g_crashpad_client.Get().StartHandler(
-        exe_file, database_path, url, process_annotations, arguments, false);
+        exe_file, database_path, metrics_path, url, process_annotations,
+        arguments, false);
 
     // If we're the browser, push the pipe name into the environment so child
     // processes can connect to it. If we inherited another crashpad_handler's

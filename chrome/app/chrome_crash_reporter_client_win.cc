@@ -361,6 +361,11 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   return install_static::GetDefaultCrashDumpLocation(crash_dir);
 }
 
+bool ChromeCrashReporterClient::GetCrashMetricsLocation(
+    base::string16* metrics_dir) {
+  return install_static::GetDefaultUserDataDirectory(metrics_dir);
+}
+
 // TODO(ananta)
 // This function should be removed when the new crash key map implementation
 // lands.

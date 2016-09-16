@@ -686,7 +686,7 @@ void GlobalHistogramAllocator::CreateWithLocalMemory(
 
 #if !defined(OS_NACL)
 // static
-void GlobalHistogramAllocator::CreateWithFile(
+bool GlobalHistogramAllocator::CreateWithFile(
     const FilePath& file_path,
     size_t size,
     uint64_t id,
@@ -706,14 +706,55 @@ void GlobalHistogramAllocator::CreateWithFile(
   if (!mmfile->IsValid() ||
       !FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true)) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   Set(WrapUnique(
       new GlobalHistogramAllocator(MakeUnique<FilePersistentMemoryAllocator>(
           std::move(mmfile), size, id, name, false))));
+  Get()->SetPersistentLocation(file_path);
+  return true;
 }
-#endif
+
+// static
+bool GlobalHistogramAllocator::CreateWithActiveFile(const FilePath& base_path,
+                                                    const FilePath& active_path,
+                                                    size_t size,
+                                                    uint64_t id,
+                                                    StringPiece name) {
+  if (!base::ReplaceFile(active_path, base_path, nullptr))
+    base::DeleteFile(base_path, /*recursive=*/false);
+
+  return base::GlobalHistogramAllocator::CreateWithFile(active_path, size, id,
+                                                        name);
+}
+
+// static
+bool GlobalHistogramAllocator::CreateWithActiveFileInDir(const FilePath& dir,
+                                                         size_t size,
+                                                         uint64_t id,
+                                                         StringPiece name) {
+  FilePath base_path, active_path;
+  ConstructFilePaths(dir, name, &base_path, &active_path);
+  return CreateWithActiveFile(base_path, active_path, size, id, name);
+}
+
+// static
+void GlobalHistogramAllocator::ConstructFilePaths(const FilePath& dir,
+                                                  StringPiece name,
+                                                  FilePath* out_base_path,
+                                                  FilePath* out_active_path) {
+  if (out_base_path) {
+    *out_base_path = dir.AppendASCII(name).AddExtension(
+        PersistentMemoryAllocator::kFileExtension);
+  }
+  if (out_active_path) {
+    *out_active_path =
+        dir.AppendASCII(name.as_string() + std::string("-active"))
+            .AddExtension(PersistentMemoryAllocator::kFileExtension);
+  }
+}
+#endif  // !defined(OS_NACL)
 
 // static
 void GlobalHistogramAllocator::CreateWithSharedMemory(
@@ -834,6 +875,22 @@ bool GlobalHistogramAllocator::WriteToPersistentLocation() {
   }
 
   return true;
+#endif
+}
+
+void GlobalHistogramAllocator::DeletePersistentLocation() {
+#if defined(OS_NACL)
+  NOTREACHED();
+#else
+  if (persistent_location_.empty())
+    return;
+
+  // Open (with delete) and then immediately close the file by going out of
+  // scope. This is the only cross-platform safe way to delete a file that may
+  // be open elsewhere. Open handles will continue to operate normally but
+  // new opens will not be possible.
+  File file(persistent_location_,
+            File::FLAG_OPEN | File::FLAG_READ | File::FLAG_DELETE_ON_CLOSE);
 #endif
 }
 

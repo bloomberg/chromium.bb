@@ -35,6 +35,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool browser_process,
                                               bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
+  base::FilePath metrics_path;  // Only valid in the browser process.
   DCHECK(!embedded_handler);  // This is not used on Mac.
 
   if (initial_client) {
@@ -46,6 +47,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       // Is there a way to recover if this fails?
       CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
       crash_reporter_client->GetCrashDumpLocation(&database_path);
+      crash_reporter_client->GetCrashMetricsLocation(&metrics_path);
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
       // Only allow the possibility of report upload in official builds. This
@@ -91,6 +93,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       crashpad::CrashpadClient crashpad_client;
       bool result = crashpad_client.StartHandler(handler_path,
                                                  database_path,
+                                                 metrics_path,
                                                  url,
                                                  process_annotations,
                                                  arguments,

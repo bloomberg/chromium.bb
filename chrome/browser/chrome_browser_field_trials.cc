@@ -43,16 +43,10 @@ void InstantiatePersistentHistograms() {
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &metrics_dir))
     return;
 
-  base::FilePath metrics_file =
-      metrics_dir
-          .AppendASCII(ChromeMetricsServiceClient::kBrowserMetricsName)
-          .AddExtension(base::PersistentMemoryAllocator::kFileExtension);
-  base::FilePath active_file =
-      metrics_dir
-          .AppendASCII(
-              std::string(ChromeMetricsServiceClient::kBrowserMetricsName) +
-              "-active")
-          .AddExtension(base::PersistentMemoryAllocator::kFileExtension);
+  base::FilePath metrics_file, active_file;
+  base::GlobalHistogramAllocator::ConstructFilePaths(
+      metrics_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
+      &metrics_file, &active_file);
 
   // Move any existing "active" file to the final name from which it will be
   // read when reporting initial stability metrics. If there is no file to
@@ -110,7 +104,6 @@ void InstantiatePersistentHistograms() {
   // Create tracking histograms for the allocator and record storage file.
   allocator->CreateTrackingHistograms(
       ChromeMetricsServiceClient::kBrowserMetricsName);
-  allocator->SetPersistentLocation(active_file);
 }
 
 // Create a field trial to control metrics/crash sampling for Stable on

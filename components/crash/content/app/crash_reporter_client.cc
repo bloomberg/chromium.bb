@@ -110,6 +110,14 @@ bool CrashReporterClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
   return false;
 }
 
+#if defined(OS_WIN)
+bool CrashReporterClient::GetCrashMetricsLocation(base::string16* crash_dir) {
+#else
+bool CrashReporterClient::GetCrashMetricsLocation(base::FilePath* crash_dir) {
+#endif
+  return false;
+}
+
 size_t CrashReporterClient::RegisterCrashKeys() {
   return 0;
 }
