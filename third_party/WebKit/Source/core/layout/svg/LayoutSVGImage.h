@@ -62,11 +62,13 @@ private:
     void layout() override;
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    void updateBoundingBox();
+    bool updateBoundingBox();
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
     AffineTransform localSVGTransform() const override { return m_localTransform; }
+
+    FloatSize calculateObjectSize() const;
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsTransformUpdate : 1;
