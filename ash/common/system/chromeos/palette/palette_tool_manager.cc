@@ -106,6 +106,12 @@ void PaletteToolManager::NotifyViewsDestroyed() {
     tool->OnViewDestroyed();
 }
 
+void PaletteToolManager::DisableActiveTool(PaletteGroup group) {
+  PaletteToolId tool_id = GetActiveTool(group);
+  if (tool_id != PaletteToolId::NONE)
+    DeactivateTool(tool_id);
+}
+
 void PaletteToolManager::EnableTool(PaletteToolId tool_id) {
   ActivateTool(tool_id);
 }

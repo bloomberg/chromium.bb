@@ -90,6 +90,9 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   // should clear any (now) stale references.
   void NotifyViewsDestroyed();
 
+  // Helper method to disable any active tool in the given |group|.
+  void DisableActiveTool(PaletteGroup group);
+
  private:
   // PaleteTool::Delegate overrides.
   void EnableTool(PaletteToolId tool_id) override;

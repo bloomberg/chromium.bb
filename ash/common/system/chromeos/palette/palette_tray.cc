@@ -69,6 +69,17 @@ views::Separator* CreateSeparator(views::Separator::Orientation orientation) {
   return separator;
 }
 
+// Returns true if we are in a user session that can show the stylus tools.
+bool IsInUserSession() {
+  SessionStateDelegate* session_state_delegate =
+      WmShell::Get()->GetSessionStateDelegate();
+  return !session_state_delegate->IsUserSessionBlocked() &&
+         session_state_delegate->GetSessionState() ==
+             SessionStateDelegate::SESSION_STATE_ACTIVE &&
+         WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+             LoginStatus::KIOSK_APP;
+}
+
 class TitleView : public views::View, public views::ButtonListener {
  public:
   explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
@@ -247,6 +258,11 @@ void PaletteTray::SessionStateChanged(
 
 void PaletteTray::OnLockStateChanged(bool locked) {
   UpdateIconVisibility();
+
+  // The user can eject the stylus during the lock screen transition, which will
+  // open the palette. Make sure to close it if that happens.
+  if (locked)
+    HidePalette();
 }
 
 void PaletteTray::ClickedOutsideBubble() {
@@ -391,33 +407,39 @@ void PaletteTray::UpdateTrayIcon() {
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
-  if (!WmShell::Get()->palette_delegate()->ShouldAutoOpenPalette())
+  PaletteDelegate* palette_delegate = WmShell::Get()->palette_delegate();
+
+  // Don't do anything if the palette should not be shown or if the user has
+  // disabled it all-together.
+  if (!IsInUserSession() || !palette_delegate->ShouldShowPalette())
     return;
 
-  if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
-    is_bubble_auto_opened_ = true;
-    ShowPalette();
-  } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
-    HidePalette();
+  // Auto show/hide the palette if allowed by the user.
+  if (palette_delegate->ShouldAutoOpenPalette()) {
+    if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
+      is_bubble_auto_opened_ = true;
+      ShowPalette();
+    } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
+      HidePalette();
+    }
   }
+
+  // Disable any active modes if the stylus has been inserted.
+  if (stylus_state == ui::StylusState::INSERTED)
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
-  if (!enabled)
+  if (!enabled) {
     SetVisible(false);
-  else
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
+  } else {
     UpdateIconVisibility();
+  }
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
-
-  SetVisible(!session_state_delegate->IsScreenLocked() &&
-             session_state_delegate->GetSessionState() ==
-                 SessionStateDelegate::SESSION_STATE_ACTIVE &&
-             WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
-                 LoginStatus::KIOSK_APP);
+  SetVisible(IsInUserSession());
 }
 
 }  // namespace ash
