@@ -124,7 +124,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes)
         int wordStartIndexOffset = m_letterPos.size();
         String str = text->wholeText();
         for (size_t i = 0; i < str.length(); i++) {
-            m_letterPos.append(visiblePositionToContentsPoint(createVisiblePositionDeprecated(Position(text, i))));
+            m_letterPos.append(visiblePositionToContentsPoint(createVisiblePosition(Position(text, i))));
             char c = str[i];
             if (isASCIIAlphanumeric(c) && !wordStarted) {
                 wordStartIndex = i + wordStartIndexOffset;
@@ -138,7 +138,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes)
     }
     if (wordStarted) {
         const auto& lastNode = textNodes.last();
-        int xEnd = visiblePositionToContentsPoint(createVisiblePositionDeprecated(Position(lastNode, lastNode->wholeText().length()))).x();
+        int xEnd = visiblePositionToContentsPoint(createVisiblePosition(Position(lastNode, lastNode->wholeText().length()))).x();
         IntPoint wordMiddle((m_letterPos[wordStartIndex].x() + xEnd) / 2, m_letterPos[wordStartIndex].y());
         m_wordMiddles.append(wordMiddle);
     }
@@ -480,14 +480,16 @@ TEST_F(GranularityStrategyTest, Character)
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
     // "Foo Bar Baz,"
     Text* text = appendTextNode("Foo Bar Baz,");
+    document().updateStyleAndLayout();
+
     // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and > means end).
     selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
     EXPECT_EQ_SELECTED_TEXT("a");
     // "Foo B^ar B|>az,"
-    selection().moveRangeSelectionExtent(visiblePositionToContentsPoint(createVisiblePositionDeprecated(Position(text, 9))));
+    selection().moveRangeSelectionExtent(visiblePositionToContentsPoint(createVisiblePosition(Position(text, 9))));
     EXPECT_EQ_SELECTED_TEXT("ar B");
     // "F<|oo B^ar Baz,"
-    selection().moveRangeSelectionExtent(visiblePositionToContentsPoint(createVisiblePositionDeprecated(Position(text, 1))));
+    selection().moveRangeSelectionExtent(visiblePositionToContentsPoint(createVisiblePosition(Position(text, 1))));
     EXPECT_EQ_SELECTED_TEXT("oo B");
 }
 
@@ -614,6 +616,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink)
     String str = "ab cd efghijkl mnopqr iiin, abc";
     Text* text = document().createTextNode(str);
     document().body()->appendChild(text);
+    document().updateStyleAndLayout();
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 
     parseText(text);
@@ -646,6 +649,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary)
     String str = "ab cd efghijkl mnopqr iiin, abc";
     Text* text = document().createTextNode(str);
     document().body()->appendChild(text);
+    document().updateStyleAndLayout();
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
 
     parseText(text);

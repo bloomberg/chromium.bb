@@ -20,13 +20,14 @@ TEST_F(RelocatablePositionTest, position)
 
     RelocatablePosition relocatablePosition(Position(textarea, PositionAnchorType::BeforeAnchor));
     textarea->remove();
+    document().updateStyleAndLayout();
 
     // RelocatablePosition should track the given Position even if its original
     // anchor node is moved away from the document.
     Position expectedPosition(boldface, PositionAnchorType::AfterAnchor);
     Position trackedPosition = relocatablePosition.position();
     EXPECT_TRUE(trackedPosition.anchorNode()->isConnected());
-    EXPECT_EQ(createVisiblePositionDeprecated(expectedPosition).deepEquivalent(), createVisiblePositionDeprecated(trackedPosition).deepEquivalent());
+    EXPECT_EQ(createVisiblePosition(expectedPosition).deepEquivalent(), createVisiblePosition(trackedPosition).deepEquivalent());
 }
 
 } // namespace blink

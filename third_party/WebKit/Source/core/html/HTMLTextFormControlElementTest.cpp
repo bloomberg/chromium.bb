@@ -129,9 +129,9 @@ typedef VisiblePosition(*VisblePositionFunction)(const VisiblePosition&);
 
 void testFunctionEquivalence(const Position& position, PositionFunction positionFunction, VisblePositionFunction visibleFunction)
 {
-    VisiblePosition visiblePosition = createVisiblePositionDeprecated(position);
+    VisiblePosition visiblePosition = createVisiblePosition(position);
     VisiblePosition expected = visibleFunction(visiblePosition);
-    VisiblePosition actual = createVisiblePositionDeprecated(positionFunction(position));
+    VisiblePosition actual = createVisiblePosition(positionFunction(position));
     EXPECT_EQ(expected.deepEquivalent(), actual.deepEquivalent());
 }
 
@@ -147,6 +147,7 @@ static VisiblePosition endOfWord(const VisiblePosition& position)
 
 void testBoundary(Document& document, HTMLTextFormControlElement& textControl)
 {
+    document.updateStyleAndLayout();
     for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
         textControl.setSelectionRange(i, i);
         Position position = document.frame()->selection().start();

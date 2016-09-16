@@ -23,7 +23,7 @@ PositionWithAffinity positionWithAffinityInDOMTree(Node& anchor, int offset, Tex
 
 VisiblePosition createVisiblePositionInDOMTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
 {
-    return createVisiblePositionDeprecated(Position(&anchor, offset), affinity);
+    return createVisiblePosition(Position(&anchor, offset), affinity);
 }
 
 PositionInFlatTreeWithAffinity positionWithAffinityInFlatTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
@@ -33,7 +33,7 @@ PositionInFlatTreeWithAffinity positionWithAffinityInFlatTree(Node& anchor, int 
 
 VisiblePositionInFlatTree createVisiblePositionInFlatTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
 {
-    return createVisiblePositionDeprecated(PositionInFlatTree(&anchor, offset), affinity);
+    return createVisiblePosition(PositionInFlatTree(&anchor, offset), affinity);
 }
 
 } // namespace
@@ -58,8 +58,8 @@ TEST_F(VisibleUnitsTest, absoluteCaretBoundsOf)
     Element* body = document().body();
     Element* one = body->querySelector("#one");
 
-    IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePositionDeprecated(Position(one, 0)));
-    IntRect boundsInFlatTree = absoluteCaretBoundsOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 0)));
+    IntRect boundsInDOMTree = absoluteCaretBoundsOf(createVisiblePosition(Position(one, 0)));
+    IntRect boundsInFlatTree = absoluteCaretBoundsOf(createVisiblePosition(PositionInFlatTree(one, 0)));
 
     EXPECT_FALSE(boundsInDOMTree.isEmpty());
     EXPECT_EQ(boundsInDOMTree, boundsInFlatTree);
@@ -765,14 +765,14 @@ TEST_F(VisibleUnitsTest, leftPositionOf)
     Element* four = shadowRoot->getElementById("four");
     Element* five = shadowRoot->getElementById("five");
 
-    EXPECT_EQ(Position(two->firstChild(), 1), leftPositionOf(createVisiblePositionDeprecated(Position(one, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(two->firstChild(), 1), leftPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 0))).deepEquivalent());
+    EXPECT_EQ(Position(two->firstChild(), 1), leftPositionOf(createVisiblePosition(Position(one, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(two->firstChild(), 1), leftPositionOf(createVisiblePosition(PositionInFlatTree(one, 0))).deepEquivalent());
 
-    EXPECT_EQ(Position(one->firstChild(), 0), leftPositionOf(createVisiblePositionDeprecated(Position(two, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 3), leftPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(two, 0))).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 0), leftPositionOf(createVisiblePosition(Position(two, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 3), leftPositionOf(createVisiblePosition(PositionInFlatTree(two, 0))).deepEquivalent());
 
-    EXPECT_EQ(Position(two->firstChild(), 2), leftPositionOf(createVisiblePositionDeprecated(Position(three, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 5), leftPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(three, 0))).deepEquivalent());
+    EXPECT_EQ(Position(two->firstChild(), 2), leftPositionOf(createVisiblePosition(Position(three, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 5), leftPositionOf(createVisiblePosition(PositionInFlatTree(three, 0))).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
@@ -991,17 +991,17 @@ TEST_F(VisibleUnitsTest, nextPositionOf)
     Element* four = shadowRoot->getElementById("four");
     Element* five = shadowRoot->getElementById("five");
 
-    EXPECT_EQ(Position(one->firstChild(), 0), nextPositionOf(createVisiblePositionDeprecated(Position(zero, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 0), nextPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(zero, 1))).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 0), nextPositionOf(createVisiblePosition(Position(zero, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 0), nextPositionOf(createVisiblePosition(PositionInFlatTree(zero, 1))).deepEquivalent());
 
-    EXPECT_EQ(Position(one->firstChild(), 1), nextPositionOf(createVisiblePositionDeprecated(Position(one, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(one->firstChild(), 1), nextPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 0))).deepEquivalent());
+    EXPECT_EQ(Position(one->firstChild(), 1), nextPositionOf(createVisiblePosition(Position(one, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(one->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInFlatTree(one, 0))).deepEquivalent());
 
-    EXPECT_EQ(Position(two->firstChild(), 1), nextPositionOf(createVisiblePositionDeprecated(Position(one, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 1), nextPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 1))).deepEquivalent());
+    EXPECT_EQ(Position(two->firstChild(), 1), nextPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInFlatTree(one, 1))).deepEquivalent());
 
-    EXPECT_EQ(Position(three->firstChild(), 0), nextPositionOf(createVisiblePositionDeprecated(Position(two, 2))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(one->firstChild(), 1), nextPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(two, 2))).deepEquivalent());
+    EXPECT_EQ(Position(three->firstChild(), 0), nextPositionOf(createVisiblePosition(Position(two, 2))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(one->firstChild(), 1), nextPositionOf(createVisiblePosition(PositionInFlatTree(two, 2))).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, previousPositionOf)
@@ -1018,30 +1018,30 @@ TEST_F(VisibleUnitsTest, previousPositionOf)
     Node* four = shadowRoot->getElementById("four")->firstChild();
     Node* five = shadowRoot->getElementById("five")->firstChild();
 
-    EXPECT_EQ(Position(zero, 0), previousPositionOf(createVisiblePositionDeprecated(Position(zero, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(zero, 0), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(zero, 1))).deepEquivalent());
+    EXPECT_EQ(Position(zero, 0), previousPositionOf(createVisiblePosition(Position(zero, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(zero, 0), previousPositionOf(createVisiblePosition(PositionInFlatTree(zero, 1))).deepEquivalent());
 
-    EXPECT_EQ(Position(zero, 1), previousPositionOf(createVisiblePositionDeprecated(Position(one, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(two, 1), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 0))).deepEquivalent());
+    EXPECT_EQ(Position(zero, 1), previousPositionOf(createVisiblePosition(Position(one, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(two, 1), previousPositionOf(createVisiblePosition(PositionInFlatTree(one, 0))).deepEquivalent());
 
-    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePositionDeprecated(Position(one, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(two, 2), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 1))).deepEquivalent());
+    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(two, 2), previousPositionOf(createVisiblePosition(PositionInFlatTree(one, 1))).deepEquivalent());
 
-    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePositionDeprecated(Position(two, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(four, 3), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(two, 0))).deepEquivalent());
+    EXPECT_EQ(Position(one, 0), previousPositionOf(createVisiblePosition(Position(two, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(four, 3), previousPositionOf(createVisiblePosition(PositionInFlatTree(two, 0))).deepEquivalent());
 
     // DOM tree to shadow tree
-    EXPECT_EQ(Position(two, 2), previousPositionOf(createVisiblePositionDeprecated(Position(three, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(five, 5), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(three, 0))).deepEquivalent());
+    EXPECT_EQ(Position(two, 2), previousPositionOf(createVisiblePosition(Position(three, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five, 5), previousPositionOf(createVisiblePosition(PositionInFlatTree(three, 0))).deepEquivalent());
 
     // Shadow tree to DOM tree
-    EXPECT_EQ(Position(), previousPositionOf(createVisiblePositionDeprecated(Position(four, 0))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(zero, 1), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(four, 0))).deepEquivalent());
+    EXPECT_EQ(Position(), previousPositionOf(createVisiblePosition(Position(four, 0))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(zero, 1), previousPositionOf(createVisiblePosition(PositionInFlatTree(four, 0))).deepEquivalent());
 
     // Note: Canonicalization maps (five, 0) to (four, 4) in DOM tree and
     // (one, 1) in flat tree.
-    EXPECT_EQ(Position(four, 4), previousPositionOf(createVisiblePositionDeprecated(Position(five, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(one, 1), previousPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(five, 1))).deepEquivalent());
+    EXPECT_EQ(Position(four, 4), previousPositionOf(createVisiblePosition(Position(five, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(one, 1), previousPositionOf(createVisiblePosition(PositionInFlatTree(five, 1))).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, previousPositionOfOneCharPerLine)
@@ -1056,8 +1056,8 @@ TEST_F(VisibleUnitsTest, previousPositionOfOneCharPerLine)
     //  A        A       A         A|
     //  B        B|     |B         B
     // |C        C       C         C
-    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePositionDeprecated(Position(sample, 2))).toPositionWithAffinity());
-    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePositionDeprecated(Position(sample, 2), TextAffinity::Upstream)).toPositionWithAffinity());
+    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePosition(Position(sample, 2))).toPositionWithAffinity());
+    EXPECT_EQ(PositionWithAffinity(Position(sample, 1)), previousPositionOf(createVisiblePosition(Position(sample, 2), TextAffinity::Upstream)).toPositionWithAffinity());
 }
 
 TEST_F(VisibleUnitsTest, previousPositionOfNoPreviousPosition)
@@ -1069,7 +1069,7 @@ TEST_F(VisibleUnitsTest, previousPositionOfNoPreviousPosition)
             "<div id='anchor'> bar</div>"
         "</span>");
     const Position position(document().getElementById("anchor")->firstChild(), 1);
-    EXPECT_EQ(Position(), previousPositionOf(createVisiblePositionDeprecated(position)).deepEquivalent());
+    EXPECT_EQ(Position(), previousPositionOf(createVisiblePosition(position)).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
@@ -1132,17 +1132,17 @@ TEST_F(VisibleUnitsTest, rightPositionOf)
     Node* four = shadowRoot->getElementById("four")->firstChild();
     Node* five = shadowRoot->getElementById("five")->firstChild();
 
-    EXPECT_EQ(Position(), rightPositionOf(createVisiblePositionDeprecated(Position(one, 1))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(five, 0), rightPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(one, 1))).deepEquivalent());
+    EXPECT_EQ(Position(), rightPositionOf(createVisiblePosition(Position(one, 1))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five, 0), rightPositionOf(createVisiblePosition(PositionInFlatTree(one, 1))).deepEquivalent());
 
-    EXPECT_EQ(Position(one, 1), rightPositionOf(createVisiblePositionDeprecated(Position(two, 2))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(one, 1), rightPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(two, 2))).deepEquivalent());
+    EXPECT_EQ(Position(one, 1), rightPositionOf(createVisiblePosition(Position(two, 2))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(one, 1), rightPositionOf(createVisiblePosition(PositionInFlatTree(two, 2))).deepEquivalent());
 
-    EXPECT_EQ(Position(five, 0), rightPositionOf(createVisiblePositionDeprecated(Position(four, 4))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(two, 0), rightPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(four, 4))).deepEquivalent());
+    EXPECT_EQ(Position(five, 0), rightPositionOf(createVisiblePosition(Position(four, 4))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(two, 0), rightPositionOf(createVisiblePosition(PositionInFlatTree(four, 4))).deepEquivalent());
 
-    EXPECT_EQ(Position(), rightPositionOf(createVisiblePositionDeprecated(Position(five, 5))).deepEquivalent());
-    EXPECT_EQ(PositionInFlatTree(three, 0), rightPositionOf(createVisiblePositionDeprecated(PositionInFlatTree(five, 5))).deepEquivalent());
+    EXPECT_EQ(Position(), rightPositionOf(createVisiblePosition(Position(five, 5))).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(three, 0), rightPositionOf(createVisiblePosition(PositionInFlatTree(five, 5))).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, startOfDocument)
@@ -1243,7 +1243,7 @@ TEST_F(VisibleUnitsTest, startOfParagraph)
     DCHECK(styleText->isTextNode()) << styleText;
     updateAllLifecyclePhases();
 
-    EXPECT_FALSE(startOfParagraph(createVisiblePositionDeprecated(Position(styleText, 0))).isNull());
+    EXPECT_FALSE(startOfParagraph(createVisiblePosition(Position(styleText, 0))).isNull());
 }
 
 TEST_F(VisibleUnitsTest, startOfSentence)
