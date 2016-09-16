@@ -1568,6 +1568,8 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profile.profile = VP8PROFILE_ANY;
     // Since there is little to no power benefit below 360p, don't advertise
     // support for it.  Let libvpx decode it, and save a MediaCodec instance.
+    // Note that we allow it anyway for encrypted content, since we push a
+    // separate profile for that.
     profile.min_resolution.SetSize(480, 360);
     profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
@@ -1578,28 +1580,38 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profile.encrypted_only =
         VideoCodecBridge::IsKnownUnaccelerated(kCodecVP8, MEDIA_CODEC_DECODER);
     profiles.push_back(profile);
+
+    // Always allow encrypted content, even at low resolutions.
+    profile.min_resolution.SetSize(0, 0);
+    profile.encrypted_only = true;
+    profiles.push_back(profile);
   }
 
   if (MediaCodecUtil::IsVp9DecoderAvailable()) {
-    SupportedProfile profile;
-    // Limit to 360p, like we do for vp8.  See above.
-    profile.min_resolution.SetSize(480, 360);
-    profile.max_resolution.SetSize(3840, 2160);
-    // If we know MediaCodec will just create a software codec, prefer our
-    // internal software decoder instead. It's more up to date and secured
-    // within the renderer sandbox. However if the content is encrypted, we
-    // must use MediaCodec anyways since MediaDrm offers no way to decrypt
-    // the buffers and let us use our internal software decoders.
-    profile.encrypted_only =
+    const VideoCodecProfile profile_types[] = {
+        VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1, VP9PROFILE_PROFILE2,
+        VP9PROFILE_PROFILE3, VIDEO_CODEC_PROFILE_UNKNOWN};
+    const bool is_known_unaccelerated =
         VideoCodecBridge::IsKnownUnaccelerated(kCodecVP9, MEDIA_CODEC_DECODER);
-    profile.profile = VP9PROFILE_PROFILE0;
-    profiles.push_back(profile);
-    profile.profile = VP9PROFILE_PROFILE1;
-    profiles.push_back(profile);
-    profile.profile = VP9PROFILE_PROFILE2;
-    profiles.push_back(profile);
-    profile.profile = VP9PROFILE_PROFILE3;
-    profiles.push_back(profile);
+    for (int i = 0; profile_types[i] != VIDEO_CODEC_PROFILE_UNKNOWN; i++) {
+      SupportedProfile profile;
+      // Limit to 360p, like we do for vp8.  See above.
+      profile.min_resolution.SetSize(480, 360);
+      profile.max_resolution.SetSize(3840, 2160);
+      // If we know MediaCodec will just create a software codec, prefer our
+      // internal software decoder instead. It's more up to date and secured
+      // within the renderer sandbox. However if the content is encrypted, we
+      // must use MediaCodec anyways since MediaDrm offers no way to decrypt
+      // the buffers and let us use our internal software decoders.
+      profile.encrypted_only = is_known_unaccelerated;
+      profile.profile = profile_types[i];
+      profiles.push_back(profile);
+
+      // Always allow encrypted content.
+      profile.min_resolution.SetSize(0, 0);
+      profile.encrypted_only = true;
+      profiles.push_back(profile);
+    }
   }
 
   for (const auto& supported_profile : kSupportedH264Profiles) {
