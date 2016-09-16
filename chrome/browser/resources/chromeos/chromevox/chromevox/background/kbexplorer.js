@@ -96,8 +96,13 @@ cvox.KbExplorer.onKeyPress = function(evt) {
 /**
  * Queues up command description.
  * @param {string} command
+ * @return {boolean|undefined} True if command existed and was handled.
  */
 cvox.KbExplorer.onCommand = function(command) {
-  var commandText = Msgs.getMsg(cvox.CommandStore.messageForCommand(command));
-  chrome.extension.getBackgroundPage()['speak'](commandText);
+  var msg = cvox.CommandStore.messageForCommand(command);
+  if (msg) {
+    var commandText = Msgs.getMsg(msg);
+    chrome.extension.getBackgroundPage()['speak'](commandText);
+    return true;
+  }
 };

@@ -362,6 +362,9 @@ cvox.CommandStore.CMD_WHITELIST = {
                          msgId: 'show_kb_explorer_page',
                          'disallowOOBE': true,
                          category: 'help_commands'},
+  'toggleBrailleCaptions': {announce: false,
+                            msgId: 'braille_captions',
+                            category: 'help_commands'},
 
   'showFormsList': {announce: false,
                     disallowContinuation: true,
@@ -667,9 +670,6 @@ cvox.CommandStore.CMD_WHITELIST = {
   'enableConsoleTts': {announce: false,
                       msgId: 'enable_tts_log',
                       category: 'developer'},
-  'toggleBrailleCaptions': {announce: false,
-                            msgId: 'braille_captions',
-                            category: 'developer'},
 
   'startHistoryRecording': {announce: false},
   'stopHistoryRecording': {announce: false},

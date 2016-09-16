@@ -56,8 +56,7 @@ _COMMON_EXTERNS = [
 
 # List of top-level scripts and externs that we can check.
 _TOP_LEVEL_SCRIPTS = [
-    [[CVoxPath('chromevox/background/kbexplorer_loader.js')],
-     [_CHROME_EXTENSIONS_EXTERNS]],
+    [[CVoxPath('chromevox/background/kbexplorer_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/background/options_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/injected/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/loader.js')], _COMMON_EXTERNS],
