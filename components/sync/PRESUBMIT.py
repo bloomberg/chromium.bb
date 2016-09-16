@@ -261,7 +261,8 @@ def CheckNotificationTypeMatchesProtoMessageName(
   if map_entry.notification_type.lower() != proto_message_name:
     return [
       FormatPresubmitError(
-        output_api,'notification type "%s" does not match proto message'
+        output_api,'In the construction of ModelTypeInfo: notification type'
+        ' "%s" does not match proto message'
         ' name defined in sync.proto: ' '"%s"' %
         (map_entry.notification_type, proto_message_name),
         map_entry.affected_lines)]
