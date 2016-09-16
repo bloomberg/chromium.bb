@@ -188,33 +188,29 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     : version(-1),
       start(base::string16::npos),
       end(base::string16::npos),
-      resolve(true) {
-}
+      now_on_tap_version(0) {}
 
-TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
-    ContextualSearchParams(
-        const int version,
-        const std::string& selection,
-        const std::string& base_page_url,
-        const bool resolve)
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
+    int version,
+    const std::string& selection,
+    const std::string& base_page_url,
+    int now_on_tap_version)
     : version(version),
       start(base::string16::npos),
       end(base::string16::npos),
       selection(selection),
       base_page_url(base_page_url),
-      resolve(resolve) {
-}
+      now_on_tap_version(now_on_tap_version) {}
 
-TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
-    ContextualSearchParams(
-        const int version,
-        const size_t start,
-        const size_t end,
-        const std::string& selection,
-        const std::string& content,
-        const std::string& base_page_url,
-        const std::string& encoding,
-        const bool resolve)
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
+    int version,
+    size_t start,
+    size_t end,
+    const std::string& selection,
+    const std::string& content,
+    const std::string& base_page_url,
+    const std::string& encoding,
+    int now_on_tap_version)
     : version(version),
       start(start),
       end(end),
@@ -222,8 +218,7 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
       content(content),
       base_page_url(base_page_url),
       encoding(encoding),
-      resolve(resolve) {
-}
+      now_on_tap_version(now_on_tap_version) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -1020,8 +1015,10 @@ std::string TemplateURLRef::HandleReplacements(
           context_data.append("ctxs_encoding=" + params.encoding + "&");
         }
 
-        context_data.append(
-            params.resolve ? "ctxsl_resolve=1" : "ctxsl_resolve=0");
+        // The above parameters all add a trailing "&" so there must be one last
+        // parameter that's always added at the end.
+        context_data.append("ctxsl_coca=" +
+                            base::IntToString(params.now_on_tap_version));
 
         HandleReplacement(std::string(), context_data, *i, &url);
         break;

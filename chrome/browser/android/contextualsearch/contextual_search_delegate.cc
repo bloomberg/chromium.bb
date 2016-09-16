@@ -55,6 +55,9 @@ const char kDoPreventPreloadValue[] = "1";
 // The number of characters that should be shown after the selected expression.
 const int kSurroundingSizeForUI = 60;
 
+// The version of the Now on Tap API that we want to invoke.
+const int kNowOnTapVersion = 1;
+
 } // namespace
 
 // URLFetcher ID, only used for tests: we only have one kind of fetcher.
@@ -207,8 +210,12 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
+  int now_on_tap_version =
+      field_trial_->IsNowOnTapBarIntegrationEnabled() ? kNowOnTapVersion : 0;
+
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, selected_text, "", true);
+      kContextualSearchRequestVersion, selected_text, std::string(),
+      now_on_tap_version);
 
   search_terms_args.contextual_search_params = params;
 

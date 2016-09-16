@@ -83,20 +83,20 @@ class TemplateURLRef {
       // parameters.
       // TODO(donnd): Remove base_page_url and selection parameters once
       // they are logged from the HTTP header.
-      ContextualSearchParams(const int version,
+      ContextualSearchParams(int version,
                              const std::string& selection,
                              const std::string& base_page_url,
-                             const bool resolve);
+                             int now_on_tap_version);
       // TODO(donnd): Delete constructor once Clank, iOS, and tests no
       // longer depend on it.
-      ContextualSearchParams(const int version,
-                             const size_t start,
-                             const size_t end,
+      ContextualSearchParams(int version,
+                             size_t start,
+                             size_t end,
                              const std::string& selection,
                              const std::string& content,
                              const std::string& base_page_url,
                              const std::string& encoding,
-                             const bool resolve);
+                             int now_on_tap_version);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -121,10 +121,9 @@ class TemplateURLRef {
       // The encoding of content.
       std::string encoding;
 
-      // If true, the server will generate a search term based on the user
-      // selection and context.  Otherwise the user selection will be used as-is
-      // as the search term.
-      bool resolve;
+      // The version of Now on Tap data to request.
+      // A value of 0 indicates no data needed.
+      int now_on_tap_version;
     };
 
     // The search terms (query).
