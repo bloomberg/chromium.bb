@@ -98476,6 +98476,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="kCodecTheora"/>
   <int value="6" label="kCodecVP8"/>
   <int value="7" label="kCodecVP9"/>
+  <int value="8" label="kCodecHEVC"/>
 </enum>
 
 <enum name="VideoCodecProfile" type="int">
