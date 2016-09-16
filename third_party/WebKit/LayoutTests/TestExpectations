@@ -1262,4 +1262,6 @@ crbug.com/646598 [ Mac ] virtual/display_list_2d_canvas/fast/canvas/text-renderi
 crbug.com/646598 virtual/gpu/fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
 crbug.com/646598 fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
 
-crbug.com/492785 [ Linux Mac Win7 ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruction-on-inserting-style-sheet.html [ Failure ]
+crbug.com/492785 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruction-on-inserting-style-sheet.html [ Failure ]
+
+crbug.com/601247 [ Win10 ] media/video-zoom-controls.html [ NeedsRebaseline ]
