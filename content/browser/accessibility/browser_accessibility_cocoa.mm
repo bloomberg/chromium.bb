@@ -772,24 +772,15 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if ([self shouldExposeNameInAXValue])
     return @"";
 
-  // If the name came from a single related element and it's present in the
-  // tree, it will be exposed in AXTitleUIElement.
-  std::vector<int32_t> labelledby_ids =
-      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
+  // If we're exposing the title in TitleUIElement, don't also redundantly
+  // expose it in AXDescription.
+  if ([self shouldExposeTitleUIElement])
+    return @"";
+
   ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
       browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
   std::string name = browserAccessibility_->GetStringAttribute(
       ui::AX_ATTR_NAME);
-
-  // VoiceOver ignores titleUIElement on non-control AX nodes, so this special
-  // case expressly returns a nonempty text name for these nodes.
-  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
-      labelledby_ids.size() == 1 &&
-      browserAccessibility_->manager()->GetFromID(labelledby_ids[0]) &&
-      !browserAccessibility_->IsControl()) {
-    return base::SysUTF8ToNSString(name);
-  }
-
   if (!name.empty()) {
     // On Mac OS X, the accessible name of an object is exposed as its
     // title if it comes from visible text, and as its description
@@ -1235,6 +1226,35 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     default:
       return false;
   }
+}
+
+// Returns true if this object should expose its accessible name using
+// AXTitleUIElement rather than AXTitle or AXDescription. We only do
+// this if it's a control, if there's a single label, and the label has
+// nonempty text.
+// internal
+- (BOOL)shouldExposeTitleUIElement {
+  // VoiceOver ignores TitleUIElement if the element isn't a control.
+  if (!browserAccessibility_->IsControl())
+    return false;
+
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+  if (nameFrom != ui::AX_NAME_FROM_RELATED_ELEMENT)
+    return false;
+
+  std::vector<int32_t> labelledby_ids =
+  browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
+  if (labelledby_ids.size() != 1)
+    return false;
+
+  BrowserAccessibility* label =
+      browserAccessibility_->manager()->GetFromID(labelledby_ids[0]);
+  if (!label)
+    return false;
+
+  std::string labelName = label->GetStringAttribute(ui::AX_ATTR_NAME);
+  return !labelName.empty();
 }
 
 // internal
@@ -1716,21 +1736,16 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if ([self shouldExposeNameInAXValue])
     return @"";
 
-  // If the name came from a single related element and it's present in the
-  // tree, it will be exposed in AXTitleUIElement.
-  std::vector<int32_t> labelledby_ids =
-      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
-  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
-      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
-  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
-      labelledby_ids.size() == 1 &&
-      browserAccessibility_->manager()->GetFromID(labelledby_ids[0])) {
+  // If we're exposing the title in TitleUIElement, don't also redundantly
+  // expose it in AXDescription.
+  if ([self shouldExposeTitleUIElement])
     return @"";
-  }
 
   // On Mac OS X, the accessible name of an object is exposed as its
   // title if it comes from visible text, and as its description
   // otherwise, but never both.
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
   if (nameFrom == ui::AX_NAME_FROM_CONTENTS ||
       nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT ||
       nameFrom == ui::AX_NAME_FROM_VALUE) {
@@ -1744,6 +1759,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (id)titleUIElement {
   if (![self instanceActive])
     return nil;
+  if (![self shouldExposeTitleUIElement])
+    return nil;
+
   std::vector<int32_t> labelledby_ids =
       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
   ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
