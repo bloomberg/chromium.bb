@@ -575,9 +575,9 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     LayoutRect newRect = rectToScroll;
 
     bool restrictedByLineClamp = false;
-    if (parent()) {
-        parentBox = parent()->enclosingBox();
-        restrictedByLineClamp = !parent()->style()->lineClamp().isNone();
+    if (containingBlock()) {
+        parentBox = containingBlock();
+        restrictedByLineClamp = !containingBlock()->style()->lineClamp().isNone();
     }
 
     if (hasOverflowClip() && !restrictedByLineClamp) {
