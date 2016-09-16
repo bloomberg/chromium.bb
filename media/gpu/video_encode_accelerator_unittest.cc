@@ -165,7 +165,7 @@ int g_num_frames_to_encode = 0;
 // buffers.
 const size_t kPlatformBufferAlignment = 128;
 #else
-const size_t kPlatformBufferAlignment = 1;
+const size_t kPlatformBufferAlignment = 8;
 #endif
 
 inline static size_t AlignToPlatformRequirements(size_t value) {
