@@ -34,7 +34,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     kwargs.setdefault('env', {})
     kwargs['env'].setdefault('PATH', '%(PATH)s')
     kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        str(self._module.PACKAGE_REPO_ROOT), kwargs['env']['PATH']])
+        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
     return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property
