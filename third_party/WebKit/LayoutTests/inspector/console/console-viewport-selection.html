@@ -182,6 +182,27 @@ function test()
             var count = text ? text.split("\n").length : 0;
             InspectorTest.addResult(count === messagesCount ? "Selected all " + count + " messages." : "Selected " + count + " messages instead of " + messagesCount);
             next();
+        },
+
+        function testSelectWithNonTextNodeContainer(next)
+        {
+            viewport.forceScrollItemToBeFirst(0);
+
+            var nonTextNodeBase = consoleView.itemElement(1).element();
+            var nonTextNodeExtent = consoleView.itemElement(2).element();
+            var textNodeBase = consoleView.itemElement(1).element().traverseNextTextNode();
+            var textNodeExtent = consoleView.itemElement(2).element().traverseNextTextNode();
+
+            window.getSelection().setBaseAndExtent(nonTextNodeBase, 0, nonTextNodeExtent, 0);
+            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+
+            window.getSelection().setBaseAndExtent(textNodeBase, 0, nonTextNodeExtent, 0);
+            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+
+            window.getSelection().setBaseAndExtent(nonTextNodeBase, 0, textNodeExtent, 0);
+            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+
+            next();
         }
     ];
 

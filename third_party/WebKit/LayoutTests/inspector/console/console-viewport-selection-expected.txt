@@ -224,3 +224,11 @@ Selected text: world
 Running: testSelectAll
 Selected all 150 messages.
 
+Running: testSelectWithNonTextNodeContainer
+Selected text: console-viewport-selection.html:5 Message #1
+
+Selected text: console-viewport-selection.html:5 Message #1
+
+Selected text: console-viewport-selection.html:5 Message #1
+
+
