@@ -9,6 +9,7 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSStyleRule.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StaticNodeList.h"

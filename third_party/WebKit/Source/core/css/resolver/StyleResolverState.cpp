@@ -26,6 +26,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
+#include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {
 
@@ -57,6 +58,13 @@ StyleResolverState::~StyleResolverState()
     // For performance reasons, explicitly clear HeapVectors and
     // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
     m_animationUpdate.clear();
+}
+
+void StyleResolverState::setStyle(PassRefPtr<ComputedStyle> style)
+{
+    // FIXME: Improve RAII of StyleResolverState to remove this function.
+    m_style = style;
+    m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutViewItem(), m_style->effectiveZoom());
 }
 
 CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const

@@ -33,7 +33,6 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/CachedUAStyle.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
@@ -63,12 +62,7 @@ public:
 
     const ElementResolveContext& elementContext() const { return m_elementContext; }
 
-    void setStyle(PassRefPtr<ComputedStyle> style)
-    {
-        // FIXME: Improve RAII of StyleResolverState to remove this function.
-        m_style = style;
-        m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutViewItem(), m_style->effectiveZoom());
-    }
+    void setStyle(PassRefPtr<ComputedStyle>);
     const ComputedStyle* style() const { return m_style.get(); }
     ComputedStyle* style() { return m_style.get(); }
     PassRefPtr<ComputedStyle> takeStyle() { return m_style.release(); }
