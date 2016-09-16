@@ -43,6 +43,13 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
     return times_diagnostics_dialog_invoked_;
   }
 
+  void SetCurrentTargetFrame(content::RenderFrameHost* render_frame_host) {
+    network_diagnostics_bindings_for_testing().SetCurrentTargetFrameForTesting(
+        render_frame_host);
+  }
+
+  mojom::NetworkDiagnostics* network_diagnostics_interface() { return this; }
+
  private:
   // NetErrorTabHelper implementation:
 
@@ -420,10 +427,9 @@ TEST_F(NetErrorTabHelperTest, CoalesceFailures) {
 // Makes sure that URLs are sanitized before running the platform network
 // diagnostics tool.
 TEST_F(NetErrorTabHelperTest, SanitizeDiagnosticsUrl) {
-  content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-  rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
-      rfh->GetRoutingID(),
-      GURL("http://foo:bar@somewhere:123/hats?for#goats")));
+  tab_helper()->SetCurrentTargetFrame(web_contents()->GetMainFrame());
+  tab_helper()->network_diagnostics_interface()->RunNetworkDiagnostics(
+      GURL("http://foo:bar@somewhere:123/hats?for#goats"));
   EXPECT_EQ("http://somewhere:123/",
             tab_helper()->network_diagnostics_url());
   EXPECT_EQ(1, tab_helper()->times_diagnostics_dialog_invoked());
@@ -442,9 +448,9 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
   };
 
   for (const char* url : kUrls) {
-    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-    rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
-        rfh->GetRoutingID(), GURL(url)));
+    tab_helper()->SetCurrentTargetFrame(web_contents()->GetMainFrame());
+    tab_helper()->network_diagnostics_interface()
+        ->RunNetworkDiagnostics(GURL(url));
     EXPECT_EQ(0, tab_helper()->times_diagnostics_dialog_invoked());
   }
 }

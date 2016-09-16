@@ -11,12 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/error_page/renderer/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 class GURL;
 
@@ -44,7 +46,8 @@ class NetErrorHelper
       public content::RenderFrameObserverTracker<NetErrorHelper>,
       public content::RenderThreadObserver,
       public error_page::NetErrorHelperCore::Delegate,
-      public NetErrorPageController::Delegate {
+      public NetErrorPageController::Delegate,
+      public mojom::NetworkDiagnosticsClient {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_frame);
   ~NetErrorHelper() override;
@@ -82,6 +85,8 @@ class NetErrorHelper
   bool ShouldSuppressErrorPage(const GURL& url);
 
  private:
+  mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
+
   // NetErrorHelperCore::Delegate implementation:
   void GenerateLocalizedErrorPage(
       const blink::WebURLError& error,
@@ -112,8 +117,6 @@ class NetErrorHelper
   void ShowOfflinePages() override;
 
   void OnNetErrorInfo(int status);
-  void OnSetCanShowNetworkDiagnosticsDialog(
-      bool can_use_local_diagnostics_service);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
                                      const std::string& language,
                                      const std::string& country_code,
@@ -126,6 +129,12 @@ class NetErrorHelper
   void OnTrackingRequestComplete(const blink::WebURLResponse& response,
                                  const std::string& data);
 
+  void OnNetworkDiagnosticsClientRequest(
+      mojom::NetworkDiagnosticsClientAssociatedRequest request);
+
+  // mojom::NetworkDiagnosticsClient:
+  void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
+
 #if defined(OS_ANDROID)
   // Called to set whether offline pages exists, which will be used to decide
   // if offline related button will be provided in the error page.
@@ -136,6 +145,10 @@ class NetErrorHelper
   std::unique_ptr<content::ResourceFetcher> tracking_fetcher_;
 
   std::unique_ptr<error_page::NetErrorHelperCore> core_;
+
+  mojo::AssociatedBinding<mojom::NetworkDiagnosticsClient>
+      network_diagnostics_client_binding_;
+  mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
 
   // Weak factory for vending a weak pointer to a NetErrorPageController. Weak
   // pointers are invalidated on each commit, to prevent getting messages from

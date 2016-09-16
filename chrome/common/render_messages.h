@@ -306,11 +306,6 @@ IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
                     int /* DNS probe status */)
 
-// Tells the renderer whether or not there is a local diagnostics service that
-// can be run via ChromeViewHostMsg_RunNetworkDiagnostics messages.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog,
-                    bool /* can_show_network_diagnostics_dialog */)
-
 #if defined(OS_ANDROID)
 // Tells the renderer whether or not offline pages exist. This is used to
 // decide if offline related button will be provided on certain error page.
@@ -326,9 +321,6 @@ IPC_MESSAGE_ROUTED5(ChromeViewMsg_SetNavigationCorrectionInfo,
                     std::string /* origin_country */,
                     std::string /* API key to use */,
                     GURL /* Google Search URL to use */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RunNetworkDiagnostics,
-                    GURL /* failed_url */)
 
 #if defined(OS_ANDROID)
 // Message sent from the renderer to the browser to show the UI for offline

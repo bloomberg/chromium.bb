@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -98,10 +99,10 @@ void NetErrorTabHelper::RenderFrameCreated(
   // platform's network diagnostics dialog.
   if (render_frame_host->GetParent())
     return;
-  render_frame_host->Send(
-      new ChromeViewMsg_SetCanShowNetworkDiagnosticsDialog(
-          render_frame_host->GetRoutingID(),
-          CanShowNetworkDiagnosticsDialog()));
+
+  mojom::NetworkDiagnosticsClientAssociatedPtr client;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+  client->SetCanShowNetworkDiagnosticsDialog(CanShowNetworkDiagnosticsDialog());
 }
 
 void NetErrorTabHelper::DidStartNavigationToPendingEntry(
@@ -181,21 +182,22 @@ bool NetErrorTabHelper::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host != web_contents()->GetMainFrame())
     return false;
+#if BUILDFLAG(ANDROID_JAVA_UI)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RunNetworkDiagnostics,
-                        RunNetworkDiagnostics)
-#if BUILDFLAG(ANDROID_JAVA_UI)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowOfflinePages, ShowOfflinePages)
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
+#else
+  return false;
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
+      network_diagnostics_bindings_(contents, this),
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
@@ -286,12 +288,18 @@ void NetErrorTabHelper::RunNetworkDiagnostics(const GURL& url) {
   // any other schemes, but the renderer is not trusted.
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return;
+
   // Sanitize URL prior to running diagnostics on it.
   RunNetworkDiagnosticsHelper(url.GetOrigin().spec());
 }
 
 void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
     const std::string& sanitized_url) {
+  if (network_diagnostics_bindings_.GetCurrentTargetFrame()
+          != web_contents()->GetMainFrame()) {
+    return;
+  }
+
   ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
 

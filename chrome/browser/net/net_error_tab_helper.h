@@ -13,9 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/features.h"
+#include "chrome/common/network_diagnostics.mojom.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -26,7 +28,8 @@ namespace chrome_browser_net {
 // DnsProbeService whenever a page fails to load with a DNS-related error.
 class NetErrorTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<NetErrorTabHelper> {
+      public content::WebContentsUserData<NetErrorTabHelper>,
+      public mojom::NetworkDiagnostics {
  public:
   enum TestingState {
     TESTING_DEFAULT,
@@ -76,7 +79,6 @@ class NetErrorTabHelper
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
-
  protected:
   // |contents| is the WebContents of the tab this NetErrorTabHelper is
   // attached to.
@@ -89,6 +91,11 @@ class NetErrorTabHelper
     return dns_probe_status_;
   }
 
+  content::WebContentsFrameBindingSet<mojom::NetworkDiagnostics>&
+  network_diagnostics_bindings_for_testing() {
+    return network_diagnostics_bindings_;
+  }
+
  private:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
 
@@ -97,8 +104,8 @@ class NetErrorTabHelper
   void InitializePref(content::WebContents* contents);
   bool ProbesAllowed() const;
 
-  // Sanitizes |url| and shows a dialog for it.
-  void RunNetworkDiagnostics(const GURL& url);
+  // mojom::NetworkDiagnostics:
+  void RunNetworkDiagnostics(const GURL& url) override;
 
   // Shows the diagnostics dialog after its been sanitized, virtual for
   // testing.
@@ -111,6 +118,9 @@ class NetErrorTabHelper
   void ShowOfflinePages();
   bool IsFromErrorPage() const;
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
+
+  content::WebContentsFrameBindingSet<mojom::NetworkDiagnostics>
+      network_diagnostics_bindings_;
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;
