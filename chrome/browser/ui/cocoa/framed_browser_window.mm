@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
@@ -162,7 +161,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       break;
   }
 
-  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     buttonFrame.origin.x =
         NSWidth([self frame]) - buttonFrame.origin.x - NSWidth([button frame]);
   }

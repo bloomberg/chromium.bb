@@ -7,7 +7,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -250,7 +249,7 @@ const CGFloat kLocationBarRightOffset = 35;
   }
   layout.rightIndent = width - maxX;
 
-  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     std::swap(layout.leftIndent, layout.rightIndent);
     layout.avatarFrame.origin.x =
         width - parameters_.avatarSize.width - layout.avatarFrame.origin.x;

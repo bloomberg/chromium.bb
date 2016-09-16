@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -219,7 +220,10 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
       [[avatarButton cell] setHighlightsBy:NSNoCellMask];
     [avatarButton setBordered:YES];
 
-    [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+      [avatarButton setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    else
+      [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
     [avatarButton setTarget:self];
     [avatarButton setAction:@selector(buttonClicked:)];
     [avatarButton setRightAction:@selector(buttonRightClicked:)];

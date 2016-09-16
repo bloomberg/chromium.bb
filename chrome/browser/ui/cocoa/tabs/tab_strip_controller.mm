@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/i18n/rtl.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -139,7 +138,7 @@ private:
 };
 
 CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
-  if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL())
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
     return [view frame].size.width - x - width;
   return x;
 }
@@ -1008,7 +1007,7 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
   BOOL visible = [[tabStripView_ window] isVisible];
 
   CGFloat offset =
-      cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()
+      cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
           ? [self rightIndentForControls]
           : [self leftIndentForControls];
   bool hasPlaceholderGap = false;
@@ -1162,7 +1161,7 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
     // so we don't have to check it against the available space. We do need
     // to make sure we put it after any placeholder.
     CGFloat maxTabX = MAX(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
-    if (cocoa_l10n_util::ExperimentalMacRTLIsEnabled() && base::i18n::IsRTL()) {
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
       maxTabX = FlipXInView(tabStripView_, [newTabButton_ frame].size.width,
                             maxTabX) -
                 (2 * kNewTabButtonOffset);

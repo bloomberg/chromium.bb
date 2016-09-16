@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 
-#include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -417,7 +416,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   // The SVG path is flipped for some reason, so flip it back. However, in RTL,
   // we'd need to flip it again below, so when in RTL mode just leave the flip
   // out altogether.
-  if (!cocoa_l10n_util::ExperimentalMacRTLIsEnabled() || !base::i18n::IsRTL()) {
+  if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     const CGFloat kSVGHeight = 32;
     NSAffineTransformStruct flipStruct = {1, 0, 0, -1, 0, kSVGHeight};
     NSAffineTransform* flipTransform = [NSAffineTransform transform];

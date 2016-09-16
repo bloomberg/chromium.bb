@@ -60,6 +60,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
@@ -1662,7 +1663,10 @@ bool IsTabDetachingInFullscreenEnabled() {
       [[AvatarIconController alloc] initWithBrowser:browser_.get()]);
   }
   view = [avatarButtonController_ view];
-  [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+  else
+    [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [view setHidden:![self shouldShowAvatar]];
 
   // Install the view.
