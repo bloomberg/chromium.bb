@@ -269,9 +269,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // Sends |message| from appropriate thread.
     void Send(Message* message);
 
-    // Indicates if the underlying channel's Send is thread-safe.
-    bool IsChannelSendThreadSafe() const;
-
     // Requests a remote associated interface on the IPC thread.
     void GetRemoteAssociatedInterface(
         const std::string& name,
@@ -336,7 +333,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
         const std::string& interface_name,
         mojo::ScopedInterfaceEndpointHandle handle);
 
-    void SendFromThisThread(Message* message);
     void ClearChannel();
 
     mojo::AssociatedGroup* associated_group() { return &associated_group_; }
@@ -366,9 +362,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // Lock for |channel_| value. This is only relevant in the context of
     // thread-safe send.
     base::Lock channel_lifetime_lock_;
-    // Indicates the thread-safe send availability. This is constant once
-    // |channel_| is set.
-    bool channel_send_thread_safe_;
 
     // Routes a given message to a proper subset of |filters_|, depending
     // on which message classes a filter might support.

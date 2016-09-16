@@ -86,10 +86,6 @@ void Channel::Unpause(bool flush) { NOTREACHED(); }
 
 void Channel::Flush() { NOTREACHED(); }
 
-bool Channel::IsSendThreadSafe() const {
-  return false;
-}
-
 void Channel::OnSetAttachmentBrokerEndpoint() {
   CHECK(!did_start_connect_);
 }

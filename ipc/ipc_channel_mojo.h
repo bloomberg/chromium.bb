@@ -73,7 +73,6 @@ class IPC_EXPORT ChannelMojo
   void Flush() override;
   void Close() override;
   bool Send(Message* message) override;
-  bool IsSendThreadSafe() const override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
   Channel::AssociatedInterfaceSupport* GetAssociatedInterfaceSupport() override;

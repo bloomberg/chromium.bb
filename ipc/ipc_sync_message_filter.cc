@@ -99,10 +99,7 @@ bool SyncMessageFilter::Send(Message* message) {
   if (!message->is_sync()) {
     {
       base::AutoLock auto_lock(lock_);
-      if (sender_ && is_channel_send_thread_safe_) {
-        sender_->Send(message);
-        return true;
-      } else if (!io_task_runner_.get()) {
+      if (!io_task_runner_.get()) {
         pending_messages_.emplace_back(base::WrapUnique(message));
         return true;
       }
@@ -220,10 +217,8 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
   return false;
 }
 
-SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event,
-                                     bool is_channel_send_thread_safe)
+SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
     : sender_(NULL),
-      is_channel_send_thread_safe_(is_channel_send_thread_safe),
       listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(shutdown_event),
       weak_factory_(this) {

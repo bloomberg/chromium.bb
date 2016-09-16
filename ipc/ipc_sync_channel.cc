@@ -542,8 +542,7 @@ void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
 
 scoped_refptr<SyncMessageFilter> SyncChannel::CreateSyncMessageFilter() {
   scoped_refptr<SyncMessageFilter> filter = new SyncMessageFilter(
-      sync_context()->shutdown_event(),
-      sync_context()->IsChannelSendThreadSafe());
+      sync_context()->shutdown_event());
   AddFilter(filter.get());
   if (!did_init())
     pre_init_sync_message_filters_.push_back(filter);
@@ -699,10 +698,6 @@ void SyncChannel::StartWatching() {
 }
 
 void SyncChannel::OnChannelInit() {
-  for (const auto& filter : pre_init_sync_message_filters_) {
-    filter->set_is_channel_send_thread_safe(
-        context()->IsChannelSendThreadSafe());
-  }
   pre_init_sync_message_filters_.clear();
 }
 

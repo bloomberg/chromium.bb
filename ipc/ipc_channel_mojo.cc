@@ -370,10 +370,6 @@ bool ChannelMojo::Send(Message* message) {
   return message_reader_->Send(std::move(scoped_message));
 }
 
-bool ChannelMojo::IsSendThreadSafe() const {
-  return false;
-}
-
 base::ProcessId ChannelMojo::GetPeerPID() const {
   if (!message_reader_)
     return base::kNullProcessId;

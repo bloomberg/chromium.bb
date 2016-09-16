@@ -47,7 +47,6 @@ ChannelProxy::Context::Context(
       listener_(listener),
       ipc_task_runner_(ipc_task_runner),
       channel_connected_called_(false),
-      channel_send_thread_safe_(false),
       message_filter_router_(new MessageFilterRouter()),
       peer_pid_(base::kNullProcessId),
       attachment_broker_endpoint_(false) {
@@ -77,7 +76,6 @@ void ChannelProxy::Context::CreateChannel(
   DCHECK_EQ(factory->GetIPCTaskRunner(), ipc_task_runner_);
   channel_id_ = factory->GetName();
   channel_ = factory->BuildChannel(this);
-  channel_send_thread_safe_ = channel_->IsSendThreadSafe();
   channel_->SetAttachmentBrokerEndpoint(attachment_broker_endpoint_);
 
   Channel::AssociatedInterfaceSupport* support =
@@ -412,27 +410,10 @@ void ChannelProxy::Context::AddGenericAssociatedInterfaceForIOThread(
     support->AddGenericAssociatedInterface(name, factory);
 }
 
-void ChannelProxy::Context::SendFromThisThread(Message* message) {
-  base::AutoLock l(channel_lifetime_lock_);
-  if (!channel_)
-    return;
-  DCHECK(channel_->IsSendThreadSafe());
-  channel_->Send(message);
-}
-
 void ChannelProxy::Context::Send(Message* message) {
-  if (channel_send_thread_safe_) {
-    SendFromThisThread(message);
-    return;
-  }
-
   ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ChannelProxy::Context::OnSendMessage, this,
                             base::Passed(base::WrapUnique(message))));
-}
-
-bool ChannelProxy::Context::IsChannelSendThreadSafe() const {
-  return channel_send_thread_safe_;
 }
 
 // Called on the IPC::Channel thread

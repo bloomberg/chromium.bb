@@ -54,8 +54,7 @@ class MockDispatcher : public IndexedDBDispatcher {
 
 class MockSyncMessageFilter : public IPC::SyncMessageFilter {
  public:
-  MockSyncMessageFilter()
-      : SyncMessageFilter(nullptr, false /* is_channel_send_thread_safe */) {}
+  MockSyncMessageFilter() : SyncMessageFilter(nullptr) {}
 
  private:
   ~MockSyncMessageFilter() override {}

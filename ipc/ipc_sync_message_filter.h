@@ -43,9 +43,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   bool OnMessageReceived(const Message& message) override;
 
  protected:
-  SyncMessageFilter(base::WaitableEvent* shutdown_event,
-                    bool is_channel_send_thread_safe);
-
+  explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
   ~SyncMessageFilter() override;
 
  private:
@@ -53,10 +51,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
 
   friend class SyncChannel;
   friend class IOMessageLoopObserver;
-
-  void set_is_channel_send_thread_safe(bool is_channel_send_thread_safe) {
-    is_channel_send_thread_safe_ = is_channel_send_thread_safe;
-  }
 
   void SendOnIOThread(Message* message);
   // Signal all the pending sends as done, used in an error condition.
@@ -67,9 +61,6 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
 
   // The channel to which this filter was added.
   Sender* sender_;
-
-  // Indicates if |sender_|'s Send method is thread-safe.
-  bool is_channel_send_thread_safe_;
 
   // The process's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
