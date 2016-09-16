@@ -27,6 +27,9 @@
 #  "gpu_browser_test"
 #  : the test is a subset of the browser_tests that will be run against
 #    a real GPU.
+#  "additional_compile_target"
+#  : this isn't actually a test, but we still need a mapping from the 
+#    ninja target to the GN label in order to analyze it.
 #  "raw"
 #  : the test is a standalone executable; it may take an optional list of
 #    command line arguments in the "args" field, but otherwise needs no
@@ -61,6 +64,10 @@
 # "//testing/scripts/foo.py".
 
 {
+  "All": {
+    "label": "//:All",
+    "type": "additional_compile_target",
+  },
   "accessibility_unittests":  {
     "label": "//ui/accessibility:accessibility_unittests",
     "type": "raw",
@@ -191,8 +198,16 @@
     "label": "//chromecast/crash:cast_crash_unittests",
     "type": "console_test_launcher",
   },
+  "cast_media_unittests": {
+    "label": "//chromecast/media:cast_media_unittests",
+    "type": "console_test_launcher",
+  },
   "cast_shell_unittests": {
     "label": "//chromecast/app:cast_shell_unittests",
+    "type": "console_test_launcher",
+  },
+  "cast_shell_browser_test": {
+    "label": "//chromecast/browser:cast_shell_browser_test",
     "type": "console_test_launcher",
   },
   "cast_unittests": {
@@ -203,6 +218,10 @@
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
   },
+  "chrome": {
+    "label": "//chrome",
+    "type": "additional_compile_target",
+  },
   "chrome_app_unittests": {
     "label": "//chrome/test:chrome_app_unittests",
     "type": "console_test_launcher",
@@ -211,9 +230,21 @@
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "raw",
   },
+  "chrome_official_builder": {
+    "label": "//:chrome_official_builder",
+    "type": "additional_compile_target",
+  },
+  "chrome_public_apk": {
+    "label": "//chrome/android:chrome_public_apk",
+    "type": "additional_compile_target",
+  },
   "chrome_public_test_apk": {
     "label": "//chrome/android:chrome_public_test_apk",
     "type": "console_test_launcher",
+  },
+  "chromium_swarm_tests": {
+    "label": "//:chromium_swarm_tests",
+    "type": "additional_compile_target",
   },
   "chrome_sync_shell_test_apk": {
     "label": "//chrome/android:chrome_sync_shell_test_apk",
@@ -273,6 +304,14 @@
   "courgette_unittests": {
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
+  },
+  "cronet_package": {
+    "label": "//components/cronet/android:cronet_package",
+    "type": "additional_compile_target",
+  },
+  "cronet_test_instrumentation_apk": {
+    "label": "//cronet_test_instrumentation_apk",
+    "type": "additional_compile_target",
   },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
@@ -341,6 +380,10 @@
     "type": "raw",
     "args": [],
   },
+  "gn_all": {
+    "label": "//:gn_all",
+    "type": "additional_compile_target",
+  },
   "gn_unittests": {
     "label": "//tools/gn:gn_unittests",
     "type": "raw",
@@ -358,9 +401,21 @@
     "label": "//gpu:gpu_unittests",
     "type": "windowed_test_launcher",
   },
+  "headless_lib": {
+    "label": "//headless:headless_lib",
+    "type": "additional_compile_target",
+  },
   "headless_browsertests": {
     "label": "//headless:headless_browsertests",
     "type": "console_test_launcher",
+  },
+  "headless_shell": {
+    "label": "//headless:headless_shell",
+    "type": "additional_compile_target",
+  },
+  "headless_tests": {
+    "label": "//headless:headless_tests",
+    "type": "additional_compile_target",
   },
   "headless_unittests": {
     "label": "//headless:headless_unittests",
@@ -399,18 +454,22 @@
     "type": "console_test_launcher",
   },
   # See http://crbug.com/585151
-  #"libaddressinput_unittests": {
-    #"label": "//third_party/libaddressinput:libaddressinput_unittests",
-    #"type": "console_test_launcher",
-  #},
+  "libaddressinput_unittests": {
+    "label": "//third_party/libaddressinput:libaddressinput_unittests",
+    "type": "console_test_launcher",
+  },
   # See http://crbug.com/585151
-  #"libphonenumber_unittests": {
-    #"label": "//third_party/libphonenumber:libphonenumber_unittests",
-    #"type": "console_test_launcher",
-  #},
+  "libphonenumber_unittests": {
+    "label": "//third_party/libphonenumber:libphonenumber_unittests",
+    "type": "console_test_launcher",
+  },
   "mac_installer_unittests": {
     "label": "//chrome/installer/mac/app:mac_installer_unittests",
     "type": "console_test_launcher",
+  },
+  "mash:all" : {
+    "label": "//mash:all",
+    "type": "additional_compile_target",
   },
   "media_unittests": {
     "label": "//media:media_unittests",
@@ -598,6 +657,10 @@
   "sync_integration_tests": {
     "label": "//chrome/test:sync_integration_tests",
     "type": "windowed_test_launcher",
+  },
+  "system_webview_apk": {
+    "label": "//android_webview:system_webview_apk",
+    "type": "additional_compile_target",
   },
   "system_wrappers_unittests": {
     "label": "//webrtc/system_wrappers:system_wrappers_unittests",
