@@ -383,8 +383,6 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
         return;
 
       case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
-        RETURN_ON_FAILURE(false, "Unexpected output format change",
-                          kPlatformFailureError);
         break;
 
       case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
