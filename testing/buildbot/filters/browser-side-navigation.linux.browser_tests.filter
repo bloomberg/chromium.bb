@@ -229,3 +229,11 @@
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/0
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/1
 -WebViewTests/WebViewTest*
+
+# https://crbug.com/647712: Nested URL blocking needs to work with PlzNavigate
+-ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
+-ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
+-WebViewGuestTouchFocusTest.TouchFocusesBrowserPluginInEmbedder
+-WebViewScrollGuestContent/WebViewScrollGuestContentTest.ScrollGuestContent/0
+-WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble*
+-WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
