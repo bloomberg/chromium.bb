@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "net/base/arena.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,6 +15,8 @@ namespace net {
 
 using base::StringPiece;
 using std::string;
+using std::vector;
+using std::pair;
 using testing::ElementsAre;
 
 namespace test {
@@ -76,6 +79,7 @@ namespace {
 
 using std::map;
 using testing::ElementsAre;
+using testing::Pair;
 
 class HpackEncoderTest : public ::testing::Test {
  protected:
@@ -84,7 +88,8 @@ class HpackEncoderTest : public ::testing::Test {
   HpackEncoderTest()
       : encoder_(ObtainHpackHuffmanTable()),
         peer_(&encoder_),
-        static_(peer_.table()->GetByIndex(1)) {}
+        static_(peer_.table()->GetByIndex(1)),
+        headers_storage_(1024 /* block size */) {}
 
   void SetUp() override {
     // Populate dynamic entries into the table fixture. For simplicity each
@@ -99,6 +104,14 @@ class HpackEncoderTest : public ::testing::Test {
 
     // Disable Huffman coding by default. Most tests don't care about it.
     peer_.set_allow_huffman_compression(false);
+  }
+
+  void SaveHeaders(StringPiece name, StringPiece value) {
+    StringPiece n(headers_storage_.Memdup(name.data(), name.size()),
+                  name.size());
+    StringPiece v(headers_storage_.Memdup(value.data(), value.size()),
+                  value.size());
+    headers_observed_.push_back(make_pair(n, v));
   }
 
   void ExpectIndex(size_t index) {
@@ -155,15 +168,24 @@ class HpackEncoderTest : public ::testing::Test {
   const HpackEntry* cookie_a_;
   const HpackEntry* cookie_c_;
 
+  UnsafeArena headers_storage_;
+  vector<pair<StringPiece, StringPiece>> headers_observed_;
+
   HpackOutputStream expected_;
 };
 
 TEST_F(HpackEncoderTest, SingleDynamicIndex) {
+  encoder_.SetHeaderListener([this](StringPiece name, StringPiece value) {
+    this->SaveHeaders(name, value);
+  });
+
   ExpectIndex(IndexOf(key_2_));
 
   SpdyHeaderBlock headers;
   headers[key_2_->name().as_string()] = key_2_->value().as_string();
   CompareWithExpectedEncoding(headers);
+  EXPECT_THAT(headers_observed_,
+              ElementsAre(Pair(key_2_->name(), key_2_->value())));
 }
 
 TEST_F(HpackEncoderTest, SingleStaticIndex) {
@@ -268,6 +290,10 @@ TEST_F(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
 }
 
 TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
+  encoder_.SetHeaderListener([this](StringPiece name, StringPiece value) {
+    this->SaveHeaders(name, value);
+  });
+
   // Implementation should internally disable.
   peer_.set_allow_huffman_compression(true);
 
@@ -284,9 +310,18 @@ TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
   expected_.TakeString(&expected_out);
   encoder_.EncodeHeaderSetWithoutCompression(headers, &actual_out);
   EXPECT_EQ(expected_out, actual_out);
+
+  EXPECT_THAT(headers_observed_,
+              ElementsAre(Pair(":path", "/index.html"),
+                          Pair("cookie", "foo=bar; baz=bing"),
+                          Pair("hello", "goodbye")));
 }
 
 TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
+  encoder_.SetHeaderListener([this](StringPiece name, StringPiece value) {
+    this->SaveHeaders(name, value);
+  });
+
   // Pass 1.
   {
     SpdyHeaderBlock headers;
@@ -339,6 +374,19 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
 
     CompareWithExpectedEncoding(headers);
   }
+
+  // clang-format off
+  EXPECT_THAT(headers_observed_,
+              ElementsAre(Pair("key1", "value1"),
+                          Pair("cookie", "a=bb"),
+                          Pair("key2", "value2"),
+                          Pair("cookie", "c=dd"),
+                          Pair("cookie", "e=ff"),
+                          Pair("key2", "value2"),
+                          Pair("cookie", "a=bb"),
+                          Pair("cookie", "b=cc"),
+                          Pair("cookie", "c=dd")));
+  // clang-format on
 }
 
 TEST_F(HpackEncoderTest, PseudoHeadersFirst) {

@@ -37,6 +37,11 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   using Representation = std::pair<base::StringPiece, base::StringPiece>;
   using Representations = std::vector<Representation>;
 
+  // Callers may provide a HeaderListener to be informed of header name-value
+  // pairs processed by this encoder.
+  typedef std::function<void(base::StringPiece, base::StringPiece)>
+      HeaderListener;
+
   // An indexing policy should return true if the provided header name-value
   // pair should be inserted into the HPACK dynamic table.
   using IndexingPolicy =
@@ -73,6 +78,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   // This HpackEncoder will use |policy| to determine whether to insert header
   // name-value pairs into the dynamic table.
   void SetIndexingPolicy(IndexingPolicy policy) { should_index_ = policy; }
+
+  // |listener| will be invoked for each header name-value pair processed by
+  // this encoder.
+  void SetHeaderListener(HeaderListener listener) { listener_ = listener; }
 
   void SetHeaderTableDebugVisitor(
       std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
@@ -115,6 +124,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
 
   const HpackHuffmanTable& huffman_table_;
   size_t min_table_size_setting_received_;
+  HeaderListener listener_;
   IndexingPolicy should_index_;
   bool allow_huffman_compression_;
   bool should_emit_table_size_;

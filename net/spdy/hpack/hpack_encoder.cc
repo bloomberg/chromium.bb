@@ -56,6 +56,9 @@ class HpackEncoder::RepresentationIterator {
 
 namespace {
 
+// The default header listener.
+void NoOpListener(StringPiece /*name*/, StringPiece /*value*/) {}
+
 // The default HPACK indexing policy.
 bool DefaultPolicy(StringPiece name, StringPiece /* value */) {
   if (name.empty()) {
@@ -76,6 +79,7 @@ HpackEncoder::HpackEncoder(const HpackHuffmanTable& table)
     : output_stream_(),
       huffman_table_(table),
       min_table_size_setting_received_(std::numeric_limits<size_t>::max()),
+      listener_(NoOpListener),
       should_index_(DefaultPolicy),
       allow_huffman_compression_(true),
       should_emit_table_size_(false) {}
@@ -121,6 +125,7 @@ bool HpackEncoder::EncodeHeaderSetWithoutCompression(
   allow_huffman_compression_ = false;
   MaybeEmitTableSize();
   for (const auto& header : header_set) {
+    listener_(header.first, header.second);
     // Note that cookies are not crumbled in this case.
     EmitNonIndexedLiteral(header);
   }
@@ -146,6 +151,7 @@ void HpackEncoder::EncodeRepresentations(RepresentationIterator* iter,
   MaybeEmitTableSize();
   while (iter->HasNext()) {
     const auto header = iter->Next();
+    listener_(header.first, header.second);
     const HpackEntry* entry =
         header_table_.GetByNameAndValue(header.first, header.second);
     if (entry != nullptr) {
