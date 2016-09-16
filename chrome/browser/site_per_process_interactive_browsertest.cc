@@ -588,8 +588,14 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_EQ("none", GetFullscreenElementId(grandchild));
 }
 
+// Flaky on Windows: https://crbug.com/647311
+#if defined(OS_WIN)
+#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey DISABLED_FullscreenElementInABAAndExitViaEscapeKey
+#else
+#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey FullscreenElementInABAAndExitViaEscapeKey
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       FullscreenElementInABAAndExitViaEscapeKey) {
+                       MAYBE_FullscreenElementInABAAndExitViaEscapeKey) {
   FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
 }
 
