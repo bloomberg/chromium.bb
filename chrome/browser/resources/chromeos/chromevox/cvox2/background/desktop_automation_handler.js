@@ -176,7 +176,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventWithFlushedOutput: function(evt) {
-    Output.flushNextSpeechUtterance();
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     this.onEventDefault(evt);
   },
 
@@ -187,7 +187,7 @@ DesktopAutomationHandler.prototype = {
     if (ChromeVoxState.instance.currentRange &&
         evt.target == ChromeVoxState.instance.currentRange.start.node)
       return;
-    Output.flushNextSpeechUtterance();
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     this.onEventDefault(evt);
   },
 
@@ -251,12 +251,10 @@ DesktopAutomationHandler.prototype = {
 
     this.createTextEditHandlerIfNeeded_(evt.target);
 
-    // Since we queue output mostly for live regions support and there isn't a
-    // reliable way to know if this focus event resulted from a user's explicit
-    // action, only flush when the focused node is not web content.
-    if (node.root.role == RoleType.desktop)
-      Output.flushNextSpeechUtterance();
-
+    // Category flush speech triggered by events with no source. This includes
+    // views.
+    if (evt.eventFrom == '')
+      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
     this.onEventDefault(new chrome.automation.AutomationEvent(
         EventType.focus, node, evt.eventFrom));
   },
@@ -427,7 +425,7 @@ DesktopAutomationHandler.prototype = {
       var override = evt.target.role == RoleType.menuItem ||
           (evt.target.root == focus.root &&
               focus.root.role == RoleType.desktop);
-      Output.flushNextSpeechUtterance();
+      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))
         this.onEventDefault(evt);
     }.bind(this));

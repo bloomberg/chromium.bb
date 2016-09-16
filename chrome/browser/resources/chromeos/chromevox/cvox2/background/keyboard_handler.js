@@ -38,7 +38,7 @@ BackgroundKeyboardHandler.prototype = {
       evt.preventDefault();
       evt.stopPropagation();
     }
-    Output.flushNextSpeechUtterance();
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     return false;
   },
 

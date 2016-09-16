@@ -58,13 +58,13 @@ var RoleType = chrome.automation.RoleType;
  */
 Output = function() {
   // TODO(dtseng): Include braille specific rules.
-  /** @type {!Array<!Spannable>} */
+  /** @type {!Array<!Spannable>} @private */
   this.speechBuffer_ = [];
-  /** @type {!Array<!Spannable>} */
+  /** @type {!Array<!Spannable>} @private */
   this.brailleBuffer_ = [];
-  /** @type {!Array<!Object>} */
+  /** @type {!Array<!Object>} @private */
   this.locations_ = [];
-  /** @type {function(?)} */
+  /** @type {function(?)} @private */
   this.speechEndCallback_;
 
   /**
@@ -688,19 +688,21 @@ Output.EventType = {
 };
 
 /**
- * If true, the next speech utterance will flush instead of the normal
+ * If set, the next speech utterance will use this value instead of the normal
  * queueing mode.
- * @type {boolean}
+ * @type {cvox.QueueMode|undefined}
  * @private
  */
-Output.flushNextSpeechUtterance_ = false;
+Output.forceModeForNextSpeechUtterance_;
 
 /**
- * Calling this will make the next speech utterance flush even if it would
- * normally queue or do a category flush.
+ * Calling this will make the next speech utterance use |mode| even if it would
+ * normally queue or do a category flush. This differs from the |withQueueMode|
+ * instance method as it can apply to future output.
+   * @param {cvox.QueueMode} mode
  */
-Output.flushNextSpeechUtterance = function() {
-  Output.flushNextSpeechUtterance_ = true;
+Output.forceModeForNextSpeechUtterance = function(mode) {
+  Output.forceModeForNextSpeechUtterance_ = mode;
 };
 
 Output.prototype = {
@@ -907,6 +909,7 @@ Output.prototype = {
   /**
    * Triggers callback for a speech event.
    * @param {function()} callback
+   * @return {Output}
    */
   onSpeechEnd: function(callback) {
     this.speechEndCallback_ = function(opt_cleanupOnly) {
@@ -923,9 +926,10 @@ Output.prototype = {
     // Speech.
     var queueMode = this.queueMode_;
     this.speechBuffer_.forEach(function(buff, i, a) {
-      if (Output.flushNextSpeechUtterance_ && buff.length > 0) {
-        queueMode = cvox.QueueMode.FLUSH;
-        Output.flushNextSpeechUtterance_ = false;
+      if (Output.forceModeForNextSpeechUtterance_ !== undefined &&
+          buff.length > 0) {
+        queueMode = Output.forceModeForNextSpeechUtterance_;
+        Output.forceModeForNextSpeechUtterance_ = undefined;
       }
 
       var speechProps = {};
