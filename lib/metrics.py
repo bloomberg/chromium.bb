@@ -11,6 +11,8 @@ deployed with your code.
 
 from __future__ import print_function
 
+import contextlib
+import datetime
 import ssl
 
 from functools import wraps
@@ -173,6 +175,54 @@ def SecondsDistribution(name):
   """
   b = ts_mon.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR)
   return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
+
+
+@contextlib.contextmanager
+def SecondsTimer(name, fields=None):
+  """Record the time of an operation to a SecondsDistributionMetric.
+
+  Usage:
+
+  with SecondsTimer('timer/name', fields={'foo': 'bar'}):
+    doSomething()
+
+  Will record the time taken inside of the context block, to the
+  SecondsDistribution named 'timer/name', with the given fields.
+
+  Note that this helper can only be used if the field values are known
+  at timer-start time and to not depend on the result of the operation
+  being timed.
+  """
+  m = SecondsDistribution(name)
+  t0 = datetime.datetime.now()
+  yield
+  dt = (datetime.datetime.now() - t0).total_seconds()
+  m.add(dt, fields=fields)
+
+
+def SecondsTimerDecorator(name, fields=None):
+  """Decorator to time the duration of function calls.
+
+  Usage:
+    @SecondsTimerDecorator('timer/name', fields={'foo': 'bar'})
+    def Foo(bar):
+      return doStuff()
+
+    is equivalent to
+
+    def Foo(bar):
+      with SecondsTimer('timer/name', fields={'foo': 'bar'})
+        return doStuff()
+  """
+  def decorator(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+      with SecondsTimer(name, fields):
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+  return decorator
 
 
 def Flush(reset_after=()):
