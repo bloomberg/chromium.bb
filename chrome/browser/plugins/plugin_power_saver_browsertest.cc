@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -414,12 +414,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
       "    type='application/x-ppapi-tests' width='400' height='100' "
       "    poster='click_me.png'>"
       "</object>"
-      "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='3' height='3'>"
-      "</object>"
-      "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='1' height='1'>"
-      "</object>"
       "<object id='large_cross_origin' data='http://b.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='400' height='500'>"
       "</object>"
@@ -430,8 +424,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(),
                               "small_same_origin_poster");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_2");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "large_cross_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(),
                               "medium_16_9_cross_origin");
@@ -667,26 +659,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }
 
-// Separate test case that blocks tiny plugins. This requires a separate test
-// case, because we need to initialize the renderer with a different feature
-// setting.
-class PluginPowerSaverBlockTinyBrowserTest
-    : public PluginPowerSaverBrowserTest {
- public:
-  void SetUp() override {
-    base::FeatureList::ClearInstanceForTesting();
-    PluginPowerSaverBrowserTest::SetUp();
-  }
-  void SetUpInProcessBrowserTestFixture() override {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(features::kBlockSmallContent.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest, BlockTinyPlugins) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
   LoadHTML(
       "<object id='tiny_same_origin' data='fake.swf' "
       "    type='application/x-ppapi-tests' width='3' height='3'>"
@@ -703,8 +676,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest, BlockTinyPlugins) {
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_2");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
-                       BackgroundTabTinyPlugins) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
   content::WebContents* background_contents = LoadHTMLInBackgroundTab(
       "<object id='tiny' data='http://a.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='3' height='3'>"
@@ -715,8 +687,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
   VerifyPluginIsPlaceholderOnly("tiny");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
-                       ExpandingTinyPlugins) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
   LoadHTML(
       "<object id='expand_to_peripheral' data='http://a.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='4' height='4'></object>"
@@ -735,4 +706,32 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
+}
+
+// Separate test case that allows tiny plugins. This requires a separate test
+// case, because we need to initialize the renderer with a different feature
+// setting.
+class PluginPowerSaverAllowTinyBrowserTest
+    : public PluginPowerSaverBrowserTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    feature_list.InitAndDisableFeature(features::kBlockSmallContent);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverAllowTinyBrowserTest,
+                       EssentialTinyPlugins) {
+  LoadHTML(
+      "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "</object>"
+      "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='1' height='1'>"
+      "</object>");
+
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_2");
 }

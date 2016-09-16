@@ -39,11 +39,6 @@
             }
         }
     ],
-    "BlockSmallPluginContent": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "BrowserBlacklist": [
         {
             "group_name": "Enabled"
@@ -352,6 +347,14 @@
             "params": {
                 "storage": "MappedFile"
             }
+        }
+    ],
+    "PluginPowerSaverTiny": [
+        {
+            "enable_features": [
+                "BlockSmallPluginContent"
+            ],
+            "group_name": "Enabled"
         }
     ],
     "PointerEvent": [

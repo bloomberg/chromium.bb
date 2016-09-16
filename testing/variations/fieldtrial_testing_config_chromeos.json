@@ -28,11 +28,6 @@
             "group_name": "Enabled"
         }
     ],
-    "BlockSmallPluginContent": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "CaptivePortalInterstitial": [
         {
             "group_name": "Enabled"
@@ -197,6 +192,14 @@
             "params": {
                 "storage": "MappedFile"
             }
+        }
+    ],
+    "PluginPowerSaverTiny": [
+        {
+            "enable_features": [
+                "BlockSmallPluginContent"
+            ],
+            "group_name": "Enabled"
         }
     ],
     "PointerEvent": [
