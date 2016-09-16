@@ -74,10 +74,10 @@ public:
     ReflectedXSSDisposition getReflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
     bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
-    bool isReportOnly() const { return m_reportOnly; }
+    bool isReportOnly() const { return m_headerType == ContentSecurityPolicyHeaderTypeReport; }
     const Vector<String>& reportEndpoints() const { return m_reportEndpoints; }
     uint8_t requireSRIForTokens() const { return m_requireSRIFor; }
-    bool isFrameAncestorsEnforced() const { return m_frameAncestors.get() && !m_reportOnly; }
+    bool isFrameAncestorsEnforced() const { return m_frameAncestors.get() && !isReportOnly(); }
 
     // Used to copy plugin-types into a plugin document in a nested
     // browsing context.
@@ -142,7 +142,7 @@ private:
     bool checkAncestorsAndReportViolation(SourceListDirective*, LocalFrame*, const KURL&) const;
     bool checkRequestWithoutIntegrityAndReportViolation(WebURLRequest::RequestContext, const KURL&, ResourceRequest::RedirectStatus) const;
 
-    bool denyIfEnforcingPolicy() const { return m_reportOnly; }
+    bool denyIfEnforcingPolicy() const { return isReportOnly(); }
 
     Member<ContentSecurityPolicy> m_policy;
 
@@ -150,7 +150,6 @@ private:
     ContentSecurityPolicyHeaderType m_headerType;
     ContentSecurityPolicyHeaderSource m_headerSource;
 
-    bool m_reportOnly;
     bool m_hasSandboxPolicy;
     ReflectedXSSDisposition m_reflectedXSSDisposition;
 

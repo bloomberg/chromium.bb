@@ -47,7 +47,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     : m_policy(policy)
     , m_headerType(type)
     , m_headerSource(source)
-    , m_reportOnly(false)
     , m_hasSandboxPolicy(false)
     , m_reflectedXSSDisposition(ReflectedXSSUnset)
     , m_didSetReferrerPolicy(false)
@@ -57,7 +56,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_treatAsPublicAddress(false)
     , m_requireSRIFor(RequireSRIForToken::None)
 {
-    m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
 
 CSPDirectiveList* CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
@@ -78,33 +76,33 @@ CSPDirectiveList* CSPDirectiveList::create(ContentSecurityPolicy* policy, const 
 
 void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ResourceRequest::RedirectStatus redirectStatus) const
 {
-    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    String message = isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
     m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation, nullptr, redirectStatus);
 }
 
 void CSPDirectiveList::reportViolationWithFrame(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, LocalFrame* frame) const
 {
-    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    String message = isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
     m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message), frame);
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation, frame);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
-    String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
+    String message = isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
     m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, SourceLocation::capture(contextURL, contextLine.oneBasedInt(), 0)));
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::InlineViolation, nullptr, RedirectStatus::NoRedirect, contextLine.oneBasedInt());
 }
 
 void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& message, const KURL& blockedURL, ScriptState* scriptState, const ContentSecurityPolicy::ExceptionStatus exceptionStatus) const
 {
-    String reportMessage = m_reportOnly ? "[Report Only] " + message : message;
+    String reportMessage = isReportOnly() ? "[Report Only] " + message : message;
     // Print a console message if it won't be redundant with a
     // JavaScript exception that the caller will throw. (Exceptions will
     // never get thrown in report-only mode because the caller won't see
     // a violation.)
-    if (m_reportOnly || exceptionStatus == ContentSecurityPolicy::WillNotThrowException) {
+    if (isReportOnly() || exceptionStatus == ContentSecurityPolicy::WillNotThrowException) {
         ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
         m_policy->logToConsole(consoleMessage);
     }
@@ -260,7 +258,7 @@ bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directiv
         suffix = " Note that 'script-src' was not explicitly set, so 'default-src' is used as a fallback.";
 
     reportViolationWithState(directive->text(), ContentSecurityPolicy::ScriptSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), scriptState, exceptionStatus);
-    if (!m_reportOnly) {
+    if (!isReportOnly()) {
         m_policy->reportBlockedScriptExecutionToInspector(directive->text());
         return false;
     }
@@ -300,7 +298,7 @@ bool CSPDirectiveList::checkInlineAndReportViolation(SourceListDirective* direct
 
     reportViolationWithLocation(directive->text(), isScript ? ContentSecurityPolicy::ScriptSrc : ContentSecurityPolicy::StyleSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine);
 
-    if (!m_reportOnly) {
+    if (!isReportOnly()) {
         if (isScript)
             m_policy->reportBlockedScriptExecutionToInspector(directive->text());
         return false;
@@ -723,7 +721,7 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
         m_policy->reportInvalidDirectiveInMeta(name);
         return;
     }
-    if (m_reportOnly) {
+    if (isReportOnly()) {
         m_policy->reportInvalidInReportOnly(name);
         return;
     }
@@ -741,7 +739,7 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
 
 void CSPDirectiveList::treatAsPublicAddress(const String& name, const String& value)
 {
-    if (m_reportOnly) {
+    if (isReportOnly()) {
         m_policy->reportInvalidInReportOnly(name);
         return;
     }
@@ -766,13 +764,13 @@ void CSPDirectiveList::enforceStrictMixedContentChecking(const String& name, con
 
     m_strictMixedContentCheckingEnforced = true;
 
-    if (!m_reportOnly)
+    if (!isReportOnly())
         m_policy->enforceStrictMixedContentChecking();
 }
 
 void CSPDirectiveList::enableInsecureRequestsUpgrade(const String& name, const String& value)
 {
-    if (m_reportOnly) {
+    if (isReportOnly()) {
         m_policy->reportInvalidInReportOnly(name);
         return;
     }
