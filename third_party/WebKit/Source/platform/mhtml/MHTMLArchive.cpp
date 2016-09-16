@@ -67,7 +67,7 @@ MHTMLArchive::MHTMLArchive()
 {
 }
 
-MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> data)
+MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<const SharedBuffer> data)
 {
     // MHTML pages can only be loaded from local URLs, http/https URLs, and content URLs(Android specific).
     // The latter is now allowed due to full sandboxing enforcement on MHTML pages.

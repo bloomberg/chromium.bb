@@ -184,7 +184,7 @@ public:
 
     bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 
-    virtual PassRefPtr<SharedBuffer> resourceBuffer() const { return m_data; }
+    virtual PassRefPtr<const SharedBuffer> resourceBuffer() const { return m_data; }
     void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
     virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);

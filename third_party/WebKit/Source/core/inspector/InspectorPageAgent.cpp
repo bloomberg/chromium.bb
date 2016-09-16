@@ -156,7 +156,7 @@ static std::unique_ptr<TextResourceDecoder> createResourceTextDecoder(const Stri
     return std::unique_ptr<TextResourceDecoder>();
 }
 
-static void maybeEncodeTextContent(const String& textContent, PassRefPtr<SharedBuffer> buffer, String* result, bool* base64Encoded)
+static void maybeEncodeTextContent(const String& textContent, PassRefPtr<const SharedBuffer> buffer, String* result, bool* base64Encoded)
 {
     if (!textContent.isNull() && !textContent.utf8(WTF::StrictUTF8Conversion).isNull()) {
         *result = textContent;
@@ -172,7 +172,7 @@ static void maybeEncodeTextContent(const String& textContent, PassRefPtr<SharedB
 }
 
 // static
-bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, const String& mimeType, const String& textEncodingName, String* result, bool* base64Encoded)
+bool InspectorPageAgent::sharedBufferContent(PassRefPtr<const SharedBuffer> buffer, const String& mimeType, const String& textEncodingName, String* result, bool* base64Encoded)
 {
     if (!buffer)
         return false;
@@ -200,7 +200,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
         return false;
 
     if (!hasTextContent(cachedResource)) {
-        RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
+        RefPtr<const SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
         if (!buffer)
             return false;
         *result = base64Encode(buffer->data(), buffer->size());

@@ -372,7 +372,7 @@ private:
     bool m_cancelled;
     bool m_finished;
 
-    RefPtr<SharedBuffer> m_resourceBuffer; // Only used by the main thread.
+    RefPtr<const SharedBuffer> m_resourceBuffer; // Only used by the main thread.
 
     // The queue contains the data to be passed to the V8 thread.
     //   queueLeadPosition: data we have handed off to the V8 thread.

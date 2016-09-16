@@ -386,7 +386,7 @@ bool FrameSerializer::shouldAddURL(const KURL& url)
         && !m_delegate.shouldSkipResourceWithURL(url);
 }
 
-void FrameSerializer::addToResources(const Resource& resource, PassRefPtr<SharedBuffer> data, const KURL& url)
+void FrameSerializer::addToResources(const Resource& resource, PassRefPtr<const SharedBuffer> data, const KURL& url)
 {
     if (m_delegate.shouldSkipResource(resource))
         return;
@@ -406,7 +406,7 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
     if (!image || !image->hasImage() || image->errorOccurred() || !shouldAddURL(url))
         return;
 
-    RefPtr<SharedBuffer> data = image->getImage()->data();
+    RefPtr<const SharedBuffer> data = image->getImage()->data();
     addToResources(*image, data, url);
 }
 
@@ -415,7 +415,7 @@ void FrameSerializer::addFontToResources(FontResource* font)
     if (!font || !font->isLoaded() || !font->resourceBuffer() || !shouldAddURL(font->url()))
         return;
 
-    RefPtr<SharedBuffer> data(font->resourceBuffer());
+    RefPtr<const SharedBuffer> data(font->resourceBuffer());
 
     addToResources(*font, data, font->url());
 }

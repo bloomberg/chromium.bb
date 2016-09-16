@@ -39,7 +39,7 @@
 
 namespace blink {
 
-SharedBufferReader::SharedBufferReader(PassRefPtr<SharedBuffer> buffer)
+SharedBufferReader::SharedBufferReader(PassRefPtr<const SharedBuffer> buffer)
     : m_buffer(buffer)
     , m_currentOffset(0)
 {

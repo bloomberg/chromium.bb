@@ -34,7 +34,7 @@
 
 namespace blink {
 
-SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<SharedBuffer> buffer, const Vector<char>& separator)
+SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<const SharedBuffer> buffer, const Vector<char>& separator)
     : m_buffer(buffer)
     , m_bufferPosition(0)
     , m_segment(0)
@@ -46,7 +46,7 @@ SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<SharedBuffer> buffer
 {
 }
 
-SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<SharedBuffer> buffer, const char* separator)
+SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<const SharedBuffer> buffer, const char* separator)
     : m_buffer(buffer)
     , m_bufferPosition(0)
     , m_segment(0)

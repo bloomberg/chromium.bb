@@ -648,7 +648,7 @@ static void* openFunc(const char* uri)
         return &globalDescriptor;
 
     KURL finalURL;
-    RefPtr<SharedBuffer> data;
+    RefPtr<const SharedBuffer> data;
 
     {
         Document* document = XMLDocumentParserScope::currentDocument;

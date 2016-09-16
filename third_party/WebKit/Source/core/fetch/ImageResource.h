@@ -104,7 +104,7 @@ public:
 
     void allClientsAndObserversRemoved() override;
 
-    PassRefPtr<SharedBuffer> resourceBuffer() const override;
+    PassRefPtr<const SharedBuffer> resourceBuffer() const override;
     void appendData(const char*, size_t) override;
     void error(const ResourceError&) override;
     void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;

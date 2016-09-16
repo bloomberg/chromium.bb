@@ -123,7 +123,7 @@ private:
 
     bool shouldAddURL(const KURL&);
 
-    void addToResources(const Resource&, PassRefPtr<SharedBuffer>, const KURL&);
+    void addToResources(const Resource&, PassRefPtr<const SharedBuffer>, const KURL&);
     void addImageToResources(ImageResource*, const KURL&);
     void addFontToResources(FontResource*);
 

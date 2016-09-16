@@ -44,7 +44,7 @@ class SharedBuffer;
 class CORE_EXPORT SharedBufferReader {
     USING_FAST_MALLOC(SharedBufferReader);
 public:
-    SharedBufferReader(PassRefPtr<SharedBuffer>);
+    SharedBufferReader(PassRefPtr<const SharedBuffer>);
 
     ~SharedBufferReader();
 
@@ -53,7 +53,7 @@ public:
     int readData(char* outputBuffer, int askedToRead);
 
 private:
-    RefPtr<SharedBuffer> m_buffer;
+    RefPtr<const SharedBuffer> m_buffer;
     size_t m_currentOffset;
 };
 

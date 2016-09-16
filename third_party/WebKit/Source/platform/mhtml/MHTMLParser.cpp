@@ -199,7 +199,7 @@ static bool skipLinesUntilBoundaryFound(SharedBufferChunkReader& lineReader, con
     return false;
 }
 
-MHTMLParser::MHTMLParser(PassRefPtr<SharedBuffer> data)
+MHTMLParser::MHTMLParser(PassRefPtr<const SharedBuffer> data)
     : m_lineReader(std::move(data), "\r\n")
 {
 }
