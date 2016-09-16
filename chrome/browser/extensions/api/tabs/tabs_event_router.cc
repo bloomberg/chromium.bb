@@ -507,14 +507,9 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
 }
 
 void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
-  TabStripModel* tab_strip = NULL;
-  int tab_index;
-
-  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    std::set<std::string> changed_property_names;
-    changed_property_names.insert(tabs_constants::kPinnedKey);
-    DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
-  }
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kPinnedKey);
+  DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
 }
 
 void TabsEventRouter::OnZoomChanged(
@@ -558,26 +553,16 @@ void TabsEventRouter::OnFaviconUpdated(
 
 void TabsEventRouter::OnDiscardedStateChange(WebContents* contents,
                                              bool is_discarded) {
-  TabStripModel* tab_strip = nullptr;
-  int tab_index = -1;
-
-  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    std::set<std::string> changed_property_names;
-    changed_property_names.insert(tabs_constants::kDiscardedKey);
-    DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
-  }
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kDiscardedKey);
+  DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
 }
 
 void TabsEventRouter::OnAutoDiscardableStateChange(WebContents* contents,
                                                    bool is_auto_discardable) {
-  TabStripModel* tab_strip = nullptr;
-  int tab_index = -1;
-
-  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    std::set<std::string> changed_property_names;
-    changed_property_names.insert(tabs_constants::kAutoDiscardableKey);
-    DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
-  }
+  std::set<std::string> changed_property_names;
+  changed_property_names.insert(tabs_constants::kAutoDiscardableKey);
+  DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
 }
 
 }  // namespace extensions
