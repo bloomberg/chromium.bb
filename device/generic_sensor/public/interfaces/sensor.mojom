@@ -10,7 +10,9 @@ enum SensorType {
   AMBIENT_LIGHT = FIRST,
   PROXIMITY,
   ACCELEROMETER,
+  LINEAR_ACCELERATION,
   GYROSCOPE,
+  MAGNETOMETER,
   PRESSURE,
   LAST = PRESSURE // Note: LAST is also equal to the types count.
 };

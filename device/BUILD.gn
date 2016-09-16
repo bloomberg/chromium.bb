@@ -254,11 +254,16 @@ if (is_android) {
   }
 
   junit_binary("device_junit_tests") {
-    java_files = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
+    java_files = [
+      "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
+      "generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
+    ]
     deps = [
       "//base:base_java",
       "//base:base_java_test_support",
       "//device/gamepad:java",
+      "//device/generic_sensor:java",
+      "//device/generic_sensor/public/interfaces:interfaces_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]

@@ -19,4 +19,9 @@ bool PlatformSensorConfiguration::operator==(
   return frequency_ == other.frequency();
 }
 
+bool PlatformSensorConfiguration::operator>(
+    const PlatformSensorConfiguration& other) const {
+  return frequency() > other.frequency();
+}
+
 }  // namespace device

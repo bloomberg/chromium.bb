@@ -27,6 +27,7 @@
 #include "content/public/common/result_codes.h"
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
 #include "device/gamepad/android/gamepad_jni_registrar.h"
+#include "device/generic_sensor/android/sensors_jni_registrar.h"
 #include "device/geolocation/android/geolocation_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
@@ -80,6 +81,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterGeolocationJni(env))
+      return false;
+
+    if (!device::android::RegisterSensorsJni(env))
       return false;
 
     if (!device::android::RegisterUsbJni(env))

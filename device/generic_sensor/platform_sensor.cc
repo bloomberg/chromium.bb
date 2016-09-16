@@ -94,4 +94,26 @@ void PlatformSensor::NotifySensorError() {
   FOR_EACH_OBSERVER(Client, clients_, OnSensorError());
 }
 
+bool PlatformSensor::UpdateSensorInternal(const ConfigMap& configurations) {
+  const PlatformSensorConfiguration* optimal_configuration = nullptr;
+  for (const auto& pair : configurations) {
+    if (pair.first->IsNotificationSuspended())
+      continue;
+
+    const auto& conf_list = pair.second;
+    for (const auto& configuration : conf_list) {
+      if (!optimal_configuration || configuration > *optimal_configuration) {
+        optimal_configuration = &configuration;
+      }
+    }
+  }
+
+  if (!optimal_configuration) {
+    StopSensor();
+    return true;
+  }
+
+  return StartSensor(*optimal_configuration);
+}
+
 }  // namespace device

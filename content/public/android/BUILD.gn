@@ -31,6 +31,7 @@ android_library("content_java") {
     "//device/battery/android:battery_monitor_android",
     "//device/bluetooth:java",
     "//device/gamepad:java",
+    "//device/generic_sensor:java",
     "//device/nfc:mojo_bindings_java",
     "//device/nfc/android:java",
     "//device/power_save_blocker:java",

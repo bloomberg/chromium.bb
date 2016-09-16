@@ -49,6 +49,7 @@ template("implement_content_app") {
       "//content/child",
       "//device/bluetooth",
       "//device/gamepad",
+      "//device/generic_sensor",
       "//device/geolocation",
       "//device/power_save_blocker",
       "//device/usb",

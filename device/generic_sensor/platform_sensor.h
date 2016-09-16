@@ -57,7 +57,10 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   using ConfigMap = std::map<Client*, std::list<PlatformSensorConfiguration>>;
 
-  virtual bool UpdateSensorInternal(const ConfigMap& configurations) = 0;
+  virtual bool UpdateSensorInternal(const ConfigMap& configurations);
+  virtual bool StartSensor(
+      const PlatformSensorConfiguration& configuration) = 0;
+  virtual void StopSensor() = 0;
   virtual bool CheckSensorConfiguration(
       const PlatformSensorConfiguration& configuration) = 0;
 

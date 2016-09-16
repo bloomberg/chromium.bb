@@ -16,11 +16,6 @@ namespace device {
 // Its implementations must be accessed via GetInstance() method.
 class PlatformSensorProviderBase : public base::NonThreadSafe {
  public:
-  // Returns the PlatformSensorProviderBase singleton.
-  // Note: returns 'nullptr' if there is no available implementation for
-  // the current platform.
-  static PlatformSensorProviderBase* GetInstance();
-
   // Creates new instance of PlatformSensor.
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type,
                                              uint64_t size,
