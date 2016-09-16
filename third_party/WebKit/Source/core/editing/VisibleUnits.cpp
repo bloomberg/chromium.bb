@@ -1343,7 +1343,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     if (!node)
         return VisiblePosition();
 
-    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!node->document().needsLayoutTreeUpdate());
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
@@ -1396,7 +1396,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     if (!node)
         return VisiblePosition();
 
-    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(!node->document().needsLayoutTreeUpdate());
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)

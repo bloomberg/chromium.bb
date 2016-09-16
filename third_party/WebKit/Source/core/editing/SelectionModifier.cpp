@@ -532,6 +532,12 @@ static void setSelectionStart(VisibleSelection* selection, const VisiblePosition
 
 bool SelectionModifier::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame()->document()->lifecycle());
+
     willBeModified(alter, direction);
 
     bool wasRange = m_selection.isRange();
@@ -635,6 +641,9 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter, unsigned ve
 {
     if (!verticalDistance)
         return false;
+
+    DCHECK(!frame()->document()->needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame()->document()->lifecycle());
 
     willBeModified(alter, direction == FrameSelection::DirectionUp ? DirectionBackward : DirectionForward);
 
