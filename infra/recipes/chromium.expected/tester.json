@@ -43,7 +43,7 @@
     "cwd": "[BUILDER_CACHE]/Linux_remote_run_Tester",
     "env": {
       "GCLIENT_KILL_GIT_FETCH_AFTER": "1200",
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
+      "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
     "name": "bot_update",
     "~followup_annotations": [
