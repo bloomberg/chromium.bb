@@ -72,10 +72,10 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
                                         int error, void* user_data);
 
   // Callback to get the native sample rate of PulseAudio, used by
-  // GetNativeSampleRate().
-  static void SampleRateInfoCallback(pa_context* context,
-                                     const pa_server_info* info,
-                                     void* user_data);
+  // UpdateNativeAudioHardwareInfo().
+  static void AudioHardwareInfoCallback(pa_context* context,
+                                        const pa_server_info* info,
+                                        void* user_data);
 
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
   AudioOutputStream* MakeOutputStream(const AudioParameters& params,
@@ -85,13 +85,14 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
 
-  // Gets the native sample rate of Pulse.
-  int GetNativeSampleRate();
+  // Updates |native_input_sample_rate_| and |native_channel_count_|.
+  void UpdateNativeAudioHardwareInfo();
 
   pa_threaded_mainloop* input_mainloop_;
   pa_context* input_context_;
   AudioDeviceNames* devices_;
   int native_input_sample_rate_;
+  int native_channel_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerPulse);
 };
