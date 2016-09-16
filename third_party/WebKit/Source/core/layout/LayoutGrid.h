@@ -142,9 +142,9 @@ private:
     GridTrackSizingDirection autoPlacementMajorAxisDirection() const;
     GridTrackSizingDirection autoPlacementMinorAxisDirection() const;
 
-    void computeIntrinsicLogicalHeight(GridSizingData&);
+    void computeTrackSizesForIndefiniteSize(GridTrackSizingDirection, GridSizingData&, LayoutUnit& minIntrinsicSize, LayoutUnit& maxIntrinsicSize) const;
     LayoutUnit computeTrackBasedLogicalHeight(const GridSizingData&) const;
-    void computeTrackSizesForDirection(GridTrackSizingDirection, GridSizingData&, LayoutUnit freeSpace);
+    void computeTrackSizesForDefiniteSize(GridTrackSizingDirection, GridSizingData&, LayoutUnit freeSpace) const;
 
     void repeatTracksSizingIfNeeded(GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
 
@@ -205,7 +205,7 @@ private:
     void updateAutoMarginsInRowAxisIfNeeded(LayoutBox&);
 
 #if ENABLE(ASSERT)
-    bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, GridSizingData&);
+    bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, GridSizingData&) const;
 #endif
 
     LayoutUnit gridGapForDirection(GridTrackSizingDirection, SizingOperation) const;

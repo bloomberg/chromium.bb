@@ -405,7 +405,7 @@ LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(const GridSizingData& sizi
     return logicalHeight;
 }
 
-void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit availableSpace)
+void LayoutGrid::computeTrackSizesForDefiniteSize(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit availableSpace) const
 {
     DCHECK(sizingData.isValidTransition(direction));
     sizingData.setAvailableSpace(availableSpace);
@@ -431,8 +431,8 @@ void LayoutGrid::repeatTracksSizingIfNeeded(GridSizingData& sizingData, LayoutUn
     // cases with orthogonal flows require this extra cycle; we need a more specific
     // condition to detect whether child's min-content contribution has changed or not.
     if (m_hasAnyOrthogonalChild) {
-        computeTrackSizesForDirection(ForColumns, sizingData, availableSpaceForColumns);
-        computeTrackSizesForDirection(ForRows, sizingData, availableSpaceForRows);
+        computeTrackSizesForDefiniteSize(ForColumns, sizingData, availableSpaceForColumns);
+        computeTrackSizesForDefiniteSize(ForRows, sizingData, availableSpaceForRows);
     }
 }
 
@@ -471,14 +471,17 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         // paths inside updateLogicalHeight() require a previous call to setLogicalHeight() to resolve
         // heights properly (like for positioned items for example).
         LayoutUnit availableSpaceForColumns = availableLogicalWidth();
-        computeTrackSizesForDirection(ForColumns, sizingData, availableSpaceForColumns);
+        computeTrackSizesForDefiniteSize(ForColumns, sizingData, availableSpaceForColumns);
 
         // 2- Next, the track sizing algorithm resolves the sizes of the grid rows, using the
         // grid column sizes calculated in the previous step.
-        if (cachedHasDefiniteLogicalHeight())
-            computeTrackSizesForDirection(ForRows, sizingData, availableLogicalHeight(ExcludeMarginBorderPadding));
-        else
-            computeIntrinsicLogicalHeight(sizingData);
+        if (cachedHasDefiniteLogicalHeight()) {
+            computeTrackSizesForDefiniteSize(ForRows, sizingData, availableLogicalHeight(ExcludeMarginBorderPadding));
+        } else {
+            computeTrackSizesForIndefiniteSize(ForRows, sizingData, m_minContentHeight, m_maxContentHeight);
+            sizingData.nextState();
+            sizingData.sizingOperation = TrackSizing;
+        }
         setLogicalHeight(computeTrackBasedLogicalHeight(sizingData) + borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
         LayoutUnit oldClientAfterEdge = clientLogicalBottom();
@@ -601,36 +604,30 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
-    sizingData.setAvailableSpace(LayoutUnit());
-    sizingData.freeSpace(ForColumns) = LayoutUnit();
-    sizingData.sizingOperation = IntrinsicSizeComputation;
-    computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth);
-
-    LayoutUnit totalGuttersSize = guttersSize(ForColumns, 0, sizingData.columnTracks.size(), sizingData.sizingOperation);
-    minLogicalWidth += totalGuttersSize;
-    maxLogicalWidth += totalGuttersSize;
+    computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth);
 
     LayoutUnit scrollbarWidth = LayoutUnit(scrollbarLogicalWidth());
     minLogicalWidth += scrollbarWidth;
     maxLogicalWidth += scrollbarWidth;
 }
 
-void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
+void LayoutGrid::computeTrackSizesForIndefiniteSize(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& minIntrinsicSize, LayoutUnit& maxIntrinsicSize) const
 {
-    DCHECK(sizingData.isValidTransition(ForRows));
-    ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData));
+    DCHECK(sizingData.isValidTransition(direction));
     sizingData.setAvailableSpace(LayoutUnit());
-    sizingData.freeSpace(ForRows) = LayoutUnit();
+    sizingData.freeSpace(direction) = LayoutUnit();
     sizingData.sizingOperation = IntrinsicSizeComputation;
-    computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight);
 
-    LayoutUnit totalGuttersSize = guttersSize(ForRows, 0, gridRowCount(), sizingData.sizingOperation);
-    m_minContentHeight += totalGuttersSize;
-    m_maxContentHeight += totalGuttersSize;
+    computeUsedBreadthOfGridTracks(direction, sizingData, minIntrinsicSize, maxIntrinsicSize);
 
-    ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, sizingData));
-    sizingData.nextState();
-    sizingData.sizingOperation = TrackSizing;
+    size_t numberOfTracks = direction == ForColumns ? sizingData.columnTracks.size() : sizingData.rowTracks.size();
+    LayoutUnit totalGuttersSize = guttersSize(direction, 0, numberOfTracks, sizingData.sizingOperation);
+    minIntrinsicSize += totalGuttersSize;
+    maxIntrinsicSize += totalGuttersSize;
+
+#if ENABLE(ASSERT)
+    DCHECK(tracksAreWiderThanMinTrackBreadth(direction, sizingData));
+#endif
 }
 
 LayoutUnit LayoutGrid::computeIntrinsicLogicalContentHeightUsing(const Length& logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
@@ -1404,7 +1401,7 @@ void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
 }
 
 #if ENABLE(ASSERT)
-bool LayoutGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection direction, GridSizingData& sizingData)
+bool LayoutGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection direction, GridSizingData& sizingData) const
 {
     const Vector<GridTrack>& tracks = (direction == ForColumns) ? sizingData.columnTracks : sizingData.rowTracks;
     LayoutUnit& maxSize = sizingData.freeSpace(direction);
