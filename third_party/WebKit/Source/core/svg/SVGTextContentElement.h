@@ -21,7 +21,6 @@
 #ifndef SVGTextContentElement_h
 #define SVGTextContentElement_h
 
-#include "core/layout/api/LineLayoutItem.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
@@ -32,6 +31,7 @@
 namespace blink {
 
 class ExceptionState;
+class LineLayoutItem;
 
 enum SVGLengthAdjustType {
     SVGLengthAdjustUnknown,
@@ -60,7 +60,7 @@ public:
     int getCharNumAtPosition(SVGPointTearOff*, ExceptionState&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
-    static SVGTextContentElement* elementFromLineLayoutItem(const LineLayoutItem);
+    static SVGTextContentElement* elementFromLineLayoutItem(const LineLayoutItem&);
 
     SVGAnimatedLength* textLength() { return m_textLength.get(); }
     bool textLengthIsSpecifiedByUser() { return m_textLengthIsSpecifiedByUser; }

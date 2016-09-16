@@ -30,6 +30,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/svg/SVGTextQuery.h"
 
 namespace blink {
@@ -249,7 +250,7 @@ bool SVGTextContentElement::selfHasRelativeLengths() const
     return true;
 }
 
-SVGTextContentElement* SVGTextContentElement::elementFromLineLayoutItem(LineLayoutItem lineLayoutItem)
+SVGTextContentElement* SVGTextContentElement::elementFromLineLayoutItem(const LineLayoutItem& lineLayoutItem)
 {
     if (!lineLayoutItem || (!lineLayoutItem.isSVGText() && !lineLayoutItem.isSVGInline()))
         return nullptr;
