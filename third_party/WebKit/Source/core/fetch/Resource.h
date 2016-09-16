@@ -214,6 +214,9 @@ public:
     DataBufferingPolicy getDataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
     void setDataBufferingPolicy(DataBufferingPolicy);
 
+    // The isPreloaded() flag is using a counter in order to make sure that even when
+    // multiple ResourceFetchers are preloading the resource, it will remain marked as
+    // preloaded until *all* of them have used it.
     bool isUnusedPreload() const { return isPreloaded() && getPreloadResult() == PreloadNotReferenced; }
     bool isPreloaded() const { return m_preloadCount; }
     void increasePreloadCount() { ++m_preloadCount; }

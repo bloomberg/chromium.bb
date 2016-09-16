@@ -34,6 +34,7 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/MockResourceClients.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -513,7 +514,130 @@ TEST_F(ResourceFetcherTest, SynchronousRequest)
     EXPECT_TRUE(resource->isLoaded());
     EXPECT_EQ(ResourceLoadPriorityHighest, resource->resourceRequest().priority());
 
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
     memoryCache()->remove(resource);
+}
+
+TEST_F(ResourceFetcherTest, PreloadImageTwice)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
+    Resource* resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
+    ASSERT_TRUE(resource);
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    fetcher->preloadStarted(resource);
+
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    Resource* newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, newResource);
+    fetcher->preloadStarted(resource);
+
+    fetcher->clearPreloads(ResourceFetcher::ClearAllPreloads);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+    EXPECT_FALSE(memoryCache()->contains(resource));
+    EXPECT_FALSE(resource->isPreloaded());
+}
+
+
+TEST_F(ResourceFetcherTest, LinkPreloadImageAndUse)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    // Link preload preload scanner
+    FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
+    fetchRequestOriginal.setLinkPreload(true);
+    Resource* resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
+    ASSERT_TRUE(resource);
+    EXPECT_TRUE(resource->isLinkPreload());
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    fetcher->preloadStarted(resource);
+
+    // Image preload scanner
+    FetchRequest fetchRequestPreloadScanner = FetchRequest(url, FetchInitiatorInfo());
+    Resource* imgPreloadScannerResource = fetcher->requestResource(fetchRequestPreloadScanner, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, imgPreloadScannerResource);
+    EXPECT_FALSE(resource->isLinkPreload());
+    fetcher->preloadStarted(resource);
+
+    // Image created by parser
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    Resource* newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
+    Persistent<MockResourceClient> client = new MockResourceClient(newResource);
+    EXPECT_EQ(resource, newResource);
+    EXPECT_FALSE(resource->isLinkPreload());
+
+    // DCL reached
+    fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+    EXPECT_TRUE(memoryCache()->contains(resource));
+    EXPECT_FALSE(resource->isPreloaded());
+}
+
+TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+    ResourceFetcher* fetcher2 = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
+    fetchRequestOriginal.setLinkPreload(true);
+    Resource* resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
+    ASSERT_TRUE(resource);
+    EXPECT_TRUE(resource->isLinkPreload());
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    fetcher->preloadStarted(resource);
+
+    FetchRequest fetchRequestSecond = FetchRequest(url, FetchInitiatorInfo());
+    fetchRequestSecond.setLinkPreload(true);
+    Resource* secondResource = fetcher2->requestResource(fetchRequestSecond, TestResourceFactory(Resource::Image));
+    ASSERT_TRUE(secondResource);
+    EXPECT_TRUE(secondResource->isLinkPreload());
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    fetcher2->preloadStarted(secondResource);
+
+    // Image preload scanner
+    FetchRequest fetchRequestPreloadScanner = FetchRequest(url, FetchInitiatorInfo());
+    Resource* imgPreloadScannerResource = fetcher->requestResource(fetchRequestPreloadScanner, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, imgPreloadScannerResource);
+    EXPECT_FALSE(resource->isLinkPreload());
+    fetcher->preloadStarted(resource);
+
+    // Image created by parser
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    Resource* newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
+    Persistent<MockResourceClient> client = new MockResourceClient(newResource);
+    EXPECT_EQ(resource, newResource);
+    EXPECT_FALSE(resource->isLinkPreload());
+
+    // DCL reached on first fetcher
+    EXPECT_TRUE(resource->isPreloaded());
+    fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+    EXPECT_TRUE(memoryCache()->contains(resource));
+    EXPECT_TRUE(resource->isPreloaded());
+
+    // DCL reached on second fetcher
+    fetcher2->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
+    EXPECT_TRUE(memoryCache()->contains(resource));
+    EXPECT_FALSE(resource->isPreloaded());
 }
 
 } // namespace blink

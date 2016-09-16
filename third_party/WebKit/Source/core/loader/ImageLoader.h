@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceObserver.h"
-#include "core/fetch/ResourceClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"

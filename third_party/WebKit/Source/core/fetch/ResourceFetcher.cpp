@@ -474,6 +474,8 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
         initializeRevalidation(request.mutableResourceRequest(), resource);
         break;
     case Use:
+        if (resource->isLinkPreload() && !request.isLinkPreload())
+            resource->setLinkPreload(false);
         memoryCache()->updateForAccess(resource);
         break;
     }
