@@ -134,27 +134,38 @@ bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources)
     return true;
 }
 
+static bool hasReferenceFilterOnly(const ComputedStyle& style)
+{
+    if (!style.hasFilter())
+        return false;
+    const FilterOperations& operations = style.filter();
+    if (operations.size() != 1)
+        return false;
+    return operations.at(0)->type() == FilterOperation::REFERENCE;
+}
+
 bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
 {
-    if (!resources) {
-        if (m_object.style()->hasFilter())
-            return false;
-    } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
-        m_filterRecordingContext = wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
-        m_filter = filter;
-        GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(m_object, *m_filterRecordingContext);
-        if (!filterContext)
-            return false;
+    if (!resources)
+        return !hasReferenceFilterOnly(m_object.styleRef());
 
-        // Because the filter needs to cache its contents we replace the context
-        // during filtering with the filter's context.
-        m_filterPaintInfo = wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
+    LayoutSVGResourceFilter* filter = resources->filter();
+    if (!filter)
+        return true;
+    m_filterRecordingContext = wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
+    m_filter = filter;
+    GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(m_object, *m_filterRecordingContext);
+    if (!filterContext)
+        return false;
 
-        // Because we cache the filter contents and do not invalidate on paint
-        // invalidation rect changes, we need to paint the entire filter region
-        // so elements outside the initial paint (due to scrolling, etc) paint.
-        m_filterPaintInfo->m_cullRect.m_rect = LayoutRect::infiniteIntRect();
-    }
+    // Because the filter needs to cache its contents we replace the context
+    // during filtering with the filter's context.
+    m_filterPaintInfo = wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
+
+    // Because we cache the filter contents and do not invalidate on paint
+    // invalidation rect changes, we need to paint the entire filter region
+    // so elements outside the initial paint (due to scrolling, etc) paint.
+    m_filterPaintInfo->m_cullRect.m_rect = LayoutRect::infiniteIntRect();
     return true;
 }
 
