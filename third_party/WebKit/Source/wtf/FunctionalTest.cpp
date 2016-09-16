@@ -589,9 +589,11 @@ TEST(FunctionalTest, WeakPtr)
     std::unique_ptr<WTF::Closure> bound = WTF::bind(&HasWeakPtrSupport::increment, obj.createWeakPtr(), WTF::unretained(&counter));
 
     (*bound)();
+    EXPECT_FALSE(bound->isCancelled());
     EXPECT_EQ(1, counter);
 
     obj.revokeAll();
+    EXPECT_TRUE(bound->isCancelled());
     (*bound)();
     EXPECT_EQ(1, counter);
 }

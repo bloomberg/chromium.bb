@@ -203,6 +203,11 @@ public:
         return m_callback.Run(std::forward<Args>(args)...);
     }
 
+    bool isCancelled() const
+    {
+        return m_callback.IsCancelled();
+    }
+
     friend base::Callback<R(Args...)> convertToBaseCallback(std::unique_ptr<Function> function)
     {
         return std::move(function->m_callback);
