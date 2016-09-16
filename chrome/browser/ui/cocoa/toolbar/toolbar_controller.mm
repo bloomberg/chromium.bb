@@ -1150,10 +1150,13 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   GURL url(url_formatter::FixupURL(
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
 
+  // Security: Sanitize text to prevent self-XSS.
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(
           OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
+    return;
   }
+
   OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_TYPED, false);
   browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
@@ -1171,6 +1174,10 @@ class NotificationBridge : public AppMenuIconController::Delegate {
       base::SysNSStringToUTF16(text), false, false,
       metrics::OmniboxEventProto::BLANK, &match, NULL);
   GURL url(match.destination_url);
+
+  // Security: Block JavaScript to prevent self-XSS.
+  if (url.SchemeIs(url::kJavaScriptScheme))
+    return;
 
   OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_TYPED, false);

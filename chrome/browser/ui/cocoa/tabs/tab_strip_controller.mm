@@ -2059,6 +2059,10 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
 }
 
 - (void)openURL:(GURL*)url inView:(NSView*)view at:(NSPoint)point {
+  // Security: Block JavaScript to prevent self-XSS.
+  if (url->SchemeIs(url::kJavaScriptScheme))
+    return;
+
   // Get the index and disposition.
   NSInteger index;
   WindowOpenDisposition disposition;
