@@ -30,6 +30,14 @@ using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(HistoryTabHelper);
 
+namespace {
+
+// Referrer used for clicks on article suggestions on the NTP.
+const char kChromeContentSuggestionsReferrer[] =
+    "https://www.googleapis.com/auth/chrome-content-suggestions";
+
+}  // namespace
+
 HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       received_page_title_(false) {
@@ -58,10 +66,16 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     bool did_replace_entry,
     int nav_entry_id,
     const content::FrameNavigateParams& params) {
+  // Clicks on content suggestions on the NTP should not contribute to the
+  // Most Visited tiles in the NTP.
+  const bool consider_for_ntp_most_visited =
+      params.referrer.url != GURL(kChromeContentSuggestionsReferrer);
+
   history::HistoryAddPageArgs add_page_args(
       params.url, timestamp, history::ContextIDForWebContents(web_contents()),
       nav_entry_id, params.referrer.url, params.redirects, params.transition,
-      history::SOURCE_BROWSED, did_replace_entry);
+      history::SOURCE_BROWSED, did_replace_entry,
+      consider_for_ntp_most_visited);
   if (ui::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
     // Hack on the "virtual" URL so that it will appear in history. For some

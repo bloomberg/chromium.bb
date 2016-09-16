@@ -357,7 +357,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     history::HistoryAddPageArgs request(
         redirects.back(), time, context_id, nav_entry_id, GURL(),
         redirects, transition, history::SOURCE_BROWSED,
-        true);
+        true, true);
     backend_->AddPage(request);
   }
 
@@ -383,7 +383,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     HistoryAddPageArgs request(
         url2, time, dummy_context_id, 0, url1,
         redirects, ui::PAGE_TRANSITION_CLIENT_REDIRECT,
-        history::SOURCE_BROWSED, did_replace);
+        history::SOURCE_BROWSED, did_replace, true);
     backend_->AddPage(request);
 
     *transition1 = GetTransition(url1);
@@ -779,7 +779,7 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false);
+                             history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request);
 
   // Check that a row was added.
@@ -921,7 +921,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   HistoryAddPageArgs request(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false);
+                             history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request);
 
   // A row should have been added for the url.
@@ -953,7 +953,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK);
   HistoryAddPageArgs back_request(url, visit_time, NULL, 0, GURL(),
                                   history::RedirectList(), back_transition,
-                                  history::SOURCE_BROWSED, false);
+                                  history::SOURCE_BROWSED, false, true);
   backend_->AddPage(back_request);
   url_id = backend_->db()->GetRowForURL(url, &row);
   ASSERT_NE(0, url_id);
@@ -1482,19 +1482,19 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   HistoryAddPageArgs request1(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false);
+                             history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request1);
   // Assume this page is synced.
   HistoryAddPageArgs request2(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_LINK,
-                             history::SOURCE_SYNCED, false);
+                             history::SOURCE_SYNCED, false, true);
   backend_->AddPage(request2);
   // Assume this page is browsed again.
   HistoryAddPageArgs request3(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_TYPED,
-                             history::SOURCE_BROWSED, false);
+                             history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request3);
 
   // Three visits should be added with proper sources.
@@ -3804,6 +3804,36 @@ TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedWithSearchTerms) {
   EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
   EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
   EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+}
+
+TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {
+  ASSERT_TRUE(backend_.get());
+
+  // Pairs from page transitions to consider_for_ntp_most_visited.
+  std::vector<std::pair<ui::PageTransition, bool>> pages;
+  pages.emplace_back(ui::PAGE_TRANSITION_AUTO_BOOKMARK, true);   // good.
+  pages.emplace_back(ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);  // bad.
+  pages.emplace_back(ui::PAGE_TRANSITION_LINK, true);            // bad.
+  pages.emplace_back(ui::PAGE_TRANSITION_TYPED, false);          // bad.
+  pages.emplace_back(ui::PAGE_TRANSITION_TYPED, true);           // good.
+
+  for (size_t i = 0; i < pages.size(); ++i) {
+    HistoryAddPageArgs args;
+    args.url = GURL("http://example" + base::SizeTToString(i + 1) + ".com");
+    args.time = base::Time::Now() - base::TimeDelta::FromDays(i + 1);
+    args.transition = pages[i].first;
+    args.consider_for_ntp_most_visited = pages[i].second;
+    backend_->AddPage(args);
+  }
+
+  MostVisitedURLList most_visited;
+  backend_->QueryMostVisitedURLs(100, 100, &most_visited);
+
+  const base::string16 kSomeTitle;  // Ignored by equality operator.
+  EXPECT_THAT(
+      most_visited,
+      ElementsAre(MostVisitedURL(GURL("http://example1.com"), kSomeTitle),
+                  MostVisitedURL(GURL("http://example5.com"), kSomeTitle)));
 }
 
 }  // namespace history

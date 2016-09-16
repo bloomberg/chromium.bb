@@ -522,7 +522,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
     // result in changing most visited, so we don't update segments (most
     // visited db).
-    if (!is_keyword_generated) {
+    if (!is_keyword_generated && request.consider_for_ntp_most_visited) {
       UpdateSegments(request.url, from_visit_id, last_ids.second, t,
                      request.time);
 
@@ -592,9 +592,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       last_ids = AddPageVisit(redirects[redirect_index], request.time,
                               last_ids.second, t, request.visit_source);
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
-        // Update the segment for this visit.
-        UpdateSegments(redirects[redirect_index], from_visit_id,
-                       last_ids.second, t, request.time);
+        if (request.consider_for_ntp_most_visited) {
+          UpdateSegments(redirects[redirect_index], from_visit_id,
+                         last_ids.second, t, request.time);
+        }
 
         // Update the visit_details for this visit.
         UpdateVisitDuration(from_visit_id, request.time);
