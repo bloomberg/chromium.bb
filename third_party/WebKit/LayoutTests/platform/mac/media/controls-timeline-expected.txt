@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test seeking on the media controls timeline assert_greater_than: expected a number greater than 0.4 but got 0
+Harness: the test ran to completion.
+

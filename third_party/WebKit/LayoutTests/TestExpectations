@@ -1263,15 +1263,3 @@ crbug.com/646598 virtual/gpu/fast/canvas/text-rendering-frameless-canvas.html [ 
 crbug.com/646598 fast/canvas/text-rendering-frameless-canvas.html [ Skip ]
 
 crbug.com/492785 [ Linux Mac Win7 ] virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruction-on-inserting-style-sheet.html [ Failure ]
-
-crbug.com/601247 [ Mac Linux Win ] virtual/android/fullscreen/video-controls-timeline.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux Win ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux Win ] http/tests/loading/image-picture-no-download-after-source-removal.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux Win ] virtual/android/fullscreen/video-scrolled-iframe.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux Win ] paint/invalidation/video-mute-repaint.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux Win ] paint/invalidation/video-unmute-repaint.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux ] compositing/video/video-controls-layer-creation.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac Linux ] media/video-zoom-controls.html [ NeedsRebaseline ]
-crbug.com/601247 [ Linux ] http/tests/media/video-buffered-range-contains-currentTime.html [ NeedsRebaseline ]
-crbug.com/601247 [ Mac ] media/controls-timeline.html [ NeedsRebaseline ]
-crbug.com/601247 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ NeedsRebaseline ]
