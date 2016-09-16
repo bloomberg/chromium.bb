@@ -58,6 +58,18 @@ Histogram* HistogramFactoryGetEnumeration(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
+const std::string& GetHistogramName(Histogram* histogram_pointer) {
+  base::HistogramBase* ptr =
+      reinterpret_cast<base::HistogramBase*>(histogram_pointer);
+  return ptr->histogram_name();
+}
+
+void HistogramAdd(Histogram* histogram_pointer, int sample) {
+  base::HistogramBase* ptr =
+      reinterpret_cast<base::HistogramBase*>(histogram_pointer);
+  ptr->Add(sample);
+}
+
 void HistogramAdd(
     Histogram* histogram_pointer, const std::string& name, int sample) {
   base::HistogramBase* ptr =
