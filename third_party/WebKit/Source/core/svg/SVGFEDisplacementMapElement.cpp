@@ -21,7 +21,6 @@
 
 #include "core/SVGNames.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
 

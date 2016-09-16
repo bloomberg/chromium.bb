@@ -22,7 +22,6 @@
 #define SVGFEMergeElement_h
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEMerge.h"
 
 namespace blink {
 

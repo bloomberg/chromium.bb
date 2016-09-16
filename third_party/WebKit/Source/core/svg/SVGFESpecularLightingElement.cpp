@@ -23,9 +23,9 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
-#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FESpecularLighting.h"
+#include "platform/graphics/filters/Filter.h"
 
 namespace blink {
 

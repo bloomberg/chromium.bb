@@ -27,7 +27,7 @@
 #include "core/svg/SVGFEFuncGElement.h"
 #include "core/svg/SVGFEFuncRElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FEComponentTransfer.h"
 
 namespace blink {
 

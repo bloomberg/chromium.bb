@@ -22,10 +22,8 @@
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
 

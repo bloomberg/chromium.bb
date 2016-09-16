@@ -22,7 +22,6 @@
 #define SVGFETileElement_h
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FETile.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

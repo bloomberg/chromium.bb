@@ -25,7 +25,6 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGResourceClient.h"
 
 namespace blink {

@@ -21,9 +21,8 @@
 #include "core/svg/SVGFEGaussianBlurElement.h"
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
 
 namespace blink {
 

@@ -23,7 +23,6 @@
 
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEGaussianBlur.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

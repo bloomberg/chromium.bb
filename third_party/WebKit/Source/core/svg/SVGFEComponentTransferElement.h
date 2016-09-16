@@ -22,7 +22,6 @@
 #define SVGFEComponentTransferElement_h
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

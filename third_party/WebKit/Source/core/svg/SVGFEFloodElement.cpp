@@ -24,6 +24,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/SVGComputedStyle.h"
+#include "platform/graphics/filters/FEFlood.h"
 
 namespace blink {
 

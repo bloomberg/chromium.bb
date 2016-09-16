@@ -22,7 +22,6 @@
 #define SVGFEFloodElement_h
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEFlood.h"
 
 namespace blink {
 

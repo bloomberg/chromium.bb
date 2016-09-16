@@ -21,7 +21,6 @@
 #include "core/svg/SVGFETurbulenceElement.h"
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGParserUtilities.h"
 
 namespace blink {
 

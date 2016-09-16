@@ -27,7 +27,6 @@
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FESpecularLighting.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

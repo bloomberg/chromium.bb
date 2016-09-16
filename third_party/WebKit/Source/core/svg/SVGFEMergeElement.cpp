@@ -24,7 +24,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGFEMergeNodeElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/FEMerge.h"
 
 namespace blink {
 
@@ -39,8 +39,8 @@ FilterEffect* SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder, Filter* 
 {
     FilterEffect* effect = FEMerge::create(filter);
     FilterEffectVector& mergeInputs = effect->inputEffects();
-    for (SVGFEMergeNodeElement* element = Traversal<SVGFEMergeNodeElement>::firstChild(*this); element; element = Traversal<SVGFEMergeNodeElement>::nextSibling(*element)) {
-        FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(element->in1()->currentValue()->value()));
+    for (SVGFEMergeNodeElement& mergeNode : Traversal<SVGFEMergeNodeElement>::childrenOf(*this)) {
+        FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(mergeNode.in1()->currentValue()->value()));
         ASSERT(mergeEffect);
         mergeInputs.append(mergeEffect);
     }
