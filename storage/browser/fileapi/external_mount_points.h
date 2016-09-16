@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -119,7 +120,7 @@ class STORAGE_EXPORT ExternalMountPoints
   // Represents each file system instance (defined in the .cc).
   class Instance;
 
-  typedef std::map<std::string, Instance*> NameToInstance;
+  typedef std::map<std::string, std::unique_ptr<Instance>> NameToInstance;
 
   // Reverse map from registered path to its corresponding mount name.
   typedef std::map<base::FilePath, std::string> PathToName;

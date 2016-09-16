@@ -166,11 +166,6 @@ class STORAGE_EXPORT IsolatedContext : public MountPoints {
   // Represents each file system instance (defined in the .cc).
   class Instance;
 
-  typedef std::map<std::string, Instance*> IDToInstance;
-
-  // Reverse map from registered path to IDs.
-  typedef std::map<base::FilePath, std::set<std::string> > PathToID;
-
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();
   ~IsolatedContext() override;
@@ -188,8 +183,10 @@ class STORAGE_EXPORT IsolatedContext : public MountPoints {
   // This lock needs to be obtained when accessing the instance_map_.
   mutable base::Lock lock_;
 
-  IDToInstance instance_map_;
-  PathToID path_to_id_map_;
+  std::map<std::string, std::unique_ptr<Instance>> instance_map_;
+
+  // Reverse map from registered path to IDs.
+  std::map<base::FilePath, std::set<std::string>> path_to_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };
