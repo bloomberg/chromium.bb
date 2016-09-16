@@ -38,4 +38,3 @@
     attribute unsigned short sdpMLineIndex;
     serializer = {attribute};
 };
-

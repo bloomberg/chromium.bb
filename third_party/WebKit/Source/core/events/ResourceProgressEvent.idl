@@ -35,4 +35,3 @@
 ] interface ResourceProgressEvent : ProgressEvent {
     readonly attribute DOMString url;
 };
-

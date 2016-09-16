@@ -26,4 +26,3 @@
 callback interface MediaStreamTrackSourcesCallback {
     void handleEvent(sequence<SourceInfo> sources);
 };
-

@@ -23,8 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface InternalSettings : InternalSettingsGenerated {
+interface InternalSettings : InternalSettingsGenerated {
     // All methods which access Page::settings() can raise an exception
     // when the page cannot be accessed. (Such as during page tear-down.)
     [RaisesException] void setMockScrollbarsEnabled(boolean enabled);

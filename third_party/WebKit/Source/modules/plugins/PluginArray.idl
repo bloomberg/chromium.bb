@@ -27,4 +27,3 @@
     [NotEnumerable, ImplementedAs=namedItem] getter Plugin ([Default=Undefined] optional DOMString name);
     void refresh([Default=Undefined] optional boolean reload);
 };
-

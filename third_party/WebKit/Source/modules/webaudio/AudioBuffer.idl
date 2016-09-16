@@ -26,8 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface AudioBuffer {
+interface AudioBuffer {
     readonly attribute long length; // in sample-frames
     readonly attribute double duration; // in seconds
     readonly attribute float sampleRate; // in sample-frames per second

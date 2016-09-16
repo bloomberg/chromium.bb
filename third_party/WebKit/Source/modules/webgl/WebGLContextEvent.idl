@@ -30,4 +30,3 @@
 ] interface WebGLContextEvent : Event {
     readonly attribute DOMString statusMessage;
 };
-

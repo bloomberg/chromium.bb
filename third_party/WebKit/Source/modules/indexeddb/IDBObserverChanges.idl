@@ -14,5 +14,3 @@
     // Map object from String (object store name) to Array of IDBObservation.
     [CallWith=ScriptState] readonly attribute any records;
 };
-
-

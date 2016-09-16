@@ -31,4 +31,3 @@
 callback interface RTCSessionDescriptionCallback {
     void handleEvent(RTCSessionDescription sdp);
 };
-

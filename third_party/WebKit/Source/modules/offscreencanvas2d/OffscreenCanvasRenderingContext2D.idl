@@ -48,7 +48,7 @@
     // dashed lines
     void setLineDash(sequence<unrestricted double> dash);
     sequence<unrestricted double> getLineDash();
-    attribute unrestricted double lineDashOffset; 
+    attribute unrestricted double lineDashOffset;
 
     // state
     void save(); // push state on state stack

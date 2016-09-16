@@ -7,4 +7,3 @@
 callback interface RTCPeerConnectionErrorCallback {
     void handleEvent(DOMException exception);
 };
-

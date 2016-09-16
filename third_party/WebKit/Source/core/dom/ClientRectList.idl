@@ -39,8 +39,7 @@
 // DOMRectList, legacy interfaces must use sequences instead and
 // DOMRectList will be removed from this specification."
 
-[
-] interface ClientRectList {
+interface ClientRectList {
     readonly attribute unsigned long length;
     [MeasureAs=ClientRectListItem] ClientRect item(unsigned long index);
     getter ClientRect (unsigned long index);

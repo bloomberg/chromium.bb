@@ -28,8 +28,7 @@
 
 // http://dev.w3.org/csswg/cssom-view/#the-screen-interface
 
-[
-] interface Screen {
+interface Screen {
     readonly attribute long availWidth;
     readonly attribute long availHeight;
     readonly attribute long width;

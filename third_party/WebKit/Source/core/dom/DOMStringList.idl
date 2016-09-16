@@ -26,8 +26,7 @@
 // https://dom.spec.whatwg.org/#domstringlist
 
 // FIXME: DOMStringList has been removed from the spec. crbug.com/460726
-[
-] interface DOMStringList {
+interface DOMStringList {
     readonly attribute unsigned long length;
     getter DOMString? (unsigned long index);
 

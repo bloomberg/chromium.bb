@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface LayerRectList {
+interface LayerRectList {
     readonly attribute unsigned long length;
     getter LayerRect item(unsigned long index);
 };

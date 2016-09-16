@@ -25,8 +25,7 @@
 
 // https://html.spec.whatwg.org/#texttrackcuelist
 
-[
-] interface TextTrackCueList {
+interface TextTrackCueList {
     readonly attribute unsigned long length;
     getter TextTrackCue (unsigned long index);
     TextTrackCue? getCueById(DOMString id);

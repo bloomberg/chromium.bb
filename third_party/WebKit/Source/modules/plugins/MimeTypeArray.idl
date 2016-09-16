@@ -26,4 +26,3 @@
     MimeType namedItem([Default=Undefined] optional DOMString name);
     [NotEnumerable, ImplementedAs=namedItem] getter MimeType ([Default=Undefined] optional DOMString name);
 };
-

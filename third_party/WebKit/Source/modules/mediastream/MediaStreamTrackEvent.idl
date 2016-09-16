@@ -27,4 +27,3 @@
 ] interface MediaStreamTrackEvent : Event {
    readonly attribute MediaStreamTrack track;
 };
-

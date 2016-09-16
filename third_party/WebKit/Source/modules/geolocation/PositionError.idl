@@ -33,4 +33,3 @@
     const unsigned short POSITION_UNAVAILABLE = 2;
     const unsigned short TIMEOUT = 3;
 };
-

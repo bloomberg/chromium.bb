@@ -264,7 +264,6 @@ class BlinkIDLParser(IDLParser):
     # FIXME: Upstream
     def p_ExtendedAttributeList(self, p):
         """ExtendedAttributeList : '[' ExtendedAttribute ExtendedAttributes ']'
-                                 | '[' ']'
                                  | """
         if len(p) > 3:
             items = ListFromConcat(p[2], p[3])

@@ -8,4 +8,3 @@ partial interface CSS {
     [RuntimeEnabled=CSSVariables2, CallWith=ExecutionContext, RaisesException]
         static void unregisterProperty(DOMString name);
 };
-

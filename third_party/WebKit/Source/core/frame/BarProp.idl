@@ -28,7 +28,6 @@
 
 // https://html.spec.whatwg.org/#barprop
 
-[
-] interface BarProp {
+interface BarProp {
     readonly attribute boolean visible;
 };

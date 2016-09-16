@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Test for [OriginTrialEnabled] extended attribute applied to a partial
-// interface. This is separate from TestInterfacePartial, as the 
+// interface. This is separate from TestInterfacePartial, as the
 // [OriginTrialEnabled] attribute cannot be applied with [RuntimeEnabled].
 
 [

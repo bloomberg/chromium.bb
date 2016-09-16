@@ -26,4 +26,3 @@ typedef unrestricted double Megabit;
     [RuntimeEnabled=NetInfoDownlinkMax, MeasureAs=NetInfoOnChange] attribute EventHandler onchange;
     [MeasureAs=NetInfoOnTypeChange] attribute EventHandler ontypechange;
 };
-

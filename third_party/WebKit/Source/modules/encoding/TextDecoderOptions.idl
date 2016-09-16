@@ -4,8 +4,7 @@
 
 // http://encoding.spec.whatwg.org/#textdecoder
 
-[
-] dictionary TextDecoderOptions {
+dictionary TextDecoderOptions {
     boolean fatal = false;
     boolean ignoreBOM = false;
 };

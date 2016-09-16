@@ -23,7 +23,6 @@
  */
 
 // PeriodicWave represents a periodic audio waveform given by its Fourier coefficients.
-[
-] interface PeriodicWave {
+interface PeriodicWave {
 
 };

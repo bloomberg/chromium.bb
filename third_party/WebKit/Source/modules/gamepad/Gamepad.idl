@@ -23,8 +23,7 @@
  * DAMAGE.
  */
 
-[
-] interface Gamepad {
+interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;
     readonly attribute boolean connected;

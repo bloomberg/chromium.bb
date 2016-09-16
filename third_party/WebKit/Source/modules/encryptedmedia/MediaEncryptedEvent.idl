@@ -31,4 +31,3 @@
     readonly attribute DOMString initDataType;
     readonly attribute ArrayBuffer? initData;
 };
-

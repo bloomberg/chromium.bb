@@ -20,7 +20,6 @@
 
 // https://dom.spec.whatwg.org/#callbackdef-eventlistener
 
-[
-] callback interface EventListener {
+callback interface EventListener {
     void handleEvent(Event event);
 };

@@ -8,4 +8,3 @@ partial interface Internals {
     [OriginTrialEnabled=OriginTrialsSampleAPI, ImplementedAs=frobulateNoEnabledCheck] readonly attribute boolean frobulateBindings;
     [OriginTrialEnabled=OriginTrialsSampleAPI] const unsigned short FROBULATE_CONST = 1;
 };
-

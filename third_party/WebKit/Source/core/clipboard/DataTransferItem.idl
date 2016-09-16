@@ -30,8 +30,7 @@
 
 // https://html.spec.whatwg.org/#the-datatransferitem-interface
 
-[
-] interface DataTransferItem {
+interface DataTransferItem {
     readonly attribute DOMString kind;
     readonly attribute DOMString type;
     // TODO(foolip): The callback argument should be a FunctionStringCallback.

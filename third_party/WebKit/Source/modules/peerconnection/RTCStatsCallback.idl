@@ -25,4 +25,3 @@
 callback interface RTCStatsCallback {
     void handleEvent(RTCStatsResponse response);
 };
-

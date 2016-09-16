@@ -23,8 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface TypeConversions {
+interface TypeConversions {
     attribute long testLong;
     [EnforceRange, ImplementedAs=testLong] attribute long testEnforceRangeLong;
     attribute unsigned long testUnsignedLong;

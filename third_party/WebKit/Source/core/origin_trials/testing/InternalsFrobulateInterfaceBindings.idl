@@ -12,4 +12,3 @@ partial interface Internals {
     boolean frobulateMethodPartial();
     static boolean frobulateStaticMethodPartial();
 };
-

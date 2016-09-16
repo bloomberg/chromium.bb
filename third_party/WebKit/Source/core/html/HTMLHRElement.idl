@@ -17,7 +17,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-
 // https://html.spec.whatwg.org/#the-hr-element
 
 interface HTMLHRElement : HTMLElement {

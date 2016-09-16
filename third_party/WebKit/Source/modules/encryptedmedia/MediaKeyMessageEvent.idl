@@ -37,4 +37,3 @@ enum MediaKeyMessageType {
     readonly attribute MediaKeyMessageType messageType;
     readonly attribute ArrayBuffer message;
 };
-

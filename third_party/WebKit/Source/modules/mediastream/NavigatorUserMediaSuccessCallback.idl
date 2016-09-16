@@ -25,4 +25,3 @@
 callback interface NavigatorUserMediaSuccessCallback {
     void handleEvent(MediaStream stream);
 };
-

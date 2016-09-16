@@ -32,8 +32,7 @@
 // http://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
 // http://dev.w3.org/fxtf/geometry/#DOMRect
 
-[
-] interface ClientRect {
+interface ClientRect {
     readonly attribute float top;
     readonly attribute float right;
     readonly attribute float bottom;

@@ -27,8 +27,7 @@
 
 enum ScrollRestoration {"auto", "manual"};
 
-[
-] interface History {
+interface History {
     readonly attribute unsigned long length;
     [Measure] attribute ScrollRestoration scrollRestoration;
     // TODO(foolip): The SerializedScriptValue type should be any.
