@@ -941,6 +941,10 @@ def prepare(options, git_slns, active):
 
 
 def checkout(options, git_slns, specs, revisions, step_text, shallow):
+  print 'Checking git version...'
+  ver = git('version').strip()
+  print 'Using %s' % ver
+
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   try:
