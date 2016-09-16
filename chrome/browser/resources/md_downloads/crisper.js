@@ -6867,6 +6867,11 @@ cr.define('downloads', function() {
         observer: 'hasDownloadsChanged_',
         type: Boolean
       },
+      hasShadow_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
       items_: {
         type: Array,
         value: function() {
@@ -6931,6 +6936,7 @@ cr.define('downloads', function() {
       if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
         downloads.ActionService.getInstance().loadMore();
       }
+      this.hasShadow_ = list.scrollTop > 0;
     },
     onLoad_: function() {
       cr.ui.decorate('command', cr.ui.Command);

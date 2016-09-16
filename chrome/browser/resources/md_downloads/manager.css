@@ -7,12 +7,34 @@
   flex: 1 0;
   flex-direction: column;
   height: 100%;
+  z-index: 0;
 }
 
 @media screen and (max-width: 1024px) {
   :host {
     flex-basis: 670px;  /* 622 card width + 24 left margin + 24 right margin. */
   }
+}
+
+#toolbar {
+  position: relative;
+  z-index: 1;
+}
+
+#toolbar::after {
+  box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
+  content: '';
+  display: block;
+  height: 6px;
+  opacity: 0;
+  position: absolute;
+  top: 100%;
+  transition: opacity 500ms;
+  width: 100%;
+}
+
+:host([has-shadow_]) #toolbar::after {
+  opacity: 1;
 }
 
 #downloads-list {

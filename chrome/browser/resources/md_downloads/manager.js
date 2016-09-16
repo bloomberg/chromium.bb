@@ -12,6 +12,12 @@ cr.define('downloads', function() {
         type: Boolean,
       },
 
+      hasShadow_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
       items_: {
         type: Array,
         value: function() { return []; },
@@ -111,6 +117,7 @@ cr.define('downloads', function() {
         // Approaching the end of the scrollback. Attempt to load more items.
         downloads.ActionService.getInstance().loadMore();
       }
+      this.hasShadow_ = list.scrollTop > 0;
     },
 
     /** @private */
