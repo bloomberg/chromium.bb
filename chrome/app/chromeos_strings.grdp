@@ -346,6 +346,21 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_16_9" desc="Button label to fix aspect to 16:9 ratio when cropping.">
     16x9
   </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_RESIZE" desc="In the Gallery, the title on the button that resize a photo.">
+    Resize
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_FIXRATIO" desc="Togglable Button to fix the ratio of width/height input field when resizing.">
+    Fix ratio
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_HEIGHT" desc="Input field to set the new size for height.">
+    Height
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_INVALIDVALUE" desc="In the Gallery, the message informing that the input value is invalid.">
+    Input value is invalid.
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_WIDTH" desc="Input field to set the new size for width.">
+    Width
+  </message>
   <message name="IDS_FILE_BROWSER_GALLERY_EXPOSURE" desc="In the Gallery, the title on the button that applies the Brightness/Contrast filter to a photo.">
     Brightness
   </message>

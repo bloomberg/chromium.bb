@@ -313,6 +313,32 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDrive) {
 }
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_ResizeImageOnDownloads DISABLED_ResizeImageOnDownloads
+#else
+#define MAYBE_ResizeImageOnDownloads ResizeImageOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ResizeImageOnDownloads) {
+  set_test_case_name("resizeImageOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
+                       MAYBE_ResizeImageOnDownloads) {
+  set_test_case_name("resizeImageOnDownloads");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_ResizeImageOnDrive DISABLED_ResizeImageOnDrive
+#else
+#define MAYBE_ResizeImageOnDrive ResizeImageOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ResizeImageOnDrive) {
+  set_test_case_name("resizeImageOnDrive");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads \
   DISABLED_EnableDisableOverwriteOriginalCheckboxOnDownloads
 #else

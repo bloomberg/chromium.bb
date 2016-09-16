@@ -746,6 +746,12 @@ button[disabled] {
       url(../images/200/crop.png) 2x);
 }
 
+.edit-main button.resize .icon {
+  background-image:  -webkit-image-set(
+      url(../images/100/resize.png) 1x,
+      url(../images/200/resize.png) 2x);
+}
+
 .edit-main button.exposure .icon {
   background-image: -webkit-image-set(
       url(../images/100/brightness.png) 1x,
@@ -786,6 +792,10 @@ button[disabled] {
   pointer-events: none;
   position: absolute;
   width: 100%;
+}
+
+.gallery[editor-mode="resize"] .edit-modal {
+  height: 56px;
 }
 
 .edit-modal-wrapper[hidden] {
@@ -1002,6 +1012,44 @@ paper-slider {
 
 .gallery .crop-frame .corner.bottom {
   bottom: -6px;
+}
+
+/* Input UI */
+.edit-modal .input {
+  align-items: flex-end;
+  display: flex;
+  width: 90px;
+}
+
+.edit-modal .input > .unit_label {
+  color: rgba(255, 255, 255, 0.54);
+  margin-bottom: 10px;
+}
+
+.edit-modal .lockicon {
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 16px;
+  margin: 16px;
+  margin-top: auto;
+  width: 16px;
+}
+
+.edit-modal .lockicon:focus {
+  outline: none;
+}
+
+.edit-modal .lockicon[locked] {
+  background-image: -webkit-image-set(
+      url(../images/100/ratio_locked.png) 1x,
+      url(../images/200/ratio_locked.png) 2x);
+}
+
+.edit-modal .lockicon:not([locked]) {
+  opacity: 0.54;
+  background-image: -webkit-image-set(
+      url(../images/100/ratio_unlocked.png) 1x,
+      url(../images/200/ratio_unlocked.png) 2x);
 }
 
 /* Prompt/notification panel */

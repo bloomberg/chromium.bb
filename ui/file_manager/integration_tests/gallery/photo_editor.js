@@ -137,7 +137,6 @@ function exposureImage(testVolumeName, volumeType) {
     var appId = args.appId;
     var url = args.urls[0];
     var buttonQuery = '.gallery:not([locked]) button.exposure';
-
     var origMetadata = null;
 
     // Click the exposure button.
@@ -179,6 +178,76 @@ function exposureImage(testVolumeName, volumeType) {
         });
       });
     });
+  });
+}
+
+/**
+ * Tests to resize an image and undoes it.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function resizeImage(testVolumeName, volumeType) {
+  var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
+  return launchedPromise.then(function(args) {
+    var appId = args.appId;
+
+    return gallery.waitAndClickElement(
+        appId, '.gallery:not([locked]) button.resize').
+        then(function() {
+          return Promise.all([
+            gallery.waitForElement(appId, '.width > paper-input'),
+            gallery.waitForElement(appId, '.height > paper-input'),
+            gallery.waitForElement(appId, '.lockicon[locked]'),
+          ]);
+        }).then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.height > paper-input', 500]);
+        }).then(function() {
+          return gallery.fakeKeyDown(
+              appId, 'body', 'Enter', 'Enter', false, false, false);
+        }).then(function() {
+          return gallery.waitForSlideImage(appId, 667, 500,
+              'My Desktop Background');
+        }).then(function() {
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) button.undo');
+        }).then(function() {
+          return gallery.waitForSlideImage(appId, 800, 600,
+              'My Desktop Background');
+        }).then(function() {
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) button.resize');
+        }).then(function() {
+          return Promise.all([
+            gallery.waitForElement(appId, '.width > paper-input'),
+            gallery.waitForElement(appId, '.height > paper-input'),
+            gallery.waitForElement(appId, '.lockicon[locked]'),
+          ]);
+        }).then(function() {
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) .lockicon[locked]');
+        }).then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.width > paper-input', 500]);
+        }).then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.height > paper-input', 300]);
+        }).then(function() {
+          return gallery.fakeKeyDown(
+              appId, 'body', 'Enter', 'Enter', false, false, false);
+        }).then(function() {
+          return gallery.waitForSlideImage(appId, 500, 300,
+              'My Desktop Background');
+        }).then(function() {
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) button.undo');
+        }).then(function() {
+          return gallery.waitForSlideImage(appId, 800, 600,
+              'My Desktop Background');
+        });
   });
 }
 
@@ -291,6 +360,22 @@ testcase.exposureImageOnDownloads = function() {
 testcase.exposureImageOnDrive = function() {
   return exposureImage('drive', 'drive');
 };
+
+/**
+ * The resize test for Downloas.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.resizeImageOnDownloads = function() {
+  return resizeImage('local', 'downloads');
+};
+
+/**
+ * The resize test for Google Drive
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.resizeImageOnDrive = function() {
+  return resizeImage('drive', 'drive');
+}
 
 /**
  * The enableDisableOverwriteOriginalCheckbox test for Downloads.

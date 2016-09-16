@@ -57,6 +57,7 @@
 //<include src="../../file_manager/foreground/js/share_client.js">
 //<include src="../../file_manager/foreground/js/thumbnail_loader.js">
 //<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
+//<include src="../../file_manager/foreground/js/ui/files_alert_dialog.js">
 //<include src="../../file_manager/foreground/js/ui/files_confirm_dialog.js">
 //<include src="../../file_manager/foreground/js/ui/share_dialog.js">
 //<include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
@@ -69,6 +70,7 @@
 //<include src="image_editor/image_editor.js">
 //<include src="image_editor/image_transform.js">
 //<include src="image_editor/image_adjust.js">
+//<include src="image_editor/image_resize.js">
 //<include src="image_editor/filter.js">
 //<include src="image_editor/image_encoder.js">
 //<include src="image_editor/exif_encoder.js">

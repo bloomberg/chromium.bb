@@ -776,7 +776,9 @@ Gallery.prototype.onKeyDown_ = function(event) {
   switch (keyString) {
     case 'Backspace':
       // The default handler would call history.back and close the Gallery.
-      event.preventDefault();
+      // Except while typing into text.
+      if(!event.target.classList.contains('text'))
+        event.preventDefault();
       break;
 
     case 'm':  // 'm' switches between Slide and Mosaic mode.

@@ -450,3 +450,34 @@ Command.Filter.prototype.execute = function(
   filter.applyByStrips(result, srcImage, this.filter_,
       uiContext.imageView ? onProgressVisible : onProgressInvisible);
 };
+
+/**
+ * Resize Command
+ * @param {number} inputWidth width user input
+ * @param {number} inputHeight height user input
+ * @constructor
+ * @extends {Command}
+ * @struct
+ */
+Command.Resize = function(inputWidth, inputHeight) {
+  Command.call(this, 'resize(x:' + inputWidth + ',y:' + inputHeight + ')');
+  this.newWidth_ = inputWidth;
+  this.newHeight_ = inputHeight;
+};
+
+Command.Resize.prototype = {__proto__: Command.prototype};
+
+/** @override */
+Command.Resize.prototype.execute = function(
+    document, srcImage, callback, uiContext) {
+  var result = this.createCanvas_(
+    document, srcImage, this.newWidth_, this.newHeight_);
+
+  var scaleX = this.newWidth_ / srcImage.width;
+  var scaleY = this.newHeight_ / srcImage.height;
+  ImageUtil.drawImageTransformed(result, srcImage, scaleX, scaleY, 0);
+
+  if(uiContext.imageView)
+    uiContext.imageView.replace(result);
+  callback(result);
+};
