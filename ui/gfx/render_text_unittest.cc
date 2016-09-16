@@ -77,6 +77,42 @@ class RenderTextTestApi {
     render_text_->DrawVisualText(renderer);
   }
 
+  const BreakList<SkColor>& colors() const { return render_text_->colors(); }
+
+  const BreakList<BaselineStyle>& baselines() const {
+    return render_text_->baselines();
+  }
+
+  const BreakList<Font::Weight>& weights() const {
+    return render_text_->weights();
+  }
+
+  const std::vector<BreakList<bool>>& styles() const {
+    return render_text_->styles();
+  }
+
+  const std::vector<internal::Line>& lines() const {
+    return render_text_->lines();
+  }
+
+  SelectionModel EdgeSelectionModel(VisualCursorDirection direction) {
+    return render_text_->EdgeSelectionModel(direction);
+  }
+
+  size_t TextIndexToDisplayIndex(size_t index) {
+    return render_text_->TextIndexToDisplayIndex(index);
+  }
+
+  size_t DisplayIndexToTextIndex(size_t index) {
+    return render_text_->DisplayIndexToTextIndex(index);
+  }
+
+  void EnsureLayout() { render_text_->EnsureLayout(); }
+
+  Vector2d GetAlignmentOffset(size_t line_number) {
+    return render_text_->GetAlignmentOffset(line_number);
+  }
+
  private:
   RenderText* render_text_;
 
@@ -347,6 +383,7 @@ class RenderTextTest : public testing::Test,
 
   Canvas* canvas() { return &canvas_; }
   TestSkiaTextRenderer* renderer() { return &renderer_; }
+  test::RenderTextTestApi* test_api() { return test_api_.get(); };
 
  private:
   std::unique_ptr<RenderText> render_text_;
@@ -369,23 +406,52 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
   RenderTextHarfBuzzTest() {}
 
   // Overridden from testing::Test:
-  void SetUp() override { DCHECK_EQ(RENDER_TEXT_HARFBUZZ, GetParam()); }
+  void SetUp() override {
+    RenderTextTest::SetUp();
+    DCHECK_EQ(RENDER_TEXT_HARFBUZZ, GetParam());
+  }
+
+ protected:
+  void SetGlyphWidth(float test_width) {
+    GetRenderTextHarfBuzz()->set_glyph_width_for_test(test_width);
+  }
+
+  bool ShapeRunWithFont(const base::string16& text,
+                        const Font& font,
+                        const FontRenderParams& params,
+                        internal::TextRunHarfBuzz* run) {
+    return GetRenderTextHarfBuzz()->ShapeRunWithFont(text, font, params, run);
+  }
+
+  base::i18n::BreakIterator* GetGraphemeIterator() {
+    return GetRenderTextHarfBuzz()->GetGraphemeIterator();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzzTest);
 };
 
+#if defined(OS_MACOSX)
 // Test fixture class. Use for tests which are only to be run for RenderTextMac.
 class RenderTextMacTest : public RenderTextTest {
  public:
   RenderTextMacTest() {}
 
   // Overridden from testing::Test:
-  void SetUp() override { DCHECK_EQ(RENDER_TEXT_MAC, GetParam()); }
+  void SetUp() override {
+    RenderTextTest::SetUp();
+    DCHECK_EQ(RENDER_TEXT_MAC, GetParam());
+  }
+
+ protected:
+  base::ScopedCFTypeRef<CTLineRef> GetCoreTextLine() {
+    return GetRenderTextMac()->line_;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderTextMacTest);
 };
+#endif
 
 TEST_P(RenderTextTest, DefaultStyles) {
   // Check the default styles applied to new instances and adjusted text.
@@ -393,11 +459,10 @@ TEST_P(RenderTextTest, DefaultStyles) {
   EXPECT_TRUE(render_text->text().empty());
   const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    EXPECT_TRUE(render_text->colors().EqualsValueForTesting(SK_ColorBLACK));
-    EXPECT_TRUE(
-        render_text->baselines().EqualsValueForTesting(NORMAL_BASELINE));
+    EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(SK_ColorBLACK));
+    EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(NORMAL_BASELINE));
     for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
-      EXPECT_TRUE(render_text->styles()[style].EqualsValueForTesting(false));
+      EXPECT_TRUE(test_api()->styles()[style].EqualsValueForTesting(false));
     render_text->SetText(WideToUTF16(cases[i]));
   }
 }
@@ -412,18 +477,18 @@ TEST_P(RenderTextTest, SetStyles) {
   render_text->SetStyle(UNDERLINE, false);
   const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    EXPECT_TRUE(render_text->colors().EqualsValueForTesting(color));
-    EXPECT_TRUE(render_text->baselines().EqualsValueForTesting(SUPERSCRIPT));
+    EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(color));
+    EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(SUPERSCRIPT));
     EXPECT_TRUE(
-        render_text->weights().EqualsValueForTesting(Font::Weight::BOLD));
-    EXPECT_TRUE(render_text->styles()[UNDERLINE].EqualsValueForTesting(false));
+        test_api()->weights().EqualsValueForTesting(Font::Weight::BOLD));
+    EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsValueForTesting(false));
     render_text->SetText(WideToUTF16(cases[i]));
 
     // Ensure custom default styles can be applied after text has been set.
     if (i == 1)
       render_text->SetStyle(STRIKE, true);
     if (i >= 1)
-      EXPECT_TRUE(render_text->styles()[STRIKE].EqualsValueForTesting(true));
+      EXPECT_TRUE(test_api()->styles()[STRIKE].EqualsValueForTesting(true));
   }
 }
 
@@ -439,7 +504,7 @@ TEST_P(RenderTextTest, ApplyStyles) {
   expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorBLACK));
   expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorRED));
   expected_color.push_back(std::pair<size_t, SkColor>(4, SK_ColorBLACK));
-  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
   std::vector<std::pair<size_t, BaselineStyle>> expected_baseline_style;
   expected_baseline_style.push_back(
       std::pair<size_t, BaselineStyle>(0, NORMAL_BASELINE));
@@ -448,7 +513,7 @@ TEST_P(RenderTextTest, ApplyStyles) {
   expected_baseline_style.push_back(
       std::pair<size_t, BaselineStyle>(4, NORMAL_BASELINE));
   EXPECT_TRUE(
-      render_text->baselines().EqualsForTesting(expected_baseline_style));
+      test_api()->baselines().EqualsForTesting(expected_baseline_style));
   std::vector<std::pair<size_t, Font::Weight>> expected_weight;
   expected_weight.push_back(
       std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
@@ -456,16 +521,16 @@ TEST_P(RenderTextTest, ApplyStyles) {
       std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
   expected_weight.push_back(
       std::pair<size_t, Font::Weight>(5, Font::Weight::NORMAL));
-  EXPECT_TRUE(render_text->weights().EqualsForTesting(expected_weight));
+  EXPECT_TRUE(test_api()->weights().EqualsForTesting(expected_weight));
 
   // Ensure that setting a value overrides the ranged values.
   render_text->SetColor(SK_ColorBLUE);
-  EXPECT_TRUE(render_text->colors().EqualsValueForTesting(SK_ColorBLUE));
+  EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(SK_ColorBLUE));
   render_text->SetBaselineStyle(SUBSCRIPT);
-  EXPECT_TRUE(render_text->baselines().EqualsValueForTesting(SUBSCRIPT));
+  EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(SUBSCRIPT));
   render_text->SetWeight(Font::Weight::NORMAL);
   EXPECT_TRUE(
-      render_text->weights().EqualsValueForTesting(Font::Weight::NORMAL));
+      test_api()->weights().EqualsValueForTesting(Font::Weight::NORMAL));
 
   // Apply a value over the text end and check the resulting breaks (INT_MAX
   // should be used instead of the text length for the range end)
@@ -475,17 +540,17 @@ TEST_P(RenderTextTest, ApplyStyles) {
   render_text->ApplyWeight(Font::Weight::BOLD, Range(2, text_length));
   std::vector<std::pair<size_t, SkColor> > expected_color_end;
   expected_color_end.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
-  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color_end));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color_end));
   std::vector<std::pair<size_t, BaselineStyle>> expected_baseline_end;
   expected_baseline_end.push_back(
       std::pair<size_t, BaselineStyle>(0, SUPERIOR));
-  EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline_end));
+  EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline_end));
   std::vector<std::pair<size_t, Font::Weight>> expected_weight_end;
   expected_weight_end.push_back(
       std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
   expected_weight_end.push_back(
       std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
-  EXPECT_TRUE(render_text->weights().EqualsForTesting(expected_weight_end));
+  EXPECT_TRUE(test_api()->weights().EqualsForTesting(expected_weight_end));
 
   // Ensure ranged values adjust to accommodate text length changes.
   render_text->ApplyStyle(ITALIC, true, Range(0, 2));
@@ -497,22 +562,22 @@ TEST_P(RenderTextTest, ApplyStyles) {
   expected_italic.push_back(std::pair<size_t, bool>(3, true));
   expected_italic.push_back(std::pair<size_t, bool>(6, false));
   expected_italic.push_back(std::pair<size_t, bool>(7, true));
-  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
 
   // Changing the text should clear any breaks except for the first one.
   render_text->SetText(ASCIIToUTF16("0123456"));
   expected_italic.resize(1);
-  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
   render_text->ApplyStyle(ITALIC, false, Range(2, 4));
   render_text->SetText(ASCIIToUTF16("012345678"));
-  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
   render_text->ApplyStyle(ITALIC, false, Range(0, 1));
   render_text->SetText(ASCIIToUTF16("0123456"));
   expected_italic.begin()->second = false;
-  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
   render_text->ApplyStyle(ITALIC, true, Range(2, 4));
   render_text->SetText(ASCIIToUTF16("012345678"));
-  EXPECT_TRUE(render_text->styles()[ITALIC].EqualsForTesting(expected_italic));
+  EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
 
   // TODO(tmoniuszko): Enable when RenderTextMac::IsValidCursorIndex is
   //                   implemented. See http://crbug.com/131618.
@@ -530,7 +595,7 @@ TEST_P(RenderTextTest, ApplyStyles) {
     expected_underline.push_back(std::pair<size_t, bool>(1, true));
     expected_underline.push_back(std::pair<size_t, bool>(6, false));
     EXPECT_TRUE(
-        render_text->styles()[UNDERLINE].EqualsForTesting(expected_underline));
+        test_api()->styles()[UNDERLINE].EqualsForTesting(expected_underline));
   }
 }
 
@@ -545,26 +610,24 @@ TEST_P(RenderTextTest, AppendTextKeepsStyles) {
   std::vector<std::pair<size_t, SkColor>> expected_color;
   expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
   expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorBLACK));
-  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
   std::vector<std::pair<size_t, BaselineStyle>> expected_baseline;
   expected_baseline.push_back(
       std::pair<size_t, BaselineStyle>(0, NORMAL_BASELINE));
   expected_baseline.push_back(std::pair<size_t, BaselineStyle>(1, SUPERSCRIPT));
   expected_baseline.push_back(
       std::pair<size_t, BaselineStyle>(2, NORMAL_BASELINE));
-  EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline));
+  EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
   std::vector<std::pair<size_t, bool>> expected_style;
   expected_style.push_back(std::pair<size_t, bool>(0, false));
   expected_style.push_back(std::pair<size_t, bool>(2, true));
-  EXPECT_TRUE(
-      render_text->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
   // Ensure AppendText maintains current text styles.
   render_text->AppendText(ASCIIToUTF16("def"));
   EXPECT_EQ(render_text->GetDisplayText(), ASCIIToUTF16("abcdef"));
-  EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color));
-  EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline));
-  EXPECT_TRUE(
-      render_text->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
+  EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
+  EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
 }
 
 void TestVisualCursorMotionInObscuredField(
@@ -626,11 +689,11 @@ TEST_P(RenderTextHarfBuzzTest, ObscuredText) {
   EXPECT_EQ(2U, render_text->cursor_position());
 
   // Test index conversion and cursor validity with a valid surrogate pair.
-  EXPECT_EQ(0U, render_text->TextIndexToDisplayIndex(0U));
-  EXPECT_EQ(1U, render_text->TextIndexToDisplayIndex(1U));
-  EXPECT_EQ(1U, render_text->TextIndexToDisplayIndex(2U));
-  EXPECT_EQ(0U, render_text->DisplayIndexToTextIndex(0U));
-  EXPECT_EQ(2U, render_text->DisplayIndexToTextIndex(1U));
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
+  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
+  EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(0U));
+  EXPECT_EQ(2U, test_api()->DisplayIndexToTextIndex(1U));
   EXPECT_TRUE(render_text->IsValidCursorIndex(0U));
   EXPECT_FALSE(render_text->IsValidCursorIndex(1U));
   EXPECT_TRUE(render_text->IsValidCursorIndex(2U));
@@ -1661,11 +1724,11 @@ TEST_P(RenderTextTest, EdgeSelectionModels) {
     bool ltr = (cases[i].expected_text_direction == base::i18n::LEFT_TO_RIGHT);
 
     SelectionModel start_edge =
-        render_text->EdgeSelectionModel(ltr ? CURSOR_LEFT : CURSOR_RIGHT);
+        test_api()->EdgeSelectionModel(ltr ? CURSOR_LEFT : CURSOR_RIGHT);
     EXPECT_EQ(start_edge, SelectionModel(0, CURSOR_BACKWARD));
 
     SelectionModel end_edge =
-        render_text->EdgeSelectionModel(ltr ? CURSOR_RIGHT : CURSOR_LEFT);
+        test_api()->EdgeSelectionModel(ltr ? CURSOR_RIGHT : CURSOR_LEFT);
     EXPECT_EQ(end_edge, SelectionModel(cases[i].text.length(), CURSOR_FORWARD));
   }
 }
@@ -2607,7 +2670,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_MinWidth) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(WideToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
-    EXPECT_GT(render_text->lines_.size(), 1U);
+    EXPECT_GT(test_api()->lines().size(), 1U);
   }
 }
 
@@ -2632,7 +2695,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_NormalWidth) {
 
   // Specify the fixed width for characters to suppress the possible variations
   // of linebreak results.
-  render_text->set_glyph_width_for_test(5);
+  SetGlyphWidth(5);
   render_text->SetDisplayRect(Rect(50, 1000));
   render_text->SetMultiline(true);
   render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
@@ -2643,13 +2706,13 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_NormalWidth) {
     render_text->SetText(WideToUTF16(kTestStrings[i].text));
     DrawVisualText();
 
-    ASSERT_EQ(2U, render_text->lines_.size());
-    ASSERT_EQ(1U, render_text->lines_[0].segments.size());
+    ASSERT_EQ(2U, test_api()->lines().size());
+    ASSERT_EQ(1U, test_api()->lines()[0].segments.size());
     EXPECT_EQ(kTestStrings[i].first_line_char_range,
-              render_text->lines_[0].segments[0].char_range);
-    ASSERT_EQ(1U, render_text->lines_[1].segments.size());
+              test_api()->lines()[0].segments[0].char_range);
+    ASSERT_EQ(1U, test_api()->lines()[1].segments.size());
     EXPECT_EQ(kTestStrings[i].second_line_char_range,
-              render_text->lines_[1].segments[0].char_range);
+              test_api()->lines()[1].segments[0].char_range);
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
     renderer()->GetTextLogAndReset(&text_log);
@@ -2687,7 +2750,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_SufficientWidth) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(WideToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
-    EXPECT_EQ(1U, render_text->lines_.size());
+    EXPECT_EQ(1U, test_api()->lines().size());
   }
 }
 
@@ -2714,22 +2777,20 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_Newline) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(WideToUTF16(kTestStrings[i].text));
     render_text->Draw(canvas());
-    EXPECT_EQ(kTestStrings[i].lines_count, render_text->lines_.size());
-    if (kTestStrings[i].lines_count != render_text->lines_.size())
+    EXPECT_EQ(kTestStrings[i].lines_count, test_api()->lines().size());
+    if (kTestStrings[i].lines_count != test_api()->lines().size())
       continue;
 
     for (size_t j = 0; j < kTestStrings[i].lines_count; ++j) {
       SCOPED_TRACE(base::StringPrintf("Line %" PRIuS "", j));
       // There might be multiple segments in one line. Merge all the segments
       // ranges in the same line.
-      const size_t segment_size = render_text->lines()[j].segments.size();
+      const size_t segment_size = test_api()->lines()[j].segments.size();
       Range line_range;
       if (segment_size > 0)
-        line_range =
-            Range(render_text->lines()[j].segments[0].char_range.start(),
-                  render_text->lines()[j]
-                      .segments[segment_size - 1]
-                      .char_range.end());
+        line_range = Range(
+            test_api()->lines()[j].segments[0].char_range.start(),
+            test_api()->lines()[j].segments[segment_size - 1].char_range.end());
       EXPECT_EQ(kTestStrings[i].line_char_ranges[j], line_range);
     }
   }
@@ -2801,7 +2862,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_HorizontalAlignment) {
   const int kGlyphSize = 5;
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetHorizontalAlignment(ALIGN_TO_HEAD);
-  render_text->set_glyph_width_for_test(kGlyphSize);
+  SetGlyphWidth(kGlyphSize);
   render_text->SetDisplayRect(Rect(100, 1000));
   render_text->SetMultiline(true);
 
@@ -2810,18 +2871,18 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_HorizontalAlignment) {
                                     kTestStrings[i].text));
     render_text->SetText(WideToUTF16(kTestStrings[i].text));
     render_text->Draw(canvas());
-    ASSERT_LE(2u, render_text->lines().size());
+    ASSERT_LE(2u, test_api()->lines().size());
     if (kTestStrings[i].alignment == ALIGN_LEFT) {
-      EXPECT_EQ(0, render_text->GetAlignmentOffset(0).x());
-      EXPECT_EQ(0, render_text->GetAlignmentOffset(1).x());
+      EXPECT_EQ(0, test_api()->GetAlignmentOffset(0).x());
+      EXPECT_EQ(0, test_api()->GetAlignmentOffset(1).x());
     } else {
       std::vector<base::string16> lines = base::SplitString(
           base::WideToUTF16(kTestStrings[i].text),
           base::string16(1, '\n'), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2u, lines.size());
       int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
-      EXPECT_EQ(render_text->GetAlignmentOffset(0).x() + difference,
-                render_text->GetAlignmentOffset(1).x());
+      EXPECT_EQ(test_api()->GetAlignmentOffset(0).x() + difference,
+                test_api()->GetAlignmentOffset(1).x());
     }
   }
 }
@@ -2844,7 +2905,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetMultiline(true);
   render_text->SetText(ASCIIToUTF16("foo fooooo foo"));
-  render_text->set_glyph_width_for_test(kGlyphSize);
+  SetGlyphWidth(kGlyphSize);
   render_text->SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
 
   for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
@@ -2853,13 +2914,13 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior) {
     render_text->SetWordWrapBehavior(kTestScenarios[i].behavior);
     render_text->Draw(canvas());
 
-    ASSERT_EQ(kTestScenarios[i].num_lines, render_text->lines().size());
-    for (size_t j = 0; j < render_text->lines().size(); ++j) {
+    ASSERT_EQ(kTestScenarios[i].num_lines, test_api()->lines().size());
+    for (size_t j = 0; j < test_api()->lines().size(); ++j) {
       SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
       EXPECT_EQ(kTestScenarios[i].char_ranges[j],
-                render_text->lines()[j].segments[0].char_range);
+                test_api()->lines()[j].segments[0].char_range);
       EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
-                render_text->lines()[j].size.width());
+                test_api()->lines()[j].size.width());
     }
   }
 }
@@ -2901,7 +2962,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_LineBreakerBehavior) {
 
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetMultiline(true);
-  render_text->set_glyph_width_for_test(kGlyphSize);
+  SetGlyphWidth(kGlyphSize);
   render_text->SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
 
   for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
@@ -2910,21 +2971,19 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_LineBreakerBehavior) {
     render_text->SetWordWrapBehavior(kTestScenarios[i].behavior);
     render_text->Draw(canvas());
 
-    ASSERT_EQ(3u, render_text->lines().size());
-    for (size_t j = 0; j < render_text->lines().size(); ++j) {
+    ASSERT_EQ(3u, test_api()->lines().size());
+    for (size_t j = 0; j < test_api()->lines().size(); ++j) {
       SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
       // Merge all the segments ranges in the same line.
-      size_t segment_size = render_text->lines()[j].segments.size();
+      size_t segment_size = test_api()->lines()[j].segments.size();
       Range line_range;
       if (segment_size > 0)
-        line_range =
-            Range(render_text->lines()[j].segments[0].char_range.start(),
-                  render_text->lines()[j]
-                      .segments[segment_size - 1]
-                      .char_range.end());
+        line_range = Range(
+            test_api()->lines()[j].segments[0].char_range.start(),
+            test_api()->lines()[j].segments[segment_size - 1].char_range.end());
       EXPECT_EQ(kTestScenarios[i].char_ranges[j], line_range);
       EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
-                render_text->lines()[j].size.width());
+                test_api()->lines()[j].size.width());
     }
   }
 }
@@ -2969,12 +3028,12 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_SurrogatePairsOrCombiningChars) {
     render_text->SetDisplayRect(Rect(0, 0, kTestScenarios[i].display_width, 0));
     render_text->Draw(canvas());
 
-    ASSERT_EQ(3u, render_text->lines().size());
-    for (size_t j = 0; j < render_text->lines().size(); ++j) {
+    ASSERT_EQ(3u, test_api()->lines().size());
+    for (size_t j = 0; j < test_api()->lines().size(); ++j) {
       SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
       // There is only one segment in each line.
       EXPECT_EQ(kTestScenarios[i].char_ranges[j],
-                render_text->lines()[j].segments[0].char_range);
+                test_api()->lines()[j].segments[0].char_range);
     }
   }
 }
@@ -2997,14 +3056,14 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars) {
   render_text->SetDisplayRect(Rect(0, 0, kTestWidth, 0));
   render_text->Draw(canvas());
 
-  ASSERT_EQ(3u, render_text->lines().size());
-  for (size_t j = 0; j < render_text->lines().size(); ++j) {
+  ASSERT_EQ(3u, test_api()->lines().size());
+  for (size_t j = 0; j < test_api()->lines().size(); ++j) {
     SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
-    int segment_size = render_text->lines()[j].segments.size();
+    int segment_size = test_api()->lines()[j].segments.size();
     ASSERT_GT(segment_size, 0);
     Range line_range(
-        render_text->lines()[j].segments[0].char_range.start(),
-        render_text->lines()[j].segments[segment_size - 1].char_range.end());
+        test_api()->lines()[j].segments[0].char_range.start(),
+        test_api()->lines()[j].segments[segment_size - 1].char_range.end());
     EXPECT_EQ(char_ranges[j], line_range);
   }
 }
@@ -3022,7 +3081,7 @@ TEST_P(RenderTextHarfBuzzTest, NewlineWithoutMultilineFlag) {
     render_text->SetText(WideToUTF16(kTestStrings[i]));
     render_text->Draw(canvas());
 
-    EXPECT_EQ(1U, render_text->lines_.size());
+    EXPECT_EQ(1U, test_api()->lines().size());
   }
 }
 
@@ -3047,8 +3106,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_HorizontalPositions) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text->SetText(WideToUTF16(kTestStrings[i].text));
 
-    render_text->EnsureLayout();
-    const internal::TextRunList* run_list = render_text->GetRunList();
+    test_api()->EnsureLayout();
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(2U, run_list->runs().size());
     EXPECT_EQ(kTestStrings[i].first_run_char_range, run_list->runs()[0]->range);
     EXPECT_EQ(kTestStrings[i].second_run_char_range,
@@ -3062,7 +3121,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_HorizontalPositions) {
       EXPECT_EQ(1U, run_list->logical_to_visual(1));
     }
 
-    render_text->DrawVisualText(renderer());
+    DrawVisualText();
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
     renderer()->GetTextLogAndReset(&text_log);
@@ -3154,12 +3213,12 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemeCases) {
 
     base::string16 text = WideToUTF16(cases[i]);
     render_text->SetText(text);
-    render_text->EnsureLayout();
-    internal::TextRunList* run_list = render_text->GetRunList();
+    test_api()->EnsureLayout();
+    internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(1U, run_list->size());
     internal::TextRunHarfBuzz* run = run_list->runs()[0];
 
-    base::i18n::BreakIterator* iter = render_text->grapheme_iterator_.get();
+    base::i18n::BreakIterator* iter = GetGraphemeIterator();
     auto first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
     EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(iter, 1));
     auto second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
@@ -3234,8 +3293,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_RunDirection) {
 
   // Get the run list for both display directions.
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(4U, run_list->size());
   EXPECT_TRUE(run_list->runs()[0]->is_rtl);
   EXPECT_FALSE(run_list->runs()[1]->is_rtl);
@@ -3249,8 +3308,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_RunDirection) {
   EXPECT_EQ(3U, run_list->logical_to_visual(3));
 
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
-  render_text->EnsureLayout();
-  run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  run_list = GetHarfBuzzRunList();
   ASSERT_EQ(4U, run_list->size());
   EXPECT_TRUE(run_list->runs()[0]->is_rtl);
   EXPECT_FALSE(run_list->runs()[1]->is_rtl);
@@ -3269,16 +3328,16 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
 
   // The '\x25B6' "play character" should break runs. http://crbug.com/278913
   render_text->SetText(WideToUTF16(L"x\x25B6y"));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(3U, run_list->size());
   EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
   EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
   EXPECT_EQ(Range(2, 3), run_list->runs()[2]->range);
 
   render_text->SetText(WideToUTF16(L"x \x25B6 y"));
-  render_text->EnsureLayout();
-  run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  run_list = GetHarfBuzzRunList();
   ASSERT_EQ(4U, run_list->size());
   EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
   EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
@@ -3293,8 +3352,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
   // a sparkle icon. Both can be drawn with color emoji fonts, so runs should be
   // separated. See crbug.com/448909
   render_text->SetText(UTF8ToUTF16("x\xF0\x9F\x98\x81y\xE2\x9C\xA8"));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(4U, run_list->size());
   EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
   // The length is 2 since U+1F601 is represented as a surrogate pair in UTF16.
@@ -3309,8 +3368,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii) {
   // \xF0\x9F\x90\xB1 (U+1F431) is a cat face. It should be put into a separate
   // run from the ASCII period character.
   render_text->SetText(UTF8ToUTF16("\xF0\x9F\x90\xB1."));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(2U, run_list->size());
   // U+1F431 is represented as a surrogate pair in UTF16.
   EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
@@ -3325,7 +3384,7 @@ TEST_P(RenderTextHarfBuzzTest, GlyphBounds) {
 
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     render_text->SetText(WideToUTF16(kTestStrings[i]));
-    render_text->EnsureLayout();
+    test_api()->EnsureLayout();
 
     for (size_t j = 0; j < render_text->text().length(); ++j)
       EXPECT_FALSE(render_text->GetGlyphBounds(j).is_empty());
@@ -3336,13 +3395,12 @@ TEST_P(RenderTextHarfBuzzTest, GlyphBounds) {
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetText(ASCIIToUTF16("test"));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   internal::TextRunHarfBuzz* run = run_list->runs()[0];
-  render_text->ShapeRunWithFont(render_text->text(),
-                                Font("TheFontThatDoesntExist", 13),
-                                FontRenderParams(), run);
+  ShapeRunWithFont(render_text->text(), Font("TheFontThatDoesntExist", 13),
+                   FontRenderParams(), run);
 }
 
 // Ensure an empty run returns sane values to queries.
@@ -3435,8 +3493,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback) {
   render_text->SetFontList(font_list);
   // Korean character "han".
   render_text->SetText(WideToUTF16(L"\xd55c"));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
@@ -3454,8 +3512,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UnicodeFallback) {
 
   // Korean character "han".
   render_text->SetText(WideToUTF16(L"\xd55c"));
-  render_text->EnsureLayout();
-  internal::TextRunList* run_list = render_text->GetRunList();
+  test_api()->EnsureLayout();
+  internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
@@ -3636,16 +3694,16 @@ TEST_P(RenderTextMacTest, Mac_ElidedText) {
   render_text->SetText(text);
   Size string_size = render_text->GetStringSize();
   render_text->SetDisplayRect(Rect(string_size));
-  render_text->EnsureLayout();
+  test_api()->EnsureLayout();
   // NOTE: Character and glyph counts are only comparable for simple text.
   EXPECT_EQ(text.size(),
-            static_cast<size_t>(CTLineGetGlyphCount(render_text->line_)));
+            static_cast<size_t>(CTLineGetGlyphCount(GetCoreTextLine())));
 
   render_text->SetElideBehavior(ELIDE_TAIL);
   string_size.set_width(string_size.width() / 2);
   render_text->SetDisplayRect(Rect(string_size));
-  render_text->EnsureLayout();
-  CFIndex glyph_count = CTLineGetGlyphCount(render_text->line_);
+  test_api()->EnsureLayout();
+  CFIndex glyph_count = CTLineGetGlyphCount(GetCoreTextLine());
   EXPECT_GT(text.size(), static_cast<size_t>(glyph_count));
   EXPECT_NE(0, glyph_count);
 }

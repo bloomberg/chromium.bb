@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -650,40 +649,6 @@ class GFX_EXPORT RenderText {
 
  private:
   friend class test::RenderTextTestApi;
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, DefaultStyles);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetStyles);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyles);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, AppendTextKeepsStyles);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, ObscuredText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, RevealObscuredText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ElidedText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ElidedObscuredText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedObscuredText);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, MinLineHeight);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_MinWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_NormalWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_SufficientWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_Newline);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           Multiline_LineBreakerBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           Multiline_SurrogatePairsOrCombiningChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, NewlineWithoutMultilineFlag);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, GlyphBounds);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
-                           MoveCursorLeftRight_MeiryoUILigatures);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SameFontForParentheses);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, BreakRunsByUnicodeBlocks);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PangoAttributes);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StringFitsOwnWidth);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.

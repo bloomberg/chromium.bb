@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
@@ -60,7 +59,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
   void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RenderTextMacTest, Mac_ElidedText);
+  friend class RenderTextMacTest;
 
   struct TextRun {
     CTRunRef ct_run;

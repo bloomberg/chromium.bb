@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
@@ -178,30 +177,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
  private:
   friend class test::RenderTextTestApi;
-
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           Multiline_HorizontalAlignment);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_NormalWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_RunDirection);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           HarfBuzz_HorizontalPositions);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           HarfBuzz_BreakRunsByUnicodeBlocks);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           HarfBuzz_SubglyphGraphemeCases);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           HarfBuzz_SubglyphGraphemePartition);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_UnicodeFallback);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           Multiline_LineBreakerBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
-                           Multiline_SurrogatePairsOrCombiningChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars);
+  friend class RenderTextHarfBuzzTest;
 
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline test
