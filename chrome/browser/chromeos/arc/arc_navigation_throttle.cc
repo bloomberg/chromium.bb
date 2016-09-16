@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/chromeos/arc/page_transition_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -78,25 +79,8 @@ content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::HandleRequest() {
   const GURL& url = navigation_handle()->GetURL();
 
-  // Mask out any redirect qualifiers - this method handles navigation from
-  // redirect and non-redirect navigations equivalently.
-  const ui::PageTransition transition =
-      ui::PageTransitionFromInt(navigation_handle()->GetPageTransition() &
-                                ~ui::PAGE_TRANSITION_IS_REDIRECT_MASK);
-
-  if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK)) {
-    // Allow navigation to proceed if this event wasn't spawned by the user
-    // clicking on a link.
+  if (ShouldIgnoreNavigation(navigation_handle()->GetPageTransition()))
     return content::NavigationThrottle::PROCEED;
-  }
-
-  if (ui::PageTransitionGetQualifier(transition) != 0) {
-    // Qualifiers indicate that this navigation was the result of a click on a
-    // forward/back button, or typing in the URL bar, etc.  Don't pass any of
-    // those types of navigations to the intent helper (see crbug.com/630072).
-    // Note that redirects, which we do pass on, are masked out above.
-    return content::NavigationThrottle::PROCEED;
-  }
 
   if (!ShouldOverrideUrlLoading(navigation_handle()))
     return content::NavigationThrottle::PROCEED;

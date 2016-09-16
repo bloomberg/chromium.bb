@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_external_protocol_dialog.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -36,6 +37,12 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     int routing_id,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
+  // First, check if ARC version of the dialog is available and run ARC version
+  // when possible.
+  if (arc::RunArcExternalProtocolDialog(url, render_process_host_id, routing_id,
+                                        page_transition, has_user_gesture)) {
+    return;
+  }
   WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id, routing_id);
   new ExternalProtocolDialog(web_contents, url);
