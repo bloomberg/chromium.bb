@@ -745,8 +745,6 @@ void GpuImageDecodeController::RefImage(const DrawImage& draw_image) {
 }
 
 void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::UnrefImageInternal");
   lock_.AssertAcquired();
   auto found = in_use_cache_.find(GenerateInUseCacheKey(draw_image));
   DCHECK(found != in_use_cache_.end());
@@ -763,8 +761,6 @@ void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
 // Called any time an image or decode ref count changes. Takes care of any
 // necessary memory budget book-keeping and cleanup.
 void GpuImageDecodeController::OwnershipChanged(ImageData* image_data) {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::OwnershipChanged");
   lock_.AssertAcquired();
 
   bool has_any_refs =
@@ -904,8 +900,6 @@ bool GpuImageDecodeController::EnsureCapacity(size_t required_size) {
 }
 
 bool GpuImageDecodeController::CanFitSize(size_t size) const {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::CanFitSize");
   lock_.AssertAcquired();
 
   base::CheckedNumeric<uint32_t> new_size(bytes_used_);
@@ -914,8 +908,6 @@ bool GpuImageDecodeController::CanFitSize(size_t size) const {
 }
 
 bool GpuImageDecodeController::ExceedsPreferredCount() const {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::ExceedsPreferredCount");
   lock_.AssertAcquired();
 
   return persistent_cache_.size() > cached_items_limit_;
@@ -1090,8 +1082,6 @@ GpuImageDecodeController::CreateImageData(const DrawImage& draw_image) {
 }
 
 void GpuImageDecodeController::DeletePendingImages() {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::DeletePendingImages");
   context_->GetLock()->AssertAcquired();
   lock_.AssertAcquired();
   images_pending_deletion_.clear();
@@ -1100,8 +1090,6 @@ void GpuImageDecodeController::DeletePendingImages() {
 SkImageInfo GpuImageDecodeController::CreateImageInfoForDrawImage(
     const DrawImage& draw_image,
     int upload_scale_mip_level) const {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::CreateImageInfoForDrawImage");
   gfx::Size mip_size =
       CalculateSizeForMipLevel(draw_image, upload_scale_mip_level);
   return SkImageInfo::Make(mip_size.width(), mip_size.height(),
@@ -1146,8 +1134,6 @@ GpuImageDecodeController::GetImageDataForDrawImage(
 // the provided |draw_image|.
 bool GpuImageDecodeController::IsCompatible(const ImageData* image_data,
                                             const DrawImage& draw_image) const {
-  TRACE_EVENT0("disabled-by-default-cc.debug",
-               "GpuImageDecodeController::IsCompatible");
   bool is_scaled = image_data->upload_scale_mip_level != 0;
   bool scale_is_compatible = CalculateUploadScaleMipLevel(draw_image) >=
                              image_data->upload_scale_mip_level;
