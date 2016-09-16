@@ -396,6 +396,11 @@ spv = {
         SubgroupLocalInvocationId = 41,
         VertexIndex = 42,
         InstanceIndex = 43,
+        SubgroupEqMaskKHR = 4416,
+        SubgroupGeMaskKHR = 4417,
+        SubgroupGtMaskKHR = 4418,
+        SubgroupLeMaskKHR = 4419,
+        SubgroupLtMaskKHR = 4420,
     },
 
     SelectionControlShift = {
@@ -568,6 +573,7 @@ spv = {
         SubgroupDispatch = 58,
         NamedBarrier = 59,
         PipeStorage = 60,
+        SubgroupBallotKHR = 4423,
     },
 
     Op = {
@@ -875,6 +881,8 @@ spv = {
         OpNamedBarrierInitialize = 328,
         OpMemoryNamedBarrier = 329,
         OpModuleProcessed = 330,
+        OpSubgroupBallotKHR = 4421,
+        OpSubgroupFirstInvocationKHR = 4422,
     },
 
 }

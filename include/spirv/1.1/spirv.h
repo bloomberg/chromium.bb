@@ -428,6 +428,11 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInSubgroupLocalInvocationId = 41,
     SpvBuiltInVertexIndex = 42,
     SpvBuiltInInstanceIndex = 43,
+    SpvBuiltInSubgroupEqMaskKHR = 4416,
+    SpvBuiltInSubgroupGeMaskKHR = 4417,
+    SpvBuiltInSubgroupGtMaskKHR = 4418,
+    SpvBuiltInSubgroupLeMaskKHR = 4419,
+    SpvBuiltInSubgroupLtMaskKHR = 4420,
     SpvBuiltInMax = 0x7fffffff,
 } SpvBuiltIn;
 
@@ -610,6 +615,7 @@ typedef enum SpvCapability_ {
     SpvCapabilitySubgroupDispatch = 58,
     SpvCapabilityNamedBarrier = 59,
     SpvCapabilityPipeStorage = 60,
+    SpvCapabilitySubgroupBallotKHR = 4423,
     SpvCapabilityMax = 0x7fffffff,
 } SpvCapability;
 
@@ -918,6 +924,8 @@ typedef enum SpvOp_ {
     SpvOpNamedBarrierInitialize = 328,
     SpvOpMemoryNamedBarrier = 329,
     SpvOpModuleProcessed = 330,
+    SpvOpSubgroupBallotKHR = 4421,
+    SpvOpSubgroupFirstInvocationKHR = 4422,
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 
