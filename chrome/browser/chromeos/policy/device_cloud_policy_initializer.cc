@@ -149,7 +149,13 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
       break;
   }
 
+  // If OOBE is done and we are not enrolled, make sure we only try interactive
+  // enrollment.
   const bool oobe_complete = local_state_->GetBoolean(prefs::kOobeComplete);
+  if (oobe_complete &&
+      config.auth_mechanism == EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE)
+    config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE;
+  // If OOBE is done and we are enrolled, check for need to recover enrollment.
   if (oobe_complete && install_attributes_->IsEnterpriseDevice()) {
     // Regardless what mode is applicable, the enrollment domain is fixed.
     config.management_domain = install_attributes_->GetDomain();
