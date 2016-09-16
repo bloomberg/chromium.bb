@@ -392,21 +392,8 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
 // Shift operators of ostream.
 // Needed to print values in case of EXPECT_* failure in gtest.
 std::ostream& operator<<(std::ostream& stream,
-                         const DeviceEvent& device_event) {
-  return stream << device_event.DebugString();
-}
-
-std::ostream& operator<<(std::ostream& stream, const DiskEvent& disk_event) {
-  return stream << disk_event.DebugString();
-}
-
-std::ostream& operator<<(std::ostream& stream,
                          const FormatEvent& format_event) {
   return stream << format_event.DebugString();
-}
-
-std::ostream& operator<<(std::ostream& stream, const MountEvent& mount_event) {
-  return stream << mount_event.DebugString();
 }
 
 class DiskMountManagerTest : public testing::Test {
