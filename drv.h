@@ -135,6 +135,7 @@ struct drv_import_fd_data {
 	uint32_t strides[DRV_MAX_PLANES];
 	uint32_t offsets[DRV_MAX_PLANES];
 	uint32_t sizes[DRV_MAX_PLANES];
+	uint64_t format_modifiers[DRV_MAX_PLANES];
 	uint32_t width;
 	uint32_t height;
 	drv_format_t format;
@@ -214,4 +215,3 @@ drv_resolve_format(struct driver *drv, drv_format_t format);
 #endif
 
 #endif
-
