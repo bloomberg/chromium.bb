@@ -1563,12 +1563,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   Capabilities capabilities;
   SupportedProfiles& profiles = capabilities.supported_profiles;
 
-  // Only support VP8 on Android versions where we don't have to synchronously
-  // tear down the MediaCodec on surface destruction because VP8 requires
-  // us to completely drain the decoder before releasing it, which is difficult
-  // and time consuming to do while the surface is being destroyed.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18 &&
-      MediaCodecUtil::IsVp8DecoderAvailable()) {
+  if (MediaCodecUtil::IsVp8DecoderAvailable()) {
     SupportedProfile profile;
     profile.profile = VP8PROFILE_ANY;
     // Since there is little to no power benefit below 360p, don't advertise
