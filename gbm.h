@@ -68,6 +68,8 @@ union gbm_bo_handle {
    uint64_t u64;
 };
 
+#define GBM_MAX_PLANES 4
+
 #define __gbm_fourcc_code(a,b,c,d) ((uint32_t)(a) | ((uint32_t)(b) << 8) | \
 			      ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24))
 
@@ -262,6 +264,7 @@ gbm_bo_create(struct gbm_device *gbm,
 #define GBM_BO_IMPORT_WL_BUFFER         0x5501
 #define GBM_BO_IMPORT_EGL_IMAGE         0x5502
 #define GBM_BO_IMPORT_FD                0x5503
+#define GBM_BO_IMPORT_FD_PLANAR         0x5504
 
 struct gbm_import_fd_data {
    int fd;
@@ -269,6 +272,16 @@ struct gbm_import_fd_data {
    uint32_t height;
    uint32_t stride;
    uint32_t format;
+};
+
+struct gbm_import_fd_planar_data {
+   int fds[GBM_MAX_PLANES];
+   uint32_t width;
+   uint32_t height;
+   uint32_t format;
+   uint32_t strides[GBM_MAX_PLANES];
+   uint32_t offsets[GBM_MAX_PLANES];
+   uint64_t format_modifiers[GBM_MAX_PLANES];
 };
 
 struct gbm_bo *

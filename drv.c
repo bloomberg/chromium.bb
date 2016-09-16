@@ -298,6 +298,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		bo->strides[plane] = data->strides[plane];
 		bo->offsets[plane] = data->offsets[plane];
 		bo->sizes[plane] = data->sizes[plane];
+		bo->format_modifiers[plane] = data->format_modifiers[plane];
 		bo->total_size += data->sizes[plane];
 
 		pthread_mutex_lock(&drv->table_lock);
