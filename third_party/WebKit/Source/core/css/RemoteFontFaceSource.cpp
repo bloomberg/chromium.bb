@@ -266,7 +266,6 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontReso
 void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
-        enum { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
         DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
         cacheHitHistogram.count(dataSourceMetricsValue());
 
