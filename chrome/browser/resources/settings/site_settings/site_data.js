@@ -30,6 +30,14 @@ Polymer({
      * Keeps track of how many outstanding requests for more data there are.
      */
     requests_: Number,
+
+    /**
+     * The current filter applied to the cookie data list.
+     */
+    filterString_: {
+      type: String,
+      value: '',
+    }
   },
 
   ready: function() {
@@ -51,13 +59,42 @@ Polymer({
   },
 
   /**
+   * A filter function for the list.
+   * @param {!CookieDataSummaryItem} item The item to possibly filter out.
+   * @return {!boolean} Whether to show the item.
+   * @private
+   */
+  showItem_: function(item) {
+    if (this.filterString_.length == 0)
+      return true;
+    return item.site.indexOf(this.filterString_) > -1;
+  },
+
+  /** @private */
+  onSearchChanged_: function(e) {
+    this.filterString_ = e.detail;
+    this.$.list.render();
+  },
+
+  /**
    * Returns whether remove all should be shown.
-   * @param {Array<CookieDataSummaryItem>} sites The sites list to use to
+   * @param {!Array<!CookieDataSummaryItem>} sites The sites list to use to
    *     determine whether the button should be visible.
    * @private
    */
   removeAllIsVisible_: function(sites) {
     return sites.length > 0;
+  },
+
+  /**
+   * Returns the string to use for the Remove label.
+   * @return {!string} filterString The current filter string.
+   * @private
+   */
+  computeRemoveLabel_: function(filterString) {
+    if (filterString.length == 0)
+      return loadTimeData.getString('siteSettingsCookieRemoveAll');
+    return loadTimeData.getString('siteSettingsCookieRemoveAllShown');
   },
 
   /**
@@ -118,13 +155,21 @@ Polymer({
   },
 
   /**
-   * Deletes site data for all sites.
+   * Deletes site data for multiple sites.
    * @private
    */
-  onDeleteAllSites_: function() {
-    this.browserProxy.removeAllCookies().then(function(list) {
-      this.loadChildren_(list);
-    }.bind(this));
+  onDeleteMultipleSites_: function() {
+    if (this.filterString_.length == 0) {
+      this.browserProxy.removeAllCookies().then(function(list) {
+        this.loadChildren_(list);
+      }.bind(this));
+    } else {
+      var items = this.$.list.items;
+      for (var i = 0; i < items.length; ++i) {
+        if (this.showItem_(items[i]))
+          this.browserProxy.removeCookie(items[i].id);
+      }
+    }
   },
 
   /**
