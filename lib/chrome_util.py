@@ -122,10 +122,8 @@ class Copier(object):
   Provides destination stripping and permission setting functionality.
   """
 
-  DEFAULT_BLACKLIST = (r'(^|.*/)\.svn($|/.*)',)
-
   def __init__(self, strip_bin=None, strip_flags=None, default_mode=0o644,
-               dir_mode=0o755, exe_mode=0o755, blacklist=None):
+               dir_mode=0o755, exe_mode=0o755):
     """Initialization.
 
     Args:
@@ -135,27 +133,17 @@ class Copier(object):
       default_mode: Default permissions to set on files.
       dir_mode: Mode to set for directories.
       exe_mode: Permissions to set on executables.
-      blacklist: A list of path patterns to ignore during the copy.
     """
     self.strip_bin = strip_bin
     self.strip_flags = strip_flags
     self.default_mode = default_mode
     self.dir_mode = dir_mode
     self.exe_mode = exe_mode
-    self.blacklist = blacklist
-    if self.blacklist is None:
-      self.blacklist = self.DEFAULT_BLACKLIST
 
   @staticmethod
   def Log(src, dest, directory):
     sep = ' [d] -> ' if directory else ' -> '
     logging.debug('%s %s %s', src, sep, dest)
-
-  def _PathIsBlacklisted(self, path):
-    for pattern in self.blacklist:
-      if re.match(pattern, path):
-        return True
-    return False
 
   def _CopyFile(self, src, dest, path):
     """Perform the copy.
@@ -174,8 +162,7 @@ class Copier(object):
       return
 
     osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
-    is_bin = path.exe or src.endswith('.library')
-    if is_bin and self.strip_bin and path.strip and os.path.getsize(src) > 0:
+    if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
                      self.strip_flags)
       cros_build_lib.DebugRunCommand(
@@ -241,7 +228,7 @@ class Copier(object):
           for sub_path in osutils.DirectoryIterator(p):
             rel_path = os.path.relpath(sub_path, p)
             sub_dest = os.path.join(dest, rel_path)
-            if self._PathIsBlacklisted(rel_path):
+            if path.IsBlacklisted(rel_path):
               continue
             if sub_path.endswith('/'):
               osutils.SafeMakedirs(sub_dest, mode=self.dir_mode)
@@ -256,8 +243,10 @@ class Copier(object):
 class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
+  DEFAULT_BLACKLIST = (r'(^|.*/)\.svn($|/.*)',)
+
   def __init__(self, src, exe=False, cond=None, dest=None, mode=None,
-               optional=False, strip=True):
+               optional=False, strip=True, blacklist=None):
     """Initializes the object.
 
     Args:
@@ -279,6 +268,9 @@ class Path(object):
                 script errors out if the artifact does not exist.  In 'sloppy'
                 mode, the Copier class treats all artifacts as optional.
       strip: If |exe| is set, whether to strip the executable.
+      blacklist: A list of path patterns to ignore during the copy. This gets
+                 added to a default blacklist pattern. Only used if Path
+                 represents a directory.
     """
     self.src = src
     self.exe = exe
@@ -287,6 +279,22 @@ class Path(object):
     self.mode = mode
     self.optional = optional
     self.strip = strip
+    self.blacklist = self.DEFAULT_BLACKLIST
+    if blacklist is not None:
+      self.blacklist += tuple(blacklist)
+
+  def IsBlacklisted(self, path):
+    """Returns whether |path| is in the blacklist.
+
+    A file in the blacklist is not copied over to the staging directory.
+
+    Args:
+      path: The path of a file, relative to the path of this Path object.
+    """
+    for pattern in self.blacklist:
+      if re.match(pattern, path):
+        return True
+    return False
 
   def ShouldProcess(self, gyp_defines, staging_flags):
     """Tests whether this artifact should be copied."""
@@ -392,8 +400,7 @@ _COPY_PATHS_ENVOY = (
 ) + _COPY_PATHS_COMMON
 
 _COPY_PATHS_MASH = (
-    Path('mojo_runner', exe=True),
-    Path('Packages/'),
+    Path('Packages/', blacklist=(r'.*\.library$',)),
     Path('*_manifest.json'),
 ) + _COPY_PATHS_CHROME
 
