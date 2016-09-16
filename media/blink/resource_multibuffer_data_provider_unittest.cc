@@ -46,6 +46,7 @@ namespace media {
 
 const char kHttpUrl[] = "http://test";
 const char kHttpRedirect[] = "http://test/ing";
+const char kEtag[] = "\"arglebargle glopy-glyf?\"";
 
 const int kDataSize = 1024;
 const int kHttpOK = 200;
@@ -54,7 +55,11 @@ const int kHttpPartialContent = 206;
 enum NetworkState { NONE, LOADED, LOADING };
 
 // Predicate that tests that request disallows compressed data.
-static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
+static bool CorrectAcceptEncodingAndEtag(const blink::WebURLRequest& request) {
+  std::string etag =
+      request.httpHeaderField(WebString::fromUTF8("If-Match")).utf8();
+  EXPECT_EQ(etag, kEtag);
+
   std::string value =
       request.httpHeaderField(
                  WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding))
@@ -85,6 +90,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   void Initialize(const char* url, int first_position) {
     gurl_ = GURL(url);
     url_data_ = url_index_->GetByUrl(gurl_, UrlData::CORS_UNSPECIFIED);
+    url_data_->set_etag(kEtag);
     DCHECK(url_data_);
     DCHECK(url_data_->frame());
     url_data_->OnRedirect(
@@ -105,8 +111,9 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   void Start() {
     InSequence s;
-    EXPECT_CALL(*url_loader_,
-                loadAsynchronously(Truly(CorrectAcceptEncoding), loader_));
+    EXPECT_CALL(
+        *url_loader_,
+        loadAsynchronously(Truly(CorrectAcceptEncodingAndEtag), loader_));
 
     loader_->Start();
   }

@@ -466,8 +466,9 @@ class MultibufferDataSourceTest : public testing::Test {
   int data_source_bitrate() { return data_source_->bitrate_; }
   double data_source_playback_rate() { return data_source_->playback_rate_; }
   bool is_local_source() { return data_source_->assume_fully_buffered(); }
+  scoped_refptr<UrlData> url_data() { return data_source_->url_data_; }
   void set_might_be_reused_from_cache_in_future(bool value) {
-    data_source_->url_data_->set_cacheable(value);
+    url_data()->set_cacheable(value);
   }
 
  protected:
@@ -1478,4 +1479,18 @@ TEST_F(MultibufferDataSourceTest, DidPassCORSAccessTest) {
   EXPECT_TRUE(data_source_->DidPassCORSAccessCheck());
 }
 
+TEST_F(MultibufferDataSourceTest, EtagTest) {
+  Initialize(kHttpUrl, true);
+
+  EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
+  WebURLResponse response = response_generator_->Generate206(0);
+  const std::string etag("\"arglebargle glop-glyf?\"");
+  response.setHTTPHeaderField(WebString::fromUTF8("Etag"),
+                              WebString::fromUTF8(etag));
+  Respond(response);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  ReceiveData(kDataSize);
+
+  EXPECT_EQ(url_data()->etag(), etag);
+}
 }  // namespace media

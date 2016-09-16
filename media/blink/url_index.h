@@ -77,6 +77,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Last modified time.
   base::Time last_modified() const { return last_modified_; }
 
+  const std::string& etag() const { return etag_; }
+
   // Expiration time.
   base::Time valid_until() const { return valid_until_; }
 
@@ -109,6 +111,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   void set_valid_until(base::Time valid_until);
   void set_range_supported();
   void set_last_modified(base::Time last_modified);
+  void set_etag(const std::string& etag);
 
   // A redirect has occured (or we've found a better UrlData for the same
   // resource).
@@ -187,6 +190,9 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 
   // Last modification time according to http headers.
   base::Time last_modified_;
+
+  // Etag from HTTP reply.
+  std::string etag_;
 
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;

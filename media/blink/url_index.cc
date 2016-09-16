@@ -167,6 +167,11 @@ void UrlData::set_last_modified(base::Time last_modified) {
   last_modified_ = last_modified;
 }
 
+void UrlData::set_etag(const std::string& etag) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  etag_ = etag;
+}
+
 void UrlData::set_range_supported() {
   DCHECK(thread_checker_.CalledOnValidThread());
   range_supported_ = true;
@@ -215,6 +220,25 @@ scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
   return new UrlData(url, cors_mode, weak_factory_.GetWeakPtr());
 }
 
+namespace {
+bool IsStrongEtag(const std::string& etag) {
+  return etag.size() > 2 && etag[0] == '"';
+}
+
+bool IsNewDataForSameResource(const scoped_refptr<UrlData>& new_entry,
+                              const scoped_refptr<UrlData>& old_entry) {
+  if (IsStrongEtag(new_entry->etag()) && IsStrongEtag(old_entry->etag())) {
+    if (new_entry->etag() != old_entry->etag())
+      return true;
+  }
+  if (!new_entry->last_modified().is_null()) {
+    if (new_entry->last_modified() != old_entry->last_modified())
+      return true;
+  }
+  return false;
+}
+};
+
 scoped_refptr<UrlData> UrlIndex::TryInsert(
     const scoped_refptr<UrlData>& url_data) {
   scoped_refptr<UrlData>* by_url_slot;
@@ -232,14 +256,12 @@ scoped_refptr<UrlData> UrlIndex::TryInsert(
   if (*by_url_slot == url_data)
     return url_data;
 
-  // TODO(hubbe): Support etag validation.
-  if (!url_data->last_modified().is_null()) {
-    if ((*by_url_slot)->last_modified() != url_data->last_modified()) {
-      if (urldata_valid)
-        *by_url_slot = url_data;
-      return url_data;
-    }
+  if (IsNewDataForSameResource(url_data, *by_url_slot)) {
+    if (urldata_valid)
+      *by_url_slot = url_data;
+    return url_data;
   }
+
   // Check if we should replace the in-cache url data with our url data.
   if (urldata_valid) {
     if ((!(*by_url_slot)->Valid() ||

@@ -84,6 +84,11 @@ void ResourceMultiBufferDataProvider::Start() {
       WebString::fromUTF8(
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
 
+  if (!url_data_->etag().empty()) {
+    request.setHTTPHeaderField(WebString::fromUTF8("If-Match"),
+                               WebString::fromUTF8(url_data_->etag()));
+  }
+
   url_data_->frame()->setReferrerForRequest(request, blink::WebURL());
 
   // Disable compression, compression for audio/video doesn't make sense...
@@ -240,6 +245,9 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
           &last_modified)) {
     destination_url_data->set_last_modified(last_modified);
   }
+
+  destination_url_data->set_etag(
+      response.httpHeaderField("ETag").utf8().data());
 
   destination_url_data->set_valid_until(base::Time::Now() +
                                         GetCacheValidUntil(response));
