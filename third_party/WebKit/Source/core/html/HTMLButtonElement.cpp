@@ -114,10 +114,8 @@ void HTMLButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::DOMActivate && !isDisabledFormControl()) {
         if (form() && m_type == SUBMIT) {
-            m_isActivatedSubmit = true;
-            form()->prepareForSubmission(event);
+            form()->prepareForSubmission(event, this);
             event->setDefaultHandled();
-            m_isActivatedSubmit = false; // Do this in case submission was canceled.
         }
         if (form() && m_type == RESET) {
             form()->reset();

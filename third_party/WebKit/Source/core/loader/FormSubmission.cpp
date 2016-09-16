@@ -162,19 +162,9 @@ inline FormSubmission::FormSubmission(const String& result)
 {
 }
 
-FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, Event* event)
+FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, Event* event, HTMLFormControlElement* submitButton)
 {
     DCHECK(form);
-
-    HTMLFormControlElement* submitButton = 0;
-    if (event && event->target()) {
-        for (Node* node = event->target()->toNode(); node; node = node->parentOrShadowHostNode()) {
-            if (node->isElementNode() && toElement(node)->isFormControlElement()) {
-                submitButton = toHTMLFormControlElement(node);
-                break;
-            }
-        }
-    }
 
     FormSubmission::Attributes copiedAttributes;
     copiedAttributes.copyFrom(attributes);
@@ -220,6 +210,8 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& 
     WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataEncoder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.encoding());
     FormData* domFormData = FormData::create(dataEncoding.encodingForFormSubmission());
 
+    if (submitButton)
+        submitButton->setActivatedSubmit(true);
     bool containsPasswordData = false;
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
         FormAssociatedElement* control = form->associatedElements()[i];
@@ -233,6 +225,8 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& 
                 containsPasswordData = true;
         }
     }
+    if (submitButton)
+        submitButton->setActivatedSubmit(false);
 
     RefPtr<EncodedFormData> formData;
     String boundary;

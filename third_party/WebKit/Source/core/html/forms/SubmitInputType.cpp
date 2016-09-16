@@ -66,9 +66,7 @@ void SubmitInputType::handleDOMActivateEvent(Event* event)
 {
     if (element().isDisabledFormControl() || !element().form())
         return;
-    element().setActivatedSubmit(true);
-    element().form()->prepareForSubmission(event); // Event handlers can run.
-    element().setActivatedSubmit(false);
+    element().form()->prepareForSubmission(event, &element()); // Event handlers can run.
     event->setDefaultHandled();
 }
 

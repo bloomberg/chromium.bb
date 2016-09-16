@@ -66,7 +66,7 @@ public:
     void disassociate(HTMLImageElement&);
     void didAssociateByParser();
 
-    void prepareForSubmission(Event*);
+    void prepareForSubmission(Event*, HTMLFormControlElement* submitButton);
     void submitFromJavaScript();
     void reset();
 
@@ -119,7 +119,7 @@ private:
     void copyNonAttributePropertiesFromElement(const Element&) override;
 
     void submitDialog(FormSubmission*);
-    void submit(Event*, bool activateSubmitButton);
+    void submit(Event*, HTMLFormControlElement* submitButton);
 
     void scheduleFormSubmission(FormSubmission*);
 

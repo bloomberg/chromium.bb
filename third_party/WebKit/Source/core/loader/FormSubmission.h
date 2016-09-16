@@ -42,6 +42,7 @@ namespace blink {
 class Document;
 class EncodedFormData;
 class Event;
+class HTMLFormControlElement;
 class HTMLFormElement;
 
 class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
@@ -90,7 +91,7 @@ public:
         String m_acceptCharset;
     };
 
-    static FormSubmission* create(HTMLFormElement*, const Attributes&, Event*);
+    static FormSubmission* create(HTMLFormElement*, const Attributes&, Event*, HTMLFormControlElement* submitButton);
     DECLARE_TRACE();
 
     FrameLoadRequest createFrameLoadRequest(Document* originDocument);
