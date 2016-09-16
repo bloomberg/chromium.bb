@@ -32,7 +32,7 @@ class SyncEngineTest : public testing::Test,
  public:
   typedef RemoteFileSyncService::OriginStatusMap RemoteOriginStatusMap;
 
-  SyncEngineTest() : worker_pool_owner_(1, "Worker") {}
+  SyncEngineTest() : worker_pool_owner_(2, "Worker") {}
   ~SyncEngineTest() override {}
 
   void SetUp() override {
