@@ -56,11 +56,6 @@ class TestSkTypeface : public SkTypeface {
     return nullptr;
   }
 
-  SkFontData* onCreateFontData() const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
   void onGetFontDescriptor(SkFontDescriptor*, bool* isLocal) const override {
     ADD_FAILURE();
   }
@@ -186,11 +181,6 @@ class TestSkFontMgr : public SkFontMgr {
   }
 
   SkTypeface* onCreateFromStream(SkStreamAsset*, int ttcIndex) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  SkTypeface* onCreateFromFontData(SkFontData*) const override {
     ADD_FAILURE();
     return nullptr;
   }
