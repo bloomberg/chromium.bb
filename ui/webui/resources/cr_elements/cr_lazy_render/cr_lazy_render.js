@@ -16,30 +16,6 @@
  *   });
  */
 
-/**
- * A template instance created by Polymer.Templatizer.
- * @constructor
- * @extends {PolymerElement}
- */
-var TemplateInstance = function() {};
-
-/** @type {Array<Element>} */
-TemplateInstance.prototype._children;
-
-/**
- * @param {string} prop
- * @param {Object} value
- * @param {boolean} quiet
- */
-TemplateInstance.prototype.__setProperty = function(prop, value, quiet) {};
-
-/**
- * @param {string} path
- * @param {Object} value
- * @param {boolean} quiet
- */
-TemplateInstance.prototype._notifyPath = function(path, value, quiet) {};
-
 Polymer({
   is: 'cr-lazy-render',
   extends: 'template',
@@ -49,10 +25,10 @@ Polymer({
   ],
 
   /** @private {Promise<Element>} */
-  _renderPromise: null,
+  renderPromise_: null,
 
-  /** @private {TemplateInstance} */
-  _instance: null,
+  /** @private {TemplatizerNode} */
+  child_: null,
 
   /**
    * Stamp the template into the DOM tree asynchronously
@@ -60,16 +36,16 @@ Polymer({
    *   been stamped.
    */
   get: function() {
-    if (!this._renderPromise) {
-      this._renderPromise = new Promise(function(resolve) {
+    if (!this.renderPromise_) {
+      this.renderPromise_ = new Promise(function(resolve) {
         this._debounceTemplate(function() {
-          this._render();
-          this._renderPromise = null;
+          this.render_();
+          this.renderPromise_ = null;
           resolve(this.getIfExists());
         }.bind(this));
       }.bind(this));
     }
-    return this._renderPromise;
+    return this.renderPromise_;
   },
 
   /**
@@ -77,25 +53,18 @@ Polymer({
    *   already been stamped.
    */
   getIfExists: function() {
-    if (this._instance) {
-      var children = this._instance._children;
-
-      for (var i = 0; i < children.length; i++) {
-        if (children[i].nodeType == Node.ELEMENT_NODE)
-          return children[i];
-      }
-    }
-    return null;
+    return this.child_;
   },
 
-  _render: function() {
+  /** @private */
+  render_: function() {
     if (!this.ctor)
       this.templatize(this);
     var parentNode = this.parentNode;
-    if (parentNode && !this._instance) {
-      this._instance = /** @type {TemplateInstance} */(this.stamp({}));
-      var root = this._instance.root;
-      parentNode.insertBefore(root, this);
+    if (parentNode && !this.child_) {
+      var instance = this.stamp({});
+      this.child_ = instance.root.firstElementChild;
+      parentNode.insertBefore(instance.root, this);
     }
   },
 
@@ -104,8 +73,8 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentProp: function(prop, value) {
-    if (this._instance)
-      this._instance.__setProperty(prop, value, true);
+    if (this.child_)
+      this.child_._templateInstance[prop] = value;
   },
 
   /**
@@ -113,7 +82,7 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentPath: function(path, value) {
-    if (this._instance)
-      this._instance._notifyPath(path, value, true);
+    if (this.child_)
+      this.child_._templateInstance.notifyPath(path, value, true);
   }
 });

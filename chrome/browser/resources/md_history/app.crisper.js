@@ -5388,7 +5388,7 @@ Polymer({
   "extends": 'template',
   behaviors: [ Polymer.Templatizer ],
   _renderPromise: null,
-  _instance: null,
+  _child: null,
   get: function() {
     if (!this._renderPromise) {
       this._renderPromise = new Promise(function(resolve) {
@@ -5402,28 +5402,22 @@ Polymer({
     return this._renderPromise;
   },
   getIfExists: function() {
-    if (this._instance) {
-      var children = this._instance._children;
-      for (var i = 0; i < children.length; i++) {
-        if (children[i].nodeType == Node.ELEMENT_NODE) return children[i];
-      }
-    }
-    return null;
+    return this._child;
   },
   _render: function() {
     if (!this.ctor) this.templatize(this);
     var parentNode = this.parentNode;
-    if (parentNode && !this._instance) {
-      this._instance = this.stamp({});
-      var root = this._instance.root;
-      parentNode.insertBefore(root, this);
+    if (parentNode && !this._child) {
+      var instance = this.stamp({});
+      this._child = instance.root.querySelector('*');
+      parentNode.insertBefore(instance.root, this);
     }
   },
   _forwardParentProp: function(prop, value) {
-    if (this._instance) this._instance.__setProperty(prop, value, true);
+    if (this._child) this._child._templateInstance[prop] = value;
   },
   _forwardParentPath: function(path, value) {
-    if (this._instance) this._instance._notifyPath(path, value, true);
+    if (this._child) this._child._templateInstance.notifyPath(path, value, true);
   }
 });
 
