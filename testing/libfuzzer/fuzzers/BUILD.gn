@@ -400,3 +400,14 @@ fuzzer_test("skia_pathop_fuzzer") {
     additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }
 }
+
+fuzzer_test("prtime_fuzzer") {
+  sources = [
+    "prtime_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+  dict = "dicts/prtime.dict"
+  libfuzzer_options = [ "max_len=1024" ]
+}
