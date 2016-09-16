@@ -3625,6 +3625,23 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
       GL_DEPTH_STENCIL_ATTACHMENT));
 }
 
+TEST_P(GLES3DecoderTest, BlitFramebufferFeedbackLoopDefaultFramebuffer) {
+  // Run BlitFramebufferCHROMIUM targetting the default framebuffer for both
+  // read and draw, should result in a feedback loop.
+  BlitFramebufferCHROMIUM cmd;
+  cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_LINEAR);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 // TODO(gman): PixelStorei
 
 // TODO(gman): SwapBuffers

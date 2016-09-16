@@ -7569,25 +7569,27 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     is_feedback_loop = FeedbackLoopTrue;
   } else if (!read_framebuffer || !draw_framebuffer) {
     is_feedback_loop = FeedbackLoopFalse;
-  }
-  if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
-    const Framebuffer::Attachment* depth_buffer_read =
-        read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
-    const Framebuffer::Attachment* depth_buffer_draw =
-        draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
-    if (depth_buffer_draw &&
-        depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
-      is_feedback_loop = FeedbackLoopTrue;
+  } else {
+    DCHECK(read_framebuffer && draw_framebuffer);
+    if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
+      const Framebuffer::Attachment* depth_buffer_read =
+          read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+      const Framebuffer::Attachment* depth_buffer_draw =
+          draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+      if (depth_buffer_draw &&
+          depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
+        is_feedback_loop = FeedbackLoopTrue;
+      }
     }
-  }
-  if ((mask & GL_STENCIL_BUFFER_BIT) != 0) {
-    const Framebuffer::Attachment* stencil_buffer_read =
-        read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
-    const Framebuffer::Attachment* stencil_buffer_draw =
-        draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
-    if (stencil_buffer_draw &&
-        stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
-      is_feedback_loop = FeedbackLoopTrue;
+    if ((mask & GL_STENCIL_BUFFER_BIT) != 0) {
+      const Framebuffer::Attachment* stencil_buffer_read =
+          read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+      const Framebuffer::Attachment* stencil_buffer_draw =
+          draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+      if (stencil_buffer_draw &&
+          stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
+        is_feedback_loop = FeedbackLoopTrue;
+      }
     }
   }
 
@@ -7607,6 +7609,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
 
     GLenum src_sized_format =
         GLES2Util::ConvertToSizedFormat(src_format, src_type);
+    DCHECK(read_framebuffer || (is_feedback_loop != FeedbackLoopUnknown));
     const Framebuffer::Attachment* read_buffer =
         is_feedback_loop == FeedbackLoopUnknown ?
         read_framebuffer->GetReadBufferAttachment() : nullptr;
@@ -7635,6 +7638,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       // Check whether draw buffers have identical color image with read buffer
       if (is_feedback_loop == FeedbackLoopUnknown) {
         GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + ii);
+        DCHECK(draw_framebuffer);
         const Framebuffer::Attachment* draw_buffer =
             draw_framebuffer->GetAttachment(attachment);
         if (!draw_buffer) {
