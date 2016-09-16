@@ -261,6 +261,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.WinAPIs" enum="AccessibilityWinAPIEnum">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>nektar@chromium.org</owner>
+  <summary>Tracks usage of all public Windows accessibility APIs.</summary>
+</histogram>
+
 <histogram name="Accessibility.WinAudioDescription" enum="BooleanEnabled">
   <owner>dmazzoni@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -69514,6 +69520,240 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="ScrolledMainFrame"/>
   <int value="1" label="ScrolledMainFrameWithAcceleratedFixedRootBackground"/>
   <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
+</enum>
+
+<enum name="AccessibilityWinAPIEnum" type="int">
+  <summary>
+    Track which Windows accessibility APIs are being called by clients.
+  </summary>
+  <int value="0" label="UMA_API_ACC_DO_DEFAULT_ACTION">accDoDefaultAction</int>
+  <int value="1" label="UMA_API_ACC_HIT_TEST">accHitTest</int>
+  <int value="2" label="UMA_API_ACC_LOCATION">accLocation</int>
+  <int value="3" label="UMA_API_ACC_NAVIGATE">accNavigate</int>
+  <int value="4" label="UMA_API_ACC_SELECT">accSelect</int>
+  <int value="5" label="UMA_API_ADD_SELECTION">addSelection</int>
+  <int value="6" label="UMA_API_CONVERT_RETURNED_ELEMENT">
+    ConvertReturnedElement
+  </int>
+  <int value="7" label="UMA_API_DO_ACTION">doAction</int>
+  <int value="8" label="UMA_API_GET_ACCESSIBLE_AT">get_accessibleAt</int>
+  <int value="9" label="UMA_API_GET_ACC_CHILD">get_accChild</int>
+  <int value="10" label="UMA_API_GET_ACC_CHILD_COUNT">get_accChildCount</int>
+  <int value="11" label="UMA_API_GET_ACC_DEFAULT_ACTION">
+    get_accDefaultAction
+  </int>
+  <int value="12" label="UMA_API_GET_ACC_DESCRIPTION">get_accDescription</int>
+  <int value="13" label="UMA_API_GET_ACC_FOCUS">get_accFocus</int>
+  <int value="14" label="UMA_API_GET_ACC_HELP">get_accHelp</int>
+  <int value="15" label="UMA_API_GET_ACC_HELP_TOPIC">get_accHelpTopic</int>
+  <int value="16" label="UMA_API_GET_ACC_KEYBOARD_SHORTCUT">
+    get_accKeyboardShortcut
+  </int>
+  <int value="17" label="UMA_API_GET_ACC_NAME">get_accName</int>
+  <int value="18" label="UMA_API_GET_ACC_PARENT">get_accParent</int>
+  <int value="19" label="UMA_API_GET_ACC_ROLE">get_accRole</int>
+  <int value="20" label="UMA_API_GET_ACC_SELECTION">get_accSelection</int>
+  <int value="21" label="UMA_API_GET_ACC_STATE">get_accState</int>
+  <int value="22" label="UMA_API_GET_ACC_VALUE">get_accValue</int>
+  <int value="23" label="UMA_API_GET_ANCHOR">get_anchor</int>
+  <int value="24" label="UMA_API_GET_ANCHOR_TARGET">get_anchorTarget</int>
+  <int value="25" label="UMA_API_GET_APP_NAME">get_appName</int>
+  <int value="26" label="UMA_API_GET_APP_VERSION">get_appVersion</int>
+  <int value="27" label="UMA_API_GET_ATTRIBUTES_FOR_NAMES">
+    get_attributesForNames
+  </int>
+  <int value="28" label="UMA_API_GET_CAPTION">get_caption</int>
+  <int value="29" label="UMA_API_GET_CARET_OFFSET">get_caretOffset</int>
+  <int value="30" label="UMA_API_GET_CELL_AT">get_cellAt</int>
+  <int value="31" label="UMA_API_GET_CHARACTER_EXTENTS">
+    get_characterExtents
+  </int>
+  <int value="32" label="UMA_API_GET_CHILD_AT">get_childAt</int>
+  <int value="33" label="UMA_API_GET_CHILD_INDEX">get_childIndex</int>
+  <int value="34" label="UMA_API_GET_CLIPPED_SUBSTRING_BOUNDS">
+    get_clippedSubstringBounds
+  </int>
+  <int value="35" label="UMA_API_GET_COLUMN_DESCRIPTION">
+    get_columnDescription
+  </int>
+  <int value="36" label="UMA_API_GET_COLUMN_EXTENT">get_columnExtent</int>
+  <int value="37" label="UMA_API_GET_COLUMN_EXTENT_AT">get_columnExtentAt</int>
+  <int value="38" label="UMA_API_GET_COLUMN_HEADER">get_columnHeader</int>
+  <int value="39" label="UMA_API_GET_COLUMN_HEADER_CELLS">
+    get_columnHeaderCells
+  </int>
+  <int value="40" label="UMA_API_GET_COLUMN_INDEX">get_columnIndex</int>
+  <int value="41" label="UMA_API_GET_COMPUTED_STYLE">get_computedStyle</int>
+  <int value="42" label="UMA_API_GET_COMPUTED_STYLE_FOR_PROPERTIES">
+    get_computedStyleForProperties
+  </int>
+  <int value="43" label="UMA_API_GET_CURRENT_VALUE">get_currentValue</int>
+  <int value="44" label="UMA_API_GET_DESCRIPTION">get_description</int>
+  <int value="45" label="UMA_API_GET_DOC_TYPE">get_docType</int>
+  <int value="46" label="UMA_API_GET_DOM_TEXT">get_domText</int>
+  <int value="47" label="UMA_API_GET_END_INDEX">get_endIndex</int>
+  <int value="48" label="UMA_API_GET_EXTENDED_ROLE">get_extendedRole</int>
+  <int value="49" label="UMA_API_GET_EXTENDED_STATES">get_extendedStates</int>
+  <int value="50" label="UMA_API_GET_FIRST_CHILD">get_firstChild</int>
+  <int value="51" label="UMA_API_GET_FONT_FAMILY">get_fontFamily</int>
+  <int value="52" label="UMA_API_GET_GROUP_POSITION">get_groupPosition</int>
+  <int value="53" label="UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER">
+    get_HostRawElementProvider
+  </int>
+  <int value="54" label="UMA_API_GET_HYPERLINK">get_hyperlink</int>
+  <int value="55" label="UMA_API_GET_HYPERLINK_INDEX">get_hyperlinkIndex</int>
+  <int value="56" label="UMA_API_GET_IACCESSIBLE_PAIR">
+    GetIAccessiblePair ALT
+  </int>
+  <int value="57" label="UMA_API_GET_IMAGE_POSITION">get_imagePosition</int>
+  <int value="58" label="UMA_API_GET_IMAGE_SIZE">get_imageSize</int>
+  <int value="59" label="UMA_API_GET_INDEX_IN_PARENT">get_indexInParent</int>
+  <int value="60" label="UMA_API_GET_INNER_HTML">get_innerHTML</int>
+  <int value="61" label="UMA_API_GET_IS_COLUMN_SELECTED">
+    get_isColumnSelected
+  </int>
+  <int value="62" label="UMA_API_GET_IS_ROW_SELECTED">get_isRowSelected</int>
+  <int value="63" label="UMA_API_GET_IS_SELECTED">get_isSelected</int>
+  <int value="64" label="UMA_API_GET_KEY_BINDING">get_keyBinding</int>
+  <int value="65" label="UMA_API_GET_LANGUAGE">get_language</int>
+  <int value="66" label="UMA_API_GET_LAST_CHILD">get_lastChild</int>
+  <int value="67" label="UMA_API_GET_LOCALE">get_locale</int>
+  <int value="68" label="UMA_API_GET_LOCALIZED_EXTENDED_ROLE">
+    get_localizedExtendedRole
+  </int>
+  <int value="69" label="UMA_API_GET_LOCALIZED_EXTENDED_STATES">
+    get_localizedExtendedStates
+  </int>
+  <int value="70" label="UMA_API_GET_LOCALIZED_NAME">get_localizedName</int>
+  <int value="71" label="UMA_API_GET_LOCAL_INTERFACE">get_localInterface</int>
+  <int value="72" label="UMA_API_GET_MAXIMUM_VALUE">get_maximumValue</int>
+  <int value="73" label="UMA_API_GET_MIME_TYPE">get_mimeType</int>
+  <int value="74" label="UMA_API_GET_MINIMUM_VALUE">get_minimumValue</int>
+  <int value="75" label="UMA_API_GET_NAME">get_name</int>
+  <int value="76" label="UMA_API_GET_NAMESPACE_URI_FOR_ID">
+    get_nameSpaceURIForID ALT
+  </int>
+  <int value="77" label="UMA_API_GET_NEW_TEXT">get_newText</int>
+  <int value="78" label="UMA_API_GET_NEXT_SIBLING">get_nextSibling</int>
+  <int value="79" label="UMA_API_GET_NODE_INFO">get_nodeInfo</int>
+  <int value="80" label="UMA_API_GET_N_CHARACTERS">get_nCharacters</int>
+  <int value="81" label="UMA_API_GET_N_COLUMNS">get_nColumns</int>
+  <int value="82" label="UMA_API_GET_N_EXTENDED_STATES">
+    get_nExtendedStates
+  </int>
+  <int value="83" label="UMA_API_GET_N_HYPERLINKS">get_nHyperlinks</int>
+  <int value="84" label="UMA_API_GET_N_RELATIONS">get_nRelations</int>
+  <int value="85" label="UMA_API_GET_N_ROWS">get_nRows</int>
+  <int value="86" label="UMA_API_GET_N_SELECTED_CELLS">get_nSelectedCells</int>
+  <int value="87" label="UMA_API_GET_N_SELECTED_CHILDREN">
+    get_nSelectedChildren
+  </int>
+  <int value="88" label="UMA_API_GET_N_SELECTED_COLUMNS">
+    get_nSelectedColumns
+  </int>
+  <int value="89" label="UMA_API_GET_N_SELECTED_ROWS">get_nSelectedRows</int>
+  <int value="90" label="UMA_API_GET_N_SELECTIONS">get_nSelections</int>
+  <int value="91" label="UMA_API_GET_OBJECT_FOR_CHILD">GetObjectForChild</int>
+  <int value="92" label="UMA_API_GET_OFFSET_AT_POINT">get_offsetAtPoint</int>
+  <int value="93" label="UMA_API_GET_OLD_TEXT">get_oldText</int>
+  <int value="94" label="UMA_API_GET_PARENT_NODE">get_parentNode</int>
+  <int value="95" label="UMA_API_GET_PATTERN_PROVIDER">GetPatternProvider</int>
+  <int value="96" label="UMA_API_GET_PREVIOUS_SIBLING">get_previousSibling</int>
+  <int value="97" label="UMA_API_GET_PROPERTY_VALUE">GetPropertyValue</int>
+  <int value="98" label="UMA_API_GET_PROVIDER_OPTIONS">get_ProviderOptions</int>
+  <int value="99" label="UMA_API_GET_RELATION">get_relation</int>
+  <int value="100" label="UMA_API_GET_RELATIONS">get_relations</int>
+  <int value="101" label="UMA_API_GET_ROW_COLUMN_EXTENTS">
+    get_rowColumnExtents
+  </int>
+  <int value="102" label="UMA_API_GET_ROW_COLUMN_EXTENTS_AT_INDEX">
+    get_rowColumnExtentsAtIndex
+  </int>
+  <int value="103" label="UMA_API_GET_ROW_DESCRIPTION">get_rowDescription</int>
+  <int value="104" label="UMA_API_GET_ROW_EXTENT">get_rowExtent</int>
+  <int value="105" label="UMA_API_GET_ROW_EXTENT_AT">get_rowExtentAt</int>
+  <int value="106" label="UMA_API_GET_ROW_HEADER">get_rowHeader</int>
+  <int value="107" label="UMA_API_GET_ROW_HEADER_CELLS">get_rowHeaderCells</int>
+  <int value="108" label="UMA_API_GET_ROW_INDEX">get_rowIndex</int>
+  <int value="109" label="UMA_API_GET_RUNTIME_ID">GetRuntimeId</int>
+  <int value="110" label="UMA_API_GET_SELECTED_CELLS">get_selectedCells</int>
+  <int value="111" label="UMA_API_GET_SELECTED_CHILDREN">
+    get_selectedChildren
+  </int>
+  <int value="112" label="UMA_API_GET_SELECTED_COLUMNS">
+    get_selectedColumns
+  </int>
+  <int value="113" label="UMA_API_GET_SELECTED_ROWS">get_selectedRows</int>
+  <int value="114" label="UMA_API_GET_SELECTION">get_selection</int>
+  <int value="115" label="UMA_API_GET_START_INDEX">get_startIndex</int>
+  <int value="116" label="UMA_API_GET_STATES">get_states</int>
+  <int value="117" label="UMA_API_GET_SUMMARY">get_summary</int>
+  <int value="118" label="UMA_API_GET_TABLE">get_table</int>
+  <int value="119" label="UMA_API_GET_TEXT">get_text</int>
+  <int value="120" label="UMA_API_GET_TEXT_AFTER_OFFSET">
+    get_textAfterOffset
+  </int>
+  <int value="121" label="UMA_API_GET_TEXT_AT_OFFSET">get_textAtOffset</int>
+  <int value="122" label="UMA_API_GET_TEXT_BEFORE_OFFSET">
+    get_textBeforeOffset
+  </int>
+  <int value="123" label="UMA_API_GET_TITLE">get_title</int>
+  <int value="124" label="UMA_API_GET_TOOLKIT_NAME">get_toolkitName</int>
+  <int value="125" label="UMA_API_GET_TOOLKIT_VERSION">get_toolkitVersion</int>
+  <int value="126" label="UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS">
+    get_unclippedSubstringBounds
+  </int>
+  <int value="127" label="UMA_API_GET_UNIQUE_ID">get_uniqueID</int>
+  <int value="128" label="UMA_API_GET_URL">get_URL</int>
+  <int value="129" label="UMA_API_GET_VALID">get_valid</int>
+  <int value="130" label="UMA_API_GET_WINDOW_HANDLE">get_windowHandle</int>
+  <int value="131" label="UMA_API_IA2_GET_ATTRIBUTES">get_attributes ALT</int>
+  <int value="132" label="UMA_API_IA2_SCROLL_TO">scrollTo ALT</int>
+  <int value="133" label="UMA_API_IAACTION_GET_DESCRIPTION">
+    get_description ALT
+  </int>
+  <int value="134" label="UMA_API_IATEXT_GET_ATTRIBUTES">
+    get_attributes ALT
+  </int>
+  <int value="135" label="UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES">
+    get_attributes ALT
+  </int>
+  <int value="136" label="UMA_API_ISIMPLEDOMNODE_SCROLL_TO">scrollTo ALT</int>
+  <int value="137" label="UMA_API_N_ACTIONS">nActions</int>
+  <int value="138" label="UMA_API_PUT_ALTERNATE_VIEW_MEDIA_TYPES">
+    put_alternateViewMediaTypes
+  </int>
+  <int value="139" label="UMA_API_QUERY_SERVICE">QueryService</int>
+  <int value="140" label="UMA_API_REMOVE_SELECTION">removeSelection</int>
+  <int value="141" label="UMA_API_ROLE">role</int>
+  <int value="142" label="UMA_API_SCROLL_SUBSTRING_TO">scrollSubstringTo</int>
+  <int value="143" label="UMA_API_SCROLL_SUBSTRING_TO_POINT">
+    scrollSubstringToPoint
+  </int>
+  <int value="144" label="UMA_API_SCROLL_TO_POINT">scrollToPoint</int>
+  <int value="145" label="UMA_API_SCROLL_TO_SUBSTRING">scrollToSubstring</int>
+  <int value="146" label="UMA_API_SELECT_COLUMN">selectColumn</int>
+  <int value="147" label="UMA_API_SELECT_ROW">selectRow</int>
+  <int value="148" label="UMA_API_SET_CARET_OFFSET">setCaretOffset</int>
+  <int value="149" label="UMA_API_SET_CURRENT_VALUE">setCurrentValue</int>
+  <int value="150" label="UMA_API_SET_SELECTION">setSelection</int>
+  <int value="151" label="UMA_API_TABLE2_GET_SELECTED_COLUMNS">
+    get_selectedColumns ALT
+  </int>
+  <int value="152" label="UMA_API_TABLE2_GET_SELECTED_ROWS">
+    get_selectedRows ALT
+  </int>
+  <int value="153" label="UMA_API_TABLECELL_GET_COLUMN_INDEX">
+    get_columnIndex ALT
+  </int>
+  <int value="154" label="UMA_API_TABLECELL_GET_IS_SELECTED">
+    get_isSelected ALT
+  </int>
+  <int value="155" label="UMA_API_TABLECELL_GET_ROW_INDEX">
+    get_rowIndex ALT
+  </int>
+  <int value="156" label="UMA_API_UNSELECT_COLUMN">unselectColumn</int>
+  <int value="157" label="UMA_API_UNSELECT_ROW">unselectRow</int>
 </enum>
 
 <enum name="AccountChooserDismissalReason" type="int">

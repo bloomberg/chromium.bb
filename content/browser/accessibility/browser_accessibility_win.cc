@@ -11,6 +11,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,181 @@
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
+
+namespace {
+
+// IMPORTANT!
+// These values are written to logs.  Do not renumber or delete
+// existing items; add new entries to the end of the list.
+enum {
+  UMA_API_ACC_DO_DEFAULT_ACTION = 0,
+  UMA_API_ACC_HIT_TEST = 1,
+  UMA_API_ACC_LOCATION = 2,
+  UMA_API_ACC_NAVIGATE = 3,
+  UMA_API_ACC_SELECT = 4,
+  UMA_API_ADD_SELECTION = 5,
+  UMA_API_CONVERT_RETURNED_ELEMENT = 6,
+  UMA_API_DO_ACTION = 7,
+  UMA_API_GET_ACCESSIBLE_AT = 8,
+  UMA_API_GET_ACC_CHILD = 9,
+  UMA_API_GET_ACC_CHILD_COUNT = 10,
+  UMA_API_GET_ACC_DEFAULT_ACTION = 11,
+  UMA_API_GET_ACC_DESCRIPTION = 12,
+  UMA_API_GET_ACC_FOCUS = 13,
+  UMA_API_GET_ACC_HELP = 14,
+  UMA_API_GET_ACC_HELP_TOPIC = 15,
+  UMA_API_GET_ACC_KEYBOARD_SHORTCUT = 16,
+  UMA_API_GET_ACC_NAME = 17,
+  UMA_API_GET_ACC_PARENT = 18,
+  UMA_API_GET_ACC_ROLE = 19,
+  UMA_API_GET_ACC_SELECTION = 20,
+  UMA_API_GET_ACC_STATE = 21,
+  UMA_API_GET_ACC_VALUE = 22,
+  UMA_API_GET_ANCHOR = 23,
+  UMA_API_GET_ANCHOR_TARGET = 24,
+  UMA_API_GET_APP_NAME = 25,
+  UMA_API_GET_APP_VERSION = 26,
+  UMA_API_GET_ATTRIBUTES_FOR_NAMES = 27,
+  UMA_API_GET_CAPTION = 28,
+  UMA_API_GET_CARET_OFFSET = 29,
+  UMA_API_GET_CELL_AT = 30,
+  UMA_API_GET_CHARACTER_EXTENTS = 31,
+  UMA_API_GET_CHILD_AT = 32,
+  UMA_API_GET_CHILD_INDEX = 33,
+  UMA_API_GET_CLIPPED_SUBSTRING_BOUNDS = 34,
+  UMA_API_GET_COLUMN_DESCRIPTION = 35,
+  UMA_API_GET_COLUMN_EXTENT = 36,
+  UMA_API_GET_COLUMN_EXTENT_AT = 37,
+  UMA_API_GET_COLUMN_HEADER = 38,
+  UMA_API_GET_COLUMN_HEADER_CELLS = 39,
+  UMA_API_GET_COLUMN_INDEX = 40,
+  UMA_API_GET_COMPUTED_STYLE = 41,
+  UMA_API_GET_COMPUTED_STYLE_FOR_PROPERTIES = 42,
+  UMA_API_GET_CURRENT_VALUE = 43,
+  UMA_API_GET_DESCRIPTION = 44,
+  UMA_API_GET_DOC_TYPE = 45,
+  UMA_API_GET_DOM_TEXT = 46,
+  UMA_API_GET_END_INDEX = 47,
+  UMA_API_GET_EXTENDED_ROLE = 48,
+  UMA_API_GET_EXTENDED_STATES = 49,
+  UMA_API_GET_FIRST_CHILD = 50,
+  UMA_API_GET_FONT_FAMILY = 51,
+  UMA_API_GET_GROUP_POSITION = 52,
+  UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER = 53,
+  UMA_API_GET_HYPERLINK = 54,
+  UMA_API_GET_HYPERLINK_INDEX = 55,
+  UMA_API_GET_IACCESSIBLE_PAIR = 56,
+  UMA_API_GET_IMAGE_POSITION = 57,
+  UMA_API_GET_IMAGE_SIZE = 58,
+  UMA_API_GET_INDEX_IN_PARENT = 59,
+  UMA_API_GET_INNER_HTML = 60,
+  UMA_API_GET_IS_COLUMN_SELECTED = 61,
+  UMA_API_GET_IS_ROW_SELECTED = 62,
+  UMA_API_GET_IS_SELECTED = 63,
+  UMA_API_GET_KEY_BINDING = 64,
+  UMA_API_GET_LANGUAGE = 65,
+  UMA_API_GET_LAST_CHILD = 66,
+  UMA_API_GET_LOCALE = 67,
+  UMA_API_GET_LOCALIZED_EXTENDED_ROLE = 68,
+  UMA_API_GET_LOCALIZED_EXTENDED_STATES = 69,
+  UMA_API_GET_LOCALIZED_NAME = 70,
+  UMA_API_GET_LOCAL_INTERFACE = 71,
+  UMA_API_GET_MAXIMUM_VALUE = 72,
+  UMA_API_GET_MIME_TYPE = 73,
+  UMA_API_GET_MINIMUM_VALUE = 74,
+  UMA_API_GET_NAME = 75,
+  UMA_API_GET_NAMESPACE_URI_FOR_ID = 76,
+  UMA_API_GET_NEW_TEXT = 77,
+  UMA_API_GET_NEXT_SIBLING = 78,
+  UMA_API_GET_NODE_INFO = 79,
+  UMA_API_GET_N_CHARACTERS = 80,
+  UMA_API_GET_N_COLUMNS = 81,
+  UMA_API_GET_N_EXTENDED_STATES = 82,
+  UMA_API_GET_N_HYPERLINKS = 83,
+  UMA_API_GET_N_RELATIONS = 84,
+  UMA_API_GET_N_ROWS = 85,
+  UMA_API_GET_N_SELECTED_CELLS = 86,
+  UMA_API_GET_N_SELECTED_CHILDREN = 87,
+  UMA_API_GET_N_SELECTED_COLUMNS = 88,
+  UMA_API_GET_N_SELECTED_ROWS = 89,
+  UMA_API_GET_N_SELECTIONS = 90,
+  UMA_API_GET_OBJECT_FOR_CHILD = 91,
+  UMA_API_GET_OFFSET_AT_POINT = 92,
+  UMA_API_GET_OLD_TEXT = 93,
+  UMA_API_GET_PARENT_NODE = 94,
+  UMA_API_GET_PATTERN_PROVIDER = 95,
+  UMA_API_GET_PREVIOUS_SIBLING = 96,
+  UMA_API_GET_PROPERTY_VALUE = 97,
+  UMA_API_GET_PROVIDER_OPTIONS = 98,
+  UMA_API_GET_RELATION = 99,
+  UMA_API_GET_RELATIONS = 100,
+  UMA_API_GET_ROW_COLUMN_EXTENTS = 101,
+  UMA_API_GET_ROW_COLUMN_EXTENTS_AT_INDEX = 102,
+  UMA_API_GET_ROW_DESCRIPTION = 103,
+  UMA_API_GET_ROW_EXTENT = 104,
+  UMA_API_GET_ROW_EXTENT_AT = 105,
+  UMA_API_GET_ROW_HEADER = 106,
+  UMA_API_GET_ROW_HEADER_CELLS = 107,
+  UMA_API_GET_ROW_INDEX = 108,
+  UMA_API_GET_RUNTIME_ID = 109,
+  UMA_API_GET_SELECTED_CELLS = 110,
+  UMA_API_GET_SELECTED_CHILDREN = 111,
+  UMA_API_GET_SELECTED_COLUMNS = 112,
+  UMA_API_GET_SELECTED_ROWS = 113,
+  UMA_API_GET_SELECTION = 114,
+  UMA_API_GET_START_INDEX = 115,
+  UMA_API_GET_STATES = 116,
+  UMA_API_GET_SUMMARY = 117,
+  UMA_API_GET_TABLE = 118,
+  UMA_API_GET_TEXT = 119,
+  UMA_API_GET_TEXT_AFTER_OFFSET = 120,
+  UMA_API_GET_TEXT_AT_OFFSET = 121,
+  UMA_API_GET_TEXT_BEFORE_OFFSET = 122,
+  UMA_API_GET_TITLE = 123,
+  UMA_API_GET_TOOLKIT_NAME = 124,
+  UMA_API_GET_TOOLKIT_VERSION = 125,
+  UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS = 126,
+  UMA_API_GET_UNIQUE_ID = 127,
+  UMA_API_GET_URL = 128,
+  UMA_API_GET_VALID = 129,
+  UMA_API_GET_WINDOW_HANDLE = 130,
+  UMA_API_IA2_GET_ATTRIBUTES = 131,
+  UMA_API_IA2_SCROLL_TO = 132,
+  UMA_API_IAACTION_GET_DESCRIPTION = 133,
+  UMA_API_IATEXT_GET_ATTRIBUTES = 134,
+  UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES = 135,
+  UMA_API_ISIMPLEDOMNODE_SCROLL_TO = 136,
+  UMA_API_N_ACTIONS = 137,
+  UMA_API_PUT_ALTERNATE_VIEW_MEDIA_TYPES = 138,
+  UMA_API_QUERY_SERVICE = 139,
+  UMA_API_REMOVE_SELECTION = 140,
+  UMA_API_ROLE = 141,
+  UMA_API_SCROLL_SUBSTRING_TO = 142,
+  UMA_API_SCROLL_SUBSTRING_TO_POINT = 143,
+  UMA_API_SCROLL_TO_POINT = 144,
+  UMA_API_SCROLL_TO_SUBSTRING = 145,
+  UMA_API_SELECT_COLUMN = 146,
+  UMA_API_SELECT_ROW = 147,
+  UMA_API_SET_CARET_OFFSET = 148,
+  UMA_API_SET_CURRENT_VALUE = 149,
+  UMA_API_SET_SELECTION = 150,
+  UMA_API_TABLE2_GET_SELECTED_COLUMNS = 151,
+  UMA_API_TABLE2_GET_SELECTED_ROWS = 152,
+  UMA_API_TABLECELL_GET_COLUMN_INDEX = 153,
+  UMA_API_TABLECELL_GET_IS_SELECTED = 154,
+  UMA_API_TABLECELL_GET_ROW_INDEX = 155,
+  UMA_API_UNSELECT_COLUMN = 156,
+  UMA_API_UNSELECT_ROW = 157,
+
+  // This must always be the last enum. It's okay for its value to
+  // increase, but none of the other enum values may change.
+  UMA_API_MAX
+};
+
+#define WIN_ACCESSIBILITY_API_HISTOGRAM(enum_value) \
+    UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
+
+}  // namespace
 
 namespace content {
 
@@ -236,6 +412,7 @@ BrowserAccessibilityWin::~BrowserAccessibilityWin() {
 //
 
 HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_DO_DEFAULT_ACTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -254,6 +431,7 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
 STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
                                                  LONG y_top,
                                                  VARIANT* child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_HIT_TEST);
   if (!instance_active())
     return E_FAIL;
 
@@ -284,6 +462,7 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left,
                                                   LONG* width,
                                                   LONG* height,
                                                   VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_LOCATION);
   if (!instance_active())
     return E_FAIL;
 
@@ -306,6 +485,7 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left,
 STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
                                                   VARIANT start,
                                                   VARIANT* end) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_NAVIGATE);
   BrowserAccessibilityWin* target = GetTargetFromChildID(start);
   if (!target)
     return E_INVALIDARG;
@@ -354,6 +534,7 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
 
 STDMETHODIMP BrowserAccessibilityWin::get_accChild(VARIANT var_child,
                                                    IDispatch** disp_child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD);
   if (!instance_active())
     return E_FAIL;
 
@@ -371,6 +552,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accChild(VARIANT var_child,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accChildCount(LONG* child_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD_COUNT);
   if (!instance_active())
     return E_FAIL;
 
@@ -384,6 +566,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accChildCount(LONG* child_count) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
                                                            BSTR* def_action) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DEFAULT_ACTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -400,6 +583,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
                                                          BSTR* desc) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DESCRIPTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -421,6 +605,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_FOCUS);
   if (!instance_active())
     return E_FAIL;
 
@@ -443,6 +628,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP);
   if (!instance_active())
     return E_FAIL;
 
@@ -454,6 +640,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
                                                               BSTR* acc_key) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_KEYBOARD_SHORTCUT);
   if (!instance_active())
     return E_FAIL;
 
@@ -469,6 +656,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_NAME);
   if (!instance_active())
     return E_FAIL;
 
@@ -498,6 +686,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_PARENT);
   if (!instance_active())
     return E_FAIL;
 
@@ -528,6 +717,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_accRole(VARIANT var_id,
                                                   VARIANT* role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_ROLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -550,6 +740,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accRole(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibilityWin::get_accState(VARIANT var_id,
                                                    VARIANT* state) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_STATE);
   if (!instance_active())
     return E_FAIL;
 
@@ -570,6 +761,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accState(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
                                                    BSTR* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
   if (!instance_active())
     return E_FAIL;
 
@@ -613,10 +805,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
 STDMETHODIMP BrowserAccessibilityWin::get_accHelpTopic(BSTR* help_file,
                                                        VARIANT var_id,
                                                        LONG* topic_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP_TOPIC);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -666,6 +860,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
 
 STDMETHODIMP BrowserAccessibilityWin::accSelect(
     LONG flags_sel, VARIANT var_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_SELECT);
   if (!instance_active())
     return E_FAIL;
 
@@ -691,6 +886,7 @@ BrowserAccessibilityWin::put_accValue(VARIANT var_id, BSTR put_val) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::role(LONG* role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ROLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -702,6 +898,7 @@ STDMETHODIMP BrowserAccessibilityWin::role(LONG* role) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_attributes(BSTR* attributes) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_GET_ATTRIBUTES);
   if (!attributes)
     return E_INVALIDARG;
   *attributes = nullptr;
@@ -722,6 +919,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(BSTR* attributes) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_states(AccessibleStates* states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_STATES);
   if (!instance_active())
     return E_FAIL;
 
@@ -734,6 +932,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_states(AccessibleStates* states) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_uniqueID(LONG* unique_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNIQUE_ID);
   if (!instance_active())
     return E_FAIL;
 
@@ -745,6 +944,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_uniqueID(LONG* unique_id) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_windowHandle(HWND* window_handle) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_WINDOW_HANDLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -760,6 +960,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_windowHandle(HWND* window_handle) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_indexInParent(LONG* index_in_parent) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INDEX_IN_PARENT);
   if (!instance_active())
     return E_FAIL;
 
@@ -771,6 +972,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_indexInParent(LONG* index_in_parent) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nRelations(LONG* n_relations) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_RELATIONS);
   if (!instance_active())
     return E_FAIL;
 
@@ -784,6 +986,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nRelations(LONG* n_relations) {
 STDMETHODIMP BrowserAccessibilityWin::get_relation(
     LONG relation_index,
     IAccessibleRelation** relation) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATION);
   if (!instance_active())
     return E_FAIL;
 
@@ -804,6 +1007,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_relations(
     LONG max_relations,
     IAccessibleRelation** relations,
     LONG* n_relations) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATIONS);
   if (!instance_active())
     return E_FAIL;
 
@@ -824,6 +1028,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_relations(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::scrollTo(IA2ScrollType scroll_type) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
   if (!instance_active())
     return E_FAIL;
 
@@ -866,6 +1071,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
     IA2CoordinateType coordinate_type,
     LONG x,
     LONG y) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
   if (!instance_active())
     return E_FAIL;
 
@@ -890,6 +1096,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
     LONG* group_level,
     LONG* similar_items_in_group,
     LONG* position_in_group) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_GROUP_POSITION);
   if (!instance_active())
     return E_FAIL;
 
@@ -910,21 +1117,25 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_extendedRole(BSTR* extended_role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_ROLE);
   return E_NOTIMPL;
 }
 STDMETHODIMP
 BrowserAccessibilityWin::get_localizedExtendedRole(
     BSTR* localized_extended_role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_ROLE);
   return E_NOTIMPL;
 }
 STDMETHODIMP
 BrowserAccessibilityWin::get_nExtendedStates(LONG* n_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_EXTENDED_STATES);
   return E_NOTIMPL;
 }
 STDMETHODIMP
 BrowserAccessibilityWin::get_extendedStates(LONG max_extended_states,
                                             BSTR** extended_states,
                                             LONG* n_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_EXTENDED_STATES);
   return E_NOTIMPL;
 }
 STDMETHODIMP
@@ -932,9 +1143,11 @@ BrowserAccessibilityWin::get_localizedExtendedStates(
     LONG max_localized_extended_states,
     BSTR** localized_extended_states,
     LONG* n_localized_extended_states) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_STATES);
   return E_NOTIMPL;
 }
 STDMETHODIMP BrowserAccessibilityWin::get_locale(IA2Locale* locale) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALE);
   return E_NOTIMPL;
 }
 
@@ -943,6 +1156,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_locale(IA2Locale* locale) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_APP_NAME);
   // No need to check |instance_active()| because this interface is
   // global, and doesn't depend on any local state.
 
@@ -963,6 +1177,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_APP_VERSION);
   // No need to check |instance_active()| because this interface is
   // global, and doesn't depend on any local state.
 
@@ -984,6 +1199,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_toolkitName(BSTR* toolkit_name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TOOLKIT_NAME);
   // No need to check |instance_active()| because this interface is
   // global, and doesn't depend on any local state.
 
@@ -1000,6 +1216,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_toolkitName(BSTR* toolkit_name) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_toolkitVersion(
     BSTR* toolkit_version) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TOOLKIT_VERSION);
   // No need to check |instance_active()| because this interface is
   // global, and doesn't depend on any local state.
 
@@ -1017,6 +1234,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_toolkitVersion(
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_description(BSTR* desc) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DESCRIPTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -1036,6 +1254,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
     IA2CoordinateType coordinate_type,
     LONG* x,
     LONG* y) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IMAGE_POSITION);
   if (!instance_active())
     return E_FAIL;
 
@@ -1060,6 +1279,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_imageSize(LONG* height, LONG* width) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IMAGE_SIZE);
   if (!instance_active())
     return E_FAIL;
 
@@ -1079,6 +1299,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
     long row,
     long column,
     IUnknown** accessible) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACCESSIBLE_AT);
   if (!instance_active())
     return E_FAIL;
 
@@ -1115,6 +1336,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_caption(IUnknown** accessible) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CAPTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -1128,6 +1350,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_caption(IUnknown** accessible) {
 STDMETHODIMP BrowserAccessibilityWin::get_childIndex(long row,
                                                      long column,
                                                      long* cell_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1166,6 +1389,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_childIndex(long row,
 
 STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
                                                             BSTR* description) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_DESCRIPTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -1212,6 +1436,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
     long row,
     long column,
     long* n_columns_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT_AT);
   if (!instance_active())
     return E_FAIL;
 
@@ -1250,12 +1475,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
 STDMETHODIMP BrowserAccessibilityWin::get_columnHeader(
     IAccessibleTable** accessible_table,
     long* starting_row_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_HEADER);
   // TODO(dmazzoni): implement
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
                                                       long* column_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1284,6 +1511,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nColumns(long* column_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_COLUMNS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1301,6 +1529,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nColumns(long* column_count) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nRows(long* row_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_ROWS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1317,6 +1546,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nRows(long* row_count) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nSelectedChildren(long* cell_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_CHILDREN);
   if (!instance_active())
     return E_FAIL;
 
@@ -1329,6 +1559,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelectedChildren(long* cell_count) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nSelectedColumns(long* column_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_COLUMNS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1340,6 +1571,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelectedColumns(long* column_count) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nSelectedRows(long* row_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_ROWS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1352,6 +1584,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelectedRows(long* row_count) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
                                                          BSTR* description) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_DESCRIPTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -1397,6 +1630,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
 STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
                                                       long column,
                                                       long* n_rows_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT_AT);
   if (!instance_active())
     return E_FAIL;
 
@@ -1435,12 +1669,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
 STDMETHODIMP BrowserAccessibilityWin::get_rowHeader(
     IAccessibleTable** accessible_table,
     long* starting_column_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_HEADER);
   // TODO(dmazzoni): implement
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
                                                    long* row_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1471,6 +1707,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
 STDMETHODIMP BrowserAccessibilityWin::get_selectedChildren(long max_children,
                                                            long** children,
                                                            long* n_children) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_CHILDREN);
   if (!instance_active())
     return E_FAIL;
 
@@ -1485,6 +1722,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedChildren(long max_children,
 STDMETHODIMP BrowserAccessibilityWin::get_selectedColumns(long max_columns,
                                                           long** columns,
                                                           long* n_columns) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_COLUMNS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1499,6 +1737,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedColumns(long max_columns,
 STDMETHODIMP BrowserAccessibilityWin::get_selectedRows(long max_rows,
                                                        long** rows,
                                                        long* n_rows) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_ROWS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1511,6 +1750,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedRows(long max_rows,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_summary(IUnknown** accessible) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SUMMARY);
   if (!instance_active())
     return E_FAIL;
 
@@ -1524,6 +1764,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_summary(IUnknown** accessible) {
 STDMETHODIMP BrowserAccessibilityWin::get_isColumnSelected(
     long column,
     boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_COLUMN_SELECTED);
   if (!instance_active())
     return E_FAIL;
 
@@ -1537,6 +1778,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_isColumnSelected(
 
 STDMETHODIMP BrowserAccessibilityWin::get_isRowSelected(long row,
                                                         boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_ROW_SELECTED);
   if (!instance_active())
     return E_FAIL;
 
@@ -1551,6 +1793,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_isRowSelected(long row,
 STDMETHODIMP BrowserAccessibilityWin::get_isSelected(long row,
                                                      long column,
                                                      boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_SELECTED);
   if (!instance_active())
     return E_FAIL;
 
@@ -1569,6 +1812,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
     long* row_extents,
     long* column_extents,
     boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_COLUMN_EXTENTS_AT_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1603,18 +1847,22 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::selectRow(long row) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECT_ROW);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::selectColumn(long column) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECT_COLUMN);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::unselectRow(long row) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_UNSELECT_ROW);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::unselectColumn(long column) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_UNSELECT_COLUMN);
   return E_NOTIMPL;
 }
 
@@ -1630,16 +1878,19 @@ BrowserAccessibilityWin::get_modelChange(IA2TableModelChange* model_change) {
 STDMETHODIMP BrowserAccessibilityWin::get_cellAt(long row,
                                                  long column,
                                                  IUnknown** cell) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CELL_AT);
   return get_accessibleAt(row, column, cell);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nSelectedCells(long* cell_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_CELLS);
   return get_nSelectedChildren(cell_count);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_selectedCells(
     IUnknown*** cells,
     long* n_selected_cells) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_CELLS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1653,6 +1904,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedCells(
 
 STDMETHODIMP BrowserAccessibilityWin::get_selectedColumns(long** columns,
                                                           long* n_columns) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE2_GET_SELECTED_COLUMNS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1666,6 +1918,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedColumns(long** columns,
 
 STDMETHODIMP BrowserAccessibilityWin::get_selectedRows(long** rows,
                                                        long* n_rows) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE2_GET_SELECTED_ROWS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1684,6 +1937,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selectedRows(long** rows,
 
 STDMETHODIMP BrowserAccessibilityWin::get_columnExtent(
     long* n_columns_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT);
   if (!instance_active())
     return E_FAIL;
 
@@ -1704,6 +1958,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtent(
 STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     IUnknown*** cell_accessibles,
     long* n_column_header_cells) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_HEADER_CELLS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1764,6 +2019,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long* column_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_COLUMN_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1781,6 +2037,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long* column_index) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_rowExtent(long* n_rows_spanned) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT);
   if (!instance_active())
     return E_FAIL;
 
@@ -1801,6 +2058,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtent(long* n_rows_spanned) {
 STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     IUnknown*** cell_accessibles,
     long* n_row_header_cells) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_HEADER_CELLS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1861,6 +2119,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long* row_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_ROW_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -1876,6 +2135,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long* row_index) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_isSelected(boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_IS_SELECTED);
   if (!instance_active())
     return E_FAIL;
 
@@ -1892,6 +2152,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtents(
     long* row_extents,
     long* column_extents,
     boolean* is_selected) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_COLUMN_EXTENTS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1926,6 +2187,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtents(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_table(IUnknown** table) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TABLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -1957,6 +2219,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_table(IUnknown** table) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
   if (!instance_active())
     return E_FAIL;
 
@@ -1968,6 +2231,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CARET_OFFSET);
   if (!instance_active())
     return E_FAIL;
 
@@ -1994,6 +2258,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
     LONG* out_y,
     LONG* out_width,
     LONG* out_height) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHARACTER_EXTENTS);
   if (!instance_active())
     return E_FAIL;
 
@@ -2026,6 +2291,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTIONS);
   if (!instance_active())
     return E_FAIL;
 
@@ -2046,6 +2312,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
 STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
                                                     LONG* start_offset,
                                                     LONG* end_offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -2078,6 +2345,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
 STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
                                                LONG end_offset,
                                                BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT);
   if (!instance_active())
     return E_FAIL;
 
@@ -2120,6 +2388,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AT_OFFSET);
   if (!instance_active())
     return E_FAIL;
 
@@ -2170,6 +2439,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textBeforeOffset(
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_BEFORE_OFFSET);
   if (!instance_active())
     return E_FAIL;
 
@@ -2199,6 +2469,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAfterOffset(
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AFTER_OFFSET);
   if (!instance_active())
     return E_FAIL;
 
@@ -2223,6 +2494,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAfterOffset(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_newText(IA2TextSegment* new_text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NEW_TEXT);
   if (!instance_active())
     return E_FAIL;
 
@@ -2245,6 +2517,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_newText(IA2TextSegment* new_text) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_oldText(IA2TextSegment* old_text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OLD_TEXT);
   if (!instance_active())
     return E_FAIL;
 
@@ -2272,6 +2545,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_offsetAtPoint(
     LONG y,
     IA2CoordinateType coord_type,
     LONG* offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OFFSET_AT_POINT);
   if (!instance_active())
     return E_FAIL;
 
@@ -2289,6 +2563,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollSubstringTo(
     LONG start_index,
     LONG end_index,
     IA2ScrollType scroll_type) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO);
   // TODO(dmazzoni): adjust this for the start and end index, too.
   return scrollTo(scroll_type);
 }
@@ -2299,12 +2574,14 @@ STDMETHODIMP BrowserAccessibilityWin::scrollSubstringToPoint(
     IA2CoordinateType coordinate_type,
     LONG x,
     LONG y) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO_POINT);
   // TODO(dmazzoni): adjust this for the start and end index, too.
   return scrollToPoint(coordinate_type, x, y);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::addSelection(LONG start_offset,
                                                    LONG end_offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADD_SELECTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -2317,6 +2594,7 @@ STDMETHODIMP BrowserAccessibilityWin::addSelection(LONG start_offset,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::removeSelection(LONG selection_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_REMOVE_SELECTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -2328,6 +2606,7 @@ STDMETHODIMP BrowserAccessibilityWin::removeSelection(LONG selection_index) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::setCaretOffset(LONG offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_CARET_OFFSET);
   if (!instance_active())
     return E_FAIL;
 
@@ -2340,6 +2619,7 @@ STDMETHODIMP BrowserAccessibilityWin::setCaretOffset(LONG offset) {
 STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
                                                    LONG start_offset,
                                                    LONG end_offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_SELECTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -2358,6 +2638,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(LONG offset,
                                                      LONG* start_offset,
                                                      LONG* end_offset,
                                                      BSTR* text_attributes) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IATEXT_GET_ATTRIBUTES);
   if (!start_offset || !end_offset || !text_attributes)
     return E_INVALIDARG;
 
@@ -2395,6 +2676,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(LONG offset,
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_nHyperlinks(long* hyperlink_count) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_HYPERLINKS);
   if (!instance_active())
     return E_FAIL;
 
@@ -2408,6 +2690,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nHyperlinks(long* hyperlink_count) {
 STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
     long index,
     IAccessibleHyperlink** hyperlink) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HYPERLINK);
   if (!instance_active())
     return E_FAIL;
 
@@ -2430,6 +2713,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
 STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
     long char_index,
     long* hyperlink_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HYPERLINK_INDEX);
   if (!instance_active())
     return E_FAIL;
 
@@ -2457,6 +2741,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
 
 // Currently, only text links are supported.
 STDMETHODIMP BrowserAccessibilityWin::get_anchor(long index, VARIANT* anchor) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR);
   if (!instance_active() || !IsHyperlink())
     return E_FAIL;
 
@@ -2480,6 +2765,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_anchor(long index, VARIANT* anchor) {
 // Currently, only text links are supported.
 STDMETHODIMP BrowserAccessibilityWin::get_anchorTarget(long index,
                                                        VARIANT* anchor_target) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR_TARGET);
   if (!instance_active() || !IsHyperlink())
     return E_FAIL;
 
@@ -2506,6 +2792,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_anchorTarget(long index,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_START_INDEX);
   if (!instance_active() || !IsHyperlink())
     return E_FAIL;
 
@@ -2523,6 +2810,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_endIndex(long* index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_END_INDEX);
   LONG start_index;
   HRESULT hr = get_startIndex(&start_index);
   if (hr == S_OK)
@@ -2532,6 +2820,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_endIndex(long* index) {
 
 // This method is deprecated in the IA2 Spec.
 STDMETHODIMP BrowserAccessibilityWin::get_valid(boolean* valid) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_VALID);
   return E_NOTIMPL;
 }
 
@@ -2540,6 +2829,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_valid(boolean* valid) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_N_ACTIONS);
   if (!instance_active())
     return E_FAIL;
 
@@ -2559,6 +2849,7 @@ STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_DO_ACTION);
   if (!instance_active())
     return E_FAIL;
 
@@ -2571,16 +2862,20 @@ STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
 
 STDMETHODIMP
 BrowserAccessibilityWin::get_description(long action_index, BSTR* description) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IAACTION_GET_DESCRIPTION);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP BrowserAccessibilityWin::get_keyBinding(long action_index,
                                                      long n_max_bindings,
                                                      BSTR** key_bindings,
                                                      long* n_bindings) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_KEY_BINDING);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_name(long action_index, BSTR* name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NAME);
   if (!instance_active())
     return E_FAIL;
 
@@ -2602,6 +2897,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_name(long action_index, BSTR* name) {
 STDMETHODIMP
 BrowserAccessibilityWin::get_localizedName(long action_index,
                                            BSTR* localized_name) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_NAME);
   return E_NOTIMPL;
 }
 
@@ -2610,6 +2906,7 @@ BrowserAccessibilityWin::get_localizedName(long action_index,
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_currentValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CURRENT_VALUE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2629,6 +2926,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_currentValue(VARIANT* value) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_minimumValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MINIMUM_VALUE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2648,6 +2946,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_minimumValue(VARIANT* value) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_maximumValue(VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MAXIMUM_VALUE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2667,6 +2966,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_maximumValue(VARIANT* value) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::setCurrentValue(VARIANT new_value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_CURRENT_VALUE);
   // TODO(dmazzoni): Implement this.
   return E_NOTIMPL;
 }
@@ -2676,6 +2976,7 @@ STDMETHODIMP BrowserAccessibilityWin::setCurrentValue(VARIANT new_value) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_URL);
   if (!instance_active())
     return E_FAIL;
 
@@ -2696,6 +2997,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TITLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2713,6 +3015,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MIME_TYPE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2730,6 +3033,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DOC_TYPE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2749,11 +3053,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
 STDMETHODIMP
 BrowserAccessibilityWin::get_nameSpaceURIForID(short name_space_id,
                                                BSTR* name_space_uri) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NAMESPACE_URI_FOR_ID);
   return E_NOTIMPL;
 }
+
 STDMETHODIMP
 BrowserAccessibilityWin::put_alternateViewMediaTypes(
     BSTR* comma_separated_media_types) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_PUT_ALTERNATE_VIEW_MEDIA_TYPES);
   return E_NOTIMPL;
 }
 
@@ -2768,6 +3075,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
     unsigned int* num_children,
     unsigned int* unique_id,
     unsigned short* node_type) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NODE_INFO);
   if (!instance_active())
     return E_FAIL;
 
@@ -2805,6 +3113,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(
     short* name_space_id,
     BSTR* attrib_values,
     unsigned short* num_attribs) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES);
   if (!instance_active())
     return E_FAIL;
 
@@ -2830,6 +3139,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributesForNames(
     BSTR* attrib_names,
     short* name_space_id,
     BSTR* attrib_values) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ATTRIBUTES_FOR_NAMES);
   if (!instance_active())
     return E_FAIL;
 
@@ -2861,6 +3171,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyle(
     BSTR* style_properties,
     BSTR* style_values,
     unsigned short *num_style_properties)  {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COMPUTED_STYLE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2888,6 +3199,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
     boolean use_alternate_view,
     BSTR* style_properties,
     BSTR* style_values) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COMPUTED_STYLE_FOR_PROPERTIES);
   if (!instance_active())
     return E_FAIL;
 
@@ -2912,11 +3224,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::scrollTo(boolean placeTopLeft) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ISIMPLEDOMNODE_SCROLL_TO);
   return scrollTo(placeTopLeft ?
       IA2_SCROLL_TYPE_TOP_LEFT : IA2_SCROLL_TYPE_ANYWHERE);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_parentNode(ISimpleDOMNode** node) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PARENT_NODE);
   if (!instance_active())
     return E_FAIL;
 
@@ -2928,6 +3242,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_parentNode(ISimpleDOMNode** node) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_firstChild(ISimpleDOMNode** node)  {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FIRST_CHILD);
   if (!instance_active())
     return E_FAIL;
 
@@ -2944,6 +3259,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_firstChild(ISimpleDOMNode** node)  {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_lastChild(ISimpleDOMNode** node) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LAST_CHILD);
   if (!instance_active())
     return E_FAIL;
 
@@ -2962,6 +3278,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_lastChild(ISimpleDOMNode** node) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_previousSibling(
     ISimpleDOMNode** node) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PREVIOUS_SIBLING);
   if (!instance_active())
     return E_FAIL;
 
@@ -2979,6 +3296,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_previousSibling(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_nextSibling(ISimpleDOMNode** node) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NEXT_SIBLING);
   if (!instance_active())
     return E_FAIL;
 
@@ -3001,6 +3319,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nextSibling(ISimpleDOMNode** node) {
 STDMETHODIMP BrowserAccessibilityWin::get_childAt(
     unsigned int child_index,
     ISimpleDOMNode** node) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_AT);
   if (!instance_active())
     return E_FAIL;
 
@@ -3021,15 +3340,18 @@ STDMETHODIMP BrowserAccessibilityWin::get_childAt(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_innerHTML(BSTR* innerHTML) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INNER_HTML);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP
 BrowserAccessibilityWin::get_localInterface(void** local_interface) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCAL_INTERFACE);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_language(BSTR* language) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LANGUAGE);
   if (!language)
     return E_INVALIDARG;
   *language = nullptr;
@@ -3051,6 +3373,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_language(BSTR* language) {
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_domText(BSTR* dom_text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DOM_TEXT);
   if (!instance_active())
     return E_FAIL;
 
@@ -3068,6 +3391,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_clippedSubstringBounds(
     int* out_y,
     int* out_width,
     int* out_height) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CLIPPED_SUBSTRING_BOUNDS);
   // TODO(dmazzoni): fully support this API by intersecting the
   // rect with the container's rect.
   return get_unclippedSubstringBounds(
@@ -3081,6 +3405,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
     int* out_y,
     int* out_width,
     int* out_height) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS);
   if (!instance_active())
     return E_FAIL;
 
@@ -3105,6 +3430,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
 STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
     unsigned int start_index,
     unsigned int end_index) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_SUBSTRING);
   if (!instance_active())
     return E_FAIL;
 
@@ -3122,6 +3448,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_fontFamily(BSTR* font_family) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FONT_FAMILY);
   if (!font_family)
     return E_INVALIDARG;
   *font_family = nullptr;
@@ -3146,6 +3473,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_fontFamily(BSTR* font_family) {
 STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
                                                    REFIID riid,
                                                    void** object) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_QUERY_SERVICE);
   if (!instance_active())
     return E_FAIL;
 
@@ -3200,15 +3528,18 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
 
 STDMETHODIMP
 BrowserAccessibilityWin::GetObjectForChild(long child_id, IAccessibleEx** ret) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OBJECT_FOR_CHILD);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP
 BrowserAccessibilityWin::GetIAccessiblePair(IAccessible** acc, long* child_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IACCESSIBLE_PAIR);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::GetRuntimeId(SAFEARRAY** runtime_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
   return E_NOTIMPL;
 }
 
@@ -3216,11 +3547,13 @@ STDMETHODIMP
 BrowserAccessibilityWin::ConvertReturnedElement(
     IRawElementProviderSimple* element,
     IAccessibleEx** acc) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_CONVERT_RETURNED_ELEMENT);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
                                                          IUnknown** provider) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   DVLOG(1) << "In Function: " << __func__ << " for pattern id: " << id;
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (HasState(ui::AX_STATE_EDITABLE)) {
@@ -3235,6 +3568,7 @@ STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
 
 STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
                                                        VARIANT* ret) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
   DVLOG(1) << "In Function: " << __func__ << " for property id: " << id;
   V_VT(ret) = VT_EMPTY;
   if (id == UIA_ControlTypePropertyId) {
@@ -3251,11 +3585,13 @@ STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
 
 STDMETHODIMP BrowserAccessibilityWin::get_ProviderOptions(
     ProviderOptions* ret) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_HostRawElementProvider(
     IRawElementProviderSimple** provider) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
   return E_NOTIMPL;
 }
 
