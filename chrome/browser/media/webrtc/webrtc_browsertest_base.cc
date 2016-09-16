@@ -428,6 +428,13 @@ std::string WebRtcTestBase::GetStreamSize(
   return result.substr(3);
 }
 
+bool WebRtcTestBase::HasWebcamAvailableOnSystem(
+    content::WebContents* tab_contents) const {
+  std::string result =
+      ExecuteJavascript("hasVideoInputDeviceOnSystem();", tab_contents);
+  return result == "has-video-input-device";
+}
+
 bool WebRtcTestBase::OnWin8() const {
 #if defined(OS_WIN)
   return base::win::GetVersion() > base::win::VERSION_WIN7;
