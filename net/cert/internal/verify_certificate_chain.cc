@@ -22,9 +22,39 @@
 
 namespace net {
 
-using namespace verify_certificate_chain_errors;
-
 namespace {
+
+// -----------------------------------------------
+// Errors/Warnings set by VerifyCertificateChain
+// -----------------------------------------------
+
+DEFINE_CERT_ERROR_ID(
+    kSignatureAlgorithmMismatch,
+    "Certificate.signatureAlgorithm != TBSCertificate.signature");
+DEFINE_CERT_ERROR_ID(kInvalidOrUnsupportedSignatureAlgorithm,
+                     "Invalid or unsupported signature algorithm");
+DEFINE_CERT_ERROR_ID(kChainIsEmpty, "Chain is empty");
+DEFINE_CERT_ERROR_ID(kUnconsumedCriticalExtension,
+                     "Unconsumed critical extension");
+DEFINE_CERT_ERROR_ID(
+    kTargetCertInconsistentCaBits,
+    "Target certificate looks like a CA but does not set all CA properties");
+DEFINE_CERT_ERROR_ID(kKeyCertSignBitNotSet, "keyCertSign bit is not set");
+DEFINE_CERT_ERROR_ID(kMaxPathLengthViolated, "max_path_length reached");
+DEFINE_CERT_ERROR_ID(kBasicConstraintsIndicatesNotCa,
+                     "Basic Constraints indicates not a CA");
+DEFINE_CERT_ERROR_ID(kMissingBasicConstraints,
+                     "Does not have Basic Constraints");
+DEFINE_CERT_ERROR_ID(kNotPermittedByNameConstraints,
+                     "Not permitted by name constraints");
+DEFINE_CERT_ERROR_ID(kSubjectDoesNotMatchIssuer,
+                     "subject does not match issuer");
+DEFINE_CERT_ERROR_ID(kVerifySignedDataFailed, "VerifySignedData failed");
+DEFINE_CERT_ERROR_ID(kValidityFailedNotAfter, "Time is after notAfter");
+DEFINE_CERT_ERROR_ID(kValidityFailedNotBefore, "Time is before notBefore");
+DEFINE_CERT_ERROR_ID(kSignatureAlgorithmsDifferentEncoding,
+                     "Certificate.signatureAlgorithm is encoded differently "
+                     "than TBSCertificate.signature");
 
 DEFINE_CERT_ERROR_ID(kContextTrustAnchor, "Processing Trust Anchor");
 DEFINE_CERT_ERROR_ID(kContextCertificate, "Processing Certificate");
@@ -592,37 +622,5 @@ bool VerifyCertificateChain(const ParsedCertificateList& certs,
 
   return true;
 }
-
-namespace verify_certificate_chain_errors {
-
-DEFINE_CERT_ERROR_ID(
-    kSignatureAlgorithmMismatch,
-    "Certificate.signatureAlgorithm != TBSCertificate.signature");
-DEFINE_CERT_ERROR_ID(kInvalidOrUnsupportedSignatureAlgorithm,
-                     "Invalid or unsupported signature algorithm");
-DEFINE_CERT_ERROR_ID(kChainIsEmpty, "Chain is empty");
-DEFINE_CERT_ERROR_ID(kUnconsumedCriticalExtension,
-                     "Unconsumed critical extension");
-DEFINE_CERT_ERROR_ID(
-    kTargetCertInconsistentCaBits,
-    "Target certificate looks like a CA but does not set all CA properties");
-DEFINE_CERT_ERROR_ID(kKeyCertSignBitNotSet, "keyCertSign bit is not set");
-DEFINE_CERT_ERROR_ID(kMaxPathLengthViolated, "max_path_length reached");
-DEFINE_CERT_ERROR_ID(kBasicConstraintsIndicatesNotCa,
-                     "Basic Constraints indicates not a CA");
-DEFINE_CERT_ERROR_ID(kMissingBasicConstraints,
-                     "Does not have Basic Constraints");
-DEFINE_CERT_ERROR_ID(kNotPermittedByNameConstraints,
-                     "Not permitted by name constraints");
-DEFINE_CERT_ERROR_ID(kSubjectDoesNotMatchIssuer,
-                     "subject does not match issuer");
-DEFINE_CERT_ERROR_ID(kVerifySignedDataFailed, "VerifySignedData failed");
-DEFINE_CERT_ERROR_ID(kValidityFailedNotAfter, "Time is after notAfter");
-DEFINE_CERT_ERROR_ID(kValidityFailedNotBefore, "Time is before notBefore");
-DEFINE_CERT_ERROR_ID(kSignatureAlgorithmsDifferentEncoding,
-                     "Certificate.signatureAlgorithm is encoded differently "
-                     "than TBSCertificate.signature");
-
-}  // verify_certificate_chain_errors
 
 }  // namespace net
