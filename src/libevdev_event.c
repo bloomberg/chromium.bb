@@ -414,11 +414,11 @@ Event_Sync_State(EvdevPtr device)
     /* Initialize EV_REL event state */
     Event_Clear_Ev_Rel_State(device);
 
-    LOG_WARNING(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
-                (long)device->before_sync_time.tv_sec,
-                (long)device->before_sync_time.tv_usec,
-                (long)device->after_sync_time.tv_sec,
-                (long)device->after_sync_time.tv_usec);
+    LOG_DEBUG(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
+              (long)device->before_sync_time.tv_sec,
+              (long)device->before_sync_time.tv_usec,
+              (long)device->after_sync_time.tv_sec,
+              (long)device->after_sync_time.tv_usec);
 }
 
 static void
