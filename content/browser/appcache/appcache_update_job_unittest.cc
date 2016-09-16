@@ -3047,8 +3047,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Clean up everything that was created on the IO thread.
     protect_newest_cache_ = NULL;
     group_ = NULL;
-    base::STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
-    base::STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
+    hosts_.clear();
+    frontends_.clear();
     response_infos_.clear();
     service_.reset(NULL);
 
@@ -3087,9 +3087,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   AppCacheHost* MakeHost(int host_id, AppCacheFrontend* frontend) {
-    AppCacheHost* host = new AppCacheHost(host_id, frontend, service_.get());
-    hosts_.push_back(host);
-    return host;
+    hosts_.push_back(
+        base::MakeUnique<AppCacheHost>(host_id, frontend, service_.get()));
+    return hosts_.back().get();
   }
 
   AppCacheResponseInfo* MakeAppCacheResponseInfo(
@@ -3106,9 +3106,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   MockFrontend* MakeMockFrontend() {
-    MockFrontend* frontend = new MockFrontend();
-    frontends_.push_back(frontend);
-    return frontend;
+    frontends_.push_back(base::MakeUnique<MockFrontend>());
+    return frontends_.back().get();
   }
 
   // Verifies conditions about the group and notifications after an update
@@ -3193,7 +3192,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Check expected events.
     for (size_t i = 0; i < frontends_.size(); ++i) {
-      MockFrontend* frontend = frontends_[i];
+      MockFrontend* frontend = frontends_[i].get();
 
       MockFrontend::RaisedEvents& expected_events = frontend->expected_events_;
       MockFrontend::RaisedEvents& actual_events = frontend->raised_events_;
@@ -3430,7 +3429,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   // Hosts used by an async test that need to live until update job finishes.
   // Otherwise, test can put host on the stack instead of here.
-  std::vector<AppCacheHost*> hosts_;
+  std::vector<std::unique_ptr<AppCacheHost>> hosts_;
 
   // Response infos used by an async test that need to live until update job
   // finishes.
@@ -3448,7 +3447,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   AppCache* expect_old_cache_;
   AppCache* expect_newest_cache_;
   bool expect_non_null_update_time_;
-  std::vector<MockFrontend*> frontends_;  // to check expected events
+  std::vector<std::unique_ptr<MockFrontend>>
+      frontends_;  // to check expected events
   TestedManifest tested_manifest_;
   const char* tested_manifest_path_override_;
   AppCache::EntryMap expect_extra_entries_;

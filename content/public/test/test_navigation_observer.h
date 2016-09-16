@@ -97,7 +97,7 @@ class TestNavigationObserver {
   base::Callback<void(WebContents*)> web_contents_created_callback_;
 
   // Living TestWebContentsObservers created by this observer.
-  std::set<TestWebContentsObserver*> web_contents_observers_;
+  std::set<std::unique_ptr<TestWebContentsObserver>> web_contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };

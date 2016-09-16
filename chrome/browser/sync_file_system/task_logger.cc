@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 
 namespace sync_file_system {
@@ -42,18 +41,16 @@ void TaskLogger::RecordLog(std::unique_ptr<TaskLog> log) {
     return;
 
   if (log_history_.size() >= kMaxLogSize) {
-    delete log_history_.front();
     log_history_.pop_front();
   }
 
-  log_history_.push_back(log.release());
+  log_history_.push_back(std::move(log));
 
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnLogRecorded(*log_history_.back()));
 }
 
 void TaskLogger::ClearLog() {
-  base::STLDeleteContainerPointers(log_history_.begin(), log_history_.end());
   log_history_.clear();
 }
 

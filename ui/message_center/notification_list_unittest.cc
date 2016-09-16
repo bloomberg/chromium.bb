@@ -88,11 +88,10 @@ class NotificationListTest : public testing::Test {
   }
 
   Notification* GetNotification(const std::string& id) {
-    NotificationList::Notifications::iterator iter =
-        notification_list()->GetNotification(id);
+    auto iter = notification_list()->GetNotification(id);
     if (iter == notification_list()->notifications_.end())
       return NULL;
-    return *iter;
+    return iter->get();
   }
 
   NotificationList* notification_list() { return notification_list_.get(); }

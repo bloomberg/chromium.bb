@@ -74,11 +74,6 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
-  base::STLDeleteContainerPointers(pending_requests_.begin(),
-                                   pending_requests_.end());
-  base::STLDeleteContainerPointers(transport_info_requests_.begin(),
-                                   transport_info_requests_.end());
-
   session_manager_->SessionDestroyed(this);
 }
 
@@ -230,7 +225,7 @@ void JingleSession::SendTransportInfo(
                                   base::Unretained(this)));
   if (request) {
     request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
-    transport_info_requests_.push_back(request.release());
+    transport_info_requests_.push_back(std::move(request));
   } else {
     LOG(ERROR) << "Failed to send a transport-info message";
   }
@@ -299,7 +294,7 @@ void JingleSession::SendMessage(const JingleMessage& message) {
   }
   if (request) {
     request->SetTimeout(base::TimeDelta::FromSeconds(timeout));
-    pending_requests_.insert(request.release());
+    pending_requests_.insert(std::move(request));
   } else {
     LOG(ERROR) << "Failed to send a "
                << JingleMessage::GetActionName(message.action) << " message";
@@ -313,8 +308,11 @@ void JingleSession::OnMessageResponse(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Delete the request from the list of pending requests.
-  pending_requests_.erase(request);
-  delete request;
+  pending_requests_.erase(
+      std::find_if(pending_requests_.begin(), pending_requests_.end(),
+                   [request](const std::unique_ptr<IqRequest>& ptr) {
+                     return ptr.get() == request;
+                   }));
 
   // Ignore all responses after session was closed.
   if (state_ == CLOSED || state_ == FAILED)
@@ -349,14 +347,12 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
 
   // Consider transport-info requests sent before this one lost and delete
   // corresponding IqRequest objects.
-  while (transport_info_requests_.front() != request) {
-    delete transport_info_requests_.front();
+  while (transport_info_requests_.front().get() != request) {
     transport_info_requests_.pop_front();
   }
 
   // Delete the |request| itself.
-  DCHECK_EQ(request, transport_info_requests_.front());
-  delete request;
+  DCHECK_EQ(request, transport_info_requests_.front().get());
   transport_info_requests_.pop_front();
 
   // Ignore transport-info timeouts.

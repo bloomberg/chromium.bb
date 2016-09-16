@@ -130,10 +130,10 @@ class JingleSession : public Session {
   Transport* transport_ = nullptr;
 
   // Pending Iq requests. Used for all messages except transport-info.
-  std::set<IqRequest*> pending_requests_;
+  std::set<std::unique_ptr<IqRequest>> pending_requests_;
 
   // Pending transport-info requests.
-  std::list<IqRequest*> transport_info_requests_;
+  std::list<std::unique_ptr<IqRequest>> transport_info_requests_;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;
 

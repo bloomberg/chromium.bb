@@ -108,7 +108,8 @@ class LogProofFetcher {
   // Starts the fetch (by delegating to the LogResponseHandler)
   // and stores the |log_handler| in |inflight_fetches_| for later
   // cleanup.
-  void StartFetch(const GURL& request_url, LogResponseHandler* log_handler);
+  void StartFetch(const GURL& request_url,
+                  std::unique_ptr<LogResponseHandler> log_request);
 
   // Callback for when the fetch was done (successfully or not).
   // Deletes, and removes, the |log_handler| from the |inflight_fetches_|.
@@ -120,7 +121,7 @@ class LogProofFetcher {
 
   net::URLRequestContext* const request_context_;
 
-  std::set<LogResponseHandler*> inflight_fetches_;
+  std::set<std::unique_ptr<LogResponseHandler>> inflight_fetches_;
 
   base::WeakPtrFactory<LogProofFetcher> weak_factory_;
 

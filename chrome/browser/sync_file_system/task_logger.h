@@ -31,7 +31,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
     ~TaskLog();
   };
 
-  typedef std::deque<TaskLog*> LogList;
+  using LogList = std::deque<std::unique_ptr<TaskLog>>;
 
   class Observer {
    public:
@@ -57,7 +57,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
   const LogList& GetLog() const;
 
  private:
-  std::deque<TaskLog*> log_history_;
+  LogList log_history_;
 
   base::ObserverList<Observer> observers_;
 

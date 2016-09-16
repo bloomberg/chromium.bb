@@ -863,7 +863,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool segment_queried_;
 
   // List of QueuedHistoryDBTasks to run;
-  std::list<QueuedHistoryDBTask*> queued_history_db_tasks_;
+  std::list<std::unique_ptr<QueuedHistoryDBTask>> queued_history_db_tasks_;
 
   // Used to determine if a URL is bookmarked; may be null.
   std::unique_ptr<HistoryBackendClient> backend_client_;

@@ -10,9 +10,9 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -397,8 +397,6 @@ LogProofFetcher::LogProofFetcher(net::URLRequestContext* request_context)
 }
 
 LogProofFetcher::~LogProofFetcher() {
-  base::STLDeleteContainerPointers(inflight_fetches_.begin(),
-                                   inflight_fetches_.end());
 }
 
 void LogProofFetcher::FetchSignedTreeHead(
@@ -407,8 +405,8 @@ void LogProofFetcher::FetchSignedTreeHead(
     const SignedTreeHeadFetchedCallback& fetched_callback,
     const FetchFailedCallback& failed_callback) {
   GURL request_url = base_log_url.Resolve("ct/v1/get-sth");
-  StartFetch(request_url, new GetSTHLogResponseHandler(log_id, fetched_callback,
-                                                       failed_callback));
+  StartFetch(request_url, base::MakeUnique<GetSTHLogResponseHandler>(
+                              log_id, fetched_callback, failed_callback));
 }
 
 void LogProofFetcher::FetchConsistencyProof(
@@ -421,24 +419,30 @@ void LogProofFetcher::FetchConsistencyProof(
   GURL request_url = base_log_url.Resolve(base::StringPrintf(
       "ct/v1/get-sth-consistency?first=%" PRIu64 "&second=%" PRIu64,
       old_tree_size, new_tree_size));
-  StartFetch(request_url, new GetConsistencyProofLogResponseHandler(
-                              log_id, fetched_callback, failed_callback));
+  StartFetch(request_url,
+             base::MakeUnique<GetConsistencyProofLogResponseHandler>(
+                 log_id, fetched_callback, failed_callback));
 }
 
-void LogProofFetcher::StartFetch(const GURL& request_url,
-                                 LogResponseHandler* log_request) {
-  log_request->StartFetch(request_context_, request_url,
-                          base::Bind(&LogProofFetcher::OnFetchDone,
-                                     weak_factory_.GetWeakPtr(), log_request));
-  inflight_fetches_.insert(log_request);
+void LogProofFetcher::StartFetch(
+    const GURL& request_url,
+    std::unique_ptr<LogResponseHandler> log_request) {
+  log_request->StartFetch(
+      request_context_, request_url,
+      base::Bind(&LogProofFetcher::OnFetchDone, weak_factory_.GetWeakPtr(),
+                 log_request.get()));
+  inflight_fetches_.insert(std::move(log_request));
 }
 
 void LogProofFetcher::OnFetchDone(LogResponseHandler* log_handler,
                                   const base::Closure& requestor_callback) {
-  auto it = inflight_fetches_.find(log_handler);
+  auto it = std::find_if(
+      inflight_fetches_.begin(), inflight_fetches_.end(),
+      [log_handler](const std::unique_ptr<LogResponseHandler>& ptr) {
+        return ptr.get() == log_handler;
+      });
   DCHECK(it != inflight_fetches_.end());
 
-  delete *it;
   inflight_fetches_.erase(it);
   requestor_callback.Run();
 }

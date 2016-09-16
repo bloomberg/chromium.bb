@@ -135,7 +135,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
  private:
   struct ControllerClient;
-  typedef std::list<ControllerClient*> ControllerClients;
+  typedef std::list<std::unique_ptr<ControllerClient>> ControllerClients;
 
   // Notify renderer that a new buffer has been created.
   void DoNewBufferOnIOThread(ControllerClient* client,

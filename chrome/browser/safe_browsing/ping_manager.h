@@ -73,7 +73,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                            TestSafeBrowsingHitUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest, TestThreatDetailsUrl);
 
-  typedef std::set<const net::URLFetcher*> Reports;
+  typedef std::set<std::unique_ptr<net::URLFetcher>> Reports;
 
   // Constructs a SafeBrowsingPingManager that issues network requests
   // using |request_context_getter|.

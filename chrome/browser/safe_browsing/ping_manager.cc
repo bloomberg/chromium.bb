@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
@@ -74,9 +73,6 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
 }
 
 SafeBrowsingPingManager::~SafeBrowsingPingManager() {
-  // Delete in-progress safebrowsing reports (hits and details).
-  base::STLDeleteContainerPointers(safebrowsing_reports_.begin(),
-                                   safebrowsing_reports_.end());
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
@@ -84,43 +80,44 @@ SafeBrowsingPingManager::~SafeBrowsingPingManager() {
 // All SafeBrowsing request responses are handled here.
 void SafeBrowsingPingManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  Reports::iterator sit = safebrowsing_reports_.find(source);
-  DCHECK(sit != safebrowsing_reports_.end());
-  delete *sit;
-  safebrowsing_reports_.erase(sit);
+  auto it =
+      std::find_if(safebrowsing_reports_.begin(), safebrowsing_reports_.end(),
+                   [source](const std::unique_ptr<net::URLFetcher>& ptr) {
+                     return ptr.get() == source;
+                   });
+  DCHECK(it != safebrowsing_reports_.end());
+  safebrowsing_reports_.erase(it);
 }
 
 // Sends a SafeBrowsing "hit" report.
 void SafeBrowsingPingManager::ReportSafeBrowsingHit(
     const safe_browsing::HitReport& hit_report) {
   GURL report_url = SafeBrowsingHitUrl(hit_report);
-  net::URLFetcher* report =
-      net::URLFetcher::Create(report_url, hit_report.post_data.empty()
-                                              ? net::URLFetcher::GET
-                                              : net::URLFetcher::POST,
-                              this)
-          .release();
-  report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  report->SetRequestContext(request_context_getter_.get());
+  std::unique_ptr<net::URLFetcher> report_ptr = net::URLFetcher::Create(
+      report_url, hit_report.post_data.empty() ? net::URLFetcher::GET
+                                               : net::URLFetcher::POST,
+      this);
+  net::URLFetcher* report = report_ptr.get();
+  report_ptr->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  report_ptr->SetRequestContext(request_context_getter_.get());
   if (!hit_report.post_data.empty())
-    report->SetUploadData("text/plain", hit_report.post_data);
-  safebrowsing_reports_.insert(report);
+    report_ptr->SetUploadData("text/plain", hit_report.post_data);
+  safebrowsing_reports_.insert(std::move(report_ptr));
   report->Start();
 }
 
 // Sends threat details for users who opt-in.
 void SafeBrowsingPingManager::ReportThreatDetails(const std::string& report) {
   GURL report_url = ThreatDetailsUrl();
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(report_url, net::URLFetcher::POST, this)
-          .release();
+  std::unique_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(report_url, net::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", report);
   // Don't try too hard to send reports on failures.
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->Start();
-  safebrowsing_reports_.insert(fetcher);
+  safebrowsing_reports_.insert(std::move(fetcher));
 }
 
 void SafeBrowsingPingManager::ReportInvalidCertificateChain(

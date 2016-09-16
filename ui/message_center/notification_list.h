@@ -45,16 +45,28 @@ struct MESSAGE_CENTER_EXPORT CompareTimestampSerial {
   bool operator()(Notification* n1, Notification* n2);
 };
 
+// An adapter to allow use of the comparers above with std::unique_ptr.
+template <typename PlainCompare>
+struct UniquePtrCompare {
+  template <typename T>
+  bool operator()(const std::unique_ptr<T>& n1, const std::unique_ptr<T>& n2) {
+    return PlainCompare()(n1.get(), n2.get());
+  }
+};
+
 // A helper class to manage the list of notifications.
 class MESSAGE_CENTER_EXPORT NotificationList {
  public:
   // Auto-sorted set. Matches the order in which Notifications are shown in
   // Notification Center.
-  typedef std::set<Notification*, ComparePriorityTimestampSerial> Notifications;
+  using Notifications = std::set<Notification*, ComparePriorityTimestampSerial>;
+  using OwnedNotifications =
+      std::set<std::unique_ptr<Notification>,
+               UniquePtrCompare<ComparePriorityTimestampSerial>>;
 
   // Auto-sorted set used to return the Notifications to be shown as popup
   // toasts.
-  typedef std::set<Notification*, CompareTimestampSerial> PopupNotifications;
+  using PopupNotifications = std::set<Notification*, CompareTimestampSerial>;
 
   explicit NotificationList(MessageCenter* message_center);
   virtual ~NotificationList();
@@ -142,14 +154,14 @@ class MESSAGE_CENTER_EXPORT NotificationList {
                            TestPushingShownNotification);
 
   // Iterates through the list and returns the first notification matching |id|.
-  Notifications::iterator GetNotification(const std::string& id);
+  OwnedNotifications::iterator GetNotification(const std::string& id);
 
-  void EraseNotification(Notifications::iterator iter);
+  void EraseNotification(OwnedNotifications::iterator iter);
 
   void PushNotification(std::unique_ptr<Notification> notification);
 
   MessageCenter* message_center_;  // owner
-  Notifications notifications_;
+  OwnedNotifications notifications_;
   bool quiet_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationList);

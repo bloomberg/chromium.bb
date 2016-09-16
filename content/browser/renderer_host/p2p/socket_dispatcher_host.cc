@@ -6,7 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
@@ -122,7 +125,6 @@ void P2PSocketDispatcherHost::OnChannelClosing() {
   // Since the IPC sender is gone, close pending connections.
   sockets_.clear();
 
-  base::STLDeleteContainerPointers(dns_requests_.begin(), dns_requests_.end());
   dns_requests_.clear();
 
   if (monitoring_networks_) {
@@ -226,12 +228,13 @@ void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
 
 void P2PSocketDispatcherHost::OnGetHostAddress(const std::string& host_name,
                                                int32_t request_id) {
-  DnsRequest* request = new DnsRequest(request_id,
-                                       resource_context_->GetHostResolver());
-  dns_requests_.insert(request);
-  request->Resolve(host_name, base::Bind(
-      &P2PSocketDispatcherHost::OnAddressResolved,
-      base::Unretained(this), request));
+  std::unique_ptr<DnsRequest> request = base::MakeUnique<DnsRequest>(
+      request_id, resource_context_->GetHostResolver());
+  DnsRequest* request_ptr = request.get();
+  dns_requests_.insert(std::move(request));
+  request_ptr->Resolve(host_name,
+                       base::Bind(&P2PSocketDispatcherHost::OnAddressResolved,
+                                  base::Unretained(this), request_ptr));
 }
 
 void P2PSocketDispatcherHost::OnCreateSocket(
@@ -393,8 +396,11 @@ void P2PSocketDispatcherHost::OnAddressResolved(
     const net::IPAddressList& addresses) {
   Send(new P2PMsg_GetHostAddressResult(request->request_id(), addresses));
 
-  dns_requests_.erase(request);
-  delete request;
+  dns_requests_.erase(
+      std::find_if(dns_requests_.begin(), dns_requests_.end(),
+                   [request](const std::unique_ptr<DnsRequest>& ptr) {
+                     return ptr.get() == request;
+                   }));
 }
 
 void P2PSocketDispatcherHost::StopRtpDumpOnIOThread(bool incoming,
