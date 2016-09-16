@@ -265,13 +265,12 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontReso
 
 void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
 {
-    if (m_loadStartTime > 0 && font && !font->isLoading()) {
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
-        cacheHitHistogram.count(dataSourceMetricsValue());
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
+    cacheHitHistogram.count(dataSourceMetricsValue());
 
+    if (m_dataSource == FromDiskCache || m_dataSource == FromNetwork) {
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
         recordLoadTimeHistogram(font, duration);
-        m_loadStartTime = -1;
 
         enum { CORSFail, CORSSuccess, CORSEnumMax };
         int corsValue = font->isCORSFailed() ? CORSFail : CORSSuccess;
