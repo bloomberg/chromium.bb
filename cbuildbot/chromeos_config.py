@@ -1528,6 +1528,60 @@ def CreateBuilderTemplates(site_config):
       upload_hw_test_artifacts=False,
   )
 
+
+def CreateBoardConfigs(site_config, ge_build_config):
+  """Create mixin templates for each board."""
+  # Extract the full list of board names from GE data.
+  board_names = set(config_lib.GeBuildConfigAllBoards(ge_build_config))
+
+  # TODO(crbug.com/648473): Remove these, after GE adds them to their data set.
+  board_names = board_names.union(_all_boards)
+
+  result = dict()
+  for board in board_names:
+    board_config = config_lib.BuildConfig(boards=[board])
+
+    if board in _internal_boards:
+      board_config.update(site_config.templates.internal)
+      board_config.update(site_config.templates.official_chrome)
+      board_config.update(manifest=constants.OFFICIAL_MANIFEST)
+    if board in _brillo_boards:
+      board_config.update(site_config.templates.brillo)
+    if board in _lakitu_boards:
+      board_config.update(site_config.templates.lakitu)
+    if board in _moblab_boards:
+      board_config.update(site_config.templates.moblab)
+    if board in _nofactory_boards:
+      board_config.update(factory=False)
+      board_config.update(factory_toolkit=False)
+      board_config.update(factory_install_netboot=False)
+    if board in _toolchains_from_source:
+      board_config.update(usepkg_toolchain=False)
+    if board in _noimagetest_boards:
+      board_config.update(image_test=False)
+    if board in _nohwqual_boards:
+      board_config.update(hwqual=False)
+    if board in _norootfs_verification_boards:
+      board_config.update(rootfs_verification=False)
+    if board in _base_layout_boards:
+      board_config.update(disk_layout='base')
+    if board in _no_unittest_boards:
+      board_config.update(site_config.templates.no_unittest_builder)
+    if board in _no_vmtest_boards:
+      board_config.update(site_config.templates.no_vmtest_builder)
+
+    # Note: board_config configs should not specify a useflag list. Convert any
+    # useflags that this board_config config has accrued (for instance,
+    # 'chrome_internal', via official_chrome) into an append_useflags callable.
+    # This is because the board board_config config is the last config to be
+    # derived from when creating a board-specific config,
+    if 'useflags' in board_config:
+      board_config['useflags'] = append_useflags(board_config.useflags)
+    result[board] = board_config
+
+  return result
+
+
 def ToolchainBuilders(site_config):
   """Define templates used for toolchain builders.
 
@@ -1691,14 +1745,25 @@ def ToolchainBuilders(site_config):
   )
 
 
-def _GetConfig(site_config, ge_build_config):
+def _GetConfig(site_config, ge_build_config, board_configs):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
+    board_configs: Dictionary mapping board names to per-board configurations.
   """
+
+  _base_configs = board_configs
+
+  builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
+      ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
+
+  _all_release_builder_boards = builder_to_boards_dict[
+      config_lib.CONFIG_TEMPLATE_RELEASE]
+
+
   site_config.AddWithoutTemplate(
       'chromiumos-sdk',
       site_config.templates.full,
@@ -1733,7 +1798,6 @@ def _GetConfig(site_config, ge_build_config):
                                'chrome'],
   )
 
-
   site_config.Add(
       'master-android-pfq',
       site_config.templates.android_pfq,
@@ -1755,61 +1819,6 @@ def _GetConfig(site_config, ge_build_config):
       builder_class_name='config_builders.UpdateConfigBuilder',
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
-
-  # A base config for each board.
-  _base_configs = dict()
-
-  # Map GE data into a friendly format.
-  builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
-      ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
-
-  _all_release_builder_boards = builder_to_boards_dict[
-      config_lib.CONFIG_TEMPLATE_RELEASE]
-
-  def _CreateBaseConfigs():
-    for board in _all_boards | _all_release_builder_boards:
-      base = config_lib.BuildConfig()
-
-      if board in _internal_boards:
-        base.update(site_config.templates.internal)
-        base.update(site_config.templates.official_chrome)
-        base.update(manifest=constants.OFFICIAL_MANIFEST)
-      if board in _brillo_boards:
-        base.update(site_config.templates.brillo)
-      if board in _lakitu_boards:
-        base.update(site_config.templates.lakitu)
-      if board in _moblab_boards:
-        base.update(site_config.templates.moblab)
-      if board in _nofactory_boards:
-        base.update(factory=False)
-        base.update(factory_toolkit=False)
-        base.update(factory_install_netboot=False)
-      if board in _toolchains_from_source:
-        base.update(usepkg_toolchain=False)
-      if board in _noimagetest_boards:
-        base.update(image_test=False)
-      if board in _nohwqual_boards:
-        base.update(hwqual=False)
-      if board in _norootfs_verification_boards:
-        base.update(rootfs_verification=False)
-      if board in _base_layout_boards:
-        base.update(disk_layout='base')
-      if board in _no_unittest_boards:
-        base.update(site_config.templates.no_unittest_builder)
-      if board in _no_vmtest_boards:
-        base.update(site_config.templates.no_vmtest_builder)
-
-      board_config = base.derive(boards=[board])
-      # Note: base configs should not specify a useflag list. Convert any
-      # useflags that this base config has accrued (for instance,
-      # 'chrome_internal', via official_chrome) into an append_useflags
-      # callable. This is because the board base config is the last config to be
-      # derived from when creating a board-specific config,
-      if 'useflags' in board_config:
-        board_config['useflags'] = append_useflags(board_config['useflags'])
-      _base_configs[board] = board_config
-
-  _CreateBaseConfigs()
 
   def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
     """Create configs based on |config_base| for all boards in |boards|.
@@ -3264,10 +3273,12 @@ def GetConfig():
 
   CreateBuilderTemplates(site_config)
 
+  board_configs = CreateBoardConfigs(site_config, ge_build_config)
+
   ToolchainBuilders(site_config)
 
   # Fill in templates and build configurations.
-  _GetConfig(site_config, ge_build_config)
+  _GetConfig(site_config, ge_build_config, board_configs)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():

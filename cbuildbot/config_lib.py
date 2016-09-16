@@ -1316,6 +1316,28 @@ class SiteConfig(dict):
     """
     return PrettyJsonDict(self)
 
+#
+# Methods related to working with GE Data.
+#
+
+def LoadGEBuildConfigFromFile(
+    build_settings_file=constants.GE_BUILD_CONFIG_FILE):
+  """Load template config dict from a Json encoded file."""
+  json_string = osutils.ReadFile(build_settings_file)
+  return json.loads(json_string, object_hook=_DecodeDict)
+
+
+def GeBuildConfigAllBoards(ge_build_config):
+  """Extract a list of board names from the GE Build Config.
+
+  Args:
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+
+  Returns:
+    A list of board names as strings.
+  """
+  return [b['name'] for b in ge_build_config['boards']]
+
 
 class BoardGroup(object):
   """Class holds leader_boards and follower_boards for grouped boards"""
@@ -1387,6 +1409,10 @@ def GroupBoardsByBuilder(board_list):
   return builder_to_boards_dict
 
 
+
+#
+# Methods related to loading/saving Json.
+#
 class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
   # pylint: disable=method-hidden
@@ -1398,17 +1424,6 @@ def PrettyJsonDict(dictionary):
   """Returns a pretty-ified json dump of a dictionary."""
   return json.dumps(dictionary, cls=ObjectJSONEncoder,
                     sort_keys=True, indent=4, separators=(',', ': '))
-
-
-#
-# Methods related to loading/saving Json.
-#
-
-def LoadGEBuildConfigFromFile(
-    build_settings_file=constants.GE_BUILD_CONFIG_FILE):
-  """Load template config dict from a Json encoded file."""
-  json_string = osutils.ReadFile(build_settings_file)
-  return json.loads(json_string, object_hook=_DecodeDict)
 
 
 def LoadConfigFromFile(config_file=constants.CHROMEOS_CONFIG_FILE):
