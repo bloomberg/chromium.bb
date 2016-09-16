@@ -7,12 +7,15 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/painter.h"
@@ -56,6 +59,20 @@ BorderImages::~BorderImages() {}
 }  // namespace internal
 
 namespace {
+
+// Blur and offset values for the two shadows drawn around each dialog. The
+// values are all in dip.
+const int kSmallShadowVerticalOffset = 2;
+const int kSmallShadowBlur = 4;
+const SkColor kSmallShadowColor = SkColorSetA(SK_ColorBLACK, 0x33);
+
+const int kLargeShadowVerticalOffset = 2;
+const int kLargeShadowBlur = 6;
+const SkColor kLargeShadowColor = SkColorSetA(SK_ColorBLACK, 0x1A);
+
+bool UseMd() {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+}
 
 // Bubble border and arrow image resource ids. They don't use the IMAGE_GRID
 // macro because there is no center image.
@@ -143,6 +160,7 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
       arrow_paint_type_(PAINT_NORMAL),
       alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
       shadow_(shadow),
+      images_(nullptr),
       background_color_(color),
       use_theme_background_color_(false) {
 #if defined(OS_MACOSX)
@@ -151,10 +169,22 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
   shadow_ = NO_ASSETS;
 #endif  // OS_MACOSX
   DCHECK(shadow_ < SHADOW_COUNT);
-  images_ = GetBorderImages(shadow_);
+  if (UseMd()) {
+    // Harmony bubbles don't use arrows.
+    alignment_ = ALIGN_EDGE_TO_ANCHOR_EDGE;
+    arrow_paint_type_ = PAINT_NONE;
+  } else {
+    images_ = GetBorderImages(shadow_);
+  }
 }
 
 BubbleBorder::~BubbleBorder() {}
+
+void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
+  if (UseMd())
+    return;
+  arrow_paint_type_ = value;
+}
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
@@ -166,7 +196,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   const int arrow_offset = GetArrowOffset(size);
   // |arrow_shift| is necessary to visually align the tip of the bubble arrow
   // with the anchor point. This shift is an inverse of the shadow thickness.
-  int arrow_shift =
+  int arrow_shift = UseMd() ? 0 :
       images_->arrow_interior_thickness + kStroke - images_->arrow_thickness;
   // When arrow is painted transparently the visible border of the bubble needs
   // to be positioned at the same bounds as when the arrow is shown.
@@ -206,14 +236,20 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
 }
 
 int BubbleBorder::GetBorderThickness() const {
-  return images_->border_thickness - images_->border_interior_thickness;
+  // TODO(estade): this shouldn't be called in MD.
+  return UseMd()
+             ? 0
+             : images_->border_thickness - images_->border_interior_thickness;
 }
 
 int BubbleBorder::GetBorderCornerRadius() const {
-  return images_->corner_radius;
+  return UseMd() ? 3 : images_->corner_radius;
 }
 
 int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
+  if (UseMd())
+    return 0;
+
   const int edge_length = is_arrow_on_horizontal(arrow_) ?
       border_size.width() : border_size.height();
   if (is_arrow_at_center(arrow_) && arrow_offset_ == 0)
@@ -241,6 +277,9 @@ void BubbleBorder::SetBorderInteriorThickness(int border_interior_thickness) {
 }
 
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
+  if (UseMd())
+    return PaintMd(view, canvas);
+
   gfx::Rect bounds(view.GetContentsBounds());
   bounds.Inset(-GetBorderThickness(), -GetBorderThickness());
   const gfx::Rect arrow_bounds = GetArrowRect(view.GetLocalBounds());
@@ -264,6 +303,13 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
+  if (UseMd()) {
+     gfx::Insets blur(kLargeShadowBlur);
+     gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
+                        kLargeShadowVerticalOffset, 0);
+     return blur + offset;
+  }
+
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
   if (arrow_paint_type_ != PAINT_NORMAL || !has_arrow(arrow_))
@@ -289,6 +335,8 @@ gfx::Size BubbleBorder::GetSizeForContentsSize(
   gfx::Size size(contents_size);
   const gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
+  if (UseMd())
+    return size;
 
   // Ensure the bubble is large enough to not overlap border and arrow images.
   const int min = 2 * images_->border_thickness;
@@ -360,6 +408,7 @@ gfx::Rect BubbleBorder::GetArrowRect(const gfx::Rect& bounds) const {
 
 void BubbleBorder::GetArrowPathFromArrowBounds(const gfx::Rect& arrow_bounds,
                                                SkPath* path) const {
+  DCHECK(!UseMd());
   const bool horizontal = is_arrow_on_horizontal(arrow_);
   const int thickness = images_->arrow_interior_thickness;
   float tip_x = horizontal ? arrow_bounds.CenterPoint().x() :
@@ -385,6 +434,7 @@ void BubbleBorder::GetArrowPathFromArrowBounds(const gfx::Rect& arrow_bounds,
 
 void BubbleBorder::DrawArrow(gfx::Canvas* canvas,
                              const gfx::Rect& arrow_bounds) const {
+  DCHECK(!UseMd());
   canvas->DrawImageInt(*GetArrowImage(), arrow_bounds.x(), arrow_bounds.y());
   SkPath path;
   GetArrowPathFromArrowBounds(arrow_bounds, &path);
@@ -393,6 +443,38 @@ void BubbleBorder::DrawArrow(gfx::Canvas* canvas,
   paint.setColor(background_color_);
 
   canvas->DrawPath(path, paint);
+}
+
+void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
+  gfx::ScopedCanvas scoped(canvas);
+
+  SkPaint paint;
+  std::vector<gfx::ShadowValue> shadows;
+  // gfx::ShadowValue counts blur pixels both inside and outside the shape,
+  // whereas these blur values only describe the outside portion, hence they
+  // must be doubled.
+  shadows.emplace_back(gfx::Vector2d(0, kSmallShadowVerticalOffset),
+                       2 * kSmallShadowBlur, kSmallShadowColor);
+  shadows.emplace_back(gfx::Vector2d(0, kLargeShadowVerticalOffset),
+                       2 * kLargeShadowBlur, kLargeShadowColor);
+  paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
+  paint.setColor(SkColorSetA(SK_ColorBLACK, 0x0D));
+  paint.setAntiAlias(true);
+
+  gfx::Rect bounds(view.GetLocalBounds());
+  bounds.Inset(GetInsets());
+  SkRRect r_rect =
+      SkRRect::MakeRectXY(gfx::RectToSkRect(bounds), GetBorderCornerRadius(),
+                          GetBorderCornerRadius());
+  // Clip out a round rect so the fill and shadow don't draw over the contents
+  // of the bubble.
+  SkRRect clip_r_rect = r_rect;
+  // Stroke width is a single pixel at any scale factor.
+  const SkScalar one_pixel = SkFloatToScalar(1 / canvas->image_scale());
+  clip_r_rect.inset(one_pixel, one_pixel);
+  canvas->sk_canvas()->clipRRect(clip_r_rect, SkRegion::kDifference_Op,
+                                 true /*doAntiAlias*/);
+  canvas->sk_canvas()->drawRRect(r_rect, paint);
 }
 
 internal::BorderImages* BubbleBorder::GetImagesForTest() const {

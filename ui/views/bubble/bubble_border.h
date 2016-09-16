@@ -182,7 +182,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   void set_arrow_offset(int offset) { arrow_offset_ = offset; }
 
   // Sets the way the arrow is actually painted.  Default is PAINT_NORMAL.
-  void set_paint_arrow(ArrowPaintType value) { arrow_paint_type_ = value; }
+  void set_paint_arrow(ArrowPaintType value);
 
   // Get the desired widget bounds (in screen coordinates) given the anchor rect
   // and bubble content size; calculated from shadow and arrow image dimensions.
@@ -228,6 +228,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   void GetArrowPathFromArrowBounds(const gfx::Rect& arrow_bounds,
                                    SkPath* path) const;
   void DrawArrow(gfx::Canvas* canvas, const gfx::Rect& arrow_bounds) const;
+
+  void PaintMd(const View& view, gfx::Canvas* canvas);
 
   internal::BorderImages* GetImagesForTest() const;
 
