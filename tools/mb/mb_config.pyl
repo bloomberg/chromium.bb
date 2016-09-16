@@ -9,6 +9,7 @@
   'masters': {
     'chromeos.chrome': {
       'amd64-generic Trusty (Informational)': 'cros_chrome_sdk_gn',
+      'Linux ChromeOS Buildspec Tests': 'swarming_chromeos_gn_release_bot',
     },
 
     # Take care when changing any of these builders to ensure that you do not
