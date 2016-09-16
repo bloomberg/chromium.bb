@@ -56,19 +56,19 @@ public:
 private:
     explicit HTMLMetaElement(Document&);
 
-    static void processViewportKeyValuePair(Document*, const String& key, const String& value, bool viewportMetaZeroValuesQuirk, void* data);
+    static void processViewportKeyValuePair(Document*, bool reportWarnings, const String& key, const String& value, bool viewportMetaZeroValuesQuirk, void* data);
     static void parseContentAttribute(const String& content, void* data, Document*, bool viewportMetaZeroValuesQuirk);
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void didNotifySubtreeInsertionsToDocument() override;
 
-    static float parsePositiveNumber(Document*, const String& key, const String& value, bool* ok = 0);
+    static float parsePositiveNumber(Document*, bool reportWarnings, const String& key, const String& value, bool* ok = 0);
 
-    static Length parseViewportValueAsLength(Document*, const String& key, const String& value);
-    static float parseViewportValueAsZoom(Document*, const String& key, const String& value, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk);
-    static bool parseViewportValueAsUserZoom(Document*, const String& key, const String& value, bool& computedValueMatchesParsedValue);
-    static float parseViewportValueAsDPI(Document*, const String& key, const String& value);
+    static Length parseViewportValueAsLength(Document*, bool reportWarnings, const String& key, const String& value);
+    static float parseViewportValueAsZoom(Document*, bool reportWarnings, const String& key, const String& value, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk);
+    static bool parseViewportValueAsUserZoom(Document*, bool reportWarnings, const String& key, const String& value, bool& computedValueMatchesParsedValue);
+    static float parseViewportValueAsDPI(Document*, bool reportWarnings, const String& key, const String& value);
 
     static void reportViewportWarning(Document*, ViewportErrorCode, const String& replacement1, const String& replacement2);
 

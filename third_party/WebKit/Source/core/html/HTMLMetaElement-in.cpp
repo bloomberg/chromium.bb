@@ -73,7 +73,7 @@ static bool isSeparator(UChar c)
 
 void HTMLMetaElement::parseContentAttribute(const String& content, void* data, Document* document, bool viewportMetaZeroValuesQuirk)
 {
-    bool error = false;
+    bool hasInvalidSeparator = false;
 
     // Tread lightly in this code -- it was specifically designed to mimic Win IE's parsing behavior.
     unsigned keyBegin, keyEnd;
@@ -92,7 +92,7 @@ void HTMLMetaElement::parseContentAttribute(const String& content, void* data, D
 
         // skip to first separator
         while (!isSeparator(buffer[i])) {
-            error |= isInvalidSeparator(buffer[i]);
+            hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
             if (i >= length)
                 break;
             i++;
@@ -101,7 +101,7 @@ void HTMLMetaElement::parseContentAttribute(const String& content, void* data, D
 
         // skip to first '=', but don't skip past a ',' or the end of the string
         while (buffer[i] != '=') {
-            error |= isInvalidSeparator(buffer[i]);
+            hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
             if (buffer[i] == ',' || i >= length)
                 break;
             i++;
@@ -117,7 +117,7 @@ void HTMLMetaElement::parseContentAttribute(const String& content, void* data, D
 
         // skip to first separator
         while (!isSeparator(buffer[i])) {
-            error |= isInvalidSeparator(buffer[i]);
+            hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
             if (i >= length)
                 break;
             i++;
@@ -128,9 +128,9 @@ void HTMLMetaElement::parseContentAttribute(const String& content, void* data, D
 
         String keyString = buffer.substring(keyBegin, keyEnd - keyBegin);
         String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
-        processViewportKeyValuePair(document, keyString, valueString, viewportMetaZeroValuesQuirk, data);
+        processViewportKeyValuePair(document, !hasInvalidSeparator, keyString, valueString, viewportMetaZeroValuesQuirk, data);
     }
-    if (error && document) {
+    if (hasInvalidSeparator && document) {
         String message = "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.";
         document->addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
     }
@@ -152,7 +152,7 @@ static inline float clampScaleValue(float value)
     return value;
 }
 
-float HTMLMetaElement::parsePositiveNumber(Document* document, const String& keyString, const String& valueString, bool* ok)
+float HTMLMetaElement::parsePositiveNumber(Document* document, bool reportWarnings, const String& keyString, const String& valueString, bool* ok)
 {
     size_t parsedLength;
     float value;
@@ -161,19 +161,20 @@ float HTMLMetaElement::parsePositiveNumber(Document* document, const String& key
     else
         value = charactersToFloat(valueString.characters16(), valueString.length(), parsedLength);
     if (!parsedLength) {
-        reportViewportWarning(document, UnrecognizedViewportArgumentValueError, valueString, keyString);
+        if (reportWarnings)
+            reportViewportWarning(document, UnrecognizedViewportArgumentValueError, valueString, keyString);
         if (ok)
             *ok = false;
         return 0;
     }
-    if (parsedLength < valueString.length())
+    if (parsedLength < valueString.length() && reportWarnings)
         reportViewportWarning(document, TruncatedViewportArgumentValueError, valueString, keyString);
     if (ok)
         *ok = true;
     return value;
 }
 
-Length HTMLMetaElement::parseViewportValueAsLength(Document* document, const String& keyString, const String& valueString)
+Length HTMLMetaElement::parseViewportValueAsLength(Document* document, bool reportWarnings, const String& keyString, const String& valueString)
 {
     // 1) Non-negative number values are translated to px lengths.
     // 2) Negative number values are translated to auto.
@@ -191,7 +192,7 @@ Length HTMLMetaElement::parseViewportValueAsLength(Document* document, const Str
         }
     }
 
-    float value = parsePositiveNumber(document, keyString, valueString);
+    float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
 
     if (value < 0)
         return Length(); // auto
@@ -199,7 +200,7 @@ Length HTMLMetaElement::parseViewportValueAsLength(Document* document, const Str
     return Length(clampLengthValue(value), Fixed);
 }
 
-float HTMLMetaElement::parseViewportValueAsZoom(Document* document, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk)
+float HTMLMetaElement::parseViewportValueAsZoom(Document* document, bool reportWarnings, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk)
 {
     // 1) Non-negative number values are translated to <number> values.
     // 2) Negative number values are translated to auto.
@@ -225,12 +226,12 @@ float HTMLMetaElement::parseViewportValueAsZoom(Document* document, const String
         }
     }
 
-    float value = parsePositiveNumber(document, keyString, valueString);
+    float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
 
     if (value < 0)
         return ViewportDescription::ValueAuto;
 
-    if (value > 10.0)
+    if (value > 10.0 && reportWarnings)
         reportViewportWarning(document, MaximumScaleTooLargeError, String(), String());
 
     if (!value && viewportMetaZeroValuesQuirk)
@@ -243,7 +244,7 @@ float HTMLMetaElement::parseViewportValueAsZoom(Document* document, const String
     return clampedValue;
 }
 
-bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue)
+bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, bool reportWarnings, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue)
 {
     // yes and no are used as keywords.
     // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to yes.
@@ -269,14 +270,14 @@ bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, const Str
         }
     }
 
-    float value = parsePositiveNumber(document, keyString, valueString);
+    float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
     if (fabs(value) < 1)
         return false;
 
     return true;
 }
 
-float HTMLMetaElement::parseViewportValueAsDPI(Document* document, const String& keyString, const String& valueString)
+float HTMLMetaElement::parseViewportValueAsDPI(Document* document, bool reportWarnings, const String& keyString, const String& valueString)
 {
     unsigned length = valueString.length();
     DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 10);
@@ -296,14 +297,14 @@ float HTMLMetaElement::parseViewportValueAsDPI(Document* document, const String&
     }
 
     bool ok;
-    float value = parsePositiveNumber(document, keyString, valueString, &ok);
+    float value = parsePositiveNumber(document, reportWarnings, keyString, valueString, &ok);
     if (!ok || value < 70 || value > 400)
         return ViewportDescription::ValueAuto;
 
     return value;
 }
 
-void HTMLMetaElement::processViewportKeyValuePair(Document* document, const String& keyString, const String& valueString, bool viewportMetaZeroValuesQuirk, void* data)
+void HTMLMetaElement::processViewportKeyValuePair(Document* document, bool reportWarnings, const String& keyString, const String& valueString, bool viewportMetaZeroValuesQuirk, void* data)
 {
     ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
@@ -312,7 +313,7 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, const Stri
     DEFINE_ARRAY_FOR_MATCHING(characters, keyString, 17);
     SWITCH(characters, length) {
         CASE("width") {
-            const Length& width = parseViewportValueAsLength(document, keyString, valueString);
+            const Length& width = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
             if (width.isAuto())
                 return;
             description->minWidth = Length(ExtendToZoom);
@@ -320,7 +321,7 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, const Stri
             return;
         }
         CASE("height") {
-            const Length& height = parseViewportValueAsLength(document, keyString, valueString);
+            const Length& height = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
             if (height.isAuto())
                 return;
             description->minHeight = Length(ExtendToZoom);
@@ -328,24 +329,25 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, const Stri
             return;
         }
         CASE("initial-scale") {
-            description->zoom = parseViewportValueAsZoom(document, keyString, valueString, description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
+            description->zoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("minimum-scale") {
-            description->minZoom = parseViewportValueAsZoom(document, keyString, valueString, description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
+            description->minZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("maximum-scale") {
-            description->maxZoom = parseViewportValueAsZoom(document, keyString, valueString, description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
+            description->maxZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("user-scalable") {
-            description->userZoom = parseViewportValueAsUserZoom(document, keyString, valueString, description->userZoomIsExplicit);
+            description->userZoom = parseViewportValueAsUserZoom(document, reportWarnings, keyString, valueString, description->userZoomIsExplicit);
             return;
         }
         CASE("target-densitydpi") {
-            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(document, keyString, valueString);
-            reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
+            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(document, reportWarnings, keyString, valueString);
+            if (reportWarnings)
+                reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
             return;
         }
         CASE("minimal-ui") {
@@ -357,7 +359,8 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, const Stri
             return;
         }
     }
-    reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());
+    if (reportWarnings)
+        reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());
 }
 
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)

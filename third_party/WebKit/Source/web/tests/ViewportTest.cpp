@@ -2952,27 +2952,11 @@ TEST_F(ViewportTest, viewportWarnings5)
     Page* page = webViewHelper.webView()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(5U, webFrameClient.messages.size());
+    EXPECT_EQ(1U, webFrameClient.messages.size());
 
     EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
-    EXPECT_STREQ("The value \"device-width;\" for key \"width\" is invalid, and has been ignored.",
-        webFrameClient.messages[0].text.utf8().c_str());
-
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[1].level);
-    EXPECT_STREQ("The value \"1.0;\" for key \"initial-scale\" was truncated to its numeric prefix.",
-        webFrameClient.messages[1].text.utf8().c_str());
-
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[2].level);
-    EXPECT_STREQ("The value \"1.0;\" for key \"maximum-scale\" was truncated to its numeric prefix.",
-        webFrameClient.messages[2].text.utf8().c_str());
-
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[3].level);
-    EXPECT_STREQ("The value \"0;\" for key \"user-scalable\" was truncated to its numeric prefix.",
-        webFrameClient.messages[3].text.utf8().c_str());
-
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[4].level);
     EXPECT_STREQ("Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.",
-        webFrameClient.messages[4].text.utf8().c_str());
+        webFrameClient.messages[0].text.utf8().c_str());
 
     EXPECT_NEAR(320.0f, constraints.layoutSize.width(), 0.01);
     EXPECT_NEAR(352.0f, constraints.layoutSize.height(), 0.01);
