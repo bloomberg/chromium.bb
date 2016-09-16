@@ -978,6 +978,12 @@ void NTPSnippetsService::EnterState(State state) {
     case State::READY: {
       DCHECK(state_ == State::NOT_INITED || state_ == State::DISABLED);
 
+      // TODO(jkrcal): fetching snippets automatically upon creation of this
+      // lazily created service can cause troubles, e.g. in unittests where
+      // network I/O is not allowed.
+      // Either add a DCHECK here that we actually are allowed to do network I/O
+      // or change the logic so that some explicit call is always needed for the
+      // network request.
       bool fetch_snippets =
           categories_[articles_category_].snippets.empty() || fetch_after_load_;
       DVLOG(1) << "Entering state: READY";

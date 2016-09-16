@@ -27,6 +27,8 @@ class ContentSuggestionsServiceFactory
   static ContentSuggestionsServiceFactory* GetInstance();
   static ntp_snippets::ContentSuggestionsService* GetForProfile(
       Profile* profile);
+  static ntp_snippets::ContentSuggestionsService* GetForProfileIfExists(
+      Profile* profile);
 
  private:
   friend struct base::DefaultSingletonTraits<ContentSuggestionsServiceFactory>;

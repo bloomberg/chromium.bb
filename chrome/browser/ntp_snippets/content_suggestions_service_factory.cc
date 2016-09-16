@@ -184,6 +184,13 @@ ContentSuggestionsService* ContentSuggestionsServiceFactory::GetForProfile(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
+// static
+ContentSuggestionsService*
+ContentSuggestionsServiceFactory::GetForProfileIfExists(Profile* profile) {
+  return static_cast<ContentSuggestionsService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
 ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ContentSuggestionsService",

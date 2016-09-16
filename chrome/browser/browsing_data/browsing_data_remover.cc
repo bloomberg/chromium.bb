@@ -522,7 +522,7 @@ void BrowsingDataRemover::RemoveImpl(
     }
 
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-        ContentSuggestionsServiceFactory::GetForProfile(profile_);
+        ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service) {
       content_suggestions_service->ClearHistory(delete_begin_, delete_end_,
                                                 filter);
@@ -1016,7 +1016,7 @@ void BrowsingDataRemover::RemoveImpl(
                    weak_ptr_factory_.GetWeakPtr()));
 
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-        ContentSuggestionsServiceFactory::GetForProfile(profile_);
+        ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service)
       content_suggestions_service->ClearAllCachedSuggestions();
   }
