@@ -338,6 +338,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // This method may invalidate the frame.
   virtual void RunScriptsAtDocumentEnd(RenderFrame* render_frame) {}
 
+  // Allows subclasses to enable some runtime features before Blink has
+  // started.
+  virtual void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {}
+
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(

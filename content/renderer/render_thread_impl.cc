@@ -1171,6 +1171,9 @@ void RenderThreadImpl::InitializeWebKit(
 #endif
 
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
+  GetContentClient()
+      ->renderer()
+      ->SetRuntimeFeaturesDefaultsBeforeBlinkInitialization();
 
   blink_platform_impl_.reset(new RendererBlinkPlatformImpl(
       renderer_scheduler_.get(),

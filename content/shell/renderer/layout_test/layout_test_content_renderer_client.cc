@@ -18,6 +18,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
@@ -30,7 +31,9 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/icc_profile.h"
@@ -245,6 +248,25 @@ LayoutTestContentRendererClient::GetImageDecodeColorProfile() {
 void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
   blink::WebTestingSupport::injectInternalsObject(context);
+}
+
+void LayoutTestContentRendererClient::
+    SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+  // We always expose GC to layout tests.
+  std::string flags("--expose-gc");
+  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStableReleaseMode)) {
+    blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFontAntialiasing)) {
+    blink::setFontAntialiasingEnabledForTest(true);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAlwaysUseComplexText)) {
+    blink::setAlwaysUseComplexTextForTest(true);
+  }
 }
 
 }  // namespace content

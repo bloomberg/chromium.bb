@@ -4,7 +4,6 @@
 
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 
-#include "base/command_line.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_runner.h"
@@ -14,12 +13,6 @@
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "v8/include/v8.h"
-
-using blink::WebFrame;
-using blink::WebRuntimeFeatures;
 
 namespace content {
 
@@ -39,25 +32,8 @@ LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver() {
   RenderThread::Get()->AddObserver(this);
   EnableRendererLayoutTestMode();
 
-  // We always expose GC to layout tests.
-  std::string flags("--expose-gc");
-  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStableReleaseMode)) {
-    WebRuntimeFeatures::enableTestOnlyFeatures(true);
-  }
-
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFontAntialiasing)) {
-    blink::setFontAntialiasingEnabledForTest(true);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAlwaysUseComplexText)) {
-    blink::setAlwaysUseComplexTextForTest(true);
-  }
 }
 
 LayoutTestRenderThreadObserver::~LayoutTestRenderThreadObserver() {
