@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.98",
+  "version": "8.99",
   "entries": [
     {
       "id": 1,
@@ -1987,6 +1987,21 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "add_and_true_to_loop_condition"
+      ]
+    },
+    {
+      "id": 187,
+      "description": "Rewrite do-while loops to simpler constructs on Mac",
+      "cr_bugs": [644669],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.11"
+        }
+      },
+      "features": [
+        "rewrite_do_while_loops"
       ]
     }
   ]

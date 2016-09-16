@@ -13,6 +13,8 @@
 // throughout the table.
 // clang-format off
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)                   \
+  GPU_OP(ADD_AND_TRUE_TO_LOOP_CONDITION,                     \
+         add_and_true_to_loop_condition)                     \
   GPU_OP(AVDA_DONT_COPY_PICTURES,                            \
          avda_dont_copy_pictures)                            \
   GPU_OP(AVOID_EGL_IMAGE_TARGET_TEXTURE_REUSE,               \
@@ -131,8 +133,8 @@
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
          reverse_point_sprite_coord_origin)                  \
-  GPU_OP(ADD_AND_TRUE_TO_LOOP_CONDITION,                     \
-         add_and_true_to_loop_condition)                     \
+  GPU_OP(REWRITE_DO_WHILE_LOOPS,                             \
+         rewrite_do_while_loops)                             \
   GPU_OP(REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH,             \
          rewrite_texelfetchoffset_to_texelfetch)             \
   GPU_OP(SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS,             \
