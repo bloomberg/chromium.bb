@@ -23,7 +23,7 @@ struct {
   const GUID device_category;
   const base::SystemMonitor::DeviceType device_type;
 } const kDeviceCategoryMap[] = {
-    {KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE},
+    {KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO},
     {KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE},
 };
 }  // namespace

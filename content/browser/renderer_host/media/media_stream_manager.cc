@@ -2038,7 +2038,7 @@ void MediaStreamManager::OnDevicesChanged(
   // changes (from the operating system).
 
   MediaStreamType stream_type;
-  if (device_type == base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE) {
+  if (device_type == base::SystemMonitor::DEVTYPE_AUDIO) {
     stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
   } else if (device_type == base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE) {
     stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;

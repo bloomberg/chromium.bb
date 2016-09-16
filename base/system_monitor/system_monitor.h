@@ -20,9 +20,9 @@ class BASE_EXPORT SystemMonitor {
  public:
   // Type of devices whose change need to be monitored, such as add/remove.
   enum DeviceType {
-    DEVTYPE_AUDIO_CAPTURE,  // Audio capture device, e.g., microphone.
+    DEVTYPE_AUDIO,          // Audio device, e.g., microphone.
     DEVTYPE_VIDEO_CAPTURE,  // Video capture device, e.g., webcam.
-    DEVTYPE_UNKNOWN,  // Other devices.
+    DEVTYPE_UNKNOWN,        // Other devices.
   };
 
   // Create SystemMonitor. Only one SystemMonitor instance per application

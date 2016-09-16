@@ -73,7 +73,7 @@ const char* WebrtcAudioPrivateEventService::service_name() {
 void WebrtcAudioPrivateEventService::OnDevicesChanged(
     base::SystemMonitor::DeviceType device_type) {
   switch (device_type) {
-    case base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE:
+    case base::SystemMonitor::DEVTYPE_AUDIO:
     case base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE:
       SignalEvent();
       break;

@@ -1282,16 +1282,14 @@ void CrasAudioHandler::HandleAudioDeviceChange(
   }
 
   // content::MediaStreamManager listens to
-  // base::SystemMonitor::DevicesChangedObserver for audio capture devices,
+  // base::SystemMonitor::DevicesChangedObserver for audio devices,
   // and updates EnumerateDevices when OnDevicesChanged is called.
-  if (is_input) {
-    base::SystemMonitor* monitor = base::SystemMonitor::Get();
-    // In some unittest, |monitor| might be nullptr.
-    if (!monitor)
-      return;
-    monitor->ProcessDevicesChanged(
-        base::SystemMonitor::DeviceType::DEVTYPE_AUDIO_CAPTURE);
-  }
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  // In some unittest, |monitor| might be nullptr.
+  if (!monitor)
+    return;
+  monitor->ProcessDevicesChanged(
+      base::SystemMonitor::DeviceType::DEVTYPE_AUDIO);
 }
 
 void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,

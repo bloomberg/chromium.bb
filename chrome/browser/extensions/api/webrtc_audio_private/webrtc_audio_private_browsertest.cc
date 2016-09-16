@@ -377,12 +377,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, MAYBE_TriggerEvent) {
       WebrtcAudioPrivateEventService::GetFactoryInstance()->Get(profile());
 
   // Just trigger, without any extension listening.
-  service->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
+  service->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
 
   // Now load our test extension and do it again.
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("webrtc_audio_private_event_listener"));
-  service->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
+  service->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
 
   // Check that the extension got the notification.
   std::string result = ExecuteScriptInBackgroundPage(extension->id(),

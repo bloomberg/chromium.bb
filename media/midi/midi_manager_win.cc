@@ -554,7 +554,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
       return;
 
     switch (device_type) {
-      case base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE:
+      case base::SystemMonitor::DEVTYPE_AUDIO:
       case base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE:
         // Add case of other unrelated device types here.
         return;

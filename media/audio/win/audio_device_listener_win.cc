@@ -100,7 +100,7 @@ STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
                                                           DWORD new_state) {
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
-    monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
+    monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
 
   return S_OK;
 }
