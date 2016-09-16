@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include "base/debug/alias.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
@@ -950,9 +951,10 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
   {
     base::AutoUnlock unlock(lock_);
 
+    size_t image_data_size = image_data->size;
+    base::debug::Alias(&image_data_size);
     backing_memory = base::DiscardableMemoryAllocator::GetInstance()
-                         ->AllocateLockedDiscardableMemory(image_data->size);
-    CHECK(backing_memory);
+                         ->AllocateLockedDiscardableMemory(image_data_size);
 
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
