@@ -427,13 +427,29 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
       continue;
     }
 
-    // When both the layer and the target are unclipped, the entire layer
-    // content rect is visible.
+    // When both the layer and the target are unclipped, we only have to apply
+    // the viewport clip.
     const bool fully_visible =
         !clip_node->layers_are_clipped && !clip_node->target_is_clipped;
 
     if (fully_visible) {
-      layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
+      if (!transform_node->ancestors_are_invertible) {
+        // An animated singular transform may become non-singular during the
+        // animation, so we still need to compute a visible rect. In this
+        // situation, we treat the entire layer as visible.
+        layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
+      } else {
+        gfx::Transform from_screen;
+        from_screen.Translate(-layer->offset_to_transform_parent().x(),
+                              -layer->offset_to_transform_parent().y());
+        from_screen.PreconcatTransform(
+            property_trees->transform_tree.FromScreen(transform_node->id));
+        gfx::Rect visible_rect =
+            gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
+                from_screen, property_trees->clip_tree.ViewportClip()));
+        visible_rect.Intersect(gfx::Rect(layer_bounds));
+        layer->set_visible_layer_rect(visible_rect);
+      }
       continue;
     }
 

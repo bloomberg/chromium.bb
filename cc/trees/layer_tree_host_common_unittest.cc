@@ -3192,9 +3192,10 @@ TEST_F(LayerTreeHostCommonTest,
             render_surface->render_surface()->DrawableContentRect());
 
   // All layers that draw content into the unclipped surface are also unclipped.
+  // Only the viewport clip should apply
   EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child3->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 25, 25), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), child3->visible_layer_rect());
 
   EXPECT_EQ(gfx::Rect(5, 5, 50, 50), child1->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(75, 75, 50, 50), child2->drawable_content_rect());
@@ -3239,8 +3240,7 @@ TEST_F(LayerTreeHostCommonTest,
   leaf_node1->SetDrawsContent(true);
   leaf_node2->SetDrawsContent(true);
 
-  // Case 1: No layers clip. Visible rects are clipped by the viewport, but the
-  // viewport clip doesn't apply to layers that draw into unclipped surfaces.
+  // Case 1: No layers clip. Visible rects are clipped by the viewport.
   // Each layer's drawable content rect is its bounds in target space; the only
   // thing that changes with surfaces disabled is that target space is always
   // screen space.
@@ -3250,12 +3250,12 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 98, 98), parent->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(2000, 2000), leaf_node1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(2000, 2000), leaf_node2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
 
   EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
@@ -3345,7 +3345,7 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(95, 95), child2->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
@@ -3758,10 +3758,11 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::RectF(5.f, 5.f, 170.f, 170.f),
             render_surface2->render_surface()->DrawableContentRect());
 
-  // All layers that draw content into render_surface2 think they are unclipped.
+  // All layers that draw content into render_surface2 think they are unclipped
+  // by the surface. So, only the viewport clip applies.
   EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child3->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 25, 25), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), child3->visible_layer_rect());
 
   // DrawableContentRects are also unclipped.
   EXPECT_EQ(gfx::Rect(5, 5, 50, 50), child1->drawable_content_rect());
@@ -3963,7 +3964,7 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
   unclipped_desc_surface->SetMasksToBounds(true);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(50, 50), unclipped_surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), unclipped_surface->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), unclipped_desc_surface->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), clipped_surface->visible_layer_rect());
 }
@@ -4121,8 +4122,8 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
   EXPECT_EQ(gfx::Rect(0, 0, 3, 4), render_surface1->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 7, 13), render_surface2->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child3->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 15, 15), child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), child3->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
@@ -5588,24 +5589,6 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), copy_clipped_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(5, 5), copy_surface->visible_layer_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* surface = AddChild<LayerImpl>(root);
-  LayerImpl* surface_child = AddChild<LayerImpl>(surface);
-
-  root->SetBounds(gfx::Size(50, 50));
-  root->SetDrawsContent(true);
-  surface->SetPosition(gfx::PointF(-10, 20));
-  surface->test_properties()->force_render_surface = true;
-  surface_child->SetBounds(gfx::Size(50, 50));
-  surface_child->SetDrawsContent(true);
-  ExecuteCalculateDrawProperties(root);
-
-  // The visible_layer_rect for the |surface_child| should not be clipped by
-  // the viewport.
-  EXPECT_EQ(gfx::Rect(50, 50), surface_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
@@ -8927,7 +8910,7 @@ TEST_F(LayerTreeHostCommonTest,
   clip_parent->test_properties()->clip_children->insert(clip_child);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(40, 40), child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(30, 10), child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,

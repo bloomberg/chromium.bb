@@ -1112,7 +1112,7 @@ void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
   set_needs_update(true);
 }
 
-gfx::RectF ClipTree::ViewportClip() {
+gfx::RectF ClipTree::ViewportClip() const {
   const unsigned long min_size = 1;
   DCHECK_GT(size(), min_size);
   return Node(kViewportNodeId)->clip;

@@ -312,7 +312,7 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
   static const int kViewportNodeId = 1;
 
   void SetViewportClip(gfx::RectF viewport_rect);
-  gfx::RectF ViewportClip();
+  gfx::RectF ViewportClip() const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto,
