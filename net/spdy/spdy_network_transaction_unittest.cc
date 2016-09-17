@@ -2288,7 +2288,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(OK, r->status().error());
+    EXPECT_EQ(OK, d.request_status());
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
   }
@@ -2374,7 +2374,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
     base::RunLoop().Run();
     EXPECT_EQ(1, d2.response_started_count());
     EXPECT_FALSE(d2.received_data_before_response());
-    EXPECT_EQ(OK, r2->status().error());
+    EXPECT_EQ(OK, d2.request_status());
     std::string contents2("hello!");
     EXPECT_EQ(contents2, d2.data_received());
   }
