@@ -28,10 +28,12 @@ std::string GetFilePath(const std::string& file_name) {
 }
 
 // Loads certificate data and expectations from the PEM file |file_name|.
-// Verifies that parsing the Certificate succeeds, and each parsed field matches
-// the expectations.
-void EnsureParsingCertificateSucceeds(const std::string& file_name) {
+// Verifies that parsing the Certificate matches expectations:
+//   * If expected to fail, emits the expected errors
+//   * If expected to succeeds, the parsed fields match expectations
+void RunCertificateTest(const std::string& file_name) {
   std::string data;
+  std::string expected_errors;
   std::string expected_tbs_certificate;
   std::string expected_signature_algorithm;
   std::string expected_signature;
@@ -39,92 +41,82 @@ void EnsureParsingCertificateSucceeds(const std::string& file_name) {
   // Read the certificate data and test expectations from a single PEM file.
   const PemBlockMapping mappings[] = {
       {"CERTIFICATE", &data},
-      {"SIGNATURE", &expected_signature},
-      {"SIGNATURE ALGORITHM", &expected_signature_algorithm},
-      {"TBS CERTIFICATE", &expected_tbs_certificate},
+      {"ERRORS", &expected_errors, true /*optional*/},
+      {"SIGNATURE", &expected_signature, true /*optional*/},
+      {"SIGNATURE ALGORITHM", &expected_signature_algorithm, true /*optional*/},
+      {"TBS CERTIFICATE", &expected_tbs_certificate, true /*optional*/},
   };
-  ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
+  std::string test_file_path = GetFilePath(file_name);
+  ASSERT_TRUE(ReadTestDataFromPemFile(test_file_path, mappings));
 
-  // Parsing the certificate should succeed.
-  der::Input tbs_certificate_tlv;
-  der::Input signature_algorithm_tlv;
-  der::BitString signature_value;
-  ASSERT_TRUE(ParseCertificate(der::Input(&data), &tbs_certificate_tlv,
-                               &signature_algorithm_tlv, &signature_value,
-                               nullptr));
+  // Note that empty expected_errors doesn't necessarily mean success.
+  bool expected_result = !expected_tbs_certificate.empty();
 
-  // Ensure that the parsed certificate matches expectations.
-  EXPECT_EQ(0, signature_value.unused_bits());
-  EXPECT_EQ(der::Input(&expected_signature), signature_value.bytes());
-  EXPECT_EQ(der::Input(&expected_signature_algorithm), signature_algorithm_tlv);
-  EXPECT_EQ(der::Input(&expected_tbs_certificate), tbs_certificate_tlv);
-}
-
-// Loads certificate data from the PEM file |file_name| and verifies that the
-// Certificate parsing fails.
-void EnsureParsingCertificateFails(const std::string& file_name) {
-  std::string data;
-
-  const PemBlockMapping mappings[] = {
-      {"CERTIFICATE", &data},
-  };
-
-  ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-
-  // Parsing the Certificate should fail.
+  // Parsing the certificate.
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
   CertErrors errors;
-  ASSERT_FALSE(ParseCertificate(der::Input(&data), &tbs_certificate_tlv,
-                                &signature_algorithm_tlv, &signature_value,
-                                &errors));
-  // TODO(crbug.com/634443): Verify |errors| to make sure it failed for the
-  //                         expected reason.
+  bool actual_result =
+      ParseCertificate(der::Input(&data), &tbs_certificate_tlv,
+                       &signature_algorithm_tlv, &signature_value, &errors);
+
+  EXPECT_EQ(expected_result, actual_result);
+  EXPECT_EQ(expected_errors, errors.ToDebugString()) << "Test file: "
+                                                     << test_file_path;
+
+  // Ensure that the parsed certificate matches expectations.
+  if (expected_result && actual_result) {
+    EXPECT_EQ(0, signature_value.unused_bits());
+    EXPECT_EQ(der::Input(&expected_signature), signature_value.bytes());
+    EXPECT_EQ(der::Input(&expected_signature_algorithm),
+              signature_algorithm_tlv);
+    EXPECT_EQ(der::Input(&expected_tbs_certificate), tbs_certificate_tlv);
+  }
 }
 
 // Tests parsing a Certificate.
 TEST(ParseCertificateTest, Version3) {
-  EnsureParsingCertificateSucceeds("cert_version3.pem");
+  RunCertificateTest("cert_version3.pem");
 }
 
 // Tests parsing a simplified Certificate-like structure (the sub-fields for
 // algorithm and tbsCertificate are not actually valid, but ParseCertificate()
 // doesn't check them)
 TEST(ParseCertificateTest, Skeleton) {
-  EnsureParsingCertificateSucceeds("cert_skeleton.pem");
+  RunCertificateTest("cert_skeleton.pem");
 }
 
 // Tests parsing a Certificate that is not a sequence fails.
 TEST(ParseCertificateTest, NotSequence) {
-  EnsureParsingCertificateFails("cert_not_sequence.pem");
+  RunCertificateTest("cert_not_sequence.pem");
 }
 
 // Tests that uncomsumed data is not allowed after the main SEQUENCE.
 TEST(ParseCertificateTest, DataAfterSignature) {
-  EnsureParsingCertificateFails("cert_data_after_signature.pem");
+  RunCertificateTest("cert_data_after_signature.pem");
 }
 
 // Tests that parsing fails if the signature BIT STRING is missing.
 TEST(ParseCertificateTest, MissingSignature) {
-  EnsureParsingCertificateFails("cert_missing_signature.pem");
+  RunCertificateTest("cert_missing_signature.pem");
 }
 
 // Tests that parsing fails if the signature is present but not a BIT STRING.
 TEST(ParseCertificateTest, SignatureNotBitString) {
-  EnsureParsingCertificateFails("cert_signature_not_bit_string.pem");
+  RunCertificateTest("cert_signature_not_bit_string.pem");
 }
 
 // Tests that parsing fails if the main SEQUENCE is empty (missing all the
 // fields).
 TEST(ParseCertificateTest, EmptySequence) {
-  EnsureParsingCertificateFails("cert_empty_sequence.pem");
+  RunCertificateTest("cert_empty_sequence.pem");
 }
 
 // Tests what happens when the signature algorithm is present, but has the wrong
 // tag.
 TEST(ParseCertificateTest, AlgorithmNotSequence) {
-  EnsureParsingCertificateFails("cert_algorithm_not_sequence.pem");
+  RunCertificateTest("cert_algorithm_not_sequence.pem");
 }
 
 // Loads tbsCertificate data and expectations from the PEM file |file_name|.

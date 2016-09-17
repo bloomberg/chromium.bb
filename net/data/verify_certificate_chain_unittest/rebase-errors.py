@@ -93,11 +93,10 @@ def fixup_pem_file(path, actual_errors):
   m = errors_block_regex.search(contents)
 
   if not m:
-    print "Couldn't find ERRORS block in %s" % (path)
-    return
-
-  contents = replace_string(contents, m.start(1), m.end(1),
-                            common.text_data_to_pem('ERRORS', actual_errors))
+    contents += '\n' + common.text_data_to_pem('ERRORS', actual_errors)
+  else:
+    contents = replace_string(contents, m.start(1), m.end(1),
+                              common.text_data_to_pem('ERRORS', actual_errors))
 
   # Update the file.
   write_string_to_file(contents, path)
