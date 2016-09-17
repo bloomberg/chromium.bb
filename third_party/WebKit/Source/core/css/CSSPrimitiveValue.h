@@ -29,6 +29,7 @@
 #include "wtf/BitVector.h"
 #include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringView.h"
@@ -38,6 +39,7 @@ namespace blink {
 class CSSCalcValue;
 class CSSToLengthConversionData;
 class Length;
+class ComputedStyle;
 
 // Dimension calculations are imprecise, often resulting in values of e.g.
 // 44.99998. We need to go ahead and round if we're really close to the next
@@ -207,6 +209,9 @@ public:
 
     static CSSPrimitiveValue* createIdentifier(CSSValueID);
     static CSSPrimitiveValue* create(double value, UnitType);
+    // TODO(sashab): Remove this create() method, CSSPrimitiveValue should not
+    // reference ComputedStyle.
+    static CSSPrimitiveValue* create(const Length& value, const ComputedStyle&);
     static CSSPrimitiveValue* create(const Length& value, float zoom)
     {
         return new CSSPrimitiveValue(value, zoom);

@@ -14,9 +14,7 @@
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
-#include "core/css/StyleColor.h"
 #include "core/frame/UseCounter.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
