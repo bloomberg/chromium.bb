@@ -87,7 +87,7 @@ static CSSPrimitiveValue* zoomAdjustedPixelValueForLength(const Length& length, 
 {
     if (length.isFixed())
         return zoomAdjustedPixelValue(length.value(), style);
-    return CSSPrimitiveValue::create(length, style);
+    return CSSPrimitiveValue::create(length, style.effectiveZoom());
 }
 
 static CSSPrimitiveValue* pixelValueForUnzoomedLength(const UnzoomedLength& unzoomedLength, const ComputedStyle& style)
@@ -95,7 +95,7 @@ static CSSPrimitiveValue* pixelValueForUnzoomedLength(const UnzoomedLength& unzo
     const Length& length = unzoomedLength.length();
     if (length.isFixed())
         return CSSPrimitiveValue::create(length.value(), CSSPrimitiveValue::UnitType::Pixels);
-    return CSSPrimitiveValue::create(length, style);
+    return CSSPrimitiveValue::create(length, style.effectiveZoom());
 }
 
 static CSSValueList* createPositionListForLayer(CSSPropertyID propertyID, const FillLayer& layer, const ComputedStyle& style)
@@ -313,6 +313,13 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(const NinePieceImag
     return CSSBorderImageSliceValue::create(CSSQuadValue::create(top, right, bottom, left, CSSQuadValue::SerializeAsQuad), image.fill());
 }
 
+static CSSPrimitiveValue* valueForBorderImageLength(const BorderImageLength& borderImageLength, const ComputedStyle& style)
+{
+    if (borderImageLength.isNumber())
+        return CSSPrimitiveValue::create(borderImageLength.number(), CSSPrimitiveValue::UnitType::Number);
+    return CSSPrimitiveValue::create(borderImageLength.length(), style.effectiveZoom());
+}
+
 static CSSQuadValue* valueForNinePieceImageQuad(const BorderImageLengthBox& box, const ComputedStyle& style)
 {
     // Create the slices.
@@ -321,41 +328,27 @@ static CSSQuadValue* valueForNinePieceImageQuad(const BorderImageLengthBox& box,
     CSSPrimitiveValue* bottom = nullptr;
     CSSPrimitiveValue* left = nullptr;
 
-    if (box.top().isNumber())
-        top = CSSPrimitiveValue::create(box.top().number(), CSSPrimitiveValue::UnitType::Number);
-    else
-        top = CSSPrimitiveValue::create(box.top().length(), style);
+    top = valueForBorderImageLength(box.top(), style);
 
     if (box.right() == box.top() && box.bottom() == box.top() && box.left() == box.top()) {
         right = top;
         bottom = top;
         left = top;
     } else {
-        if (box.right().isNumber())
-            right = CSSPrimitiveValue::create(box.right().number(), CSSPrimitiveValue::UnitType::Number);
-        else
-            right = CSSPrimitiveValue::create(box.right().length(), style);
+        right = valueForBorderImageLength(box.right(), style);
 
         if (box.bottom() == box.top() && box.right() == box.left()) {
             bottom = top;
             left = right;
         } else {
-            if (box.bottom().isNumber())
-                bottom = CSSPrimitiveValue::create(box.bottom().number(), CSSPrimitiveValue::UnitType::Number);
-            else
-                bottom = CSSPrimitiveValue::create(box.bottom().length(), style);
+            bottom = valueForBorderImageLength(box.bottom(), style);
 
-            if (box.left() == box.right()) {
+            if (box.left() == box.right())
                 left = right;
-            } else {
-                if (box.left().isNumber())
-                    left = CSSPrimitiveValue::create(box.left().number(), CSSPrimitiveValue::UnitType::Number);
-                else
-                    left = CSSPrimitiveValue::create(box.left().length(), style);
-            }
+            else
+                left = valueForBorderImageLength(box.left(), style);
         }
     }
-
     return CSSQuadValue::create(top, right, bottom, left, CSSQuadValue::SerializeAsQuad);
 }
 
@@ -2659,7 +2652,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         }
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
     case CSSPropertyShapeMargin:
-        return CSSPrimitiveValue::create(style.shapeMargin(), style);
+        return CSSPrimitiveValue::create(style.shapeMargin(), style.effectiveZoom());
     case CSSPropertyShapeImageThreshold:
         return CSSPrimitiveValue::create(style.shapeImageThreshold(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyShapeOutside:

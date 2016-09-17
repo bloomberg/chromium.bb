@@ -25,9 +25,6 @@
 
 #include "core/css/CSSValuePool.h"
 
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Threading.h"
 
