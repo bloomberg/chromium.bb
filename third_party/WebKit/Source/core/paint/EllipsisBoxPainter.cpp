@@ -18,17 +18,16 @@ namespace blink {
 
 void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
+    if (paintInfo.phase == PaintPhaseSelection)
+        return;
+
     const ComputedStyle& style = m_ellipsisBox.getLineLayoutItem().styleRef(m_ellipsisBox.isFirstLineStyle());
     paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
-    bool haveSelection = !paintInfo.isPrinting() && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.getSelectionState() != SelectionNone;
-
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
-    if (haveSelection)
-        paintRect.unite(LayoutRect(m_ellipsisBox.selectionRect()));
     m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
     paintRect.moveBy(paintOffset);
 
@@ -49,42 +48,11 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
 
     const Font& font = style.font();
 
-    if (haveSelection)
-        paintSelection(context, boxOrigin, style, font);
-    else if (paintInfo.phase == PaintPhaseSelection)
-        return;
-
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.getLineLayoutItem(), style, paintInfo);
-    if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.getLineLayoutItem(), true, paintInfo, textStyle);
-
     TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.getFontMetrics().ascent());
     TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
-}
-
-void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font)
-{
-    Color textColor = m_ellipsisBox.getLineLayoutItem().resolveColor(style, CSSPropertyColor);
-    Color c = m_ellipsisBox.getLineLayoutItem().selectionBackgroundColor();
-    if (!c.alpha())
-        return;
-
-    // If the text color ends up being the same as the selection background, invert the selection
-    // background.
-    if (textColor == c)
-        c = Color(0xff - c.red(), 0xff - c.green(), 0xff - c.blue());
-
-    GraphicsContextStateSaver stateSaver(context);
-    LayoutUnit selectionBottom = m_ellipsisBox.root().selectionBottom();
-    LayoutUnit top = m_ellipsisBox.root().selectionTop();
-    LayoutUnit h = m_ellipsisBox.root().selectionHeight();
-    const int deltaY = roundToInt(m_ellipsisBox.getLineLayoutItem().styleRef().isFlippedLinesWritingMode() ? selectionBottom - m_ellipsisBox.logicalBottom() : m_ellipsisBox.logicalTop() - top);
-    const FloatPoint localOrigin(LayoutPoint(boxOrigin.x(), boxOrigin.y() - deltaY));
-    FloatRect clipRect(localOrigin, FloatSize(LayoutSize(m_ellipsisBox.logicalWidth(), h)));
-    context.clip(clipRect);
-    context.drawHighlightForText(font, constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion), localOrigin, h.toInt(), c);
 }
 
 } // namespace blink

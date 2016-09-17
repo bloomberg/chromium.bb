@@ -10,7 +10,7 @@
   </head>
   <body>
     <!-- This expectation depends on the ellipsis is U+2026. -->
-    <div id="target" class="testDiv"><span style="font-family: Ahem">B</span>&#x2026;</div>
+    <div class="testDiv"><span id="target" style="font-family: Ahem">B</span>&#x2026;</div>
     <script>
       var range = document.createRange();
       range.selectNode(document.getElementById("target"));
