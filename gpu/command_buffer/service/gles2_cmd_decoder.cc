@@ -9369,7 +9369,11 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     return error::kNoError;
   }
 
-  GLuint max_vertex_accessed = first + count - 1;
+  base::CheckedNumeric<GLuint> checked_max_vertex = first;
+  checked_max_vertex += count - 1;
+  // first and count-1 are both a non-negative int, so their sum fits an
+  // unsigned int.
+  GLuint max_vertex_accessed = checked_max_vertex.ValueOrDie();
   if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
     if (!ClearUnclearedTextures()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
