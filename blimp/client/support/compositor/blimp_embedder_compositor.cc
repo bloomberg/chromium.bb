@@ -19,7 +19,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 
@@ -78,7 +78,7 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
   compositor_dependencies_->GetSurfaceManager()->RegisterSurfaceClientId(
       surface_id_allocator_->client_id());
 
-  cc::LayerTreeHost::InitParams params;
+  cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.gpu_memory_buffer_manager =
       compositor_dependencies_->GetGpuMemoryBufferManager();
@@ -87,7 +87,7 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.animation_host = cc::AnimationHost::CreateMainInstance();
-  host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
 
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
   host_->GetLayerTree()->SetRootLayer(root_layer_);

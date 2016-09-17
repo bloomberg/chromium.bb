@@ -12,7 +12,7 @@
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/proto/compositor_message_to_main.pb.h"
 #include "cc/proto/gfx_conversions.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/proxy_main.h"
 
 namespace cc {
@@ -172,7 +172,7 @@ void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
 
 void RemoteChannelMain::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc.remote", "RemoteChannelMain::NotifyReadyToCommitOnImpl");
@@ -219,7 +219,7 @@ void RemoteChannelMain::NotifyReadyToCommitOnImpl(
 }
 
 void RemoteChannelMain::SynchronouslyInitializeImpl(
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyInitializeImpl");
   DCHECK(!initialized_);

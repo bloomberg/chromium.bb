@@ -110,7 +110,7 @@ class ScrollbarLayerTest : public testing::Test {
 
     scrollbar_layer_id_ = -1;
 
-    LayerTreeHost::InitParams params;
+    LayerTreeHostInProcess::InitParams params;
     params.client = &fake_client_;
     params.settings = &layer_tree_settings_;
     params.task_graph_runner = &task_graph_runner_;

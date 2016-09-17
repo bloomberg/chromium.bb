@@ -136,7 +136,7 @@ void ThreadedChannel::MainFrameWillHappenOnImplForTesting(
 
 void ThreadedChannel::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
   DCHECK(IsMainThread());
@@ -148,7 +148,7 @@ void ThreadedChannel::NotifyReadyToCommitOnImpl(
 }
 
 void ThreadedChannel::SynchronouslyInitializeImpl(
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   TRACE_EVENT0("cc", "ThreadChannel::SynchronouslyInitializeImpl");
   DCHECK(IsMainThread());
@@ -261,7 +261,7 @@ void ThreadedChannel::BeginMainFrame(
 
 std::unique_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
     ChannelImpl* channel_impl,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsImplThread());
@@ -272,7 +272,7 @@ std::unique_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
 
 void ThreadedChannel::InitializeImplOnImpl(
     CompletionEvent* completion,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(IsImplThread());
   impl().proxy_impl =

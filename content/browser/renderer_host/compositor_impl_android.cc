@@ -45,7 +45,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #include "components/display_compositor/gl_helper.h"
@@ -496,7 +496,7 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.single_thread_proxy_scheduler = true;
 
-  cc::LayerTreeHost::InitParams params;
+  cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.shared_bitmap_manager = HostSharedBitmapManager::current();
   params.gpu_memory_buffer_manager = BrowserGpuMemoryBufferManager::current();
@@ -504,7 +504,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
   params.animation_host = cc::AnimationHost::CreateMainInstance();
-  host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
   host_->SetSurfaceClientId(surface_id_allocator_->client_id());

@@ -51,11 +51,11 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
       base::TimeTicks main_thread_start_time,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises) override;
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
-                                 LayerTreeHost* layer_tree_host,
+                                 LayerTreeHostInProcess* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void SynchronouslyCloseImpl() override;
 

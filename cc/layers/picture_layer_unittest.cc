@@ -67,7 +67,7 @@ class TestSerializationPictureLayer : public PictureLayer {
 
   void ValidateSerialization(
       ImageSerializationProcessor* image_serialization_processor,
-      LayerTreeHost* host) {
+      LayerTreeHostInProcess* host) {
     std::vector<uint32_t> engine_picture_ids = GetPictureIds();
     proto::LayerProperties proto;
     LayerSpecificPropertiesToProto(&proto);
@@ -497,7 +497,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(client);
 
-  LayerTreeHost::InitParams params;
+  LayerTreeHostInProcess::InitParams params;
   params.client = &host_client1;
   params.shared_bitmap_manager = &shared_bitmap_manager;
   params.settings = &settings;
@@ -505,12 +505,13 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host1 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+      LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client,
+                                                   &params);
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
   // TODO(sad): InitParams will be movable.
-  LayerTreeHost::InitParams params2;
+  LayerTreeHostInProcess::InitParams params2;
   params2.client = &host_client1;
   params2.shared_bitmap_manager = &shared_bitmap_manager;
   params2.settings = &settings;
@@ -520,7 +521,8 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params2.animation_host =
       AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
+      LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client,
+                                                   &params2);
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 

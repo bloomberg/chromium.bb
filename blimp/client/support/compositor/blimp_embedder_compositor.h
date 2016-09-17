@@ -15,7 +15,7 @@
 
 namespace cc {
 class Display;
-class LayerTreeHostInterface;
+class LayerTreeHost;
 class SurfaceIdAllocator;
 class SurfaceManager;
 }  // namespace cc
@@ -84,7 +84,7 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
 
   gfx::Size viewport_size_in_px_;
 
-  std::unique_ptr<cc::LayerTreeHostInterface> host_;
+  std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<cc::Layer> root_layer_;
 
   base::Closure did_complete_swap_buffers_;

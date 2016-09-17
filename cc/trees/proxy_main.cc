@@ -17,7 +17,7 @@
 #include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/blocking_task_runner.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/remote_channel_main.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "cc/trees/threaded_channel.h"
@@ -25,7 +25,7 @@
 namespace cc {
 
 std::unique_ptr<ProxyMain> ProxyMain::CreateThreaded(
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     TaskRunnerProvider* task_runner_provider) {
   std::unique_ptr<ProxyMain> proxy_main(
       new ProxyMain(layer_tree_host, task_runner_provider));
@@ -36,7 +36,7 @@ std::unique_ptr<ProxyMain> ProxyMain::CreateThreaded(
 
 std::unique_ptr<ProxyMain> ProxyMain::CreateRemote(
     RemoteProtoChannel* remote_proto_channel,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     TaskRunnerProvider* task_runner_provider) {
   std::unique_ptr<ProxyMain> proxy_main(
       new ProxyMain(layer_tree_host, task_runner_provider));
@@ -45,7 +45,7 @@ std::unique_ptr<ProxyMain> ProxyMain::CreateRemote(
   return proxy_main;
 }
 
-ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
+ProxyMain::ProxyMain(LayerTreeHostInProcess* layer_tree_host,
                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_(layer_tree_host),
       task_runner_provider_(task_runner_provider),

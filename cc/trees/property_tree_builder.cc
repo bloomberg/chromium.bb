@@ -19,6 +19,7 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/point_f.h"

@@ -1310,15 +1310,16 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 
-  LayerTreeHost::InitParams params;
+  LayerTreeHostInProcess::InitParams params;
   params.client = &layer_tree_host_client;
   params.shared_bitmap_manager = &shared_bitmap_manager;
   params.task_graph_runner = &task_graph_runner;
   params.settings = &settings;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
-  std::unique_ptr<LayerTreeHostInterface> layer_tree_host =
-      LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host =
+      LayerTreeHostInProcess::CreateThreaded(impl_thread.task_runner(),
+                                             &params);
 
   ThreadCheckingInputHandlerClient input_handler_client(
       impl_thread.task_runner().get(), &received_stop_flinging);

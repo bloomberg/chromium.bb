@@ -10,7 +10,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/tree_synchronizer.h"
 
@@ -18,7 +18,7 @@ namespace cc {
 class ImageSerializationProcessor;
 class TestTaskGraphRunner;
 
-class FakeLayerTreeHost : public LayerTreeHost {
+class FakeLayerTreeHost : public LayerTreeHostInProcess {
  public:
   static std::unique_ptr<FakeLayerTreeHost> Create(
       FakeLayerTreeHostClient* client,
@@ -67,15 +67,15 @@ class FakeLayerTreeHost : public LayerTreeHost {
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
   LayerTreeImpl* pending_tree() { return host_impl_.pending_tree(); }
 
-  using LayerTreeHost::ScheduleMicroBenchmark;
-  using LayerTreeHost::SendMessageToMicroBenchmark;
-  using LayerTreeHost::InitializeSingleThreaded;
-  using LayerTreeHost::InitializeForTesting;
-  using LayerTreeHost::InitializePictureCacheForTesting;
-  using LayerTreeHost::RecordGpuRasterizationHistogram;
-  using LayerTreeHost::SetUIResourceManagerForTesting;
+  using LayerTreeHostInProcess::ScheduleMicroBenchmark;
+  using LayerTreeHostInProcess::SendMessageToMicroBenchmark;
+  using LayerTreeHostInProcess::InitializeSingleThreaded;
+  using LayerTreeHostInProcess::InitializeForTesting;
+  using LayerTreeHostInProcess::InitializePictureCacheForTesting;
+  using LayerTreeHostInProcess::RecordGpuRasterizationHistogram;
+  using LayerTreeHostInProcess::SetUIResourceManagerForTesting;
 
-  void UpdateLayers() { LayerTreeHost::UpdateLayers(); }
+  void UpdateLayers() { LayerTreeHostInProcess::UpdateLayers(); }
 
   MicroBenchmarkController* GetMicroBenchmarkController() {
     return &micro_benchmark_controller_;
@@ -84,7 +84,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   bool needs_commit() { return needs_commit_; }
 
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                    LayerTreeHost::InitParams* params,
+                    LayerTreeHostInProcess::InitParams* params,
                     CompositorMode mode);
 
  private:

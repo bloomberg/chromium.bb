@@ -33,7 +33,7 @@ class CompositorMessage;
 
 class ContextProvider;
 class Layer;
-class LayerTreeHostInterface;
+class LayerTreeHost;
 class LayerTreeSettings;
 class Surface;
 class SurfaceFactory;
@@ -189,7 +189,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   BlimpCompositorDependencies* compositor_dependencies_;
 
-  std::unique_ptr<cc::LayerTreeHostInterface> host_;
+  std::unique_ptr<cc::LayerTreeHost> host_;
 
   // The SurfaceFactory is bound to the lifetime of the |proxy_client_|. When
   // detached, the surface factory will be destroyed.

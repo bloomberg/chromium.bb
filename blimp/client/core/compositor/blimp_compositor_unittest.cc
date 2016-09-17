@@ -58,7 +58,7 @@ class BlimpCompositorForTesting : public BlimpCompositor {
     SendWebGestureEvent(gesture_event);
   }
 
-  cc::LayerTreeHostInterface* host() const { return host_.get(); }
+  cc::LayerTreeHost* host() const { return host_.get(); }
 };
 
 class BlimpCompositorTest : public testing::Test {

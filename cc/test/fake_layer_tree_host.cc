@@ -27,9 +27,9 @@ class FakeLayerTree : public LayerTree {
 }  // namespace
 
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                                     LayerTreeHost::InitParams* params,
+                                     LayerTreeHostInProcess::InitParams* params,
                                      CompositorMode mode)
-    : LayerTreeHost(
+    : LayerTreeHostInProcess(
           params,
           mode,
           base::MakeUnique<FakeLayerTree>(std::move(params->animation_host),
@@ -70,7 +70,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     TestTaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
     CompositorMode mode) {
-  LayerTreeHost::InitParams params;
+  LayerTreeHostInProcess::InitParams params;
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
@@ -84,7 +84,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     const LayerTreeSettings& settings,
     CompositorMode mode,
     ImageSerializationProcessor* image_serialization_processor) {
-  LayerTreeHost::InitParams params;
+  LayerTreeHostInProcess::InitParams params;
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;

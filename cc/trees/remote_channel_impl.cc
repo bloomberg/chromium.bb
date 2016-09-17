@@ -12,12 +12,12 @@
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/proto/compositor_message_to_main.pb.h"
 #include "cc/proto/gfx_conversions.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
-RemoteChannelImpl::RemoteChannelImpl(LayerTreeHost* layer_tree_host,
+RemoteChannelImpl::RemoteChannelImpl(LayerTreeHostInProcess* layer_tree_host,
                                      RemoteProtoChannel* remote_proto_channel,
                                      TaskRunnerProvider* task_runner_provider)
     : task_runner_provider_(task_runner_provider),
@@ -38,7 +38,7 @@ RemoteChannelImpl::~RemoteChannelImpl() {
 
 std::unique_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
     ChannelImpl* channel_impl,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(task_runner_provider_->IsImplThread());
@@ -192,8 +192,8 @@ void RemoteChannelImpl::SetNeedsUpdateLayers() {
 
 void RemoteChannelImpl::SetNeedsCommit() {
   // Ideally commits should be requested only on the server. But we have to
-  // allow this call since the LayerTreeHost will currently ask for a commit in
-  // 2 cases:
+  // allow this call since the LayerTreeHostInProcesswill currently ask for a
+  // commit in 2 cases:
   // 1) When it is being initialized from a protobuf for a commit.
   // 2) When it loses the CompositorFrameSink.
   NOTIMPLEMENTED() << "Commits should not be requested on the client";
@@ -441,8 +441,9 @@ void RemoteChannelImpl::PostSetNeedsRedrawToImpl(
                             proxy_impl_weak_ptr_, damaged_rect));
 }
 
-void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,
-                                             LayerTreeHost* layer_tree_host) {
+void RemoteChannelImpl::InitializeImplOnImpl(
+    CompletionEvent* completion,
+    LayerTreeHostInProcess* layer_tree_host) {
   DCHECK(task_runner_provider_->IsMainThreadBlocked());
   DCHECK(task_runner_provider_->IsImplThread());
 
@@ -498,7 +499,7 @@ base::SingleThreadTaskRunner* RemoteChannelImpl::ImplThreadTaskRunner() const {
 
 RemoteChannelImpl::MainThreadOnly::MainThreadOnly(
     RemoteChannelImpl* remote_channel_impl,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     RemoteProtoChannel* remote_proto_channel)
     : layer_tree_host(layer_tree_host),
       remote_proto_channel(remote_proto_channel),

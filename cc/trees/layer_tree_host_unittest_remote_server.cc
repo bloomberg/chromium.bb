@@ -9,8 +9,8 @@
 #include "cc/animation/animation_host.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/proxy_common.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/remote_proto_channel.h"
@@ -27,7 +27,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
       : calls_received_(0),
         image_serialization_processor_(
             base::WrapUnique(new FakeImageSerializationProcessor)) {
-    LayerTreeHost::InitParams params;
+    LayerTreeHostInProcess::InitParams params;
     params.client = this;
     params.task_graph_runner = &task_graph_runner_;
     params.settings = &settings_;
@@ -35,7 +35,8 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
     params.image_serialization_processor = image_serialization_processor_.get();
     params.animation_host =
         AnimationHost::CreateForTesting(ThreadInstance::MAIN);
-    layer_tree_host_ = LayerTreeHost::CreateRemoteServer(this, &params);
+    layer_tree_host_ =
+        LayerTreeHostInProcess::CreateRemoteServer(this, &params);
   }
 
   ~LayerTreeHostTestRemoteServer() override {}
@@ -69,7 +70,7 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
   int calls_received_;
   TestTaskGraphRunner task_graph_runner_;
   LayerTreeSettings settings_;
-  std::unique_ptr<LayerTreeHostInterface> layer_tree_host_;
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_;
   RemoteProtoChannel::ProtoReceiver* receiver_;
   std::unique_ptr<FakeImageSerializationProcessor>
       image_serialization_processor_;
@@ -95,9 +96,7 @@ TEST_F(LayerTreeHostTestRemoteServerBeginMainFrame, BeginMainFrameNotAborted) {
   begin_frame_state.reset(new BeginMainFrameAndCommitState());
   begin_frame_state->scroll_info.reset(new ScrollAndScaleSet());
 
-  LayerTreeHost* layer_tree_host =
-      static_cast<LayerTreeHost*>(layer_tree_host_.get());
-  static_cast<ProxyMain*>(layer_tree_host->proxy())
+  static_cast<ProxyMain*>(layer_tree_host_->proxy())
       ->BeginMainFrame(std::move(begin_frame_state));
   EXPECT_EQ(calls_received_, 1);
 }

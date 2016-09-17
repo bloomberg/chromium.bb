@@ -19,7 +19,7 @@ class AnimationEvents;
 class BeginFrameSource;
 class ChannelMain;
 class CompositorFrameSink;
-class LayerTreeHost;
+class LayerTreeHostInProcess;
 class LayerTreeMutator;
 
 // This class aggregates all interactions that the impl side of the compositor
@@ -28,12 +28,12 @@ class LayerTreeMutator;
 class CC_EXPORT ProxyMain : public Proxy {
  public:
   static std::unique_ptr<ProxyMain> CreateThreaded(
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       TaskRunnerProvider* task_runner_provider);
 
   static std::unique_ptr<ProxyMain> CreateRemote(
       RemoteProtoChannel* remote_proto_channel,
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       TaskRunnerProvider* task_runner_provider);
 
   ~ProxyMain() override;
@@ -71,7 +71,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   }
 
  protected:
-  ProxyMain(LayerTreeHost* layer_tree_host,
+  ProxyMain(LayerTreeHostInProcess* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
 
  private:
@@ -113,7 +113,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       CommitPipelineStage required_stage);
   bool IsMainThread() const;
 
-  LayerTreeHost* layer_tree_host_;
+  LayerTreeHostInProcess* layer_tree_host_;
 
   TaskRunnerProvider* task_runner_provider_;
 

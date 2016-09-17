@@ -890,7 +890,7 @@ namespace {
 
 class MockLayerTree : public LayerTree {
  public:
-  MockLayerTree(LayerTreeHost::InitParams* params,
+  MockLayerTree(LayerTreeHostInProcess::InitParams* params,
                 LayerTreeHost* layer_tree_host)
       : LayerTree(std::move(params->animation_host), layer_tree_host) {}
   ~MockLayerTree() override {}
@@ -898,11 +898,11 @@ class MockLayerTree : public LayerTree {
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
 };
 
-class MockLayerTreeHost : public LayerTreeHost {
+class MockLayerTreeHost : public LayerTreeHostInProcess {
  public:
   MockLayerTreeHost(LayerTreeHostSingleThreadClient* single_thread_client,
-                    LayerTreeHost::InitParams* params)
-      : LayerTreeHost(
+                    LayerTreeHostInProcess::InitParams* params)
+      : LayerTreeHostInProcess(
             params,
             CompositorMode::SINGLE_THREADED,
             base::MakeUnique<StrictMock<MockLayerTree>>(params, this)) {
@@ -932,7 +932,7 @@ class LayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    LayerTreeHost::InitParams params;
+    LayerTreeHostInProcess::InitParams params;
     params.client = &fake_client_;
     params.settings = &settings_;
     params.task_graph_runner = &task_graph_runner_;
@@ -1868,7 +1868,7 @@ class LayerTreeHostFactory {
   }
 
   std::unique_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
-    LayerTreeHost::InitParams params;
+    LayerTreeHostInProcess::InitParams params;
     params.client = &client_;
     params.shared_bitmap_manager = &shared_bitmap_manager_;
     params.task_graph_runner = &task_graph_runner_;
@@ -1877,7 +1877,8 @@ class LayerTreeHostFactory {
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.animation_host =
         AnimationHost::CreateForTesting(ThreadInstance::MAIN);
-    return LayerTreeHost::CreateSingleThreaded(&single_thread_client_, &params);
+    return LayerTreeHostInProcess::CreateSingleThreaded(&single_thread_client_,
+                                                        &params);
   }
 
  private:

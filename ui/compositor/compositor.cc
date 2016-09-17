@@ -30,7 +30,8 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -190,7 +191,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 
-  cc::LayerTreeHost::InitParams params;
+  cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.shared_bitmap_manager = context_factory_->GetSharedBitmapManager();
   params.gpu_memory_buffer_manager =
@@ -199,7 +200,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   params.settings = &settings;
   params.main_task_runner = task_runner_;
   params.animation_host = cc::AnimationHost::CreateMainInstance();
-  host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
 

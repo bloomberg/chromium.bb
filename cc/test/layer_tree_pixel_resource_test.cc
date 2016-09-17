@@ -5,6 +5,7 @@
 #include "cc/test/layer_tree_pixel_resource_test.h"
 
 #include "cc/layers/layer.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"

@@ -20,7 +20,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/task_runner_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -38,7 +38,7 @@ unsigned int nextBeginFrameId = 0;
 
 ProxyImpl::ProxyImpl(
     ChannelImpl* channel_impl,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     TaskRunnerProvider* task_runner_provider,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source)
     : layer_tree_host_id_(layer_tree_host->GetId()),
@@ -228,7 +228,7 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
 
 void ProxyImpl::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
-    LayerTreeHost* layer_tree_host,
+    LayerTreeHostInProcess* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");

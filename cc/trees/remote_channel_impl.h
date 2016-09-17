@@ -16,7 +16,7 @@
 #include "cc/trees/remote_proto_channel.h"
 
 namespace cc {
-class LayerTreeHost;
+class LayerTreeHostInProcess;
 
 namespace proto {
 class CompositorMessage;
@@ -70,15 +70,15 @@ class CompositorMessageToMain;
 //
 // The RemoteChannelImpl receives and processes messages from the remote server
 // compositor on the main thread. The requests from ProxyImpl are received on
-// the impl thread which may be directed to the LayerTreeHost on the client
-// (for instance output surface requests) or sent to the LayerTreeHost on the
-// server. The messages to the server are created on the impl thread and sent
-// using the RemoteProtoChannel on the main thread.
+// the impl thread which may be directed to the LayerTreeHostInProcesson the
+// client (for instance output surface requests) or sent to the
+// LayerTreeHostInProcess on the server. The messages to the server are created
+// on the impl thread and sent using the RemoteProtoChannel on the main thread.
 class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
                                     public RemoteProtoChannel::ProtoReceiver,
                                     public Proxy {
  public:
-  RemoteChannelImpl(LayerTreeHost* layer_tree_host,
+  RemoteChannelImpl(LayerTreeHostInProcess* layer_tree_host,
                     RemoteProtoChannel* remote_proto_channel,
                     TaskRunnerProvider* task_runner_provider);
   ~RemoteChannelImpl() override;
@@ -86,13 +86,13 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   // virtual for testing.
   virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   struct MainThreadOnly {
-    LayerTreeHost* layer_tree_host;
+    LayerTreeHostInProcess* layer_tree_host;
     RemoteProtoChannel* remote_proto_channel;
 
     bool started;
@@ -108,7 +108,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
     base::WeakPtrFactory<RemoteChannelImpl> remote_channel_weak_factory;
 
     MainThreadOnly(RemoteChannelImpl*,
-                   LayerTreeHost* layer_tree_host,
+                   LayerTreeHostInProcess* layer_tree_host,
                    RemoteProtoChannel* remote_proto_channel);
     ~MainThreadOnly();
   };
@@ -181,7 +181,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void PostSetNeedsRedrawToImpl(const gfx::Rect& damaged_rect);
 
   void InitializeImplOnImpl(CompletionEvent* completion,
-                            LayerTreeHost* layer_tree_host);
+                            LayerTreeHostInProcess* layer_tree_host);
   void ShutdownImplOnImpl(CompletionEvent* completion);
 
   MainThreadOnly& main();

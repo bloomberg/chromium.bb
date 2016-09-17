@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -124,45 +124,45 @@ ComputeLayerTreeHostProtoSizeSplitAsValue(proto::LayerTreeHost* proto) {
 
 }  // namespace
 
-LayerTreeHost::InitParams::InitParams() {
-}
+LayerTreeHostInProcess::InitParams::InitParams() {}
 
-LayerTreeHost::InitParams::~InitParams() {
-}
+LayerTreeHostInProcess::InitParams::~InitParams() {}
 
-std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateThreaded(
+std::unique_ptr<LayerTreeHostInProcess> LayerTreeHostInProcess::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
   DCHECK(impl_task_runner.get());
   DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::THREADED));
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
+      new LayerTreeHostInProcess(params, CompositorMode::THREADED));
   layer_tree_host->InitializeThreaded(
       params->main_task_runner, impl_task_runner,
       std::move(params->external_begin_frame_source));
-  return std::move(layer_tree_host);
+  return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
+std::unique_ptr<LayerTreeHostInProcess>
+LayerTreeHostInProcess::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     InitParams* params) {
   DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
+      new LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(
       single_thread_client, params->main_task_runner,
       std::move(params->external_begin_frame_source));
   return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteServer(
+std::unique_ptr<LayerTreeHostInProcess>
+LayerTreeHostInProcess::CreateRemoteServer(
     RemoteProtoChannel* remote_proto_channel,
     InitParams* params) {
   DCHECK(params->main_task_runner.get());
   DCHECK(params->settings);
   DCHECK(remote_proto_channel);
-  TRACE_EVENT0("cc.remote", "LayerTreeHost::CreateRemoteServer");
+  TRACE_EVENT0("cc.remote", "LayerTreeHostInProcess::CreateRemoteServer");
 
   // Using an external begin frame source is not supported on the server in
   // remote mode.
@@ -170,14 +170,15 @@ std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteServer(
   DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::REMOTE));
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
+      new LayerTreeHostInProcess(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteServer(remote_proto_channel,
                                           params->main_task_runner);
-  return std::move(layer_tree_host);
+  return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteClient(
+std::unique_ptr<LayerTreeHostInProcess>
+LayerTreeHostInProcess::CreateRemoteClient(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams* params) {
@@ -187,28 +188,30 @@ std::unique_ptr<LayerTreeHostInterface> LayerTreeHost::CreateRemoteClient(
 
   // Using an external begin frame source is not supported in remote mode.
   // TODO(khushalsagar): Add support for providing an external begin frame
-  // source on the client LayerTreeHost. crbug/576962
+  // source on the client LayerTreeHostInProcess. crbug/576962
   DCHECK(!params->settings->use_external_begin_frame_source);
   DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::REMOTE));
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
+      new LayerTreeHostInProcess(params, CompositorMode::REMOTE));
   layer_tree_host->InitializeRemoteClient(
       remote_proto_channel, params->main_task_runner, impl_task_runner);
-  return std::move(layer_tree_host);
+  return layer_tree_host;
 }
 
-LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
-    : LayerTreeHost(
+LayerTreeHostInProcess::LayerTreeHostInProcess(InitParams* params,
+                                               CompositorMode mode)
+    : LayerTreeHostInProcess(
           params,
           mode,
           base::MakeUnique<LayerTree>(std::move(params->animation_host),
                                       this)) {}
 
-LayerTreeHost::LayerTreeHost(InitParams* params,
-                             CompositorMode mode,
-                             std::unique_ptr<LayerTree> layer_tree)
+LayerTreeHostInProcess::LayerTreeHostInProcess(
+    InitParams* params,
+    CompositorMode mode,
+    std::unique_ptr<LayerTree> layer_tree)
     : micro_benchmark_controller_(this),
       layer_tree_(std::move(layer_tree)),
       compositor_mode_(mode),
@@ -236,7 +239,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params,
       debug_state_.RecordRenderingStats());
 }
 
-void LayerTreeHost::InitializeThreaded(
+void LayerTreeHostInProcess::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
@@ -248,7 +251,7 @@ void LayerTreeHost::InitializeThreaded(
                   std::move(external_begin_frame_source));
 }
 
-void LayerTreeHost::InitializeSingleThreaded(
+void LayerTreeHostInProcess::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
@@ -258,7 +261,7 @@ void LayerTreeHost::InitializeSingleThreaded(
                   std::move(external_begin_frame_source));
 }
 
-void LayerTreeHost::InitializeRemoteServer(
+void LayerTreeHostInProcess::InitializeRemoteServer(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
@@ -266,13 +269,14 @@ void LayerTreeHost::InitializeRemoteServer(
   if (image_serialization_processor_) {
     engine_picture_cache_ =
         image_serialization_processor_->CreateEnginePictureCache();
+    layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
   }
   InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
                                           task_runner_provider_.get()),
                   nullptr);
 }
 
-void LayerTreeHost::InitializeRemoteClient(
+void LayerTreeHostInProcess::InitializeRemoteClient(
     RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
@@ -282,20 +286,21 @@ void LayerTreeHost::InitializeRemoteClient(
   if (image_serialization_processor_) {
     client_picture_cache_ =
         image_serialization_processor_->CreateClientPictureCache();
+    layer_tree_->set_client_picture_cache(client_picture_cache_.get());
   }
 
   // For the remote mode, the RemoteChannelImpl implements the Proxy, which is
-  // owned by the LayerTreeHost. The RemoteChannelImpl pipes requests which need
-  // to handled locally, for instance the Output Surface creation to the
-  // LayerTreeHost on the client, while the other requests are sent to the
-  // RemoteChannelMain on the server which directs them to ProxyMain and the
-  // remote server LayerTreeHost.
+  // owned by the LayerTreeHostInProcess. The RemoteChannelImpl pipes requests
+  // which need to handled locally, for instance the Output Surface creation to
+  // the LayerTreeHostInProcess on the client, while the other requests are sent
+  // to the RemoteChannelMain on the server which directs them to ProxyMain and
+  // the remote server LayerTreeHostInProcess.
   InitializeProxy(base::MakeUnique<RemoteChannelImpl>(
                       this, remote_proto_channel, task_runner_provider_.get()),
                   nullptr);
 }
 
-void LayerTreeHost::InitializeForTesting(
+void LayerTreeHostInProcess::InitializeForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider,
     std::unique_ptr<Proxy> proxy_for_testing,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
@@ -307,33 +312,35 @@ void LayerTreeHost::InitializeForTesting(
                   std::move(external_begin_frame_source));
 }
 
-void LayerTreeHost::InitializePictureCacheForTesting() {
+void LayerTreeHostInProcess::InitializePictureCacheForTesting() {
   if (!image_serialization_processor_)
     return;
 
   // Initialize both engine and client cache to ensure serialization tests
-  // with a single LayerTreeHost can work correctly.
+  // with a single LayerTreeHostInProcess can work correctly.
   engine_picture_cache_ =
       image_serialization_processor_->CreateEnginePictureCache();
+  layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
   client_picture_cache_ =
       image_serialization_processor_->CreateClientPictureCache();
+  layer_tree_->set_client_picture_cache(client_picture_cache_.get());
 }
 
-void LayerTreeHost::SetTaskRunnerProviderForTesting(
+void LayerTreeHostInProcess::SetTaskRunnerProviderForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider) {
   DCHECK(!task_runner_provider_);
   task_runner_provider_ = std::move(task_runner_provider);
 }
 
-void LayerTreeHost::SetUIResourceManagerForTesting(
+void LayerTreeHostInProcess::SetUIResourceManagerForTesting(
     std::unique_ptr<UIResourceManager> ui_resource_manager) {
   ui_resource_manager_ = std::move(ui_resource_manager);
 }
 
-void LayerTreeHost::InitializeProxy(
+void LayerTreeHostInProcess::InitializeProxy(
     std::unique_ptr<Proxy> proxy,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
-  TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::InitializeForReal");
   DCHECK(task_runner_provider_);
 
   proxy_ = std::move(proxy);
@@ -343,10 +350,10 @@ void LayerTreeHost::InitializeProxy(
       proxy_->SupportsImplScrolling());
 }
 
-LayerTreeHost::~LayerTreeHost() {
-  TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
+LayerTreeHostInProcess::~LayerTreeHostInProcess() {
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::~LayerTreeHostInProcess");
 
-  // Clear any references into the LayerTreeHost.
+  // Clear any references into the LayerTreeHostInProcess.
   layer_tree_.reset();
 
   if (proxy_) {
@@ -358,87 +365,90 @@ LayerTreeHost::~LayerTreeHost() {
   }
 }
 
-int LayerTreeHost::GetId() const {
+int LayerTreeHostInProcess::GetId() const {
   return id_;
 }
 
-int LayerTreeHost::SourceFrameNumber() const {
+int LayerTreeHostInProcess::SourceFrameNumber() const {
   return source_frame_number_;
 }
 
-LayerTree* LayerTreeHost::GetLayerTree() {
+LayerTree* LayerTreeHostInProcess::GetLayerTree() {
   return layer_tree_.get();
 }
 
-const LayerTree* LayerTreeHost::GetLayerTree() const {
+const LayerTree* LayerTreeHostInProcess::GetLayerTree() const {
   return layer_tree_.get();
 }
 
-UIResourceManager* LayerTreeHost::GetUIResourceManager() const {
+UIResourceManager* LayerTreeHostInProcess::GetUIResourceManager() const {
   return ui_resource_manager_.get();
 }
 
-TaskRunnerProvider* LayerTreeHost::GetTaskRunnerProvider() const {
+TaskRunnerProvider* LayerTreeHostInProcess::GetTaskRunnerProvider() const {
   return task_runner_provider_.get();
 }
 
-SwapPromiseManager* LayerTreeHost::GetSwapPromiseManager() {
+SwapPromiseManager* LayerTreeHostInProcess::GetSwapPromiseManager() {
   return &swap_promise_manager_;
 }
 
-const LayerTreeSettings& LayerTreeHost::GetSettings() const {
+const LayerTreeSettings& LayerTreeHostInProcess::GetSettings() const {
   return settings_;
 }
 
-void LayerTreeHost::SetSurfaceClientId(uint32_t client_id) {
+void LayerTreeHostInProcess::SetSurfaceClientId(uint32_t client_id) {
   surface_sequence_generator_.set_surface_client_id(client_id);
 }
 
-void LayerTreeHost::QueueSwapPromise(
+void LayerTreeHostInProcess::QueueSwapPromise(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
 }
 
-SurfaceSequenceGenerator* LayerTreeHost::GetSurfaceSequenceGenerator() {
+SurfaceSequenceGenerator*
+LayerTreeHostInProcess::GetSurfaceSequenceGenerator() {
   return &surface_sequence_generator_;
 }
 
-void LayerTreeHost::WillBeginMainFrame() {
+void LayerTreeHostInProcess::WillBeginMainFrame() {
   devtools_instrumentation::WillBeginMainThreadFrame(GetId(),
                                                      SourceFrameNumber());
   client_->WillBeginMainFrame();
 }
 
-void LayerTreeHost::DidBeginMainFrame() {
+void LayerTreeHostInProcess::DidBeginMainFrame() {
   client_->DidBeginMainFrame();
 }
 
-void LayerTreeHost::BeginMainFrameNotExpectedSoon() {
+void LayerTreeHostInProcess::BeginMainFrameNotExpectedSoon() {
   client_->BeginMainFrameNotExpectedSoon();
 }
 
-void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
+void LayerTreeHostInProcess::BeginMainFrame(const BeginFrameArgs& args) {
   client_->BeginMainFrame(args);
 }
 
-void LayerTreeHost::DidStopFlinging() {
+void LayerTreeHostInProcess::DidStopFlinging() {
   proxy_->MainThreadHasStoppedFlinging();
 }
 
-const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
+const LayerTreeDebugState& LayerTreeHostInProcess::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate() {
+void LayerTreeHostInProcess::RequestMainFrameUpdate() {
   client_->UpdateLayerTreeHost();
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
-// should be delayed until the LayerTreeHost::CommitComplete, which will run
+// should be delayed until the LayerTreeHostInProcess::CommitComplete, which
+// will run
 // after the commit, but on the main thread.
-void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
+void LayerTreeHostInProcess::FinishCommitOnImplThread(
+    LayerTreeHostImpl* host_impl) {
   DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
 
@@ -484,7 +494,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       ui_resource_manager_->TakeUIResourcesRequests());
 
   {
-    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
+    TRACE_EVENT0("cc", "LayerTreeHostInProcess::PushProperties");
 
     TreeSynchronizer::PushLayerProperties(layer_tree_.get(), sync_tree);
 
@@ -495,7 +505,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // property tree scrolling and animation.
     sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
-    TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
+    TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
     DCHECK(host_impl->animation_host());
     layer_tree_->animation_host()->PushPropertiesTo(
         host_impl->animation_host());
@@ -509,15 +519,14 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   layer_tree_->property_trees()->ResetAllChangeTracking();
 }
 
-void LayerTreeHost::WillCommit() {
+void LayerTreeHostInProcess::WillCommit() {
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
 }
 
-void LayerTreeHost::UpdateHudLayer() {
-}
+void LayerTreeHostInProcess::UpdateHudLayer() {}
 
-void LayerTreeHost::CommitComplete() {
+void LayerTreeHostInProcess::CommitComplete() {
   source_frame_number_++;
   client_->DidCommit();
   if (did_complete_scale_animation_) {
@@ -526,9 +535,9 @@ void LayerTreeHost::CommitComplete() {
   }
 }
 
-void LayerTreeHost::SetCompositorFrameSink(
+void LayerTreeHostInProcess::SetCompositorFrameSink(
     std::unique_ptr<CompositorFrameSink> surface) {
-  TRACE_EVENT0("cc", "LayerTreeHost::SetCompositorFrameSink");
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::SetCompositorFrameSink");
   DCHECK(surface);
 
   DCHECK(!new_compositor_frame_sink_);
@@ -537,7 +546,7 @@ void LayerTreeHost::SetCompositorFrameSink(
 }
 
 std::unique_ptr<CompositorFrameSink>
-LayerTreeHost::ReleaseCompositorFrameSink() {
+LayerTreeHostInProcess::ReleaseCompositorFrameSink() {
   DCHECK(!visible_);
 
   DidLoseCompositorFrameSink();
@@ -545,17 +554,17 @@ LayerTreeHost::ReleaseCompositorFrameSink() {
   return std::move(current_compositor_frame_sink_);
 }
 
-void LayerTreeHost::RequestNewCompositorFrameSink() {
+void LayerTreeHostInProcess::RequestNewCompositorFrameSink() {
   client_->RequestNewCompositorFrameSink();
 }
 
-void LayerTreeHost::DidInitializeCompositorFrameSink() {
+void LayerTreeHostInProcess::DidInitializeCompositorFrameSink() {
   DCHECK(new_compositor_frame_sink_);
   current_compositor_frame_sink_ = std::move(new_compositor_frame_sink_);
   client_->DidInitializeCompositorFrameSink();
 }
 
-void LayerTreeHost::DidFailToInitializeCompositorFrameSink() {
+void LayerTreeHostInProcess::DidFailToInitializeCompositorFrameSink() {
   DCHECK(new_compositor_frame_sink_);
   // Note: It is safe to drop all output surface references here as
   // LayerTreeHostImpl will not keep a pointer to either the old or
@@ -565,7 +574,8 @@ void LayerTreeHost::DidFailToInitializeCompositorFrameSink() {
   client_->DidFailToInitializeCompositorFrameSink();
 }
 
-std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
+std::unique_ptr<LayerTreeHostImpl>
+LayerTreeHostInProcess::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
@@ -590,65 +600,66 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
   return host_impl;
 }
 
-void LayerTreeHost::DidLoseCompositorFrameSink() {
-  TRACE_EVENT0("cc", "LayerTreeHost::DidLoseCompositorFrameSink");
+void LayerTreeHostInProcess::DidLoseCompositorFrameSink() {
+  TRACE_EVENT0("cc", "LayerTreeHostInProcess::DidLoseCompositorFrameSink");
   DCHECK(task_runner_provider_->IsMainThread());
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetDeferCommits(bool defer_commits) {
+void LayerTreeHostInProcess::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
 DISABLE_CFI_PERF
-void LayerTreeHost::SetNeedsAnimate() {
+void LayerTreeHostInProcess::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
 DISABLE_CFI_PERF
-void LayerTreeHost::SetNeedsUpdateLayers() {
+void LayerTreeHostInProcess::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-void LayerTreeHost::SetNeedsCommit() {
+void LayerTreeHostInProcess::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-void LayerTreeHost::SetNeedsRedraw() {
+void LayerTreeHostInProcess::SetNeedsRedraw() {
   SetNeedsRedrawRect(gfx::Rect(layer_tree_->device_viewport_size()));
 }
 
-void LayerTreeHost::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+void LayerTreeHostInProcess::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
 }
 
-bool LayerTreeHost::CommitRequested() const {
+bool LayerTreeHostInProcess::CommitRequested() const {
   return proxy_->CommitRequested();
 }
 
-bool LayerTreeHost::BeginMainFrameRequested() const {
+bool LayerTreeHostInProcess::BeginMainFrameRequested() const {
   return proxy_->BeginMainFrameRequested();
 }
 
-void LayerTreeHost::SetNextCommitWaitsForActivation() {
+void LayerTreeHostInProcess::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
 }
 
-void LayerTreeHost::SetNextCommitForcesRedraw() {
+void LayerTreeHostInProcess::SetNextCommitForcesRedraw() {
   next_commit_forces_redraw_ = true;
   proxy_->SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::SetAnimationEvents(
+void LayerTreeHostInProcess::SetAnimationEvents(
     std::unique_ptr<AnimationEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   layer_tree_->animation_host()->SetAnimationEvents(std::move(events));
 }
 
-void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
+void LayerTreeHostInProcess::SetDebugState(
+    const LayerTreeDebugState& debug_state) {
   LayerTreeDebugState new_debug_state =
       LayerTreeDebugState::Unite(settings_.initial_debug_state, debug_state);
 
@@ -663,24 +674,23 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::ResetGpuRasterizationTracking() {
+void LayerTreeHostInProcess::ResetGpuRasterizationTracking() {
   content_is_suitable_for_gpu_rasterization_ = true;
   gpu_rasterization_histogram_recorded_ = false;
 }
 
-void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
+void LayerTreeHostInProcess::SetHasGpuRasterizationTrigger(bool has_trigger) {
   if (has_trigger == has_gpu_rasterization_trigger_)
     return;
 
   has_gpu_rasterization_trigger_ = has_trigger;
-  TRACE_EVENT_INSTANT1("cc",
-                       "LayerTreeHost::SetHasGpuRasterizationTrigger",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "has_trigger",
-                       has_gpu_rasterization_trigger_);
+  TRACE_EVENT_INSTANT1(
+      "cc", "LayerTreeHostInProcess::SetHasGpuRasterizationTrigger",
+      TRACE_EVENT_SCOPE_THREAD, "has_trigger", has_gpu_rasterization_trigger_);
 }
 
-void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
+void LayerTreeHostInProcess::ApplyPageScaleDeltaFromImplSide(
+    float page_scale_delta) {
   DCHECK(CommitRequested());
   if (page_scale_delta == 1.f)
     return;
@@ -688,22 +698,22 @@ void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
   layer_tree_->SetPageScaleFromImplSide(page_scale);
 }
 
-void LayerTreeHost::SetVisible(bool visible) {
+void LayerTreeHostInProcess::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
   proxy_->SetVisible(visible);
 }
 
-bool LayerTreeHost::IsVisible() const {
+bool LayerTreeHostInProcess::IsVisible() const {
   return visible_;
 }
 
-void LayerTreeHost::NotifyInputThrottledUntilCommit() {
+void LayerTreeHostInProcess::NotifyInputThrottledUntilCommit() {
   proxy_->NotifyInputThrottledUntilCommit();
 }
 
-void LayerTreeHost::LayoutAndUpdateLayers() {
+void LayerTreeHostInProcess::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
@@ -711,7 +721,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   UpdateLayers();
 }
 
-void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
+void LayerTreeHostInProcess::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
@@ -720,7 +730,7 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   proxy->CompositeImmediately(frame_begin_time);
 }
 
-bool LayerTreeHost::UpdateLayers() {
+bool LayerTreeHostInProcess::UpdateLayers() {
   if (!layer_tree_->root_layer())
     return false;
   DCHECK(!layer_tree_->root_layer()->parent());
@@ -729,11 +739,11 @@ bool LayerTreeHost::UpdateLayers() {
   return result || next_commit_forces_redraw_;
 }
 
-void LayerTreeHost::DidCompletePageScaleAnimation() {
+void LayerTreeHostInProcess::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
 
-void LayerTreeHost::RecordGpuRasterizationHistogram() {
+void LayerTreeHostInProcess::RecordGpuRasterizationHistogram() {
   // Gpu rasterization is only supported for Renderer compositors.
   // Checking for IsSingleThreaded() to exclude Browser compositors.
   if (gpu_rasterization_histogram_recorded_ || IsSingleThreaded())
@@ -759,9 +769,9 @@ void LayerTreeHost::RecordGpuRasterizationHistogram() {
   gpu_rasterization_histogram_recorded_ = true;
 }
 
-bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
-  TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
-               SourceFrameNumber());
+bool LayerTreeHostInProcess::DoUpdateLayers(Layer* root_layer) {
+  TRACE_EVENT1("cc", "LayerTreeHostInProcess::DoUpdateLayers",
+               "source_frame_number", SourceFrameNumber());
 
   layer_tree_->UpdateHudLayer(debug_state_.ShowHudInfo());
   UpdateHudLayer();
@@ -782,9 +792,11 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   LayerList update_layer_list;
 
   {
-    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                 "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+    TRACE_EVENT0("cc",
+                 "LayerTreeHostInProcess::UpdateLayers::BuildPropertyTrees");
+    TRACE_EVENT0(
+        TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+        "LayerTreeHostInProcessCommon::ComputeVisibleRectsWithPropertyTrees");
     PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
     bool can_render_to_separate_surface = true;
     PropertyTrees* property_trees = layer_tree_->property_trees();
@@ -800,15 +812,15 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           layer_tree_->device_scale_factor(),
           gfx::Rect(layer_tree_->device_viewport_size()), identity_transform,
           property_trees);
-      TRACE_EVENT_INSTANT1("cc",
-                           "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
-                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees->AsTracedValue());
+      TRACE_EVENT_INSTANT1(
+          "cc", "LayerTreeHostInProcess::UpdateLayers_BuiltPropertyTrees",
+          TRACE_EVENT_SCOPE_THREAD, "property_trees",
+          property_trees->AsTracedValue());
     } else {
-      TRACE_EVENT_INSTANT1("cc",
-                           "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
-                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees->AsTracedValue());
+      TRACE_EVENT_INSTANT1(
+          "cc", "LayerTreeHostInProcess::UpdateLayers_ReceivedPropertyTrees",
+          TRACE_EVENT_SCOPE_THREAD, "property_trees",
+          property_trees->AsTracedValue());
     }
     draw_property_utils::UpdatePropertyTrees(property_trees,
                                              can_render_to_separate_surface);
@@ -837,7 +849,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
+void LayerTreeHostInProcess::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
   if (info->inner_viewport_scroll.layer_id != Layer::INVALID_ID)
     inner_viewport_scroll_delta = info->inner_viewport_scroll.scroll_delta;
@@ -868,10 +880,9 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
+void LayerTreeHostInProcess::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   for (auto& swap_promise : info->swap_promises) {
-    TRACE_EVENT_WITH_FLOW1("input,benchmark",
-                           "LatencyInfo.Flow",
+    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "Main thread scroll update");
@@ -895,19 +906,21 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   ApplyViewportDeltas(info);
 }
 
-const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler() const {
+const base::WeakPtr<InputHandler>& LayerTreeHostInProcess::GetInputHandler()
+    const {
   return input_handler_weak_ptr_;
 }
 
-void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
-                                           TopControlsState current,
-                                           bool animate) {
+void LayerTreeHostInProcess::UpdateTopControlsState(
+    TopControlsState constraints,
+    TopControlsState current,
+    bool animate) {
   // Top controls are only used in threaded or remote mode.
   DCHECK(IsThreaded() || IsRemoteServer());
   proxy_->UpdateTopControlsState(constraints, current, animate);
 }
 
-void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
+void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
   AnimationHost* animation_host = layer_tree_->animation_host();
   std::unique_ptr<AnimationEvents> events = animation_host->CreateEvents();
 
@@ -918,7 +931,7 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
     layer_tree_->property_trees()->needs_rebuild = true;
 }
 
-int LayerTreeHost::ScheduleMicroBenchmark(
+int LayerTreeHostInProcess::ScheduleMicroBenchmark(
     const std::string& benchmark_name,
     std::unique_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
@@ -926,41 +939,41 @@ int LayerTreeHost::ScheduleMicroBenchmark(
                                                  std::move(value), callback);
 }
 
-bool LayerTreeHost::SendMessageToMicroBenchmark(
+bool LayerTreeHostInProcess::SendMessageToMicroBenchmark(
     int id,
     std::unique_ptr<base::Value> value) {
   return micro_benchmark_controller_.SendMessage(id, std::move(value));
 }
 
-void LayerTreeHost::SetLayerTreeMutator(
+void LayerTreeHostInProcess::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
   proxy_->SetMutator(std::move(mutator));
 }
 
-bool LayerTreeHost::IsSingleThreaded() const {
+bool LayerTreeHostInProcess::IsSingleThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::SINGLE_THREADED ||
          !task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::SINGLE_THREADED;
 }
 
-bool LayerTreeHost::IsThreaded() const {
+bool LayerTreeHostInProcess::IsThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::THREADED ||
          task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::THREADED;
 }
 
-bool LayerTreeHost::IsRemoteServer() const {
-  // The LayerTreeHost on the server does not have an impl task runner.
+bool LayerTreeHostInProcess::IsRemoteServer() const {
+  // The LayerTreeHostInProcess on the server does not have an impl task runner.
   return compositor_mode_ == CompositorMode::REMOTE &&
          !task_runner_provider_->HasImplThread();
 }
 
-bool LayerTreeHost::IsRemoteClient() const {
+bool LayerTreeHostInProcess::IsRemoteClient() const {
   return compositor_mode_ == CompositorMode::REMOTE &&
          task_runner_provider_->HasImplThread();
 }
 
-void LayerTreeHost::ToProtobufForCommit(
+void LayerTreeHostInProcess::ToProtobufForCommit(
     proto::LayerTreeHost* proto,
     std::vector<std::unique_ptr<SwapPromise>>* swap_promises) {
   DCHECK(engine_picture_cache_);
@@ -978,13 +991,14 @@ void LayerTreeHost::ToProtobufForCommit(
   // - The output surfaces are only valid on the client-side so they are
   //   therefore not serialized.
   // - LayerTreeSettings are needed only during construction of the
-  //   LayerTreeHost, so they are serialized outside of the LayerTreeHost
+  //   LayerTreeHostInProcess, so they are serialized outside of the
+  //   LayerTreeHostInProcess
   //   serialization.
   // - The |visible_| flag will be controlled from the client separately and
   //   will need special handling outside of the serialization of the
-  //   LayerTreeHost.
+  //   LayerTreeHostInProcess.
   // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
-  TRACE_EVENT0("cc.remote", "LayerTreeHost::ToProtobufForCommit");
+  TRACE_EVENT0("cc.remote", "LayerTreeHostInProcess::ToProtobufForCommit");
   *swap_promises = swap_promise_manager_.TakeSwapPromises();
 
   proto->set_source_frame_number(source_frame_number_);
@@ -1014,7 +1028,8 @@ void LayerTreeHost::ToProtobufForCommit(
       ComputeLayerTreeHostProtoSizeSplitAsValue(proto));
 }
 
-void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
+void LayerTreeHostInProcess::FromProtobufForCommit(
+    const proto::LayerTreeHost& proto) {
   DCHECK(client_picture_cache_);
   source_frame_number_ = proto.source_frame_number();
 

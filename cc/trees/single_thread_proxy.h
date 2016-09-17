@@ -22,7 +22,7 @@ namespace cc {
 class AnimationEvents;
 class BeginFrameSource;
 class ContextProvider;
-class LayerTreeHost;
+class LayerTreeHostInProcess;
 class LayerTreeHostSingleThreadClient;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
@@ -30,7 +30,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                                     SchedulerClient {
  public:
   static std::unique_ptr<Proxy> Create(
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
       TaskRunnerProvider* task_runner_provider_);
   ~SingleThreadProxy() override;
@@ -107,7 +107,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void CompositeImmediately(base::TimeTicks frame_begin_time);
 
  protected:
-  SingleThreadProxy(LayerTreeHost* layer_tree_host,
+  SingleThreadProxy(LayerTreeHostInProcess* layer_tree_host,
                     LayerTreeHostSingleThreadClient* client,
                     TaskRunnerProvider* task_runner_provider);
 
@@ -125,7 +125,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduleRequestNewCompositorFrameSink();
 
   // Accessed on main thread only.
-  LayerTreeHost* layer_tree_host_;
+  LayerTreeHostInProcess* layer_tree_host_;
   LayerTreeHostSingleThreadClient* client_;
 
   TaskRunnerProvider* task_runner_provider_;

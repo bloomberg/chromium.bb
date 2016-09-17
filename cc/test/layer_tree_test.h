@@ -12,8 +12,9 @@
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_hooks.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -25,6 +26,7 @@ class LayerTreeHostForTesting;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
 class LayerTreeTestCompositorFrameSinkClient;
+class Proxy;
 class ProxyImpl;
 class ProxyMain;
 class RemoteChannelImplForTest;
@@ -143,7 +145,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
   bool TestEnded() const { return ended_; }
 
-  LayerTreeHost* layer_tree_host();
+  LayerTreeHostInProcess* layer_tree_host();
   LayerTree* layer_tree() { return layer_tree_host()->GetLayerTree(); }
   LayerTreeHost* remote_client_layer_tree_host();
   SharedBitmapManager* shared_bitmap_manager() const {
@@ -181,7 +183,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   CompositorMode mode_;
 
   std::unique_ptr<LayerTreeHostClientForTesting> client_;
-  std::unique_ptr<LayerTreeHost> layer_tree_host_;
+  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_;
 
   // The LayerTreeHost created by the cc embedder on the client in remote mode.
   std::unique_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;

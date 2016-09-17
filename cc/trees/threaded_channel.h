@@ -24,19 +24,19 @@ class SingleThreadTaskRunner;
 namespace cc {
 class ChannelImpl;
 class ChannelMain;
-class LayerTreeHost;
+class LayerTreeHostInProcess;
 class ProxyImpl;
 class ProxyMain;
 
 // An implementation of ChannelMain and ChannelImpl that sends commands between
 // ProxyMain and ProxyImpl across thread boundaries.
 //
-// LayerTreeHost creates ThreadedChannel and passes the ownership to ProxyMain.
-// The object life cycle and communication across threads is as follows:
-//
+// LayerTreeHostInProcess creates ThreadedChannel and passes the ownership to
+// ProxyMain. The object life cycle and communication across threads is as
+// follows:
 //
 //           Main Thread              |               Impl Thread
-//   LayerTreeHost->InitializeProxy   |
+//   LayerTreeHostInProcess->InitializeProxy   |
 //               |                    |
 //        ProxyMain->Start()          |
 //               |              ThreadedChannel
@@ -108,11 +108,11 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
       CompletionEvent* completion,
       bool* main_frame_will_happen) override;
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
-                                 LayerTreeHost* layer_tree_host,
+                                 LayerTreeHostInProcess* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void SynchronouslyCloseImpl() override;
 
@@ -135,7 +135,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   // Virtual for testing.
   virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       TaskRunnerProvider* task_runner_provider,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);
 
@@ -175,7 +175,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   // Called on impl thread.
   void InitializeImplOnImpl(
       CompletionEvent* completion,
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);
   void CloseImplOnImpl(CompletionEvent* completion);
 

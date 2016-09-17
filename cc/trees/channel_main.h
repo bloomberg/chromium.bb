@@ -14,7 +14,7 @@
 #include "cc/trees/proxy_common.h"
 
 namespace cc {
-
+class LayerTreeHostInProcess;
 class LayerTreeMutator;
 
 // ChannelMain and ChannelImpl provide an abstract communication layer for
@@ -22,7 +22,7 @@ class LayerTreeMutator;
 //
 // The communication sequence between the 2 sides is:
 //
-// LayerTreeHost<-->ProxyMain<-->ChannelMain
+// LayerTreeHostInProcess<-->ProxyMain<-->ChannelMain
 //                                      |
 //                                      |
 //                               ChannelImpl<-->ProxyImpl<-->LayerTreeHostImpl
@@ -54,14 +54,15 @@ class CC_EXPORT ChannelMain {
       CommitEarlyOutReason reason,
       base::TimeTicks main_thread_start_time,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises) = 0;
-  virtual void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
-                                         LayerTreeHost* layer_tree_host,
-                                         base::TimeTicks main_thread_start_time,
-                                         bool hold_commit_for_activation) = 0;
+  virtual void NotifyReadyToCommitOnImpl(
+      CompletionEvent* completion,
+      LayerTreeHostInProcess* layer_tree_host,
+      base::TimeTicks main_thread_start_time,
+      bool hold_commit_for_activation) = 0;
 
   // Must be called before using the channel.
   virtual void SynchronouslyInitializeImpl(
-      LayerTreeHost* layer_tree_host,
+      LayerTreeHostInProcess* layer_tree_host,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) = 0;
 
   // Must be called before deleting the channel.

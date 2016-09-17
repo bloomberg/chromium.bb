@@ -225,7 +225,7 @@ void PictureLayer::LayerSpecificPropertiesToProto(
       if (!picture)
         continue;
 
-      layer_tree_host()->engine_picture_cache()->MarkUsed(picture.get());
+      GetLayerTree()->engine_picture_cache()->MarkUsed(picture.get());
     }
   }
 
@@ -254,7 +254,7 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
       ProtoToRect(picture.recorded_viewport());
 
   ClientPictureCache* client_picture_cache =
-      layer_tree_host()->client_picture_cache();
+      GetLayerTree()->client_picture_cache();
   DCHECK(client_picture_cache);
   // This might not exist if the |input_.display_list| of the serialized
   // RecordingSource was null, which can happen if |Clear()| is
@@ -272,7 +272,7 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
 
   // Inform picture cache about which SkPictures are now in use.
   for (uint32_t engine_picture_id : used_engine_picture_ids)
-    layer_tree_host()->client_picture_cache()->MarkUsed(engine_picture_id);
+    GetLayerTree()->client_picture_cache()->MarkUsed(engine_picture_id);
 
   Region new_invalidation = RegionFromProto(picture.invalidation());
   last_updated_invalidation_.Swap(&new_invalidation);

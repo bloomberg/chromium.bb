@@ -341,7 +341,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 };
 
 // Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
-class LayerTreeHostForTesting : public LayerTreeHost {
+class LayerTreeHostForTesting : public LayerTreeHostInProcess {
  public:
   static std::unique_ptr<LayerTreeHostForTesting> Create(
       TestHooks* test_hooks,
@@ -356,7 +356,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source,
       ImageSerializationProcessor* image_serialization_processor) {
-    LayerTreeHost::InitParams params;
+    LayerTreeHostInProcess::InitParams params;
     params.client = client;
     params.shared_bitmap_manager = shared_bitmap_manager;
     params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
@@ -416,22 +416,22 @@ class LayerTreeHostForTesting : public LayerTreeHost {
   void SetNeedsCommit() override {
     if (!test_started_)
       return;
-    LayerTreeHost::SetNeedsCommit();
+    LayerTreeHostInProcess::SetNeedsCommit();
   }
 
   void SetNeedsUpdateLayers() override {
     if (!test_started_)
       return;
-    LayerTreeHost::SetNeedsUpdateLayers();
+    LayerTreeHostInProcess::SetNeedsUpdateLayers();
   }
 
   void set_test_started(bool started) { test_started_ = started; }
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
-                          LayerTreeHost::InitParams* params,
+                          LayerTreeHostInProcess::InitParams* params,
                           CompositorMode mode)
-      : LayerTreeHost(params, mode),
+      : LayerTreeHostInProcess(params, mode),
         test_hooks_(test_hooks),
         test_started_(false) {}
 
@@ -913,7 +913,7 @@ TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
   return host->GetTaskRunnerProvider();
 }
 
-LayerTreeHost* LayerTreeTest::layer_tree_host() {
+LayerTreeHostInProcess* LayerTreeTest::layer_tree_host() {
   DCHECK(task_runner_provider()->IsMainThread() ||
          task_runner_provider()->IsMainThreadBlocked());
   return layer_tree_host_.get();

@@ -39,7 +39,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/remote_proto_channel.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -232,7 +232,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings =
       GenerateLayerTreeSettings(*cmd, compositor_deps_, device_scale_factor);
-  cc::LayerTreeHost::InitParams params;
+  cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.shared_bitmap_manager = compositor_deps_->GetSharedBitmapManager();
   params.gpu_memory_buffer_manager =
@@ -248,12 +248,14 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
     DCHECK(!threaded_);
     params.image_serialization_processor =
         compositor_deps_->GetImageSerializationProcessor();
-    layer_tree_host_ = cc::LayerTreeHost::CreateRemoteServer(this, &params);
+    layer_tree_host_ =
+        cc::LayerTreeHostInProcess::CreateRemoteServer(this, &params);
   } else if (!threaded_) {
     // Single-threaded layout tests.
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+    layer_tree_host_ =
+        cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   } else {
-    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+    layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
         compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
   }
   DCHECK(layer_tree_host_);

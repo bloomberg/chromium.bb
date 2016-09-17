@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"

@@ -27,7 +27,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_in_process.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "net/base/net_errors.h"
 #include "ui/gl/gl_surface.h"
@@ -286,7 +286,7 @@ void BlimpCompositor::CreateLayerTreeHost() {
   VLOG(1) << "Creating LayerTreeHost for render widget: " << render_widget_id_;
 
   // Create the LayerTreeHost
-  cc::LayerTreeHost::InitParams params;
+  cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
   params.task_graph_runner = compositor_dependencies_->GetTaskGraphRunner();
   params.gpu_memory_buffer_manager =
@@ -307,7 +307,7 @@ void BlimpCompositor::CreateLayerTreeHost() {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       compositor_dependencies_->GetCompositorTaskRunner();
 
-  host_ = cc::LayerTreeHost::CreateRemoteClient(
+  host_ = cc::LayerTreeHostInProcess::CreateRemoteClient(
       this /* remote_proto_channel */, compositor_task_runner, &params);
 
   DCHECK(!input_manager_);

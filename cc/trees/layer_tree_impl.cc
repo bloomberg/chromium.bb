@@ -33,6 +33,7 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "cc/resources/ui_resource_request.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"

@@ -10,6 +10,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
