@@ -1164,7 +1164,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         Would you like to share this computer for another user to see and control?
       </message>
       <message desc="Message displayed before sharing computer in 'It2Me' mode when the email of the remote user attempting to connect is known." name="IDS_SHARE_CONFIRM_DIALOG_MESSAGE_WITH_USERNAME" >
-        Would you like to share this computer with <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> and allow them to see and control it?
+        Would you like to allow <ph name="CLIENT_USERNAME">{0}<ex>client@email.com</ex></ph> to see and control your computer?
       </message>
       <message desc="Label for the button to accept sharing the computer in 'It2Me' mode." name="IDS_SHARE_CONFIRM_DIALOG_CONFIRM" >
         Share
