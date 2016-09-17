@@ -340,8 +340,12 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::ViewportDescriptionChange:
-        if (mainFrame() && mainFrame()->isLocalFrame())
+        if (mainFrame() && mainFrame()->isLocalFrame()) {
             deprecatedLocalMainFrame()->document()->updateViewportDescription();
+            // The text autosizer has dependencies on the viewport.
+            if (TextAutosizer* textAutosizer = deprecatedLocalMainFrame()->document()->textAutosizer())
+                textAutosizer->updatePageInfoInAllFrames();
+        }
         break;
     case SettingsDelegate::DNSPrefetchingChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {

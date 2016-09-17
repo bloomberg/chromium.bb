@@ -384,15 +384,12 @@ TEST_F(TextAutosizerTest, DeviceScaleAdjustmentWithViewport)
     EXPECT_FLOAT_EQ(40.f, autosized->layoutObject()->style()->computedFontSize());
 
     document().settings()->setViewportMetaEnabled(false);
-    // TODO(pdr): This should not be needed but changing viewport settings does
-    // not invalidate TextAutosizing, see ViewportDescriptionChange in Page.cpp.
-    document().settings()->setDeviceScaleAdjustment(2.0f);
     document().view()->updateAllLifecyclePhases();
 
     autosized = document().getElementById("autosized");
     EXPECT_FLOAT_EQ(16.f, autosized->layoutObject()->style()->specifiedFontSize());
-    // (device scale adjustment = 2) * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 80px.
-    EXPECT_FLOAT_EQ(80.f, autosized->layoutObject()->style()->computedFontSize());
+    // (device scale adjustment = 1.5) * (specified font-size = 16px) * (viewport width = 800px) / (window width = 320px) = 60px.
+    EXPECT_FLOAT_EQ(60.f, autosized->layoutObject()->style()->computedFontSize());
 }
 
 } // namespace blink

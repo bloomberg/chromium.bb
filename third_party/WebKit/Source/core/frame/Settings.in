@@ -261,7 +261,7 @@ doHtmlPreloadScanning initial=true
 pluginsEnabled initial=false
 
 viewportEnabled initial=false, invalidate=ViewportDescription
-viewportMetaEnabled initial=false
+viewportMetaEnabled initial=false, invalidate=ViewportDescription
 
 dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
 
