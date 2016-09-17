@@ -98,8 +98,8 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateInternal(
     return nullptr;
   }
 
-  if (!ParseTbsCertificate(result->tbs_certificate_tlv_, options,
-                           &result->tbs_)) {
+  if (!ParseTbsCertificate(result->tbs_certificate_tlv_, options, &result->tbs_,
+                           errors)) {
     return nullptr;
   }
 

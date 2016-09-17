@@ -30,6 +30,9 @@ DEFINE_CERT_ERROR_ID(
 DEFINE_CERT_ERROR_ID(kSignatureValueNotBitString,
                      "Couldn't read Certificate.signatureValue as BIT STRING");
 
+DEFINE_CERT_ERROR_ID(kUnconsumedDataInsideTbsCertificateSequence,
+                     "Unconsumed data inside TBSCertificate");
+
 // Returns true if |input| is a SEQUENCE and nothing else.
 WARN_UNUSED_RESULT bool IsSequenceTLV(const der::Input& input) {
   der::Parser parser(input);
@@ -258,7 +261,16 @@ bool ParseCertificate(const der::Input& certificate_tlv,
 //        }
 bool ParseTbsCertificate(const der::Input& tbs_tlv,
                          const ParseCertificateOptions& options,
-                         ParsedTbsCertificate* out) {
+                         ParsedTbsCertificate* out,
+                         CertErrors* errors) {
+  // The rest of this function assumes that |errors| is non-null.
+  if (!errors) {
+    CertErrors unused_errors;
+    return ParseTbsCertificate(tbs_tlv, options, out, &unused_errors);
+  }
+
+  // TODO(crbug.com/634443): Add useful error information to |errors|.
+
   der::Parser parser(tbs_tlv);
 
   //   Certificate  ::=  SEQUENCE  {
@@ -374,8 +386,10 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
   // However because only v1, v2, and v3 certificates are supported by the
   // parsing, there shouldn't be any subsequent data in those versions, so
   // reject.
-  if (tbs_parser.HasMore())
+  if (tbs_parser.HasMore()) {
+    errors->AddError(kUnconsumedDataInsideTbsCertificateSequence);
     return false;
+  }
 
   // By definition the input was a single TBSCertificate, so there shouldn't be
   // unconsumed data.

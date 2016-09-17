@@ -133,7 +133,7 @@ bool ParseCertificateSandboxed(const base::StringPiece& certificate,
 
   ParsedTbsCertificate parsed_tbs_cert;
   if (!ParseTbsCertificate(tbs_cert, ParseCertificateOptions(),
-                           &parsed_tbs_cert))
+                           &parsed_tbs_cert, nullptr))
     return false;
 
   if (!GetCommonName(parsed_tbs_cert.subject_tlv, subject))
