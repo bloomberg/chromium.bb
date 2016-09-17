@@ -15,9 +15,11 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
@@ -25,6 +27,8 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
@@ -47,6 +51,7 @@ public class ProcessInitializationHandler {
     private static ProcessInitializationHandler sInstance;
 
     private boolean mInitializedPreNative;
+    private boolean mInitializedPostNative;
     private boolean mInitializedDeferredStartupTasks;
     private DevToolsServer mDevToolsServer;
 
@@ -147,6 +152,32 @@ public class ProcessInitializationHandler {
         UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
                 new UuidBasedUniqueIdentificationGenerator(
                         application, SESSIONS_UUID_PREF_KEY), false);
+    }
+
+    /**
+     * Initializes any dependencies that must occur after the native library has been loaded.
+     */
+    public final void initializePostNative() {
+        ThreadUtils.assertOnUiThread();
+        if (mInitializedPostNative) return;
+        mInitializedPostNative = true;
+        handlePostNativeInitialization();
+    }
+
+    /**
+     * Performs the post native initialization.
+     */
+    protected void handlePostNativeInitialization() {
+        final ChromeApplication application =
+                (ChromeApplication) ContextUtils.getApplicationContext();
+
+        DataReductionProxySettings.reconcileDataReductionProxyEnabledState(application);
+        ChromeActivitySessionTracker.getInstance().initializeWithNative();
+        ChromeApplication.removeSessionCookies();
+        AppBannerManager.setAppDetailsDelegate(application.createAppDetailsDelegate());
+        ChromeLifetimeController.initialize();
+
+        PrefServiceBridge.getInstance().migratePreferences(application);
     }
 
     /**

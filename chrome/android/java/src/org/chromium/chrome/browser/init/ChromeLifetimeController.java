@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.init;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,6 +12,10 @@ import android.os.Process;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.ApplicationLifetime;
+import org.chromium.chrome.browser.BrowserRestartActivity;
 
 import java.lang.ref.WeakReference;
 
@@ -28,12 +32,23 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
         ApplicationStatus.ActivityStateListener {
     private static final String TAG = "LifetimeController";
 
+    private static ChromeLifetimeController sInstance;
+
     private boolean mRestartChromeOnDestroy;
     private int mRemainingActivitiesCount = 0;
 
-    public ChromeLifetimeController() {
-        ApplicationLifetime.addObserver(this);
+    /**
+     * Initialize the ChromeLifetimeController;
+     */
+    @SuppressFBWarnings("LI_LAZY_INIT_UPDATE_STATIC")
+    public static void initialize() {
+        ThreadUtils.assertOnUiThread();
+        if (sInstance != null) return;
+        sInstance = new ChromeLifetimeController();
+        ApplicationLifetime.addObserver(sInstance);
     }
+
+    private ChromeLifetimeController() {}
 
     @Override
     public void onTerminate(boolean restart) {

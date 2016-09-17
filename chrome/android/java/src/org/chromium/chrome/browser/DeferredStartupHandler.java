@@ -194,7 +194,7 @@ public class DeferredStartupHandler {
 
                 PowerMonitor.create(mAppContext);
 
-                ShareHelper.clearSharedImages(mAppContext);
+                ShareHelper.clearSharedImages();
 
                 OfflinePageUtils.clearSharedOfflineFiles(mAppContext);
             }
@@ -231,9 +231,6 @@ public class DeferredStartupHandler {
         });
 
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
-        // TODO(tedchoc): Remove this once all internal clients have moved to using
-        //                ProcessInitializationHandler.
-        application.initializeSharedClasses();
     }
 
     private void initAsyncDiskTask() {

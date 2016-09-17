@@ -198,12 +198,13 @@ public class ShareHelper {
     /**
      * Clears all shared image files.
      */
-    public static void clearSharedImages(final Context context) {
+    public static void clearSharedImages() {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    File imagePath = UiUtils.getDirectoryForImageCapture(context);
+                    File imagePath = UiUtils.getDirectoryForImageCapture(
+                            ContextUtils.getApplicationContext());
                     deleteShareImageFiles(new File(imagePath, SHARE_IMAGES_DIRECTORY_NAME));
                 } catch (IOException ie) {
                     // Ignore exception.

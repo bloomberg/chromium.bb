@@ -249,7 +249,7 @@ public class ChromeBrowserInitializer {
         initQueue.add(new NativeInitTask() {
             @Override
             public void initFunction() {
-                mApplication.initializeProcess();
+                ProcessInitializationHandler.getInstance().initializePostNative();
             }
         });
 

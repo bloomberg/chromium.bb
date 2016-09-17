@@ -580,7 +580,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onStartWithNative() {
         super.onStartWithNative();
         UpdateMenuItemHelper.getInstance().onStart();
-        getChromeApplication().onStartWithNative();
+        ChromeActivitySessionTracker.getInstance().onStartWithNative();
 
         if (GSAState.getInstance(this).isGsaAvailable()) {
             mGSAServiceClient = new GSAServiceClient(this);
