@@ -414,6 +414,8 @@ void TileManager::DidFinishRunningTileTasksRequiredForActivation() {
                "TileManager::DidFinishRunningTileTasksRequiredForActivation");
   TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
                                ScheduledTasksStateAsValue());
+  // TODO(vmpstr): Temporary check to debug crbug.com/642927.
+  CHECK(tile_task_manager_);
   signals_.ready_to_activate = true;
   signals_check_notifier_.Schedule();
 }
@@ -422,6 +424,8 @@ void TileManager::DidFinishRunningTileTasksRequiredForDraw() {
   TRACE_EVENT0("cc", "TileManager::DidFinishRunningTileTasksRequiredForDraw");
   TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
                                ScheduledTasksStateAsValue());
+  // TODO(vmpstr): Temporary check to debug crbug.com/642927.
+  CHECK(tile_task_manager_);
   signals_.ready_to_draw = true;
   signals_check_notifier_.Schedule();
 }
@@ -442,6 +446,8 @@ void TileManager::DidFinishRunningAllTileTasks() {
     // TODO(ericrk): We should find a better way to safely handle re-entrant
     // notifications than always having to schedule a new task.
     // http://crbug.com/498439
+    // TODO(vmpstr): Temporary check to debug crbug.com/642927.
+    CHECK(tile_task_manager_);
     signals_.all_tile_tasks_completed = true;
     signals_check_notifier_.Schedule();
     return;
@@ -1149,6 +1155,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   resource_pool_->ReduceResourceUsage();
   image_manager_.ReduceMemoryUsage();
 
+  // TODO(vmpstr): Temporary check to debug crbug.com/642927.
+  CHECK(tile_task_manager_);
   signals_.all_tile_tasks_completed = true;
   signals_check_notifier_.Schedule();
 
@@ -1179,6 +1187,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
       global_state_.tree_priority,
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW));
 
+  // TODO(vmpstr): Temporary check to debug crbug.com/642927.
+  CHECK(tile_task_manager_);
   DCHECK(IsReadyToActivate());
   DCHECK(IsReadyToDraw());
   signals_.ready_to_activate = need_to_signal_activate;
