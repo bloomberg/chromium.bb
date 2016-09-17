@@ -99,12 +99,8 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
       return LayoutUnit();
     case DeviceWidth:
     case DeviceHeight:
-      // TODO(layout-ng): Do we need to handle this here or does the style
-      // system already compute these?
-      return LayoutUnit();
     case ExtendToZoom:
-      NOTREACHED()
-          << "ExtendToZoom should only be used for viewport definitions";
+      NOTREACHED() << "These should only be used for viewport definitions";
     case MaxSizeNone:
     default:
       NOTREACHED();
@@ -158,12 +154,8 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
       return contentSize;
     case DeviceWidth:
     case DeviceHeight:
-      // TODO(layout-ng): Do we need to handle this here or does the style
-      // system already compute these?
-      return LayoutUnit();
     case ExtendToZoom:
-      NOTREACHED()
-          << "ExtendToZoom should only be used for viewport definitions";
+      NOTREACHED() << "These should only be used for viewport definitions";
     case MaxSizeNone:
     default:
       NOTREACHED();
