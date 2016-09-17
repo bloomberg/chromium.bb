@@ -25,8 +25,6 @@ public final class DesktopView extends SurfaceView {
     /** The parent Desktop activity. */
     private Desktop mDesktop;
 
-    private RenderStub mRenderStub;
-
     private TouchInputHandler mInputHandler;
 
     private InputEventSender mInputEventSender;
@@ -42,27 +40,22 @@ public final class DesktopView extends SurfaceView {
      */
     public void init(Client client, Desktop desktop, RenderStub renderStub) {
         Preconditions.isNull(mDesktop);
-        Preconditions.isNull(mRenderStub);
+        Preconditions.isNull(mInputHandler);
         Preconditions.isNull(mInputEventSender);
         Preconditions.notNull(desktop);
         Preconditions.notNull(renderStub);
+
         mDesktop = desktop;
-        mRenderStub = renderStub;
         mInputEventSender = new InputEventSender(client);
+        renderStub.setDesktopView(this);
+        mInputHandler = new TouchInputHandler(this, mDesktop, renderStub, mInputEventSender);
     }
 
-    @Override
-    public void onAttachedToWindow() {
-        Preconditions.isNull(mInputHandler);
-        super.onAttachedToWindow();
-        mRenderStub.setDesktopView(this);
-        mInputHandler = new TouchInputHandler(this, mDesktop, mRenderStub, mInputEventSender);
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
+    /**
+     * Destroys the view. Should be called in {@link android.app.Activity#onDestroy()}.
+     */
+    public void destroy() {
         mInputHandler.detachEventListeners();
-        super.onDetachedFromWindow();
     }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this class.

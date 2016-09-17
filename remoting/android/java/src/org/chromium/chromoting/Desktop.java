@@ -177,6 +177,12 @@ public class Desktop
         mClient.enableVideoChannel(false);
     }
 
+    @Override
+    protected void onDestroy() {
+        mRemoteHostDesktop.destroy();
+        super.onDestroy();
+    }
+
     /** Called to initialize the action bar. */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
