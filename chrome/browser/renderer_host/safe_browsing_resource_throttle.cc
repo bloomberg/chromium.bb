@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/logging.h"
@@ -296,13 +297,28 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
 
-    subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
-        subresource_filter::ContentSubresourceFilterDriverFactory::
-            FromWebContents(web_contents);
-    DCHECK(driver_factory);
-    driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-        resource.url, resource.redirect_urls, resource.threat_type,
-        resource.threat_metadata.threat_pattern_type);
+    // Once activated, the subresource filter will filters subresources, but is
+    // triggered when the main frame document matches Safe Browsing blacklists.
+    if (!resource.is_subresource) {
+      using subresource_filter::ContentSubresourceFilterDriverFactory;
+      ContentSubresourceFilterDriverFactory* driver_factory =
+          ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+      DCHECK(driver_factory);
+
+      // For a redirect chain of A -> B -> C, the subresource filter expects C
+      // as the resource URL and [A, B] as redirect URLs.
+      std::vector<GURL> redirect_parent_urls;
+      if (!resource.redirect_urls.empty()) {
+        redirect_parent_urls.push_back(resource.original_url);
+        redirect_parent_urls.insert(redirect_parent_urls.end(),
+                                    resource.redirect_urls.begin(),
+                                    std::prev(resource.redirect_urls.end()));
+      }
+
+      driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
+          resource.url, redirect_parent_urls, resource.threat_type,
+          resource.threat_metadata.threat_pattern_type);
+    }
 
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
