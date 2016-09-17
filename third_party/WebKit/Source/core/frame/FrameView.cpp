@@ -1859,6 +1859,24 @@ bool FrameView::hasOrthogonalWritingModeRoots() const
     return !m_orthogonalWritingModeRootList.isEmpty();
 }
 
+static inline void removeFloatingObjectsForSubtreeRoot(LayoutObject& root)
+{
+    // TODO(kojii): Under certain conditions, moveChildTo() defers
+    // removeFloatingObjects() until the containing block layouts. For
+    // instance, when descendants of the moving child is floating,
+    // removeChildNode() does not clear them. In such cases, at this
+    // point, FloatingObjects may contain old or even deleted objects.
+    // Dealing this in markAllDescendantsWithFloatsForLayout() could
+    // solve, but since that is likely to suffer the performance and
+    // since the containing block of orthogonal writing mode roots
+    // having floats is very rare, prefer to re-create
+    // FloatingObjects.
+    if (LayoutBlock* cb = root.containingBlock()) {
+        if (cb->needsLayout() && cb->isLayoutBlockFlow())
+            toLayoutBlockFlow(cb)->removeFloatingObjects();
+    }
+}
+
 void FrameView::layoutOrthogonalWritingModeRoots()
 {
     for (auto& root : m_orthogonalWritingModeRootList.ordered()) {
@@ -1869,8 +1887,9 @@ void FrameView::layoutOrthogonalWritingModeRoots()
             || !root->styleRef().logicalHeight().isIntrinsicOrAuto()) {
             continue;
         }
-        LayoutState layoutState(*root);
-        root->layout();
+
+        removeFloatingObjectsForSubtreeRoot(*root);
+        layoutFromRootObject(*root);
     }
 }
 
