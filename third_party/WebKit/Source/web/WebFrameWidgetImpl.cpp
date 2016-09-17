@@ -1360,6 +1360,21 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->clearRootLayer();
 }
 
+void WebFrameWidgetImpl::setRootLayer(WebLayer* layer)
+{
+    m_rootLayer = layer;
+
+    setIsAcceleratedCompositingActive(layer);
+
+    if (!m_layerTreeView)
+        return;
+
+    if (m_rootLayer)
+        m_layerTreeView->setRootLayer(*m_rootLayer);
+    else
+        m_layerTreeView->clearRootLayer();
+}
+
 void WebFrameWidgetImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
 {
     if (m_layerTreeView)

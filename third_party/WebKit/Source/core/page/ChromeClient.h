@@ -70,6 +70,7 @@ class PopupOpeningObserver;
 class WebDragData;
 class WebFrameScheduler;
 class WebImage;
+class WebLayer;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -196,14 +197,15 @@ public:
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
 
-    // Pass 0 as the GraphicsLayer to detach the root layer.
+    // Pass nullptr as the GraphicsLayer to detach the root layer.
     // This sets the graphics layer for the LocalFrame's WebWidget, if it has
     // one. Otherwise it sets it for the WebViewImpl.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
 
-    // In Slimming Paint v2, called when the paint artifact is updated, to allow
-    // the underlying web widget to composite it.
-    virtual void didPaint(const PaintArtifact&) { }
+    // Pass nullptr as the WebLayer to detach the root layer.
+    // This sets the WebLayer for the LocalFrame's WebWidget, if it has
+    // one. Otherwise it sets it for the WebViewImpl.
+    virtual void attachRootLayer(WebLayer*, LocalFrame* localRoot) = 0;
 
     virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }
     virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame* localRoot) { }

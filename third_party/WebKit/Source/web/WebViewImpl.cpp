@@ -2786,11 +2786,6 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
-    // For SPv2, accelerated compositing is managed by the
-    // PaintArtifactCompositor.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return m_paintArtifactCompositor.rootLayer();
-
     return m_rootLayer;
 }
 
@@ -2805,10 +2800,7 @@ void WebViewImpl::willCloseLayerTreeView()
     if (m_layerTreeView)
         page()->willCloseLayerTreeView(*m_layerTreeView);
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        detachPaintArtifactCompositor();
-    else
-        setRootGraphicsLayer(nullptr);
+    setRootLayer(nullptr);
 
     m_mutator = nullptr;
     m_layerTreeView = nullptr;
@@ -4242,18 +4234,17 @@ void WebViewImpl::registerViewportLayersWithCompositor()
         layoutViewportWebLayer);
 }
 
-void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
+void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* graphicsLayer)
 {
     if (!m_layerTreeView)
         return;
 
-    // In SPv2, we attach layers via PaintArtifactCompositor, rather than
-    // supplying a root GraphicsLayer from PaintLayerCompositor.
+    // In SPv2, setRootLayer is used instead.
     DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
-    visualViewport.attachToLayerTree(layer);
-    if (layer) {
+    visualViewport.attachToLayerTree(graphicsLayer);
+    if (graphicsLayer) {
         m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
         m_visualViewportContainerLayer = visualViewport.containerLayer();
         m_rootLayer = m_rootGraphicsLayer->platformLayer();
@@ -4271,6 +4262,28 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     } else {
         m_rootGraphicsLayer = nullptr;
         m_visualViewportContainerLayer = nullptr;
+        m_rootLayer = nullptr;
+        // This means that we're transitioning to a new page. Suppress
+        // commits until Blink generates invalidations so we don't
+        // attempt to paint too early in the next page load.
+        m_layerTreeView->setDeferCommits(true);
+        m_layerTreeView->clearRootLayer();
+        m_layerTreeView->clearViewportLayers();
+        if (WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl())
+            devTools->rootLayerCleared();
+    }
+}
+
+void WebViewImpl::setRootLayer(WebLayer* layer)
+{
+    if (!m_layerTreeView)
+        return;
+
+    if (layer) {
+        m_rootLayer = layer;
+        m_layerTreeView->setRootLayer(*m_rootLayer);
+        m_layerTreeView->setVisible(page()->isPageVisible());
+    } else {
         m_rootLayer = nullptr;
         // This means that we're transitioning to a new page. Suppress
         // commits until Blink generates invalidations so we don't
@@ -4355,9 +4368,6 @@ void WebViewImpl::initializeLayerTreeView()
         m_linkHighlightsTimeline = CompositorAnimationTimeline::create();
         attachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
     }
-
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        attachPaintArtifactCompositor();
 }
 
 void WebViewImpl::applyViewportDeltas(
@@ -4553,36 +4563,6 @@ void WebViewImpl::updatePageOverlays()
         if (inspectorPageOverlay)
             inspectorPageOverlay->update();
     }
-}
-
-void WebViewImpl::attachPaintArtifactCompositor()
-{
-    if (!m_layerTreeView)
-        return;
-
-    // Otherwise, PaintLayerCompositor is expected to supply a root
-    // GraphicsLayer via setRootGraphicsLayer.
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-
-    // TODO(jbroman): This should probably have hookups for overlays, visual
-    // viewport, etc.
-
-    WebLayer* rootLayer = m_paintArtifactCompositor.getWebLayer();
-    DCHECK(rootLayer);
-    m_layerTreeView->setRootLayer(*rootLayer);
-
-    // TODO(jbroman): This is cargo-culted from setRootGraphicsLayer. Is it
-    // necessary?
-    m_layerTreeView->setVisible(page()->isPageVisible());
-}
-
-void WebViewImpl::detachPaintArtifactCompositor()
-{
-    if (!m_layerTreeView)
-        return;
-
-    m_layerTreeView->setDeferCommits(true);
-    m_layerTreeView->clearRootLayer();
 }
 
 float WebViewImpl::deviceScaleFactor() const

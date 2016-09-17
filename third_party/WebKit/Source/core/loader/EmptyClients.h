@@ -159,6 +159,7 @@ public:
     Cursor lastSetCursorForTesting() const override { return pointerCursor(); }
 
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override {}
+    void attachRootLayer(WebLayer*, LocalFrame* localRoot) override {}
 
     void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) override {}
     WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const override { return WebEventListenerProperties::Nothing; }

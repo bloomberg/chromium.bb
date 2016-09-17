@@ -13,6 +13,7 @@ namespace blink {
 class CompositorAnimationTimeline;
 class CompositorProxyClient;
 class GraphicsLayer;
+class WebLayer;
 
 class WebFrameWidgetBase : public WebFrameWidget {
 public:
@@ -24,6 +25,9 @@ public:
     // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
     // the root layer.
     virtual void setRootGraphicsLayer(GraphicsLayer*) = 0;
+
+    // Sets the root layer. |WebLayer| can be null when detaching the root layer.
+    virtual void setRootLayer(WebLayer*) = 0;
 
     // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
     virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;

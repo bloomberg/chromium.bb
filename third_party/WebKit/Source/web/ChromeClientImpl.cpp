@@ -795,6 +795,7 @@ String ChromeClientImpl::acceptLanguages()
 
 void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFrame* localFrame)
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
 
     // This method can be called while the frame is being detached. In that
@@ -804,11 +805,15 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
         webFrame->frameWidget()->setRootGraphicsLayer(rootLayer);
 }
 
-void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
+void ChromeClientImpl::attachRootLayer(WebLayer* rootLayer, LocalFrame* localFrame)
 {
-    // TODO(jbroman): This doesn't handle OOPIF correctly. We probably need a
-    // branch for WebFrameWidget, like attachRootGraphicsLayer.
-    m_webView->getPaintArtifactCompositor().update(paintArtifact);
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
+
+    // This method can be called while the frame is being detached. In that
+    // case, the rootLayer is null, and the widget is already destroyed.
+    DCHECK(webFrame->frameWidget() || !rootLayer);
+    if (webFrame->frameWidget())
+        webFrame->frameWidget()->setRootLayer(rootLayer);
 }
 
 void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localFrame)

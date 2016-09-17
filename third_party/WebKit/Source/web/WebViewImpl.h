@@ -37,7 +37,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebFloatSize.h"
@@ -500,17 +499,6 @@ public:
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
 
-    // Attaches the PaintArtifactCompositor's tree to this WebView's layer tree
-    // view.
-    void attachPaintArtifactCompositor();
-
-    // Detaches the PaintArtifactCompositor and clears the layer tree view's
-    // root layer.
-    void detachPaintArtifactCompositor();
-
-    // Use in Slimming Paint v2 to update the layer tree for the content.
-    PaintArtifactCompositor& getPaintArtifactCompositor() { return m_paintArtifactCompositor; }
-
     bool isTransparent() const;
     void setIsTransparent(bool value);
 
@@ -620,6 +608,7 @@ private:
     float deviceScaleFactor() const;
 
     void setRootGraphicsLayer(GraphicsLayer*);
+    void setRootLayer(WebLayer*);
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
 
@@ -761,9 +750,6 @@ private:
     WebPageImportanceSignals m_pageImportanceSignals;
 
     const std::unique_ptr<WebViewScheduler> m_scheduler;
-
-    // Manages the layer tree created for this page in Slimming Paint v2.
-    PaintArtifactCompositor m_paintArtifactCompositor;
 
     double m_lastFrameTimeMonotonic;
 

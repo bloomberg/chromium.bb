@@ -138,6 +138,7 @@ public:
     CompositorProxyClient* createCompositorProxyClient() override;
     WebWidgetClient* client() const override { return m_client; }
     void setRootGraphicsLayer(GraphicsLayer*) override;
+    void setRootLayer(WebLayer*) override;
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
 

@@ -71,7 +71,7 @@ protected:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
 
         // Delay constructing the compositor until after the feature is set.
-        m_paintArtifactCompositor = wrapUnique(new PaintArtifactCompositor);
+        m_paintArtifactCompositor = PaintArtifactCompositor::create();
         m_paintArtifactCompositor->enableExtraDataForTesting();
 
         cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();

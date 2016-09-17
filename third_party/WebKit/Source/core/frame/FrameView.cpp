@@ -106,6 +106,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
@@ -2790,12 +2791,18 @@ void FrameView::pushPaintArtifactToCompositor()
 
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    const PaintArtifact& paintArtifact = m_paintController->paintArtifact();
-
     Page* page = frame().page();
     if (!page)
         return;
-    page->chromeClient().didPaint(paintArtifact);
+
+    if (!m_paintArtifactCompositor) {
+        m_paintArtifactCompositor = PaintArtifactCompositor::create();
+        page->chromeClient().attachRootLayer(m_paintArtifactCompositor->getWebLayer(), &frame());
+    }
+
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
+
+    m_paintArtifactCompositor->update(m_paintController->paintArtifact());
 }
 
 void FrameView::updateStyleAndLayoutIfNeededRecursive()

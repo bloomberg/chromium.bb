@@ -79,6 +79,7 @@ class LayoutObject;
 class LayoutReplaced;
 class LayoutScrollbarPart;
 class LayoutView;
+class PaintArtifactCompositor;
 class PaintController;
 class PaintInvalidationState;
 class Page;
@@ -957,6 +958,7 @@ private:
 
     // For Slimming Paint v2 only.
     std::unique_ptr<PaintController> m_paintController;
+    std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

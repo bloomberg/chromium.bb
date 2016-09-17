@@ -125,10 +125,9 @@ public:
     bool hasScrollEventHandlers() const override;
     void setTouchAction(TouchAction) override;
 
-    // Pass 0 as the GraphicsLayer to detatch the root layer.
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 
-    void didPaint(const PaintArtifact&) override;
+    void attachRootLayer(WebLayer*, LocalFrame* localRoot) override;
 
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*, LocalFrame*) override;

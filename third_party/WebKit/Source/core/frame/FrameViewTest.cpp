@@ -31,7 +31,6 @@ public:
     MockChromeClient() : m_hasScheduledAnimation(false) { }
 
     // ChromeClient
-    MOCK_METHOD1(didPaint, void(const PaintArtifact&));
     MOCK_METHOD2(attachRootGraphicsLayer, void(GraphicsLayer*, LocalFrame* localRoot));
     MOCK_METHOD2(setToolTip, void(const String&, TextDirection));
 
@@ -107,25 +106,6 @@ private:
 
 INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(All, FrameViewSlimmingPaintV2Test, ::testing::Bool());
-
-// These tests ensure that FrameView informs the ChromeClient of changes to the
-// paint artifact so that they can be shown to the user (e.g. via the
-// compositor).
-TEST_P(FrameViewSlimmingPaintV2Test, PaintOnce)
-{
-    EXPECT_CALL(chromeClient(), didPaint(_));
-    document().body()->setInnerHTML("Hello world", ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
-}
-
-TEST_P(FrameViewSlimmingPaintV2Test, PaintAndRepaint)
-{
-    EXPECT_CALL(chromeClient(), didPaint(_)).Times(2);
-    document().body()->setInnerHTML("Hello", ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
-    document().body()->setInnerHTML("Hello world", ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
-}
 
 TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases)
 {

@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include <memory>
 
@@ -36,8 +37,12 @@ struct PaintChunk;
 class PLATFORM_EXPORT PaintArtifactCompositor {
     WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
 public:
-    PaintArtifactCompositor();
     ~PaintArtifactCompositor();
+
+    static std::unique_ptr<PaintArtifactCompositor> create()
+    {
+        return wrapUnique(new PaintArtifactCompositor());
+    }
 
     // Updates the layer tree to match the provided paint artifact.
     void update(const PaintArtifact&);
@@ -60,6 +65,8 @@ public:
     ExtraDataForTesting* getExtraDataForTesting() const { return m_extraDataForTesting.get(); }
 
 private:
+    PaintArtifactCompositor();
+
     class ContentLayerClientImpl;
 
     // Builds a leaf layer that represents a single paint chunk.
@@ -75,6 +82,7 @@ private:
 
     bool m_extraDataForTestingEnabled = false;
     std::unique_ptr<ExtraDataForTesting> m_extraDataForTesting;
+    friend class StubChromeClientForSPv2;
 };
 
 } // namespace blink

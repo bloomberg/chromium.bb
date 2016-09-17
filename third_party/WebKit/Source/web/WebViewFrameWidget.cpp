@@ -282,6 +282,11 @@ void WebViewFrameWidget::setRootGraphicsLayer(GraphicsLayer* layer)
     m_webView->setRootGraphicsLayer(layer);
 }
 
+void WebViewFrameWidget::setRootLayer(WebLayer* layer)
+{
+    m_webView->setRootLayer(layer);
+}
+
 void WebViewFrameWidget::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline)
 {
     m_webView->attachCompositorAnimationTimeline(compositorTimeline);
