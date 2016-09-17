@@ -40,21 +40,28 @@
 extern "C" {
 #endif
 
-/* GCC visibility */
+/** Visibility attribute */
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define WL_EXPORT __attribute__ ((visibility("default")))
 #else
 #define WL_EXPORT
 #endif
 
-/* Deprecated attribute */
+/** Deprecated attribute */
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define WL_DEPRECATED __attribute__ ((deprecated))
 #else
 #define WL_DEPRECATED
 #endif
 
-/* Printf annotation */
+/**
+ * Printf-style argument attribute
+ *
+ * \param x Ordinality of the format string argument
+ * \param y Ordinality of the argument to check against the format string
+ *
+ * \sa https://gcc.gnu.org/onlinedocs/gcc-3.2.1/gcc/Function-Attributes.html
+ */
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define WL_PRINTF(x, y) __attribute__((__format__(__printf__, x, y)))
 #else
