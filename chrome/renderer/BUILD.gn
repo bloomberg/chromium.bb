@@ -224,10 +224,6 @@ static_library("renderer") {
       "extensions/chrome_v8_extension_handler.h",
       "extensions/extension_localization_peer.cc",
       "extensions/extension_localization_peer.h",
-      "extensions/file_browser_handler_custom_bindings.cc",
-      "extensions/file_browser_handler_custom_bindings.h",
-      "extensions/file_manager_private_custom_bindings.cc",
-      "extensions/file_manager_private_custom_bindings.h",
       "extensions/media_galleries_custom_bindings.cc",
       "extensions/media_galleries_custom_bindings.h",
       "extensions/notifications_native_handler.cc",
@@ -274,9 +270,7 @@ static_library("renderer") {
       "resources/extensions/declarative_content_custom_bindings.js",
       "resources/extensions/enterprise_platform_keys_custom_bindings.js",
       "resources/extensions/feedback_private_custom_bindings.js",
-      "resources/extensions/file_browser_handler_custom_bindings.js",
       "resources/extensions/file_entry_binding_util.js",
-      "resources/extensions/file_manager_private_custom_bindings.js",
       "resources/extensions/file_system_custom_bindings.js",
       "resources/extensions/file_system_provider_custom_bindings.js",
       "resources/extensions/gcm_custom_bindings.js",
@@ -348,6 +342,14 @@ static_library("renderer") {
 
   if (is_chromeos) {
     deps += [ "//chrome/renderer/leak_detector:leak_detector" ]
+    sources += [
+      "extensions/file_browser_handler_custom_bindings.cc",
+      "extensions/file_browser_handler_custom_bindings.h",
+      "extensions/file_manager_private_custom_bindings.cc",
+      "extensions/file_manager_private_custom_bindings.h",
+      "resources/extensions/file_browser_handler_custom_bindings.js",
+      "resources/extensions/file_manager_private_custom_bindings.js",
+    ]
   }
 }
 

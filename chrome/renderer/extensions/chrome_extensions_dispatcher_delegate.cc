@@ -16,8 +16,6 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
-#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
-#include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
@@ -48,6 +46,11 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
+#include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #endif
 
 using extensions::NativeHandler;
@@ -100,6 +103,7 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "sync_file_system",
       std::unique_ptr<NativeHandler>(
           new extensions::SyncFileSystemCustomBindings(context)));
+#if defined(OS_CHROMEOS)
   module_system->RegisterNativeHandler(
       "file_browser_handler",
       std::unique_ptr<NativeHandler>(
@@ -108,6 +112,7 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "file_manager_private",
       std::unique_ptr<NativeHandler>(
           new extensions::FileManagerPrivateCustomBindings(context)));
+#endif  // defined(OS_CHROMEOS)
   module_system->RegisterNativeHandler(
       "notifications_private",
       std::unique_ptr<NativeHandler>(
@@ -184,10 +189,12 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
   source_map->RegisterSource("feedbackPrivate",
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
+#if defined(OS_CHROMEOS)
   source_map->RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileManagerPrivate",
                              IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
+#endif  // defined(OS_CHROMEOS)
   source_map->RegisterSource("fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileSystemProvider",
                              IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
