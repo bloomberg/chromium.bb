@@ -53,6 +53,8 @@ blink_modules_sources("webgl") {
     "WebGLCompressedTexturePVRTC.h",
     "WebGLCompressedTextureS3TC.cpp",
     "WebGLCompressedTextureS3TC.h",
+    "WebGLCompressedTextureS3TCsRGB.cpp",
+    "WebGLCompressedTextureS3TCsRGB.h",
     "WebGLContextAttributeHelpers.cpp",
     "WebGLContextAttributeHelpers.h",
     "WebGLContextEvent.cpp",

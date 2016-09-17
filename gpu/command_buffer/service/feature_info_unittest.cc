@@ -291,6 +291,8 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
               Not(HasSubstr("GL_AMD_compressed_ATC_texture")));
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_IMG_texture_compression_pvrtc")));
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_EXT_texture_compression_s3tc_srgb")));
   EXPECT_FALSE(info_->feature_flags().npot_ok);
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
@@ -300,6 +302,14 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+  EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_S3TC_DXT1_EXT));
+  EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT));
+  EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT));
+  EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT));
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
       GL_ETC1_RGB8_OES));
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
@@ -408,6 +418,35 @@ TEST_P(FeatureInfoTest, InitializeDXTExtensionGL) {
       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
   EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+}
+
+TEST_P(FeatureInfoTest, InitializeEXT_texture_compression_s3tc_srgb) {
+  SetupInitExpectationsWithGLVersion("GL_NV_sRGB_formats", "",
+                                     "OpenGL ES 2.0");
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_texture_compression_s3tc_srgb"));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_S3TC_DXT1_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT));
+}
+
+TEST_P(FeatureInfoTest, InitializeEXT_texture_compression_s3tc_srgbGL) {
+  SetupInitExpectations("GL_EXT_texture_sRGB GL_EXT_texture_compression_s3tc");
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_texture_compression_s3tc_srgb"));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_S3TC_DXT1_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT));
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {

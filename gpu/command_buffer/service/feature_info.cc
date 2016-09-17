@@ -608,6 +608,34 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
   }
 
+  // On desktop, GL_EXT_texture_sRGB is required regardless of GL version,
+  // since the sRGB formats in OpenGL 3.0 Core do not support S3TC.
+  // TODO(kainino): Support GL_EXT_texture_compression_s3tc_srgb once ratified.
+  if ((gl_version_info_->is_es && extensions.Contains("GL_NV_sRGB_formats")) ||
+      (!gl_version_info_->is_es &&
+       extensions.Contains("GL_EXT_texture_sRGB") &&
+       extensions.Contains("GL_EXT_texture_compression_s3tc"))) {
+    AddExtensionString("GL_EXT_texture_compression_s3tc_srgb");
+
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SRGB_S3TC_DXT1_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT);
+
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SRGB_S3TC_DXT1_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT);
+  }
+
   // Note: Only APPLE_texture_format_BGRA8888 extension allows BGRA8_EXT in
   // ES3's glTexStorage2D, whereas EXT_texture_format_BGRA8888 doesn't provide
   // that compatibility. So if EXT_texture_format_BGRA8888 (but not

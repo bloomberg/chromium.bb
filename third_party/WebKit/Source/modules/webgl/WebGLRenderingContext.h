@@ -91,6 +91,7 @@ private:
     Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    Member<WebGLCompressedTextureS3TCsRGB> m_webglCompressedTextureS3TCsRGB;
     Member<WebGLDepthTexture> m_webglDepthTexture;
 };
 

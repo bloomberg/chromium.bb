@@ -51,6 +51,7 @@
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"
+#include "modules/webgl/WebGLCompressedTextureS3TCsRGB.h"
 #include "modules/webgl/WebGLContextEvent.h"
 #include "modules/webgl/WebGLDebugRendererInfo.h"
 #include "modules/webgl/WebGLDebugShaders.h"
@@ -172,6 +173,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
+    registerExtension<WebGLCompressedTextureS3TCsRGB>(m_webglCompressedTextureS3TCsRGB, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
     registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
     registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);
@@ -204,6 +206,7 @@ DEFINE_TRACE(WebGLRenderingContext)
     visitor->trace(m_webglCompressedTextureETC1);
     visitor->trace(m_webglCompressedTexturePVRTC);
     visitor->trace(m_webglCompressedTextureS3TC);
+    visitor->trace(m_webglCompressedTextureS3TCsRGB);
     visitor->trace(m_webglDepthTexture);
     WebGLRenderingContextBase::trace(visitor);
 }
@@ -233,6 +236,7 @@ DEFINE_TRACE_WRAPPERS(WebGLRenderingContext)
     visitor->traceWrappers(m_webglCompressedTextureETC1);
     visitor->traceWrappers(m_webglCompressedTexturePVRTC);
     visitor->traceWrappers(m_webglCompressedTextureS3TC);
+    visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
     visitor->traceWrappers(m_webglDepthTexture);
 }
 } // namespace blink

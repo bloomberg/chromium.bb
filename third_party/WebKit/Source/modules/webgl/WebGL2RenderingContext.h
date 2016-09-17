@@ -53,6 +53,7 @@ protected:
     Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    Member<WebGLCompressedTextureS3TCsRGB> m_webglCompressedTextureS3TCsRGB;
     Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
     Member<WebGLDebugShaders> m_webglDebugShaders;
     Member<WebGLLoseContext> m_webglLoseContext;

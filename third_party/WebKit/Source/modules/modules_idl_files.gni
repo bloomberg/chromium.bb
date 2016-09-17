@@ -319,6 +319,7 @@ modules_idl_files =
                     "webgl/WebGLCompressedTextureETC1.idl",
                     "webgl/WebGLCompressedTexturePVRTC.idl",
                     "webgl/WebGLCompressedTextureS3TC.idl",
+                    "webgl/WebGLCompressedTextureS3TCsRGB.idl",
                     "webgl/WebGLContextEvent.idl",
                     "webgl/WebGLDebugRendererInfo.idl",
                     "webgl/WebGLDebugShaders.idl",

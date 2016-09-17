@@ -20,6 +20,7 @@
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"
+#include "modules/webgl/WebGLCompressedTextureS3TCsRGB.h"
 #include "modules/webgl/WebGLContextAttributeHelpers.h"
 #include "modules/webgl/WebGLContextEvent.h"
 #include "modules/webgl/WebGLDebugRendererInfo.h"
@@ -107,6 +108,7 @@ void WebGL2RenderingContext::registerContextExtensions()
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC);
+    registerExtension<WebGLCompressedTextureS3TCsRGB>(m_webglCompressedTextureS3TCsRGB);
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
     registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
     registerExtension<WebGLLoseContext>(m_webglLoseContext);
@@ -123,6 +125,7 @@ DEFINE_TRACE(WebGL2RenderingContext)
     visitor->trace(m_webglCompressedTextureETC1);
     visitor->trace(m_webglCompressedTexturePVRTC);
     visitor->trace(m_webglCompressedTextureS3TC);
+    visitor->trace(m_webglCompressedTextureS3TCsRGB);
     visitor->trace(m_webglDebugRendererInfo);
     visitor->trace(m_webglDebugShaders);
     visitor->trace(m_webglLoseContext);
@@ -140,6 +143,7 @@ DEFINE_TRACE_WRAPPERS(WebGL2RenderingContext)
     visitor->traceWrappers(m_webglCompressedTextureETC1);
     visitor->traceWrappers(m_webglCompressedTexturePVRTC);
     visitor->traceWrappers(m_webglCompressedTextureS3TC);
+    visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
     visitor->traceWrappers(m_webglDebugRendererInfo);
     visitor->traceWrappers(m_webglDebugShaders);
     visitor->traceWrappers(m_webglLoseContext);

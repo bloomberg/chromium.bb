@@ -67,6 +67,7 @@
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"
+#include "modules/webgl/WebGLCompressedTextureS3TCsRGB.h"
 #include "modules/webgl/WebGLContextAttributeHelpers.h"
 #include "modules/webgl/WebGLContextEvent.h"
 #include "modules/webgl/WebGLContextGroup.h"

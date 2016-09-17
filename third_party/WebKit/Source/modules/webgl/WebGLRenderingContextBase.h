@@ -94,6 +94,7 @@ class WebGLCompressedTextureATC;
 class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
 class WebGLCompressedTextureS3TC;
+class WebGLCompressedTextureS3TCsRGB;
 class WebGLContextGroup;
 class WebGLContextObject;
 class WebGLDebugRendererInfo;
@@ -431,6 +432,7 @@ protected:
     friend class WebGLCompressedTextureETC1;
     friend class WebGLCompressedTexturePVRTC;
     friend class WebGLCompressedTextureS3TC;
+    friend class WebGLCompressedTextureS3TCsRGB;
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectBase;
     friend class ScopedTexture2DRestorer;

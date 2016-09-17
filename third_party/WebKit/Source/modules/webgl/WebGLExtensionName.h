@@ -29,6 +29,7 @@ enum WebGLExtensionName {
     WebGLCompressedTextureETC1Name,
     WebGLCompressedTexturePVRTCName,
     WebGLCompressedTextureS3TCName,
+    WebGLCompressedTextureS3TCsRGBName,
     WebGLDebugRendererInfoName,
     WebGLDebugShadersName,
     WebGLDepthTextureName,
