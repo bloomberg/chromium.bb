@@ -35,8 +35,6 @@ class GamepadDevice {
     private int mDeviceIndex;
     // Last time the data for this gamepad was updated.
     private long mTimestamp;
-    // If this gamepad is mapped to standard gamepad?
-    private boolean mIsStandardGamepad;
 
     // Array of values for all axes of the gamepad.
     // All axis values must be linearly normalized to the range [-1.0 .. 1.0].
@@ -59,6 +57,9 @@ class GamepadDevice {
     // Array of axes ids.
     private int[] mAxes;
 
+    // Mappings to canonical gamepad
+    private GamepadMappings mMappings;
+
     GamepadDevice(int index, InputDevice inputDevice) {
         mDeviceIndex = index;
         mDeviceId = inputDevice.getId();
@@ -75,14 +76,14 @@ class GamepadDevice {
                 mAxes[i++] = axis;
             }
         }
+        mMappings = GamepadMappings.getMappings(mDeviceName, mAxes);
     }
 
     /**
      * Updates the axes and buttons maping of a gamepad device to a standard gamepad format.
      */
     public void updateButtonsAndAxesMapping() {
-        mIsStandardGamepad = GamepadMappings.mapToStandardGamepad(
-                mAxisValues, mButtonsValues, mRawAxes, mRawButtons, mDeviceName);
+        mMappings.mapToStandardGamepad(mAxisValues, mButtonsValues, mRawAxes, mRawButtons);
     }
 
     /**
@@ -96,7 +97,7 @@ class GamepadDevice {
      * @return Mapping status of the gamepad device.
      */
     public boolean isStandardGamepad() {
-        return mIsStandardGamepad;
+        return mMappings.isStandard();
     }
 
     /**

@@ -14,7 +14,7 @@ import org.chromium.base.annotations.JNINamespace;
  * Class to manage mapping information related to each supported gamepad controller device.
  */
 @JNINamespace("content")
-class GamepadMappings {
+abstract class GamepadMappings {
     @VisibleForTesting
     static final String NVIDIA_SHIELD_DEVICE_NAME_PREFIX = "NVIDIA Corporation NVIDIA Controller";
     @VisibleForTesting
@@ -26,28 +26,36 @@ class GamepadMappings {
     @VisibleForTesting
     static final String AMAZON_FIRE_DEVICE_NAME = "Amazon Fire Game Controller";
 
-    public static boolean mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
-            float[] rawAxes, float[] rawButtons, String deviceName) {
-        if (deviceName.startsWith(NVIDIA_SHIELD_DEVICE_NAME_PREFIX)) {
-            mapShieldGamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-            return true;
-        } else if (deviceName.equals(MICROSOFT_XBOX_PAD_DEVICE_NAME)) {
-            mapXBox360Gamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-            return true;
+    public static GamepadMappings getMappings(String deviceName, int[] axes) {
+        if (deviceName.startsWith(NVIDIA_SHIELD_DEVICE_NAME_PREFIX)
+                || deviceName.equals(MICROSOFT_XBOX_PAD_DEVICE_NAME)) {
+            return new XboxCompatibleGamepadMappings();
         } else if (deviceName.equals(PS3_SIXAXIS_DEVICE_NAME)) {
-            mapPS3SixAxisGamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-            return true;
+            return new PS3SixAxisGamepadMappings();
         } else if (deviceName.equals(SAMSUNG_EI_GP20_DEVICE_NAME)) {
-            mapSamsungEIGP20Gamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-            return true;
+            return new SamsungEIGP20GamepadMappings();
         } else if (deviceName.equals(AMAZON_FIRE_DEVICE_NAME)) {
-            mapAmazonFireGamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-            return true;
+            return new AmazonFireGamepadMappings();
         }
 
-        mapUnknownGamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
-        return false;
+        return new UnknownGamepadMappings(axes);
     }
+
+    /**
+     * Method that specifies whether the mappings are standard or not.
+     * It should be overridden in subclasses that don't provide standard
+     * mappings.
+     */
+    public boolean isStandard() {
+        return true;
+    }
+
+    /**
+     * Method implemented by subclasses to perform mapping from raw axes and buttons
+     * to canonical axes and buttons.
+     */
+    public abstract void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+            float[] rawAxes, float[] rawButtons);
 
     private static void mapCommonXYABButtons(float[] mappedButtons, float[] rawButtons) {
         float a = rawButtons[KeyEvent.KEYCODE_BUTTON_A];
@@ -76,7 +84,14 @@ class GamepadMappings {
         mappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK] = thumbR;
     }
 
-    private static void mapCommonTriggerButtons(float[] mappedButtons, float[] rawButtons) {
+    /**
+     * Method for mapping the L1/R1 buttons to lower shoulder buttons, rather than
+     * upper shoulder as the user would normally expect. Please think twice before
+     * using this, as it can easily confuse the user. It is only really useful if
+     * the controller completely lacks a second set of shoulder buttons.
+     */
+    private static void mapUpperTriggerButtonsToBottomShoulder(float[] mappedButtons,
+            float[] rawButtons) {
         float l1 = rawButtons[KeyEvent.KEYCODE_BUTTON_L1];
         float r1 = rawButtons[KeyEvent.KEYCODE_BUTTON_R1];
         mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = l1;
@@ -116,13 +131,6 @@ class GamepadMappings {
         mappedAxes[CanonicalAxisIndex.RIGHT_STICK_Y] = rawAxes[MotionEvent.AXIS_RZ];
     }
 
-    private static void mapTriggerAxexToShoulderButtons(float[] mappedButtons, float[] rawAxes) {
-        float lTrigger = rawAxes[MotionEvent.AXIS_LTRIGGER];
-        float rTrigger = rawAxes[MotionEvent.AXIS_RTRIGGER];
-        mappedButtons[CanonicalButtonIndex.LEFT_SHOULDER] = lTrigger;
-        mappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER] = rTrigger;
-    }
-
     private static void mapPedalAxesToBottomShoulder(float[] mappedButtons, float[] rawAxes) {
         float lTrigger = rawAxes[MotionEvent.AXIS_BRAKE];
         float rTrigger = rawAxes[MotionEvent.AXIS_GAS];
@@ -135,6 +143,14 @@ class GamepadMappings {
         float rTrigger = rawAxes[MotionEvent.AXIS_RTRIGGER];
         mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = lTrigger;
         mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = rTrigger;
+    }
+
+    private static void mapLowerTriggerButtonsToBottomShoulder(float[] mappedButtons,
+            float[] rawButtons) {
+        float l2 = rawButtons[KeyEvent.KEYCODE_BUTTON_L2];
+        float r2 = rawButtons[KeyEvent.KEYCODE_BUTTON_R2];
+        mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = l2;
+        mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = r2;
     }
 
     @VisibleForTesting
@@ -156,98 +172,182 @@ class GamepadMappings {
         mappedButtons[CanonicalButtonIndex.DPAD_DOWN] = positiveAxisValueAsButton(hatY);
     }
 
-    /**
-     * Method for mapping Amazon Fire gamepad axis and button values
-     * to standard gamepad button and axes values.
-     */
-    private static void mapAmazonFireGamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        mapCommonXYABButtons(mappedButtons, rawButtons);
-        mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
-        mapCommonThumbstickButtons(mappedButtons, rawButtons);
-        mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
-        mapPedalAxesToBottomShoulder(mappedButtons, rawAxes);
-        mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+    private static class AmazonFireGamepadMappings extends GamepadMappings {
 
-        mapXYAxes(mappedAxes, rawAxes);
-        mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        /**
+         * Method for mapping Amazon Fire gamepad axis and button values
+         * to standard gamepad button and axes values.
+         */
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            mapCommonXYABButtons(mappedButtons, rawButtons);
+            mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapPedalAxesToBottomShoulder(mappedButtons, rawAxes);
+            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+
+            mapXYAxes(mappedAxes, rawAxes);
+            mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        }
     }
 
-    /**
-     * Method for mapping Nvidia gamepad axis and button values
-     * to standard gamepad button and axes values.
-     */
-    private static void mapShieldGamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        mapCommonXYABButtons(mappedButtons, rawButtons);
-        mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
-        mapCommonThumbstickButtons(mappedButtons, rawButtons);
-        mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
-        mapTriggerAxesToBottomShoulder(mappedButtons, rawAxes);
-        mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+    private static class XboxCompatibleGamepadMappings extends GamepadMappings {
 
-        mapXYAxes(mappedAxes, rawAxes);
-        mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        /**
+         * Method for mapping Xbox 360-compatible gamepad axis and button values
+         * to standard gamepad button and axes values.
+         */
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            mapCommonXYABButtons(mappedButtons, rawButtons);
+            mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapTriggerAxesToBottomShoulder(mappedButtons, rawAxes);
+            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+
+            mapXYAxes(mappedAxes, rawAxes);
+            mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        }
     }
 
-    /**
-     * Method for mapping Microsoft XBox 360 gamepad axis and button values
-     * to standard gamepad button and axes values.
-     */
-    private static void mapXBox360Gamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        // These are actually mapped the same way in Android.
-        mapShieldGamepad(mappedButtons, rawButtons, mappedAxes, rawAxes);
+    private static class PS3SixAxisGamepadMappings extends GamepadMappings {
+
+        /**
+         * Method for mapping PS3 gamepad axis and button values
+         * to standard gamepad button and axes values.
+         */
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            // On PS3 X/Y has higher priority.
+            float a = rawButtons[KeyEvent.KEYCODE_BUTTON_A];
+            float b = rawButtons[KeyEvent.KEYCODE_BUTTON_B];
+            float x = rawButtons[KeyEvent.KEYCODE_BUTTON_X];
+            float y = rawButtons[KeyEvent.KEYCODE_BUTTON_Y];
+            mappedButtons[CanonicalButtonIndex.PRIMARY] = x;
+            mappedButtons[CanonicalButtonIndex.SECONDARY] = y;
+            mappedButtons[CanonicalButtonIndex.TERTIARY] = a;
+            mappedButtons[CanonicalButtonIndex.QUATERNARY] = b;
+
+            mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonDpadButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapTriggerAxesToBottomShoulder(mappedButtons, rawAxes);
+
+            mapXYAxes(mappedAxes, rawAxes);
+            mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+        }
     }
 
-    private static void mapPS3SixAxisGamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        // On PS3 X/Y has higher priority.
-        float a = rawButtons[KeyEvent.KEYCODE_BUTTON_A];
-        float b = rawButtons[KeyEvent.KEYCODE_BUTTON_B];
-        float x = rawButtons[KeyEvent.KEYCODE_BUTTON_X];
-        float y = rawButtons[KeyEvent.KEYCODE_BUTTON_Y];
-        mappedButtons[CanonicalButtonIndex.PRIMARY] = x;
-        mappedButtons[CanonicalButtonIndex.SECONDARY] = y;
-        mappedButtons[CanonicalButtonIndex.TERTIARY] = a;
-        mappedButtons[CanonicalButtonIndex.QUATERNARY] = b;
+    private static class SamsungEIGP20GamepadMappings extends GamepadMappings {
 
-        mapCommonTriggerButtons(mappedButtons, rawButtons);
-        mapCommonThumbstickButtons(mappedButtons, rawButtons);
-        mapCommonDpadButtons(mappedButtons, rawButtons);
-        mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
-        mapTriggerAxexToShoulderButtons(mappedButtons, rawAxes);
+        /**
+         * Method for mapping PS3 gamepad axis and button values
+         * to standard gamepad button and axes values.
+         */
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            mapCommonXYABButtons(mappedButtons, rawButtons);
+            mapUpperTriggerButtonsToBottomShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapHatAxisToDpadButtons(mappedButtons, rawAxes);
 
-        mapXYAxes(mappedAxes, rawAxes);
-        mapZAndRZAxesToRightStick(mappedAxes, rawAxes);
+            mapXYAxes(mappedAxes, rawAxes);
+            mapRXAndRYAxesToRightStick(mappedAxes, rawAxes);
+        }
     }
 
-    private static void mapSamsungEIGP20Gamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        mapCommonXYABButtons(mappedButtons, rawButtons);
-        mapCommonTriggerButtons(mappedButtons, rawButtons);
-        mapCommonThumbstickButtons(mappedButtons, rawButtons);
-        mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
-        mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+    private static class UnknownGamepadMappings extends GamepadMappings {
+        private int mLeftTriggerAxis = -1;
+        private int mRightTriggerAxis = -1;
+        private int mRightStickXAxis = -1;
+        private int mRightStickYAxis = -1;
+        private boolean mUseHatAxes = false;
 
-        mapXYAxes(mappedAxes, rawAxes);
-        mapRXAndRYAxesToRightStick(mappedAxes, rawAxes);
-    }
+        UnknownGamepadMappings(int[] axes) {
+            int hatAxesFound = 0;
 
-    /**
-     * Method for mapping Unkown gamepad axis and button values
-     * to standard gamepad button and axes values.
-     */
-    private static void mapUnknownGamepad(
-            float[] mappedButtons, float[] rawButtons, float[] mappedAxes, float[] rawAxes) {
-        mapCommonXYABButtons(mappedButtons, rawButtons);
-        mapCommonTriggerButtons(mappedButtons, rawButtons);
-        mapCommonThumbstickButtons(mappedButtons, rawButtons);
-        mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
-        mapTriggerAxexToShoulderButtons(mappedButtons, rawAxes);
-        mapCommonDpadButtons(mappedButtons, rawButtons);
+            for (int axis : axes) {
+                switch (axis) {
+                    case MotionEvent.AXIS_LTRIGGER:
+                    case MotionEvent.AXIS_BRAKE:
+                        mLeftTriggerAxis = axis;
+                        break;
+                    case MotionEvent.AXIS_RTRIGGER:
+                    case MotionEvent.AXIS_GAS:
+                    case MotionEvent.AXIS_THROTTLE:
+                        mRightTriggerAxis = axis;
+                        break;
+                    case MotionEvent.AXIS_RX:
+                    case MotionEvent.AXIS_Z:
+                        mRightStickXAxis = axis;
+                        break;
+                    case MotionEvent.AXIS_RY:
+                    case MotionEvent.AXIS_RZ:
+                        mRightStickYAxis = axis;
+                        break;
+                    case MotionEvent.AXIS_HAT_X:
+                        hatAxesFound++;
+                        break;
+                    case MotionEvent.AXIS_HAT_Y:
+                        hatAxesFound++;
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-        mapXYAxes(mappedAxes, rawAxes);
-        mapRXAndRYAxesToRightStick(mappedAxes, rawAxes);
+            if (hatAxesFound == 2) {
+                mUseHatAxes = true;
+            }
+        }
+
+        @Override
+        public boolean isStandard() {
+            // These mappings should not be considered standard
+            return false;
+        }
+
+        @Override
+        public void mapToStandardGamepad(float[] mappedAxes, float[] mappedButtons,
+                float[] rawAxes, float[] rawButtons) {
+            // These are shared among all gamepads intended for use with Android
+            // that we tested so far.
+            mapCommonXYABButtons(mappedButtons, rawButtons);
+            mapTriggerButtonsToTopShoulder(mappedButtons, rawButtons);
+            mapCommonThumbstickButtons(mappedButtons, rawButtons);
+            mapCommonStartSelectMetaButtons(mappedButtons, rawButtons);
+            mapXYAxes(mappedAxes, rawAxes);
+
+            if (mLeftTriggerAxis != -1 && mRightTriggerAxis != -1) {
+                float lTrigger = rawAxes[mLeftTriggerAxis];
+                float rTrigger = rawAxes[mRightTriggerAxis];
+                mappedButtons[CanonicalButtonIndex.LEFT_TRIGGER] = lTrigger;
+                mappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER] = rTrigger;
+            } else {
+                // Devices without analog triggers use digital buttons
+                mapLowerTriggerButtonsToBottomShoulder(mappedButtons, rawButtons);
+            }
+
+            if (mRightStickXAxis != -1 && mRightStickYAxis != -1) {
+                float rX = rawAxes[mRightStickXAxis];
+                float rY = rawAxes[mRightStickYAxis];
+                mappedAxes[CanonicalAxisIndex.RIGHT_STICK_X] = rX;
+                mappedAxes[CanonicalAxisIndex.RIGHT_STICK_Y] = rY;
+            }
+
+            if (mUseHatAxes) {
+                mapHatAxisToDpadButtons(mappedButtons, rawAxes);
+            } else {
+                mapCommonDpadButtons(mappedButtons, rawButtons);
+            }
+        }
     }
 }
