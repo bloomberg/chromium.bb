@@ -369,6 +369,7 @@ public class PrecacheController {
                 recordPeriodicTaskIntervalHistogram();
                 cancelPrecacheCompletionTask(mAppContext);
             }
+            recordBatteryLevelAtStart();
             registerDeviceStateReceiver();
             acquirePrecachingWakeLock();
             startPrecachingAfterSyncInit();
@@ -439,6 +440,7 @@ public class PrecacheController {
         if (precachingIncomplete) {
             schedulePrecacheCompletionTask(mAppContext);
         }
+        recordBatteryLevelAtEnd();
         mHandler.removeCallbacks(mTimeoutRunnable);
         mAppContext.unregisterReceiver(mDeviceStateReceiver);
         releasePrecachingWakeLock();
@@ -542,5 +544,22 @@ public class PrecacheController {
         prefs.edit()
                 .putLong(PREF_PRECACHE_PERIODIC_TASK_START_TIME_MS, current_start_time_ms)
                 .apply();
+    }
+
+    private void recordBatteryLevelAtStart() {
+        mDeviceState.saveCurrentBatteryPercentage(mAppContext);
+
+        // Report battery percentage.
+        RecordHistogram.recordPercentageHistogram(
+                "Precache.BatteryPercentage.Start", mDeviceState.getSavedBatteryPercentage());
+    }
+
+    private void recordBatteryLevelAtEnd() {
+        int delta_percentage = mDeviceState.getCurrentBatteryPercentage(mAppContext)
+                - mDeviceState.getSavedBatteryPercentage();
+        if (delta_percentage >= 0) {
+            RecordHistogram.recordPercentageHistogram(
+                    "Precache.BatteryPercentageDiff.End", delta_percentage);
+        }
     }
 }

@@ -45294,6 +45294,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.BatteryPercentage.Start" units="%">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The battery level in percentage when the precache task was started.
+  </summary>
+</histogram>
+
+<histogram name="Precache.BatteryPercentageDiff.End" units="%">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    Measures the difference between the battery level percentage when the
+    precache task is started and ended. This value indicates the possible
+    battery usage due to the precache task. Logged when the precache task ends,
+    which could be due to successful completion, time-out, error conditions, max
+    download limit exceeded, etc.
+  </summary>
+</histogram>
+
 <histogram name="Precache.CacheStatus.NonPrefetch" enum="HttpCachePattern">
   <owner>jamartin@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
