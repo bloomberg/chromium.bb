@@ -355,7 +355,7 @@ void av1_tokenize_palette_sb(const struct ThreadData *const td,
                    (xd->plane[plane != 0].subsampling_y);
   const int cols = (4 * num_4x4_blocks_wide_lookup[bsize]) >>
                    (xd->plane[plane != 0].subsampling_x);
-  const aom_prob (*const probs)[PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] =
+  const aom_prob(*const probs)[PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] =
       plane == 0 ? av1_default_palette_y_color_prob
                  : av1_default_palette_uv_color_prob;
 
@@ -397,15 +397,15 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const TX_TYPE tx_type = get_tx_type(type, xd, block);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int ref = is_inter_block(mbmi);
-  unsigned int (*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[tx_size][type][ref];
-  aom_prob (*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
+  aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[tx_size][type][ref];
 #if CONFIG_RANS || CONFIG_DAALA_EC
-  aom_cdf_prob (*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       cpi->common.fc->coef_cdfs[tx_size][type][ref];
 #endif
-  unsigned int (*const eob_branch)[COEFF_CONTEXTS] =
+  unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[tx_size][type][ref];
   const uint8_t *const band = get_band_translate(tx_size);
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);

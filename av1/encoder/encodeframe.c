@@ -1267,9 +1267,9 @@ static void update_stats(const AV1_COMP *const cpi, ThreadData *td,
     if (is_inter_block(mbmi)) {
       ++td->counts->inter_ext_tx[mbmi->tx_size][mbmi->tx_type];
     } else {
-      ++td->counts
-            ->intra_ext_tx[mbmi->tx_size][intra_mode_to_tx_type_context
-                                              [mbmi->mode]][mbmi->tx_type];
+      ++td->counts->intra_ext_tx[mbmi->tx_size]
+                                [intra_mode_to_tx_type_context[mbmi->mode]]
+                                [mbmi->tx_type];
     }
   }
 
@@ -1313,26 +1313,26 @@ static void update_stats(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_EXT_REFS
 
         if (cm->reference_mode == REFERENCE_MODE_SELECT)
-          counts->comp_inter[av1_get_reference_mode_context(
-              cm, xd)][has_second_ref(mbmi)]++;
+          counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
+                            [has_second_ref(mbmi)]++;
 
         if (has_second_ref(mbmi)) {
 #if CONFIG_EXT_REFS
           const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
 
-          counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p(cm,
-                                                                 xd)][0][bit]++;
+          counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p(cm, xd)][0]
+                             [bit]++;
           if (!bit)
-            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p1(
-                cm, xd)][1][ref0 == LAST_FRAME]++;
+            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p1(cm, xd)][1]
+                               [ref0 == LAST_FRAME]++;
           else
-            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p2(
-                cm, xd)][2][ref0 == GOLDEN_FRAME]++;
-          counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(
-              cm, xd)][0][ref1 == ALTREF_FRAME]++;
+            counts->comp_fwdref[av1_get_pred_context_comp_fwdref_p2(cm, xd)][2]
+                               [ref0 == GOLDEN_FRAME]++;
+          counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
+                             [ref1 == ALTREF_FRAME]++;
 #else
-          counts->comp_ref[av1_get_pred_context_comp_ref_p(
-              cm, xd)][ref0 == GOLDEN_FRAME]++;
+          counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)]
+                          [ref0 == GOLDEN_FRAME]++;
 #endif  // CONFIG_EXT_REFS
         } else {
 #if CONFIG_EXT_REFS
@@ -1340,26 +1340,26 @@ static void update_stats(const AV1_COMP *const cpi, ThreadData *td,
 
           counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0][bit]++;
           if (bit) {
-            counts->single_ref[av1_get_pred_context_single_ref_p2(
-                xd)][1][ref0 != BWDREF_FRAME]++;
+            counts->single_ref[av1_get_pred_context_single_ref_p2(xd)][1]
+                              [ref0 != BWDREF_FRAME]++;
           } else {
             const int bit1 = !(ref0 == LAST2_FRAME || ref0 == LAST_FRAME);
-            counts
-                ->single_ref[av1_get_pred_context_single_ref_p3(xd)][2][bit1]++;
+            counts->single_ref[av1_get_pred_context_single_ref_p3(xd)][2]
+                              [bit1]++;
             if (!bit1) {
-              counts->single_ref[av1_get_pred_context_single_ref_p4(
-                  xd)][3][ref0 != LAST_FRAME]++;
+              counts->single_ref[av1_get_pred_context_single_ref_p4(xd)][3]
+                                [ref0 != LAST_FRAME]++;
             } else {
-              counts->single_ref[av1_get_pred_context_single_ref_p5(
-                  xd)][4][ref0 != LAST3_FRAME]++;
+              counts->single_ref[av1_get_pred_context_single_ref_p5(xd)][4]
+                                [ref0 != LAST3_FRAME]++;
             }
           }
 #else
-          counts->single_ref[av1_get_pred_context_single_ref_p1(
-              xd)][0][ref0 != LAST_FRAME]++;
+          counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0]
+                            [ref0 != LAST_FRAME]++;
           if (ref0 != LAST_FRAME)
-            counts->single_ref[av1_get_pred_context_single_ref_p2(
-                xd)][1][ref0 != GOLDEN_FRAME]++;
+            counts->single_ref[av1_get_pred_context_single_ref_p2(xd)][1]
+                              [ref0 != GOLDEN_FRAME]++;
 #endif  // CONFIG_EXT_REFS
         }
       }

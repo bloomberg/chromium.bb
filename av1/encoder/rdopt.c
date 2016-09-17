@@ -3147,12 +3147,13 @@ static void store_coding_context(const MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   ctx->hybrid_pred_diff = (int)comp_pred_diff[REFERENCE_MODE_SELECT];
 }
 
-static void setup_buffer_inter(
-    const AV1_COMP *const cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
-    BLOCK_SIZE block_size, int mi_row, int mi_col,
-    int_mv frame_nearest_mv[MAX_REF_FRAMES],
-    int_mv frame_near_mv[MAX_REF_FRAMES],
-    struct buf_2d yv12_mb[MAX_REF_FRAMES][MAX_MB_PLANE]) {
+static void setup_buffer_inter(const AV1_COMP *const cpi, MACROBLOCK *x,
+                               MV_REFERENCE_FRAME ref_frame,
+                               BLOCK_SIZE block_size, int mi_row, int mi_col,
+                               int_mv frame_nearest_mv[MAX_REF_FRAMES],
+                               int_mv frame_near_mv[MAX_REF_FRAMES],
+                               struct buf_2d yv12_mb[MAX_REF_FRAMES]
+                                                    [MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;

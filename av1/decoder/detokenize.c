@@ -70,7 +70,7 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
       fc->coef_probs[tx_size][type][ref];
   const aom_prob *prob;
 #if CONFIG_RANS || CONFIG_DAALA_EC
-  const aom_cdf_prob (*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  const aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       fc->coef_cdfs[tx_size][type][ref];
   const aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
 #endif  // CONFIG_RANS
@@ -293,7 +293,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
   const int n = mbmi->palette_mode_info.palette_size[plane != 0];
   int i, j;
   uint8_t *color_map = xd->plane[plane != 0].color_index_map;
-  const aom_prob (*const prob)[PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] =
+  const aom_prob(*const prob)[PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] =
       plane ? av1_default_palette_uv_color_prob
             : av1_default_palette_y_color_prob;
 
