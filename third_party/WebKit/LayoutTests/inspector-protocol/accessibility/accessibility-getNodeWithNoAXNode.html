@@ -26,7 +26,7 @@ function test()
             return;
         }
         var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNodeChain", { "nodeId": node.nodeId, "fetchAncestors": false }, onGotAccessibilityNode);
+        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, onGotAccessibilityNode);
     }
 
     function onGotAccessibilityNode(msg)
@@ -37,6 +37,7 @@ function test()
             return;
         }
 
+        // nodeId isn't always the same, so set it to a known value if it's present
         InspectorTest.log('result: ' + JSON.stringify(msg.result, null, "  "));
         InspectorTest.completeTest();
     }

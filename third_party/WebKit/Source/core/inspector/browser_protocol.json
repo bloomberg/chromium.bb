@@ -4222,13 +4222,12 @@
         ],
         "commands": [
             {
-                "name": "getAXNodeChain",
+                "name": "getAXNode",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." },
-                    { "name": "fetchAncestors", "type": "boolean", "description": "Whether to also push down a partial tree (parent chain)." }
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." }
                 ],
                 "returns": [
-                    { "name": "nodes", "type": "array", "items": { "$ref": "AXNode" }, "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus ancestors if requested." }
+                    { "name": "accessibilityNode", "$ref": "AXNode", "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists.", "optional": true }
                 ],
                 "description": "Fetches the accessibility node for this DOM node, if it exists.",
                 "experimental": true

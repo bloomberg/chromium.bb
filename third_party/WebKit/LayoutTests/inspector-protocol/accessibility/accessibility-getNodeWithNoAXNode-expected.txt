@@ -1,19 +1,17 @@
 
 result: {
-  "nodes": [
-    {
-      "nodeId": "0",
-      "ignored": true,
-      "ignoredReasons": [
-        {
-          "name": "notRendered",
-          "value": {
-            "type": "boolean",
-            "value": true
-          }
+  "accessibilityNode": {
+    "nodeId": "0",
+    "ignored": true,
+    "ignoredReasons": [
+      {
+        "name": "notRendered",
+        "value": {
+          "type": "boolean",
+          "value": true
         }
-      ]
-    }
-  ]
+      }
+    ]
+  }
 }
 

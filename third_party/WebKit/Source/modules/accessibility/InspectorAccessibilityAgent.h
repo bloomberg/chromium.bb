@@ -11,9 +11,7 @@
 
 namespace blink {
 
-class AXObjectCacheImpl;
 class InspectorDOMAgent;
-class LocalFrame;
 class Page;
 
 class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<protocol::Accessibility::Metainfo> {
@@ -25,7 +23,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Protocol methods.
-    void getAXNodeChain(ErrorString*, int domNodeId, bool fetchAncestors, std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*) override;
+    void getAXNode(ErrorString*, int nodeId, Maybe<protocol::Accessibility::AXNode>* accessibilityNode) override;
 
 private:
     Member<Page> m_page;

@@ -8,7 +8,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
-#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/page/Page.h"
@@ -301,7 +300,7 @@ std::unique_ptr<AXValue> createRoleNameValue(AccessibilityRole role)
     return roleNameValue;
 }
 
-std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node, const AXObject* axObject)
+std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node, AXObject* axObject, AXObjectCacheImpl* cacheImpl)
 {
     AXObject::IgnoredReasons ignoredReasons;
 
@@ -312,7 +311,7 @@ std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node, const AXObject* ax
         axID = axObject->axObjectID();
         AccessibilityRole role = axObject->roleValue();
         ignoredNodeObject->setRole(createRoleNameValue(role));
-    } else if (node && !node->layoutObject()) {
+    } else if (!node->layoutObject()) {
         ignoredReasons.append(IgnoredReason(AXNotRendered));
     }
 
@@ -324,18 +323,11 @@ std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node, const AXObject* ax
     return ignoredNodeObject;
 }
 
-std::unique_ptr<AXNode> buildProtocolAXObject(AXObject* axObject)
+std::unique_ptr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCacheImpl* cacheImpl, std::unique_ptr<protocol::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
     std::unique_ptr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setIgnored(false).build();
     nodeObject->setRole(createRoleNameValue(role));
-
-    std::unique_ptr<protocol::Array<AXProperty>> properties = protocol::Array<AXProperty>::create();
-    fillLiveRegionProperties(axObject, properties.get());
-    fillGlobalStates(axObject, properties.get());
-    fillWidgetProperties(axObject, properties.get());
-    fillWidgetStates(axObject, properties.get());
-    fillRelationships(axObject, properties.get());
 
     AXObject::NameSources nameSources;
     String computedName = axObject->name(&nameSources);
@@ -372,41 +364,41 @@ InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page, InspectorDO
 {
 }
 
-void InspectorAccessibilityAgent::getAXNodeChain(ErrorString* errorString, int domNodeId, bool fetchAncestors, std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>* nodes)
+void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId, Maybe<AXNode>* accessibilityNode)
 {
+    Frame* mainFrame = m_page->mainFrame();
+    if (!mainFrame->isLocalFrame()) {
+        *errorString = "Can't inspect out of process frames yet";
+        return;
+    }
+
     if (!m_domAgent->enabled()) {
         *errorString = "DOM agent must be enabled";
         return;
     }
-    Node* node = m_domAgent->assertNode(errorString, domNodeId);
+    Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
         return;
 
     Document& document = node->document();
     document.updateStyleAndLayoutIgnorePendingStylesheets();
     DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
-    LocalFrame* localFrame = document.frame();
-    if (!localFrame) {
-        *errorString = "Frame is detached.";
+    std::unique_ptr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document);
+    AXObjectCacheImpl* cacheImpl = toAXObjectCacheImpl(cache->get());
+    AXObject* axObject = cacheImpl->getOrCreate(node);
+    if (!axObject || axObject->accessibilityIsIgnored()) {
+        *accessibilityNode = buildObjectForIgnoredNode(node, axObject, cacheImpl);
         return;
     }
-    std::unique_ptr<ScopedAXObjectCache> scopedCache = ScopedAXObjectCache::create(document);
-    AXObjectCacheImpl* cache = toAXObjectCacheImpl(scopedCache->get());
-    AXObject* axObject = cache->getOrCreate(node);
-    *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
-    if (!axObject || axObject->accessibilityIsIgnored()) {
-        (*nodes)->addItem(buildObjectForIgnoredNode(node, axObject));
-    } else {
-        (*nodes)->addItem(buildProtocolAXObject(axObject));
-    }
 
-    if (fetchAncestors && axObject) {
-        AXObject* parent = axObject->parentObjectUnignored();
-        while (parent) {
-            (*nodes)->addItem(buildProtocolAXObject(parent));
-            parent = parent->parentObjectUnignored();
-        }
-    }
+    std::unique_ptr<protocol::Array<AXProperty>> properties = protocol::Array<AXProperty>::create();
+    fillLiveRegionProperties(axObject, properties.get());
+    fillGlobalStates(axObject, properties.get());
+    fillWidgetProperties(axObject, properties.get());
+    fillWidgetStates(axObject, properties.get());
+    fillRelationships(axObject, properties.get());
+
+    *accessibilityNode = buildObjectForNode(node, axObject, cacheImpl, std::move(properties));
 }
 
 DEFINE_TRACE(InspectorAccessibilityAgent)

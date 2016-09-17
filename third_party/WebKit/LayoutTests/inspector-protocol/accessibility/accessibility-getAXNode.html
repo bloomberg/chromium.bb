@@ -26,7 +26,7 @@ function test()
             return;
         }
         var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNodeChain", { "nodeId": node.nodeId, "fetchAncestors": false }, onGotAccessibilityNode.bind(null, node));
+        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, onGotAccessibilityNode.bind(null, node));
     }
 
     function onGotAccessibilityNode(domNode, msg)
@@ -38,8 +38,8 @@ function test()
         }
 
         // nodeId isn't always the same, so set it to a known value if it's present
-        if (msg.result && "nodes" in msg.result && "nodeId" in msg.result.nodes[0])
-            msg.result.nodes[0].nodeId = "3";
+        if (msg.result && "accessibilityNode" in msg.result && "nodeId" in msg.result.accessibilityNode)
+            msg.result.accessibilityNode.nodeId = "3";
 
         InspectorTest.log('result: ' + JSON.stringify(msg.result, null, "  "));
         InspectorTest.completeTest();
