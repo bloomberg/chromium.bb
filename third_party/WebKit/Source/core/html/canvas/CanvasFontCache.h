@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class Document;
 class FontCachePurgePreventer;
 

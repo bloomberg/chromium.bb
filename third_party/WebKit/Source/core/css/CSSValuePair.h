@@ -22,11 +22,8 @@
 #define CSSValuePair_h
 
 #include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/Length.h"
-#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -38,11 +35,6 @@ public:
         IdenticalValuesPolicy identicalValuesPolicy)
     {
         return new CSSValuePair(first, second, identicalValuesPolicy);
-    }
-
-    static CSSValuePair* create(const LengthSize& lengthSize, const ComputedStyle& style)
-    {
-        return new CSSValuePair(CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()), CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()), KeepIdenticalValues);
     }
 
     const CSSValue& first() const { return *m_first; }

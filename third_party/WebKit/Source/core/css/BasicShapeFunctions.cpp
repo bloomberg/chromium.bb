@@ -41,18 +41,29 @@ namespace blink {
 static CSSValue* valueForCenterCoordinate(const ComputedStyle& style, const BasicShapeCenterCoordinate& center, EBoxOrient orientation)
 {
     if (center.getDirection() == BasicShapeCenterCoordinate::TopLeft)
-        return CSSPrimitiveValue::create(center.length(), style);
+        return CSSPrimitiveValue::create(center.length(), style.effectiveZoom());
 
     CSSValueID keyword = orientation == HORIZONTAL ? CSSValueRight : CSSValueBottom;
 
-    return CSSValuePair::create(CSSPrimitiveValue::createIdentifier(keyword), CSSPrimitiveValue::create(center.length(), style), CSSValuePair::DropIdenticalValues);
+    return CSSValuePair::create(
+        CSSPrimitiveValue::createIdentifier(keyword),
+        CSSPrimitiveValue::create(center.length(), style.effectiveZoom()),
+        CSSValuePair::DropIdenticalValues);
+}
+
+static CSSValuePair* valueForLengthSize(const LengthSize& lengthSize, const ComputedStyle& style)
+{
+    return CSSValuePair::create(
+        CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()),
+        CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()),
+        CSSValuePair::KeepIdenticalValues);
 }
 
 static CSSPrimitiveValue* basicShapeRadiusToCSSValue(const ComputedStyle& style, const BasicShapeRadius& radius)
 {
     switch (radius.type()) {
     case BasicShapeRadius::Value:
-        return CSSPrimitiveValue::create(radius.value(), style);
+        return CSSPrimitiveValue::create(radius.value(), style.effectiveZoom());
     case BasicShapeRadius::ClosestSide:
         return CSSPrimitiveValue::createIdentifier(CSSValueClosestSide);
     case BasicShapeRadius::FarthestSide:
@@ -91,24 +102,26 @@ CSSValue* valueForBasicShape(const ComputedStyle& style, const BasicShape* basic
 
         polygonValue->setWindRule(polygon->getWindRule());
         const Vector<Length>& values = polygon->values();
-        for (unsigned i = 0; i < values.size(); i += 2)
-            polygonValue->appendPoint(CSSPrimitiveValue::create(values.at(i), style), CSSPrimitiveValue::create(values.at(i + 1), style));
-
+        for (unsigned i = 0; i < values.size(); i += 2) {
+            polygonValue->appendPoint(
+                CSSPrimitiveValue::create(values.at(i), style.effectiveZoom()),
+                CSSPrimitiveValue::create(values.at(i + 1), style.effectiveZoom()));
+        }
         return polygonValue;
     }
     case BasicShape::BasicShapeInsetType: {
         const BasicShapeInset* inset = toBasicShapeInset(basicShape);
         CSSBasicShapeInsetValue* insetValue = CSSBasicShapeInsetValue::create();
 
-        insetValue->setTop(CSSPrimitiveValue::create(inset->top(), style));
-        insetValue->setRight(CSSPrimitiveValue::create(inset->right(), style));
-        insetValue->setBottom(CSSPrimitiveValue::create(inset->bottom(), style));
-        insetValue->setLeft(CSSPrimitiveValue::create(inset->left(), style));
+        insetValue->setTop(CSSPrimitiveValue::create(inset->top(), style.effectiveZoom()));
+        insetValue->setRight(CSSPrimitiveValue::create(inset->right(), style.effectiveZoom()));
+        insetValue->setBottom(CSSPrimitiveValue::create(inset->bottom(), style.effectiveZoom()));
+        insetValue->setLeft(CSSPrimitiveValue::create(inset->left(), style.effectiveZoom()));
 
-        insetValue->setTopLeftRadius(CSSValuePair::create(inset->topLeftRadius(), style));
-        insetValue->setTopRightRadius(CSSValuePair::create(inset->topRightRadius(), style));
-        insetValue->setBottomRightRadius(CSSValuePair::create(inset->bottomRightRadius(), style));
-        insetValue->setBottomLeftRadius(CSSValuePair::create(inset->bottomLeftRadius(), style));
+        insetValue->setTopLeftRadius(valueForLengthSize(inset->topLeftRadius(), style));
+        insetValue->setTopRightRadius(valueForLengthSize(inset->topRightRadius(), style));
+        insetValue->setBottomRightRadius(valueForLengthSize(inset->bottomRightRadius(), style));
+        insetValue->setBottomLeftRadius(valueForLengthSize(inset->bottomLeftRadius(), style));
 
         return insetValue;
     }

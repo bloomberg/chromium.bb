@@ -25,14 +25,8 @@
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Node.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
-#include "platform/fonts/FontMetrics.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 
@@ -144,11 +138,6 @@ CSSPrimitiveValue* CSSPrimitiveValue::create(double value, UnitType type)
     default:
         return new CSSPrimitiveValue(value, type);
     }
-}
-
-CSSPrimitiveValue* CSSPrimitiveValue::create(const Length& value, const ComputedStyle& style)
-{
-    return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
 using CSSTextCache = PersistentHeapHashMap<WeakMember<const CSSPrimitiveValue>, String>;
