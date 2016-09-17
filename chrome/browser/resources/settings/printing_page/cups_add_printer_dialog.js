@@ -75,15 +75,16 @@ Polymer({
       notify: true,
       value: function() {
         return {
-         printerAddress: '',
-         printerDescription: '',
-         printerId: '',
-         printerManufacturer: '',
-         printerModel: '',
-         printerName: '',
-         printerProtocol: 'ipp',
-         printerQueue: '',
-         printerStatus: '',
+          printerAddress: '',
+          printerDescription: '',
+          printerId: '',
+          printerManufacturer: '',
+          printerModel: '',
+          printerName: '',
+          printerPPDPath: '',
+          printerProtocol: 'ipp',
+          printerQueue: '',
+          printerStatus: '',
         };
       },
     },
@@ -187,6 +188,21 @@ Polymer({
   },
 
   /** @private */
+  onBrowseFile_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        getCupsPrinterPPDPath().then(this.printerPPDPathChanged_.bind(this));
+  },
+
+  /**
+   * @param {string} path
+   * @private
+   */
+  printerPPDPathChanged_: function(path) {
+    this.newPrinter.printerPPDPath = path;
+    this.$$('paper-input').value = this.getBaseName_(path);
+  },
+
+  /** @private */
   switchToManualAddDialog_: function() {
     this.$$('add-printer-dialog').close();
     this.fire('open-manually-add-printer-dialog');
@@ -201,6 +217,15 @@ Polymer({
   switchToConfiguringDialog_: function() {
     this.$$('add-printer-dialog').close();
     this.fire('open-configuring-printer-dialog');
+  },
+
+  /**
+   * @param {string} path The full path of the file
+   * @return {string} The base name of the file
+   * @private
+   */
+  getBaseName_: function(path) {
+    return path.substring(path.lastIndexOf('/') + 1);
   },
 });
 

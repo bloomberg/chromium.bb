@@ -11,7 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
@@ -38,6 +43,9 @@ void CupsPrintersHandler::RegisterMessages() {
       "removeCupsPrinter",
       base::Bind(&CupsPrintersHandler::HandleRemoveCupsPrinter,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "selectPPDFile", base::Bind(&CupsPrintersHandler::HandleSelectPPDFile,
+                                  base::Unretained(this)));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrintersList(
@@ -107,6 +115,33 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   CHECK(args->GetString(0, &printer_id));
   PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RemovePrinter(
       printer_id);
+}
+
+void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &webui_callback_id_));
+
+  base::FilePath downloads_path = DownloadPrefs::FromDownloadManager(
+      content::BrowserContext::GetDownloadManager(profile_))->DownloadPath();
+
+  select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  gfx::NativeWindow owning_window =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents())
+          ->window()
+          ->GetNativeWindow();
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), downloads_path,
+      nullptr, 0, FILE_PATH_LITERAL(""), owning_window, nullptr);
+}
+
+void CupsPrintersHandler::FileSelected(const base::FilePath& path,
+                                       int index,
+                                       void* params) {
+  DCHECK(!webui_callback_id_.empty());
+  ResolveJavascriptCallback(base::StringValue(webui_callback_id_),
+                            base::StringValue(path.value()));
+  webui_callback_id_.clear();
 }
 
 }  // namespace settings

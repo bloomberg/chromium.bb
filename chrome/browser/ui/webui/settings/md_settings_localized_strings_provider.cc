@@ -1096,6 +1096,9 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"selectManufacturerModelMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_MANUFACTURER_MODEL},
     {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
+    {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
+    {"selectDriverButtonText",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

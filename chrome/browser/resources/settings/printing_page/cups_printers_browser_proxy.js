@@ -9,15 +9,16 @@
 
 /**
  * @typedef {{
- *   printerId: string,
- *   printerName: string,
+ *   printerAddress: string,
  *   printerDescription: string,
+ *   printerId: string,
  *   printerManufacturer: string,
  *   printerModel: string,
- *   printerStatus: string,
- *   printerAddress: string,
+ *   printerName: string,
+ *   printerPPDPath: string,
  *   printerProtocol: string,
- *   printerQueue: string
+ *   printerQueue: string,
+ *   printerStatus: string
  * }}
  */
 var CupsPrinterInfo;
@@ -51,6 +52,10 @@ cr.define('settings', function() {
      */
     removeCupsPrinter: function(printerId) {},
 
+    /**
+     * @return {!Promise<string>} The full path of the printer PPD file.
+     */
+    getCupsPrinterPPDPath: function() {},
   };
 
   /**
@@ -61,19 +66,24 @@ cr.define('settings', function() {
   cr.addSingletonGetter(CupsPrintersBrowserProxyImpl);
 
   CupsPrintersBrowserProxyImpl.prototype = {
-    /** override */
+    /** @override */
     getCupsPrintersList: function() {
       return cr.sendWithPromise('getCupsPrintersList');
     },
 
-    /** override */
+    /** @override */
     updateCupsPrinter: function(printerId, printerName) {
       chrome.send('updateCupsPrinter', [printerId, printerName]);
     },
 
-    /** override */
+    /** @override */
     removeCupsPrinter: function(printerId) {
       chrome.send('removeCupsPrinter', [printerId]);
+    },
+
+    /** @override */
+    getCupsPrinterPPDPath: function() {
+      return cr.sendWithPromise('selectPPDFile');
     },
   };
 

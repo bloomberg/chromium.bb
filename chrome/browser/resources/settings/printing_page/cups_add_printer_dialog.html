@@ -206,8 +206,32 @@
         color: var(--google-grey-700);
       }
 
+      .last {
+        margin-top: 20px;
+      }
+
+      paper-input {
+        --paper-input-container-color: var(--google-grey-500);
+        --paper-input-container-input: {
+          font-size: inherit;
+          border: 1px solid lightgray;
+        };
+        --paper-input-container-underline: {
+          display: none;
+        };
+        --paper-input-container-underline-focus: {
+          display: none;
+        };
+        width: 340px;
+      }
+
       #manuallyAddPrinterButton {
         -webkit-margin-end: 210px;
+      }
+
+      #browseButton {
+        color: black;
+        font-size: inherit;
       }
     </style>
     <add-printer-dialog>
@@ -232,6 +256,18 @@
               <drop-down-search-box items="[[modelList]]"
                   selected-item="{{newPrinter.printerModel}}">
               </drop-down-search-box>
+            </div>
+          </div>
+        </div>
+        <div class="settings-box two-line last">
+          <div class="start">
+            <div class="label">$i18n{selectDriver}</div>
+            <div class="secondary">
+              <paper-input no-label-float readonly>
+                <paper-button suffix id="browseButton" on-tap="onBrowseFile_">
+                  $i18n{selectDriverButtonText}
+                </paper-button>
+              </paper-input>
             </div>
           </div>
         </div>

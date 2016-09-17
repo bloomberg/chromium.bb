@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
 class ListValue;
@@ -18,7 +19,8 @@ namespace chromeos {
 namespace settings {
 
 // Chrome OS CUPS printing settings page UI handler.
-class CupsPrintersHandler : public ::settings::SettingsPageUIHandler {
+class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
+                            public ui::SelectFileDialog::Listener {
  public:
   explicit CupsPrintersHandler(content::WebUI* webui);
   ~CupsPrintersHandler() override;
@@ -31,11 +33,19 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler {
  private:
   // Gets all CUPS printers and return it to WebUI.
   void HandleGetCupsPrintersList(const base::ListValue* args);
-
   void HandleUpdateCupsPrinter(const base::ListValue* args);
   void HandleRemoveCupsPrinter(const base::ListValue* args);
+  void HandleSelectPPDFile(const base::ListValue* args);
+
+  // ui::SelectFileDialog::Listener override:
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
 
   Profile* profile_;
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  std::string webui_callback_id_;
+
   base::WeakPtrFactory<CupsPrintersHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintersHandler);
