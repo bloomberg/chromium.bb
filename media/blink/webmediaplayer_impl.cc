@@ -1579,13 +1579,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 }
 
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
-  if (!delegate_)
-    return;
-
-  // Dedupe state changes in the general case, but make an exception for gone
-  // since the delegate will use that information to decide when the idle timer
-  // should be fired.
-  if (delegate_state_ == new_state && new_state != DelegateState::GONE)
+  if (!delegate_ || delegate_state_ == new_state)
     return;
 
   delegate_state_ = new_state;

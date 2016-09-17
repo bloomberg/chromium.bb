@@ -63,11 +63,12 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   bool OnMessageReceived(const IPC::Message& msg) override;
   void OnDestruct() override;
 
-  // Zeros out |idle_cleanup_interval_|, and sets |idle_timeout_| to
-  // |idle_timeout|. A zero cleanup interval will cause the idle timer to run
-  // with each run of the message loop.
+  // Zeros out |idle_cleanup_interval_|, sets |idle_timeout_| to |idle_timeout|,
+  // and |is_low_end_device_| to |is_low_end_device|. A zero cleanup interval
+  // will cause the idle timer to run with each run of the message loop.
   void SetIdleCleanupParamsForTesting(base::TimeDelta idle_timeout,
-                                      base::TickClock* tick_clock);
+                                      base::TickClock* tick_clock,
+                                      bool is_low_end_device);
   bool IsIdleCleanupTimerRunningForTesting() const {
     return idle_cleanup_timer_.IsRunning();
   }
@@ -86,8 +87,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void AddIdleDelegate(int delegate_id);
   void RemoveIdleDelegate(int delegate_id);
 
-  // Runs periodically to suspend idle delegates in |idle_delegate_map_|.
-  void CleanupIdleDelegates();
+  // Runs periodically to suspend idle delegates in |idle_delegate_map_| which
+  // have been idle for longer than |timeout|.
+  void CleanupIdleDelegates(base::TimeDelta timeout);
 
   // Setter for |is_playing_background_video_| that updates the metrics.
   void SetIsPlayingBackgroundVideo(bool is_playing);
@@ -99,7 +101,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // inactivity these players will be suspended to release unused resources.
   bool idle_cleanup_running_ = false;
   std::map<int, base::TimeTicks> idle_delegate_map_;
-  base::RepeatingTimer idle_cleanup_timer_;
+  base::Timer idle_cleanup_timer_;
 
   // Amount of time allowed to elapse after a delegate enters the paused before
   // the delegate is suspended.
@@ -128,6 +130,10 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // OnMediaDelegatePlay() should allow the videos to play in the background or
   // not.
   std::set<int> playing_videos_;
+
+  // Determined at construction time based on system information; determines
+  // when the idle cleanup timer should be fired more aggressively.
+  bool is_low_end_device_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

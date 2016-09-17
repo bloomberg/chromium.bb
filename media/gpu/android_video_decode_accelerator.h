@@ -374,6 +374,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // when the EOS buffer is received.
   bool codec_needs_reset_;
 
+  // True if surface creation and |picture_buffer_manager_| initialization has
+  // been defered until the first Decode() call.
+  bool defer_surface_creation_;
+
   // Copy of the VDA::Config we were given.
   Config config_;
 

@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -324,6 +325,16 @@ class AVDAManager {
     waiter->OnSurfaceAvailable(true);
   }
 
+  // On low end devices (< KitKat is always low-end due to buggy MediaCodec),
+  // defer the surface creation until the codec is actually used if we know no
+  // software fallback exists.
+  bool ShouldDeferSurfaceCreation(int surface_id, VideoCodec codec) {
+    return surface_id == AndroidVideoDecodeAccelerator::Config::kNoSurfaceID &&
+           codec == kCodecH264 && !thread_avda_instances_.empty() &&
+           (base::android::BuildInfo::GetInstance()->sdk_int() <= 18 ||
+            base::SysInfo::IsLowEndDevice());
+  }
+
  private:
   friend struct base::DefaultLazyInstanceTraits<AVDAManager>;
 
@@ -425,6 +436,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       defer_errors_(false),
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
+      defer_surface_creation_(false),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -471,15 +483,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   codec_config_->initial_expected_coded_size_ =
       config.initial_expected_coded_size;
 
-  // We signalled that we support deferred initialization, so see if the client
-  // does also.
-  deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
-
-  if (config_.is_encrypted && !deferred_initialization_pending_) {
-    DLOG(ERROR) << "Deferred initialization must be used for encrypted streams";
-    return false;
-  }
-
   if (codec_config_->codec_ != kCodecVP8 &&
       codec_config_->codec_ != kCodecVP9 &&
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -507,13 +510,31 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (!make_context_current_cb_.Run()) {
-    LOG(ERROR) << "Failed to make this decoder's GL context current.";
+  // If we're low on resources, we may decide to defer creation of the surface
+  // until the codec is actually used.
+  if (g_avda_manager.Get().ShouldDeferSurfaceCreation(config_.surface_id,
+                                                      codec_config_->codec_)) {
+    DCHECK(!deferred_initialization_pending_);
+
+    // We should never be here if a SurfaceView is required.
+    DCHECK_EQ(config_.surface_id, Config::kNoSurfaceID);
+    DCHECK(g_avda_manager.Get().AllocateSurface(config_.surface_id, this));
+
+    defer_surface_creation_ = true;
+    NotifyInitializationComplete(true);
+    return true;
+  }
+
+  // We signaled that we support deferred initialization, so see if the client
+  // does also.
+  deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
+  if (config_.is_encrypted && !deferred_initialization_pending_) {
+    DLOG(ERROR) << "Deferred initialization must be used for encrypted streams";
     return false;
   }
 
   if (g_avda_manager.Get().AllocateSurface(config_.surface_id, this)) {
-    // We have succesfully owned the surface, so finish initialization now.
+    // We have successfully owned the surface, so finish initialization now.
     return InitializePictureBufferManager();
   }
 
@@ -524,6 +545,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
 void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
   DCHECK(deferred_initialization_pending_);
+  DCHECK(!defer_surface_creation_);
 
   if (!success || !InitializePictureBufferManager()) {
     NotifyInitializationComplete(false);
@@ -532,6 +554,11 @@ void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
 }
 
 bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
+  if (!make_context_current_cb_.Run()) {
+    LOG(ERROR) << "Failed to make this decoder's GL context current.";
+    return false;
+  }
+
   codec_config_->surface_ =
       picture_buffer_manager_.Initialize(this, config_.surface_id);
   if (codec_config_->surface_.IsEmpty())
@@ -552,7 +579,8 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
     return true;
   }
 
-  if (deferred_initialization_pending_) {
+  if (deferred_initialization_pending_ || defer_surface_creation_) {
+    defer_surface_creation_ = false;
     ConfigureMediaCodecAsynchronously();
     return true;
   }
@@ -790,7 +818,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         // decoded images. Breaking their connection to the decoded image will
         // cause rendering of black frames. Instead, we let the existing
         // PictureBuffers live on and we simply update their size the next time
-        // they're attachted to an image of the new resolution. See the
+        // they're attached to an image of the new resolution. See the
         // size update in |SendDecodedFrameToClient| and https://crbug/587994.
         if (output_picture_buffers_.empty() && !picturebuffers_requested_) {
           picturebuffers_requested_ = true;
@@ -928,6 +956,12 @@ void AndroidVideoDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (defer_surface_creation_ && !InitializePictureBufferManager()) {
+    POST_ERROR(PLATFORM_FAILURE,
+               "Failed deferred surface and MediaCodec initialization.");
+    return;
+  }
+
   // If we previously deferred a codec restart, take care of it now. This can
   // happen on older devices where configuration changes require a codec reset.
   if (codec_needs_reset_) {
@@ -1027,7 +1061,7 @@ void AndroidVideoDecodeAccelerator::Flush() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (state_ == SURFACE_DESTROYED)
+  if (state_ == SURFACE_DESTROYED || defer_surface_creation_)
     NotifyFlushDone();
   else
     StartCodecDrain(DRAIN_FOR_FLUSH);
@@ -1258,7 +1292,7 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
 
   // Flush the codec if possible, or create a new one if not.
   if (!did_codec_error_happen &&
-      !media::MediaCodecUtil::CodecNeedsFlushWorkaround(media_codec_.get())) {
+      !MediaCodecUtil::CodecNeedsFlushWorkaround(media_codec_.get())) {
     DVLOG(3) << __FUNCTION__ << " Flushing MediaCodec.";
     media_codec_->Flush();
     // Since we just flushed all the output buffers, make sure that nothing is
@@ -1276,6 +1310,16 @@ void AndroidVideoDecodeAccelerator::Reset() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Reset");
+
+  if (defer_surface_creation_) {
+    DCHECK(!media_codec_);
+    DCHECK(pending_bitstream_records_.empty());
+    DCHECK_EQ(state_, NO_ERROR);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                              weak_this_factory_.GetWeakPtr()));
+    return;
+  }
 
   while (!pending_bitstream_records_.empty()) {
     int32_t bitstream_buffer_id =
@@ -1635,10 +1679,10 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   // is disabled (http://crbug.com/582170).
   if (gpu_preferences.enable_threaded_texture_mailboxes) {
     capabilities.flags |=
-        media::VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY;
-  } else if (media::MediaCodecUtil::IsSurfaceViewOutputSupported()) {
-    capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
-        SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
+        VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY;
+  } else if (MediaCodecUtil::IsSurfaceViewOutputSupported()) {
+    capabilities.flags |=
+        VideoDecodeAccelerator::Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
   }
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

@@ -276,12 +276,10 @@ TEST_F(WebMediaPlayerImplTest, DidLoadingProgressClearsIdle) {
   EXPECT_CALL(strict_delegate, IsPlayingBackgroundVideo()).Times(AnyNumber());
   InitializeWebMediaPlayerImpl(strict_delegate.AsWeakPtr());
   EXPECT_FALSE(IsSuspended());
-  EXPECT_CALL(strict_delegate, PlayerGone(0));
   wmpi_->OnSuspendRequested(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsSuspended());
   AddBufferedRanges();
-  EXPECT_CALL(strict_delegate, PlayerGone(0));
   wmpi_->didLoadingProgress();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSuspended());
