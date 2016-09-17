@@ -108,6 +108,11 @@ class WebViewPlugin : public blink::WebPlugin,
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
 
+  // didReceiveResponse() overrides both WebPlugin and WebFrameClient.
+  // The WebFrameClient variant receives callbacks, but the WebPlugin variant
+  // shouldn't.
+  // TODO(japhet): WebViewPlugin shouldn't be a WebFrameClient, after which
+  // didReceiveResponse() should have a NOTREACHED().
   void didReceiveResponse(const blink::WebURLResponse& response) override {}
   void didReceiveData(const char* data, int data_length) override;
   void didFinishLoading() override;
