@@ -283,6 +283,8 @@ source_set("browser") {
     "ntp_snippets/ios_chrome_content_suggestions_service_factory.h",
     "open_from_clipboard/create_clipboard_recent_content.h",
     "open_from_clipboard/create_clipboard_recent_content.mm",
+    "open_url_util.h",
+    "open_url_util.mm",
     "passwords/credential_manager.h",
     "passwords/credential_manager.mm",
     "passwords/ios_chrome_password_manager_client.h",
