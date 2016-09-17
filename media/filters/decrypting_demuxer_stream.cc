@@ -305,6 +305,8 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
     if (need_to_try_again_if_nokey) {
       // The |state_| is still kPendingDecrypt.
+      MEDIA_LOG(INFO, media_log_) << GetDisplayName()
+                                  << ": key was added, resuming decrypt";
       DecryptPendingBuffer();
       return;
     }
@@ -335,6 +337,8 @@ void DecryptingDemuxerStream::OnKeyAdded() {
   }
 
   if (state_ == kWaitingForKey) {
+    MEDIA_LOG(INFO, media_log_) << GetDisplayName()
+                                << ": key added, resuming decrypt";
     state_ = kPendingDecrypt;
     DecryptPendingBuffer();
   }
