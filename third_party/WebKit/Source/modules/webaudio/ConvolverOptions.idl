@@ -4,6 +4,6 @@
 
 // See https://webaudio.github.io/web-audio-api/#convolveroptions
 dictionary ConvolverOptions : AudioNodeOptions {
-    AudioBuffer buffer;
+    AudioBuffer? buffer;
     boolean disableNormalization = false;
 };
