@@ -26,10 +26,10 @@ function test()
             return;
         }
         var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNodeChain", { "nodeId": node.nodeId, "fetchAncestors": false }, onGotAccessibilityNode.bind(null, node));
+        InspectorTest.sendCommand("Accessibility.getAXNodeChain", { "nodeId": node.nodeId, "fetchAncestors": true }, onGotAccessibilityNodes.bind(null, node));
     }
 
-    function onGotAccessibilityNode(domNode, msg)
+    function onGotAccessibilityNodes(domNode, msg)
     {
         if (msg.error) {
             InspectorTest.log(msg.error.message);
@@ -38,8 +38,12 @@ function test()
         }
 
         // nodeId isn't always the same, so set it to a known value if it's present
-        if (msg.result && "nodes" in msg.result && "nodeId" in msg.result.nodes[0])
-            msg.result.nodes[0].nodeId = "3";
+        if (msg.result && "nodes" in msg.result) {
+            for (node of msg.result.nodes) {
+                if ("nodeId" in node)
+                    node.nodeId = "<id>";
+            }
+        }
 
         InspectorTest.log('result: ' + JSON.stringify(msg.result, null, "  "));
         InspectorTest.completeTest();
@@ -49,6 +53,10 @@ function test()
 </script>
 </head>
 <body onLoad="runTest();">
-  <input type="text"></input>
+  <div role="main">
+    <div role="article" aria-label="Top story">
+      <input type="text"></input>
+    </div>
+  </div>
 </body>
 </html>
