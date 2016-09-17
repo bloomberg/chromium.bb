@@ -30,9 +30,9 @@ Tree link: https://github.com/PolymerElements/iron-a11y-keys/tree/v1.0.6
 
 Name: iron-a11y-keys-behavior
 Repository: git://github.com/PolymerElements/iron-a11y-keys-behavior.git
-Tree: v1.1.8
-Revision: 078d64750538735c27e1c68ade907a6b58aceb43
-Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v1.1.8
+Tree: v1.1.9
+Revision: 26243e0f8687b8ea3d95eed3cefb7661a388dbce
+Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v1.1.9
 
 Name: iron-autogrow-textarea
 Repository: git://github.com/PolymerElements/iron-autogrow-textarea.git
@@ -234,9 +234,9 @@ Tree link: https://github.com/PolymerElements/paper-drawer-panel/tree/v1.0.10
 
 Name: paper-dropdown-menu
 Repository: git://github.com/PolymerElements/paper-dropdown-menu.git
-Tree: v1.4.0
-Revision: dd0eb79be7d79d33c041d65fe6877c8da53acee4
-Tree link: https://github.com/PolymerElements/paper-dropdown-menu/tree/v1.4.0
+Tree: v1.4.1
+Revision: d4178271f56b2237870e5761d3717ee6d99b3ab4
+Tree link: https://github.com/PolymerElements/paper-dropdown-menu/tree/v1.4.1
 
 Name: paper-fab
 Repository: git://github.com/PolymerElements/paper-fab.git
@@ -258,9 +258,9 @@ Tree link: https://github.com/PolymerElements/paper-icon-button/tree/v1.1.2
 
 Name: paper-input
 Repository: git://github.com/PolymerElements/paper-input.git
-Tree: v1.1.18
-Revision: 5cfb50307000b0216c6bd200c3bcadad22519680
-Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.18
+Tree: v1.1.19
+Revision: d248dad17af3ee46a0701a664e0f304c1619770d
+Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.19
 
 Name: paper-item
 Repository: git://github.com/PolymerElements/paper-item.git
@@ -288,9 +288,9 @@ Tree link: https://github.com/PolymerElements/paper-menu/tree/v1.2.2
 
 Name: paper-menu-button
 Repository: git://github.com/PolymerElements/paper-menu-button.git
-Tree: v1.5.1
-Revision: 1a4d0a04177782beaf7a6c855ad10cf545da338f
-Tree link: https://github.com/PolymerElements/paper-menu-button/tree/v1.5.1
+Tree: v1.5.2
+Revision: 0f43421bc76ca863b16b82b8e4c67efb0267b818
+Tree link: https://github.com/PolymerElements/paper-menu-button/tree/v1.5.2
 
 Name: paper-progress
 Repository: git://github.com/PolymerElements/paper-progress.git

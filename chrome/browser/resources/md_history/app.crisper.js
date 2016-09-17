@@ -2013,7 +2013,13 @@ Polymer.IronScrollTargetBehavior = {
     return validKey;
   }
   function normalizedKeyForEvent(keyEvent, noSpecialChars) {
-    return transformKey(keyEvent.key, noSpecialChars) || transformKeyIdentifier(keyEvent.keyIdentifier) || transformKeyCode(keyEvent.keyCode) || transformKey(keyEvent.detail ? keyEvent.detail.key : keyEvent.detail, noSpecialChars) || '';
+    if (keyEvent.key) {
+      return transformKey(keyEvent.key, noSpecialChars);
+    }
+    if (keyEvent.detail && keyEvent.detail.key) {
+      return transformKey(keyEvent.detail.key, noSpecialChars);
+    }
+    return transformKeyIdentifier(keyEvent.keyIdentifier) || transformKeyCode(keyEvent.keyCode) || '';
   }
   function keyComboMatchesEvent(keyCombo, event) {
     var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
@@ -5387,37 +5393,37 @@ Polymer({
   is: 'cr-lazy-render',
   "extends": 'template',
   behaviors: [ Polymer.Templatizer ],
-  _renderPromise: null,
-  _child: null,
+  renderPromise_: null,
+  child_: null,
   get: function() {
-    if (!this._renderPromise) {
-      this._renderPromise = new Promise(function(resolve) {
+    if (!this.renderPromise_) {
+      this.renderPromise_ = new Promise(function(resolve) {
         this._debounceTemplate(function() {
-          this._render();
-          this._renderPromise = null;
+          this.render_();
+          this.renderPromise_ = null;
           resolve(this.getIfExists());
         }.bind(this));
       }.bind(this));
     }
-    return this._renderPromise;
+    return this.renderPromise_;
   },
   getIfExists: function() {
-    return this._child;
+    return this.child_;
   },
-  _render: function() {
+  render_: function() {
     if (!this.ctor) this.templatize(this);
     var parentNode = this.parentNode;
-    if (parentNode && !this._child) {
+    if (parentNode && !this.child_) {
       var instance = this.stamp({});
-      this._child = instance.root.querySelector('*');
+      this.child_ = instance.root.firstElementChild;
       parentNode.insertBefore(instance.root, this);
     }
   },
   _forwardParentProp: function(prop, value) {
-    if (this._child) this._child._templateInstance[prop] = value;
+    if (this.child_) this.child_._templateInstance[prop] = value;
   },
   _forwardParentPath: function(path, value) {
-    if (this._child) this._child._templateInstance.notifyPath(path, value, true);
+    if (this.child_) this.child_._templateInstance.notifyPath(path, value, true);
   }
 });
 

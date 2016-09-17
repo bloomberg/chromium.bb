@@ -1065,7 +1065,13 @@ Polymer.IronResizableBehavior = {
     return validKey;
   }
   function normalizedKeyForEvent(keyEvent, noSpecialChars) {
-    return transformKey(keyEvent.key, noSpecialChars) || transformKeyIdentifier(keyEvent.keyIdentifier) || transformKeyCode(keyEvent.keyCode) || transformKey(keyEvent.detail ? keyEvent.detail.key : keyEvent.detail, noSpecialChars) || '';
+    if (keyEvent.key) {
+      return transformKey(keyEvent.key, noSpecialChars);
+    }
+    if (keyEvent.detail && keyEvent.detail.key) {
+      return transformKey(keyEvent.detail.key, noSpecialChars);
+    }
+    return transformKeyIdentifier(keyEvent.keyIdentifier) || transformKeyCode(keyEvent.keyCode) || '';
   }
   function keyComboMatchesEvent(keyCombo, event) {
     var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);

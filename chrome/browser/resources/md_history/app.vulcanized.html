@@ -1530,6 +1530,7 @@ paper-icon-button {
         color: var(--paper-input-container-input-color,var(--primary-text-color));;
         -webkit-appearance: none;
         text-align: inherit;
+        vertical-align: bottom;
 
         font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
         ;
@@ -3450,7 +3451,7 @@ paper-tabs {
   cursor: var(--cr-actionable_-_cursor);
 }
 
-[selectable] :focus {
+[selectable]:focus, [selectable] > :focus {
   background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
 }
 
@@ -4391,7 +4392,7 @@ paper-spinner {
   cursor: var(--cr-actionable_-_cursor);
 }
 
-[selectable] :focus {
+[selectable]:focus, [selectable] > :focus {
   background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
 }
 
@@ -4766,7 +4767,7 @@ paper-spinner {
   cursor: var(--cr-actionable_-_cursor);
 }
 
-[selectable] :focus {
+[selectable]:focus, [selectable] > :focus {
   background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
 }
 
