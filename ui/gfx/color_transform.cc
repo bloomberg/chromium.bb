@@ -287,6 +287,19 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       v = fmax(0.0f, v);
       return powf(48.0f * v + 52.37f, 1.0f / 2.6f);
 
+    // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
+    case ColorSpace::TransferID::ARIB_STD_B67: {
+      const float a = 0.17883277f;
+      const float b = 0.28466892f;
+      const float c = 0.55991073f;
+      const float Lmax = 12.0f;
+      v = Lmax * fmax(0.0f, v);
+      if (v <= 1)
+        return 0.5f * sqrtf(v);
+      else
+        return a * log(v - b) + c;
+    }
+
     // Chrome-specific values below
     case ColorSpace::TransferID::GAMMA24:
       v = fmax(0.0f, v);
@@ -402,6 +415,22 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
     case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
       v = fmax(0.0f, v);
       return fmin(2.3f * pow(v, 2.8f), v / 5.0f + 0.8f);
+
+    // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
+    case ColorSpace::TransferID::ARIB_STD_B67: {
+      v = fmax(0.0f, v);
+      const float a = 0.17883277f;
+      const float b = 0.28466892f;
+      const float c = 0.55991073f;
+      const float Lmax = 12.0f;
+      float v_ = 0.0f;
+      if (v <= 0.5f) {
+        v_ = (v * 2.0f) * (v * 2.0f);
+      } else {
+        v_ = exp((v - c) / a) + b;
+      }
+      return v_ / Lmax;
+    }
   }
 }
 

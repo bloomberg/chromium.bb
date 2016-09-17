@@ -70,6 +70,7 @@ class GFX_EXPORT ColorSpace {
     BT2020_12 = 15,
     SMPTEST2084 = 16,
     SMPTEST428_1 = 17,
+    ARIB_STD_B67 = 18,  // AKA hybrid-log gamma, HLG.
 
     // Chrome-specific values start at 1000.
     GAMMA24 = 1000,
