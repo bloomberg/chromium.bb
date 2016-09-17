@@ -7,7 +7,6 @@ import("//build/config/ios/rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//build/util/version.gni")
-import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
 

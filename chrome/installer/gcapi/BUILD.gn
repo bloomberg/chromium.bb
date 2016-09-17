@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/version.gni")
+import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
 assert(is_win)
@@ -34,7 +34,7 @@ copy("copy_gcapi_header") {
   ]
 }
 
-process_version("gcapi_dll_version") {
+process_version_rc_template("gcapi_dll_version") {
   template_file = "gcapi_dll_version.rc.version"
   output = "$target_gen_dir/gcapi_dll_version.rc"
 }

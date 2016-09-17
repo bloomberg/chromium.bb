@@ -4,11 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-
-# Technically, this directory should not depend on files from src/chrome, but
-# that's where the VERSION file is. This  should probably all be moved to
-# src/build.
-import("//chrome/version.gni")
+import("//build/util/process_version.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -280,6 +276,10 @@ test("app_shell_unittests") {
 
 process_version("version_header") {
   template_file = "common/version.h.in"
+  sources = [
+    "//build/util/LASTCHANGE",
+    "//chrome/VERSION",
+  ]
   output = "$target_gen_dir/common/version.h"
 }
 

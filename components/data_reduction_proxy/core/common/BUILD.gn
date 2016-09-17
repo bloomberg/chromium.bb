@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/version.gni")
+import("//build/util/process_version.gni")
 
 # Variables:
 #   deps: Extra dependencies.
@@ -109,6 +109,9 @@ source_set("unit_tests") {
 
 process_version("version_header") {
   template_file = "version.h.in"
+  sources = [
+    "//chrome/VERSION",
+  ]
   output = "$target_gen_dir/version.h"
   extra_args = [
     "-e",

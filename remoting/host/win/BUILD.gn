@@ -457,8 +457,6 @@ remoting_localize("remoting_windows_resources") {
     "version.rc.jinja2",
   ]
 
-  # TODO(zijiehe): Export lastchange_path from
-  # //chrome/version.gni:process_version
   variables = [
     rebase_path(chrome_version_file),
     rebase_path(remoting_version_file),

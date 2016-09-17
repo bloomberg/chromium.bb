@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/win/manifest.gni")
+import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//chrome/version.gni")
 
 version_assembly_output_file = "$target_gen_dir/version_assembly.manifest"
 
@@ -12,6 +12,9 @@ version_assembly_output_file = "$target_gen_dir/version_assembly.manifest"
 process_version("chrome_exe_version_manifest") {
   visibility = [ ":*" ]
   template_file = "chrome_exe_manifest.template"
+  sources = [
+    "//chrome/VERSION",
+  ]
   output = version_assembly_output_file
 }
 
@@ -36,6 +39,9 @@ windows_manifest("chrome_exe_manifest") {
 # directory where Chrome finds chrome.dll.
 process_version("version_assembly_manifest") {
   template_file = "version_assembly_manifest.template"
+  sources = [
+    "//chrome/VERSION",
+  ]
   output = "$root_build_dir/$chrome_version_full.manifest"
   process_only = true
 }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/version.gni")
+import("//build/util/process_version.gni")
 import("//testing/test.gni")
 
 component("common") {
@@ -82,6 +82,9 @@ source_set("unit_tests") {
 }
 
 process_version("protocol_version") {
+  sources = [
+    "//chrome/VERSION",
+  ]
   template_file = "protocol_version.h.version"
   output = "$target_gen_dir/protocol_version.h"
 }
