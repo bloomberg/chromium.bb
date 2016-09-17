@@ -542,13 +542,10 @@ void Predictor::SerializeReferrers(base::ListValue* referral_list) {
   referral_list->AppendInteger(kPredictorReferrerVersion);
   for (Referrers::const_reverse_iterator it = referrers_.rbegin();
        it != referrers_.rend(); ++it) {
-    // Serialize the list of subresource names.
-    base::Value* subresource_list(it->second.Serialize());
-
     // Create a list for each referer.
     std::unique_ptr<base::ListValue> motivator(new base::ListValue);
     motivator->AppendString(it->first.spec());
-    motivator->Append(subresource_list);
+    motivator->Append(it->second.Serialize());
 
     referral_list->Append(std::move(motivator));
   }

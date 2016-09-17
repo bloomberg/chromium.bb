@@ -6,9 +6,11 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -540,11 +542,11 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     ListPrefUpdate update(&pref_service_,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
     account_tracker_service_.Initialize(client_.get());
 
@@ -599,16 +601,16 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     ListPrefUpdate update(&pref_service_,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email1));
     dict->SetString("email", base::UTF8ToUTF16(email1));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id1));
-    dict = new base::DictionaryValue();
-    update->Append(dict);
+    update->Append(std::move(dict));
+    dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email2));
     dict->SetString("email", base::UTF8ToUTF16(email2));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id2));
+    update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
     account_tracker_service_.Initialize(client_.get());
 

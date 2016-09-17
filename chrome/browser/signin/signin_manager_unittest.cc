@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -505,11 +506,11 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    update->Append(std::move(dict));
 
     tracker->Shutdown();
     tracker->Initialize(signin_client());
@@ -539,11 +540,11 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    update->Append(std::move(dict));
 
     tracker->Shutdown();
     tracker->Initialize(signin_client());
@@ -574,11 +575,11 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
     ListPrefUpdate update(client_prefs,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
+    update->Append(std::move(dict));
 
     tracker->Shutdown();
     tracker->Initialize(signin_client());

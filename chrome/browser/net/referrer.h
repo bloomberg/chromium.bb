@@ -15,18 +15,16 @@
 #ifndef CHROME_BROWSER_NET_REFERRER_H_
 #define CHROME_BROWSER_NET_REFERRER_H_
 
-#include <map>
-
 #include <stdint.h>
+
+#include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"
-
-namespace base {
-class Value;
-}
 
 namespace chrome_browser_net {
 
@@ -108,7 +106,7 @@ class Referrer : public SubresourceMap {
   void SuggestHost(const GURL& url);
 
   // Provide methods for persisting, and restoring contents into a Value class.
-  base::Value* Serialize() const;
+  std::unique_ptr<base::ListValue> Serialize() const;
   void Deserialize(const base::Value& referrers);
 
  private:

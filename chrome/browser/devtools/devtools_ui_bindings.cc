@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -13,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -98,9 +100,9 @@ typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
 base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
-base::DictionaryValue* CreateFileSystemValue(
+std::unique_ptr<base::DictionaryValue> CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
-  base::DictionaryValue* file_system_value = new base::DictionaryValue();
+  auto file_system_value = base::MakeUnique<base::DictionaryValue>();
   file_system_value->SetString("fileSystemName", file_system.file_system_name);
   file_system_value->SetString("rootURL", file_system.root_url);
   file_system_value->SetString("fileSystemPath", file_system.file_system_path);

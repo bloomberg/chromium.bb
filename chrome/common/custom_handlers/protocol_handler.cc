@@ -4,6 +4,7 @@
 
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -58,8 +59,8 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
   return GURL(translatedUrlSpec);
 }
 
-base::DictionaryValue* ProtocolHandler::Encode() const {
-  base::DictionaryValue* d = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
+  auto d = base::MakeUnique<base::DictionaryValue>();
   d->Set("protocol", new base::StringValue(protocol_));
   d->Set("url", new base::StringValue(url_.spec()));
   return d;

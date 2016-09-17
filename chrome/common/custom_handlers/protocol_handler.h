@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_
 #define CHROME_COMMON_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/values.h"
@@ -41,9 +42,8 @@ class ProtocolHandler {
   // ignored.
   bool IsEquivalent(const ProtocolHandler& other) const;
 
-  // Encodes this protocol handler as a DictionaryValue. The caller is
-  // responsible for deleting the returned value.
-  base::DictionaryValue* Encode() const;
+  // Encodes this protocol handler as a DictionaryValue.
+  std::unique_ptr<base::DictionaryValue> Encode() const;
 
   const std::string& protocol() const { return protocol_; }
   const GURL& url() const { return url_;}

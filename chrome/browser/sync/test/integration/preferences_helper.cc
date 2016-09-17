@@ -76,7 +76,7 @@ void ChangeListPref(int index,
     for (base::ListValue::const_iterator it = new_value.begin();
          it != new_value.end();
          ++it) {
-      list->Append((*it)->DeepCopy());
+      list->Append((*it)->CreateDeepCopy());
     }
   }
 
@@ -86,7 +86,7 @@ void ChangeListPref(int index,
     for (base::ListValue::const_iterator it = new_value.begin();
          it != new_value.end();
          ++it) {
-      list_verifier->Append((*it)->DeepCopy());
+      list_verifier->Append((*it)->CreateDeepCopy());
     }
   }
 }

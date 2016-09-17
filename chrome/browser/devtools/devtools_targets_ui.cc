@@ -4,9 +4,11 @@
 
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -238,15 +240,16 @@ void LocalTargetsUIHandler::SendTargets(
   targets_.clear();
   for (scoped_refptr<DevToolsAgentHost> host : targets) {
     targets_[host->GetId()] = host;
-    id_to_descriptor[host->GetId()] = Serialize(host);
+    id_to_descriptor[host->GetId()] = Serialize(host).release();
   }
 
   for (auto& it : targets_) {
     scoped_refptr<DevToolsAgentHost> host = it.second;
     base::DictionaryValue* descriptor = id_to_descriptor[host->GetId()];
+    DCHECK(descriptor);
     std::string parent_id = host->GetParentId();
     if (parent_id.empty() || id_to_descriptor.count(parent_id) == 0) {
-      list_value.Append(descriptor);
+      list_value.Append(base::WrapUnique(descriptor));
     } else {
       base::DictionaryValue* parent = id_to_descriptor[parent_id];
       base::ListValue* guests = NULL;
@@ -254,7 +257,7 @@ void LocalTargetsUIHandler::SendTargets(
         guests = new base::ListValue();
         parent->Set(kGuestList, guests);
       }
-      guests->Append(descriptor);
+      guests->Append(base::WrapUnique(descriptor));
     }
   }
 
@@ -369,7 +372,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       for (const auto& page : browser->pages()) {
         scoped_refptr<DevToolsAgentHost> host =
             android_bridge_->CreatePageTarget(page);
-        base::DictionaryValue* target_data = Serialize(host);
+        std::unique_ptr<base::DictionaryValue> target_data = Serialize(host);
         target_data->SetBoolean(
             kAdbAttachedForeignField,
             host->IsAttached() &&
@@ -381,7 +384,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
         target_data->SetInteger(kAdbScreenWidthField, screen_size.width());
         target_data->SetInteger(kAdbScreenHeightField, screen_size.height());
         targets_[host->GetId()] = host;
-        page_list->Append(target_data);
+        page_list->Append(std::move(target_data));
       }
       browser_list->Append(std::move(browser_data));
     }
@@ -439,9 +442,9 @@ DevToolsTargetsUIHandler::GetBrowserAgentHost(const std::string& browser_id) {
   return NULL;
 }
 
-base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
+std::unique_ptr<base::DictionaryValue> DevToolsTargetsUIHandler::Serialize(
     scoped_refptr<DevToolsAgentHost> host) {
-  base::DictionaryValue* target_data = new base::DictionaryValue();
+  auto target_data = base::MakeUnique<base::DictionaryValue>();
   target_data->SetString(kTargetSourceField, source_id_);
   target_data->SetString(kTargetIdField, host->GetId());
   target_data->SetString(kTargetTypeField, host->GetType());

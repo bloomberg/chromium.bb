@@ -13,6 +13,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -101,10 +102,10 @@ static void AddToSerializedList(const GURL& motivation,
     motivation_list = new base::ListValue;
     motivation_list->AppendString(motivation.spec());
     // Provide empty subresource list.
-    motivation_list->Append(new base::ListValue());
+    motivation_list->Append(base::MakeUnique<base::ListValue>());
 
     // ...and make it part of the serialized referral_list.
-    referral_list->Append(motivation_list);
+    referral_list->Append(base::WrapUnique(motivation_list));
   }
 
   base::ListValue* subresource_list(NULL);

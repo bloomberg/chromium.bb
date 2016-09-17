@@ -49,7 +49,7 @@ class DevToolsTargetsUIHandler {
   virtual void ForceUpdate();
 
  protected:
-  base::DictionaryValue* Serialize(
+  std::unique_ptr<base::DictionaryValue> Serialize(
       scoped_refptr<content::DevToolsAgentHost> host);
   void SendSerializedTargets(const base::ListValue& list);
 

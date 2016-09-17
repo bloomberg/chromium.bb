@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -121,18 +122,21 @@ void AssertWillHandle(
   base::RunLoop().RunUntilIdle();
 }
 
-base::DictionaryValue* GetProtocolHandlerValue(std::string protocol,
-                                               std::string url) {
-  base::DictionaryValue* value = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
+    const std::string& protocol,
+    const std::string& url) {
+  auto value = base::MakeUnique<base::DictionaryValue>();
   value->SetString("protocol", protocol);
   value->SetString("url", url);
   return value;
 }
 
-base::DictionaryValue* GetProtocolHandlerValueWithDefault(std::string protocol,
-                                                          std::string url,
-                                                          bool is_default) {
-  base::DictionaryValue* value = GetProtocolHandlerValue(protocol, url);
+std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValueWithDefault(
+    const std::string& protocol,
+    const std::string& url,
+    bool is_default) {
+  std::unique_ptr<base::DictionaryValue> value =
+      GetProtocolHandlerValue(protocol, url);
   value->SetBoolean("default", is_default);
   return value;
 }
