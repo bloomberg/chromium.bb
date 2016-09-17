@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#fetch-event-interface
+// https://w3c.github.io/ServiceWorker/#fetch-event-interface
 
 dictionary FetchEventInit : ExtendableEventInit {
-  required Request request;
+  // TODO(foolip): |request| should not be nullable. https://crbug.com/647693
+  required Request? request;
   DOMString? clientId = null;
   boolean isReload = false;
 };

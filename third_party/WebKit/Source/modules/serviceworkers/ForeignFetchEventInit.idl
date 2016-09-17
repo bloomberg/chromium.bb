@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#dictdef-foreignfetchevent-foreignfetcheventinit
+// https://w3c.github.io/ServiceWorker/#dictdef-foreignfetchevent-foreignfetcheventinit
 
 dictionary ForeignFetchEventInit : ExtendableEventInit {
-  required Request request;
+  // TODO(foolip): |request| should not be nullable. https://crbug.com/647693
+  required Request? request;
   USVString origin = "null";
 };

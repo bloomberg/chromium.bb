@@ -6,6 +6,9 @@
 [
     RuntimeEnabled=WebVR
 ] dictionary VRDisplayEventInit : EventInit {
-    VRDisplay display;
+    // TODO(foolip): |display| should be required and not nullable.
+    // https://crbug.com/647693
+    // https://github.com/w3c/webvr/issues/83
+    VRDisplay? display;
     VRDisplayEventReason reason;
 };

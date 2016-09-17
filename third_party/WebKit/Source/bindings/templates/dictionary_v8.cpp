@@ -68,7 +68,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         {% endif %}
         {{v8_value_to_local_cpp_value(member) | indent(8)}}
         {% if member.is_interface_type %}
-        if (!{{member.name}} && !{{member.name}}Value->IsNull()) {
+        if (!{{member.name}}) {
             exceptionState.throwTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
             return;
         }

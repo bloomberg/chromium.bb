@@ -5,5 +5,7 @@
 // https://w3c.github.io/presentation-api/#idl-def-presentationconnectionavailableeventinit
 
 dictionary PresentationConnectionAvailableEventInit : EventInit {
-    required PresentationConnection connection;
+    // TODO(foolip): |connection| should not be nullable.
+    // https://crbug.com/647693
+    required PresentationConnection? connection;
 };

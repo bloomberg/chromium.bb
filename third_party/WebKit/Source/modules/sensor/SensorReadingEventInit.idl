@@ -6,5 +6,8 @@
 // https://w3c.github.io/sensors/#dictdef-sensorreadingeventinit
 
 dictionary SensorReadingEventInit : EventInit {
-    SensorReading reading;
+    // TODO(foolip): |reading| should be required and not nullable.
+    // https://crbug.com/647693
+    // https://github.com/w3c/sensors/issues/129
+    SensorReading? reading;
 };

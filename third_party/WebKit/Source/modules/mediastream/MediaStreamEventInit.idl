@@ -5,5 +5,5 @@
 // http://www.w3.org/TR/webrtc/#mediastreamevent
 
 dictionary MediaStreamEventInit : EventInit {
-    MediaStream stream;
+    MediaStream? stream;
 };
