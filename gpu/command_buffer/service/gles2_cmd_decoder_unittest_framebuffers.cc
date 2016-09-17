@@ -3642,6 +3642,61 @@ TEST_P(GLES3DecoderTest, BlitFramebufferFeedbackLoopDefaultFramebuffer) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, BlitFramebufferDisabledReadBuffer) {
+  // Run BlitFramebufferCHROMIUM from a disabled read buffer. Even though the
+  // read and draw framebuffer use the same attachment, since the read buffer is
+  // disabled, no feedback loop happens.
+  DoBindFramebuffer(GL_DRAW_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                     kServiceRenderbufferId);
+  DoRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, GL_RGBA8, 1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, client_renderbuffer_id_,
+                            kServiceRenderbufferId, GL_NO_ERROR);
+
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  GLuint read_fbo = client_framebuffer_id_ + 1;
+  DoBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo, kNewServiceId);
+  DoFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, client_renderbuffer_id_,
+                            kServiceRenderbufferId, GL_NO_ERROR);
+  {
+    EXPECT_CALL(*gl_, ReadBuffer(GL_NONE))
+        .Times(1)
+        .RetiresOnSaturation();
+    ReadBuffer cmd;
+    cmd.Init(GL_NONE);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+
+  {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+    SetupExpectationsForFramebufferClearing(GL_DRAW_FRAMEBUFFER,  // target
+                                            GL_COLOR_BUFFER_BIT,  // clear bits
+                                            0, 0, 0, 0,           // color
+                                            0,                    // stencil
+                                            1.0f,                 // depth
+                                            false,  // scissor test
+                                            0, 0, 128, 64);
+    SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+                                      GL_COLOR_BUFFER_BIT, GL_LINEAR))
+        .Times(1)
+        .RetiresOnSaturation();
+    SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
+    BlitFramebufferCHROMIUM cmd;
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+}
+
 // TODO(gman): PixelStorei
 
 // TODO(gman): SwapBuffers

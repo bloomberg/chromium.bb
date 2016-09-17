@@ -7643,7 +7643,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
         DCHECK(draw_framebuffer);
         const Framebuffer::Attachment* draw_buffer =
             draw_framebuffer->GetAttachment(attachment);
-        if (!draw_buffer) {
+        if (!draw_buffer || !read_buffer) {
           continue;
         }
         if (draw_buffer->IsSameAttachment(read_buffer)) {
