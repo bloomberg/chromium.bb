@@ -71,8 +71,7 @@ class PrerenderLocalPredictor;
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
-class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
-                         public content::NotificationObserver,
+class PrerenderManager : public content::NotificationObserver,
                          public content::RenderProcessHostObserver,
                          public KeyedService,
                          public MediaCaptureDevicesDispatcher::Observer {
@@ -587,6 +586,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Set of process hosts being prerendered.
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
   PrerenderProcessSet prerender_process_hosts_;
+
+  base::WeakPtrFactory<PrerenderManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

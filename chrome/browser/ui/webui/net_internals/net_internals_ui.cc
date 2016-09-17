@@ -240,8 +240,6 @@ class NetInternalsMessageHandler
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
 
-  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(NetInternalsMessageHandler);
 };
 
@@ -410,14 +408,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
   proxy_->AddRequestContextGetter(profile->GetRequestContextForExtensions());
 #endif
 
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
-  if (prerender_manager) {
-    prerender_manager_ = prerender_manager->AsWeakPtr();
-  } else {
-    prerender_manager_ = base::WeakPtr<prerender::PrerenderManager>();
-  }
-
   web_ui()->RegisterMessageCallback(
       "notifyReady",
       base::Bind(&NetInternalsMessageHandler::OnRendererReady,
@@ -542,8 +532,12 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<base::DictionaryValue> value;
-  if (prerender_manager_) {
-    value = prerender_manager_->GetAsValue();
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (prerender_manager) {
+    value = prerender_manager->GetAsValue();
   } else {
     value.reset(new base::DictionaryValue());
     value->SetBoolean("enabled", false);
