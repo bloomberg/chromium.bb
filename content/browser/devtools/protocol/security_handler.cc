@@ -154,8 +154,8 @@ Response SecurityHandler::ShowCertificateViewer() {
   if (!host_)
     return Response::InternalError("Could not connect to view");
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
-  scoped_refptr<net::X509Certificate> certificate = web_contents->
-      GetController().GetLastCommittedEntry()->GetSSL().certificate;
+  scoped_refptr<net::X509Certificate> certificate =
+      web_contents->GetController().GetVisibleEntry()->GetSSL().certificate;
   if (!certificate)
     return Response::InternalError("Could not find certificate");
   web_contents->GetDelegate()->ShowCertificateViewerInDevTools(

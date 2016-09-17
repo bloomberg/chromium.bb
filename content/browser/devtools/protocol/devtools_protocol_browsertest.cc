@@ -14,12 +14,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,7 +34,9 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_switches.h"
@@ -117,7 +125,16 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   DevToolsProtocolTest()
       : last_sent_id_(0),
         waiting_for_command_result_id_(0),
-        in_dispatch_(false) {
+        in_dispatch_(false),
+        last_shown_certificate_(nullptr),
+        ok_cert_(nullptr),
+        expired_cert_(nullptr) {}
+
+  void SetUpOnMainThread() override {
+    ok_cert_ =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    expired_cert_ = net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                            "expired_cert.pem");
   }
 
  protected:
@@ -129,6 +146,12 @@ class DevToolsProtocolTest : public ContentBrowserTest,
                            const base::string16& source_id) override {
     console_messages_.push_back(base::UTF16ToUTF8(message));
     return true;
+  }
+
+  void ShowCertificateViewerInDevTools(
+      WebContents* web_contents,
+      scoped_refptr<net::X509Certificate> certificate) override {
+    last_shown_certificate_ = certificate;
   }
 
   void SendCommand(const std::string& method,
@@ -272,6 +295,16 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return urls;
   }
 
+  const scoped_refptr<net::X509Certificate>& last_shown_certificate() {
+    return last_shown_certificate_;
+  }
+
+  const scoped_refptr<net::X509Certificate>& ok_cert() { return ok_cert_; }
+
+  const scoped_refptr<net::X509Certificate>& expired_cert() {
+    return expired_cert_;
+  }
+
   std::unique_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   int last_sent_id_;
@@ -321,6 +354,15 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   std::string waiting_for_notification_;
   int waiting_for_command_result_id_;
   bool in_dispatch_;
+  scoped_refptr<net::X509Certificate> last_shown_certificate_;
+  scoped_refptr<net::X509Certificate> ok_cert_;
+  scoped_refptr<net::X509Certificate> expired_cert_;
+};
+
+class TestInterstitialDelegate : public InterstitialPageDelegate {
+ private:
+  // InterstitialPageDelegate:
+  std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
 class SyntheticKeyEventTest : public DevToolsProtocolTest {
@@ -935,6 +977,59 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
   WaitForNotification("Emulation.virtualTimeBudgetExpired");
 
   EXPECT_THAT(console_messages_, ElementsAre("before", "done", "after"));
+}
+
+// Tests that the Security.showCertificateViewer command shows the
+// certificate corresponding to the visible navigation entry, even when
+// an interstitial is showing. Regression test for
+// https://crbug.com/647759.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ShowCertificateViewer) {
+  // First test that the correct certificate is shown for a normal
+  // (non-interstitial) page.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  // Set a dummy certificate on the NavigationEntry.
+  shell()
+      ->web_contents()
+      ->GetController()
+      .GetVisibleEntry()
+      ->GetSSL()
+      .certificate = ok_cert();
+
+  std::unique_ptr<base::DictionaryValue> params1(new base::DictionaryValue());
+  SendCommand("Security.showCertificateViewer", std::move(params1), true);
+
+  scoped_refptr<net::X509Certificate> normal_page_cert = shell()
+                                                             ->web_contents()
+                                                             ->GetController()
+                                                             .GetVisibleEntry()
+                                                             ->GetSSL()
+                                                             .certificate;
+  ASSERT_TRUE(normal_page_cert);
+  EXPECT_EQ(normal_page_cert, last_shown_certificate());
+
+  // Now test that the correct certificate is shown on an interstitial.
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  GURL interstitial_url("https://example.test");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      web_contents, static_cast<RenderWidgetHostDelegate*>(web_contents), true,
+      interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(web_contents);
+
+  // Set the transient navigation entry certificate.
+  NavigationEntry* transient_entry =
+      web_contents->GetController().GetTransientEntry();
+  ASSERT_TRUE(transient_entry);
+  transient_entry->GetSSL().certificate = expired_cert();
+  ASSERT_TRUE(transient_entry->GetSSL().certificate);
+
+  std::unique_ptr<base::DictionaryValue> params2(new base::DictionaryValue());
+  SendCommand("Security.showCertificateViewer", std::move(params2), true);
+  EXPECT_EQ(transient_entry->GetSSL().certificate, last_shown_certificate());
 }
 
 }  // namespace content
