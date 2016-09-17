@@ -42,7 +42,7 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the idle inhibitor object">
-	This destroys the inhibit manager.
+	Destroy the inhibit manager.
       </description>
     </request>
 
@@ -75,7 +75,7 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the idle inhibitor object">
-	This removes the inhibitor effect from the associated wl_surface.
+	Remove the inhibitor effect from the associated wl_surface.
       </description>
     </request>
 
