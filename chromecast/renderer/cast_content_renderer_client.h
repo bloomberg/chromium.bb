@@ -25,6 +25,10 @@ class MediaCapsObserverImpl;
 }
 
 namespace shell {
+class CastGinRunner;
+class CastRenderThreadObserver;
+
+void ExecuteJavaScript(content::RenderFrame* render_frame, int resourceId);
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
@@ -44,6 +48,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool render_frame_has_played_media_before,
                       const base::Closure& closure) override;
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
 
  protected:
   CastContentRendererClient();
