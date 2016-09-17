@@ -79,6 +79,7 @@ class LayoutObject;
 class LayoutReplaced;
 class LayoutScrollbarPart;
 class LayoutView;
+class PaintController;
 class PaintInvalidationState;
 class Page;
 class ScrollingCoordinator;
@@ -792,6 +793,8 @@ private:
 
     bool checkLayoutInvalidationIsAllowed() const;
 
+    PaintController* paintController() { return m_paintController.get(); }
+
     LayoutSize m_size;
 
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -951,6 +954,9 @@ private:
         PaintInvalidationReason reason;
     };
     std::unique_ptr<Vector<ObjectPaintInvalidation>> m_trackedObjectPaintInvalidations;
+
+    // For Slimming Paint v2 only.
+    std::unique_ptr<PaintController> m_paintController;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

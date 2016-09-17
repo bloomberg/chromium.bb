@@ -1756,7 +1756,7 @@ PaintLayer* PaintLayer::hitTestLayer(PaintLayer* rootLayer, PaintLayer* containe
     const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, bool appliedTransform,
     const HitTestingTransformState* transformState, double* zOffset)
 {
-    ASSERT(layoutObject()->document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    DCHECK(layoutObject()->document().lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
         return nullptr;

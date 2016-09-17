@@ -143,7 +143,9 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == LayoutClean)
             return true;
-        if (nextState == InCompositingUpdate)
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InCompositingUpdate)
+            return true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InPrePaint)
             return true;
         break;
     case InLayoutSubtreeChange:
@@ -162,7 +164,9 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == LayoutClean)
             return true;
-        if (nextState == InCompositingUpdate)
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InCompositingUpdate)
+            return true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InPrePaint)
             return true;
         break;
     case InPreLayout:
@@ -198,12 +202,16 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == StyleClean)
             return true;
-        if (nextState == InCompositingUpdate)
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InCompositingUpdate)
+            return true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InPrePaint)
             return true;
         break;
     case InCompositingUpdate:
+        DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         return nextState == CompositingClean;
     case CompositingClean:
+        DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         if (nextState == InStyleRecalc)
             return true;
         if (nextState == InPreLayout)
@@ -228,23 +236,23 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == InCompositingUpdate)
             return true;
-        if (nextState == InPaint)
+        if (nextState == InPrePaint)
             return true;
         break;
     case InPrePaint:
-        if (nextState == PrePaintClean && RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        if (nextState == PrePaintClean)
             return true;
         break;
     case PrePaintClean:
-        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-            break;
         if (nextState == InPaint)
             return true;
         if (nextState == InStyleRecalc)
             return true;
         if (nextState == InPreLayout)
             return true;
-        if (nextState == InCompositingUpdate)
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InCompositingUpdate)
+            return true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InPrePaint)
             return true;
         break;
     case InPaint:
@@ -256,7 +264,9 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == InPreLayout)
             return true;
-        if (nextState == InCompositingUpdate)
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InCompositingUpdate)
+            return true;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && nextState == InPrePaint)
             return true;
         break;
     case Stopping:

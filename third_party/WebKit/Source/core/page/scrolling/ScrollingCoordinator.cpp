@@ -570,6 +570,10 @@ void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()
     if (!RuntimeEnabledFeatures::touchEnabled())
         return;
 
+    // TODO(chrishtr): implement touch event target rects for SPv2.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
     LayerHitTestRects touchEventTargetRects;
     computeTouchEventTargetRects(touchEventTargetRects);
     setTouchEventTargetRects(touchEventTargetRects);
@@ -685,13 +689,13 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
         if (mainThreadScrollingReasons) {
             if (ScrollAnimatorBase* scrollAnimator = layer->getScrollableArea()->existingScrollAnimator()) {
-                DCHECK(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+                DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled() || m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
                 scrollAnimator->takeOverCompositorAnimation();
             }
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
             if (visualViewportScrollLayer) {
                 if (ScrollAnimatorBase* scrollAnimator = visualViewportLayer->getScrollableArea()->existingScrollAnimator()) {
-                    DCHECK(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+                    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled() || m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
                     scrollAnimator->takeOverCompositorAnimation();
                 }
                 visualViewportScrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);

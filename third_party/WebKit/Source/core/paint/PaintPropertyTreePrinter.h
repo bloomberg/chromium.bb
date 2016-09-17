@@ -21,6 +21,7 @@ class ScrollPaintPropertyNode;
 } // namespace blink
 
 // Outside the blink namespace for ease of invocation from gdb.
+CORE_EXPORT void showAllPropertyTrees(const blink::FrameView& rootFrame);
 CORE_EXPORT void showTransformPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showClipPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showEffectPropertyTree(const blink::FrameView& rootFrame);

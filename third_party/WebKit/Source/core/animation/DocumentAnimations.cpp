@@ -67,9 +67,13 @@ void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
         updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 
-void DocumentAnimations::updateCompositorAnimations(Document& document)
+void DocumentAnimations::updateAnimations(Document& document)
 {
-    DCHECK_EQ(document.lifecycle().state(), DocumentLifecycle::CompositingClean);
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        DCHECK(document.lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    else
+        DCHECK(document.lifecycle().state() >= DocumentLifecycle::LayoutClean);
+
     if (document.compositorPendingAnimations().update()) {
         DCHECK(document.view());
         document.view()->scheduleAnimation();

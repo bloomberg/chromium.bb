@@ -49,8 +49,13 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
             TransformPaintPropertyNode* transform = m_frameView->scrollTranslation() ? m_frameView->scrollTranslation() : m_frameView->preTranslation();
             ClipPaintPropertyNode* clip = m_frameView->contentClip();
             ScrollPaintPropertyNode* scroll = m_frameView->scroll();
+            PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
+            if (frameView().frame().isLocalRoot()) {
+                properties.transform = frameView().rootTransform();
+                properties.clip = frameView().rootClip();
+                properties.effect = frameView().rootEffect();
+            }
             if (transform || clip || scroll) {
-                PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 if (transform)
                     properties.transform = transform;
                 if (scroll)
@@ -113,7 +118,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
 
     // TODO(wangxianzhu): The following check should be stricter, but currently this is blocked
     // by the svg root issue (crbug.com/442939).
-    ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    DCHECK(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     TRACE_EVENT1("devtools.timeline,rail", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
 

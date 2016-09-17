@@ -28,6 +28,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
+#include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -71,6 +72,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
+#include "core/layout/compositing/CompositingInputsUpdater.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/DocumentLoader.h"
@@ -2522,7 +2524,10 @@ void FrameView::updateAllLifecyclePhases()
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::CompositingClean);
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        updateAllLifecyclePhasesExceptPaint();
+    else
+        frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(DocumentLifecycle::CompositingClean);
 }
 
 void FrameView::updateAllLifecyclePhasesExceptPaint()
@@ -2627,19 +2632,22 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
         {
             TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
-            // This was required for slimming paint v1 but is only temporarily
-            // needed for slimming paint v2.
-            view.compositor()->updateIfNeededRecursive();
-            scrollContentsIfNeededRecursive();
+            if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+                view.compositor()->updateIfNeededRecursive();
+            } else {
+                DocumentAnimations::updateAnimations(layoutView()->document());
 
-            DCHECK(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+                forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.layoutView()->commitPendingSelection(); });
+            }
+
+            scrollContentsIfNeededRecursive();
+            DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() || lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
             m_frame->host()->globalRootScrollerController().didUpdateCompositing();
 
             if (targetState >= DocumentLifecycle::PrePaintClean) {
                 if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
                     invalidateTreeIfNeededRecursive();
-
                 if (view.compositor()->inCompositingMode())
                     scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
@@ -2648,8 +2656,7 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
         }
 
         if (targetState >= DocumentLifecycle::PrePaintClean) {
-            if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-                updatePaintProperties();
+            updatePaintProperties();
         }
 
         if (targetState == DocumentLifecycle::PaintClean) {
@@ -2660,7 +2667,7 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
                 pushPaintArtifactToCompositor();
 
             DCHECK(!view.hasPendingSelection());
-            DCHECK((m_frame->document()->printing() && lifecycle().state() == DocumentLifecycle::PaintInvalidationClean)
+            DCHECK((m_frame->document()->printing() && lifecycle().state() == DocumentLifecycle::PrePaintClean)
                 || lifecycle().state() == DocumentLifecycle::PaintClean);
         }
 
@@ -2677,10 +2684,18 @@ void FrameView::updatePaintProperties()
 {
     TRACE_EVENT0("blink", "FrameView::updatePaintProperties");
 
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    if (!m_paintController)
+        m_paintController = PaintController::create();
 
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint); });
-    PrePaintTreeWalk().walk(*this);
+
+    // TODO(chrishtr): merge this into the actual pre-paint tree walk.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        forAllNonThrottledFrameViews([](FrameView& frameView) { CompositingInputsUpdater(frameView.layoutView()->layer()).update(); });
+
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        PrePaintTreeWalk().walk(*this);
+
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::PrePaintClean); });
 }
 
@@ -2695,24 +2710,32 @@ void FrameView::synchronizedPaint()
     ASSERT(!view.isNull());
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPaint); });
 
-    // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree,
-    // or when the FrameView is the main frame view of a page overlay. The page overlay is in the layer tree of
-    // the host page and will be painted during synchronized painting of the host page.
-    if (GraphicsLayer* rootGraphicsLayer = view.compositor()->rootGraphicsLayer()) {
-        synchronizedPaintRecursively(rootGraphicsLayer);
-    }
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (layoutView()->layer()->needsRepaint()) {
+            GraphicsContext graphicsContext(*m_paintController);
+            paint(graphicsContext, CullRect(LayoutRect::infiniteIntRect()));
+            m_paintController->commitNewDisplayItems(LayoutSize());
+        }
+    } else {
+        // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree,
+        // or when the FrameView is the main frame view of a page overlay. The page overlay is in the layer tree of
+        // the host page and will be painted during synchronized painting of the host page.
+        if (GraphicsLayer* rootGraphicsLayer = view.compositor()->rootGraphicsLayer()) {
+            synchronizedPaintRecursively(rootGraphicsLayer);
+        }
 
-    // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
-    // webkit_unit_tests (http://crbug.com/644788).
-    if (m_viewportScrollableArea) {
-        if (GraphicsLayer* layerForHorizontalScrollbar = m_viewportScrollableArea->layerForHorizontalScrollbar()) {
-            synchronizedPaintRecursively(layerForHorizontalScrollbar);
-        }
-        if (GraphicsLayer* layerForVerticalScrollbar = m_viewportScrollableArea->layerForVerticalScrollbar()) {
-            synchronizedPaintRecursively(layerForVerticalScrollbar);
-        }
-        if (GraphicsLayer* layerForScrollCorner = m_viewportScrollableArea->layerForScrollCorner()) {
-            synchronizedPaintRecursively(layerForScrollCorner);
+        // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
+        // webkit_unit_tests (http://crbug.com/644788).
+        if (m_viewportScrollableArea) {
+            if (GraphicsLayer* layerForHorizontalScrollbar = m_viewportScrollableArea->layerForHorizontalScrollbar()) {
+                synchronizedPaintRecursively(layerForHorizontalScrollbar);
+            }
+            if (GraphicsLayer* layerForVerticalScrollbar = m_viewportScrollableArea->layerForVerticalScrollbar()) {
+                synchronizedPaintRecursively(layerForVerticalScrollbar);
+            }
+            if (GraphicsLayer* layerForScrollCorner = m_viewportScrollableArea->layerForScrollCorner()) {
+                synchronizedPaintRecursively(layerForScrollCorner);
+            }
         }
     }
 
@@ -2748,18 +2771,7 @@ void FrameView::pushPaintArtifactToCompositor()
 
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    LayoutViewItem viewItem = layoutViewItem();
-    ASSERT(!viewItem.isNull());
-
-    // TODO(jbroman): Simplify the path to PaintController.
-    PaintLayer* layer = viewItem.layer();
-    ASSERT(layer);
-    if (!layer->hasCompositedLayerMapping())
-        return;
-    GraphicsLayer* rootGraphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
-    if (!rootGraphicsLayer->drawsContent())
-        return;
-    const PaintArtifact& paintArtifact = rootGraphicsLayer->getPaintController().paintArtifact();
+    const PaintArtifact& paintArtifact = m_paintController->paintArtifact();
 
     Page* page = frame().page();
     if (!page)

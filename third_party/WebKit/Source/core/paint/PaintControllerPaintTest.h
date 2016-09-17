@@ -11,6 +11,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include <gtest/gtest.h>
 
@@ -24,7 +25,12 @@ public:
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
-    PaintController& rootPaintController() { return layoutView().layer()->graphicsLayerBacking()->getPaintController(); }
+    PaintController& rootPaintController()
+    {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return *document().view()->paintController();
+        return layoutView().layer()->graphicsLayerBacking()->getPaintController();
+    }
 
     void SetUp() override
     {
@@ -34,8 +40,17 @@ protected:
 
     bool paintWithoutCommit(const IntRect* interestRect = nullptr)
     {
-        // Only root graphics layer is supported.
         document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            if (layoutView().layer()->needsRepaint()) {
+                GraphicsContext graphicsContext(rootPaintController());
+                document().view()->paint(graphicsContext, CullRect(LayoutRect::infiniteIntRect()));
+                return true;
+            }
+            document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+            return false;
+        }
+        // Only root graphics layer is supported.
         if (!layoutView().layer()->graphicsLayerBacking()->paintWithoutCommit(interestRect)) {
             document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
             return false;

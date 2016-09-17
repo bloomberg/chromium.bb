@@ -483,6 +483,13 @@ const char* PaintPropertyTreeGraphBuilder::s_effectNodeColor = "black";
 } // namespace {
 } // namespace blink
 
+CORE_EXPORT void showAllPropertyTrees(const blink::FrameView& rootFrame)
+{
+    showTransformPropertyTree(rootFrame);
+    showClipPropertyTree(rootFrame);
+    showEffectPropertyTree(rootFrame);
+}
+
 void showTransformPropertyTree(const blink::FrameView& rootFrame)
 {
     blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showTree(rootFrame);

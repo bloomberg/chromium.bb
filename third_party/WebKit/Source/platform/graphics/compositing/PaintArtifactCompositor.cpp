@@ -442,7 +442,7 @@ int PropertyTreeManager::switchToEffectNode(const EffectPaintPropertyNode& nextE
         m_effectStack.removeLast();
 
 #if DCHECK_IS_ON()
-    DCHECK(m_isFirstEffectEver || currentEffectNode()) << "Malformed effect tree. Nodes in the same property tree should have common root.";
+    DCHECK(m_isFirstEffectEver || currentEffectNode()) << "Malformed effect tree. Nodes in the same property tree should have common root. " << &nextEffect;
     m_isFirstEffectEver = false;
 #endif
     buildEffectNodesRecursively(&nextEffect);
