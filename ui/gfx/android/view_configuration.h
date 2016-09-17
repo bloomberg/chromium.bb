@@ -19,9 +19,6 @@ class GFX_EXPORT ViewConfiguration {
   static int GetLongPressTimeoutInMs();
   static int GetTapTimeoutInMs();
 
-  // Dimensionless coefficient of friction.
-  static float GetScrollFriction();
-
   static int GetMaximumFlingVelocityInDipsPerSecond();
   static int GetMinimumFlingVelocityInDipsPerSecond();
 
@@ -29,7 +26,6 @@ class GFX_EXPORT ViewConfiguration {
   static int GetDoubleTapSlopInDips();
 
   static int GetMinScalingSpanInDips();
-  static int GetMinScalingTouchMajorInDips();
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);

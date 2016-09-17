@@ -83,11 +83,6 @@ public class ViewConfigurationHelper {
     }
 
     @CalledByNative
-    private static float getScrollFriction() {
-        return ViewConfiguration.getScrollFriction();
-    }
-
-    @CalledByNative
     private float getMaximumFlingVelocity() {
         return toDips(mViewConfiguration.getScaledMaximumFlingVelocity());
     }
