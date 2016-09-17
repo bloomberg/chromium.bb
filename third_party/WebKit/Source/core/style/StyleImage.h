@@ -25,17 +25,16 @@
 #define StyleImage_h
 
 #include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class ImageResource;
 class CSSValue;
+class ImageResource;
+class IntSize;
 class LayoutObject;
+class LayoutSize;
 class SVGImage;
 
 typedef void* WrappedImagePtr;

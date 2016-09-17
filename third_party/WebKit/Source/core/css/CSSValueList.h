@@ -23,7 +23,6 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {

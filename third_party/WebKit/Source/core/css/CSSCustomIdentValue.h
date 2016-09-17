@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

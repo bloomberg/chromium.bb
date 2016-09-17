@@ -23,9 +23,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

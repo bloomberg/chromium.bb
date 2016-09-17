@@ -6,6 +6,7 @@
 #define CSSStringValue_h
 
 #include "core/css/CSSValue.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 

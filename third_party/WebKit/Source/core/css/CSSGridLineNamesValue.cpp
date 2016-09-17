@@ -30,6 +30,8 @@
 
 #include "core/css/CSSGridLineNamesValue.h"
 
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 String CSSGridLineNamesValue::customCSSText() const

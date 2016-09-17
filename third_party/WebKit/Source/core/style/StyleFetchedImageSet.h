@@ -29,6 +29,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 

@@ -32,7 +32,6 @@
 #define CSSGridLineNamesValue_h
 
 #include "core/css/CSSValueList.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

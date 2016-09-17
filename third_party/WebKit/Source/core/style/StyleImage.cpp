@@ -6,6 +6,7 @@
 
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace blink {
 

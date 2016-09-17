@@ -8,18 +8,20 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
 #include "wtf/Allocator.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-class LayoutObject;
+class CSSVariableData;
 class ComputedStyle;
 class FilterOperations;
+class LayoutObject;
+class Node;
+class PropertyRegistry;
 class ShadowData;
 class ShadowList;
 class StyleColor;
-class Node;
-class CSSVariableData;
-class PropertyRegistry;
 
 class ComputedStyleCSSValueMapping {
     STATIC_ONLY(ComputedStyleCSSValueMapping);
