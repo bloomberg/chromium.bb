@@ -16,7 +16,9 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/page_transition_types.h"
 
@@ -231,6 +233,8 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
                           handlers[selected_app_index]->package_name);
         handle->CancelDeferredNavigation(
             content::NavigationThrottle::CANCEL_AND_IGNORE);
+        if (handle->GetWebContents()->GetController().IsInitialNavigation())
+          handle->GetWebContents()->Close();
       }
       break;
     }
