@@ -77,9 +77,9 @@ remoting.HostInstaller.isInstalled = function() {
 
 /** @type {Object<string>} */
 var HOST_DOWNLOAD_URLS = {
-  'Win32': 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
+  'Win32': 'https://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
                'chromeremotedesktophost.msi',
-  'Win64': 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
+  'Win64': 'https://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
                'chromeremotedesktophost.msi',
   'MacIntel': 'https://dl.google.com/chrome-remote-desktop/' +
                   'chromeremotedesktop.dmg',
