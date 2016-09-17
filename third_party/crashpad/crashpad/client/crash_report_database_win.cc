@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "client/settings.h"
 #include "util/misc/initialization_state_dcheck.h"
+#include "util/misc/metrics.h"
 
 namespace crashpad {
 
@@ -677,6 +678,9 @@ OperationStatus CrashReportDatabaseWin::FinishedWritingCrashReport(
                                     time(nullptr),
                                     ReportState::kPending));
   *uuid = scoped_report->uuid;
+
+  Metrics::CrashReportSize(handle.get());
+
   return kNoError;
 }
 

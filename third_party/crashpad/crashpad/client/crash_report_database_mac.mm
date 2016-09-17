@@ -35,6 +35,7 @@
 #include "util/file/file_io.h"
 #include "util/mac/xattr.h"
 #include "util/misc/initialization_state_dcheck.h"
+#include "util/misc/metrics.h"
 
 namespace crashpad {
 
@@ -357,6 +358,8 @@ CrashReportDatabaseMac::FinishedWritingCrashReport(NewReport* report,
                 << new_path.value();
     return kFileSystemError;
   }
+
+  Metrics::CrashReportSize(report->handle);
 
   return kNoError;
 }
