@@ -65,7 +65,10 @@ interface WindowTree {
 
   // Deletes a window. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the window
-  // can delete it.
+  // can delete it. DeleteWindow() may also be used to remove a window as an
+  // embed root from the client. When DeleteWindow() is used to remove an embed
+  // root, the client no longer has access to the embed root. The embedder of
+  // the root is notified of the change via OnEmbeddedAppDisconnected().
   DeleteWindow(uint32 change_id, uint32 window_id);
 
   // Requests input event capture for the given |window_id|. Capture is only

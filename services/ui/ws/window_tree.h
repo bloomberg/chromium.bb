@@ -226,7 +226,7 @@ class WindowTree : public mojom::WindowTree,
                             const ServerWindow* relative_window,
                             mojom::OrderDirection direction,
                             bool originated_change);
-  void ProcessWindowDeleted(const ServerWindow* window, bool originated_change);
+  void ProcessWindowDeleted(ServerWindow* window, bool originated_change);
   void ProcessWillChangeWindowVisibility(const ServerWindow* window,
                                          bool originated_change);
   void ProcessWindowOpacityChanged(const ServerWindow* window,
@@ -276,6 +276,9 @@ class WindowTree : public mojom::WindowTree,
 
     // Another client is being embedded in the window.
     EMBED,
+
+    // The embedded client explicitly asked to be unembedded.
+    UNEMBED,
   };
 
   bool ShouldRouteToWindowManager(const ServerWindow* window) const;
@@ -314,7 +317,7 @@ class WindowTree : public mojom::WindowTree,
 
   // Removes a root from set of roots of this tree. This does not remove
   // the window from the window tree, only from the set of roots.
-  void RemoveRoot(const ServerWindow* window, RemoveRootReason reason);
+  void RemoveRoot(ServerWindow* window, RemoveRootReason reason);
 
   // Converts Window(s) to WindowData(s) for transport. This assumes all the
   // windows are valid for the client. The parent of windows the client is not

@@ -1130,10 +1130,46 @@ TEST_F(WindowTreeClientTest, DeleteWindow) {
   }
 }
 
+// Verifies DeleteWindow() on the root suceeds.
+TEST_F(WindowTreeClientTest, DeleteRoot) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
+  Id window_1_1 = BuildWindowId(client_id_1(), 1);
+  EXPECT_TRUE(wt_client2()->DeleteWindow(window_1_1));
+  // Client1 should get OnEmbeddedAppDisconnected().
+  wt_client1_->WaitForChangeCount(1);
+  EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_1_1),
+            SingleChangeToDescription(*changes1()));
+
+  // Create a new window and try adding to |window_1_1| from client 2, should
+  // fail as client 2 no longer knows about |window_1_1|.
+  Id window_2_1 = wt_client2()->NewWindow(1);
+  ASSERT_TRUE(window_2_1);
+  EXPECT_FALSE(wt_client2()->AddWindow(window_1_1, window_2_1));
+}
+
+// Verifies DeleteWindow() on the root suceeds.
+TEST_F(WindowTreeClientTest, DeleteRootWithChildren) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
+  Id window_1_1 = BuildWindowId(client_id_1(), 1);
+  Id window_2_1 = wt_client2()->NewWindow(1);
+  ASSERT_TRUE(window_2_1);
+  ASSERT_TRUE(wt_client2()->AddWindow(window_1_1, window_2_1));
+  changes2()->clear();
+  EXPECT_TRUE(wt_client2()->DeleteWindow(window_1_1));
+  // DeleteWindow() should not result in any calls to client 2.
+  EXPECT_TRUE(changes2()->empty());
+
+  // Create a new window parented to 2_1. Should work as 2_1 is still valid.
+  Id window_2_2 = wt_client2()->NewWindow(2);
+  ASSERT_TRUE(window_2_2);
+  ASSERT_TRUE(wt_client2()->AddWindow(window_2_1, window_2_2));
+}
+
 // Verifies DeleteWindow isn't allowed from a separate client.
 TEST_F(WindowTreeClientTest, DeleteWindowFromAnotherClientDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClient(true));
-  EXPECT_FALSE(wt_client2()->DeleteWindow(BuildWindowId(client_id_1(), 1)));
+  // This id is unknown, so deletion should fail.
+  EXPECT_FALSE(wt_client2()->DeleteWindow(BuildWindowId(client_id_1(), 2)));
 }
 
 // Verifies if a window was deleted and then reused that other clients are

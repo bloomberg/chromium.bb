@@ -385,6 +385,11 @@ void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
   delegate_->OnScheduleWindowPaint(this);
 }
 
+void ServerWindow::OnEmbeddedAppDisconnected() {
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
+                    OnWindowEmbeddedAppDisconnected(this));
+}
+
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::string ServerWindow::GetDebugWindowHierarchy() const {
   std::string result;

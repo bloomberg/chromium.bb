@@ -202,7 +202,7 @@ void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
   if (event_source_wms_ && event_source_wms_->window_tree() == tree)
     event_source_wms_ = nullptr;
 
-  // Notify our client if |tree| was embedded in any of our views.
+  // Notify our client if |tree| was embedded in any of our windows.
   for (const auto* tree_root : tree->roots_) {
     const bool owns_tree_root = tree_root->id().client_id == id_;
     if (owns_tree_root) {
@@ -605,7 +605,7 @@ void WindowTree::ProcessWindowReorder(const ServerWindow* window,
   window_server_->OnTreeMessagedClient(id_);
 }
 
-void WindowTree::ProcessWindowDeleted(const ServerWindow* window,
+void WindowTree::ProcessWindowDeleted(ServerWindow* window,
                                       bool originated_change) {
   if (window->id().client_id == id_)
     created_window_map_.erase(window->id());
@@ -887,8 +887,7 @@ void WindowTree::RemoveFromKnown(const ServerWindow* window,
     RemoveFromKnown(child, local_windows);
 }
 
-void WindowTree::RemoveRoot(const ServerWindow* window,
-                            RemoveRootReason reason) {
+void WindowTree::RemoveRoot(ServerWindow* window, RemoveRootReason reason) {
   DCHECK(roots_.count(window) > 0);
   roots_.erase(window);
 
@@ -910,6 +909,17 @@ void WindowTree::RemoveRoot(const ServerWindow* window,
   RemoveFromKnown(window, &local_windows);
   for (size_t i = 0; i < local_windows.size(); ++i)
     local_windows[i]->parent()->Remove(local_windows[i]);
+
+  if (reason == RemoveRootReason::UNEMBED) {
+    window->OnEmbeddedAppDisconnected();
+
+    // Notify the owner of the window it no longer has a client embedded in it.
+    WindowTree* owning_tree =
+        window_server_->GetTreeWithId(window->id().client_id);
+    DCHECK(owning_tree && owning_tree != this);
+    owning_tree->client()->OnEmbeddedAppDisconnected(
+        owning_tree->ClientWindowIdForWindow(window).id);
+  }
 }
 
 Array<mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
@@ -1113,12 +1123,17 @@ void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   bool success = false;
-  bool should_close = window && (access_policy_->CanDeleteWindow(window) ||
-                                 ShouldRouteToWindowManager(window));
-  if (should_close) {
-    WindowTree* tree =
-        window_server_->GetTreeWithId(window->id().client_id);
-    success = tree && tree->DeleteWindowImpl(this, window);
+  if (window && roots_.count(window) > 0) {
+    success = true;
+    window_server_->OnTreeMessagedClient(id_);
+    RemoveRoot(window, RemoveRootReason::UNEMBED);
+  } else {
+    bool should_close = window && (access_policy_->CanDeleteWindow(window) ||
+                                   ShouldRouteToWindowManager(window));
+    if (should_close) {
+      WindowTree* tree = window_server_->GetTreeWithId(window->id().client_id);
+      success = tree && tree->DeleteWindowImpl(this, window);
+    }
   }
   client()->OnChangeCompleted(change_id, success);
 }

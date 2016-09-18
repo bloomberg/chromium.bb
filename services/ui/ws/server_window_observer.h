@@ -78,6 +78,9 @@ class ServerWindowObserver {
       const std::string& name,
       const std::vector<uint8_t>* new_data) {}
 
+  // Called when the window is no longer an embed root.
+  virtual void OnWindowEmbeddedAppDisconnected(ServerWindow* window) {}
+
   // Called when a transient child is added to |window|.
   virtual void OnTransientWindowAdded(ServerWindow* window,
                                       ServerWindow* transient_child) {}

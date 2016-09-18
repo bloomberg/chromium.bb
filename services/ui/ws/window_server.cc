@@ -416,7 +416,7 @@ void WindowServer::ProcessWindowReorder(const ServerWindow* window,
   }
 }
 
-void WindowServer::ProcessWindowDeleted(const ServerWindow* window) {
+void WindowServer::ProcessWindowDeleted(ServerWindow* window) {
   for (auto& pair : tree_map_)
     pair.second->ProcessWindowDeleted(window, IsOperationSource(pair.first));
 }

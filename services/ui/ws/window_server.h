@@ -191,7 +191,7 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWindowReorder(const ServerWindow* window,
                             const ServerWindow* relative_window,
                             const mojom::OrderDirection direction);
-  void ProcessWindowDeleted(const ServerWindow* window);
+  void ProcessWindowDeleted(ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
 
