@@ -125,13 +125,12 @@ TEST_F(URLRequestFileDirTest, ListCompletionOnNoPending) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(delegate_.got_response_started());
 
-  int bytes_read = 0;
-  EXPECT_FALSE(request->Read(buffer_.get(), kBufferSize, &bytes_read));
+  int bytes_read = request->Read(buffer_.get(), kBufferSize);
 
   // The URLRequestFileDirJobShould return the cached read error synchronously.
   // If it's not returned synchronously, the code path this is intended to test
   // was not executed.
-  EXPECT_THAT(request->status().ToNetError(), IsError(ERR_FILE_NOT_FOUND));
+  EXPECT_THAT(bytes_read, IsError(ERR_FILE_NOT_FOUND));
 }
 
 // Test the case where reading the response completes synchronously.
@@ -154,12 +153,9 @@ TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileSync) {
   // entire directory listing and cached it.
   base::RunLoop().RunUntilIdle();
 
-  int bytes_read = 0;
   // This will complete synchronously, since the URLRequetsFileDirJob had
   // directory listing cached in memory.
-  EXPECT_TRUE(request->Read(buffer_.get(), kBufferSize, &bytes_read));
-
-  EXPECT_EQ(URLRequestStatus::SUCCESS, request->status().status());
+  int bytes_read = request->Read(buffer_.get(), kBufferSize);
 
   ASSERT_GT(bytes_read, 0);
   ASSERT_LE(bytes_read, kBufferSize);
