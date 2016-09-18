@@ -1144,6 +1144,7 @@ source_set("unit_tests") {
     "layout/LayoutTableSectionTest.cpp",
     "layout/LayoutTestHelper.cpp",
     "layout/LayoutTestHelper.h",
+    "layout/LayoutTextTest.cpp",
     "layout/LayoutThemeTest.cpp",
     "layout/MapCoordinatesTest.cpp",
     "layout/MultiColumnFragmentainerGroupTest.cpp",

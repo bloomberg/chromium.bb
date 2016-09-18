@@ -1575,7 +1575,7 @@ float LayoutText::width(unsigned from, unsigned len, LayoutUnit xPos, TextDirect
     if (from >= textLength())
         return 0;
 
-    if (from + len > textLength())
+    if (len > textLength() || from + len > textLength())
         len = textLength() - from;
 
     return width(from, len, style(firstLine)->font(), xPos, textDirection, fallbackFonts, glyphBounds);
