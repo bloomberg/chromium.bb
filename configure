@@ -272,6 +272,7 @@ EXPERIMENT_LIST="
     filter_7bit
     delta_q
     adapt_scan
+    bitstream_debug
 "
 CONFIG_LIST="
     dependency_tracking

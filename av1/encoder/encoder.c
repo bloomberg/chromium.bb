@@ -65,6 +65,9 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
 
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0
@@ -4250,6 +4253,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   int brf_src_index;
 #endif  // CONFIG_EXT_REFS
   int i;
+
+#if CONFIG_BITSTREAM_DEBUG
+  assert(cpi->oxcf.max_threads == 0 &&
+         "bitstream debug tool does not support multithreading");
+  bitstream_queue_record_write();
+  bitstream_queue_set_frame_write(cm->current_video_frame * 2 + cm->show_frame);
+#endif
 
   aom_usec_timer_start(&cmptimer);
 

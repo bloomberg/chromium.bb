@@ -26,6 +26,9 @@
 #include "aom_ports/mem_ops.h"
 #include "aom_scale/aom_scale.h"
 #include "aom_util/aom_thread.h"
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
 
 #include "av1/common/alloccommon.h"
 #if CONFIG_CLPF
@@ -2246,12 +2249,18 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   struct aom_read_bit_buffer rb;
   int context_updated = 0;
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
-  const size_t first_partition_size = read_uncompressed_header(
-      pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
+  size_t first_partition_size;
   const int tile_rows = 1 << cm->log2_tile_rows;
   const int tile_cols = 1 << cm->log2_tile_cols;
   YV12_BUFFER_CONFIG *const new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
+
+#if CONFIG_BITSTREAM_DEBUG
+  bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
+#endif
+
+  first_partition_size = read_uncompressed_header(
+      pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
 
   if (!first_partition_size) {
 // showing a frame directly

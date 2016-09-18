@@ -16,6 +16,13 @@
 #include <limits.h>
 
 #include "./aom_config.h"
+
+#if CONFIG_BITSTREAM_DEBUG
+#include <assert.h>
+#include <stdio.h>
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
+
 #include "aom/aomdx.h"
 #include "aom/aom_integer.h"
 #if CONFIG_ANS
@@ -152,6 +159,28 @@ static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
 #endif
+
+#if CONFIG_BITSTREAM_DEBUG
+  {
+    int ref_bit, ref_prob;
+    const int queue_r = bitstream_queue_get_read();
+    const int frame_idx = bitstream_queue_get_frame_read();
+    bitstream_queue_pop(&ref_bit, &ref_prob);
+    if (prob != ref_prob) {
+      fprintf(
+          stderr,
+          "\n *** prob error, frame_idx_r %d prob %d ref_prob %d queue_r %d\n",
+          frame_idx, prob, ref_prob, queue_r);
+      assert(0);
+    }
+    if (ret != ref_bit) {
+      fprintf(stderr, "\n *** bit error, frame_idx_r %d bit %d ref_bit %d\n",
+              frame_idx, ret, ref_bit);
+      assert(0);
+    }
+  }
+#endif  // CONFIG_BITSTREAM_DEBUG
+
   return ret;
 }
 

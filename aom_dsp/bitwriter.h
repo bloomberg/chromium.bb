@@ -14,6 +14,12 @@
 
 #include <assert.h>
 #include "./aom_config.h"
+
+#if CONFIG_BITSTREAM_DEBUG
+#include <stdio.h>
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
+
 #if CONFIG_ANS
 #include "aom_dsp/buf_ans.h"
 #elif CONFIG_DAALA_EC
@@ -22,7 +28,6 @@
 #include "aom_dsp/dkboolwriter.h"
 #endif
 #include "aom_dsp/prob.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,6 +71,18 @@ static INLINE void aom_write(aom_writer *br, int bit, int probability) {
 #else
   aom_dk_write(br, bit, probability);
 #endif
+
+#if CONFIG_BITSTREAM_DEBUG
+  // int queue_r = 0;
+  // int frame_idx_r = 0;
+  // int queue_w = bitstream_queue_get_write();
+  // int frame_idx_w = bitstream_queue_get_frame_write();
+  // if (frame_idx_w == frame_idx_r && queue_w == queue_r) {
+  //   fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
+  //   frame_idx_w, queue_w);
+  // }
+  bitstream_queue_push(bit, probability);
+#endif  // CONFIG_BITSTREAM_DEBUG
 }
 
 static INLINE void aom_write_bit(aom_writer *w, int bit) {

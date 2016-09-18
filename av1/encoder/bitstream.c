@@ -19,6 +19,9 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem_ops.h"
 #include "aom_ports/system_state.h"
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
 
 #if CONFIG_CLPF
 #include "av1/common/clpf.h"
@@ -2306,6 +2309,10 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size) {
 #else
   const int have_tiles = 0;  // we have tiles, but we don't want to write a
                              // tile size marker in the header
+#endif
+
+#if CONFIG_BITSTREAM_DEBUG
+  bitstream_queue_reset_write();
 #endif
 
   write_uncompressed_header(cpi, &wb);
