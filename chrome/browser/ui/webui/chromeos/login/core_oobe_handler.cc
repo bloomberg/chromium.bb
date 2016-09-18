@@ -303,8 +303,11 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
 void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
   if (delegate_)
     delegate_->OnCurrentScreenChanged(screen);
-  KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
+  // TODO(mash): Support EventRewriterController; see crbug.com/647781
+  if (!chrome::IsRunningInMash()) {
+    KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
       screen == WizardController::kEulaScreenName);
+  }
 }
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
