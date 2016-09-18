@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_mode.h"
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_mode_test_api.h"
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_points_test_api.h"
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_view.h"
-#include "ash/common/test/test_palette_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/laser/laser_pointer_controller.h"
+#include "ash/laser/laser_pointer_controller_test_api.h"
+#include "ash/laser/laser_pointer_points_test_api.h"
+#include "ash/laser/laser_pointer_view.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/test/event_generator.h"
 
@@ -16,57 +15,44 @@ namespace {
 
 const int kTestPointsLifetimeSeconds = 5;
 
+// TODO(sammiequon): Move this test into a different file. See
+// http://crbug.com/646953.
 class LaserPointerPointsTest : public test::AshTestBase {
  public:
   LaserPointerPointsTest()
-      : points_(base::TimeDelta::FromSeconds(kTestPointsLifetimeSeconds)),
-        points_test_api_(base::MakeUnique<LaserPointerPoints>(
-            base::TimeDelta::FromSeconds(kTestPointsLifetimeSeconds))) {}
+      : points_(base::TimeDelta::FromSeconds(kTestPointsLifetimeSeconds)) {}
 
   ~LaserPointerPointsTest() override {}
 
-  void SetUp() override {
-    AshTestBase::SetUp();
-    // Add a test delegate so that laser pointer mode does not complain when
-    // being destroyed.
-    WmShell::Get()->SetPaletteDelegateForTesting(
-        base::MakeUnique<TestPaletteDelegate>());
-  }
-
  protected:
   LaserPointerPoints points_;
-  LaserPointerPointsTestApi points_test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LaserPointerPointsTest);
 };
 
-class LaserPointerModeTest : public test::AshTestBase {
+class LaserPointerControllerTest : public test::AshTestBase {
  public:
-  LaserPointerModeTest() {}
-  ~LaserPointerModeTest() override {}
+  LaserPointerControllerTest() {}
+  ~LaserPointerControllerTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();
-    WmShell::Get()->SetPaletteDelegateForTesting(
-        base::MakeUnique<TestPaletteDelegate>());
-    mode_test_api_.reset(new LaserPointerModeTestApi(
-        base::WrapUnique<LaserPointerMode>(new LaserPointerMode(nullptr))));
+    controller_.reset(new LaserPointerController());
   }
 
   void TearDown() override {
-    // This needs to be called first to remove the pointer watcher otherwise
-    // tear down will complain about there being more than zero pointer watcher
-    // alive.
-    mode_test_api_.reset();
+    // This needs to be called first to remove the event handler before the
+    // shell instance gets torn down.
+    controller_.reset();
     AshTestBase::TearDown();
   }
 
  protected:
-  std::unique_ptr<LaserPointerModeTestApi> mode_test_api_;
+  std::unique_ptr<LaserPointerController> controller_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LaserPointerModeTest);
+  DISALLOW_COPY_AND_ASSIGN(LaserPointerControllerTest);
 };
 
 }  // namespace
@@ -122,6 +108,8 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
 // Test the laser pointer points collection to verify that old points are
 // removed.
 TEST_F(LaserPointerPointsTest, LaserPointerInternalCollectionDeletion) {
+  LaserPointerPointsTestApi points_test_api_(&points_);
+
   // When a point older than kTestPointsLifetime (5 seconds) is added, it
   // should get removed.
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
@@ -148,45 +136,71 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollectionDeletion) {
 }
 
 // Test to ensure the class responsible for drawing the laser pointer receives
-// points from mouse movements as expected.
-TEST_F(LaserPointerModeTest, LaserPointerRenderer) {
+// points from stylus movements as expected.
+TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
+  LaserPointerControllerTestApi controller_test_api_(controller_.get());
+
   // The laser pointer mode only works with stylus.
   GetEventGenerator().EnterPenPointerMode();
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(10, 40));
-  EXPECT_EQ(0, mode_test_api_->laser_points().GetNumberOfPoints());
 
-  // Verify enabling the mode will start with a single point at the current
-  // location.
-  mode_test_api_->OnEnable();
-  EXPECT_EQ(1, mode_test_api_->laser_points().GetNumberOfPoints());
+  // When disabled the laser pointer should not be showing.
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(1, 1));
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
 
-  // Verify moving the mouse 4 times will add 4 more points.
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(25, 66));
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(91, 38));
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(34, 58));
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(19, 71));
-  EXPECT_EQ(5, mode_test_api_->laser_points().GetNumberOfPoints());
+  // Verify that by enabling the mode, the laser pointer should still not be
+  // showing.
+  controller_test_api_.SetEnabled(true);
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
 
-  // Verify disabling the mode will clear any active points.
-  mode_test_api_->OnDisable();
-  EXPECT_EQ(0, mode_test_api_->laser_points().GetNumberOfPoints());
+  // Verify moving the stylus 4 times will not display the laser pointer.
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(2, 2));
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(3, 3));
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(4, 4));
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(5, 5));
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+
+  // Verify pressing the stylus will show the laser pointer and add a point.
+  GetEventGenerator().PressLeftButton();
+  EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_EQ(1, controller_test_api_.laser_points().GetNumberOfPoints());
+
+  // Verify dragging the stylus 2 times will add 2 more points.
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(6, 6));
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(7, 7));
+  EXPECT_EQ(3, controller_test_api_.laser_points().GetNumberOfPoints());
+
+  // Verify releasing the stylus hides the laser pointer.
+  GetEventGenerator().ReleaseLeftButton();
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+
+  // Verify that disabling the mode does not display the laser pointer.
+  controller_test_api_.SetEnabled(false);
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+
+  // Verify that disabling the mode while laser pointer is displayed does not
+  // display the laser pointer.
+  controller_test_api_.SetEnabled(true);
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(6, 6));
+  EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+  controller_test_api_.SetEnabled(false);
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
 
   // Verify that the laser pointer does not add points while disabled.
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(34, 58));
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(19, 71));
-  EXPECT_EQ(0, mode_test_api_->laser_points().GetNumberOfPoints());
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(8, 8));
+  GetEventGenerator().ReleaseLeftButton();
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(9, 9));
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
 
-  // Verify that the laser pointer adds the last seen stylus point when enabled
-  // even when stylus mode is disabled.
+  // Verify that the laser pointer does not get shown if points are not coming
+  // from the stylus, even when enabled.
   GetEventGenerator().ExitPenPointerMode();
-  mode_test_api_->OnEnable();
-  EXPECT_EQ(1, mode_test_api_->laser_points().GetNumberOfPoints());
-  EXPECT_EQ(GetEventGenerator().current_location(),
-            mode_test_api_->laser_points().GetNewest().location);
-  // Verify that the laser pointer does not add additional points when move
-  // events are not from stylus.
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(34, 58));
-  GetEventGenerator().MoveMouseToInHost(gfx::Point(19, 71));
-  EXPECT_EQ(1, mode_test_api_->laser_points().GetNumberOfPoints());
+  controller_test_api_.SetEnabled(true);
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(10, 10));
+  GetEventGenerator().MoveMouseToInHost(gfx::Point(11, 11));
+  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+  GetEventGenerator().ReleaseLeftButton();
 }
 }  // namespace ash

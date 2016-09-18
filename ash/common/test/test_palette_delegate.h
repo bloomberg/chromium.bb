@@ -48,8 +48,6 @@ class TestPaletteDelegate : public PaletteDelegate {
       const EnableListener& on_state_changed) override;
   void CreateNote() override;
   bool HasNoteApp() override;
-  void OnLaserPointerEnabled() override;
-  void OnLaserPointerDisabled() override;
   void SetPartialMagnifierState(bool enabled) override;
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override;

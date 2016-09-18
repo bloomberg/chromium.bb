@@ -414,6 +414,10 @@ bool WmShellMus::IsTouchDown() {
 void WmShellMus::ToggleIgnoreExternalKeyboard() {
   NOTIMPLEMENTED();
 }
+
+void WmShellMus::SetLaserPointerEnabled(bool enabled) {
+  NOTIMPLEMENTED();
+}
 #endif  // defined(OS_CHROMEOS)
 
 ui::WindowTreeClient* WmShellMus::window_tree_client() {

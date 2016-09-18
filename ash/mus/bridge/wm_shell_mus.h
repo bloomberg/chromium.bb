@@ -114,6 +114,7 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;
+  void SetLaserPointerEnabled(bool enabled) override;
 #endif
 
  private:

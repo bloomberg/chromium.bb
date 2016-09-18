@@ -252,10 +252,6 @@ component("ash") {
     "common/system/chromeos/palette/tools/create_note_action.h",
     "common/system/chromeos/palette/tools/laser_pointer_mode.cc",
     "common/system/chromeos/palette/tools/laser_pointer_mode.h",
-    "common/system/chromeos/palette/tools/laser_pointer_points.cc",
-    "common/system/chromeos/palette/tools/laser_pointer_points.h",
-    "common/system/chromeos/palette/tools/laser_pointer_view.cc",
-    "common/system/chromeos/palette/tools/laser_pointer_view.h",
     "common/system/chromeos/palette/tools/magnifier_mode.cc",
     "common/system/chromeos/palette/tools/magnifier_mode.h",
     "common/system/chromeos/power/battery_notification.cc",
@@ -651,8 +647,6 @@ component("ash") {
     "link_handler_model_factory.h",
     "magnifier/magnification_controller.cc",
     "magnifier/magnification_controller.h",
-    "magnifier/partial_magnification_controller.cc",
-    "magnifier/partial_magnification_controller.h",
     "metrics/desktop_task_switch_metric_recorder.cc",
     "metrics/desktop_task_switch_metric_recorder.h",
     "metrics/task_switch_metrics_recorder.cc",
@@ -928,6 +922,17 @@ component("ash") {
     data = [
       "display/test_data/",
     ]
+
+    sources += [
+      "laser/laser_pointer_controller.cc",
+      "laser/laser_pointer_controller.h",
+      "laser/laser_pointer_points.cc",
+      "laser/laser_pointer_points.h",
+      "laser/laser_pointer_view.cc",
+      "laser/laser_pointer_view.h",
+      "magnifier/partial_magnification_controller.cc",
+      "magnifier/partial_magnification_controller.h",
+    ]
   } else {
     sources -= [
       "accelerators/key_hold_detector.cc",
@@ -1127,6 +1132,13 @@ static_library("test_support_common") {
     deps += [
       "//chromeos",
       "//ui/display",
+    ]
+
+    sources += [
+      "laser/laser_pointer_controller_test_api.cc",
+      "laser/laser_pointer_controller_test_api.h",
+      "laser/laser_pointer_points_test_api.cc",
+      "laser/laser_pointer_points_test_api.h",
     ]
   }
 }
@@ -1375,11 +1387,6 @@ test("ash_unittests") {
     "common/system/chromeos/palette/mock_palette_tool_delegate.h",
     "common/system/chromeos/palette/palette_tool_manager_unittest.cc",
     "common/system/chromeos/palette/tools/create_note_unittest.cc",
-    "common/system/chromeos/palette/tools/laser_pointer_mode_test_api.cc",
-    "common/system/chromeos/palette/tools/laser_pointer_mode_test_api.h",
-    "common/system/chromeos/palette/tools/laser_pointer_points_test_api.cc",
-    "common/system/chromeos/palette/tools/laser_pointer_points_test_api.h",
-    "common/system/chromeos/palette/tools/laser_pointer_unittest.cc",
     "common/system/chromeos/palette/tools/screenshot_unittest.cc",
     "common/system/chromeos/power/power_status_unittest.cc",
     "common/system/chromeos/power/power_status_view_unittest.cc",
@@ -1425,7 +1432,6 @@ test("ash_unittests") {
     "frame/caption_buttons/frame_size_button_unittest.cc",
     "host/ash_window_tree_host_x11_unittest.cc",
     "magnifier/magnification_controller_unittest.cc",
-    "magnifier/partial_magnification_controller_unittest.cc",
     "metrics/desktop_task_switch_metric_recorder_unittest.cc",
     "metrics/task_switch_metrics_recorder_unittest.cc",
     "metrics/task_switch_time_tracker_unittest.cc",
@@ -1561,7 +1567,11 @@ test("ash_unittests") {
   }
 
   if (is_chromeos) {
-    sources += [ "first_run/first_run_helper_unittest.cc" ]
+    sources += [
+      "first_run/first_run_helper_unittest.cc",
+      "laser/laser_pointer_controller_unittest.cc",
+      "magnifier/partial_magnification_controller_unittest.cc",
+    ]
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",
@@ -1586,7 +1596,6 @@ test("ash_unittests") {
       # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
       "focus_cycler_unittest.cc",
       "magnifier/magnification_controller_unittest.cc",
-      "magnifier/partial_magnification_controller_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
       "sticky_keys/sticky_keys_unittest.cc",
       "touch/touchscreen_util_unittest.cc",

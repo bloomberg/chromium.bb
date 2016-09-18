@@ -84,6 +84,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;
+  void SetLaserPointerEnabled(bool enabled) override;
 #endif
 
  private:

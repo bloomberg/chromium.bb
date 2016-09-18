@@ -37,6 +37,8 @@ class PaletteDelegate {
   virtual bool HasNoteApp() = 0;
 
   // Enables or disables the partial magnifier.
+  // TODO(sammiequon): This can be removed from the delegate and put in wmshell.
+  // See http://crbug.com/647031.
   virtual void SetPartialMagnifierState(bool enabled) = 0;
 
   // Set callback that is run when a stylus is inserted or removed.
@@ -61,10 +63,6 @@ class PaletteDelegate {
 
   // Cancels any active partial screenshot session.
   virtual void CancelPartialScreenshot() = 0;
-
-  // Called when the laser pointer has been enabled or disabled.
-  virtual void OnLaserPointerEnabled() = 0;
-  virtual void OnLaserPointerDisabled() = 0;
 
  private:
   DISALLOW_ASSIGN(PaletteDelegate);

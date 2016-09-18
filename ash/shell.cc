@@ -53,6 +53,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/input_method_event_handler.h"
+#include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
@@ -539,7 +540,6 @@ Shell::~Shell() {
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
   magnification_controller_.reset();
-  partial_magnification_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
   toplevel_window_event_handler_.reset();
@@ -561,6 +561,8 @@ Shell::~Shell() {
   touch_transformer_controller_.reset();
   stylus_metrics_recorder_.reset();
   audio_a11y_controller_.reset();
+  laser_pointer_controller_.reset();
+  partial_magnification_controller_.reset();
 #endif  // defined(OS_CHROMEOS)
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
@@ -783,10 +785,13 @@ void Shell::Init(const ShellInitParams& init_params) {
   // RootWindowController as possible.
   visibility_controller_.reset(new AshVisibilityController);
 
+#if defined(OS_CHROMEOS)
+  laser_pointer_controller_.reset(new LaserPointerController());
+  partial_magnification_controller_.reset(new PartialMagnificationController());
+#endif
+
   magnification_controller_.reset(MagnificationController::CreateInstance());
   wm_shell_->CreateMruWindowTracker();
-
-  partial_magnification_controller_.reset(new PartialMagnificationController());
 
   autoclick_controller_.reset(AutoclickController::CreateInstance());
 

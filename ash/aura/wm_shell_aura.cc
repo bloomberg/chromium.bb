@@ -18,6 +18,7 @@
 #include "ash/common/wm_display_observer.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/laser/laser_pointer_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
@@ -283,6 +284,10 @@ void WmShellAura::ToggleIgnoreExternalKeyboard() {
   Shell::GetInstance()
       ->virtual_keyboard_controller()
       ->ToggleIgnoreExternalKeyboard();
+}
+
+void WmShellAura::SetLaserPointerEnabled(bool enabled) {
+  Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
 }
 #endif
 

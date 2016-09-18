@@ -389,6 +389,9 @@ class ASH_EXPORT WmShell {
 
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
   virtual void ToggleIgnoreExternalKeyboard() = 0;
+
+  // Enable or disable the laser pointer.
+  virtual void SetLaserPointerEnabled(bool enabled) = 0;
 #endif
 
  protected:

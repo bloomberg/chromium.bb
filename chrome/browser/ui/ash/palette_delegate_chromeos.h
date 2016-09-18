@@ -38,9 +38,6 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
 
   ~PaletteDelegateChromeOS() override;
 
-  void OnLaserPointerEnabled() override;
-  void OnLaserPointerDisabled() override;
-
  private:
   PaletteDelegateChromeOS();
 

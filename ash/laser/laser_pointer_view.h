@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_VIEW_H_
-#define ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_VIEW_H_
+#ifndef ASH_LASER_LASER_POINTER_VIEW_H_
+#define ASH_LASER_LASER_POINTER_VIEW_H_
 
 #include <memory>
 
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_points.h"
+#include "ash/laser/laser_pointer_points.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
+
+namespace aura {
+class Window;
+}
 
 namespace gfx {
 class Point;
@@ -26,14 +30,18 @@ namespace ash {
 // trail of lines to help users track.
 class LaserPointerView : public views::View {
  public:
-  explicit LaserPointerView(base::TimeDelta life_duration);
+  LaserPointerView(base::TimeDelta life_duration, aura::Window* root_window);
   ~LaserPointerView() override;
 
   void AddNewPoint(const gfx::Point& new_point);
   void Stop();
+  aura::Window* GetRootWindow();
+
+  // Reparents the widget if needed.
+  void ReparentWidget(aura::Window* new_root_window);
 
  private:
-  friend class LaserPointerModeTestApi;
+  friend class LaserPointerControllerTestApi;
 
   // view::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -46,4 +54,4 @@ class LaserPointerView : public views::View {
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_VIEW_H_
+#endif  // ASH_LASER_LASER_POINTER_VIEW_H_

@@ -4,6 +4,7 @@
 
 #include "ash/magnifier/partial_magnification_controller.h"
 
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/shell.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -13,10 +14,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/palette/palette_utils.h"
-#endif
 
 namespace ash {
 namespace {
@@ -62,16 +59,6 @@ aura::Window* GetCurrentRootWindow() {
       return root_window;
   }
   return nullptr;
-}
-
-// Returns true if the event should be processed normally, ie, the stylus is
-// over the palette icon or widget.
-bool ShouldSkipEventFiltering(const gfx::Point& point) {
-#if defined(OS_CHROMEOS)
-  return PaletteContainsPointInScreen(point);
-#else
-  return false;
-#endif
 }
 
 }  // namespace
@@ -254,8 +241,9 @@ void PartialMagnificationController::OnLocatedEvent(
   gfx::Point screen_point = event->root_location();
   wm::ConvertPointToScreen(event_root, &screen_point);
 
+  // If the stylus is pressed on the palette icon or widget, do not activate.
   if (event->type() == ui::ET_MOUSE_PRESSED &&
-      !ShouldSkipEventFiltering(screen_point)) {
+      !PaletteContainsPointInScreen(screen_point)) {
     SetActive(true);
   }
 
@@ -282,7 +270,8 @@ void PartialMagnificationController::OnLocatedEvent(
       event_root, host_widget_->GetNativeView()->GetRootWindow(), &point);
   host_widget_->SetBounds(GetBounds(point));
 
-  if (!ShouldSkipEventFiltering(screen_point))
+  // If the stylus is over the palette icon or widget, do not consume the event.
+  if (!PaletteContainsPointInScreen(screen_point))
     event->StopPropagation();
 }
 

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_POINTS_TESTAPI_H_
-#define ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_POINTS_TESTAPI_H_
-
-#include <memory>
+#ifndef ASH_LASER_LASER_POINTER_POINTS_TEST_API_H_
+#define ASH_LASER_LASER_POINTER_POINTS_TEST_API_H_
 
 #include "base/time/time.h"
 
@@ -16,7 +14,7 @@ class LaserPointerPoints;
 // An api for testing the laser_pointer_points class.
 class LaserPointerPointsTestApi {
  public:
-  LaserPointerPointsTestApi(std::unique_ptr<LaserPointerPoints> instance);
+  LaserPointerPointsTestApi(LaserPointerPoints* instance);
   ~LaserPointerPointsTestApi();
 
   int GetNumberOfPoints() const;
@@ -27,10 +25,10 @@ class LaserPointerPointsTestApi {
  private:
   // The time the new points are added.
   base::Time new_point_time_;
-  std::unique_ptr<LaserPointerPoints> instance_;
+  LaserPointerPoints* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerPointsTestApi);
 };
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_TOOLS_LASER_POINTER_POINTS_TESTAPI_H_
+#endif  // ASH_LASER_LASER_POINTER_POINTS_TEST_API_H_

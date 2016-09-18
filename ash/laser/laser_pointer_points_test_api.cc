@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_points_test_api.h"
+#include "ash/laser/laser_pointer_points_test_api.h"
 
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_points.h"
+#include "ash/laser/laser_pointer_points.h"
 
 namespace ash {
 
 LaserPointerPointsTestApi::LaserPointerPointsTestApi(
-    std::unique_ptr<LaserPointerPoints> instance)
-    : new_point_time_(base::Time::Now()), instance_(std::move(instance)) {}
+    LaserPointerPoints* instance)
+    : new_point_time_(base::Time::Now()), instance_(instance) {}
 
 LaserPointerPointsTestApi::~LaserPointerPointsTestApi() {}
 

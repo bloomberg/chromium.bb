@@ -2,21 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/chromeos/palette/tools/laser_pointer_view.h"
+#include "ash/laser/laser_pointer_view.h"
 
 #include <memory>
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm_root_window_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/laser/laser_pointer_points.h"
+#include "ash/shell.h"
+#include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/aura/window.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
 
+// Variables for rendering the laser. Radius in DIP.
 const double kPointInitialRadius = 5;
 const double kPointFinalRadius = 0.25;
 const int kPointInitialOpacity = 200;
@@ -39,7 +43,8 @@ double LinearInterpolate(double initial_value,
 ////////////////////////////////////////////////////////////////////////////////
 
 // LaserPointerView
-LaserPointerView::LaserPointerView(base::TimeDelta life_duration)
+LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
+                                   aura::Window* root_window)
     : laser_points_(life_duration) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
@@ -49,11 +54,9 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration)
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  WmShell::Get()
-      ->GetRootWindowForNewWindows()
-      ->GetRootWindowController()
-      ->ConfigureWidgetInitParamsForContainer(
-          widget_.get(), kShellWindowId_OverlayContainer, &params);
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
+
   widget_->Init(params);
   widget_->Show();
   widget_->SetContentsView(this);
@@ -67,13 +70,34 @@ void LaserPointerView::Stop() {
   SchedulePaint();
 }
 
+aura::Window* LaserPointerView::GetRootWindow() {
+  return widget_->GetNativeView()->GetRootWindow();
+}
+
+void LaserPointerView::ReparentWidget(aura::Window* new_root_window) {
+  if (GetRootWindow() != new_root_window) {
+    // TODO(sammiequon): Investigate if we should stop (which removes all
+    // points) or keep the old points. See http://crbug.com/647793.
+    Stop();
+    views::Widget::ReparentNativeView(
+        widget_->GetNativeView(),
+        Shell::GetContainer(new_root_window, kShellWindowId_OverlayContainer));
+  }
+}
+
 void LaserPointerView::AddNewPoint(const gfx::Point& new_point) {
   laser_points_.AddPoint(new_point);
+
+  // The bounding box should be relative to the screen.
+  gfx::Point screen_offset =
+      widget_->GetNativeView()->GetRootWindow()->GetBoundsInScreen().origin();
+
   // Expand the bounding box so that it includes the radius of the points on the
   // edges.
   gfx::Rect bounding_box;
   bounding_box = laser_points_.GetBoundingBox();
   bounding_box.Offset(-kPointInitialRadius, -kPointInitialRadius);
+  bounding_box.Offset(screen_offset.x(), screen_offset.y());
   bounding_box.set_width(bounding_box.width() + (kPointInitialRadius * 2));
   bounding_box.set_height(bounding_box.height() + (kPointInitialRadius * 2));
   widget_->SetBounds(bounding_box);
@@ -93,7 +117,10 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
   base::Time newest = laser_points_.GetNewest().creation_time;
   gfx::Point previous_point = laser_points_.GetOldest().location;
   gfx::Point current_point;
-  gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
+
+  // Compute the offset of the current widget.
+  gfx::Point widget_offset =
+      widget_->GetNativeView()->GetBoundsInRootWindow().origin();
   int num_points_ = laser_points_.GetNumberOfPoints();
   int point_count = 0;
   for (const LaserPointerPoints::LaserPoint& point :
@@ -110,7 +137,7 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
     double radius = LinearInterpolate(kPointInitialRadius, kPointFinalRadius,
                                       relative_time);
 
-    gfx::Vector2d center = point.location - widget_bounds.origin();
+    gfx::Vector2d center = point.location - widget_offset;
     current_point = gfx::Point(center.x(), center.y());
 
     // If we draw laser_points_ that are within a stroke width of each other,
@@ -132,6 +159,7 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawLine(previous_point, current_point, paint);
     previous_point = current_point;
   }
+  // Draw the last point as a circle.
   paint.setColor(SkColorSetA(kPointColor, kPointInitialOpacity));
   paint.setStyle(SkPaint::kFill_Style);
   canvas->DrawCircle(current_point, kPointInitialRadius, paint);

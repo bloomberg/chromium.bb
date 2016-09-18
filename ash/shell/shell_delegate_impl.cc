@@ -92,8 +92,6 @@ class PaletteDelegateImpl : public PaletteDelegate {
   }
   void CreateNote() override {}
   bool HasNoteApp() override { return false; }
-  void OnLaserPointerEnabled() override {}
-  void OnLaserPointerDisabled() override {}
   void SetPartialMagnifierState(bool enabled) override {}
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override {}
