@@ -82,7 +82,7 @@
         use. The remaining events of this protocol are only being generated
         after this event has been fired with a tool type other than mouse.
       </description>
-      <arg name="type" type="uint" enum="type" summary="new device type"/>
+      <arg name="type" type="uint" enum="tool_type" summary="new device type"/>
     </event>
 
     <event name="force">
