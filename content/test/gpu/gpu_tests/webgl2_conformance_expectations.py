@@ -181,37 +181,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'nvidia'], bug=641209)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
-        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
         ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
-        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_*.html',
@@ -232,6 +208,32 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
@@ -500,38 +502,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
     # https://patchwork.freedesktop.org/patch/76903
     # So these tests fail on core profile.
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
-        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_00.html',
         ['linux', 'intel'], bug=598902)

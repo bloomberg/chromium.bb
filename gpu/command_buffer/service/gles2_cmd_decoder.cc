@@ -44,6 +44,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
+#include "gpu/command_buffer/service/gles2_cmd_srgb_converter.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
@@ -813,9 +814,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // or regular back buffer).
   gfx::Size GetBoundReadFramebufferSize();
 
-  // Get the service side ID for the bound read frame buffer.
+  // Get the service side ID for the bound read framebuffer.
   // If it's back buffer, 0 is returned.
   GLuint GetBoundReadFramebufferServiceId();
+
+  // Get the service side ID for the bound draw framebuffer.
+  // If it's back buffer, 0 is returned.
+  GLuint GetBoundDrawFramebufferServiceId();
 
   // Get the format/type of the currently bound frame buffer (either FBO or
   // regular back buffer).
@@ -2060,6 +2065,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   bool InitializeCopyTexImageBlitter(const char* function_name);
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
+  bool InitializeSRGBConverter(const char* function_name);
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2252,6 +2258,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       apply_framebuffer_attachment_cmaa_intel_;
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
+  std::unique_ptr<SRGBConverter> srgb_converter_;
   std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
 
   // Cached values of the currently assigned viewport dimensions.
@@ -4236,14 +4243,6 @@ bool GLES2DecoderImpl::CheckBoundFramebufferValid(const char* func_name) {
   Framebuffer* read_framebuffer = GetFramebufferInfoForTarget(target);
   valid = valid && CheckFramebufferValid(
       read_framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
-
-  if (valid && feature_info_->feature_flags().desktop_srgb_support) {
-    bool enable_framebuffer_srgb =
-        (draw_framebuffer && draw_framebuffer->HasSRGBAttachments()) ||
-        (read_framebuffer && read_framebuffer->HasSRGBAttachments());
-    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
-  }
-
   return valid;
 }
 
@@ -4299,6 +4298,21 @@ GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
   }
   if (offscreen_resolved_frame_buffer_.get()) {
     return offscreen_resolved_frame_buffer_->id();
+  }
+  if (offscreen_target_frame_buffer_.get()) {
+    return offscreen_target_frame_buffer_->id();
+  }
+  if (surface_.get()) {
+    return surface_->GetBackingFramebufferObject();
+  }
+  return 0;
+}
+
+GLuint GLES2DecoderImpl::GetBoundDrawFramebufferServiceId() {
+  Framebuffer* framebuffer =
+    GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  if (framebuffer) {
+    return framebuffer->service_id();
   }
   if (offscreen_target_frame_buffer_.get()) {
     return offscreen_target_frame_buffer_->id();
@@ -4545,6 +4559,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       copy_texture_CHROMIUM_.reset();
     }
 
+    if (srgb_converter_.get()) {
+      srgb_converter_->Destroy();
+      srgb_converter_.reset();
+    }
+
     clear_framebuffer_blit_.reset();
 
     if (state_.current_program.get()) {
@@ -4642,6 +4661,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   apply_framebuffer_attachment_cmaa_intel_.reset();
   copy_tex_image_blit_.reset();
   copy_texture_CHROMIUM_.reset();
+  srgb_converter_.reset();
   clear_framebuffer_blit_.reset();
 
   if (query_manager_.get()) {
@@ -7595,12 +7615,17 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     }
   }
 
-  GLenum src_format = GetBoundReadFramebufferInternalFormat();
+  GLenum src_internal_format = GetBoundReadFramebufferInternalFormat();
   GLenum src_type = GetBoundReadFramebufferTextureType();
 
+  bool read_buffer_has_srgb =
+      GetColorEncodingFromInternalFormat(src_internal_format) == GL_SRGB;
+  bool draw_buffers_has_srgb = false;
   if ((mask & GL_COLOR_BUFFER_BIT) != 0) {
-    bool is_src_signed_int = GLES2Util::IsSignedIntegerFormat(src_format);
-    bool is_src_unsigned_int = GLES2Util::IsUnsignedIntegerFormat(src_format);
+    bool is_src_signed_int =
+        GLES2Util::IsSignedIntegerFormat(src_internal_format);
+    bool is_src_unsigned_int =
+        GLES2Util::IsUnsignedIntegerFormat(src_internal_format);
     DCHECK(!is_src_signed_int || !is_src_unsigned_int);
 
     if ((is_src_signed_int || is_src_unsigned_int) && filter == GL_LINEAR) {
@@ -7610,7 +7635,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     }
 
     GLenum src_sized_format =
-        GLES2Util::ConvertToSizedFormat(src_format, src_type);
+        GLES2Util::ConvertToSizedFormat(src_internal_format, src_type);
     DCHECK(read_framebuffer || (is_feedback_loop != FeedbackLoopUnknown));
     const Framebuffer::Attachment* read_buffer =
         is_feedback_loop == FeedbackLoopUnknown ?
@@ -7621,6 +7646,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       GLenum dst_type = GetBoundColorDrawBufferType(static_cast<GLint>(ii));
       if (dst_format == 0)
         continue;
+      if (GetColorEncodingFromInternalFormat(dst_format) == GL_SRGB)
+        draw_buffers_has_srgb = true;
       if (read_buffer_samples > 0 &&
           (src_sized_format !=
            GLES2Util::ConvertToSizedFormat(dst_format, dst_type))) {
@@ -7676,11 +7703,65 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     }
   }
 
-  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
-  BlitFramebufferHelper(
-      srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
+  bool enable_srgb =
+      (read_buffer_has_srgb || draw_buffers_has_srgb) &&
+      ((mask & GL_COLOR_BUFFER_BIT) != 0);
+  bool encode_srgb_only =
+      (draw_buffers_has_srgb && !read_buffer_has_srgb) &&
+      ((mask & GL_COLOR_BUFFER_BIT) != 0);
+  // TODO(yunchao) Need to revisit here if the read buffer is a multi-sampled
+  // renderbuffer.
+  if (!enable_srgb ||
+      read_buffer_samples > 0 ||
+      !feature_info_->feature_flags().desktop_srgb_support ||
+      gl_version_info().IsAtLeastGL(4, 4) ||
+      (gl_version_info().IsAtLeastGL(4, 2) && encode_srgb_only)) {
+    if (enable_srgb && gl_version_info().IsAtLeastGL(4, 2)) {
+      state_.EnableDisableFramebufferSRGB(enable_srgb);
+    }
+
+    // TODO(yunchao) Need to revisit here. In GLES spec, blitFramebuffer
+    // should do scissor test per fragment operation.
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+    BlitFramebufferHelper(
+        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
                                   state_.enable_flags.scissor_test);
+    return;
+  }
+
+  // emulate srgb for desktop core profile when GL version < 4.4
+  // TODO(yunchao): Need to handle this situation:
+  // There are multiple draw buffers. Some of them are srgb images.
+  // The others are not.
+  state_.EnableDisableFramebufferSRGB(true);
+  if (!InitializeSRGBConverter(func_name)) {
+    return;
+  }
+  GLenum src_format =
+      TextureManager::ExtractFormatFromStorageFormat(src_internal_format);
+  srgb_converter_->Blit(this, srcX0, srcY0, srcX1, srcY1,
+                        dstX0, dstY0, dstX1, dstY1,
+                        mask, filter,
+                        GetBoundReadFramebufferSize(),
+                        GetBoundReadFramebufferServiceId(),
+                        src_internal_format, src_format, src_type,
+                        GetBoundDrawFramebufferServiceId(),
+                        read_buffer_has_srgb, draw_buffers_has_srgb);
+}
+
+bool GLES2DecoderImpl::InitializeSRGBConverter(
+    const char* function_name) {
+  if (!srgb_converter_.get()) {
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
+    srgb_converter_.reset(
+        new SRGBConverter(feature_info_.get()));
+    srgb_converter_->InitializeSRGBConverter(this);
+    if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void GLES2DecoderImpl::EnsureRenderbufferBound() {
