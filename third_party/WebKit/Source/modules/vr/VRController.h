@@ -55,6 +55,8 @@ private:
     // VRServiceClient.
     void OnDisplayChanged(device::blink::VRDisplayPtr) override;
     void OnExitPresent(unsigned index) override;
+    void OnDisplayConnected(device::blink::VRDisplayPtr) override;
+    void OnDisplayDisconnected(unsigned) override;
 
     // ContextLifecycleObserver.
     void contextDestroyed() override;

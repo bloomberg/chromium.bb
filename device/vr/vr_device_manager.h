@@ -51,6 +51,8 @@ class VRDeviceManager : public VRClientDispatcher {
 
   // VRClientDispatcher implementation
   void OnDeviceChanged(VRDisplayPtr device) override;
+  void OnDeviceConnectionStatusChanged(VRDevice* device,
+                                       bool is_connected) override;
 
  private:
   friend class VRDeviceManagerTest;

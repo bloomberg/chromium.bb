@@ -78,4 +78,6 @@ interface VRService {
 interface VRServiceClient {
   OnDisplayChanged(VRDisplay display);
   OnExitPresent(uint32 index);
+  OnDisplayConnected(VRDisplay display);
+  OnDisplayDisconnected(uint32 index);
 };

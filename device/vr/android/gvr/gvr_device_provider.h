@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/vr_client_dispatcher.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 
@@ -28,7 +29,10 @@ class GvrDeviceProvider : public VRDeviceProvider, public GvrDelegateClient {
   void OnDelegateInitialized(GvrDelegate* delegate) override;
   void OnDelegateShutdown() override;
 
+  void SetClient(VRClientDispatcher* client) override;
+
  private:
+  std::unique_ptr<VRClientDispatcher> client_;
   std::unique_ptr<VRDevice> vr_device_;
   std::unique_ptr<GvrDeviceProviderDelegate> delegate_;
 

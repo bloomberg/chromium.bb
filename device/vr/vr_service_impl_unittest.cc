@@ -27,6 +27,13 @@ class MockVRServiceClient : public VRServiceClient {
 
   MOCK_METHOD1(OnExitPresent, void(uint32_t index));
 
+  MOCK_METHOD1(OnDisplayConnected, void(const VRDisplay& display));
+  void OnDisplayConnected(VRDisplayPtr display) override {
+    OnDisplayConnected(*display);
+    last_display_ = std::move(display);
+  }
+  void OnDisplayDisconnected(unsigned index) override {}
+
   const VRDisplayPtr& LastDisplay() { return last_display_; }
 
  private:
@@ -179,5 +186,22 @@ TEST_F(VRServiceImplTest, DevicePresentationIsolation) {
                               service_1->service(), device->id()));
   EXPECT_EQ(device.get(), VRDeviceManager::GetAllowedDevice(
                               service_2->service(), device->id()));
+}
+
+// Ensure that DeviceChanged calls are dispatched to all active services.
+TEST_F(VRServiceImplTest, DeviceConnectedDispatched) {
+  std::unique_ptr<VRServiceTestBinding> service_1 = BindService();
+  std::unique_ptr<VRServiceTestBinding> service_2 = BindService();
+
+  EXPECT_CALL(service_1->client(), OnDisplayConnected(_));
+  EXPECT_CALL(service_2->client(), OnDisplayConnected(_));
+
+  std::unique_ptr<FakeVRDevice> device(new FakeVRDevice(provider_));
+  device_manager_->OnDeviceConnectionStatusChanged(device.get(), true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(device->id(), service_1->client().LastDisplay()->index);
+  EXPECT_EQ(device->id(), service_2->client().LastDisplay()->index);
 }
 }

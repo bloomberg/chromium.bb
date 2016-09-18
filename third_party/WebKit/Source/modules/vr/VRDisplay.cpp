@@ -83,6 +83,12 @@ void VRDisplay::update(const device::blink::VRDisplayPtr& display)
     }
 }
 
+void VRDisplay::disconnected()
+{
+    if (m_isConnected)
+        m_isConnected = !m_isConnected;
+}
+
 bool VRDisplay::getFrameData(VRFrameData* frameData)
 {
     updatePose();

@@ -85,22 +85,26 @@ void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
     devices->push_back(vr_device_.get());
 }
 
+void GvrDeviceProvider::SetClient(VRClientDispatcher* client) {
+  if (!client_)
+    client_.reset(client);
+}
+
 void GvrDeviceProvider::Initialize() {
-  if (!delegate_) {
+  if (!delegate_)
     delegate_.reset(new GvrDeviceProviderDelegate());
-  }
 }
 
 void GvrDeviceProvider::OnDelegateInitialized(GvrDelegate* delegate) {
   if (!vr_device_)
     vr_device_.reset(new GvrDevice(this, delegate));
 
-  // Should fire a vrdisplayconnected event here.
+  client_->OnDeviceConnectionStatusChanged(vr_device_.get(), true);
 }
 
 void GvrDeviceProvider::OnDelegateShutdown() {
-  // Nothing to do here just yet. Eventually want to shut down the VRDevice and
-  // fire a vrdisplaydisconnected event.
+  if (client_ && vr_device_)
+    client_->OnDeviceConnectionStatusChanged(vr_device_.get(), false);
 }
 
 }  // namespace device

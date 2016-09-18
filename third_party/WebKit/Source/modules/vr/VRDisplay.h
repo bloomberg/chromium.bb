@@ -91,6 +91,7 @@ protected:
     void forceExitPresent();
 
     void updateLayerBounds();
+    void disconnected();
 
     VRController* controller();
 

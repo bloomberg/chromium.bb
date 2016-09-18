@@ -35,6 +35,8 @@ public:
     VRController* controller();
     Document* document();
 
+    void fireVREvent(VRDisplayEvent*);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

@@ -246,13 +246,32 @@ void VRDeviceManager::SubmitFrame(VRServiceImpl* service,
   presenting_device_->SubmitFrame(std::move(pose));
 }
 
+void VRDeviceManager::OnDeviceConnectionStatusChanged(VRDevice* device,
+                                                      bool is_connected) {
+  if (is_connected) {
+    VRDisplayPtr vr_device_info = device->GetVRDevice();
+    if (vr_device_info.is_null())
+      return;
+
+    vr_device_info->index = device->id();
+
+    for (const auto& service : services_)
+      service->client()->OnDisplayConnected(vr_device_info.Clone());
+  } else {
+    for (const auto& service : services_)
+      service->client()->OnDisplayDisconnected(device->id());
+  }
+}
+
 void VRDeviceManager::InitializeProviders() {
   if (vr_initialized_) {
     return;
   }
 
-  for (const auto& provider : providers_)
+  for (const auto& provider : providers_) {
+    provider->SetClient(this);
     provider->Initialize();
+  }
 
   vr_initialized_ = true;
 }

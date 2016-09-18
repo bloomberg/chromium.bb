@@ -177,6 +177,28 @@ void VRController::OnExitPresent(unsigned index)
         vrDisplay->forceExitPresent();
 }
 
+void VRController::OnDisplayConnected(device::blink::VRDisplayPtr display)
+{
+    VRDisplay* vrDisplay = createOrUpdateDisplay(display);
+    if (!vrDisplay)
+        return;
+
+    m_navigatorVR->fireVREvent(VRDisplayEvent::create(
+        EventTypeNames::vrdisplayconnect, true, false, vrDisplay, "connect"));
+}
+
+void VRController::OnDisplayDisconnected(unsigned index)
+{
+    VRDisplay* vrDisplay = getDisplayForIndex(index);
+    if (!vrDisplay)
+        return;
+
+    vrDisplay->disconnected();
+
+    m_navigatorVR->fireVREvent(VRDisplayEvent::create(
+        EventTypeNames::vrdisplaydisconnect, true, false, vrDisplay, "disconnect"));
+}
+
 void VRController::contextDestroyed()
 {
     // If the document context was destroyed, shut down the client connection

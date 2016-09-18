@@ -111,4 +111,11 @@ void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display)
     }
 }
 
+void NavigatorVR::fireVREvent(VRDisplayEvent* event)
+{
+    if (m_frame && m_frame->localDOMWindow()) {
+        m_frame->localDOMWindow()->enqueueWindowEvent(event);
+    }
+}
+
 } // namespace blink
