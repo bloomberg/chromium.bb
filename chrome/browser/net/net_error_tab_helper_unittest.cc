@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
-#undef NO_ERROR
+#undef NO_ERROR  // Defined in winerror.h.
 
 using chrome_browser_net::NetErrorTabHelper;
 using error_page::DnsProbeStatus;
