@@ -1911,6 +1911,8 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       const double dr =
           (double)cpi->bytes * (double)8 / (double)1000 / time_encoded;
       const double peak = (double)((1 << cpi->oxcf.input_bit_depth) - 1);
+      const double target_rate = (double)cpi->oxcf.target_bandwidth / 1000;
+      const double rate_err = ((100.0 * (dr - target_rate)) / target_rate);
 
       if (cpi->b_calculate_psnr) {
         const double total_psnr = aom_sse_to_psnr(
@@ -1948,8 +1950,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
           SNPRINT2(results, "\t%7.3f", cpi->worst_consistency);
         }
 
-        fprintf(f, "%s\t    Time\n", headings);
-        fprintf(f, "%s\t%8.0f\n", results, total_encode_time);
+        fprintf(f, "%s\t    Time\tRcErr\tAbsErr\n", headings);
+        fprintf(f, "%s\t%8.0f\t%7.2f\t%7.2f\n", results, total_encode_time,
+                rate_err, fabs(rate_err));
       }
 
       fclose(f);
