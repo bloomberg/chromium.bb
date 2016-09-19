@@ -230,7 +230,8 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
     if (GetWidget())
       AttachSurface();
 
-    UpdatePinnedState();
+    if (item_)
+      UpdatePinnedState();
   }
 }
 
@@ -268,6 +269,8 @@ void ArcCustomNotificationView::UpdateCloseButtonVisiblity() {
 }
 
 void ArcCustomNotificationView::UpdatePinnedState() {
+  DCHECK(item_);
+
   if (item_->pinned() && floating_close_button_widget_) {
     floating_close_button_widget_.reset();
   } else if (!item_->pinned() && !floating_close_button_widget_) {
