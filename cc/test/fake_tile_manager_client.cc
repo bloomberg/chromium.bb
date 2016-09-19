@@ -25,4 +25,8 @@ FakeTileManagerClient::BuildEvictionQueue(TreePriority tree_priority) {
   return nullptr;
 }
 
+gfx::ColorSpace FakeTileManagerClient::GetTileColorSpace() const {
+  return gfx::ColorSpace();
+}
+
 }  // namespace cc

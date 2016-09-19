@@ -230,6 +230,14 @@ void LayerTree::SetPaintedDeviceScaleFactor(float painted_device_scale_factor) {
   SetNeedsCommit();
 }
 
+void LayerTree::SetDeviceColorSpace(const gfx::ColorSpace& device_color_space) {
+  if (inputs_.device_color_space == device_color_space)
+    return;
+  inputs_.device_color_space = device_color_space;
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      this, [](Layer* layer) { layer->SetNeedsDisplay(); });
+}
+
 void LayerTree::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
@@ -407,6 +415,8 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->set_painted_device_scale_factor(
       inputs_.painted_device_scale_factor);
+
+  tree_impl->SetDeviceColorSpace(inputs_.device_color_space);
 
   if (inputs_.pending_page_scale_animation) {
     tree_impl->SetPendingPageScaleAnimation(

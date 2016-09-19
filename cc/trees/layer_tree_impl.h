@@ -231,6 +231,11 @@ class CC_EXPORT LayerTreeImpl {
     return painted_device_scale_factor_;
   }
 
+  void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
+  const gfx::ColorSpace& device_color_space() const {
+    return device_color_space_;
+  }
+
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
   }
@@ -485,6 +490,7 @@ class CC_EXPORT LayerTreeImpl {
 
   float device_scale_factor_;
   float painted_device_scale_factor_;
+  gfx::ColorSpace device_color_space_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

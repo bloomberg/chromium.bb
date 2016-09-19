@@ -793,6 +793,8 @@ void TileManager::ScheduleTasks(
 
   graph_.Reset();
 
+  gfx::ColorSpace color_space = client_->GetTileColorSpace();
+
   scoped_refptr<TileTask> required_for_activation_done_task =
       CreateTaskSetFinishedTask(
           &TileManager::DidFinishRunningTileTasksRequiredForActivation);
@@ -811,7 +813,7 @@ void TileManager::ScheduleTasks(
     DCHECK(!tile->draw_info().resource_);
 
     if (!tile->raster_task_)
-      tile->raster_task_ = CreateRasterTask(prioritized_tile);
+      tile->raster_task_ = CreateRasterTask(prioritized_tile, color_space);
 
     TileTask* task = tile->raster_task_.get();
 
@@ -923,7 +925,8 @@ void TileManager::ScheduleTasks(
 }
 
 scoped_refptr<TileTask> TileManager::CreateRasterTask(
-    const PrioritizedTile& prioritized_tile) {
+    const PrioritizedTile& prioritized_tile,
+    const gfx::ColorSpace& color_space) {
   Tile* tile = prioritized_tile.tile();
 
   // Get the resource.
@@ -942,7 +945,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   } else {
     resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
                                                DetermineResourceFormat(tile),
-                                               gfx::ColorSpace());
+                                               color_space);
   }
 
   // For LOW_RESOLUTION tiles, we don't draw or predecode images.

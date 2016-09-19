@@ -1737,6 +1737,129 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 
+class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
+ public:
+  void SetupTree() override {
+    space1_ = gfx::ColorSpace::CreateXYZD50();
+    space2_ = gfx::ColorSpace::CreateSRGB();
+
+    root_layer_ = Layer::Create();
+    root_layer_->SetBounds(gfx::Size(10, 20));
+
+    child_layer_ = FakePictureLayer::Create(&client_);
+    child_layer_->SetBounds(gfx::Size(10, 10));
+    root_layer_->AddChild(child_layer_);
+
+    layer_tree()->SetRootLayer(root_layer_);
+    layer_tree()->SetDeviceColorSpace(space1_);
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(root_layer_->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+
+    int source_frame = host_impl->active_tree()->source_frame_number();
+    switch (source_frame) {
+      case 0:
+        // The first frame will have full damage, and should be in the initial
+        // color space.
+        EXPECT_FALSE(frame_data->has_no_damage);
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        break;
+      case 1:
+        // Empty commit.
+        EXPECT_TRUE(frame_data->has_no_damage);
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        break;
+      case 2:
+        // The change from space1 to space2 should cause full damage.
+        EXPECT_FALSE(frame_data->has_no_damage);
+        EXPECT_TRUE(space2_ == host_impl->active_tree()->device_color_space());
+        break;
+      case 3:
+        // Empty commit with the color space set to space2 redundantly.
+        EXPECT_TRUE(frame_data->has_no_damage);
+        EXPECT_TRUE(space2_ == host_impl->active_tree()->device_color_space());
+        break;
+      case 4:
+        // The change from space2 to space1 should cause full damage.
+        EXPECT_FALSE(frame_data->has_no_damage);
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        break;
+      case 5:
+        // Empty commit.
+        EXPECT_TRUE(frame_data->has_no_damage);
+        EXPECT_TRUE(space1_ == host_impl->active_tree()->device_color_space());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    if (!frame_data->has_no_damage) {
+      gfx::Rect root_damage_rect =
+          frame_data->render_passes.back()->damage_rect;
+      EXPECT_EQ(
+          gfx::Rect(
+              host_impl->active_tree()->root_layer_for_testing()->bounds()),
+          root_damage_rect);
+    }
+
+    return draw_result;
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        layer_tree()->SetDeviceColorSpace(space2_);
+        EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
+        break;
+      case 3:
+        // The redundant SetDeviceColorSpace should cause no commit and no
+        // damage. Force a commit for the test to continue.
+        layer_tree()->SetDeviceColorSpace(space2_);
+        PostSetNeedsCommitToMainThread();
+        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        break;
+      case 4:
+        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        layer_tree()->SetDeviceColorSpace(space1_);
+        EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
+        break;
+      case 5:
+        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 6:
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  gfx::ColorSpace space1_;
+  gfx::ColorSpace space2_;
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<Layer> child_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceColorSpaceChange);
+
 class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetNextCommitForcesRedraw()

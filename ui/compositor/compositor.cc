@@ -339,6 +339,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
+  host_->GetLayerTree()->SetDeviceColorSpace(color_space);
   color_space_ = color_space;
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.

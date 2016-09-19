@@ -2224,6 +2224,16 @@ TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
   EXPECT_TRUE(host_impl().active_tree()->needs_update_draw_properties());
 }
 
+TEST_F(LayerTreeImplTest, DeviceColorSpaceDoesNotNeedDrawPropertiesUpdate) {
+  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->SetDeviceColorSpace(
+      gfx::ColorSpace::CreateXYZD50());
+  host_impl().active_tree()->UpdateDrawProperties(false);
+  EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
+  host_impl().active_tree()->SetDeviceColorSpace(gfx::ColorSpace::CreateSRGB());
+  EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
+}
+
 TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
   host_impl().active_tree()->set_event_listener_properties(
       EventListenerClass::kMouseWheel, EventListenerProperties::kBlocking);

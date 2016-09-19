@@ -1324,6 +1324,12 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
+gfx::ColorSpace LayerTreeHostImpl::GetTileColorSpace() const {
+  if (!sync_tree())
+    return gfx::ColorSpace();
+  return sync_tree()->device_color_space();
+}
+
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
 }

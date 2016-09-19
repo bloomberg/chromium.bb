@@ -19,6 +19,7 @@
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/property_tree.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -119,6 +120,11 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   float device_scale_factor() const { return inputs_.device_scale_factor; }
 
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
+
+  void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
+  const gfx::ColorSpace& device_color_space() const {
+    return inputs_.device_color_space;
+  }
 
   // Used externally by blink for setting the PropertyTrees when
   // |settings_.use_layer_lists| is true. This is a SPV2 setting.
@@ -260,6 +266,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
     float page_scale_factor;
     float min_page_scale_factor;
     float max_page_scale_factor;
+    gfx::ColorSpace device_color_space;
 
     SkColor background_color;
     bool has_transparent_background;

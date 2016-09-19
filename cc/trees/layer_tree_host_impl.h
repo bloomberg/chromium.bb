@@ -354,6 +354,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
+  gfx::ColorSpace GetTileColorSpace() const override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,
@@ -434,7 +435,7 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeImpl* recycle_tree() { return recycle_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   // Returns the tree LTH synchronizes with.
-  LayerTreeImpl* sync_tree() {
+  LayerTreeImpl* sync_tree() const {
     // TODO(enne): This is bogus.  It should return based on the value of
     // CommitToActiveTree() and not whether the pending tree exists.
     return pending_tree_ ? pending_tree_.get() : active_tree_.get();

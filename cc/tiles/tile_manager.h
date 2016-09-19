@@ -77,6 +77,9 @@ class CC_EXPORT TileManagerClient {
   // draw. This can be used to preemptively start a frame.
   virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
 
+  // Requests the color space into which tiles should be rasterized.
+  virtual gfx::ColorSpace GetTileColorSpace() const = 0;
+
  protected:
   virtual ~TileManagerClient() {}
 };
@@ -149,7 +152,8 @@ class CC_EXPORT TileManager {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ = resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
-          raster_buffer_provider_->GetResourceFormat(false), gfx::ColorSpace());
+          raster_buffer_provider_->GetResourceFormat(false),
+          client_->GetTileColorSpace());
     }
   }
 
@@ -258,7 +262,8 @@ class CC_EXPORT TileManager {
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
-      const PrioritizedTile& prioritized_tile);
+      const PrioritizedTile& prioritized_tile,
+      const gfx::ColorSpace& color_space);
 
   std::unique_ptr<EvictionTilePriorityQueue>
   FreeTileResourcesUntilUsageIsWithinLimit(
