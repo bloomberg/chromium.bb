@@ -30,7 +30,7 @@ using testing::SizeIs;
 namespace {
 
 // The ID of default "display" that gets added when running off device.
-const int64_t kDefaultDisplayId = 36028797018963969;
+const int64_t kDefaultDisplayId = 36029742295586049;
 
 // Holds info about the display state we want to test.
 struct DisplayState {

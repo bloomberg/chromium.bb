@@ -106,8 +106,8 @@ void TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
 
 void TestNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
   log_->AppendAction(
-      GetFramebufferAction(size, outputs_.size() >= 1 ? outputs_[0] : NULL,
-                           outputs_.size() >= 2 ? outputs_[1] : NULL));
+      GetFramebufferAction(size, outputs_.size() >= 1 ? outputs_[0] : nullptr,
+                           outputs_.size() >= 2 ? outputs_[1] : nullptr));
 }
 
 void TestNativeDisplayDelegate::GetHDCPState(
@@ -151,6 +151,11 @@ void TestNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
 
 void TestNativeDisplayDelegate::RemoveObserver(
     NativeDisplayObserver* observer) {
+}
+
+display::FakeDisplayController*
+TestNativeDisplayDelegate::GetFakeDisplayController() {
+  return nullptr;
 }
 
 }  // namespace test

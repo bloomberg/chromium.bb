@@ -129,4 +129,9 @@ void NativeDisplayDelegateOzone::RemoveObserver(
   NOTIMPLEMENTED();
 }
 
+display::FakeDisplayController*
+NativeDisplayDelegateOzone::GetFakeDisplayController() {
+  return nullptr;
+}
+
 }  // namespace ui

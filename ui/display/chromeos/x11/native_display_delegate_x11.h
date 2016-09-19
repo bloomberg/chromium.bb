@@ -103,6 +103,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
                           const std::vector<float>& correction_matrix) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
+  display::FakeDisplayController* GetFakeDisplayController() override;
 
  private:
   class HelperDelegateX11;

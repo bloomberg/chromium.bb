@@ -35,6 +35,8 @@ std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
 PlatformScreenOzone::PlatformScreenOzone() {}
 
 PlatformScreenOzone::~PlatformScreenOzone() {
+  // We are shutting down and don't want to make anymore display changes.
+  fake_display_controller_ = nullptr;
   display_configurator_.RemoveObserver(this);
 }
 
@@ -46,24 +48,20 @@ void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 
+  std::unique_ptr<ui::NativeDisplayDelegate> native_display_delegate =
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
+
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    fake_display_controller_ =
+        native_display_delegate->GetFakeDisplayController();
+  }
+
   // We want display configuration to happen even off device to keep the control
   // flow similar.
   display_configurator_.set_configure_display(true);
   display_configurator_.AddObserver(this);
-  display_configurator_.Init(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
-
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
-  } else {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch("multi-display")) {
-      // This really doesn't work properly. Use at your own risk.
-      display_configurator_.AddVirtualDisplay(gfx::Size(800, 800));
-      display_configurator_.AddVirtualDisplay(gfx::Size(800, 800));
-    } else {
-      display_configurator_.AddVirtualDisplay(gfx::Size(1024, 768));
-    }
-  }
+  display_configurator_.Init(std::move(native_display_delegate), false);
+  display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
 }
 
 int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
@@ -71,14 +69,17 @@ int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
 }
 
 void PlatformScreenOzone::ToggleVirtualDisplay() {
-  if (base::SysInfo::IsRunningOnChromeOS())
+  if (!fake_display_controller_ || wait_for_display_config_update_)
     return;
 
-  // TODO(kylechar): Convert to use VirtualDisplayDelegate once landed.
   if (cached_displays_.size() == 1) {
-    display_configurator_.AddVirtualDisplay(cached_displays_[0].bounds.size());
+    const gfx::Size& display_size = cached_displays_[0].bounds.size();
+    wait_for_display_config_update_ =
+        fake_display_controller_->AddDisplay(display_size) !=
+        Display::kInvalidDisplayID;
   } else if (cached_displays_.size() > 1) {
-    display_configurator_.RemoveVirtualDisplay(cached_displays_.back().id);
+    wait_for_display_config_update_ =
+        fake_display_controller_->RemoveDisplay(cached_displays_.back().id);
   } else {
     NOTREACHED();
   }
@@ -193,12 +194,14 @@ void PlatformScreenOzone::OnDisplayModeChanged(
   ProcessModifiedDisplays(displays);
   UpdateCachedDisplays();
   AddNewDisplays(displays);
+  wait_for_display_config_update_ = false;
 }
 
 void PlatformScreenOzone::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";
+  wait_for_display_config_update_ = false;
 }
 
 void PlatformScreenOzone::Create(const shell::Identity& remote_identity,

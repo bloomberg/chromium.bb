@@ -120,4 +120,9 @@ void DrmNativeDisplayDelegate::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+display::FakeDisplayController*
+DrmNativeDisplayDelegate::GetFakeDisplayController() {
+  return nullptr;
+}
+
 }  // namespace ui

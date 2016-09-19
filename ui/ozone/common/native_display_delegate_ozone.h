@@ -55,11 +55,7 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
                           const std::vector<float>& correction_matrix) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
-
- protected:
-  std::vector<std::unique_ptr<DisplaySnapshot>>& displays() {
-    return displays_;
-  }
+  display::FakeDisplayController* GetFakeDisplayController() override;
 
  private:
   std::vector<std::unique_ptr<DisplaySnapshot>> displays_;

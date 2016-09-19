@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/display/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/headless/headless_surface_factory.h"
 #include "ui/ozone/platform/headless/headless_window.h"
@@ -74,7 +74,7 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<NativeDisplayDelegateOzone>();
+    return base::MakeUnique<display::FakeDisplayDelegate>();
   }
 
   void InitializeUI() override {

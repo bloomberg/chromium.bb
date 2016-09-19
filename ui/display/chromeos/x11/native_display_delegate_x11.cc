@@ -282,6 +282,11 @@ void NativeDisplayDelegateX11::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+display::FakeDisplayController*
+NativeDisplayDelegateX11::GetFakeDisplayController() {
+  return nullptr;
+}
+
 void NativeDisplayDelegateX11::InitModes() {
   CHECK(screen_) << "Server not grabbed";
 

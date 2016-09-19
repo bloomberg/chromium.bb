@@ -19,6 +19,7 @@
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display.h"
+#include "ui/display/types/fake_display_controller.h"
 
 namespace display {
 
@@ -101,6 +102,14 @@ class PlatformScreenOzone
 
   ui::DisplayConfigurator display_configurator_;
   PlatformScreenDelegate* delegate_ = nullptr;
+
+  // If not null it provides a way to modify the display state when running off
+  // device (eg. running mustash on Linux).
+  FakeDisplayController* fake_display_controller_ = nullptr;
+
+  // Tracks if we've made a display configuration change and want to wait for
+  // the display configuration to update before making further changes.
+  bool wait_for_display_config_update_ = false;
 
   // TODO(kylechar): These values can/should be replaced by DisplayLayout.
   int64_t primary_display_id_ = display::Display::kInvalidDisplayID;

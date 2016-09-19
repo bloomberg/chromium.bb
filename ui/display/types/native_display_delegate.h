@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_types_export.h"
+#include "ui/display/types/fake_display_controller.h"
 
 namespace gfx {
 class Point;
@@ -21,17 +22,16 @@ class Size;
 namespace ui {
 class DisplayMode;
 class DisplaySnapshot;
-
 class NativeDisplayObserver;
 
 struct GammaRampRGBEntry;
 
-typedef base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>
-    GetDisplaysCallback;
-typedef base::Callback<void(bool)> ConfigureCallback;
-typedef base::Callback<void(bool, ui::HDCPState)> GetHDCPStateCallback;
-typedef base::Callback<void(bool)> SetHDCPStateCallback;
-typedef base::Callback<void(bool)> DisplayControlCallback;
+using GetDisplaysCallback =
+    base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>;
+using ConfigureCallback = base::Callback<void(bool)>;
+using GetHDCPStateCallback = base::Callback<void(bool, ui::HDCPState)>;
+using SetHDCPStateCallback = base::Callback<void(bool)>;
+using DisplayControlCallback = base::Callback<void(bool)>;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -41,7 +41,7 @@ typedef base::Callback<void(bool)> DisplayControlCallback;
 // callbacks are always called.
 class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
  public:
-  virtual ~NativeDisplayDelegate() {}
+  virtual ~NativeDisplayDelegate();
 
   virtual void Initialize() = 0;
 
@@ -117,6 +117,11 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 
   virtual void RemoveObserver(NativeDisplayObserver* observer) = 0;
+
+  // Returns a fake display controller that can modify the fake display state.
+  // Will return null if not needed, most likely because the delegate is
+  // intended for use on device and doesn't need to fake the display state.
+  virtual display::FakeDisplayController* GetFakeDisplayController() = 0;
 };
 
 }  // namespace ui
