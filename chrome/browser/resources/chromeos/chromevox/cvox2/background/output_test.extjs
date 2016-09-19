@@ -650,3 +650,16 @@ TEST_F('OutputE2ETest', 'ComplexDiv', function() {
                    , o.speechOutputForTest.string_);
   });
 });
+
+TEST_F('OutputE2ETest', 'ContainerFocus', function() {
+  this.runWithLoadedTree(function() {/*!
+      <div role="row" tabindex=0 aria-label="start"></div>
+      <div role="row" tabindex=0 aria-label="end"></div>
+    */},
+    function(root) {
+      var r1 = cursors.Range.fromNode(root.firstChild);
+      var r2 = cursors.Range.fromNode(root.lastChild);
+      assertEquals('start|Row',
+          new Output().withSpeech(r1, r2).speechOutputForTest.string_);
+  });
+});

@@ -421,7 +421,7 @@ Output.RULES = {
     },
     abstractContainer: {
       enter: '$nameFromNode $role $state $description',
-      speak: '$descendants $name $value $state $role $description',
+      speak: '$name $value $state $role $description',
       leave: '@exited_container($role)'
     },
     alert: {
@@ -457,7 +457,7 @@ Output.RULES = {
     },
     group: {
       enter: '$nameFromNode $state $description',
-      speak: '$descendants $name $value $state $description',
+      speak: '$nameOrDescendants $value $state $description',
       leave: ''
     },
     heading: {
@@ -1435,6 +1435,7 @@ Output.prototype = {
          i++) {
       // This prevents very repetitive announcements.
       if (enteredRoleSet[formatPrevNode.role] ||
+          node.role == formatPrevNode.role ||
           localStorage['useVerboseMode'] == 'false')
         continue;
 
