@@ -110,6 +110,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
      */
     @MediumTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testBackKeyDismissesPopupZoomer() throws InterruptedException, TimeoutException {
         launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));
         waitForActiveShellToBeDoneLoading();

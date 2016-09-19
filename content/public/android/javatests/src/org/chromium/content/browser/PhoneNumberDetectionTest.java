@@ -28,6 +28,7 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     @LargeTest
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
+    @RetryOnFailure
     public void testInternationalNumberIntents() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/phone_international.html");

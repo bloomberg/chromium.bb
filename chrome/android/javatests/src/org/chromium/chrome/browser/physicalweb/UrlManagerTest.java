@@ -94,6 +94,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddUrlAfterClearAllUrlsWorks() {
         addPwsResult1();
         addPwsResult2();

@@ -352,6 +352,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
+    @RetryOnFailure
     public void testDataReductionPromoInfoBarFreOptOut() {
         // Try to add an infobar. Infobar should not be added since the first run experience or
         // second run promo hasn't been shown.
@@ -389,6 +390,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
+    @RetryOnFailure
     public void testInfoBarForHungRenderer() throws InterruptedException {
         loadUrl(HELLO_WORLD_URL);
 

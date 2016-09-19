@@ -11,6 +11,7 @@ import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -135,6 +136,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testUpdateEnabled_SyncNotReady_ThenEnabled() {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
@@ -168,6 +170,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testUpdateEnabled_Enabled_ThenDisabled() {
         mLauncher.setShouldRun(true);
         setSyncInitialized(true);

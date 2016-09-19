@@ -24,6 +24,7 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @RetryOnFailure
     public void testMultipleAddressesInText() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_multiple.html");
@@ -37,6 +38,7 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @RetryOnFailure
     public void testSplitAddresses() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_split.html");
@@ -95,6 +97,7 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @RetryOnFailure
     public void testSpecialChars() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_special_chars.html");

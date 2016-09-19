@@ -17,6 +17,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.components.precache.MockDeviceState;
 
 /**
@@ -221,6 +222,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testDeviceStateChangeWhenNotPrecaching() {
         assertFalse(mPrecacheController.isPrecaching());
         mPrecacheController.setDeviceState(new MockDeviceState(0, false, true));
@@ -234,6 +236,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testTimeoutCancelsPrecaching() {
         verifyBeginPrecaching();
 

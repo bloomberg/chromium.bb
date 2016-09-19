@@ -13,6 +13,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.util.ApplicationData;
@@ -50,6 +51,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
      */
     @SmallTest
     @Feature({"Sync"})
+    @RetryOnFailure
     public void testCallbackAfterBackgrounded() throws Exception {
         getInstrumentation().waitForIdleSync();
         SigninTestUtil.addAndSignInTestAccount();
