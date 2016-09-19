@@ -114,7 +114,6 @@
 -FindInPageControllerTest.SearchWithinSpecialURL
 -FirstRunMasterPrefsImportNothing.ImportNothingAndShowNewTabPage
 -InlineLoginUISafeIframeBrowserTest.ConfirmationRequiredForNonsecureSignin
--InProcessBrowserTest.ExternalConnectionFail
 -InputImeApiTest*
 -InstallableManagerBrowserTest.CheckChangeInIconDimensions
 -InstallableManagerBrowserTest.CheckWebapp
