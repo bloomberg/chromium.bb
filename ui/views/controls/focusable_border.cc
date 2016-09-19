@@ -85,11 +85,16 @@ void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {
 SkColor FocusableBorder::GetCurrentColor(const View& view) const {
   if (!use_default_color_)
     return override_color_;
+
   SkColor color = view.GetNativeTheme()->GetSystemColor(
       view.HasFocus() ? ui::NativeTheme::kColorId_FocusedBorderColor :
                         ui::NativeTheme::kColorId_UnfocusedBorderColor);
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !view.enabled())
-    color = color_utils::BlendTowardOppositeLuma(color, 0x61);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial() &&
+      !view.enabled()) {
+    return color_utils::BlendTowardOppositeLuma(color,
+                                                gfx::kDisabledControlAlpha);
+  }
+
   return color;
 }
 

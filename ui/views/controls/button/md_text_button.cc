@@ -7,6 +7,7 @@
 #include "base/i18n/case_conversion.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -307,7 +308,8 @@ void MdTextButton::UpdateColors() {
     bg_color = theme->GetSystemColor(
         ui::NativeTheme::kColorId_CallToActionColor);
     if (state() == STATE_DISABLED)
-      bg_color = color_utils::BlendTowardOppositeLuma(bg_color, 0x61);
+      bg_color = color_utils::BlendTowardOppositeLuma(
+          bg_color, gfx::kDisabledControlAlpha);
   } else if (is_default()) {
     bg_color = color_utils::BlendTowardOppositeLuma(text_color, 0xD8);
   }

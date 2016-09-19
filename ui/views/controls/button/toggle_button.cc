@@ -7,6 +7,7 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
@@ -27,8 +28,9 @@ const int kThumbHorizontalMargin = 4;
 // Margin from top/bottom edge of thumb to top/bottom edge of view.
 const int kThumbVerticalMargin = 3;
 
-// TODO(estade): get this color from the theme?
-const SkColor kTrackOffColor = SkColorSetA(SK_ColorBLACK, 0x61);
+// TODO(estade): get the base color (black) from the theme?
+const SkColor kTrackOffColor =
+    SkColorSetA(SK_ColorBLACK, gfx::kDisabledControlAlpha);
 
 }  // namespace
 

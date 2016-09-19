@@ -835,10 +835,8 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     SkPaint paint;
     SkColor arrow_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonEnabledColor);
-    // TODO(estade): share this disabled alpha value with other places that use
-    // it.
     if (!enabled())
-      arrow_color = SkColorSetA(arrow_color, 0x61);
+      arrow_color = SkColorSetA(arrow_color, gfx::kDisabledControlAlpha);
     paint.setColor(arrow_color);
     paint.setAntiAlias(true);
     canvas->DrawPath(path, paint);

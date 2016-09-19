@@ -19,7 +19,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     return NativeThemeAura::GetSystemColor(color_id);
 
   static const SkColor kPrimaryTextColor = SK_ColorWHITE;
-  static const SkColor kDisabledTextColor = SkColorSetA(SK_ColorWHITE, 0x61);
   static const SkColor kDefaultDarkBackground = SkColorSetRGB(0x3C, 0x3C, 0x3E);
 
   static const SkColor kButtonEnabledColor = SK_ColorWHITE;
@@ -46,8 +45,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     // Label
     case kColorId_LabelEnabledColor:
       return kPrimaryTextColor;
-    case kColorId_LabelDisabledColor:
-      return kDisabledTextColor;
     case kColorId_LabelBackgroundColor:
       return kDefaultDarkBackground;
 
@@ -90,6 +87,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       return gfx::kGoogleRed300;
 
     // Intentional pass-throughs to NativeThemeAura.
+    case kColorId_LabelDisabledColor:
     case kColorId_TextOnCallToActionColor:
     case kColorId_ButtonPressedShade:
     case kColorId_ResultsTableHoveredBackground:

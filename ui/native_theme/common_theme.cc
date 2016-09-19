@@ -29,6 +29,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       // Labels
       case NativeTheme::kColorId_LabelEnabledColor:
         return kPrimaryTextColor;
+      case NativeTheme::kColorId_LabelDisabledColor:
+        return SkColorSetA(
+            base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor),
+            gfx::kDisabledControlAlpha);
 
       // FocusableBorder
       case NativeTheme::kColorId_UnfocusedBorderColor:
@@ -41,7 +45,9 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return base_theme->GetSystemColor(
             NativeTheme::kColorId_DialogBackground);
       case NativeTheme::kColorId_TextfieldReadOnlyColor:
-        return SkColorSetA(kPrimaryTextColor, 0x61);
+        return SkColorSetA(base_theme->GetSystemColor(
+                               NativeTheme::kColorId_TextfieldDefaultColor),
+                           gfx::kDisabledControlAlpha);
 
       default:
        break;
