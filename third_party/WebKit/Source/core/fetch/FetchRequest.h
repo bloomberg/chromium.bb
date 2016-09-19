@@ -42,7 +42,9 @@ class SecurityOrigin;
 class CORE_EXPORT FetchRequest {
     STACK_ALLOCATED();
 public:
-    enum DeferOption { NoDefer, LazyLoad };
+    enum DeferOption { NoDefer,
+        LazyLoad,
+        IdleLoad };
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
 
     struct ResourceWidth {

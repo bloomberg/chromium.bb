@@ -91,6 +91,7 @@ public:
     bool isPreloaded(const String& url);
     bool isPreloadedBy(const String& url, Document*);
     bool isLoadingFromMemoryCache(const String& url);
+    int getResourcePriority(const String& url, Document*);
 
     bool isSharingStyle(Element*, Element*) const;
 

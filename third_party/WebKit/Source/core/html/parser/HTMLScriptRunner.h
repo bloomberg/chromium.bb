@@ -89,6 +89,8 @@ private:
 
     void stopWatchingResourceForLoad(Resource*);
 
+    void possiblyFetchBlockedDocWriteScript(Resource*);
+
     RefPtr<HTMLParserReentryPermit> m_reentryPermit;
     Member<Document> m_document;
     Member<HTMLScriptRunnerHost> m_host;

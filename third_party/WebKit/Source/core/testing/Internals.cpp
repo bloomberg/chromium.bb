@@ -139,7 +139,9 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
@@ -408,6 +410,19 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
     const String cacheIdentifier = contextDocument()->fetcher()->getCacheIdentifier();
     Resource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url), cacheIdentifier);
     return resource && resource->getStatus() == Resource::Cached;
+}
+
+int Internals::getResourcePriority(const String& url, Document* document)
+{
+    if (!document)
+        return ResourceLoadPriority::ResourceLoadPriorityUnresolved;
+
+    Resource* resource = document->fetcher()->allResources().get(URLTestHelpers::toKURL(url.utf8().data()));
+
+    if (!resource)
+        return ResourceLoadPriority::ResourceLoadPriorityUnresolved;
+
+    return resource->resourceRequest().priority();
 }
 
 bool Internals::isSharingStyle(Element* element1, Element* element2) const

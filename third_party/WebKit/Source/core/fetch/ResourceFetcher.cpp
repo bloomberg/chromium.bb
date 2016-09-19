@@ -146,11 +146,13 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(Resource::Type type, c
     if (type == Resource::Image)
         m_imageFetched = true;
 
-    // Special handling for scripts.
-    // Default/Parser-Blocking/Preload early in document: High (set in typeToPriority)
-    // Async/Defer: Low Priority (applies to both preload and parser-inserted)
-    // Preload late in document: Medium
-    if (type == Resource::Script) {
+    if (FetchRequest::IdleLoad == request.defer()) {
+        priority = ResourceLoadPriorityVeryLow;
+    } else if (type == Resource::Script) {
+        // Special handling for scripts.
+        // Default/Parser-Blocking/Preload early in document: High (set in typeToPriority)
+        // Async/Defer: Low Priority (applies to both preload and parser-inserted)
+        // Preload late in document: Medium
         if (FetchRequest::LazyLoad == request.defer())
             priority = ResourceLoadPriorityLow;
         else if (request.forPreload() && m_imageFetched)

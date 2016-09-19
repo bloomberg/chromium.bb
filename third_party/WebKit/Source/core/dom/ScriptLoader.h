@@ -91,6 +91,9 @@ public:
 
     bool wasCreatedDuringDocumentWrite() { return m_createdDuringDocumentWrite; }
 
+    bool disallowedFetchForDocWrittenScript() { return m_documentWriteIntervention == DocumentWriteIntervention::DoNotFetchDocWrittenScript; }
+    void setFetchDocWrittenScriptDeferIdle();
+
 protected:
     ScriptLoader(Element*, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite);
 
@@ -125,6 +128,20 @@ private:
     const bool m_createdDuringDocumentWrite : 1;
 
     ScriptRunner::AsyncExecutionType m_asyncExecType;
+    enum DocumentWriteIntervention {
+        DocumentWriteInterventionNone = 0,
+        // Based on what shouldDisallowFetchForMainFrameScript() returns.
+        // This script will be blocked if not present in http cache.
+        DoNotFetchDocWrittenScript,
+        // If a parser blocking doc.written script was not fetched and was not
+        // present in the http cache, send a GET for it with an interventions
+        // header to allow the server to know of the intervention. This fetch
+        // will be using DeferOption::IdleLoad to keep it out of the critical
+        // path.
+        FetchDocWrittenScriptDeferIdle,
+    };
+
+    DocumentWriteIntervention m_documentWriteIntervention;
 
     Member<PendingScript> m_pendingScript;
 };

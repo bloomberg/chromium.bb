@@ -34,6 +34,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLInputStream.h"
@@ -249,6 +250,43 @@ void HTMLScriptRunner::stopWatchingResourceForLoad(Resource* resource)
     }
 }
 
+void fetchBlockedDocWriteScript(Element* script, bool isParserInserted, const TextPosition& scriptStartPosition)
+{
+    DCHECK(script);
+
+    ScriptLoader* scriptLoader = ScriptLoader::create(script, isParserInserted, false, false);
+    DCHECK(scriptLoader);
+    scriptLoader->setFetchDocWrittenScriptDeferIdle();
+    scriptLoader->prepareScript(scriptStartPosition);
+}
+
+void HTMLScriptRunner::possiblyFetchBlockedDocWriteScript(Resource* resource)
+{
+    // If the script was blocked as part of document.write intervention,
+    // then send an asynchronous GET request with an interventions header.
+    Element* element = nullptr;
+    TextPosition startingPosition;
+    bool isParserInserted = false;
+
+    if (!resource->errorOccurred() || !m_parserBlockingScript || !(m_parserBlockingScript->resource() == resource))
+        return;
+
+    // Due to dependency violation, not able to check the exact error to be
+    // ERR_CACHE_MISS but other errors are rare with
+    // WebCachePolicy::ReturnCacheDataDontLoad.
+    element = m_parserBlockingScript->element();
+
+    ScriptLoader* scriptLoader = nullptr;
+    if (element && (scriptLoader = toScriptLoaderIfPossible(element)) && scriptLoader->disallowedFetchForDocWrittenScript()) {
+        startingPosition = m_parserBlockingScript->startingPosition();
+        isParserInserted = scriptLoader->isParserInserted();
+        // remove this resource entry from memory cache as the new request
+        // should not join onto this existing entry.
+        memoryCache()->remove(resource);
+        fetchBlockedDocWriteScript(element, isParserInserted, startingPosition);
+    }
+}
+
 void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
 {
     // Handle cancellations of parser-blocking script loads without
@@ -261,6 +299,11 @@ void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
         stopWatchingResourceForLoad(cachedResource);
         return;
     }
+
+    // If the script was blocked as part of document.write intervention,
+    // then send an asynchronous GET request with an interventions header.
+    possiblyFetchBlockedDocWriteScript(cachedResource);
+
     m_host->notifyScriptLoaded(cachedResource);
 }
 

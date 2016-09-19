@@ -83,7 +83,7 @@ namespace {
 
 void emitWarningForDocWriteScripts(const String& url, Document& document)
 {
-    String message = "A Parser-blocking, cross-origin script, " + url + ", is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity.";
+    String message = "A Parser-blocking, cross-origin script, " + url + ", is invoked via document.write. This may be blocked by the browser if the device has poor network connectivity. See https://www.chromestatus.com/feature/5718547946799104 for more details.";
     document.addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
     WTFLogAlways("%s", message.utf8().data());
 }

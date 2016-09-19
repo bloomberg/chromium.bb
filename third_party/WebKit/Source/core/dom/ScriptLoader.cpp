@@ -37,6 +37,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
@@ -51,6 +52,7 @@
 #include "core/svg/SVGScriptElement.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -71,6 +73,7 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_forceAsync(!parserInserted)
     , m_createdDuringDocumentWrite(createdDuringDocumentWrite)
     , m_asyncExecType(ScriptRunner::None)
+    , m_documentWriteIntervention(DocumentWriteIntervention::DocumentWriteInterventionNone)
 {
     DCHECK(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
@@ -87,6 +90,12 @@ DEFINE_TRACE(ScriptLoader)
     visitor->trace(m_resource);
     visitor->trace(m_pendingScript);
     ScriptResourceClient::trace(visitor);
+}
+
+void ScriptLoader::setFetchDocWrittenScriptDeferIdle()
+{
+    DCHECK(!m_createdDuringDocumentWrite);
+    m_documentWriteIntervention = DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle;
 }
 
 void ScriptLoader::didNotifySubtreeInsertionsToDocument()
@@ -238,8 +247,19 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         FetchRequest::DeferOption defer = FetchRequest::NoDefer;
         if (!m_parserInserted || client->asyncAttributeValue() || client->deferAttributeValue())
             defer = FetchRequest::LazyLoad;
+        if (m_documentWriteIntervention == DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle)
+            defer = FetchRequest::IdleLoad;
         if (!fetchScript(client->sourceAttributeValue(), defer))
             return false;
+    }
+
+    // Since the asynchronous, low priority fetch for doc.written blocked
+    // script is not for execution, return early from here. Watch for its
+    // completion to be able to remove it from the memory cache.
+    if (m_documentWriteIntervention == DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
+        m_pendingScript = PendingScript::create(m_element, m_resource.get());
+        m_pendingScript->watchForLoad(this);
+        return true;
     }
 
     if (client->hasSourceAttribute() && client->deferAttributeValue() && m_parserInserted && !client->asyncAttributeValue()) {
@@ -317,16 +337,25 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
             request.setIntegrityMetadata(metadataSet);
         }
 
+        if (m_documentWriteIntervention == DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
+            request.mutableResourceRequest().setHTTPHeaderField("Intervention", "<https://www.chromestatus.com/feature/5718547946799104>");
+        }
+
         m_resource = ScriptResource::fetch(request, elementDocument->fetcher());
 
         m_isExternalScript = true;
     }
 
-    if (m_resource)
-        return true;
+    if (!m_resource) {
+        dispatchErrorEvent();
+        return false;
+    }
 
-    dispatchErrorEvent();
-    return false;
+    if (m_createdDuringDocumentWrite && m_resource->resourceRequest().getCachePolicy() == WebCachePolicy::ReturnCacheDataDontLoad) {
+        m_documentWriteIntervention = DocumentWriteIntervention::DoNotFetchDocWrittenScript;
+    }
+
+    return true;
 }
 
 bool isHTMLScriptLoader(Element* element)
@@ -482,6 +511,17 @@ void ScriptLoader::execute()
 void ScriptLoader::notifyFinished(Resource* resource)
 {
     DCHECK(!m_willBeParserExecuted);
+
+    // We do not need this script in the memory cache. The primary goals of
+    // sending this fetch request are to let the third party server know
+    // about the document.write scripts intervention and populate the http
+    // cache for subsequent uses.
+    if (m_documentWriteIntervention == DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
+        memoryCache()->remove(resource);
+        m_pendingScript->stopWatchingForLoad();
+        return;
+    }
+
     DCHECK(m_asyncExecType != ScriptRunner::None);
 
     Document* contextDocument = m_element->document().contextDocument();
