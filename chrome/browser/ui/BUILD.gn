@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -451,8 +452,10 @@ split_static_library("ui") {
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/app:chrome_dll_resources",
     "//chrome/app:command_ids",
     "//chrome/app/resources:platform_locale_settings",
+    "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/devtools",
     "//chrome/browser/ui/webui/engagement:mojo_bindings",
@@ -468,6 +471,7 @@ split_static_library("ui") {
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
     "//components/browser_sync",
+    "//components/browsing_data/content",
     "//components/browsing_data/core",
     "//components/bubble:bubble",
     "//components/certificate_reporting:cert_logger_proto",
@@ -507,7 +511,7 @@ split_static_library("ui") {
     "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
     "//components/pdf/browser",
-    "//components/policy:generated",
+    "//components/policy/core/browser",
     "//components/power",
     "//components/pref_registry",
     "//components/proximity_auth",
@@ -1215,8 +1219,15 @@ split_static_library("ui") {
     deps += [
       "//chrome/browser/chromeos",
       "//components/arc",
+      "//components/drive:drive_chromeos",
+      "//components/exo",
+      "//components/login",
       "//ui/base/ime",
+      "//ui/chromeos",
     ]
+    if (enable_rlz) {
+      deps += [ "//chrome/browser:rlz" ]
+    }
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]
@@ -2303,6 +2314,7 @@ split_static_library("ui") {
     ]
     deps += [
       "//chrome/app/nibs:localizer_table",
+      "//chrome/browser/apps/app_shim",
       "//third_party/apple_sample_code",
       "//third_party/google_toolbox_for_mac",
       "//third_party/molokocacao",
@@ -2524,7 +2536,6 @@ split_static_library("ui") {
         "cocoa/download/background_theme.h",
         "cocoa/download/background_theme.mm",
         "cocoa/download/download_danger_prompt_impl.cc",
-        "cocoa/download/download_danger_prompt_impl.h",
         "cocoa/download/download_item_button.h",
         "cocoa/download/download_item_button.mm",
         "cocoa/download/download_item_cell.h",
@@ -3032,7 +3043,6 @@ split_static_library("ui") {
       "app_list/app_list_prefs.h",
       "app_list/app_list_prefs_factory.cc",
       "app_list/app_list_prefs_factory.h",
-      "app_list/app_list_presenter_delegate.h",
       "app_list/app_list_service.cc",
       "app_list/app_list_service.h",
       "app_list/app_list_service_impl.cc",
@@ -3304,6 +3314,22 @@ split_static_library("ui") {
       "webui/local_discovery/local_discovery_ui_handler.h",
     ]
   }
+
+  if (is_chromecast && is_linux) {
+    # The Chromecast build sets toolkit_views to false but some targets in the
+    # build still reference views. But this target is referenced on the Cast
+    # bot (though not currently compiled) but is configured as Linux. This
+    # necessitates these extra dependencies to pass "gn check".
+    deps += [
+      "//chrome/browser/media/router",
+      "//components/web_modal",
+      "//ui/base/x",
+      "//ui/events/devices/x11",
+      "//ui/events/keycodes:x11",
+      "//ui/views",
+      "//ui/views/controls/webview",
+    ]
+  }
 }
 
 # In GYP this is part of test_support_common.
@@ -3347,6 +3373,7 @@ static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
+    "//ui/gfx:test_support",
     "//ui/shell_dialogs",
   ]
 

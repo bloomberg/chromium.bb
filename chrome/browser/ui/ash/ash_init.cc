@@ -38,7 +38,7 @@
 #include "ui/aura/window_tree_host.h"
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 namespace chrome {

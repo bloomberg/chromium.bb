@@ -28,7 +28,7 @@ check_targets = [
   "//chrome/app/*",
   "//chrome/browser/extensions/*",
 
-  #"//chrome/browser/ui/*",  # Just a few things left
+  "//chrome/browser/ui/*",
   "//chrome/common/*",
   "//chrome/installer/*",
   "//chrome/third_party/mozilla_security_manager/*",

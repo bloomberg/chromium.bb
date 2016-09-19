@@ -685,7 +685,6 @@ if (!is_android) {
 
     if (is_win) {
       sources += [
-        "../app/chrome_dll.rc",
         "../browser/downgrade/user_data_downgrade_browsertest.cc",
         "//ui/resources/cursors/aliasb.cur",
         "//ui/resources/cursors/cell.cur",
@@ -700,6 +699,7 @@ if (!is_android) {
       ]
       deps += [
         "//chrome:other_version",
+        "//chrome/app:chrome_dll_resources",
         "//chrome/install_static:install_static_util",
         "//third_party/isimpledom",
         "//third_party/wtl",
@@ -1236,6 +1236,7 @@ test("browser_tests") {
 
   if (is_win) {
     data += [ "$root_out_dir/chrome_200_percent.pak" ]
+    deps += [ "//chrome/app:chrome_dll_resources" ]
   }
   if (is_chromeos) {
     data += [
@@ -1286,8 +1287,6 @@ test("browser_tests") {
       # desktop platforms.
       "../../apps/app_restore_service_browsertest.cc",
       "../../apps/load_and_launch_browsertest.cc",
-      "../app/chrome_dll.rc",
-      "../app/chrome_dll_resource.h",
       "../app/chrome_version.rc.version",
       "../browser/accessibility/browser_accessibility_state_browsertest.cc",
       "../browser/app_controller_mac_browsertest.mm",
@@ -2397,7 +2396,6 @@ test("browser_tests") {
       ]
     } else {
       sources -= [
-        "../app/chrome_dll_resource.h",
         "../app/chrome_version.rc.version",
         "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
       ]
@@ -2667,8 +2665,6 @@ test("browser_tests") {
 if (!is_android) {
   test("sync_integration_tests") {
     sources = [
-      "../app/chrome_dll.rc",
-      "../app/chrome_dll_resource.h",
       "../app/chrome_version.rc.version",
       "../browser/sync/test/integration/enable_disable_test.cc",
       "../browser/sync/test/integration/migration_test.cc",
@@ -2742,6 +2738,7 @@ if (!is_android) {
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
+      "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//chrome/common",
       "//chrome/renderer",
@@ -2815,8 +2812,6 @@ if (!is_android) {
 
   test("sync_performance_tests") {
     sources = [
-      "../app/chrome_dll.rc",
-      "../app/chrome_dll_resource.h",
       "../app/chrome_version.rc.version",
       "../browser/sync/test/integration/performance/autofill_sync_perf_test.cc",
       "../browser/sync/test/integration/performance/bookmarks_sync_perf_test.cc",
@@ -2836,6 +2831,7 @@ if (!is_android) {
     deps = [
       ":sync_integration_test_support",
       ":test_support_ui",
+      "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//components/sync",
       "//crypto:platform",
@@ -4615,12 +4611,12 @@ test("unit_tests") {
     }
 
     sources += [
-      "../app/chrome_dll.rc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
       "../test/data/resource.rc",
     ]
     deps += [
       "//chrome:other_version",
+      "//chrome/app:chrome_dll_resources",
       "//chrome/install_static:install_static_util",
       "//chrome/installer/util:strings",
       "//chrome_elf:blacklist_test_dll_1",
@@ -4887,8 +4883,6 @@ if (!is_android) {
 if (!is_android && !is_ios && !is_chromecast) {
   test("performance_browser_tests") {
     sources = [
-      "../app/chrome_dll.rc",
-      "../app/chrome_dll_resource.h",
       "../app/chrome_version.rc.version",
       "../browser/extensions/api/cast_streaming/performance_test.cc",
       "../browser/extensions/api/tab_capture/tab_capture_performancetest.cc",
@@ -4913,6 +4907,7 @@ if (!is_android && !is_ios && !is_chromecast) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
+      "//chrome/app:chrome_dll_resources",
       "//chrome/browser",
       "//chrome/renderer",
       "//components/about_handler",

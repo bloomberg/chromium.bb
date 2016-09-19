@@ -15,6 +15,7 @@ source_set("chromeos") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
+    ":device_policy_proto",
     "//ash/common/strings",
     "//ash/resources",
     "//chrome:extra_resources",
@@ -22,6 +23,7 @@ source_set("chromeos") {
     "//chrome:strings",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
+    "//chromeos:power_manager_proto",
     "//components/wallpaper",
     "//content/app/resources",
     "//ui/chromeos/resources",
@@ -33,7 +35,6 @@ source_set("chromeos") {
   deps = [
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
-    ":device_policy_proto",
     "//ash",
     "//ash:ash_with_content",
     "//ash/autoclick/mus/public/interfaces",
@@ -53,7 +54,6 @@ source_set("chromeos") {
     "//chromeos:attestation_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
-    "//chromeos:power_manager_proto",
     "//components/arc",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",

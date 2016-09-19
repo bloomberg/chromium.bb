@@ -63,8 +63,12 @@ static_library("arc") {
     "user_data/arc_user_data_service.h",
   ]
 
-  deps = [
+  public_deps = [
     ":arc_base",
+    ":arc_bindings",
+  ]
+
+  deps = [
     "//ash:ash",
     "//base",
     "//chromeos",
@@ -90,10 +94,6 @@ static_library("arc") {
     "//ui/events:dom_keycode_converter",
     "//ui/keyboard:keyboard",
     "//url:url",
-  ]
-
-  public_deps = [
-    ":arc_bindings",
   ]
 }
 

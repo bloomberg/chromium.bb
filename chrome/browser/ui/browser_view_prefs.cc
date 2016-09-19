@@ -11,7 +11,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 namespace {

@@ -107,7 +107,7 @@
 #endif  // defined(ENABLE_PRINTING)
 
 #if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
+#include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)

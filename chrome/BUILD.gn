@@ -295,8 +295,6 @@ if (is_win) {
 
     sources = [
       "//base/win/dllmain.cc",
-      "app/chrome_dll.rc",
-      "app/chrome_dll_resource.h",
       "app/chrome_main.cc",
       "app/chrome_main_delegate.cc",
       "app/chrome_main_delegate.h",
@@ -307,6 +305,7 @@ if (is_win) {
     deps = [
       ":browser_dependencies",
       "//build/config/sanitizers:deps",
+      "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//chrome/common:features",
       "//third_party/cld",
@@ -1165,7 +1164,8 @@ group("browser_dependencies") {
       # all blink targets.
       "//third_party/WebKit/public:blink",
       # TODO(brettw) bug 581766: V8 should not be linked into the browser
-      # process, and then we can enable this.
+      # process, and then we can enable this. When testing whether you can
+      # enable this, run with a non-component build.
       #"//v8/*",
     ]
   }
