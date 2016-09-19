@@ -17,8 +17,9 @@ BrowsingDataRemoverHelper::~BrowsingDataRemoverHelper() {
 
 BrowsingDataRemoverHelper::BrowsingDataRemovalInfo::BrowsingDataRemovalInfo(
     int remove_mask,
+    browsing_data::TimePeriod time_period,
     const base::Closure& callback)
-    : remove_mask(remove_mask) {
+    : remove_mask(remove_mask), time_period(time_period) {
   callbacks.push_back(callback);
 }
 
@@ -27,6 +28,7 @@ BrowsingDataRemoverHelper::BrowsingDataRemovalInfo::~BrowsingDataRemovalInfo() {
 
 void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
                                        int remove_mask,
+                                       browsing_data::TimePeriod time_period,
                                        const base::Closure& callback) {
   DCHECK(browser_state);
   DCHECK(!browser_state->IsOffTheRecord());
@@ -43,7 +45,7 @@ void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
     auto pending_removals_iter = pending_removals_.find(browser_state);
     if (pending_removals_iter == pending_removals_.end()) {
       std::unique_ptr<BrowsingDataRemovalInfo> removal_info(
-          new BrowsingDataRemovalInfo(remove_mask, callback));
+          new BrowsingDataRemovalInfo(remove_mask, time_period, callback));
       pending_removals_[browser_state] = std::move(removal_info);
     } else {
       pending_removals_iter->second->remove_mask |= remove_mask;
@@ -51,9 +53,15 @@ void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
     }
   } else {
     std::unique_ptr<BrowsingDataRemovalInfo> removal_info(
-        new BrowsingDataRemovalInfo(remove_mask, callback));
+        new BrowsingDataRemovalInfo(remove_mask, time_period, callback));
     DoRemove(browser_state, std::move(removal_info));
   }
+}
+
+void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
+                                       int remove_mask,
+                                       const base::Closure& callback) {
+  Remove(browser_state, remove_mask, browsing_data::ALL_TIME, callback);
 }
 
 void BrowsingDataRemoverHelper::OnIOSChromeBrowsingDataRemoverDone() {
@@ -90,7 +98,7 @@ void BrowsingDataRemoverHelper::DoRemove(
   // IOSChromeBrowsingDataRemover deletes itself.
   IOSChromeBrowsingDataRemover* remover =
       IOSChromeBrowsingDataRemover::CreateForPeriod(
-          browser_state, IOSChromeBrowsingDataRemover::EVERYTHING);
+          browser_state, current_removal_info_->time_period);
   remover->AddObserver(this);
   current_remover_ = remover;
   int remove_mask = current_removal_info_->remove_mask;

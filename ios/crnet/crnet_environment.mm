@@ -506,7 +506,7 @@ std::string CrNetEnvironment::user_agent() {
 
 void CrNetEnvironment::ClearCache(ClearCacheCallback callback) {
   PostToNetworkThread(
-      FROM_HERE,
-      base::Bind(&net::ClearHttpCache, main_context_getter_,
-                 network_io_thread_->task_runner(), base::BindBlock(callback)));
+      FROM_HERE, base::Bind(&net::ClearHttpCache, main_context_getter_,
+                            network_io_thread_->task_runner(), base::Time(),
+                            base::Time::Max(), base::BindBlock(callback)));
 }

@@ -19,6 +19,8 @@ class URLRequestContextGetter;
 // Clears the HTTP cache and calls |closure| back.
 void ClearHttpCache(const scoped_refptr<net::URLRequestContextGetter>& getter,
                     const scoped_refptr<base::TaskRunner>& network_task_runner,
+                    const base::Time& delete_begin,
+                    const base::Time& delete_end,
                     const net::CompletionCallback& callback);
 
 }  // namespace net

@@ -11,6 +11,7 @@
 
 @synthesize browserState = _browserState;
 @synthesize mask = _mask;
+@synthesize timePeriod = _timePeriod;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -18,14 +19,23 @@
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                mask:(int)mask {
+                                mask:(int)mask
+                          timePeriod:(browsing_data::TimePeriod)timePeriod {
   self = [super initWithTag:IDC_CLEAR_BROWSING_DATA_IOS];
   if (self) {
     DCHECK(browserState);
     _browserState = browserState;
     _mask = mask;
+    _timePeriod = timePeriod;
   }
   return self;
+}
+
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                mask:(int)mask {
+  return [self initWithBrowserState:browserState
+                               mask:mask
+                         timePeriod:browsing_data::ALL_TIME];
 }
 
 @end

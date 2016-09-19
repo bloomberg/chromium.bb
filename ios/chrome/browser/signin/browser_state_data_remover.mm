@@ -40,7 +40,8 @@ void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
   base::scoped_nsobject<ClearBrowsingDataCommand> command(
       [[ClearBrowsingDataCommand alloc]
           initWithBrowserState:browser_state_
-                          mask:kRemoveAllDataMask]);
+                          mask:kRemoveAllDataMask
+                    timePeriod:browsing_data::ALL_TIME]);
 
   UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
   DCHECK(mainWindow);

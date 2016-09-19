@@ -90,15 +90,26 @@ IOSChromeBrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
 // Static.
 IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
     ios::ChromeBrowserState* browser_state,
-    TimePeriod period) {
+    browsing_data::TimePeriod period) {
   switch (period) {
-    case EVERYTHING:
+    case browsing_data::LAST_HOUR:
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastHour"));
+      break;
+    case browsing_data::LAST_DAY:
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastDay"));
+      break;
+    case browsing_data::LAST_WEEK:
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastWeek"));
+      break;
+    case browsing_data::FOUR_WEEKS:
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
+      break;
+    case browsing_data::ALL_TIME:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
   }
   return new IOSChromeBrowsingDataRemover(
-      browser_state,
-      IOSChromeBrowsingDataRemover::CalculateBeginDeleteTime(period),
+      browser_state, browsing_data::CalculateBeginDeleteTime(period),
       base::Time::Max());
 }
 
@@ -303,9 +314,9 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
 
     waiting_for_clear_cache_ = true;
-    DCHECK(delete_begin_.is_null()) << "Partial clearing not supported";
     ClearHttpCache(browser_state_->GetRequestContext(),
                    WebThread::GetTaskRunnerForThread(WebThread::IO),
+                   delete_begin_, delete_end_,
                    base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCache,
                               base::Unretained(this)));
   }
@@ -348,21 +359,6 @@ void IOSChromeBrowsingDataRemover::RemoveObserver(Observer* observer) {
 void IOSChromeBrowsingDataRemover::OnHistoryDeletionDone() {
   waiting_for_clear_history_ = false;
   NotifyAndDeleteIfDone();
-}
-
-base::Time IOSChromeBrowsingDataRemover::CalculateBeginDeleteTime(
-    TimePeriod time_period) {
-  base::TimeDelta diff;
-  base::Time delete_begin_time = base::Time::Now();
-  switch (time_period) {
-    case EVERYTHING:
-      delete_begin_time = base::Time();
-      break;
-    default:
-      NOTREACHED() << L"Missing item";
-      break;
-  }
-  return delete_begin_time - diff;
 }
 
 bool IOSChromeBrowsingDataRemover::AllDone() {

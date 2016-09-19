@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
 #include "url/gurl.h"
@@ -33,9 +34,6 @@ class URLRequestContextGetter;
 
 class IOSChromeBrowsingDataRemover {
  public:
-  // Time period ranges available when doing browsing data removals.
-  enum TimePeriod { EVERYTHING };
-
   // Mask used for Remove.
   enum RemoveDataMask {
     REMOVE_APPCACHE = 1 << 0,
@@ -119,10 +117,7 @@ class IOSChromeBrowsingDataRemover {
   // itself once finished.
   static IOSChromeBrowsingDataRemover* CreateForPeriod(
       ios::ChromeBrowserState* browser_state,
-      TimePeriod period);
-
-  // Calculate the begin time for the deletion range specified by |time_period|.
-  static base::Time CalculateBeginDeleteTime(TimePeriod time_period);
+      browsing_data::TimePeriod period);
 
   // Is the IOSChromeBrowsingDataRemover currently in the process of removing
   // data?

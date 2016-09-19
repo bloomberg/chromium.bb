@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
 namespace ios {
@@ -20,15 +21,25 @@ class ChromeBrowserState;
 - (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
 
 // Initializes a command intented to clear browsing data for |browserState|
-// that correspong to removal mask |mask|.
+// that corresponds to removal mask |mask| for the time period |timePeriod|.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                mask:(int)mask NS_DESIGNATED_INITIALIZER;
+                                mask:(int)mask
+                          timePeriod:(browsing_data::TimePeriod)timePeriod
+    NS_DESIGNATED_INITIALIZER;
+
+// DEPRECATED: Same as above, but setting |timePeriod| to ALL_TIME.
+// TODO(ioanap): Remove after all call sites are changed.
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                mask:(int)mask;
 
 // When executed this command will remove browsing data for this BrowserState.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
 // Removal mask: see BrowsingDataRemover::RemoveDataMask.
 @property(nonatomic, readonly) int mask;
+
+// Time period for which the browsing data will be removed.
+@property(nonatomic, readonly) browsing_data::TimePeriod timePeriod;
 
 @end
 
