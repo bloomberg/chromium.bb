@@ -59,6 +59,10 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   virtual std::unique_ptr<views::View> CreateCustomContent();
 #endif
 
+  // Indicates whether this notification should be displayed when there is
+  // fullscreen content being displayed.
+  virtual bool ShouldDisplayOverFullscreen() const;
+
  protected:
   virtual ~NotificationDelegate() {}
 

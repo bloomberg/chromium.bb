@@ -31,6 +31,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -187,6 +190,19 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   std::string id() const override { return scoped_id_; }
+
+  // Should only display when fullscreen if this app is the source of the
+  // fullscreen window.
+  bool ShouldDisplayOverFullscreen() const override {
+    AppWindowRegistry::AppWindowList windows = AppWindowRegistry::Get(
+        api_function_->GetProfile())->GetAppWindowsForApp(extension_id_);
+    for (const auto& window : windows) {
+      // Window must be fullscreen and visible
+      if (window->IsFullscreen() && window->GetBaseWindow()->IsActive())
+        return true;
+    }
+    return false;
+  }
 
  private:
   ~NotificationsApiDelegate() override {}

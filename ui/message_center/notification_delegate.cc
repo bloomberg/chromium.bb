@@ -57,4 +57,8 @@ void HandleNotificationButtonClickDelegate::ButtonClick(int button_index) {
     button_callback_.Run(button_index);
 }
 
+bool NotificationDelegate::ShouldDisplayOverFullscreen() const {
+  return false;
+}
+
 }  // namespace message_center
