@@ -36,12 +36,15 @@ static bool DoesLeafDrawContents(scoped_refptr<cc::Layer> layer) {
   if (!layer.get())
     return false;
 
+  // If the subtree is hidden, then any layers in this tree will not be drawn.
+  if (layer->hide_layer_and_subtree())
+    return false;
+
   // TODO: Remove the need for this logic. We can't really guess from
   // an opaque layer type whether it has valid live contents, or for example
   // just a background color placeholder. Need to get this from somewhere else
   // like ContentViewCore or RWHV.
-  if (layer->DrawsContent() && !layer->hide_layer_and_subtree() &&
-      !layer->background_color()) {
+  if (layer->DrawsContent() && !layer->background_color()) {
     return true;
   }
 
