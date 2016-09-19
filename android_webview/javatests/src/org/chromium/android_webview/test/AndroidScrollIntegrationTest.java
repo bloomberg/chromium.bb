@@ -725,9 +725,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         }
 
         @Override
-        public void onFlingStartGesture(
-                int velocityX, int velocityY, int scrollOffsetY, int scrollExtentY) {
-        }
+        public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {}
 
         @Override
         public void onScrollUpdateGestureConsumed() {

@@ -142,7 +142,7 @@ public class PopupTouchHandleDrawable extends View {
                 setIsScrolling(false);
             }
             @Override
-            public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {
+            public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {
                 // Fling accounting is unreliable in WebView, as the embedder
                 // can override onScroll() and suppress fling ticking. At best
                 // we have to rely on the scroll offset changing to temporarily

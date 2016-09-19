@@ -22,7 +22,7 @@ public class GestureStateListener {
     /**
      * Called when a fling starts.
      */
-    public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {}
+    public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {}
 
     /**
      * Called when a fling has ended.
