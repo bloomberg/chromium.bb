@@ -29,7 +29,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -59,7 +60,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -88,7 +90,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -118,7 +121,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -147,7 +151,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -177,7 +182,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -206,7 +212,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -236,7 +243,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -265,7 +273,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       },
       {
@@ -295,7 +304,8 @@
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
-          ]
+          ],
+          "expiration": 14400
         }
       }
     ]

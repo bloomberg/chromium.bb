@@ -305,6 +305,7 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
+    'expiration': 14400,
     'dimension_sets': swarming_dimensions
   }
 
