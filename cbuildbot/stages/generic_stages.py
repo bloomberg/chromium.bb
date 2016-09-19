@@ -271,6 +271,7 @@ class BuilderStage(object):
     kwargs.setdefault('referenced_repo', self._run.options.reference_repo)
     kwargs.setdefault('branch', manifest_branch)
     kwargs.setdefault('manifest', self._run.config.manifest)
+    kwargs.setdefault('git_cache_dir', self._run.options.git_cache_dir)
 
     # pass in preserve_paths so that repository.RepoRepository
     # knows what paths to preserve when executing clean_up_repo

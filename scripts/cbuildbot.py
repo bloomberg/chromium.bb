@@ -623,6 +623,12 @@ def _CreateParser():
                           help=('Used with manifest logic.  Forces use of this '
                                 'version rather than create or get latest. '
                                 'Examples: 4815.0.0-rc1, 4815.1.2'))
+  group.add_remote_option('--git-cache-dir', dest='git_cache_dir', default=None,
+                          help=('Specify the cache directory to store the '
+                                'project caches populated by the git-cache '
+                                'tool. Bootstrap the projects based on the git '
+                                'cache files instead of fetching them directly '
+                                'from the GoB servers.'))
 
   parser.add_option_group(group)
 

@@ -205,7 +205,7 @@ class RepoRepository(object):
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
                depth=None, repo_url=site_config.params.REPO_URL,
                repo_branch=None, groups=None, repo_cmd='repo',
-               preserve_paths=()):
+               preserve_paths=(), git_cache_dir=None):
     """Initialize.
 
     Args:
@@ -223,6 +223,7 @@ class RepoRepository(object):
       repo_cmd: Name of repo_cmd to use.
       preserve_paths: paths need to be preserved in repo clean
         in case we want to clean and retry repo sync.
+      git_cache_dir: If specified, use --cache-dir=git_cache_dir in repo sync.
     """
     self.manifest_repo_url = manifest_repo_url
     self.repo_url = repo_url
@@ -240,8 +241,13 @@ class RepoRepository(object):
       if depth is not None:
         raise ValueError("referenced_repo and depth are mutually exclusive "
                          "options; please pick one or the other.")
+      if git_cache_dir is not None:
+        raise ValueError("referenced_repo and git_cache_dir are mutually "
+                         "exclusive options; please pick one or the other.")
       if not IsARepoRoot(referenced_repo):
         referenced_repo = None
+
+    self.git_cache_dir = git_cache_dir
     self._referenced_repo = referenced_repo
     self._manifest = manifest
 
@@ -425,6 +431,8 @@ class RepoRepository(object):
       if not all_branches or self._depth is not None:
         # Note that this option can break kernel checkouts. crbug.com/464536
         cmd.append('-c')
+      if self.git_cache_dir is not None:
+        cmd.append('--cache-dir=%s' % self.git_cache_dir)
       # Do the network half of the sync; retry as necessary to get the content.
       try:
         cros_build_lib.RunCommand(cmd + ['-n'], cwd=self.directory)
