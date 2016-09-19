@@ -23,7 +23,7 @@ public class AddToHomescreenManager {
 
         /**
          * Called once native has finished fetching the homescreen shortcut's data (like the Web
-         * Manifest) and is ready for {@link AddToHomescreenDelegate#addShortcut()} to be called.
+         * Manifest) and is ready for {@link AddToHomescreenManager#addShortcut} to be called.
          * @param icon Icon to use in the launcher.
          */
         void onReadyToAdd(Bitmap icon);
