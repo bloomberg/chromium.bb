@@ -791,8 +791,8 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 }
 
 // This will be called after the command-line has been mutated by about:flags
-void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
-  TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetricsAndFieldTrials");
+void ChromeBrowserMainParts::SetupFieldTrials() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupFieldTrials");
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
@@ -841,11 +841,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       about_flags::RegisterAllFeatureVariationParameters(
           &flags_storage, feature_list.get());
 
-  // Must initialize metrics after about:flags have been converted into
-  // switches, but before field trials are set up (so that client ID is
-  // available for one-time randomized field trials).
-  metrics::MetricsService* metrics = browser_process_->metrics_service();
-
   variations::VariationsHttpHeaderProvider* http_header_provider =
       variations::VariationsHttpHeaderProvider::GetInstance();
   // Force the variation ids selected in chrome://flags and/or specified using
@@ -855,7 +850,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       &variation_ids);
   CHECK(result) << "Invalid list of variation ids specified (either in --"
                 << switches::kForceVariationIds << " or in chrome://flags)";
-  metrics->AddSyntheticTrialObserver(http_header_provider);
 
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
@@ -895,25 +889,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
 
-  // Now that field trials have been created, initializes metrics recording.
-  metrics->InitializeMetricsRecordingState();
-
-  const version_info::Channel channel = chrome::GetChannel();
-
-  // Enable profiler instrumentation depending on the channel.
-  switch (channel) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-      tracked_objects::ScopedTracker::Enable();
-      break;
-
-    case version_info::Channel::DEV:
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE:
-      // Don't enable instrumentation.
-      break;
-  }
-
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.
   sampling_profiler_config_.RegisterSyntheticFieldTrial();
@@ -935,7 +910,30 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #endif  // defined(OS_WIN)
 }
 
-// ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
+void ChromeBrowserMainParts::SetupMetrics() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
+  metrics::MetricsService* metrics = browser_process_->metrics_service();
+  metrics->AddSyntheticTrialObserver(
+      variations::VariationsHttpHeaderProvider::GetInstance());
+  // Now that field trials have been created, initializes metrics recording.
+  metrics->InitializeMetricsRecordingState();
+
+  const version_info::Channel channel = chrome::GetChannel();
+
+  // Enable profiler instrumentation depending on the channel.
+  switch (channel) {
+    case version_info::Channel::UNKNOWN:
+    case version_info::Channel::CANARY:
+      tracked_objects::ScopedTracker::Enable();
+      break;
+
+    case version_info::Channel::DEV:
+    case version_info::Channel::BETA:
+    case version_info::Channel::STABLE:
+      // Don't enable instrumentation.
+      break;
+  }
+}
 
 void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
@@ -1319,16 +1317,17 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_CHROMEOS)
   // Must be done after g_browser_process is constructed, before
-  // SetupMetricsAndFieldTrials().
+  // SetupFieldTrials() and SetupMetrics().
   chromeos::CrosSettings::Initialize();
 #endif  // defined(OS_CHROMEOS)
 
   SetupOriginTrialsCommandLine();
 
-  // Now the command line has been mutated based on about:flags, we can setup
-  // metrics and initialize field trials. The field trials are needed by
+  // Now the command line has been mutated based on about:flags, we can
+  // initialize field trials and setup metrics. The field trials are needed by
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
-  SetupMetricsAndFieldTrials();
+  SetupFieldTrials();
+  SetupMetrics();
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
@@ -1339,10 +1338,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // This needs to be the last thing in PreCreateThreads() because the
   // TaskScheduler needs to be created before any other threads are (by
   // contract) but it creates threads itself so instantiating it earlier is also
-  // incorrect. It also has to be after SetupMetricsAndFieldTrials() to allow it
-  // to use field trials. Note: it could also be the first thing in
-  // CreateThreads() but being in chrome/ is convenient for now as the
-  // initialization uses variations parameters extensively.
+  // incorrect. It also has to be after SetupFieldTrials() to allow it to use
+  // field trials. Note: it could also be the first thing in CreateThreads() but
+  // being in chrome/ is convenient for now as the initialization uses
+  // variations parameters extensively.
   //
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
