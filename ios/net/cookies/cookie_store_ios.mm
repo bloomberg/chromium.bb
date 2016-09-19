@@ -16,11 +16,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -313,8 +313,6 @@ CookieStoreIOS::CookieStoreIOS(
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
-  base::STLDeleteContainerPairSecondPointers(hook_map_.begin(),
-                                             hook_map_.end());
 }
 
 // static
@@ -995,7 +993,7 @@ CookieStoreIOS::AddCallbackForCookie(const GURL& gurl,
   if (hook_map_.count(key) == 0) {
     UpdateCacheForCookieFromSystem(gurl, name, nullptr, nullptr);
     if (hook_map_.count(key) == 0)
-      hook_map_[key] = new CookieChangedCallbackList;
+      hook_map_[key] = base::MakeUnique<CookieChangedCallbackList>();
   }
 
   DCHECK(hook_map_.find(key) != hook_map_.end());
@@ -1028,7 +1026,7 @@ void CookieStoreIOS::RunCallbacksForCookies(
     return;
 
   std::pair<GURL, std::string> key(url, name);
-  CookieChangedCallbackList* callbacks = hook_map_[key];
+  CookieChangedCallbackList* callbacks = hook_map_[key].get();
   for (const auto& cookie : cookies) {
     DCHECK_EQ(name, cookie.Name());
     callbacks->Notify(cookie, removed);
