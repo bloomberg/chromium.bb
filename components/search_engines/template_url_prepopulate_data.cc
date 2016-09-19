@@ -536,6 +536,12 @@ int CountryCharsToCountryIDWithUpdate(char c1, char c2) {
   return CountryCharsToCountryID(c1, c2);
 }
 
+int CountryStringToCountryID(const std::string& country) {
+  return (country.length() == 2)
+             ? CountryCharsToCountryIDWithUpdate(country[0], country[1])
+             : kCountryIDUnknown;
+}
+
 #if defined(OS_WIN)
 
 // For reference, a list of GeoIDs can be found at
@@ -1200,9 +1206,7 @@ SearchEngineType GetEngineType(const GURL& url) {
 #if defined(OS_WIN)
 
 int GetCurrentCountryID() {
-  GEOID geo_id = GetUserGeoID(GEOCLASS_NATION);
-
-  return GeoIDToCountryID(geo_id);
+  return GeoIDToCountryID(GetUserGeoID(GEOCLASS_NATION));
 }
 
 #elif defined(OS_MACOSX)
@@ -1225,41 +1229,30 @@ int GetCurrentCountryID() {
 #elif defined(OS_ANDROID)
 
 int GetCurrentCountryID() {
-  const std::string& country_code = base::android::GetDefaultCountryCode();
-  return (country_code.size() == 2) ?
-      CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]) :
-      kCountryIDUnknown;
+  return CountryStringToCountryID(base::android::GetDefaultCountryCode());
 }
 
 #elif defined(OS_POSIX)
 
 int GetCurrentCountryID() {
   const char* locale = setlocale(LC_MESSAGES, NULL);
-
   if (!locale)
     return kCountryIDUnknown;
 
   // The format of a locale name is:
   // language[_territory][.codeset][@modifier], where territory is an ISO 3166
   // country code, which is what we want.
+
+  // First remove the language portion.
   std::string locale_str(locale);
-  size_t begin = locale_str.find('_');
-  if (begin == std::string::npos || locale_str.size() - begin < 3)
+  size_t territory_delim = locale_str.find('_');
+  if (territory_delim == std::string::npos)
     return kCountryIDUnknown;
+  locale_str.erase(0, territory_delim + 1);
 
-  ++begin;
-  size_t end = locale_str.find_first_of(".@", begin);
-  if (end == std::string::npos)
-    end = locale_str.size();
-
-  // The territory part must contain exactly two characters.
-  if (end - begin == 2) {
-    return CountryCharsToCountryIDWithUpdate(
-        base::ToUpperASCII(locale_str[begin]),
-        base::ToUpperASCII(locale_str[begin + 1]));
-  }
-
-  return kCountryIDUnknown;
+  // Next remove any codeset/modifier portion and uppercase.
+  return CountryStringToCountryID(
+      base::ToUpperASCII(locale_str.substr(0, locale_str.find_first_of(".@"))));
 }
 
 #endif  // OS_*
