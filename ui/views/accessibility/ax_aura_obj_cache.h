@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -119,7 +120,7 @@ class VIEWS_EXPORT AXAuraObjCache
   std::map<views::Widget*, int32_t> widget_to_id_map_;
   std::map<aura::Window*, int32_t> window_to_id_map_;
 
-  std::map<int32_t, AXAuraObjWrapper*> cache_;
+  std::map<int32_t, std::unique_ptr<AXAuraObjWrapper>> cache_;
   int32_t current_id_;
 
   aura::client::FocusClient* focus_client_;

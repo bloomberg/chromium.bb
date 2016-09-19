@@ -14,7 +14,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/display_util_x11.h"
@@ -114,8 +114,6 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
         platform_event_dispatcher_.get());
   }
-
-  base::STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
 }
 
 void NativeDisplayDelegateX11::Initialize() {
@@ -290,7 +288,6 @@ NativeDisplayDelegateX11::GetFakeDisplayController() {
 void NativeDisplayDelegateX11::InitModes() {
   CHECK(screen_) << "Server not grabbed";
 
-  base::STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
   modes_.clear();
 
   for (int i = 0; i < screen_->nmode; ++i) {
@@ -302,12 +299,10 @@ void NativeDisplayDelegateX11::InitModes() {
           (static_cast<float>(info.hTotal) * static_cast<float>(info.vTotal));
     }
 
-    modes_.insert(
-        std::make_pair(info.id,
-                       new DisplayModeX11(gfx::Size(info.width, info.height),
-                                          info.modeFlags & RR_Interlace,
-                                          refresh_rate,
-                                          info.id)));
+    modes_.insert(std::make_pair(
+        info.id, base::MakeUnique<DisplayModeX11>(
+                     gfx::Size(info.width, info.height),
+                     info.modeFlags & RR_Interlace, refresh_rate, info.id)));
   }
 }
 

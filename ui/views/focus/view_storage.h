@@ -69,7 +69,7 @@ class VIEWS_EXPORT ViewStorage {
   std::map<int, View*> id_to_view_;
 
   // Association View to id, used to speed up view notification removal.
-  std::map<View*, std::vector<int>*> view_to_ids_;
+  std::map<View*, std::vector<int>> view_to_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewStorage);
 };

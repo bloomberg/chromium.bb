@@ -4,8 +4,8 @@
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -83,12 +83,12 @@ void AXAuraObjCache::Remove(aura::Window* window, aura::Window* parent) {
 }
 
 AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
-  std::map<int32_t, AXAuraObjWrapper*>::iterator it = cache_.find(id);
+  auto it = cache_.find(id);
 
   if (it == cache_.end())
-    return NULL;
+    return nullptr;
 
-  return it->second;
+  return it->second.get();
 }
 
 void AXAuraObjCache::Remove(int32_t id) {
@@ -98,14 +98,12 @@ void AXAuraObjCache::Remove(int32_t id) {
     return;
 
   cache_.erase(id);
-  delete obj;
 }
 
 void AXAuraObjCache::GetTopLevelWindows(
     std::vector<AXAuraObjWrapper*>* children) {
-  for (std::map<aura::Window*, int32_t>::iterator it =
-           window_to_id_map_.begin();
-       it != window_to_id_map_.end(); ++it) {
+  for (auto it = window_to_id_map_.begin(); it != window_to_id_map_.end();
+       ++it) {
     if (!it->first->parent())
       children->push_back(GetOrCreate(it->first));
   }
@@ -126,7 +124,6 @@ AXAuraObjCache::AXAuraObjCache()
 
 AXAuraObjCache::~AXAuraObjCache() {
   is_destroying_ = true;
-  base::STLDeleteContainerPairSecondPointers(cache_.begin(), cache_.end());
   cache_.clear();
 }
 
@@ -173,17 +170,16 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
     AuraView* aura_view,
     std::map<AuraView*, int32_t>& aura_view_to_id_map) {
   if (!aura_view)
-    return NULL;
+    return nullptr;
 
-  typename std::map<AuraView*, int32_t>::iterator it =
-      aura_view_to_id_map.find(aura_view);
+  auto it = aura_view_to_id_map.find(aura_view);
 
   if (it != aura_view_to_id_map.end())
     return Get(it->second);
 
   AXAuraObjWrapper* wrapper = new AuraViewWrapper(aura_view);
   aura_view_to_id_map[aura_view] = current_id_;
-  cache_[current_id_] = wrapper;
+  cache_[current_id_] = base::WrapUnique(wrapper);
   current_id_++;
   return wrapper;
 }

@@ -153,7 +153,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
       gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
       screen_;
 
-  std::map<RRMode, DisplayModeX11*> modes_;
+  std::map<RRMode, std::unique_ptr<DisplayModeX11>> modes_;
 
   // Every time GetOutputs() is called we cache the updated list of outputs in
   // |cached_outputs_| so that we can check for duplicate events rather than
