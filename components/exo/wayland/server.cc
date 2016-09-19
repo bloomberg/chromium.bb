@@ -3899,7 +3899,7 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
                    remote_shell_version, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zwp_remote_shell_v1_interface,
-                   remote_shell_version, display_,
+                   remote_shell_version_DEPRECATED, display_,
                    bind_remote_shell_DEPRECATED);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
                    display_, bind_gaming_input);
