@@ -173,7 +173,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLCompressedTextureS3TCsRGB>(m_webglCompressedTextureS3TCsRGB, ApprovedExtension, bothPrefixes);
+    registerExtension<WebGLCompressedTextureS3TCsRGB>(m_webglCompressedTextureS3TCsRGB, DraftExtension, bothPrefixes);
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
     registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
     registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);

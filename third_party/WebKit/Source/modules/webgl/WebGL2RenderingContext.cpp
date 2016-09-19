@@ -98,6 +98,10 @@ ImageBitmap* WebGL2RenderingContext::transferToImageBitmap(ExceptionState& excep
 
 void WebGL2RenderingContext::registerContextExtensions()
 {
+    // TODO(kainino): add DraftExtension flag to some of these before WebGL 2
+    // is rolled out.
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=647892
+
     // Register extensions.
     registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat);
     registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
