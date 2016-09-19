@@ -279,6 +279,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarPlainTextCopy() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
