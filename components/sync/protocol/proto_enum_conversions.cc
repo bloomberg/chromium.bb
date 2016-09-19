@@ -337,6 +337,18 @@ const char* GetPasswordStateString(
   return "";
 }
 
+const char* GetReadingListEntryStatusString(
+    sync_pb::ReadingListSpecifics::ReadingListEntryStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::ReadingListSpecifics, ReadingListEntryStatus,
+                     UNREAD, READ);
+  switch (status) {
+    ENUM_CASE(sync_pb::ReadingListSpecifics, UNREAD);
+    ENUM_CASE(sync_pb::ReadingListSpecifics, READ);
+  }
+  NOTREACHED();
+  return "";
+}
+
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

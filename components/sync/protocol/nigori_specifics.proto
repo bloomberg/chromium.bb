@@ -142,4 +142,7 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether printer items should be encrypted.
   optional bool encrypt_printers = 42;
+
+  // Boolean corresponding to whether reading list items should be encrypted.
+  optional bool encrypt_reading_list = 43;
 }

@@ -322,6 +322,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncArcPackage;
     case syncer::PRINTERS:
       return prefs::kSyncPrinters;
+    case syncer::READING_LIST:
+      return prefs::kSyncReadingList;
     default:
       break;
   }
@@ -357,6 +359,7 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::APPS].Put(syncer::APP_SETTINGS);
   pref_groups_[syncer::APPS].Put(syncer::APP_LIST);
   pref_groups_[syncer::APPS].Put(syncer::ARC_PACKAGE);
+  pref_groups_[syncer::APPS].Put(syncer::READING_LIST);
 
   pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_PROFILE);
   pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_WALLET_DATA);

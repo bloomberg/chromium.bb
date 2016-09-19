@@ -134,6 +134,8 @@ enum ModelType {
   ARC_PACKAGE,
   // Printer device information.
   PRINTERS,
+  // Reading list items.
+  READING_LIST,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

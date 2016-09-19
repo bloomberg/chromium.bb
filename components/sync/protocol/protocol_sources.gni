@@ -37,6 +37,7 @@ sync_protocol_sources = [
   "//components/sync/protocol/preference_specifics.proto",
   "//components/sync/protocol/printer_specifics.proto",
   "//components/sync/protocol/priority_preference_specifics.proto",
+  "//components/sync/protocol/reading_list_specifics.proto",
   "//components/sync/protocol/search_engine_specifics.proto",
   "//components/sync/protocol/session_specifics.proto",
   "//components/sync/protocol/sync.proto",

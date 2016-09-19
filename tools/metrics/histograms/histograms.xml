@@ -97505,6 +97505,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="33" label="Managed User Whitelists"/>
   <int value="34" label="Autofill Wallet"/>
   <int value="35" label="Autofill Wallet Metadata"/>
+  <int value="38" label="Reading List"/>
 </enum>
 
 <enum name="SyncNigoriMigrationResult" type="int">

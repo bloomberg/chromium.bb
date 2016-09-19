@@ -154,6 +154,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(syncer::APP_NOTIFICATIONS);
       expected_preferred_types.Put(syncer::APP_SETTINGS);
       expected_preferred_types.Put(syncer::ARC_PACKAGE);
+      expected_preferred_types.Put(syncer::READING_LIST);
     }
     if (it.Get() == syncer::EXTENSIONS) {
       expected_preferred_types.Put(syncer::EXTENSION_SETTINGS);

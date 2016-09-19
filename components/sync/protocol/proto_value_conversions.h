@@ -62,6 +62,7 @@ class PreferenceSpecifics;
 class PriorityPreferenceSpecifics;
 class PrinterPPDData;
 class PrinterSpecifics;
+class ReadingListSpecifics;
 class SearchEngineSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -249,6 +250,10 @@ std::unique_ptr<base::DictionaryValue> PreferenceSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> PrinterSpecificsToValue(
     const sync_pb::PrinterSpecifics& printer_specifics);
+
+// Sub-protocol of ReadingListSpecifics.
+std::unique_ptr<base::DictionaryValue> ReadingListSpecificsToValue(
+    const sync_pb::ReadingListSpecifics& proto);
 
 std::unique_ptr<base::DictionaryValue>
 SyncedNotificationAppInfoSpecificsToValue(

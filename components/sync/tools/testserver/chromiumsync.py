@@ -89,6 +89,7 @@ ALL_TYPES = (
     PREFERENCE,
     PRINTERS,
     PRIORITY_PREFERENCE,
+    READING_LIST,
     SEARCH_ENGINE,
     SESSION,
     SYNCED_NOTIFICATION,
@@ -98,7 +99,7 @@ ALL_TYPES = (
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
     FAVICON_TRACKING,
-    WIFI_CREDENTIAL) = range(36)
+    WIFI_CREDENTIAL) = range(37)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -144,6 +145,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     PREFERENCE: SYNC_TYPE_FIELDS['preference'],
     PRINTERS: SYNC_TYPE_FIELDS['printer'],
     PRIORITY_PREFERENCE: SYNC_TYPE_FIELDS['priority_preference'],
+    READING_LIST: SYNC_TYPE_FIELDS['reading_list'],
     SEARCH_ENGINE: SYNC_TYPE_FIELDS['search_engine'],
     SESSION: SYNC_TYPE_FIELDS['session'],
     SYNCED_NOTIFICATION: SYNC_TYPE_FIELDS["synced_notification"],
@@ -574,6 +576,8 @@ class SyncDataModel(object):
       PermanentItem('google_chrome_priority_preferences',
                     name='Priority Preferences',
                     parent_tag=ROOT_ID, sync_type=PRIORITY_PREFERENCE),
+      PermanentItem('google_chrome_reading_list', name='Reading List',
+                    parent_tag=ROOT_ID, sync_type=READING_LIST),
       PermanentItem('google_chrome_synced_notifications',
                     name='Synced Notifications',
                     parent_tag=ROOT_ID, sync_type=SYNCED_NOTIFICATION),

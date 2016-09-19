@@ -59,6 +59,7 @@ enum UserSelectableSyncType {
   // SYNCED_NOTIFICATION_APP_INFO,
   // ARC_PACKAGE,
   // PRINTERS
+  // READING_LIST
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 11,

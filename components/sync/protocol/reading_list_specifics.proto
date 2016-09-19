@@ -1,0 +1,31 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for the reading list items.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+// Properties of Reading list items.
+message ReadingListSpecifics {
+  optional string entry_id = 1;
+
+  optional string title = 2;
+
+  optional string url = 3;
+
+  optional int64 creation_time_us = 4;
+
+  optional int64 update_time_us = 5;
+
+  enum ReadingListEntryStatus {
+    UNREAD = 0;
+    READ = 1;
+  }
+
+  optional ReadingListEntryStatus status = 6;
+}

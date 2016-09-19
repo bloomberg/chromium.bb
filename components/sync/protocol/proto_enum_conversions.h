@@ -10,6 +10,7 @@
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/client_debug_info.pb.h"
+#include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -40,6 +41,9 @@ const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
 const char* GetUpdatesOriginString(sync_pb::SyncEnums::GetUpdatesOrigin origin);
+
+const char* GetReadingListEntryStatusString(
+    sync_pb::ReadingListSpecifics::ReadingListEntryStatus status);
 
 const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type);

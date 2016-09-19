@@ -42,6 +42,7 @@
 #include "components/sync/protocol/printer_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
+#include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -298,6 +299,19 @@ std::unique_ptr<base::DictionaryValue> PrinterPPDDataToValue(
   SET_STR(file_name);
   SET_INT64(version_number);
   SET_BOOL(from_quirks_server);
+  return value;
+}
+
+std::unique_ptr<base::DictionaryValue> ReadingListSpecificsToValue(
+    const sync_pb::ReadingListSpecifics& proto) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_STR(entry_id);
+  SET_STR(title);
+  SET_STR(url);
+  SET_INT64(creation_time_us);
+  SET_INT64(update_time_us);
+  SET_ENUM(status, GetReadingListEntryStatusString);
+
   return value;
 }
 
@@ -597,6 +611,7 @@ std::unique_ptr<base::DictionaryValue> NigoriSpecificsToValue(
   SET_BOOL(encrypt_articles);
   SET_BOOL(encrypt_app_list);
   SET_BOOL(encrypt_arc_package);
+  SET_BOOL(encrypt_reading_list);
   SET_BOOL(encrypt_everything);
   SET_BOOL(server_only_was_missing_keystore_migration_time);
   SET_BOOL(sync_tab_favicons);
@@ -807,6 +822,7 @@ std::unique_ptr<base::DictionaryValue> EntitySpecificsToValue(
   SET_FIELD(preference, PreferenceSpecificsToValue);
   SET_FIELD(printer, PrinterSpecificsToValue);
   SET_FIELD(priority_preference, PriorityPreferenceSpecificsToValue);
+  SET_FIELD(reading_list, ReadingListSpecificsToValue);
   SET_FIELD(search_engine, SearchEngineSpecificsToValue);
   SET_FIELD(session, SessionSpecificsToValue);
   SET_FIELD(synced_notification, SyncedNotificationSpecificsToValue);

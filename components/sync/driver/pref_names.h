@@ -41,6 +41,7 @@ extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
 extern const char kSyncPriorityPreferences[];
 extern const char kSyncPrinters[];
+extern const char kSyncReadingList[];
 extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];
 extern const char kSyncSupervisedUserSettings[];
