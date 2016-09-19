@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  // Test that AmbientLightSensorReading interface exists
+  assert_true(new AmbientLightSensorReading({illuminance: 1}) instanceof AmbientLightSensorReading);
+}, 'AmbientLightSensorReading IDL test');
+</script>
