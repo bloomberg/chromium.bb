@@ -64,10 +64,6 @@ class StreamMixerAlsa {
     // positive.
     virtual int input_samples_per_second() const = 0;
 
-    // This number will be used to scale the stream before it is mixed. The
-    // result must be in the range (0.0, 1.0].
-    virtual float volume_multiplier() const = 0;
-
     // Returns true if the stream is primary. Primary streams will be given
     // precedence for sample rates and will dictate when data is polled.
     virtual bool primary() const = 0;
@@ -92,6 +88,16 @@ class StreamMixerAlsa {
     // be no larger than the value returned by the most recent call to
     // MaxReadSize(), and |dest->frames()| shall be >= |frames|.
     virtual void GetResampledData(::media::AudioBus* dest, int frames) = 0;
+
+    // Scale |frames| frames at |src| by the current volume (smoothing as
+    // needed). Add the scaled result to |dest|.
+    // VolumeScaleAccumulate will be called once for each channel of audio
+    // present and |repeat_transition| will be true for channels 2 through n.
+    // |src| and |dest| should be 16-byte aligned.
+    virtual void VolumeScaleAccumulate(bool repeat_transition,
+                                       const float* src,
+                                       int frames,
+                                       float* dest) = 0;
 
     // Called when this input has been skipped for output due to not having any
     // data available. This indicates that there will be a gap in the playback

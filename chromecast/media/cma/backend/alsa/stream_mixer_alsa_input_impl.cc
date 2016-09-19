@@ -56,6 +56,9 @@ const int kPausedReadSamples = 512;
 const int kDefaultReadSize = ::media::SincResampler::kDefaultRequestSize;
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
+const int kMaxSlewTimeUpMs = 100;
+const int kMaxSlewTimeDownMs = 100;
+
 }  // namespace
 
 StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
@@ -71,7 +74,7 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       resample_ratio_(1.0),
       state_(kStateUninitialized),
-      volume_multiplier_(1.0f),
+      slew_volume_(kMaxSlewTimeUpMs, kMaxSlewTimeDownMs),
       queued_frames_(0),
       queued_frames_including_resampler_(0),
       current_buffer_offset_(0),
@@ -96,10 +99,6 @@ int StreamMixerAlsaInputImpl::input_samples_per_second() const {
   return input_samples_per_second_;
 }
 
-float StreamMixerAlsaInputImpl::volume_multiplier() const {
-  return volume_multiplier_;
-}
-
 bool StreamMixerAlsaInputImpl::primary() const {
   return primary_;
 }
@@ -121,6 +120,7 @@ void StreamMixerAlsaInputImpl::Initialize(
         base::Bind(&StreamMixerAlsaInputImpl::ReadCB, base::Unretained(this))));
     resampler_->PrimeWithSilence();
   }
+  slew_volume_.SetSampleRate(mixer_->output_samples_per_second());
   mixer_rendering_delay_ = mixer_rendering_delay;
   fade_out_frames_total_ = NormalFadeFrames();
   fade_frames_remaining_ = NormalFadeFrames();
@@ -511,7 +511,14 @@ void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
     multiplier = 1.0f;
   if (multiplier < 0.0f)
     multiplier = 0.0f;
-  volume_multiplier_ = multiplier;
+  slew_volume_.SetVolume(multiplier);
+}
+
+void StreamMixerAlsaInputImpl::VolumeScaleAccumulate(bool repeat_transition,
+                                                     const float* src,
+                                                     int frames,
+                                                     float* dest) {
+  slew_volume_.ProcessFMAC(repeat_transition, src, frames, dest);
 }
 
 }  // namespace media

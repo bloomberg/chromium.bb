@@ -23,7 +23,6 @@
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_switches.h"
-#include "media/base/vector_math.h"
 
 #define RETURN_REPORT_ERROR(snd_func, ...)                        \
   do {                                                            \
@@ -827,10 +826,8 @@ bool StreamMixerAlsa::TryWriteFrames() {
   for (InputQueue* input : active_inputs) {
     input->GetResampledData(temp_.get(), chunk_size);
     for (int c = 0; c < kNumOutputChannels; ++c) {
-      float volume_scalar = input->volume_multiplier();
-      DCHECK(volume_scalar >= 0.0 && volume_scalar <= 1.0) << volume_scalar;
-      ::media::vector_math::FMAC(temp_->channel(c), volume_scalar, chunk_size,
-                                 mixed_->channel(c));
+      input->VolumeScaleAccumulate(c, temp_->channel(c), chunk_size,
+                                   mixed_->channel(c));
     }
   }
 

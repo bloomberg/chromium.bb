@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/backend/alsa/mock_alsa_wrapper.h"
 #include "media/base/audio_bus.h"
+#include "media/base/vector_math.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,6 +135,8 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
         deleting_(false) {
     ON_CALL(*this, GetResampledData(_, _)).WillByDefault(
         testing::Invoke(this, &MockInputQueue::DoGetResampledData));
+    ON_CALL(*this, VolumeScaleAccumulate(_, _, _, _)).WillByDefault(
+        testing::Invoke(this, &MockInputQueue::DoVolumeScaleAccumulate));
     ON_CALL(*this, PrepareToDelete(_)).WillByDefault(
         testing::Invoke(this, &MockInputQueue::DoPrepareToDelete));
   }
@@ -143,7 +146,6 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
 
   // StreamMixerAlsa::InputQueue implementation:
   int input_samples_per_second() const override { return samples_per_second_; }
-  float volume_multiplier() const override { return multiplier_; }
   bool primary() const override { return primary_; }
   bool IsDeleting() const override { return deleting_; }
   MOCK_METHOD1(Initialize,
@@ -151,6 +153,9 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
                         mixer_rendering_delay));
   int MaxReadSize() override { return max_read_size_; }
   MOCK_METHOD2(GetResampledData, void(::media::AudioBus* dest, int frames));
+  MOCK_METHOD4(
+      VolumeScaleAccumulate,
+      void(bool repeat_transition, const float* src, int frames, float* dest));
   MOCK_METHOD0(OnSkipped, void());
   MOCK_METHOD1(AfterWriteFrames,
                void(const MediaPipelineBackendAlsa::RenderingDelay&
@@ -186,6 +191,16 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
     } else {
       dest->ZeroFramesPartial(0, frames);
     }
+  }
+
+  void DoVolumeScaleAccumulate(bool repeat_transition,
+                               const float* src,
+                               int frames,
+                               float* dest) {
+    CHECK(src);
+    CHECK(dest);
+    CHECK(multiplier_ >= 0.0 && multiplier_ <= 1.0);
+    ::media::vector_math::FMAC(src, multiplier_, frames, dest);
   }
 
   void DoPrepareToDelete(const OnReadyToDeleteCb& delete_cb) {
@@ -365,6 +380,8 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   inputs[2]->SetMaxReadSize(2048);
   for (auto* input : inputs) {
     EXPECT_CALL(*input, GetResampledData(_, 512)).Times(1);
+    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 512, _))
+        .Times(kNumChannels);
     EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
   }
 
@@ -380,8 +397,11 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   EXPECT_CALL(*inputs[1], OnSkipped());
   inputs[2]->SetPrimary(false);
   for (auto* input : inputs) {
-    if (input != inputs[1])
+    if (input != inputs[1]) {
       EXPECT_CALL(*input, GetResampledData(_, 1024)).Times(1);
+      EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 1024, _))
+          .Times(kNumChannels);
+    }
     EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
   }
   // Note that the new smallest stream shall dictate the length of the write.
@@ -412,6 +432,8 @@ TEST_F(StreamMixerAlsaTest, OneStreamMixesProperly) {
 
   // Write the stream to ALSA.
   EXPECT_CALL(*input, GetResampledData(_, kNumFrames));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
+      .Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   mixer->WriteFramesForTest();
 
@@ -444,6 +466,8 @@ TEST_F(StreamMixerAlsaTest, OneStreamIsScaledDownProperly) {
 
   // Write the stream to ALSA.
   EXPECT_CALL(*input, GetResampledData(_, kNumFrames));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
+      .Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   mixer->WriteFramesForTest();
 
@@ -476,6 +500,8 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperly) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     inputs[i]->SetData(GetTestData(i));
     EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
+    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
+        .Times(kNumChannels);
     EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
   }
 
@@ -548,6 +574,8 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
     test_data->FromInterleaved(kEdgeData[i], kNumFrames, kBytesPerSample);
     inputs[i]->SetData(std::move(test_data));
     EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
+    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
+        .Times(kNumChannels);
     EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
   }
 
@@ -578,24 +606,28 @@ TEST_F(StreamMixerAlsaTest, WriteBuffersOfVaryingLength) {
   // The input stream will provide buffers of several different lengths.
   input->SetMaxReadSize(7);
   EXPECT_CALL(*input, GetResampledData(_, 7));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 7, _)).Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 7)).Times(1);
   mixer->WriteFramesForTest();
 
   input->SetMaxReadSize(100);
   EXPECT_CALL(*input, GetResampledData(_, 100));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 100, _)).Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 100)).Times(1);
   mixer->WriteFramesForTest();
 
   input->SetMaxReadSize(32);
   EXPECT_CALL(*input, GetResampledData(_, 32));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 32, _)).Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 32)).Times(1);
   mixer->WriteFramesForTest();
 
   input->SetMaxReadSize(1024);
   EXPECT_CALL(*input, GetResampledData(_, 1024));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 1024, _)).Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 1024)).Times(1);
   mixer->WriteFramesForTest();
@@ -622,6 +654,7 @@ TEST_F(StreamMixerAlsaTest, StuckStreamWithoutUnderrun) {
   // to give.
   inputs[0]->SetData(GetTestData(0));
   EXPECT_CALL(*inputs[0], GetResampledData(_, _)).Times(0);
+  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, _, _)).Times(0);
   EXPECT_CALL(*inputs[0], AfterWriteFrames(_)).Times(0);
 
   EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, _)).Times(0);
@@ -654,8 +687,11 @@ TEST_F(StreamMixerAlsaTest, StuckStreamWithUnderrun) {
   const int kNumFrames = 32;
   inputs[0]->SetData(GetTestData(0));
   EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
+  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, kNumFrames, _))
+      .Times(kNumChannels);
   EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
   EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
+  EXPECT_CALL(*inputs[1], VolumeScaleAccumulate(_, _, kNumFrames, _)).Times(0);
   EXPECT_CALL(*inputs[1], OnSkipped());
   EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
 
@@ -689,8 +725,11 @@ TEST_F(StreamMixerAlsaTest, StuckStreamWithLowBuffer) {
   const int kNumFrames = 32;
   inputs[0]->SetData(GetTestData(0));
   EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
+  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, kNumFrames, _))
+      .Times(kNumChannels);
   EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
   EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
+  EXPECT_CALL(*inputs[1], VolumeScaleAccumulate(_, _, _, _)).Times(0);
   EXPECT_CALL(*inputs[1], OnSkipped());
   EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
 

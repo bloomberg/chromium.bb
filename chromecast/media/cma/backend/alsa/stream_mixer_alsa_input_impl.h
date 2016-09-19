@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/media/cma/backend/alsa/slew_volume.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
 
@@ -113,7 +114,6 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
  private:
   // StreamMixerAlsa::InputQueue implementation:
   int input_samples_per_second() const override;
-  float volume_multiplier() const override;
   bool primary() const override;
   bool IsDeleting() const override;
   void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
@@ -121,6 +121,10 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   int MaxReadSize() override;
   void GetResampledData(::media::AudioBus* dest, int frames) override;
   void OnSkipped() override;
+  void VolumeScaleAccumulate(bool repeat_transition,
+                             const float* src,
+                             int frames,
+                             float* dest) override;
   void AfterWriteFrames(const MediaPipelineBackendAlsa::RenderingDelay&
                             mixer_rendering_delay) override;
   void SignalError(StreamMixerAlsaInput::MixerError error) override;
@@ -150,7 +154,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   double resample_ratio_;
 
   State state_;
-  float volume_multiplier_;
+  SlewVolume slew_volume_;
 
   base::Lock queue_lock_;  // Lock for the following queue-related members.
   scoped_refptr<DecoderBufferBase> pending_data_;
