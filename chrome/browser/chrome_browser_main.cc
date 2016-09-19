@@ -1323,29 +1323,37 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   SetupOriginTrialsCommandLine();
 
+  device::GeolocationProvider::SetGeolocationDelegate(
+      new ChromeGeolocationDelegate());
+
+  // IMPORTANT
+  // Do not add anything below this line until you've verified your new code
+  // does not interfere with the critical initialization order below. Some of
+  // the calls below end up implicitly creating threads and as such new calls
+  // typically either belong before them or in a later startup phase.
+
   // Now the command line has been mutated based on about:flags, we can
   // initialize field trials and setup metrics. The field trials are needed by
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupFieldTrials();
-  SetupMetrics();
 
-  // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
-  browser_process_->PreCreateThreads();
-
-  device::GeolocationProvider::SetGeolocationDelegate(
-      new ChromeGeolocationDelegate());
-
-  // This needs to be the last thing in PreCreateThreads() because the
-  // TaskScheduler needs to be created before any other threads are (by
-  // contract) but it creates threads itself so instantiating it earlier is also
-  // incorrect. It also has to be after SetupFieldTrials() to allow it to use
-  // field trials. Note: it could also be the first thing in CreateThreads() but
-  // being in chrome/ is convenient for now as the initialization uses
-  // variations parameters extensively.
-  //
+  // Task Scheduler initialization needs to be here for the following reasons:
+  //   * After |SetupFieldTrials()|: Initialization uses variations.
+  //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
+  //         Task Scheduler must do any necessary redirection before then.
+  //   * Near the end of |PreCreateThreads()|: The TaskScheduler needs to be
+  //         created before any other threads are (by contract) but it creates
+  //         threads itself so instantiating it earlier is also incorrect.
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
   MaybeInitializeTaskScheduler();
+
+  SetupMetrics();
+
+  // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
+  // This also instantiates the IOThread which requests the metrics service and
+  // must be after |SetupMetrics()|.
+  browser_process_->PreCreateThreads();
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
@@ -2168,13 +2176,6 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
-  // The TaskScheduler was initialized at the very end of PreCreateThreads. To
-  // maintain scoping symmetry, perform the shutdown here at the beginning of
-  // PostDestroyThreads.
-  base::TaskScheduler* task_scheduler = base::TaskScheduler::GetInstance();
-  if (task_scheduler)
-    task_scheduler->Shutdown();
-
   int restart_flags = restart_last_session_
                           ? browser_shutdown::RESTART_LAST_SESSION
                           : browser_shutdown::NO_FLAGS;
@@ -2191,6 +2192,14 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());
+
+  // The TaskScheduler was initialized before invoking
+  // |browser_process_->PreCreateThreads()|. To maintain scoping symmetry,
+  // perform the shutdown after |browser_process_->PostDestroyThreads()|.
+  base::TaskScheduler* task_scheduler = base::TaskScheduler::GetInstance();
+  if (task_scheduler)
+    task_scheduler->Shutdown();
+
   browser_shutdown::ShutdownPostThreadsStop(restart_flags);
   master_prefs_.reset();
   process_singleton_.reset();
