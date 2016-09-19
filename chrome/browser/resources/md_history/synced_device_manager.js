@@ -134,14 +134,13 @@ Polymer({
   },
 
   onToggleMenu_: function(e) {
-    this.$.menu.get().then(function(menu) {
-      menu.toggleMenu(e.detail.target, e.detail.tag);
-      if (menu.menuOpen) {
-        md_history.BrowserService.getInstance().recordHistogram(
-            SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
-            SyncedTabsHistogram.LIMIT);
-      }
-    });
+    var menu = /** @type {CrSharedMenuElement} */ this.$.menu.get();
+    menu.toggleMenu(e.detail.target, e.detail.tag);
+    if (menu.menuOpen) {
+      md_history.BrowserService.getInstance().recordHistogram(
+          SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
+          SyncedTabsHistogram.LIMIT);
+    }
   },
 
   onOpenAllTap_: function() {

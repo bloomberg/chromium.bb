@@ -123,9 +123,7 @@ Polymer({
     browserService.recordAction('RemoveSelected');
     if (this.queryState.searchTerm != '')
       browserService.recordAction('SearchResultRemove');
-    this.$.dialog.get().then(function(dialog) {
-      dialog.showModal();
-    });
+    this.$.dialog.get().showModal();
   },
 
   /**
@@ -202,15 +200,12 @@ Polymer({
    * Opens the overflow menu unless the menu is already open and the same button
    * is pressed.
    * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
-   * @return {Promise<Element>}
    * @private
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
-    return this.$.sharedMenu.get().then(function(menu) {
-      /** @type {CrSharedMenuElement} */(menu).toggleMenu(
-        target, e.detail);
-    });
+    var menu = /** @type {CrSharedMenuElement} */this.$.sharedMenu.get();
+    menu.toggleMenu(target, e.detail);
   },
 
   /** @private */

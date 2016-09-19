@@ -50,8 +50,7 @@ cr.define('md_history.history_list_test', function() {
           return flush();
         }).then(function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-          return listContainer.$.dialog.get();
-        }).then(function(dialog) {
+          var dialog = listContainer.$.dialog.get();
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();
@@ -277,8 +276,7 @@ cr.define('md_history.history_list_test', function() {
 
           items = polymerSelectAll(element, 'history-item');
           MockInteractions.tap(items[0].$['menu-button']);
-          return app.$.history.$.sharedMenu.get();
-        }).then(function() {
+          app.$.history.$.sharedMenu.get();
           MockInteractions.tap(app.$.history.$$('#menuMoreButton'));
         });
       });
@@ -361,8 +359,7 @@ cr.define('md_history.history_list_test', function() {
         }).then(function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
 
-          return listContainer.$.dialog.get();
-        }).then(function(dialog) {
+          var dialog = listContainer.$.dialog.get();
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();
@@ -416,20 +413,16 @@ cr.define('md_history.history_list_test', function() {
             });
           });
           MockInteractions.tap(items[1].$['menu-button']);
-          return app.$.history.$.sharedMenu.get();
-        }).then(function(menu) {
+          app.$.history.$.sharedMenu.get();
           MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
         });
       });
 
       test('deleting items using shortcuts', function(done) {
         var listContainer = app.$.history;
-        var dialog;
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-        listContainer.$.dialog.get().then(function(stampedDialog) {
-          dialog = stampedDialog;
-          return flush();
-        }).then(function() {
+        var dialog = listContainer.$.dialog.get();
+        return flush().then(function() {
           items = polymerSelectAll(element, 'history-item');
 
           // Dialog should not appear when there is no item selected.

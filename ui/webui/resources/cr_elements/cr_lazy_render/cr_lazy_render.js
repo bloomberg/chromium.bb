@@ -11,9 +11,7 @@
  *     <heavy-menu></heavy-menu>
  *   </template>
  *
- *   this.$.menu.get().then(function(menu) {
- *     menu.show();
- *   });
+ *   this.$.menu.get().show();
  */
 
 Polymer({
@@ -24,28 +22,17 @@ Polymer({
     Polymer.Templatizer
   ],
 
-  /** @private {Promise<Element>} */
-  renderPromise_: null,
-
   /** @private {TemplatizerNode} */
   child_: null,
 
   /**
-   * Stamp the template into the DOM tree asynchronously
-   * @return {Promise<Element>} Promise which resolves when the template has
-   *   been stamped.
+   * Stamp the template into the DOM tree synchronously
+   * @return {Element} Child element which has been stamped into the DOM tree.
    */
   get: function() {
-    if (!this.renderPromise_) {
-      this.renderPromise_ = new Promise(function(resolve) {
-        this._debounceTemplate(function() {
-          this.render_();
-          this.renderPromise_ = null;
-          resolve(this.getIfExists());
-        }.bind(this));
-      }.bind(this));
-    }
-    return this.renderPromise_;
+    if (!this.child_)
+      this.render_();
+    return this.child_;
   },
 
   /**

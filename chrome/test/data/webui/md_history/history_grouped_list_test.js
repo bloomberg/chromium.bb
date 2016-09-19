@@ -240,8 +240,8 @@ cr.define('md_history.history_grouped_list_test', function() {
           return flush();
         }).then(function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-          return listContainer.$.dialog.get();
-        }).then(function(dialog) {
+          var dialog = listContainer.$.dialog.get();
+
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();

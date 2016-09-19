@@ -5393,19 +5393,10 @@ Polymer({
   is: 'cr-lazy-render',
   "extends": 'template',
   behaviors: [ Polymer.Templatizer ],
-  renderPromise_: null,
   child_: null,
   get: function() {
-    if (!this.renderPromise_) {
-      this.renderPromise_ = new Promise(function(resolve) {
-        this._debounceTemplate(function() {
-          this.render_();
-          this.renderPromise_ = null;
-          resolve(this.getIfExists());
-        }.bind(this));
-      }.bind(this));
-    }
-    return this.renderPromise_;
+    if (!this.child_) this.render_();
+    return this.child_;
   },
   getIfExists: function() {
     return this.child_;
@@ -6144,10 +6135,9 @@ Polymer({
     this.searchTerm = event.detail;
   },
   onInfoButtonTap_: function() {
-    this.$.syncNotice.get().then(function(dropdown) {
-      dropdown.positionTarget = this.$$('#info-button-icon');
-      if (dropdown.style.display == 'none') dropdown.open();
-    }.bind(this));
+    var dropdown = this.$.syncNotice.get();
+    dropdown.positionTarget = this.$$('#info-button-icon');
+    if (dropdown.style.display == 'none') dropdown.open();
   },
   onClearSelectionTap_: function() {
     this.fire('unselect-all');
@@ -8130,9 +8120,7 @@ Polymer({
     var browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('RemoveSelected');
     if (this.queryState.searchTerm != '') browserService.recordAction('SearchResultRemove');
-    this.$.dialog.get().then(function(dialog) {
-      dialog.showModal();
-    });
+    this.$.dialog.get().showModal();
   },
   groupedRangeChanged_: function(range, oldRange) {
     this.selectedPage_ = range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
@@ -8171,9 +8159,8 @@ Polymer({
   },
   toggleMenu_: function(e) {
     var target = e.detail.target;
-    return this.$.sharedMenu.get().then(function(menu) {
-      menu.toggleMenu(target, e.detail);
-    });
+    var menu = this.$.sharedMenu.get();
+    menu.toggleMenu(target, e.detail);
   },
   onMoreFromSiteTap_: function() {
     md_history.BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
@@ -8359,12 +8346,11 @@ Polymer({
     if (menu) menu.closeMenu();
   },
   onToggleMenu_: function(e) {
-    this.$.menu.get().then(function(menu) {
-      menu.toggleMenu(e.detail.target, e.detail.tag);
-      if (menu.menuOpen) {
-        md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU, SyncedTabsHistogram.LIMIT);
-      }
-    });
+    var menu = this.$.menu.get();
+    menu.toggleMenu(e.detail.target, e.detail.tag);
+    if (menu.menuOpen) {
+      md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU, SyncedTabsHistogram.LIMIT);
+    }
   },
   onOpenAllTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
