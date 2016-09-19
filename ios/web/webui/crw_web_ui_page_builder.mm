@@ -8,11 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Prefix for script tags. Used to locate JavaScript subresources.
@@ -92,7 +95,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 
 @implementation CRWWebUIPageBuilder {
   // Delegate for requesting resources.
-  base::WeakNSProtocol<id<CRWWebUIPageBuilderDelegate>> _delegate;
+  __weak id<CRWWebUIPageBuilderDelegate> _delegate;
 }
 
 #pragma mark - Public Methods
@@ -104,7 +107,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 
 - (instancetype)initWithDelegate:(id<CRWWebUIPageBuilderDelegate>)delegate {
   if (self = [super init]) {
-    _delegate.reset(delegate);
+    _delegate = delegate;
   }
   return self;
 }
@@ -132,10 +135,11 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
     return;
   }
   __block std::map<GURL, std::string> subresources;
-  base::WeakNSObject<CRWWebUIPageBuilder> weakSelf(self);
+  __weak CRWWebUIPageBuilder* weakSelf = self;
   // Completion handler for subresource loads.
-  __block web::WebUIDelegateCompletion subresourceHandler = nil;
-  subresourceHandler = [[^(NSString* subresource, const GURL& subresourceURL) {
+  __block __weak web::WebUIDelegateCompletion weakSubresourceHandler = nil;
+  web::WebUIDelegateCompletion subresourceHandler = [^(
+      NSString* subresource, const GURL& subresourceURL) {
     // Import statements in CSS resources are also loaded.
     if ([self isCSSSubresourceURL:subresourceURL]) {
       NSSet* URLStrings = [weakSelf URLStringsFromCSS:subresource];
@@ -146,7 +150,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
                         sourceURL:subresourceURL];
         ++pendingSubresourceCount;
         [weakSelf fetchResourceWithURL:URL
-                     completionHandler:subresourceHandler];
+                     completionHandler:weakSubresourceHandler];
       }
     }
     subresources[subresourceURL] = base::SysNSStringToUTF8(subresource);
@@ -157,7 +161,9 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
       [weakSelf flattenHTML:webUIHTML withSubresources:subresources];
       completionHandler(webUIHTML);
     }
-  } copy] autorelease];
+  } copy];
+
+  weakSubresourceHandler = subresourceHandler;
 
   for (NSString* URLString in subresourceURLStrings) {
     // chrome://resources/js/ios/web_ui.js is skipped because it is

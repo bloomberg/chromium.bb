@@ -69,7 +69,7 @@ class MockURLFetcherBlockAdapter : public URLFetcherBlockAdapter {
       URLFetcherBlockAdapterCompletion completion_handler)
       : URLFetcherBlockAdapter(url, request_context, completion_handler),
         url_(url),
-        completion_handler_(completion_handler) {}
+        completion_handler_([completion_handler copy]) {}
 
   void Start() override {
     if (url_.spec() == kFaviconUrl) {

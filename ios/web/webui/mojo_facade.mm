@@ -17,6 +17,10 @@
 #include "mojo/public/cpp/system/core.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 namespace {

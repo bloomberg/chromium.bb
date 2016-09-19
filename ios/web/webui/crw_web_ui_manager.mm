@@ -25,6 +25,10 @@
 #include "mojo/public/js/constants.h"
 #import "net/base/mac/url_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Prefix for history.requestFavicon JavaScript message.
 const char kScriptCommandPrefix[] = "webui";
@@ -98,7 +102,6 @@ const char kScriptCommandPrefix[] = "webui";
 
 - (void)dealloc {
   [self resetWebState];
-  [super dealloc];
 }
 
 #pragma mark - CRWWebStateObserver Methods
@@ -214,7 +217,7 @@ const char kScriptCommandPrefix[] = "webui";
   // Retrieve favicon resource and set favicon background image via JavaScript.
   base::WeakNSObject<CRWWebUIManager> weakSelf(self);
   void (^faviconHandler)(NSData*) = ^void(NSData* data) {
-    base::scoped_nsobject<CRWWebUIManager> strongSelf([weakSelf retain]);
+    base::scoped_nsobject<CRWWebUIManager> strongSelf(weakSelf);
     if (!strongSelf)
       return;
     NSString* base64EncodedResource = [data base64EncodedStringWithOptions:0];
