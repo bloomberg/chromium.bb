@@ -469,7 +469,6 @@ split_static_library("ui") {
     "//components/bookmarks/managed",
     "//components/browser_sync",
     "//components/browsing_data/core",
-    "//components/browsing_data_ui",
     "//components/bubble:bubble",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",

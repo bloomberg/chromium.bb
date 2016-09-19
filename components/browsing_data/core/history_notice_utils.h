@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
-#define COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
+#ifndef COMPONENTS_BROWSING_DATA_CORE_HISTORY_NOTICE_UTILS_H_
+#define COMPONENTS_BROWSING_DATA_CORE_HISTORY_NOTICE_UTILS_H_
 
 #include <string>
 
@@ -21,7 +21,7 @@ namespace version_info {
 enum class Channel;
 }
 
-namespace browsing_data_ui {
+namespace browsing_data {
 
 namespace testing {
 
@@ -53,6 +53,6 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
     version_info::Channel channel,
     base::Callback<void(bool)> callback);
 
-}  // namespace browsing_data_ui
+}  // namespace browsing_data
 
-#endif  // COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
+#endif  // COMPONENTS_BROWSING_DATA_CORE_HISTORY_NOTICE_UTILS_H_

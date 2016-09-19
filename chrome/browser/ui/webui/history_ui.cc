@@ -22,8 +22,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
@@ -194,7 +194,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   if (url.has_query() && url.query() == "reset_ofbh") {
     Profile::FromWebUI(web_ui)->GetPrefs()->SetInteger(
         browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
-    browsing_data_ui::testing::
+    browsing_data::testing::
         g_override_other_forms_of_browsing_history_query = true;
   }
 

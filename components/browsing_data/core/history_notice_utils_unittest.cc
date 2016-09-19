@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data_ui/history_notice_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 
 #include <memory>
 
@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browsing_data_ui {
+namespace browsing_data {
 
 namespace {
 
@@ -184,4 +184,4 @@ TEST_F(HistoryNoticeUtilsTest, WebHistoryStates) {
   ExpectShouldPopupDialogAboutOtherFormsOfBrowsingHistoryWithResult(false);
 }
 
-}  // namespace browsing_data_ui
+}  // namespace browsing_data

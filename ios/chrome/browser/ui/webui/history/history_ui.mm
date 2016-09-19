@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
@@ -146,8 +146,8 @@ HistoryUI::HistoryUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
   if (url.has_query() && url.query() == "reset_ofbh") {
     ios::ChromeBrowserState::FromWebUIIOS(web_ui)->GetPrefs()->SetInteger(
         prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
-    browsing_data_ui::testing::
-        g_override_other_forms_of_browsing_history_query = true;
+    browsing_data::testing::g_override_other_forms_of_browsing_history_query =
+        true;
   }
 
   // Set up the chrome://history-frame/ source.

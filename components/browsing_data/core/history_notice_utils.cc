@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data_ui/history_notice_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -51,7 +51,7 @@ class MergeBooleanCallbacks {
 
 }  // namespace
 
-namespace browsing_data_ui {
+namespace browsing_data {
 
 namespace testing {
 
@@ -112,4 +112,4 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
           &MergeBooleanCallbacks::RunCallback, base::Unretained(merger)));
 }
 
-}  // namespace browsing_data_ui
+}  // namespace browsing_data

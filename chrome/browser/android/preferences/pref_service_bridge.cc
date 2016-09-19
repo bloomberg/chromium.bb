@@ -43,8 +43,8 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -771,14 +771,14 @@ static void RequestInfoAboutOtherFormsOfBrowsingHistory(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& listener) {
   // The permanent notice in the footer.
-  browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+  browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
       base::Bind(&ShowNoticeAboutOtherFormsOfBrowsingHistory,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
 
   // The one-time notice in the dialog.
-  browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+  browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
       chrome::GetChannel(),

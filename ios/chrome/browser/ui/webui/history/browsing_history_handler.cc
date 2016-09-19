@@ -21,7 +21,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
@@ -374,7 +374,7 @@ void BrowsingHistoryHandler::QueryHistory(
         IOSChromeProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
             browser_state);
     // Test the existence of other forms of browsing history.
-    browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+    browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
         sync_service, web_history,
         base::Bind(
             &BrowsingHistoryHandler::OtherFormsOfBrowsingHistoryQueryComplete,

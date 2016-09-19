@@ -18,8 +18,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
@@ -284,7 +284,7 @@ void ClearBrowsingDataHandler::OnStateChanged() {
 }
 
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {
-  browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+  browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       sync_service_,
       WebHistoryServiceFactory::GetForProfile(profile_),
       base::Bind(&ClearBrowsingDataHandler::UpdateHistoryNotice,
@@ -297,7 +297,7 @@ void ClearBrowsingDataHandler::RefreshHistoryNotice() {
       browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
 
   if (notice_shown_times < kMaxTimesHistoryNoticeShown) {
-    browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+    browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
         sync_service_,
         WebHistoryServiceFactory::GetForProfile(profile_),
         chrome::GetChannel(),

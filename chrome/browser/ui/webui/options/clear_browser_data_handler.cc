@@ -36,8 +36,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
@@ -396,7 +396,7 @@ void ClearBrowserDataHandler::OnStateChanged() {
 }
 
 void ClearBrowserDataHandler::RefreshHistoryNotice() {
-  browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+  browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
       sync_service_,
       WebHistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui())),
       base::Bind(&ClearBrowserDataHandler::UpdateHistoryNotice,
@@ -409,7 +409,7 @@ void ClearBrowserDataHandler::RefreshHistoryNotice() {
       browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
 
   if (notice_shown_times < kMaxTimesHistoryNoticeShown) {
-    browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+    browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
         sync_service_,
         WebHistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui())),
         chrome::GetChannel(),

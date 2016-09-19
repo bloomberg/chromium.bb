@@ -65,7 +65,6 @@ test("components_unittests") {
     "//components/bookmarks/managed:unit_tests",
     "//components/browser_sync:unit_tests",
     "//components/browsing_data/core:unit_tests",
-    "//components/browsing_data_ui:unit_tests",
     "//components/bubble:unit_tests",
     "//components/captive_portal:unit_tests",
     "//components/client_update_protocol:unit_tests",

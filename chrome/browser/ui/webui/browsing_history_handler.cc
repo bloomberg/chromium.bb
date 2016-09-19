@@ -39,7 +39,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browsing_data_ui/history_notice_utils.h"
+#include "components/browsing_data/core/history_notice_utils.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -472,7 +472,7 @@ void BrowsingHistoryHandler::QueryHistory(
         this, &BrowsingHistoryHandler::WebHistoryTimeout);
 
     // Test the existence of other forms of browsing history.
-    browsing_data_ui::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+    browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
         web_history,
         base::Bind(

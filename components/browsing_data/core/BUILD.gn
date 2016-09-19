@@ -18,6 +18,8 @@ static_library("core") {
     "counters/history_counter.h",
     "counters/passwords_counter.cc",
     "counters/passwords_counter.h",
+    "history_notice_utils.cc",
+    "history_notice_utils.h",
     "pref_names.cc",
     "pref_names.h",
   ]
@@ -31,6 +33,7 @@ static_library("core") {
     "//components/prefs:prefs",
     "//components/strings",
     "//components/sync",
+    "//components/version_info",
     "//components/webdata/common",
     "//ui/base",
   ]
@@ -49,12 +52,19 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browsing_data_utils_unittest.cc",
+    "history_notice_utils_unittest.cc",
   ]
 
   deps = [
     ":core",
     "//base",
     "//components/autofill/core/browser:browser",
+    "//components/history/core/test:test",
+    "//components/signin/core/browser:test_support",
+    "//components/sync:test_support_sync_driver",
+    "//components/sync/protocol:protocol",
+    "//components/version_info:version_info",
+    "//net",
     "//testing/gtest",
   ]
 }
