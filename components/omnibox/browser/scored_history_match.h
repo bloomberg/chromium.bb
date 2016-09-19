@@ -168,8 +168,8 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // untyped visits to non-bookmarked pages and 20 for typed visits.
   static int bookmark_value_;
 
-  // True if we should fix certain bugs in frequency scoring.
-  static bool fix_typed_visit_bug_;
+  // True if we should fix a bug in frequency scoring relating to how we
+  // extrapolate frecency when the URL has been visited few times.
   static bool fix_few_visits_bug_;
 
   // If true, we allow input terms to match in the TLD (e.g., ".com").

@@ -401,12 +401,6 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
   return static_cast<float>(topicality_threshold);
 }
 
-bool OmniboxFieldTrial::HQPFixTypedVisitBug() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPFixTypedVisitBugRule) == "true";
-}
-
 bool OmniboxFieldTrial::HQPFixFewVisitsBug() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -513,8 +507,6 @@ OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
     "MeasureSuggestPollingDelayFromLastKeystroke";
 const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
-const char OmniboxFieldTrial::kHQPFixTypedVisitBugRule[] =
-    "HQPFixTypedVisitBug";
 const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =

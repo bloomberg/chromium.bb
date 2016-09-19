@@ -291,10 +291,6 @@ class OmniboxFieldTrial {
   // For the HQPFixFrequencyScoring experiment that's part of the
   // bundled omnibox field trial.
 
-  // Returns true if HQP should apply the bug fix for correctly identifying
-  // typed visits.
-  static bool HQPFixTypedVisitBug();
-
   // Returns true if HQP should apply the bug fix to discount the visits to
   // pages visited less than ten times.
   static bool HQPFixFewVisitsBug();
@@ -375,7 +371,6 @@ class OmniboxFieldTrial {
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];
-  static const char kHQPFixTypedVisitBugRule[];
   static const char kHQPFixFewVisitsBugRule[];
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
