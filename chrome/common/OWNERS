@@ -19,16 +19,6 @@ per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
-# Spellcheck files. Not using spellcheck* since it covers IPC messages too.
-per-file spellcheck_bdict_language.h=groby@chromium.org
-per-file spellcheck_bdict_language.h=rouslan@chromium.org
-per-file spellcheck_common*=groby@chromium.org
-per-file spellcheck_common*=rouslan@chromium.org
-per-file spellcheck_marker.h=groby@chromium.org
-per-file spellcheck_marker.h=rouslan@chromium.org
-per-file spellcheck_result.h=groby@chromium.org
-per-file spellcheck_result.h=rouslan@chromium.org
-
 #Content settings
 per-file content_settings*=markusheintz@chromium.org
 
