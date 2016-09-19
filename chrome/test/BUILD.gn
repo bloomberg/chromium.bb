@@ -4273,9 +4273,13 @@ test("unit_tests") {
     deps += [ "//chrome/browser/media/router:test_support" ]
     if (!is_android) {
       sources += [
+        # TODO(crbug.com/646627):
+        # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
+        "../browser/media/router/media_router_ui_service_factory_unittest.cc",
         "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
         "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
         "../browser/media/router/mojo/media_router_type_converters_unittest.cc",
+        "../browser/ui/toolbar/media_router_action_controller_unittest.cc",
         "../browser/ui/toolbar/media_router_action_unittest.cc",
         "../browser/ui/toolbar/media_router_contextual_menu_unittest.cc",
         "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",

@@ -53,8 +53,8 @@ TEST_F(MediaRouterFactoryTest, CreateForIncognitoProfile) {
 }
 
 TEST_F(MediaRouterFactoryTest, IncognitoBrowserContextShutdown) {
-  MediaRouterFactory::GetMediaRouterFactoryForTest()->SetTestingFactory(
-      profile(), &CreateMockMediaRouter);
+  MediaRouterFactory::GetInstance()->SetTestingFactory(profile(),
+                                                       &CreateMockMediaRouter);
 
   // Creates an incognito profile.
   profile()->GetOffTheRecordProfile();

@@ -107,11 +107,14 @@ class ComponentMigrationHelper : public ExtensionRegistryObserver {
   void OnExtensionReady(content::BrowserContext* browser_context,
                         const Extension* extension) override;
 
- protected:
-  // Protected for unit testing.
+  // Gets and sets the preference for whether to put the component action with
+  // the given ID on the toolbar (or in the overflow menu).
+  // GetComponentActionPref() returns false if the pref has not been set.
+  bool GetComponentActionPref(const std::string& component_action_id) const;
   void SetComponentActionPref(const std::string& component_action_id,
                               bool enabled);
 
+ protected:
   // A set of component action ids whose features are currently enabled.
   // Protected for unit testing.
   std::set<std::string> enabled_actions_;

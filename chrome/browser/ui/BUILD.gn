@@ -3265,6 +3265,8 @@ split_static_library("ui") {
     sources += [
       "toolbar/media_router_action.cc",
       "toolbar/media_router_action.h",
+      "toolbar/media_router_action_controller.cc",
+      "toolbar/media_router_action_controller.h",
       "toolbar/media_router_action_platform_delegate.h",
       "toolbar/media_router_contextual_menu.cc",
       "toolbar/media_router_contextual_menu.h",

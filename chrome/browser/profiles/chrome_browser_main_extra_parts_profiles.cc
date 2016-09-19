@@ -139,6 +139,13 @@
 #include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/router/media_router_factory.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/router/media_router_ui_service_factory.h"
+#endif
+#endif
+
 namespace chrome {
 
 void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
@@ -265,6 +272,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
       ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
 #endif
 #endif
+#if defined(ENABLE_MEDIA_ROUTER)
+  media_router::MediaRouterFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  media_router::MediaRouterUIServiceFactory::GetInstance();
+#endif
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();

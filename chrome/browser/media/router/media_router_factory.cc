@@ -38,6 +38,11 @@ MediaRouter* MediaRouterFactory::GetApiForBrowserContext(
       service_factory.Get().GetServiceForBrowserContext(context, true));
 }
 
+// static
+MediaRouterFactory* MediaRouterFactory::GetInstance() {
+  return &service_factory.Get();
+}
+
 void MediaRouterFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   if (context->IsOffTheRecord()) {
@@ -60,11 +65,6 @@ MediaRouterFactory::MediaRouterFactory()
 }
 
 MediaRouterFactory::~MediaRouterFactory() {
-}
-
-// static
-MediaRouterFactory* MediaRouterFactory::GetMediaRouterFactoryForTest() {
-  return &service_factory.Get();
 }
 
 content::BrowserContext* MediaRouterFactory::GetBrowserContextToUse(

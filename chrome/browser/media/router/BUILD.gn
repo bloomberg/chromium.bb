@@ -67,6 +67,12 @@ static_library("router") {
       "//mojo/public/cpp/bindings",
     ]
     sources += [
+      # TODO(crbug.com/646627): Move media_router_ui_service* to
+      # chrome/browser/ui/.
+      "media_router_ui_service.cc",
+      "media_router_ui_service.h",
+      "media_router_ui_service_factory.cc",
+      "media_router_ui_service_factory.h",
       "mojo/media_route_provider_util_win.cc",
       "mojo/media_route_provider_util_win.h",
       "mojo/media_router_mojo_impl.cc",
