@@ -72,6 +72,7 @@ bool isValidContextNode(Node* node)
         return false;
     switch (node->getNodeType()) {
     case Node::kAttributeNode:
+    case Node::kTextNode:
     case Node::kCdataSectionNode:
     case Node::kCommentNode:
     case Node::kDocumentNode:
@@ -81,8 +82,6 @@ bool isValidContextNode(Node* node)
     case Node::kDocumentFragmentNode:
     case Node::kDocumentTypeNode:
         return false;
-    case Node::kTextNode:
-        return !(node->parentNode() && node->parentNode()->isAttributeNode());
     }
     NOTREACHED();
     return false;
