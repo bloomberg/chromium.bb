@@ -2152,7 +2152,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             currentTab.loadUrl(loadUrlParams);
 
             setUrlToPageUrl();
-            RecordUserAction.record("MobileOmniboxSearch");
+            RecordUserAction.record("MobileOmniboxUse");
             RecordUserAction.record("MobileTabClobbered");
         } else {
             setUrlToPageUrl();

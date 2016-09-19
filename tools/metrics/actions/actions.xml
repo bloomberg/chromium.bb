@@ -9573,8 +9573,26 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileOmniboxSearch">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    User used the omnibox to go somewhere.  The action doesn't have to lead to a
+    search page (except on iOS, where this is only recorded for search-type
+    navigations).
+  </description>
+  <obsolete>
+    Removed Sep 2016 because the name kept misleading people.  Replaced with
+    MobileOmniboxUse, which has the same semantics.
+  </obsolete>
+</action>
+
+<action name="MobileOmniboxUse">
+  <owner>mpearson@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    User used the omnibox to go somewhere.  The action doesn't have to lead to a
+    search page.
+  </description>
 </action>
 
 <action name="MobileOmniboxVoiceSearch">
