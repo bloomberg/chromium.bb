@@ -71,9 +71,18 @@ static void FetchSnippets(JNIEnv* env,
                           const JavaParamRef<jclass>& caller,
                           jboolean j_force_request) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
+  // Temporary check while investigating crbug.com/647920.
+  CHECK(profile);
+
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile);
+
+  // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
+  if (!content_suggestions_service)
+    return;
+
   ntp_snippets::NTPSnippetsService* service =
-      ContentSuggestionsServiceFactory::GetForProfile(profile)
-          ->ntp_snippets_service();
+      content_suggestions_service->ntp_snippets_service();
 
   // Can be null if the feature has been disabled but the scheduler has not been
   // unregistered yet. The next start should unregister it.
@@ -88,9 +97,18 @@ static void FetchSnippets(JNIEnv* env,
 static void RescheduleFetching(JNIEnv* env,
                                const JavaParamRef<jclass>& caller) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
+  // Temporary check while investigating crbug.com/647920.
+  CHECK(profile);
+
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile);
+
+  // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
+  if (!content_suggestions_service)
+    return;
+
   ntp_snippets::NTPSnippetsService* service =
-      ContentSuggestionsServiceFactory::GetForProfile(profile)
-          ->ntp_snippets_service();
+      content_suggestions_service->ntp_snippets_service();
 
   // Can be null if the feature has been disabled but the scheduler has not been
   // unregistered yet. The next start should unregister it.
