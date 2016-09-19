@@ -159,9 +159,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # self.Fail('deqp/functional/gles3/fbocompleteness.html',
     #     ['mac', ('nvidia', 0xfe9)], bug=616562)
 
-    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
-        ['mac'], bug=634525)
-
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=641129)
 
@@ -464,8 +461,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['linux', 'amd', 'intel'], bug=483282)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
-        ['linux', 'amd', 'intel'], bug=634525)
 
     # Linux with ANGLE only
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -499,9 +494,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
-    # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
-    # https://patchwork.freedesktop.org/patch/76903
-    # So these tests fail on core profile.
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_00.html',
         ['linux', 'intel'], bug=598902)
@@ -513,6 +505,42 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
+
+    # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
+    # https://patchwork.freedesktop.org/patch/76903
+    # So these tests fail on core profile.
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
 
     # Linux Intel without ANGLE only
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
