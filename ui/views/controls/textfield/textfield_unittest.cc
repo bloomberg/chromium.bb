@@ -36,7 +36,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/render_text.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -760,19 +759,7 @@ TEST_F(TextfieldTest, KeyTest) {
     EXPECT_STR_EQ("TexT!1!1", textfield_->text());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_KeysWithModifiersTest KeysWithModifiersTest
-#else
-// TODO(crbug.com/645104): Implement keyboard layout changing for other
-//                         platforms.
-#define MAYBE_KeysWithModifiersTest DISABLED_KeysWithModifiersTest
-#endif
-
-TEST_F(TextfieldTest, MAYBE_KeysWithModifiersTest) {
-  // Activate U.S. English keyboard layout. Modifier keys in other layouts may
-  // change the text inserted into a texfield and cause this test to fail.
-  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
-
+TEST_F(TextfieldTest, KeysWithModifiersTest) {
   InitTextfield();
   const int ctrl = ui::EF_CONTROL_DOWN;
   const int alt = ui::EF_ALT_DOWN;
