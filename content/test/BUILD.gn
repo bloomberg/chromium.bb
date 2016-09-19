@@ -1095,7 +1095,6 @@ test("content_unittests") {
     "../browser/media/session/media_session_controller_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
     "../browser/memory/memory_coordinator_unittest.cc",
-    "../browser/memory/memory_monitor_linux_unittest.cc",
     "../browser/memory/memory_monitor_win_unittest.cc",
     "../browser/memory/test_memory_monitor.cc",
     "../browser/memory/test_memory_monitor.h",
@@ -1319,6 +1318,13 @@ test("content_unittests") {
     "image_decoder_test.h",
     "run_all_unittests.cc",
   ]
+
+  # ChromeOS also defines linux but their memory-monitors conflict.
+  if (is_chromeos) {
+    sources += [ "../browser/memory/memory_monitor_chromeos_unittest.cc" ]
+  } else {
+    sources += [ "../browser/memory/memory_monitor_linux_unittest.cc" ]
+  }
 
   if (is_android || is_linux || is_mac || is_win) {
     data = [

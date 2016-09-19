@@ -867,8 +867,6 @@ source_set("browser") {
     "memory/memory_message_filter.h",
     "memory/memory_monitor.cc",
     "memory/memory_monitor.h",
-    "memory/memory_monitor_linux.cc",
-    "memory/memory_monitor_linux.h",
     "memory/memory_monitor_win.cc",
     "memory/memory_monitor_win.h",
     "memory/memory_pressure_controller_impl.cc",
@@ -1381,6 +1379,19 @@ source_set("browser") {
 
   if (toolkit_views) {
     deps += [ "//ui/events" ]
+  }
+
+  # ChromeOS also defines linux but their memory-monitors conflict.
+  if (is_chromeos) {
+    sources += [
+      "memory/memory_monitor_chromeos.cc",
+      "memory/memory_monitor_chromeos.h",
+    ]
+  } else {
+    sources += [
+      "memory/memory_monitor_linux.cc",
+      "memory/memory_monitor_linux.h",
+    ]
   }
 
   if (!is_win) {
