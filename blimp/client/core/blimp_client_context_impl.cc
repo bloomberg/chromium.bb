@@ -38,8 +38,14 @@ namespace blimp {
 namespace client {
 
 namespace {
+
 const char kDefaultAssignerUrl[] =
     "https://blimp-pa.googleapis.com/v1/assignment";
+
+void DropConnectionOnIOThread(ClientNetworkComponents* net_components) {
+  net_components->GetBrowserConnectionHandler()->DropCurrentConnection();
+}
+
 }  // namespace
 
 // This function is declared in //blimp/client/public/blimp_client_context.h,
@@ -226,6 +232,11 @@ void BlimpClientContextImpl::InitializeSettings() {
     settings_feature_->SetRecordWholeDocument(true);
 }
 
+void BlimpClientContextImpl::DropConnection() {
+  io_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DropConnectionOnIOThread, net_components_.get()));
+}
+
 void BlimpClientContextImpl::CreateIdentitySource() {
   identity_source_ = base::MakeUnique<IdentitySource>(
       delegate_, base::Bind(&BlimpClientContextImpl::OnAuthTokenReceived,
@@ -234,11 +245,7 @@ void BlimpClientContextImpl::CreateIdentitySource() {
 
 void BlimpClientContextImpl::OnImageDecodeError() {
   // Currently we just drop the connection on image decoding error.
-  io_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BrowserConnectionHandler::DropCurrentConnection,
-          base::Unretained(net_components_->GetBrowserConnectionHandler())));
+  DropConnection();
 }
 
 }  // namespace client

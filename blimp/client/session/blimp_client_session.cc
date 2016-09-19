@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -37,6 +38,13 @@
 
 namespace blimp {
 namespace client {
+namespace {
+
+void DropConnectionOnIOThread(ClientNetworkComponents* net_components) {
+  net_components->GetBrowserConnectionHandler()->DropCurrentConnection();
+}
+
+}  // namespace
 
 BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
     : io_thread_("BlimpIOThread"),
@@ -149,16 +157,17 @@ void BlimpClientSession::RegisterFeatures() {
     settings_feature_->SetRecordWholeDocument(true);
 }
 
+void BlimpClientSession::DropConnection() {
+  io_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DropConnectionOnIOThread, net_components_.get()));
+}
+
 void BlimpClientSession::OnConnected() {}
 
 void BlimpClientSession::OnDisconnected(int result) {}
 
 void BlimpClientSession::OnImageDecodeError() {
-  io_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BrowserConnectionHandler::DropCurrentConnection,
-          base::Unretained(net_components_->GetBrowserConnectionHandler())));
+  DropConnection();
 }
 
 TabControlFeature* BlimpClientSession::GetTabControlFeature() const {

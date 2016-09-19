@@ -84,6 +84,10 @@ class BlimpClientContextImpl
   void RegisterFeatures();
   void InitializeSettings();
 
+  // Terminates the active connection held by |net_connections_|.
+  // May be called on any thread.
+  void DropConnection();
+
   // Create IdentitySource which provides user sign in states and OAuth2 token
   // service.
   void CreateIdentitySource();
