@@ -41,11 +41,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice,
   ~BitmapPlatformDevice() override;
 
  protected:
-  // Flushes the Windows device context so that the pixel data can be accessed
-  // directly by Skia. Overridden from SkBaseDevice, this is called when Skia
-  // starts accessing pixel data.
-  const SkBitmap& onAccessBitmap() override;
-
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:

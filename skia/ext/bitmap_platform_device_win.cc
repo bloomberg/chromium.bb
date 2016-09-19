@@ -197,14 +197,6 @@ HDC BitmapPlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
   return GetBitmapDC(transform, clip_bounds);
 }
 
-const SkBitmap& BitmapPlatformDevice::onAccessBitmap() {
-  // FIXME(brettw) OPTIMIZATION: We should only flush if we know a GDI
-  // operation has occurred on our DC.
-  if (IsBitmapDCCreated())
-    GdiFlush();
-  return SkBitmapDevice::onAccessBitmap();
-}
-
 SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
                                                    const SkPaint*) {
   const SkImageInfo& info = cinfo.fInfo;

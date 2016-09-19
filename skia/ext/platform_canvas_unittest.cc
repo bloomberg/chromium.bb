@@ -102,9 +102,10 @@ bool VerifyRoundedRect(const SkCanvas& canvas,
                        int y,
                        int w,
                        int h) {
-  SkBaseDevice* device = canvas.getTopDevice(true);
-  const SkBitmap& bitmap = device->accessBitmap(false);
-  SkAutoLockPixels lock(bitmap);
+  SkPixmap pixmap;
+  ASSERT_TRUE(canvas.peekPixels(&pixmap));
+  SkBitmap bitmap;
+  bitmap.installPixels(pixmap);
 
   // Check corner points first. They should be of canvas_color.
   if (!IsOfColor(bitmap, x, y, canvas_color)) return false;
