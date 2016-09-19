@@ -745,17 +745,11 @@ int get_tx2d_size(TX_SIZE tx_size) { return 1 << ((tx_size + 2) * 2); }
 uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                             TX_TYPE tx_type) {
   switch (tx_size) {
-    case TX_4X4:
-      return fc->non_zero_prob_4X4[tx_type];
-    case TX_8X8:
-      return fc->non_zero_prob_8X8[tx_type];
-    case TX_16X16:
-      return fc->non_zero_prob_16X16[tx_type];
-    case TX_32X32:
-      return fc->non_zero_prob_32X32[tx_type];
-    default:
-      assert(0);
-      return NULL;
+    case TX_4X4: return fc->non_zero_prob_4X4[tx_type];
+    case TX_8X8: return fc->non_zero_prob_8X8[tx_type];
+    case TX_16X16: return fc->non_zero_prob_16X16[tx_type];
+    case TX_32X32: return fc->non_zero_prob_32X32[tx_type];
+    default: assert(0); return NULL;
   }
 }
 
@@ -772,17 +766,11 @@ int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size, TX_TYPE tx_type) {
 uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                               TX_TYPE tx_type) {
   switch (tx_size) {
-    case TX_4X4:
-      return counts->non_zero_count_4X4[tx_type];
-    case TX_8X8:
-      return counts->non_zero_count_8X8[tx_type];
-    case TX_16X16:
-      return counts->non_zero_count_16X16[tx_type];
-    case TX_32X32:
-      return counts->non_zero_count_32X32[tx_type];
-    default:
-      assert(0);
-      return NULL;
+    case TX_4X4: return counts->non_zero_count_4X4[tx_type];
+    case TX_8X8: return counts->non_zero_count_8X8[tx_type];
+    case TX_16X16: return counts->non_zero_count_16X16[tx_type];
+    case TX_32X32: return counts->non_zero_count_32X32[tx_type];
+    default: assert(0); return NULL;
   }
 }
 
