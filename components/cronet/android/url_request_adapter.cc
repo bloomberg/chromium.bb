@@ -210,10 +210,13 @@ void URLRequestAdapter::OnDestroyRequest(URLRequestAdapter* self) {
 }
 
 // static
-void URLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
+void URLRequestAdapter::OnResponseStarted(net::URLRequest* request,
+                                          int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(OnNetworkThread());
-  if (request->status().status() != net::URLRequestStatus::SUCCESS) {
-    OnRequestFailed();
+
+  if (net_error != net::OK) {
+    OnRequestFailed(net_error);
     return;
   }
 
@@ -238,35 +241,37 @@ void URLRequestAdapter::Read() {
     read_buffer_ = new net::IOBufferWithSize(kReadBufferSize);
 
   while(true) {
-    int bytes_read = 0;
-    url_request_->Read(read_buffer_.get(), kReadBufferSize, &bytes_read);
+    int result = url_request_->Read(read_buffer_.get(), kReadBufferSize);
     // If IO is pending, wait for the URLRequest to call OnReadCompleted.
-    if (url_request_->status().is_io_pending())
+    if (result == net::ERR_IO_PENDING)
       return;
     // Stop when request has failed or succeeded.
-    if (!HandleReadResult(bytes_read))
+    if (!HandleReadResult(result))
       return;
   }
 }
 
-bool URLRequestAdapter::HandleReadResult(int bytes_read) {
+bool URLRequestAdapter::HandleReadResult(int result) {
   DCHECK(OnNetworkThread());
-  if (!url_request_->status().is_success()) {
-    OnRequestFailed();
+  if (result < 0) {
+    OnRequestFailed(result);
     return false;
-  } else if (bytes_read == 0) {
+  }
+
+  if (result == 0) {
     OnRequestSucceeded();
     return false;
   }
 
-  total_bytes_read_ += bytes_read;
-  delegate_->OnBytesRead(this, bytes_read);
+  total_bytes_read_ += result;
+  delegate_->OnBytesRead(this, result);
 
   return true;
 }
 
 void URLRequestAdapter::OnReadCompleted(net::URLRequest* request,
                                         int bytes_read) {
+  DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
   if (!HandleReadResult(bytes_read))
     return;
 
@@ -299,15 +304,16 @@ void URLRequestAdapter::OnRequestSucceeded() {
   OnRequestCompleted();
 }
 
-void URLRequestAdapter::OnRequestFailed() {
+void URLRequestAdapter::OnRequestFailed(int net_error) {
+  DCHECK_LE(net_error, 0);
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(OnNetworkThread());
   if (canceled_) {
     return;
   }
 
-  error_code_ = url_request_->status().error();
-  VLOG(1) << "Request failed with status: " << url_request_->status().status()
-          << " and error: " << net::ErrorToString(error_code_);
+  error_code_ = net_error;
+  VLOG(1) << "Request failed with error: " << net::ErrorToString(error_code_);
   OnRequestCompleted();
 }
 

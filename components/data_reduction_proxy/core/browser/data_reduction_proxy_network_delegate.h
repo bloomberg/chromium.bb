@@ -116,7 +116,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // that the original content length of the response could not be determined.
   void CalculateAndRecordDataUsage(const net::URLRequest& request,
                                    DataReductionProxyRequestType request_type,
-                                   int64_t original_content_length);
+                                   int64_t original_content_length,
+                                   int net_error);
 
   // Posts to the UI thread to UpdateContentLengthPrefs in the data reduction
   // proxy metrics and updates |received_content_length_| and

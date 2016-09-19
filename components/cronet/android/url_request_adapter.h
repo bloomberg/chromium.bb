@@ -124,7 +124,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   bool GetWasCached() const;
 
   // net::URLRequest::Delegate implementation:
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
@@ -138,7 +138,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   void OnInitiateConnection();
   void OnCancelRequest();
   void OnRequestSucceeded();
-  void OnRequestFailed();
+  void OnRequestFailed(int net_error);
   void OnRequestCompleted();
   void OnAppendChunk(const std::unique_ptr<char[]> bytes,
                      int bytes_len,
@@ -148,7 +148,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
 
   // Handles synchronous or asynchronous read result, calls |delegate_| with
   // bytes read and returns true unless request has succeeded or failed.
-  bool HandleReadResult(int bytes_read);
+  bool HandleReadResult(int result);
 
   URLRequestContextAdapter* context_;
   scoped_refptr<URLRequestAdapterDelegate> delegate_;

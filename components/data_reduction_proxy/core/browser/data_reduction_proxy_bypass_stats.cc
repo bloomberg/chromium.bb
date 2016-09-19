@@ -117,7 +117,9 @@ DataReductionProxyBypassStats::~DataReductionProxyBypassStats() {
 }
 
 void DataReductionProxyBypassStats::OnUrlRequestCompleted(
-    const net::URLRequest* request, bool started) {
+    const net::URLRequest* request,
+    bool started,
+    int net_error) {
   DataReductionProxyTypeInfo proxy_info;
   // Ignore requests that did not use the data reduction proxy. The check for
   // LOAD_BYPASS_PROXY is necessary because the proxy_server() in the |request|
@@ -126,7 +128,7 @@ void DataReductionProxyBypassStats::OnUrlRequestCompleted(
   if (data_reduction_proxy_config_->WasDataReductionProxyUsed(request,
                                                               &proxy_info) &&
       (request->load_flags() & net::LOAD_BYPASS_PROXY) == 0 &&
-      request->status().status() == net::URLRequestStatus::SUCCESS) {
+      net_error == net::OK) {
     successful_requests_through_proxy_count_++;
     NotifyUnavailabilityIfChanged();
 

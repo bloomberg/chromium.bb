@@ -179,7 +179,7 @@ TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
 
     bypass_stats->OnProxyFallback(fallback_proxy_server,
                                   net::ERR_PROXY_CONNECTION_FAILED);
-    bypass_stats->OnUrlRequestCompleted(url_request(), false);
+    bypass_stats->OnUrlRequestCompleted(url_request(), false, net::OK);
     RunUntilIdle();
 
     EXPECT_EQ(test_case.is_unreachable, IsUnreachable());
@@ -203,7 +203,7 @@ TEST_F(DataReductionProxyBypassStatsTest, ProxyUnreachableThenReachable) {
   EXPECT_TRUE(IsUnreachable());
 
   // proxy succeeds
-  bypass_stats->OnUrlRequestCompleted(url_request(), false);
+  bypass_stats->OnUrlRequestCompleted(url_request(), false, net::OK);
   RunUntilIdle();
   EXPECT_FALSE(IsUnreachable());
 }
@@ -219,7 +219,7 @@ TEST_F(DataReductionProxyBypassStatsTest, ProxyReachableThenUnreachable) {
       .WillRepeatedly(testing::Return(true));
 
   // Proxy succeeds.
-  bypass_stats->OnUrlRequestCompleted(url_request(), false);
+  bypass_stats->OnUrlRequestCompleted(url_request(), false, net::OK);
   RunUntilIdle();
   EXPECT_FALSE(IsUnreachable());
 
@@ -499,7 +499,8 @@ TEST_F(DataReductionProxyBypassStatsTest, SuccessfulRequestCompletion) {
         .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
                                        Return(test.was_proxy_used)));
 
-    bypass_stats->OnUrlRequestCompleted(fake_request.get(), false);
+    bypass_stats->OnUrlRequestCompleted(fake_request.get(), false,
+                                        test.net_error);
 
     if (test.was_proxy_used && !test.is_load_bypass_proxy &&
         test.net_error == net::OK) {

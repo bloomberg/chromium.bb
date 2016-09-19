@@ -57,7 +57,9 @@ class DataReductionProxyBypassStats
 
   // Callback intended to be called from |DataReductionProxyNetworkDelegate|
   // when a request completes. This method is used to gather bypass stats.
-  void OnUrlRequestCompleted(const net::URLRequest* request, bool started);
+  void OnUrlRequestCompleted(const net::URLRequest* request,
+                             bool started,
+                             int net_error);
 
   // Records the last bypass reason to |bypass_type_| and sets
   // |triggering_request_| to true. A triggering request is the first request to

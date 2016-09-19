@@ -196,7 +196,6 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
   DCHECK(context_->IsOnNetworkThread());
-  DCHECK(request->status().is_success());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onRedirectReceived(
       env, owner_.obj(),
@@ -239,10 +238,15 @@ void CronetURLRequestAdapter::OnSSLCertificateError(
       request->GetTotalReceivedBytes());
 }
 
-void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
+void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request,
+                                                int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(context_->IsOnNetworkThread());
-  if (MaybeReportError(request))
+
+  if (net_error != net::OK) {
+    ReportError(request, net_error);
     return;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onResponseStarted(
       env, owner_.obj(), request->GetResponseCode(),
@@ -261,9 +265,17 @@ void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
 void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
                                               int bytes_read) {
   DCHECK(context_->IsOnNetworkThread());
-  if (MaybeReportError(request))
+
+  if (bytes_read < 0) {
+    ReportError(request, bytes_read);
     return;
-  if (bytes_read != 0) {
+  }
+
+  if (bytes_read == 0) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    cronet::Java_CronetUrlRequest_onSucceeded(
+        env, owner_.obj(), url_request_->GetTotalReceivedBytes());
+  } else {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_CronetUrlRequest_onReadCompleted(
         env, owner_.obj(), read_buffer_->byte_buffer(), bytes_read,
@@ -272,10 +284,6 @@ void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
     // Free the read buffer. This lets the Java ByteBuffer be freed, if the
     // embedder releases it, too.
     read_buffer_ = nullptr;
-  } else {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_CronetUrlRequest_onSucceeded(
-        env, owner_.obj(), url_request_->GetTotalReceivedBytes());
   }
 }
 
@@ -344,13 +352,12 @@ void CronetURLRequestAdapter::ReadDataOnNetworkThread(
 
   read_buffer_ = read_buffer;
 
-  int bytes_read = 0;
-  url_request_->Read(read_buffer_.get(), buffer_size, &bytes_read);
+  int result = url_request_->Read(read_buffer_.get(), buffer_size);
   // If IO is pending, wait for the URLRequest to call OnReadCompleted.
-  if (url_request_->status().is_io_pending())
+  if (result == net::ERR_IO_PENDING)
     return;
 
-  OnReadCompleted(url_request_.get(), bytes_read);
+  OnReadCompleted(url_request_.get(), result);
 }
 
 void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
@@ -362,12 +369,12 @@ void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
   delete this;
 }
 
-bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
-  DCHECK_NE(net::URLRequestStatus::IO_PENDING, url_request_->status().status());
+void CronetURLRequestAdapter::ReportError(net::URLRequest* request,
+                                          int net_error) const {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+  DCHECK_LT(net_error, 0);
   DCHECK_EQ(request, url_request_.get());
-  if (url_request_->status().is_success())
-    return false;
-  int net_error = url_request_->status().error();
+
   net::NetErrorDetails net_error_details;
   url_request_->PopulateNetErrorDetails(&net_error_details);
   VLOG(1) << "Error " << net::ErrorToString(net_error)
@@ -378,7 +385,6 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
       net_error_details.quic_connection_error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
-  return true;
 }
 
 net::URLRequest* CronetURLRequestAdapter::GetURLRequestForTesting() {

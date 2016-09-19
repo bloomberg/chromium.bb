@@ -127,14 +127,14 @@ int64_t ScaleByteCountByRatio(int64_t byte_count,
 
 // Calculates the effective original content length of the |request|, accounting
 // for partial responses if necessary.
-int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
+int64_t CalculateEffectiveOCL(const net::URLRequest& request, int net_error) {
   int64_t original_content_length_from_header =
       request.response_headers()->GetInt64HeaderValue(
           "x-original-content-length");
 
   if (original_content_length_from_header < 0)
     return request.received_response_content_length();
-  if (request.status().is_success())
+  if (net_error == net::OK)
     return original_content_length_from_header;
 
   int64_t content_length_from_header =
@@ -154,14 +154,15 @@ int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
 // estimates how many bytes would have been received if the response had been
 // received directly from the origin using HTTP/1.1 with a content length of
 // |adjusted_original_content_length|.
-int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request) {
+int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
+                                      int net_error) {
   if (request.was_cached() || !request.response_headers())
     return request.GetTotalReceivedBytes();
 
   // TODO(sclittle): Remove headers added by Data Reduction Proxy when computing
   // original size. http://crbug/535701.
   return request.response_headers()->raw_headers().size() +
-         CalculateEffectiveOCL(request);
+         CalculateEffectiveOCL(request, net_error);
 }
 
 }  // namespace
@@ -298,8 +299,13 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     net::URLRequest* request,
     bool started) {
   DCHECK(request);
+  // TODO(maksims): remove this once OnCompletedInternal() has net_error in
+  // arguments.
+  int net_error = request->status().error();
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   if (data_reduction_proxy_bypass_stats_)
-    data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started);
+    data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started,
+                                                              net_error);
 
   net::HttpRequestHeaders request_headers;
   if (data_reduction_proxy_io_data_ && request->response_headers() &&
@@ -338,7 +344,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                 "x-original-content-length")
           : -1;
 
-  CalculateAndRecordDataUsage(*request, request_type, original_content_length);
+  CalculateAndRecordDataUsage(*request, request_type, original_content_length,
+                              net_error);
 
   RecordContentLength(*request, request_type, original_content_length);
 }
@@ -346,7 +353,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
     const net::URLRequest& request,
     DataReductionProxyRequestType request_type,
-    int64_t original_content_length) {
+    int64_t original_content_length,
+    int net_error) {
   DCHECK_LE(-1, original_content_length);
   int64_t data_used = request.GetTotalReceivedBytes();
 
@@ -355,7 +363,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
   int64_t original_size = data_used;
 
   if (request_type == VIA_DATA_REDUCTION_PROXY)
-    original_size = EstimateOriginalReceivedBytes(request);
+    original_size = EstimateOriginalReceivedBytes(request, net_error);
 
   std::string mime_type;
   if (request.response_headers())

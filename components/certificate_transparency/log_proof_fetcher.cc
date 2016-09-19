@@ -47,7 +47,7 @@ class LogFetcher : public net::URLRequest::Delegate {
   ~LogFetcher() override {}
 
   // net::URLRequest::Delegate
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   const std::string& assembled_response() const { return assembled_response_; }
@@ -57,7 +57,7 @@ class LogFetcher : public net::URLRequest::Delegate {
   // Returns true if another read should be started, false if the read
   // failed completely or we have to wait for OnResponseStarted to
   // be called.
-  bool HandleReadResult(int bytes_read);
+  bool HandleReadResult(int result);
 
   // Calls URLRequest::Read on |request| repeatedly, until HandleReadResult
   // indicates it should no longer be called. Usually this would be when there
@@ -102,12 +102,13 @@ LogFetcher::LogFetcher(net::URLRequestContext* request_context,
   url_request_->Start();
 }
 
-void LogFetcher::OnResponseStarted(net::URLRequest* request) {
+void LogFetcher::OnResponseStarted(net::URLRequest* request, int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK_EQ(url_request_.get(), request);
   int http_response_code = request->GetResponseCode();
 
-  if (!request->status().is_success()) {
-    InvokeFailureCallback(request->status().error(), http_response_code);
+  if (net_error != net::OK) {
+    InvokeFailureCallback(net_error, http_response_code);
     return;
   }
 
@@ -133,53 +134,43 @@ void LogFetcher::OnReadCompleted(net::URLRequest* request, int bytes_read) {
     StartNextReadLoop();
 }
 
-bool LogFetcher::HandleReadResult(int bytes_read) {
-  // Start by checking for an error condition.
-  // If there are errors, invoke the failure callback and clean up the
-  // request.
-  if (!url_request_->status().is_success() || bytes_read < 0) {
-    int net_error = url_request_->status().error();
-    if (net_error == net::OK)
-      net_error = net::URLRequestStatus::FAILED;
+bool LogFetcher::HandleReadResult(int result) {
+  if (result == net::ERR_IO_PENDING)
+    return false;
 
-    InvokeFailureCallback(net_error, net::HTTP_OK);
+  if (result < 0) {
+    InvokeFailureCallback(result, net::HTTP_OK);
     return false;
   }
 
-  // Not an error, but no data available, so wait for OnReadCompleted
-  // callback.
-  if (url_request_->status().is_io_pending())
-    return false;
-
   // Nothing more to read from the stream - finish handling the response.
-  if (bytes_read == 0) {
+  if (result == 0) {
     RequestComplete();
     return false;
   }
 
   // Data is available, collect it and indicate another read is needed.
-  DCHECK_GE(bytes_read, 0);
-  // |bytes_read| is non-negative at this point, casting to size_t should be
+  DCHECK_GE(result, 0);
+  // |result| is non-negative at this point, casting to size_t should be
   // safe.
-  if (base::checked_cast<size_t>(bytes_read) >
+  if (base::checked_cast<size_t>(result) >
           LogProofFetcher::kMaxLogResponseSizeInBytes ||
       LogProofFetcher::kMaxLogResponseSizeInBytes <
-          (assembled_response_.size() + bytes_read)) {
+          (assembled_response_.size() + result)) {
     // Log response is too big, invoke the failure callback.
     InvokeFailureCallback(net::ERR_FILE_TOO_BIG, net::HTTP_OK);
     return false;
   }
 
-  assembled_response_.append(response_buffer_->data(), bytes_read);
+  assembled_response_.append(response_buffer_->data(), result);
   return true;
 }
 
 void LogFetcher::StartNextReadLoop() {
   bool continue_reading = true;
   while (continue_reading) {
-    int read_bytes = 0;
-    url_request_->Read(response_buffer_.get(), response_buffer_->size(),
-                       &read_bytes);
+    int read_bytes =
+        url_request_->Read(response_buffer_.get(), response_buffer_->size());
     continue_reading = HandleReadResult(read_bytes);
   }
 }
