@@ -1370,10 +1370,11 @@ class PreCQLauncherStage(SyncStage):
 
     use_buildbucket = False
     config_buildbucket_id_map = {}
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      # use buildbucket to launch trybots.
-      cmd += ['--use-buildbucket']
-      use_buildbucket = True
+    # TODO: Tempoary workaround for crbug.com/648310.
+    # if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+    #   # use buildbucket to launch trybots.
+    #   cmd += ['--use-buildbucket']
+    #   use_buildbucket = True
 
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
