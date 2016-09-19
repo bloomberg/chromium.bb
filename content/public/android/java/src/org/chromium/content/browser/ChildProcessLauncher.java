@@ -33,6 +33,7 @@ import org.chromium.content.app.DownloadProcessService;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 

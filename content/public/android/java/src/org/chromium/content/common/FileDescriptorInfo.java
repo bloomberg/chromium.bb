@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.common;
 
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.UsedByReflection;
 
 /**
  * Parcelable class that contains file descriptor and file region information to
  * be passed to child processes.
  */
 @MainDex
+@UsedByReflection("child_process_launcher_android.cc")
 public final class FileDescriptorInfo implements Parcelable {
     public final int mId;
     public final ParcelFileDescriptor mFd;
     public final long mOffset;
     public final long mSize;
 
-    FileDescriptorInfo(int id, ParcelFileDescriptor fd, long offset, long size) {
+    public FileDescriptorInfo(int id, ParcelFileDescriptor fd, long offset, long size) {
         mId = id;
         mFd = fd;
         mOffset = offset;

@@ -28,6 +28,7 @@ import java.util.UUID;
  * sessions for a single MediaSourcePlayer.
  */
 @JNINamespace("media")
+@MainDex
 @SuppressLint("WrongConstant")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class MediaDrmBridge {

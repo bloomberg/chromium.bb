@@ -51,8 +51,6 @@ android_library("content_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/accessibility:ui_accessibility_java",
     "//ui/android:ui_java",
-
-    #"//content:content_common",
   ]
 
   if (enable_webvr) {
@@ -120,7 +118,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ContextualSearchClient.java",
     "java/src/org/chromium/content/browser/DeviceSensors.java",
     "java/src/org/chromium/content/browser/DeviceUtils.java",
-    "java/src/org/chromium/content/browser/FileDescriptorInfo.java",
     "java/src/org/chromium/content/browser/FloatingWebActionModeCallback.java",
     "java/src/org/chromium/content/browser/InterfaceProvider.java",
     "java/src/org/chromium/content/browser/InterfaceRegistrar.java",
@@ -189,6 +186,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
     "java/src/org/chromium/content/common/ContentSwitches.java",
+    "java/src/org/chromium/content/common/FileDescriptorInfo.java",
     "java/src/org/chromium/content/common/SurfaceWrapper.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotCallback.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;

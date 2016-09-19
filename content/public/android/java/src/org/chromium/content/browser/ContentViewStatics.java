@@ -4,13 +4,11 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.annotations.MainDex;
 import org.chromium.net.ProxyChangeListener;
 
 /**
  * Implementations of various static methods.
  */
-@MainDex
 public class ContentViewStatics {
 
     /**

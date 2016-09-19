@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -68,8 +69,11 @@ bool EnsureJniRegistered(JNIEnv* env) {
     if (!content::android::RegisterCommonJni(env))
       return false;
 
-    if (!content::android::RegisterBrowserJni(env))
-      return false;
+    if (base::android::GetLibraryProcessType(env) ==
+        base::android::PROCESS_BROWSER) {
+      if (!content::android::RegisterBrowserJni(env))
+        return false;
+    }
 
     if (!content::android::RegisterAppJni(env))
       return false;

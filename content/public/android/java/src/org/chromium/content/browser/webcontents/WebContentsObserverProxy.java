@@ -10,7 +10,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -19,7 +18,6 @@ import org.chromium.content_public.common.MediaMetadata;
  * avoiding redundant JNI-related work when there are multiple Java-based observers.
  */
 @JNINamespace("content")
-@MainDex
 class WebContentsObserverProxy extends WebContentsObserver {
     private long mNativeWebContentsObserverProxy;
     private final ObserverList<WebContentsObserver> mObservers;

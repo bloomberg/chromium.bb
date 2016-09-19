@@ -20,6 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.app.ChromiumLinkerParams;
+import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
