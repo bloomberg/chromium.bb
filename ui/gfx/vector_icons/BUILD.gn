@@ -55,7 +55,6 @@ action("aggregate_vector_icons") {
     "folder_supervised.icon",
     "fullscreen.icon",
     "globe.icon",
-    "help.icon",
     "help_outline.icon",
     "image.icon",
     "incognito.1x.icon",

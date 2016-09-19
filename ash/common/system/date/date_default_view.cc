@@ -4,6 +4,7 @@
 
 #include "ash/common/system/date/date_default_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/date/date_view.h"
@@ -12,10 +13,12 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/fill_layout.h"
@@ -63,10 +66,17 @@ DateDefaultView::DateDefaultView(LoginStatus login)
 
   date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
 
-  help_button_ = new TrayPopupHeaderButton(
-      this, IDR_AURA_UBER_TRAY_HELP, IDR_AURA_UBER_TRAY_HELP,
-      IDR_AURA_UBER_TRAY_HELP_HOVER, IDR_AURA_UBER_TRAY_HELP_HOVER,
-      IDS_ASH_STATUS_TRAY_HELP);
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    gfx::ImageSkia help_icon =
+        gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
+    help_button_ =
+        new TrayPopupHeaderButton(this, help_icon, IDS_ASH_STATUS_TRAY_HELP);
+  } else {
+    help_button_ = new TrayPopupHeaderButton(
+        this, IDR_AURA_UBER_TRAY_HELP, IDR_AURA_UBER_TRAY_HELP,
+        IDR_AURA_UBER_TRAY_HELP_HOVER, IDR_AURA_UBER_TRAY_HELP_HOVER,
+        IDS_ASH_STATUS_TRAY_HELP);
+  }
   if (base::i18n::IsRTL() &&
       base::i18n::GetConfiguredLocale() == kHebrewLocale) {
     // The asset for the help button is a question mark '?'. Normally this asset

@@ -7,6 +7,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 namespace ash {
 
@@ -87,7 +88,7 @@ const int kMessageCenterBubblePadding = 4;
 const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
-const SkColor kMenuIconColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+const SkColor kMenuIconColor = gfx::kChromeIconGrey;
 
 const int kHitRegionPadding = 4;
 const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);

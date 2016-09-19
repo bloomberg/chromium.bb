@@ -18,6 +18,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/metrics/histogram_macros.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -96,10 +97,11 @@ class TitleView : public views::View, public views::ButtonListener {
     AddChildView(text_label);
     box_layout->SetFlexForView(text_label, 1);
 
-    gfx::ImageSkia settings_icon = CreateVectorIcon(
-        gfx::VectorIconId::SETTINGS, kIconSize, gfx::kChromeIconGrey);
-    gfx::ImageSkia help_icon = CreateVectorIcon(
-        gfx::VectorIconId::HELP, kIconSize, gfx::kChromeIconGrey);
+    gfx::ImageSkia settings_icon = CreateVectorIcon(gfx::VectorIconId::SETTINGS,
+                                                    kIconSize, kMenuIconColor);
+    gfx::ImageSkia help_icon =
+        CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
+    DCHECK_EQ(kIconSize, help_icon.width());
 
     help_button_ = new ash::TrayPopupHeaderButton(this, help_icon,
                                                   IDS_ASH_STATUS_TRAY_HELP);
