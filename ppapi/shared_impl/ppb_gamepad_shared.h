@@ -25,6 +25,30 @@ struct WebKitGamepadButton {
   double value;
 };
 
+struct WebKitGamepadVector {
+  bool notNull;
+  float x, y, z;
+};
+
+struct WebKitGamepadQuaternion {
+  bool notNull;
+  float x, y, z, w;
+};
+
+struct WebKitGamepadPose {
+  bool notNull;
+
+  bool hasOrientation;
+  bool hasPosition;
+
+  WebKitGamepadQuaternion orientation;
+  WebKitGamepadVector position;
+  WebKitGamepadVector angularVelocity;
+  WebKitGamepadVector linearVelocity;
+  WebKitGamepadVector angularAcceleration;
+  WebKitGamepadVector linearAcceleration;
+};
+
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
 // has some compile asserts to validate this.
 struct WebKitGamepad {
@@ -57,6 +81,8 @@ struct WebKitGamepad {
 
   // Mapping type (for example "standard")
   base::char16 mapping[kMappingLengthCap];
+
+  WebKitGamepadPose pose;
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit

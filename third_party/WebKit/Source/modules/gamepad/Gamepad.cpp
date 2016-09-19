@@ -58,9 +58,24 @@ void Gamepad::setButtons(unsigned count, const WebGamepadButton* data)
     }
 }
 
+void Gamepad::setPose(const WebGamepadPose& pose)
+{
+    if (!pose.notNull) {
+        if (m_pose)
+            m_pose = nullptr;
+        return;
+    }
+
+    if (!m_pose)
+        m_pose = GamepadPose::create();
+
+    m_pose->setPose(pose);
+}
+
 DEFINE_TRACE(Gamepad)
 {
     visitor->trace(m_buttons);
+    visitor->trace(m_pose);
 }
 
 } // namespace blink

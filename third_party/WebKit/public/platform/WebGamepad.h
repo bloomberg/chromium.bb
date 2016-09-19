@@ -49,6 +49,48 @@ public:
     double value;
 };
 
+class WebGamepadVector {
+public:
+    WebGamepadVector()
+        : notNull(false)
+    {
+    }
+
+    bool notNull;
+    float x, y, z;
+};
+
+class WebGamepadQuaternion {
+public:
+    WebGamepadQuaternion()
+        : notNull(false)
+    {
+    }
+
+    bool notNull;
+    float x, y, z, w;
+};
+
+class WebGamepadPose {
+public:
+    WebGamepadPose()
+        : notNull(false)
+    {
+    }
+
+    bool notNull;
+
+    bool hasOrientation;
+    bool hasPosition;
+
+    WebGamepadQuaternion orientation;
+    WebGamepadVector position;
+    WebGamepadVector angularVelocity;
+    WebGamepadVector linearVelocity;
+    WebGamepadVector angularAcceleration;
+    WebGamepadVector linearAcceleration;
+};
+
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
 // also WebGamepads.h.
@@ -93,9 +135,11 @@ public:
 
     // Mapping type (for example "standard")
     WebUChar mapping[mappingLengthCap];
+
+    WebGamepadPose pose;
 };
 
-static_assert(sizeof(WebGamepad) == 753, "WebGamepad has wrong size");
+static_assert(sizeof(WebGamepad) == 838, "WebGamepad has wrong size");
 
 #pragma pack(pop)
 

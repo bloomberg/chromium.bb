@@ -23,6 +23,7 @@
  * DAMAGE.
  */
 
+// https://w3c.github.io/gamepad/#gamepad-interface
 interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;
@@ -31,4 +32,5 @@ interface Gamepad {
     readonly attribute DOMString mapping;
     readonly attribute double[] axes;
     readonly attribute GamepadButton[] buttons;
+    [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadPose? pose;
 };

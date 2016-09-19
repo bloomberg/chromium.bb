@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/gamepad/GamepadButton.h"
+#include "modules/gamepad/GamepadPose.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
 #include "wtf/Vector.h"
@@ -67,6 +68,9 @@ public:
     const GamepadButtonVector& buttons() const { return m_buttons; }
     void setButtons(unsigned count, const WebGamepadButton* data);
 
+    GamepadPose* pose() const { return m_pose; }
+    void setPose(const WebGamepadPose&);
+
     DECLARE_TRACE();
 
 private:
@@ -79,6 +83,7 @@ private:
     String m_mapping;
     DoubleVector m_axes;
     GamepadButtonVector m_buttons;
+    Member<GamepadPose> m_pose;
 };
 
 } // namespace blink
