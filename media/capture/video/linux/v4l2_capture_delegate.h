@@ -55,6 +55,8 @@ class V4L2CaptureDelegate final
                         std::unique_ptr<VideoCaptureDevice::Client> client);
   void StopAndDeAllocate();
 
+  void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback);
+
   void SetRotation(int rotation);
 
  private:
@@ -66,6 +68,11 @@ class V4L2CaptureDelegate final
   bool MapAndQueueBuffer(int index);
 
   void DoCapture();
+
+  class BufferTracker;
+  mojom::BlobPtr GetPhotoBlob(
+      const scoped_refptr<BufferTracker>& buffer_tracker,
+      const uint32_t bytesused);
 
   void SetErrorState(const tracked_objects::Location& from_here,
                      const std::string& reason);
@@ -80,8 +87,9 @@ class V4L2CaptureDelegate final
   std::unique_ptr<VideoCaptureDevice::Client> client_;
   base::ScopedFD device_fd_;
 
+  std::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
+
   // Vector of BufferTracker to keep track of mmap()ed pointers and their use.
-  class BufferTracker;
   std::vector<scoped_refptr<BufferTracker>> buffer_tracker_pool_;
 
   bool is_capturing_;

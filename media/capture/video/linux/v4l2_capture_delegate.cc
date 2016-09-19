@@ -17,6 +17,9 @@
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
+#include "third_party/libyuv/include/libyuv.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace media {
 
@@ -321,6 +324,12 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   client_.reset();
 }
 
+void V4L2CaptureDelegate::TakePhoto(
+    VideoCaptureDevice::TakePhotoCallback callback) {
+  DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
+  take_photo_callbacks_.push(std::move(callback));
+}
+
 void V4L2CaptureDelegate::SetRotation(int rotation) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   DCHECK(rotation >= 0 && rotation < 360 && rotation % 90 == 0);
@@ -401,6 +410,16 @@ void V4L2CaptureDelegate::DoCapture() {
         buffer_tracker->start(), buffer_tracker->payload_size(),
         capture_format_, rotation_, base::TimeTicks::Now(), timestamp);
 
+    while (!take_photo_callbacks_.empty()) {
+      VideoCaptureDevice::TakePhotoCallback cb =
+          std::move(take_photo_callbacks_.front());
+      take_photo_callbacks_.pop();
+
+      mojom::BlobPtr blob = GetPhotoBlob(buffer_tracker, buffer.bytesused);
+      if (blob)
+        cb.Run(std::move(blob));
+    }
+
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
       SetErrorState(FROM_HERE, "Failed to enqueue capture buffer");
       return;
@@ -409,6 +428,59 @@ void V4L2CaptureDelegate::DoCapture() {
 
   v4l2_task_runner_->PostTask(
       FROM_HERE, base::Bind(&V4L2CaptureDelegate::DoCapture, this));
+}
+
+mojom::BlobPtr V4L2CaptureDelegate::GetPhotoBlob(
+    const scoped_refptr<BufferTracker>& buffer_tracker,
+    const uint32_t bytesused) {
+  uint32 src_format;
+
+  if (capture_format_.pixel_format == VideoPixelFormat::PIXEL_FORMAT_MJPEG) {
+    mojom::BlobPtr blob = mojom::Blob::New();
+    blob->data.resize(bytesused);
+    memcpy(blob->data.data(), buffer_tracker->start(), bytesused);
+    blob->mime_type = "image/jpeg";
+    return blob;
+  } else if (capture_format_.pixel_format ==
+             VideoPixelFormat::PIXEL_FORMAT_UYVY) {
+    src_format = libyuv::FOURCC_UYVY;
+  } else if (capture_format_.pixel_format ==
+             VideoPixelFormat::PIXEL_FORMAT_YUY2) {
+    src_format = libyuv::FOURCC_YUY2;
+  } else if (capture_format_.pixel_format ==
+             VideoPixelFormat::PIXEL_FORMAT_I420) {
+    src_format = libyuv::FOURCC_I420;
+  } else if (capture_format_.pixel_format ==
+             VideoPixelFormat::PIXEL_FORMAT_RGB24) {
+    src_format = libyuv::FOURCC_24BG;
+  } else {
+    return nullptr;
+  }
+
+  std::unique_ptr<uint8_t[]> dst_argb(new uint8_t[VideoFrame::AllocationSize(
+      PIXEL_FORMAT_ARGB, capture_format_.frame_size)]);
+  if (ConvertToARGB(buffer_tracker->start(), bytesused, dst_argb.get(),
+                    capture_format_.frame_size.width() * 4, 0 /* crop_x_pos */,
+                    0 /* crop_y_pos */, capture_format_.frame_size.width(),
+                    capture_format_.frame_size.height(),
+                    capture_format_.frame_size.width(),
+                    capture_format_.frame_size.height(),
+                    libyuv::RotationMode::kRotate0, src_format) != 0) {
+    return nullptr;
+  }
+
+  mojom::BlobPtr blob = mojom::Blob::New();
+  const gfx::PNGCodec::ColorFormat codec_color_format =
+      (kN32_SkColorType == kRGBA_8888_SkColorType) ? gfx::PNGCodec::FORMAT_RGBA
+                                                   : gfx::PNGCodec::FORMAT_BGRA;
+  const bool result = gfx::PNGCodec::Encode(
+      dst_argb.get(), codec_color_format, capture_format_.frame_size,
+      capture_format_.frame_size.width() * 4, true /* discard_transparency */,
+      std::vector<gfx::PNGCodec::Comment>(), &blob->data);
+  DCHECK(result);
+
+  blob->mime_type = "image/png";
+  return blob;
 }
 
 void V4L2CaptureDelegate::SetErrorState(

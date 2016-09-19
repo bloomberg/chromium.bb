@@ -39,6 +39,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
  protected:
   void SetRotation(int rotation);

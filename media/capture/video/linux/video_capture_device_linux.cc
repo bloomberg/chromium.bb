@@ -79,7 +79,16 @@ void VideoCaptureDeviceLinux::StopAndDeAllocate() {
       base::Bind(&V4L2CaptureDelegate::StopAndDeAllocate, capture_impl_));
   v4l2_thread_.Stop();
 
-  capture_impl_ = NULL;
+  capture_impl_ = nullptr;
+}
+
+void VideoCaptureDeviceLinux::TakePhoto(TakePhotoCallback callback) {
+  DCHECK(capture_impl_);
+  if (!v4l2_thread_.IsRunning())
+    return;
+  v4l2_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&V4L2CaptureDelegate::TakePhoto, capture_impl_,
+                            base::Passed(&callback)));
 }
 
 void VideoCaptureDeviceLinux::SetRotation(int rotation) {

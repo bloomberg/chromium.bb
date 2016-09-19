@@ -64,7 +64,7 @@
 // http://crbug.com/94134 http://crbug.com/137260 http://crbug.com/417824
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
-#define MAYBE_TakePhoto DISABLED_TakePhoto
+#define MAYBE_TakePhoto TakePhoto
 #else
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
@@ -142,15 +142,24 @@ class MockImageCaptureClient : public base::RefCounted<MockImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnPhotoTaken(mojom::BlobPtr blob) {
-    EXPECT_STREQ("image/jpeg", blob->mime_type.c_str());
-    ASSERT_GT(blob->data.size(), 4u);
-    // Check some bytes that univocally identify |data| as a JPEG File.
-    // https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format#File_format_structure
-    EXPECT_EQ(0xFF, blob->data[0]);  // First SOI byte
-    EXPECT_EQ(0xD8, blob->data[1]);  // Second SOI byte
-    EXPECT_EQ(0xFF, blob->data[2]);  // First JFIF-APP0 byte
-    EXPECT_EQ(0xE0, blob->data[3] & 0xF0);  // Second JFIF-APP0/APP1 byte
-    OnCorrectPhotoTaken();
+    if (strcmp("image/jpeg", blob->mime_type.c_str()) == 0) {
+      ASSERT_GT(blob->data.size(), 4u);
+      // Check some bytes that univocally identify |data| as a JPEG File.
+      // https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format#File_format_structure
+      EXPECT_EQ(0xFF, blob->data[0]);         // First SOI byte
+      EXPECT_EQ(0xD8, blob->data[1]);         // Second SOI byte
+      EXPECT_EQ(0xFF, blob->data[2]);         // First JFIF-APP0 byte
+      EXPECT_EQ(0xE0, blob->data[3] & 0xF0);  // Second JFIF-APP0 byte
+      OnCorrectPhotoTaken();
+    } else if (strcmp("image/png", blob->mime_type.c_str()) == 0) {
+      ASSERT_GT(blob->data.size(), 4u);
+      EXPECT_EQ('P', blob->data[1]);
+      EXPECT_EQ('N', blob->data[2]);
+      EXPECT_EQ('G', blob->data[3]);
+      OnCorrectPhotoTaken();
+    } else {
+      ADD_FAILURE() << "Photo format should be jpeg or png";
+    }
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   MOCK_METHOD1(OnTakePhotoFailure,
