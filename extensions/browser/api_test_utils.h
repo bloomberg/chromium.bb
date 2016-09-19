@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/manifest.h"
-
-class UIThreadExtensionFunction;
 
 namespace base {
 class DictionaryValue;
@@ -33,6 +33,33 @@ class ExtensionFunctionDispatcher;
 // TODO(ckehoe): Accept args as std::unique_ptr<base::Value>,
 // and migrate existing users to the new API.
 namespace api_test_utils {
+
+// A helper class to handle waiting for a function response.
+class SendResponseHelper {
+ public:
+  explicit SendResponseHelper(UIThreadExtensionFunction* function);
+  ~SendResponseHelper();
+
+  bool has_response() { return response_.get() != nullptr; }
+
+  // Asserts a response has been posted (has_response()) and returns the value.
+  bool GetResponse();
+
+  // Waits until a response is posted.
+  void WaitForResponse();
+
+ private:
+  // Response handler.
+  void OnResponse(ExtensionFunction::ResponseType response,
+                  const base::ListValue& results,
+                  const std::string& error,
+                  functions::HistogramValue histogram_value);
+
+  base::RunLoop run_loop_;
+  std::unique_ptr<bool> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendResponseHelper);
+};
 
 enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
 

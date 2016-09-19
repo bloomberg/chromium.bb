@@ -31,49 +31,37 @@ std::unique_ptr<base::ListValue> ParseList(const std::string& data) {
   return base::ListValue::From(ParseJSON(data));
 }
 
-// This helps us be able to wait until an UIThreadExtensionFunction calls
-// SendResponse.
-class SendResponseDelegate
-    : public UIThreadExtensionFunction::DelegateForTests {
- public:
-  SendResponseDelegate() {}
-
-  virtual ~SendResponseDelegate() {}
-
-  bool HasResponse() { return response_.get() != NULL; }
-
-  bool GetResponse() {
-    EXPECT_TRUE(HasResponse());
-    return *response_;
-  }
-
-  void OnSendResponse(UIThreadExtensionFunction* function,
-                      bool success,
-                      bool bad_message) override {
-    ASSERT_FALSE(bad_message);
-    ASSERT_FALSE(HasResponse());
-    response_.reset(new bool);
-    *response_ = success;
-    run_loop_.Quit();
-  }
-
-  void WaitForResponse() {
-    // If the RunAsync of UIThreadExtensionFunction already called SendResponse,
-    // this will finish immediately.
-    run_loop_.Run();
-  }
-
- private:
-  base::RunLoop run_loop_;
-  std::unique_ptr<bool> response_;
-  DISALLOW_COPY_AND_ASSIGN(SendResponseDelegate);
-};
-
 }  // namespace
 
 namespace extensions {
 
 namespace api_test_utils {
+
+SendResponseHelper::SendResponseHelper(UIThreadExtensionFunction* function) {
+  function->set_has_callback(true);
+  function->set_response_callback(
+      base::Bind(&SendResponseHelper::OnResponse, base::Unretained(this)));
+}
+
+SendResponseHelper::~SendResponseHelper() {}
+
+bool SendResponseHelper::GetResponse() {
+  EXPECT_TRUE(has_response());
+  return *response_;
+}
+
+void SendResponseHelper::OnResponse(ExtensionFunction::ResponseType response,
+                                    const base::ListValue& results,
+                                    const std::string& error,
+                                    functions::HistogramValue histogram_value) {
+  ASSERT_NE(ExtensionFunction::BAD_MESSAGE, response);
+  response_.reset(new bool(response == ExtensionFunction::SUCCEEDED));
+  run_loop_.Quit();
+}
+
+void SendResponseHelper::WaitForResponse() {
+  run_loop_.Run();
+}
 
 std::unique_ptr<base::DictionaryValue> ParseDictionary(
     const std::string& data) {
@@ -160,8 +148,6 @@ std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     content::BrowserContext* context,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
-  // Without a callback the function will not generate a result.
-  function->set_has_callback(true);
   RunFunction(function.get(), std::move(args), context, std::move(dispatcher),
               flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
@@ -207,9 +193,14 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
       new ExtensionFunctionDispatcher(context));
   scoped_refptr<ExtensionFunction> function_owner(function);
   // Without a callback the function will not generate a result.
-  function->set_has_callback(true);
   RunFunction(function, args, context, std::move(dispatcher), flags);
-  EXPECT_FALSE(function->GetResultList()) << "Did not expect a result";
+  // When sending a response, the function will set an empty list value if there
+  // is no specified result.
+  const base::ListValue* results = function->GetResultList();
+  CHECK(results);
+  EXPECT_TRUE(results->empty()) << "Did not expect a result";
+  CHECK(function->response_type());
+  EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
   return function->GetError();
 }
 
@@ -240,8 +231,7 @@ bool RunFunction(
     content::BrowserContext* context,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
-  SendResponseDelegate response_delegate;
-  function->set_test_delegate(&response_delegate);
+  SendResponseHelper response_helper(function);
   function->SetArgs(args.get());
 
   CHECK(dispatcher);
@@ -250,10 +240,10 @@ bool RunFunction(
   function->set_browser_context(context);
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->RunWithValidation()->Execute();
-  response_delegate.WaitForResponse();
+  response_helper.WaitForResponse();
 
-  EXPECT_TRUE(response_delegate.HasResponse());
-  return response_delegate.GetResponse();
+  EXPECT_TRUE(response_helper.has_response());
+  return response_helper.GetResponse();
 }
 
 }  // namespace api_test_utils

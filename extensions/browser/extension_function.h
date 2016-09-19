@@ -315,6 +315,8 @@ class ExtensionFunction
     return source_process_id_;
   }
 
+  ResponseType* response_type() const { return response_type_.get(); }
+
   // Sets did_respond_ to true so that the function won't DCHECK if it never
   // sends a response. Typically, this shouldn't be used, even in testing. It's
   // only for when you want to test functionality that doesn't exercise the
@@ -475,6 +477,9 @@ class ExtensionFunction
  private:
   base::ElapsedTimer timer_;
 
+  // The response type of the function, if the response has been sent.
+  std::unique_ptr<ResponseType> response_type_;
+
   void OnRespondingLater(ResponseValue response);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
@@ -484,25 +489,11 @@ class ExtensionFunction
 // this category.
 class UIThreadExtensionFunction : public ExtensionFunction {
  public:
-  // TODO(yzshen): We should be able to remove this interface now that we
-  // support overriding the response callback.
-  // A delegate for use in testing, to intercept the call to SendResponse.
-  class DelegateForTests {
-   public:
-    virtual void OnSendResponse(UIThreadExtensionFunction* function,
-                                bool success,
-                                bool bad_message) = 0;
-  };
-
   UIThreadExtensionFunction();
 
   UIThreadExtensionFunction* AsUIThreadExtensionFunction() override;
 
   bool PreRunValidation(std::string* error) override;
-
-  void set_test_delegate(DelegateForTests* delegate) {
-    delegate_ = delegate;
-  }
 
   // Called when a message was received.
   // Should return true if it processed the message.
@@ -578,8 +569,6 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   bool is_from_service_worker_;
 
   std::unique_ptr<RenderFrameHostTracker> tracker_;
-
-  DelegateForTests* delegate_;
 
   // The blobs transferred to the renderer process.
   std::vector<std::string> transferred_blob_uuids_;

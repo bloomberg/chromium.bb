@@ -476,23 +476,16 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysInvalid) {
   // been removed. The API is deprecated and will trivially return
   // success. So this is just testing that it succeeds for all inputs
   // (even invalid ones).
-  std::string errorResult = "";
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 "[\"\", \"signature\"]", browser(),
+                                 utils::NONE));
 
   cast_channel_set_authority_keys_function =
       CreateSetAuthorityKeysFunction(empty_extension);
-  std::string error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(),
-      "[\"\", \"signature\"]",
-      browser());
-  EXPECT_EQ(error, errorResult);
-
-  cast_channel_set_authority_keys_function =
-      CreateSetAuthorityKeysFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(),
-      "[\"keys\", \"\"]",
-      browser());
-  EXPECT_EQ(error, errorResult);
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 "[\"keys\", \"\"]", browser(), utils::NONE));
 
   std::string keys =
       "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
@@ -511,27 +504,21 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysInvalid) {
 
   cast_channel_set_authority_keys_function =
       CreateSetAuthorityKeysFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(),
-      "[\"" + keys + "\", \"signature\"]",
-      browser());
-  EXPECT_EQ(error, errorResult);
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 "[\"" + keys + "\", \"signature\"]", browser(),
+                                 utils::NONE));
 
   cast_channel_set_authority_keys_function =
       CreateSetAuthorityKeysFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(),
-      "[\"keys\", \"" + signature + "\"]",
-      browser());
-  EXPECT_EQ(error, errorResult);
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 "[\"keys\", \"" + signature + "\"]", browser(),
+                                 utils::NONE));
 
   cast_channel_set_authority_keys_function =
       CreateSetAuthorityKeysFunction(empty_extension);
-  error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(),
-      "[\"" + keys + "\", \"" + signature + "\"]",
-      browser());
-  EXPECT_EQ(error, errorResult);
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 "[\"" + keys + "\", \"" + signature + "\"]",
+                                 browser(), utils::NONE));
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysValid) {
@@ -563,9 +550,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysValid) {
       "bzPtNRRlTqfv7Rxm5YXkZMLmJJMZiTs5+o8FMRMTQZT4hRR3DQ+A/jofViyTGA==";
 
   std::string args = "[\"" + keys + "\", \"" + signature + "\"]";
-  std::string error = utils::RunFunctionAndReturnError(
-      cast_channel_set_authority_keys_function.get(), args, browser());
-  EXPECT_EQ(error, std::string());
+  EXPECT_TRUE(utils::RunFunction(cast_channel_set_authority_keys_function.get(),
+                                 args, browser(), utils::NONE));
 }
 
 // TODO(vadimgo): Win Dbg has a workaround that makes RunExtensionSubtest

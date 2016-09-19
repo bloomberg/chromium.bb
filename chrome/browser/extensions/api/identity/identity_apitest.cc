@@ -78,45 +78,6 @@ namespace utils = extension_function_test_utils;
 static const char kAccessToken[] = "auth_token";
 static const char kExtensionId[] = "ext_id";
 
-// This helps us be able to wait until an UIThreadExtensionFunction calls
-// SendResponse.
-class SendResponseDelegate
-    : public UIThreadExtensionFunction::DelegateForTests {
- public:
-  SendResponseDelegate() : should_post_quit_(false) {}
-
-  virtual ~SendResponseDelegate() {}
-
-  void set_should_post_quit(bool should_quit) {
-    should_post_quit_ = should_quit;
-  }
-
-  bool HasResponse() {
-    return response_.get() != NULL;
-  }
-
-  bool GetResponse() {
-    EXPECT_TRUE(HasResponse());
-    return *response_;
-  }
-
-  void OnSendResponse(UIThreadExtensionFunction* function,
-                      bool success,
-                      bool bad_message) override {
-    ASSERT_FALSE(bad_message);
-    ASSERT_FALSE(HasResponse());
-    response_.reset(new bool);
-    *response_ = success;
-    if (should_post_quit_) {
-      base::MessageLoopForUI::current()->QuitWhenIdle();
-    }
-  }
-
- private:
-  std::unique_ptr<bool> response_;
-  bool should_post_quit_;
-};
-
 class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
  protected:
   // Asynchronous function runner allows tests to manipulate the browser window
@@ -124,8 +85,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
   void RunFunctionAsync(
       UIThreadExtensionFunction* function,
       const std::string& args) {
-    response_delegate_.reset(new SendResponseDelegate);
-    function->set_test_delegate(response_delegate_.get());
+    response_delegate_.reset(new api_test_utils::SendResponseHelper(function));
     std::unique_ptr<base::ListValue> parsed_args(utils::ParseList(args));
     EXPECT_TRUE(parsed_args.get()) <<
         "Could not parse extension function arguments: " << args;
@@ -144,7 +104,8 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
   std::string WaitForError(UIThreadExtensionFunction* function) {
     RunMessageLoopUntilResponse();
-    EXPECT_FALSE(function->GetResultList()) << "Did not expect a result";
+    CHECK(function->response_type());
+    EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
     return function->GetError();
   }
 
@@ -162,16 +123,11 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
  private:
   void RunMessageLoopUntilResponse() {
-    // If the RunAsync of |function| didn't already call SendResponse, run the
-    // message loop until they do.
-    if (!response_delegate_->HasResponse()) {
-      response_delegate_->set_should_post_quit(true);
-      content::RunMessageLoop();
-    }
-    EXPECT_TRUE(response_delegate_->HasResponse());
+    response_delegate_->WaitForResponse();
+    EXPECT_TRUE(response_delegate_->has_response());
   }
 
-  std::unique_ptr<SendResponseDelegate> response_delegate_;
+  std::unique_ptr<api_test_utils::SendResponseHelper> response_delegate_;
 };
 
 class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {

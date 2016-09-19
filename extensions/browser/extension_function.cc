@@ -449,17 +449,18 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
 void ExtensionFunction::SendResponseImpl(bool success) {
   DCHECK(!response_callback_.is_null());
 
-  ResponseType type = success ? SUCCEEDED : FAILED;
+  ResponseType response = success ? SUCCEEDED : FAILED;
   if (bad_message_) {
-    type = BAD_MESSAGE;
+    response = BAD_MESSAGE;
     LOG(ERROR) << "Bad extension message " << name_;
   }
+  response_type_ = base::MakeUnique<ResponseType>(response);
 
   // If results were never set, we send an empty argument list.
   if (!results_)
     results_.reset(new base::ListValue());
 
-  response_callback_.Run(type, *results_, GetError(), histogram_value());
+  response_callback_.Run(response, *results_, GetError(), histogram_value());
   LogUma(success, timer_.Elapsed(), histogram_value_);
 }
 
@@ -470,8 +471,7 @@ void ExtensionFunction::OnRespondingLater(ResponseValue value) {
 UIThreadExtensionFunction::UIThreadExtensionFunction()
     : context_(nullptr),
       render_frame_host_(nullptr),
-      is_from_service_worker_(false),
-      delegate_(nullptr) {}
+      is_from_service_worker_(false) {}
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && render_frame_host())
@@ -551,13 +551,9 @@ content::WebContents* UIThreadExtensionFunction::GetSenderWebContents() {
 void UIThreadExtensionFunction::SendResponse(bool success) {
   DCHECK(!did_respond_) << name_;
   did_respond_ = true;
-  if (delegate_)
-    delegate_->OnSendResponse(this, success, bad_message_);
-  else
-    SendResponseImpl(success);
+  SendResponseImpl(success);
 
   if (!transferred_blob_uuids_.empty()) {
-    DCHECK(!delegate_) << "Blob transfer not supported with test delegate.";
     render_frame_host_->Send(
         new ExtensionMsg_TransferBlobs(transferred_blob_uuids_));
   }

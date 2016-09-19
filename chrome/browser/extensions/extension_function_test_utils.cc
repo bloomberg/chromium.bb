@@ -88,10 +88,14 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       Browser* browser,
                                       RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
-  // Without a callback the function will not generate a result.
-  function->set_has_callback(true);
   RunFunction(function, args, browser, flags);
-  EXPECT_FALSE(function->GetResultList()) << "Did not expect a result";
+  // When sending a response, the function will set an empty list value if there
+  // is no specified result.
+  const base::ListValue* results = function->GetResultList();
+  CHECK(results);
+  EXPECT_TRUE(results->empty()) << "Did not expect a result";
+  CHECK(function->response_type());
+  EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
   return function->GetError();
 }
 
@@ -107,8 +111,6 @@ base::Value* RunFunctionAndReturnSingleResult(
     Browser* browser,
     RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
-  // Without a callback the function will not generate a result.
-  function->set_has_callback(true);
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
@@ -119,45 +121,6 @@ base::Value* RunFunctionAndReturnSingleResult(
   }
   return NULL;
 }
-
-// This helps us be able to wait until an UIThreadExtensionFunction calls
-// SendResponse.
-class SendResponseDelegate
-    : public UIThreadExtensionFunction::DelegateForTests {
- public:
-  SendResponseDelegate() : should_post_quit_(false) {}
-
-  virtual ~SendResponseDelegate() {}
-
-  void set_should_post_quit(bool should_quit) {
-    should_post_quit_ = should_quit;
-  }
-
-  bool HasResponse() {
-    return response_.get() != NULL;
-  }
-
-  bool GetResponse() {
-    EXPECT_TRUE(HasResponse());
-    return *response_;
-  }
-
-  void OnSendResponse(UIThreadExtensionFunction* function,
-                      bool success,
-                      bool bad_message) override {
-    ASSERT_FALSE(bad_message);
-    ASSERT_FALSE(HasResponse());
-    response_.reset(new bool);
-    *response_ = success;
-    if (should_post_quit_) {
-      base::MessageLoopForUI::current()->QuitWhenIdle();
-    }
-  }
-
- private:
-  std::unique_ptr<bool> response_;
-  bool should_post_quit_;
-};
 
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,

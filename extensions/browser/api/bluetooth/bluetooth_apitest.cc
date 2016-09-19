@@ -197,8 +197,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
       .WillOnce(
           testing::Invoke(this, &BluetoothApiTest::DiscoverySessionCallback));
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
-  (void)
-      utils::RunFunctionAndReturnError(start_function.get(), "[]", browser());
+  utils::RunFunction(start_function.get(), "[]", browser(), utils::NONE);
 
   // End the discovery session. The StopDiscovery function should succeed.
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
