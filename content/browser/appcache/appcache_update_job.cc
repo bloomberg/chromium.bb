@@ -186,14 +186,16 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
   redirect_response_code_ = request->GetResponseCode();
   request->Cancel();
   result_ = REDIRECT_ERROR;
-  OnResponseCompleted();
+  OnResponseCompleted(net::ERR_ABORTED);
 }
 
-void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
-    net::URLRequest *request) {
+void AppCacheUpdateJob::URLFetcher::OnResponseStarted(net::URLRequest* request,
+                                                      int net_error) {
   DCHECK_EQ(request_.get(), request);
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
   int response_code = -1;
-  if (request->status().is_success()) {
+  if (net_error == net::OK) {
     response_code = request->GetResponseCode();
     job_->MadeProgress();
   }
@@ -203,7 +205,7 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
       result_ = SERVER_ERROR;
     else
       result_ = NETWORK_ERROR;
-    OnResponseCompleted();
+    OnResponseCompleted(net_error);
     return;
   }
 
@@ -228,7 +230,7 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
       DCHECK_EQ(-1, redirect_response_code_);
       request->Cancel();
       result_ = SECURITY_ERROR;
-      OnResponseCompleted();
+      OnResponseCompleted(net::ERR_ABORTED);
       return;
     }
   }
@@ -250,27 +252,27 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
 
 void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
     net::URLRequest* request, int bytes_read) {
+  DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
   DCHECK_EQ(request_.get(), request);
   bool data_consumed = true;
-  if (request->status().is_success() && bytes_read > 0) {
+  if (bytes_read > 0) {
     job_->MadeProgress();
     data_consumed = ConsumeResponseData(bytes_read);
     if (data_consumed) {
-      bytes_read = 0;
-      while (request->Read(buffer_.get(), kBufferSize, &bytes_read)) {
-        if (bytes_read > 0) {
-          data_consumed = ConsumeResponseData(bytes_read);
-          if (!data_consumed)
-            break;  // wait for async data processing, then read more
-        } else {
+      while (true) {
+        bytes_read = request->Read(buffer_.get(), kBufferSize);
+        if (bytes_read <= 0)
           break;
-        }
+        data_consumed = ConsumeResponseData(bytes_read);
+        if (!data_consumed)
+          break;
       }
     }
   }
-  if (data_consumed && !request->status().is_io_pending()) {
+
+  if (data_consumed && bytes_read != net::ERR_IO_PENDING) {
     DCHECK_EQ(UPDATE_OK, result_);
-    OnResponseCompleted();
+    OnResponseCompleted(bytes_read);
   }
 }
 
@@ -305,7 +307,7 @@ void  AppCacheUpdateJob::URLFetcher::OnWriteComplete(int result) {
   if (result < 0) {
     request_->Cancel();
     result_ = DISKCACHE_ERROR;
-    OnResponseCompleted();
+    OnResponseCompleted(net::ERR_ABORTED);
     return;
   }
   ReadResponseData();
@@ -315,9 +317,9 @@ void AppCacheUpdateJob::URLFetcher::ReadResponseData() {
   InternalUpdateState state = job_->internal_state_;
   if (state == CACHE_FAILURE || state == CANCELLED || state == COMPLETED)
     return;
-  int bytes_read = 0;
-  request_->Read(buffer_.get(), kBufferSize, &bytes_read);
-  OnReadCompleted(request_.get(), bytes_read);
+  int bytes_read = request_->Read(buffer_.get(), kBufferSize);
+  if (bytes_read != net::ERR_IO_PENDING)
+    OnReadCompleted(request_.get(), bytes_read);
 }
 
 // Returns false if response data is processed asynchronously, in which
@@ -344,29 +346,28 @@ bool AppCacheUpdateJob::URLFetcher::ConsumeResponseData(int bytes_read) {
   return true;
 }
 
-void AppCacheUpdateJob::URLFetcher::OnResponseCompleted() {
-  if (request_->status().is_success())
+void AppCacheUpdateJob::URLFetcher::OnResponseCompleted(int net_error) {
+  if (net_error == net::OK)
     job_->MadeProgress();
 
   // Retry for 503s where retry-after is 0.
-  if (request_->status().is_success() &&
-      request_->GetResponseCode() == 503 &&
+  if (net_error == net::OK && request_->GetResponseCode() == 503 &&
       MaybeRetryRequest()) {
     return;
   }
 
   switch (fetch_type_) {
     case MANIFEST_FETCH:
-      job_->HandleManifestFetchCompleted(this);
+      job_->HandleManifestFetchCompleted(this, net_error);
       break;
     case URL_FETCH:
-      job_->HandleUrlFetchCompleted(this);
+      job_->HandleUrlFetchCompleted(this, net_error);
       break;
     case MASTER_ENTRY_FETCH:
-      job_->HandleMasterEntryFetchCompleted(this);
+      job_->HandleMasterEntryFetchCompleted(this, net_error);
       break;
     case MANIFEST_REFETCH:
-      job_->HandleManifestRefetchCompleted(this);
+      job_->HandleManifestRefetchCompleted(this, net_error);
       break;
     default:
       NOTREACHED();
@@ -579,17 +580,17 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
   manifest_fetcher_->Start();
 }
 
-
-void AppCacheUpdateJob::HandleManifestFetchCompleted(
-    URLFetcher* fetcher) {
+void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* fetcher,
+                                                     int net_error) {
   DCHECK_EQ(internal_state_, FETCH_MANIFEST);
   DCHECK_EQ(manifest_fetcher_, fetcher);
+
   manifest_fetcher_ = NULL;
 
   net::URLRequest* request = fetcher->request();
   int response_code = -1;
   bool is_valid_response_code = false;
-  if (request->status().is_success()) {
+  if (net_error == net::OK) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
 
@@ -717,7 +718,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   MaybeCompleteUpdate();  // if not done, continues when async fetches complete
 }
 
-void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
+void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
+                                                int net_error) {
   DCHECK(internal_state_ == DOWNLOADING);
 
   net::URLRequest* request = fetcher->request();
@@ -726,9 +728,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
   NotifyAllProgress(url);
   ++url_fetches_completed_;
 
-  int response_code = request->status().is_success()
-                          ? request->GetResponseCode()
-                          : fetcher->redirect_response_code();
+  int response_code = net_error == net::OK ? request->GetResponseCode()
+                                           : fetcher->redirect_response_code();
 
   AppCacheEntry& entry = url_file_list_.find(url)->second;
 
@@ -751,8 +752,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
   } else {
-    VLOG(1) << "Request status: " << request->status().status()
-            << " error: " << request->status().error()
+    VLOG(1) << "Request error: " << net_error
             << " response code: " << response_code;
     if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept()) {
       if (response_code == 304 && fetcher->existing_entry().has_response_id()) {
@@ -814,8 +814,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
   MaybeCompleteUpdate();
 }
 
-void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
-    URLFetcher* fetcher) {
+void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
+                                                        int net_error) {
   DCHECK(internal_state_ == NO_UPDATE || internal_state_ == DOWNLOADING);
 
   // TODO(jennb): Handle downloads completing during cache failure when update
@@ -828,8 +828,7 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
   master_entry_fetches_.erase(url);
   ++master_entries_completed_;
 
-  int response_code = request->status().is_success()
-      ? request->GetResponseCode() : -1;
+  int response_code = net_error == net::OK ? request->GetResponseCode() : -1;
 
   PendingMasters::iterator found = pending_master_entries_.find(url);
   DCHECK(found != pending_master_entries_.end());
@@ -911,15 +910,14 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
   MaybeCompleteUpdate();
 }
 
-void AppCacheUpdateJob::HandleManifestRefetchCompleted(
-    URLFetcher* fetcher) {
+void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
+                                                       int net_error) {
   DCHECK(internal_state_ == REFETCH_MANIFEST);
   DCHECK(manifest_fetcher_ == fetcher);
   manifest_fetcher_ = NULL;
 
-  net::URLRequest* request = fetcher->request();
-  int response_code = request->status().is_success()
-      ? request->GetResponseCode() : -1;
+  int response_code =
+      net_error == net::OK ? fetcher->request()->GetResponseCode() : -1;
   if (response_code == 304 || manifest_data_ == fetcher->manifest_data()) {
     // Only need to store response in storage if manifest is not already
     // an entry in the cache.
@@ -937,8 +935,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(
                      base::Unretained(this)));
     }
   } else {
-    VLOG(1) << "Request status: " << request->status().status()
-            << " error: " << request->status().error()
+    VLOG(1) << "Request error: " << net_error
             << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
     if (response_code == 200) {

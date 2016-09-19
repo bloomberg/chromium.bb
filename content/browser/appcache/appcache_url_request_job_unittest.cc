@@ -152,14 +152,18 @@ class AppCacheURLRequestJobTest : public testing::Test {
     explicit MockURLRequestDelegate(AppCacheURLRequestJobTest* test)
         : test_(test),
           received_data_(new net::IOBuffer(kNumBlocks * kBlockSize)),
-          did_receive_headers_(false), amount_received_(0),
-          kill_after_amount_received_(0), kill_with_io_pending_(false) {
-    }
+          did_receive_headers_(false),
+          amount_received_(0),
+          kill_after_amount_received_(0),
+          kill_with_io_pending_(false),
+          request_status_(net::ERR_IO_PENDING) {}
 
-    void OnResponseStarted(net::URLRequest* request) override {
+    void OnResponseStarted(net::URLRequest* request, int net_error) override {
+      DCHECK_NE(net::ERR_IO_PENDING, net_error);
       amount_received_ = 0;
       did_receive_headers_ = false;
-      if (request->status().is_success()) {
+      request_status_ = net_error;
+      if (net_error == net::OK) {
         EXPECT_TRUE(request->response_headers());
         did_receive_headers_ = true;
         received_info_ = request->response_info();
@@ -172,6 +176,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
       if (bytes_read > 0) {
         amount_received_ += bytes_read;
+        request_status_ = net::OK;
 
         if (kill_after_amount_received_ && !kill_with_io_pending_) {
           if (amount_received_ >= kill_after_amount_received_) {
@@ -189,6 +194,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
           }
         }
       } else {
+        request_status_ = bytes_read;
         RequestComplete();
       }
     }
@@ -197,15 +203,15 @@ class AppCacheURLRequestJobTest : public testing::Test {
       DCHECK(amount_received_ + kBlockSize <= kNumBlocks * kBlockSize);
       scoped_refptr<IOBuffer> wrapped_buffer(
           new net::WrappedIOBuffer(received_data_->data() + amount_received_));
-      int bytes_read = 0;
-      EXPECT_FALSE(
-          request->Read(wrapped_buffer.get(), kBlockSize, &bytes_read));
-      EXPECT_EQ(0, bytes_read);
+      EXPECT_EQ(net::ERR_IO_PENDING,
+                request->Read(wrapped_buffer.get(), kBlockSize));
     }
 
     void RequestComplete() {
       test_->ScheduleNextTask();
     }
+
+    int request_status() { return request_status_; }
 
     AppCacheURLRequestJobTest* test_;
     net::HttpResponseInfo received_info_;
@@ -214,6 +220,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     int amount_received_;
     int kill_after_amount_received_;
     bool kill_with_io_pending_;
+    int request_status_;
   };
 
   // Helper callback to run a test on our io_thread. The io_thread is spun up
@@ -549,8 +556,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyDeliverNetworkResponse() {
-    EXPECT_EQ(request_->status().error(),
-              net::ERR_INTERNET_DISCONNECTED);
+    EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
+              url_request_delegate_->request_status());
     EXPECT_TRUE(restart_callback_invoked_);
     TestFinished();
   }
@@ -587,7 +594,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyDeliverErrorResponse() {
-    EXPECT_EQ(request_->status().error(), net::ERR_FAILED);
+    EXPECT_EQ(net::ERR_FAILED, url_request_delegate_->request_status());
     TestFinished();
   }
 
@@ -654,7 +661,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyDeliverSmallAppCachedResponse() {
-    EXPECT_TRUE(request_->status().is_success());
+    EXPECT_EQ(net::OK, url_request_delegate_->request_status());
     EXPECT_TRUE(CompareHttpResponseInfos(
         write_info_buffer_->http_info.get(),
         &url_request_delegate_->received_info_));
@@ -701,7 +708,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyDeliverLargeAppCachedResponse() {
-    EXPECT_TRUE(request_->status().is_success());
+    EXPECT_EQ(net::OK, url_request_delegate_->request_status());
     EXPECT_TRUE(CompareHttpResponseInfos(
         write_info_buffer_->http_info.get(),
         &url_request_delegate_->received_info_));
@@ -759,7 +766,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyDeliverPartialResponse() {
-    EXPECT_TRUE(request_->status().is_success());
+    EXPECT_EQ(net::OK, url_request_delegate_->request_status());
     EXPECT_EQ(3, url_request_delegate_->amount_received_);
     EXPECT_EQ(0, memcmp(kHttpBasicBody + 1,
                         url_request_delegate_->received_data_->data(),
@@ -801,8 +808,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   }
 
   void VerifyCancel() {
-    EXPECT_EQ(net::URLRequestStatus::CANCELED,
-              request_->status().status());
+    EXPECT_EQ(net::ERR_ABORTED, url_request_delegate_->request_status());
     TestFinished();
   }
 

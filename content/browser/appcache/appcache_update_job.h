@@ -143,14 +143,14 @@ class CONTENT_EXPORT AppCacheUpdateJob
     void OnReceivedRedirect(net::URLRequest* request,
                             const net::RedirectInfo& redirect_info,
                             bool* defer_redirect) override;
-    void OnResponseStarted(net::URLRequest* request) override;
+    void OnResponseStarted(net::URLRequest* request, int net_error) override;
     void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
     void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
     void OnWriteComplete(int result);
     void ReadResponseData();
     bool ConsumeResponseData(int bytes_read);
-    void OnResponseCompleted();
+    void OnResponseCompleted(int net_error);
     bool MaybeRetryRequest();
 
     GURL url_;
@@ -192,13 +192,13 @@ class CONTENT_EXPORT AppCacheUpdateJob
                           const GURL& failed_resource_url);
 
   void FetchManifest(bool is_first_fetch);
-  void HandleManifestFetchCompleted(URLFetcher* fetcher);
+  void HandleManifestFetchCompleted(URLFetcher* fetcher, int net_error);
   void ContinueHandleManifestFetchCompleted(bool changed);
 
-  void HandleUrlFetchCompleted(URLFetcher* fetcher);
-  void HandleMasterEntryFetchCompleted(URLFetcher* fetcher);
+  void HandleUrlFetchCompleted(URLFetcher* fetcher, int net_error);
+  void HandleMasterEntryFetchCompleted(URLFetcher* fetcher, int net_error);
 
-  void HandleManifestRefetchCompleted(URLFetcher* fetcher);
+  void HandleManifestRefetchCompleted(URLFetcher* fetcher, int net_error);
   void OnManifestInfoWriteComplete(int result);
   void OnManifestDataWriteComplete(int result);
 

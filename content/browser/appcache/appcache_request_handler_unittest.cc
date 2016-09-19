@@ -79,8 +79,26 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // exercise fallback code paths.
 
   class MockURLRequestDelegate : public net::URLRequest::Delegate {
-    void OnResponseStarted(net::URLRequest* request) override {}
-    void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
+   public:
+    MockURLRequestDelegate() : request_status_(1) {}
+
+    void OnResponseStarted(net::URLRequest* request, int net_error) override {
+      DCHECK_NE(net::ERR_IO_PENDING, net_error);
+      request_status_ = net_error;
+    }
+
+    void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
+      DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
+      if (bytes_read >= 0)
+        request_status_ = net::OK;
+      else
+        request_status_ = bytes_read;
+    }
+
+    int request_status() const { return request_status_; }
+
+   private:
+    int request_status_;
   };
 
   class MockURLRequestJob : public net::URLRequestJob {
@@ -385,7 +403,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
         response_code));
     request_->Start();
     // All our simulation needs  to satisfy are the following two DCHECKs
-    DCHECK(request_->status().is_success());
+    DCHECK_EQ(net::OK, delegate_.request_status());
     DCHECK_EQ(response_code, request_->GetResponseCode());
   }
 
