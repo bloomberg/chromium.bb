@@ -909,11 +909,13 @@ ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppID(
 ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppIDAndLaunchID(
     const std::string& app_id,
     const std::string& launch_id) {
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
   for (const auto& id_to_item_controller_pair : id_to_item_controller_map_) {
     if (id_to_item_controller_pair.second->type() ==
         LauncherItemController::TYPE_APP_PANEL)
       continue;  // Don't include panels
-    if (id_to_item_controller_pair.second->app_id() == app_id &&
+    if (id_to_item_controller_pair.second->app_id() == shelf_app_id &&
         id_to_item_controller_pair.second->launch_id() == launch_id) {
       return id_to_item_controller_pair.first;
     }
@@ -934,27 +936,33 @@ const std::string& ChromeLauncherControllerImpl::GetAppIDForShelfID(
 }
 
 void ChromeLauncherControllerImpl::PinAppWithID(const std::string& app_id) {
-  if (GetPinnableForAppID(app_id, profile_) ==
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
+  if (GetPinnableForAppID(shelf_app_id, profile_) ==
       AppListControllerDelegate::PIN_EDITABLE)
-    DoPinAppWithID(app_id);
+    DoPinAppWithID(shelf_app_id);
   else
     NOTREACHED();
 }
 
 bool ChromeLauncherControllerImpl::IsAppPinned(const std::string& app_id) {
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
-    if (IsPinned(i->first) && i->second->app_id() == app_id)
+    if (IsPinned(i->first) && i->second->app_id() == shelf_app_id)
       return true;
   }
   return false;
 }
 
 void ChromeLauncherControllerImpl::UnpinAppWithID(const std::string& app_id) {
-  if (GetPinnableForAppID(app_id, profile_) ==
+  const std::string shelf_app_id =
+      ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
+  if (GetPinnableForAppID(shelf_app_id, profile_) ==
       AppListControllerDelegate::PIN_EDITABLE)
-    DoUnpinAppWithID(app_id, true /* update_prefs */);
+    DoUnpinAppWithID(shelf_app_id, true /* update_prefs */);
   else
     NOTREACHED();
 }

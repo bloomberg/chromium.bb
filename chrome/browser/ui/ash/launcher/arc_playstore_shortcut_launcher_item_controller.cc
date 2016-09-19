@@ -30,10 +30,11 @@ ArcPlaystoreShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   DCHECK(arc_app_prefs);
   DCHECK(auth_service->IsAllowed());
 
+  const bool arc_was_enabled = auth_service->IsArcEnabled();
   auth_service->EnableArc();
 
   // Deferred launcher.
-  if (arc_app_prefs->IsRegistered(arc::kPlayStoreAppId)) {
+  if (arc_app_prefs->IsRegistered(arc::kPlayStoreAppId) && arc_was_enabled) {
     // Known apps can be launched directly or deferred.
     arc::LaunchApp(controller()->GetProfile(), arc::kPlayStoreAppId, true);
   } else {
