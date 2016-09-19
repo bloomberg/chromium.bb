@@ -1365,26 +1365,6 @@ def CreateBuilderTemplates(site_config):
           'TOC-Canaries',
   )
 
-  site_config.AddTemplate(
-      'toolchain',
-      # Make sure that we are doing a full build and that we are using AFDO.
-      site_config.templates.full,
-      site_config.templates.internal,
-      site_config.templates.official_chrome,
-      site_config.templates.no_vmtest_builder,
-      build_type=constants.TOOLCHAIN_TYPE,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      images=['base', 'test', 'recovery'],
-      build_timeout=(15 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug']),
-      afdo_use=True,
-      manifest=constants.OFFICIAL_MANIFEST,
-      manifest_version=True,
-      git_sync=False,
-      trybot_list=False,
-      description="Toolchain Builds (internal)",
-  )
-
   ### Release AFDO configs.
 
   site_config.AddTemplate(
@@ -1546,6 +1526,168 @@ def CreateBuilderTemplates(site_config):
       paygen=True,
 
       upload_hw_test_artifacts=False,
+  )
+
+def ToolchainBuilders(site_config):
+  """Define templates used for toolchain builders.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+  """
+  site_config.AddTemplate(
+      'toolchain',
+      # Make sure that we are doing a full build and that we are using AFDO.
+      site_config.templates.full,
+      site_config.templates.internal,
+      site_config.templates.official_chrome,
+      site_config.templates.no_vmtest_builder,
+      build_type=constants.TOOLCHAIN_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      images=['base', 'test', 'recovery'],
+      build_timeout=(15 * 60 + 50) * 60,
+      useflags=append_useflags(['-cros-debug']),
+      afdo_use=True,
+      manifest=constants.OFFICIAL_MANIFEST,
+      manifest_version=True,
+      git_sync=False,
+      trybot_list=False,
+      description="Toolchain Builds (internal)",
+  )
+
+  ### Master toolchain config.
+
+  site_config.Add(
+      'master-toolchain',
+      site_config.templates.toolchain,
+      boards=[],
+      description='Toolchain master (all others are slaves).',
+      master=True,
+      sync_chrome=True,
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      health_threshold=1,
+      afdo_use=False,
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+  )
+
+  # Toolchain-specific mixins.
+
+  site_config.AddTemplate(
+      'gcc_builder',
+      description='Full release build with next minor GCC toolchain revision',
+      gcc_githash='svn-mirror/google/gcc-4_9',
+      latest_toolchain=True,
+      hw_tests=HWTestList.ToolchainTestFull(),
+      hw_tests_override=HWTestList.ToolchainTestFull(),
+  )
+  site_config.AddTemplate(
+      'llvm_builder',
+      description='Full release build with LLVM toolchain',
+      profile='llvm',
+      hw_tests=HWTestList.ToolchainTestMedium(),
+      hw_tests_override=HWTestList.ToolchainTestMedium(),
+  )
+  site_config.AddTemplate(
+      'llvm_next_builder',
+      site_config.templates.llvm_builder,
+      description='Full release build with LLVM (next) toolchain',
+      useflags=append_useflags(['llvm-next', 'clang']),
+  )
+  site_config.AddTemplate(
+      'test_light',
+      hw_tests=HWTestList.ToolchainTestLight(),
+      hw_tests_override=HWTestList.ToolchainTestLight(),
+  )
+
+  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
+  ###                          x 3 toolchains {gcc,llvm,llvm-next}
+  ### All of these builders should be slaves of 'master-toolchain'.
+
+  site_config.Add(
+      'amd64-gcc-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.gcc_builder,
+      boards=['peppy'],
+  )
+
+  site_config.Add(
+      'amd64-llvm-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_builder,
+      boards=['falco'],
+  )
+
+  site_config.Add(
+      'amd64-llvm-next-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_next_builder,
+      boards=['peppy'],
+  )
+
+  site_config.Add(
+      'arm-gcc-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.gcc_builder,
+      boards=['veyron_jaq'],
+  )
+
+  site_config.Add(
+      'arm-llvm-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_builder,
+      boards=['veyron_jaq'],
+  )
+
+  site_config.Add(
+      'arm-llvm-next-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_next_builder,
+      boards=['veyron_jaq'],
+  )
+
+  site_config.Add(
+      'x86-gcc-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.gcc_builder,
+      site_config.templates.test_light,
+      boards=['x86-alex'],
+  )
+
+  site_config.Add(
+      'x86-llvm-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_builder,
+      site_config.templates.test_light,
+      boards=['x86-alex'],
+  )
+
+  site_config.Add(
+      'x86-llvm-next-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_next_builder,
+      site_config.templates.test_light,
+      boards=['x86-alex'],
+  )
+
+  site_config.Add(
+      'arm64-gcc-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.gcc_builder,
+      boards=['elm'],
+  )
+
+  site_config.Add(
+      'arm64-llvm-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_builder,
+      boards=['elm'],
+  )
+
+  site_config.Add(
+      'arm64-llvm-next-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.llvm_next_builder,
+      boards=['elm'],
   )
 
 
@@ -2509,141 +2651,6 @@ def _GetConfig(site_config, ge_build_config):
       _grouped_variant_config,
   )
 
-  ### Master toolchain config.
-
-  site_config.Add(
-      'master-toolchain',
-      site_config.templates.toolchain,
-      boards=[],
-      description='Toolchain master (all others are slaves).',
-      master=True,
-      sync_chrome=True,
-      health_alert_recipients=['c-compiler-chrome@google.com'],
-      health_threshold=1,
-      afdo_use=False,
-      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
-  )
-
-  # Toolchain-specific mixins.
-
-  _gcc_builder = config_lib.BuildConfig(
-      description='Full release build with next minor GCC toolchain revision',
-      gcc_githash='svn-mirror/google/gcc-4_9',
-      latest_toolchain=True,
-      hw_tests=HWTestList.ToolchainTestFull(),
-      hw_tests_override=HWTestList.ToolchainTestFull(),
-  )
-  _gcc_builder_light = _gcc_builder.derive(
-      hw_tests=HWTestList.ToolchainTestLight(),
-      hw_tests_override=HWTestList.ToolchainTestLight(),
-  )
-  _llvm_builder = config_lib.BuildConfig(
-      description='Full release build with LLVM toolchain',
-      profile='llvm',
-      hw_tests=HWTestList.ToolchainTestMedium(),
-      hw_tests_override=HWTestList.ToolchainTestMedium(),
-  )
-  _llvm_builder_light = _llvm_builder.derive(
-      hw_tests=HWTestList.ToolchainTestLight(),
-      hw_tests_override=HWTestList.ToolchainTestLight(),
-  )
-  _llvm_next_builder = _llvm_builder.derive(
-      description='Full release build with LLVM (next) toolchain',
-      useflags=append_useflags(['llvm-next', 'clang']),
-  )
-  _llvm_next_builder_light = _llvm_next_builder.derive(
-      hw_tests=HWTestList.ToolchainTestLight(),
-      hw_tests_override=HWTestList.ToolchainTestLight(),
-  )
-
-  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
-  ###                          x 3 toolchains {gcc,llvm,llvm-next}
-  ### All of these builders should be slaves of 'master-toolchain'.
-
-  site_config.Add(
-      'amd64-gcc-toolchain',
-      site_config.templates.toolchain,
-      _gcc_builder,
-      boards=['peppy'],
-  )
-
-  site_config.Add(
-      'amd64-llvm-toolchain',
-      site_config.templates.toolchain,
-      _llvm_builder,
-      boards=['falco'],
-  )
-
-  site_config.Add(
-      'amd64-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      _llvm_next_builder,
-      boards=['peppy'],
-  )
-
-  site_config.Add(
-      'arm-gcc-toolchain',
-      site_config.templates.toolchain,
-      _gcc_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'arm-llvm-toolchain',
-      site_config.templates.toolchain,
-      _llvm_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'arm-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      _llvm_next_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'x86-gcc-toolchain',
-      site_config.templates.toolchain,
-      _gcc_builder_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'x86-llvm-toolchain',
-      site_config.templates.toolchain,
-      _llvm_builder_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'x86-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      _llvm_next_builder_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'arm64-gcc-toolchain',
-      site_config.templates.toolchain,
-      _gcc_builder,
-      boards=['elm'],
-  )
-
-  site_config.Add(
-      'arm64-llvm-toolchain',
-      site_config.templates.toolchain,
-      _llvm_builder,
-      boards=['elm'],
-  )
-
-  site_config.Add(
-      'arm64-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      _llvm_next_builder,
-      boards=['elm'],
-  )
-
   ### Master release config.
 
   site_config.Add(
@@ -3256,6 +3263,8 @@ def GetConfig():
                                       site_params=site_params)
 
   CreateBuilderTemplates(site_config)
+
+  ToolchainBuilders(site_config)
 
   # Fill in templates and build configurations.
   _GetConfig(site_config, ge_build_config)
