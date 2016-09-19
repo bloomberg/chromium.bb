@@ -125,9 +125,9 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
   }
 
   return BuildProtocolRequest(
-      config.GetBrowserVersion().GetString(), config.GetChannel(),
-      config.GetLang(), config.GetOSLongName(), config.GetDownloadPreference(),
-      app_elements, additional_attributes);
+      config.GetProdId(), config.GetBrowserVersion().GetString(),
+      config.GetChannel(), config.GetLang(), config.GetOSLongName(),
+      config.GetDownloadPreference(), app_elements, additional_attributes);
 }
 
 class UpdateCheckerImpl : public UpdateChecker {

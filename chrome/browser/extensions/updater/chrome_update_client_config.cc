@@ -10,6 +10,7 @@
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -50,6 +51,11 @@ std::vector<GURL> ChromeUpdateClientConfig::UpdateUrl() const {
 
 std::vector<GURL> ChromeUpdateClientConfig::PingUrl() const {
   return impl_.PingUrl();
+}
+
+std::string ChromeUpdateClientConfig::GetProdId() const {
+  return update_client::UpdateQueryParams::GetProdIdString(
+      update_client::UpdateQueryParams::ProdId::CRX);
 }
 
 base::Version ChromeUpdateClientConfig::GetBrowserVersion() const {

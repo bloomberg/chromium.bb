@@ -40,7 +40,7 @@ using InstallerAttribute = std::pair<std::string, std::string>;
 // For example:
 //
 // <?xml version="1.0" encoding="UTF-8"?>
-// <request protocol="3.0" version="chrome-32.0.1.0"  prodversion="32.0.1.0"
+// <request protocol="3.0" version="chrome-32.0.1.0" prodversion="32.0.1.0"
 //        requestid="{7383396D-B4DD-46E1-9104-AAC6B918E792}"
 //        updaterchannel="canary" arch="x86" nacl_arch="x86-64"
 //        ADDITIONAL ATTRIBUTES>
@@ -56,7 +56,8 @@ using InstallerAttribute = std::pair<std::string, std::string>;
 // If specified, |additional_attributes| are appended as attributes of the
 // request element. The additional attributes have to be well-formed for
 // insertion in the request element.
-std::string BuildProtocolRequest(const std::string& browser_version,
+std::string BuildProtocolRequest(const std::string& prod_id,
+                                 const std::string& browser_version,
                                  const std::string& channel,
                                  const std::string& lang,
                                  const std::string& os_long_name,

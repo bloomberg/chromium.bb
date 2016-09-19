@@ -11,6 +11,7 @@
 #include "base/version.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/component_patcher_operation.h"
+#include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
@@ -33,6 +34,7 @@ class IOSConfigurator : public update_client::Configurator {
   int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
   std::vector<GURL> PingUrl() const override;
+  std::string GetProdId() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
   std::string GetBrand() const override;
@@ -93,6 +95,11 @@ std::vector<GURL> IOSConfigurator::UpdateUrl() const {
 
 std::vector<GURL> IOSConfigurator::PingUrl() const {
   return configurator_impl_.PingUrl();
+}
+
+std::string IOSConfigurator::GetProdId() const {
+  return update_client::UpdateQueryParams::GetProdIdString(
+      update_client::UpdateQueryParams::ProdId::CHROME);
 }
 
 base::Version IOSConfigurator::GetBrowserVersion() const {

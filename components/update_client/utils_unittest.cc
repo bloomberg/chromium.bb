@@ -23,17 +23,22 @@ base::FilePath MakeTestFilePath(const char* file) {
 
 namespace update_client {
 
-TEST(UpdateClientUtils, BuildProtocolRequest_DownloadPreference) {
-  const string emptystr;
+TEST(UpdateClientUtils, BuildProtocolRequest_ProdIdVersion) {
+  // Verifies that |prod_id| and |version| are serialized.
+  const string request =
+      BuildProtocolRequest("some_prod_id", "1.0", "", "", "", "", "", "");
+  EXPECT_NE(string::npos, request.find(" version=\"some_prod_id-1.0\" "));
+}
 
+TEST(UpdateClientUtils, BuildProtocolRequest_DownloadPreference) {
   // Verifies that an empty |download_preference| is not serialized.
-  const string request_no_dlpref = BuildProtocolRequest(
-      emptystr, emptystr, emptystr, emptystr, emptystr, emptystr, emptystr);
+  const string request_no_dlpref =
+      BuildProtocolRequest("", "", "", "", "", "", "", "");
   EXPECT_EQ(string::npos, request_no_dlpref.find(" dlpref="));
 
   // Verifies that |download_preference| is serialized.
-  const string request_with_dlpref = BuildProtocolRequest(
-      emptystr, emptystr, emptystr, emptystr, "some pref", emptystr, emptystr);
+  const string request_with_dlpref =
+      BuildProtocolRequest("", "", "", "", "", "some pref", "", "");
   EXPECT_NE(string::npos, request_with_dlpref.find(" dlpref=\"some pref\""));
 }
 

@@ -25,6 +25,7 @@
 #include "components/component_updater/configurator_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace component_updater {
@@ -45,6 +46,7 @@ class ChromeConfigurator : public update_client::Configurator {
   int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
   std::vector<GURL> PingUrl() const override;
+  std::string GetProdId() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
   std::string GetBrand() const override;
@@ -110,6 +112,11 @@ std::vector<GURL> ChromeConfigurator::UpdateUrl() const {
 
 std::vector<GURL> ChromeConfigurator::PingUrl() const {
   return configurator_impl_.PingUrl();
+}
+
+std::string ChromeConfigurator::GetProdId() const {
+  return update_client::UpdateQueryParams::GetProdIdString(
+      update_client::UpdateQueryParams::ProdId::CHROME);
 }
 
 base::Version ChromeConfigurator::GetBrowserVersion() const {

@@ -162,10 +162,10 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
       ping_event.c_str(),                                  // ping event
       BuildDownloadCompleteEventElements(item).c_str()));  // download events
 
-  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
-                              config.GetChannel(), config.GetLang(),
-                              config.GetOSLongName(),
-                              config.GetDownloadPreference(), app_element, "");
+  return BuildProtocolRequest(
+      config.GetProdId(), config.GetBrowserVersion().GetString(),
+      config.GetChannel(), config.GetLang(), config.GetOSLongName(),
+      config.GetDownloadPreference(), app_element, "");
 }
 
 // Sends a fire and forget ping. The instances of this class have no

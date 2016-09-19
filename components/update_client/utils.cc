@@ -68,16 +68,14 @@ std::string HexStringToID(const std::string& hexstr) {
 
 }  // namespace
 
-std::string BuildProtocolRequest(const std::string& browser_version,
+std::string BuildProtocolRequest(const std::string& prod_id,
+                                 const std::string& browser_version,
                                  const std::string& channel,
                                  const std::string& lang,
                                  const std::string& os_long_name,
                                  const std::string& download_preference,
                                  const std::string& request_body,
                                  const std::string& additional_attributes) {
-  const std::string prod_id(
-      UpdateQueryParams::GetProdIdString(UpdateQueryParams::CHROME));
-
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<request protocol=\"3.0\" ");
@@ -91,8 +89,8 @@ std::string BuildProtocolRequest(const std::string& browser_version,
       "version=\"%s-%s\" prodversion=\"%s\" "
       "requestid=\"{%s}\" lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
-      prod_id.c_str(),
-      browser_version.c_str(),            // "version"
+      prod_id.c_str(),                    // "version" is prefixed by prod_id.
+      browser_version.c_str(),
       browser_version.c_str(),            // "prodversion"
       base::GenerateGUID().c_str(),       // "requestid"
       lang.c_str(),                       // "lang",

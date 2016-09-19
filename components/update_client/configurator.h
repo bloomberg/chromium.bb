@@ -58,6 +58,11 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // disabled. Similarly, these URLs have a fall back behavior too.
   virtual std::vector<GURL> PingUrl() const = 0;
 
+  // The ProdId is used as a prefix in some of the version strings which appear
+  // in the protocol requests. Possible values include "chrome", "chromecrx",
+  // "chromiumcrx", and "unknown".
+  virtual std::string GetProdId() const = 0;
+
   // Version of the application. Used to compare the component manifests.
   virtual base::Version GetBrowserVersion() const = 0;
 

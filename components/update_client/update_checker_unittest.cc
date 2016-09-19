@@ -204,6 +204,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find("<hw physmemory="));
 
+  // Tests that the progid is injected correctly from the configurator.
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(
+                " version=\"fake_prodid-30.0\" prodversion=\"30.0\" "));
+
   // Sanity check the arguments of the callback after parsing.
   EXPECT_EQ(0, error_);
   EXPECT_EQ(1ul, results_.list.size());

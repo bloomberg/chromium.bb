@@ -70,6 +70,10 @@ std::vector<GURL> TestConfigurator::PingUrl() const {
   return UpdateUrl();
 }
 
+std::string TestConfigurator::GetProdId() const {
+  return "fake_prodid";
+}
+
 base::Version TestConfigurator::GetBrowserVersion() const {
   // Needs to be larger than the required version in tested component manifests.
   return base::Version("30.0");
