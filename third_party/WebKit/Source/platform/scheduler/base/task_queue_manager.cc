@@ -190,14 +190,10 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
     return;
   }
 
-  // Only request the wake up if, either there are no wake ups scheduled, or if
-  // its sooner than any previously requested wake up.
+  // De-duplicate DoWork posts.
   base::TimeTicks run_time = now + delay;
-  if (!main_thread_pending_wakeups_.empty() &&
-      *main_thread_pending_wakeups_.begin() <= run_time) {
+  if (!main_thread_pending_wakeups_.insert(run_time).second)
     return;
-  }
-  main_thread_pending_wakeups_.insert(run_time);
   delegate_->PostDelayedTask(
       from_here, base::Bind(&TaskQueueManager::DoWork,
                             weak_factory_.GetWeakPtr(), run_time, true),

@@ -198,7 +198,7 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
     // in which EnqueueTaskLocks is called is respected when choosing which
     // queue to execute a task from.
     if (dedup_set.insert(next_wakeup->second).second) {
-      next_wakeup->second->WakeUpForDelayedWork(lazy_now);
+      next_wakeup->second->MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
     }
     delayed_wakeup_multimap_.erase(next_wakeup);
   }
