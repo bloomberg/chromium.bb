@@ -40,18 +40,18 @@ ColorTransform::TriStim Xy2xyz(float x, float y) {
 void GetPrimaries(ColorSpace::PrimaryID id,
                   ColorTransform::TriStim primaries[4]) {
   switch (id) {
-    default:
-    // If we don't know, assume BT709
+    case ColorSpace::PrimaryID::CUSTOM:
+      NOTREACHED();
 
+    case ColorSpace::PrimaryID::RESERVED0:
+    case ColorSpace::PrimaryID::RESERVED:
+    case ColorSpace::PrimaryID::UNSPECIFIED:
+    case ColorSpace::PrimaryID::UNKNOWN:
     case ColorSpace::PrimaryID::BT709:
-      // Red
-      primaries[0] = Xy2xyz(0.640f, 0.330f);
-      // Green
-      primaries[1] = Xy2xyz(0.300f, 0.600f);
-      // Blue
-      primaries[2] = Xy2xyz(0.150f, 0.060f);
-      // Whitepoint (D65f)
-      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
+      // BT709 is our default case. Put it after the switch just
+      // in case we somehow get an id which is not listed in the switch.
+      // (We don't want to use "default", because we want the compiler
+      //  to tell us if we forgot some enum values.)
       break;
 
     case ColorSpace::PrimaryID::BT470M:
@@ -63,7 +63,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.14f, 0.08f);
       // Whitepoint
       primaries[3] = Xy2xyz(0.31f, 0.316f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::BT470BG:
       // Red
@@ -74,7 +74,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.15f, 0.06f);
       // Whitepoint (D65f)
       primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::SMPTE170M:
     case ColorSpace::PrimaryID::SMPTE240M:
@@ -86,7 +86,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.155f, 0.070f);
       // Whitepoint (D65f)
       primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::FILM:
       // Red
@@ -97,7 +97,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.145f, 0.049f);
       // Whitepoint (Cf)
       primaries[3] = Xy2xyz(0.310f, 0.136f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::BT2020:
       // Red
@@ -108,7 +108,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.131f, 0.046f);
       // Whitepoint (D65f)
       primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::SMPTEST428_1:
       // X
@@ -119,7 +119,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.0f, 0.0f);
       // Whitepoint (Ef)
       primaries[3] = Xy2xyz(1.0f / 3.0f, 1.0f / 3.0f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::SMPTEST431_2:
       // Red
@@ -130,7 +130,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.150f, 0.060f);
       // Whitepoint
       primaries[3] = Xy2xyz(0.314f, 0.351f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::SMPTEST432_1:
       // Red
@@ -141,7 +141,7 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.150f, 0.060f);
       // Whitepoint (D65f)
       primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      break;
+      return;
 
     case ColorSpace::PrimaryID::XYZ_D50:
       // X
@@ -152,8 +152,17 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       primaries[2] = Xy2xyz(0.0f, 0.0f);
       // D50
       primaries[3] = Xy2xyz(0.34567f, 0.35850f);
-      break;
+      return;
   }
+
+  // Red
+  primaries[0] = Xy2xyz(0.640f, 0.330f);
+  // Green
+  primaries[1] = Xy2xyz(0.300f, 0.600f);
+  // Blue
+  primaries[2] = Xy2xyz(0.150f, 0.060f);
+  // Whitepoint (D65f)
+  primaries[3] = Xy2xyz(0.3127f, 0.3290f);
 }
 
 GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
@@ -191,20 +200,24 @@ GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
 
 GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
   switch (id) {
-    default:
+    case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
+      // Should already be handled.
+      NOTREACHED();
+    case ColorSpace::TransferID::CUSTOM:
+    // TODO(hubbe): Actually implement custom transfer functions.
+    case ColorSpace::TransferID::RESERVED0:
+    case ColorSpace::TransferID::RESERVED:
+    case ColorSpace::TransferID::UNSPECIFIED:
+    case ColorSpace::TransferID::UNKNOWN:
+    // All unknown values default to BT709
+
     case ColorSpace::TransferID::BT709:
     case ColorSpace::TransferID::SMPTE170M:
     case ColorSpace::TransferID::BT2020_10:
-    case ColorSpace::TransferID::BT2020_12: {
-      v = fmax(0.0f, v);
-      float a = 1.099296826809442f;
-      float b = 0.018053968510807f;
-      if (v <= b) {
-        return 4.5f * v;
-      } else {
-        return a * powf(v, 0.45f) - (a - 1.0f);
-      }
-    }
+    case ColorSpace::TransferID::BT2020_12:
+      // BT709 is our "default" cause, so put the code after the switch
+      // to avoid "control reaches end of non-void function" errors.
+      break;
 
     case ColorSpace::TransferID::GAMMA22:
       v = fmax(0.0f, v);
@@ -305,24 +318,34 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       v = fmax(0.0f, v);
       return powf(v, 1.0f / 2.4f);
   }
+
+  v = fmax(0.0f, v);
+  float a = 1.099296826809442f;
+  float b = 0.018053968510807f;
+  if (v <= b) {
+    return 4.5f * v;
+  } else {
+    return a * powf(v, 0.45f) - (a - 1.0f);
+  }
 }
 
 GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
   switch (id) {
-    default:
+    case ColorSpace::TransferID::CUSTOM:
+    // TODO(hubbe): Actually implement custom transfer functions.
+    case ColorSpace::TransferID::RESERVED0:
+    case ColorSpace::TransferID::RESERVED:
+    case ColorSpace::TransferID::UNSPECIFIED:
+    case ColorSpace::TransferID::UNKNOWN:
+    // All unknown values default to BT709
+
     case ColorSpace::TransferID::BT709:
     case ColorSpace::TransferID::SMPTE170M:
     case ColorSpace::TransferID::BT2020_10:
-    case ColorSpace::TransferID::BT2020_12: {
-      v = fmax(0.0f, v);
-      float a = 1.099296826809442f;
-      float b = 0.018053968510807f;
-      if (v < FromLinear(ColorSpace::TransferID::BT709, b)) {
-        return v / 4.5f;
-      } else {
-        return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
-      }
-    }
+    case ColorSpace::TransferID::BT2020_12:
+      // BT709 is our "default" cause, so put the code after the switch
+      // to avoid "control reaches end of non-void function" errors.
+      break;
 
     case ColorSpace::TransferID::GAMMA22:
       v = fmax(0.0f, v);
@@ -432,6 +455,15 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       return v_ / Lmax;
     }
   }
+
+  v = fmax(0.0f, v);
+  float a = 1.099296826809442f;
+  float b = 0.018053968510807f;
+  if (v < FromLinear(ColorSpace::TransferID::BT709, b)) {
+    return v / 4.5f;
+  } else {
+    return powf((v + a - 1.0f) / a, 1.0f / 0.45f);
+  }
 }
 
 namespace {
@@ -461,7 +493,9 @@ GFX_EXPORT ColorTransform::TriStim ToLinear(ColorSpace::TransferID id,
 }
 
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
-  float Kr = 0.0f, Kb = 0.0f;
+  // Default values for BT709;
+  float Kr = 0.2126f;
+  float Kb = 0.0722f;
   switch (id) {
     case ColorSpace::MatrixID::RGB:
       return Transform();
@@ -469,8 +503,8 @@ GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
     case ColorSpace::MatrixID::BT709:
     case ColorSpace::MatrixID::UNSPECIFIED:
     case ColorSpace::MatrixID::RESERVED:
-      Kr = 0.2126f;
-      Kb = 0.0722f;
+    case ColorSpace::MatrixID::UNKNOWN:
+      // Default values are already set.
       break;
 
     case ColorSpace::MatrixID::FCC:
@@ -544,6 +578,7 @@ Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
     case ColorSpace::MatrixID::BT2020_NCL:
     case ColorSpace::MatrixID::BT2020_CL:
     case ColorSpace::MatrixID::YDZDX:
+    case ColorSpace::MatrixID::UNKNOWN:
       return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
                        0.0f, 255.0f / 224.0f, 0.0f, -15.5f / 224.0f,  // 2
                        0.0f, 0.0f, 255.0f / 224.0f, -15.5f / 224.0f,  // 3
