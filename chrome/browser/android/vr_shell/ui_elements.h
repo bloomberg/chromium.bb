@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chrome/browser/android/vr_shell/vr_util.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
+
+class Animation;
 
 enum XAnchoring {
   XLEFT = 0,
@@ -61,18 +63,22 @@ struct ContentRectangle : public WorldRectangle {
   ContentRectangle();
   ~ContentRectangle();
 
-  int id;
+  void Animate(int64_t time);
+
+  int id = 0;
+
   // samplerExternalOES texture data for desktop content image.
-  int content_texture_handle;
-  Rectf copy_rect;
-  Recti window_rect;
-  gvr::Vec3f size;
-  gvr::Vec3f translation;
-  XAnchoring x_anchoring;
-  YAnchoring y_anchoring;
-  bool anchor_z;
+  int content_texture_handle = -1;
+  Rectf copy_rect = {0.0f, 0.0f, 0.0f, 0.0f};
+  Recti window_rect = {0.0f, 0.0f, 0.0f, 0.0f};
+  gvr::Vec3f size = {0.0f, 0.0f, 0.0f};
+  gvr::Vec3f translation = {0.0f, 0.0f, 0.0f};
+  XAnchoring x_anchoring = XAnchoring::XNONE;
+  YAnchoring y_anchoring = YAnchoring::YNONE;
+  bool anchor_z = false;
   std::vector<float> orientation_axis_angle;
   std::vector<float> rotation_axis_angle;
+  std::vector<std::unique_ptr<Animation>> animations;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentRectangle);

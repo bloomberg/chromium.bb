@@ -5,7 +5,8 @@
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 
 #include <cmath>
-#include <vector>
+
+#include "chrome/browser/android/vr_shell/animation.h"
 
 namespace vr_shell {
 
@@ -85,6 +86,96 @@ float WorldRectangle::GetRayDistance(gvr::Vec3f ray_origin,
 ContentRectangle::ContentRectangle() = default;
 
 ContentRectangle::~ContentRectangle() = default;
+
+void ContentRectangle::Animate(int64_t time) {
+  for (auto& it : animations) {
+    Animation& animation = *it;
+    if (time < animation.start)
+      continue;
+
+    // If |from| is not specified, start at the current values.
+    if (animation.from.size() == 0) {
+      switch (animation.property) {
+        case Animation::COPYRECT:
+          animation.from.push_back(copy_rect.x);
+          animation.from.push_back(copy_rect.y);
+          animation.from.push_back(copy_rect.width);
+          animation.from.push_back(copy_rect.height);
+          break;
+        case Animation::SIZE:
+          animation.from.push_back(size.x);
+          animation.from.push_back(size.y);
+          animation.from.push_back(size.z);
+          break;
+        case Animation::TRANSLATION:
+          animation.from.push_back(translation.x);
+          animation.from.push_back(translation.y);
+          animation.from.push_back(translation.z);
+          break;
+        case Animation::ROTATION:
+          animation.from.push_back(rotation_axis_angle[0]);
+          animation.from.push_back(rotation_axis_angle[1]);
+          animation.from.push_back(rotation_axis_angle[2]);
+          animation.from.push_back(rotation_axis_angle[3]);
+          break;
+        case Animation::UNUSED:
+          break;
+      }
+    }
+    DCHECK_EQ(animation.from.size(), animation.to.size());
+
+    std::vector<float> values(animation.from.size());
+    for (std::size_t i = 0; i < animation.from.size(); ++i) {
+      if (animation.to[i] == animation.from[i] ||
+          time >= (animation.start + animation.duration)) {
+        values[i] = animation.to[i];
+        continue;
+      }
+      double value = animation.easing->CalculateValue(
+          (double)(time - animation.start) / (double)animation.duration);
+      values[i] =
+          animation.from[i] + (value * (animation.to[i] - animation.from[i]));
+    }
+    switch (animation.property) {
+      case Animation::COPYRECT:
+        DCHECK_EQ(animation.from.size(), 4u);
+        copy_rect.x = values[0];
+        copy_rect.y = values[1];
+        copy_rect.width = values[2];
+        copy_rect.height = values[3];
+        break;
+      case Animation::SIZE:
+        DCHECK_EQ(animation.from.size(), 3u);
+        size.x = values[0];
+        size.y = values[1];
+        size.z = values[2];
+        break;
+      case Animation::TRANSLATION:
+        DCHECK_EQ(animation.from.size(), 3u);
+        translation.x = values[0];
+        translation.y = values[1];
+        translation.z = values[2];
+        break;
+      case Animation::ROTATION:
+        DCHECK_EQ(animation.from.size(), 4u);
+        rotation_axis_angle[0] = values[0];
+        rotation_axis_angle[1] = values[1];
+        rotation_axis_angle[2] = values[2];
+        rotation_axis_angle[3] = values[3];
+        break;
+      case Animation::UNUSED:
+        break;
+    }
+  }
+  for (auto it = animations.begin(); it != animations.end();) {
+    const Animation& animation = **it;
+    if (time >= (animation.start + animation.duration)) {
+      it = animations.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
 
 }  // namespace vr_shell
 

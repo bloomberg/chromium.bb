@@ -6,8 +6,9 @@
 
 #include <thread>
 
+#include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
-#include "chrome/browser/android/vr_shell/vr_util.h"
 #include "jni/VrShell_jni.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/init/gl_factory.h"

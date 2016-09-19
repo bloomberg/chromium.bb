@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/vr_util.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 
 #include <array>
 #include <cmath>
@@ -103,20 +103,6 @@ void ScaleMRight(gvr::Mat4f& tmat, const gvr::Mat4f& mat,
     tmat.m[i][1] *= y;
     tmat.m[i][2] *= z;
   }
-}
-
-std::array<float, 16> MatrixToGLArray(const gvr::Mat4f& matrix) {
-  // Note that this performs a *transpose* to a column-major matrix array, as
-  // expected by GL. The input matrix has translation components at [i][3] for
-  // use with row vectors and premultiplied transforms. In the output, the
-  // translation elements are at the end at positions 3*4+i.
-  std::array<float, 16> result;
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      result[j * 4 + i] = matrix.m[i][j];
-    }
-  }
-  return result;
 }
 
 gvr::Mat4f MatrixTranspose(const gvr::Mat4f& mat) {
@@ -221,23 +207,6 @@ gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
   return result;
 }
 
-gvr::Rectf ModulateRect(const gvr::Rectf& rect, float width, float height) {
-  gvr::Rectf result = {rect.left * width, rect.right * width,
-                       rect.bottom * height, rect.top * height};
-  return result;
-}
-
-gvr::Recti CalculatePixelSpaceRect(const gvr::Sizei& texture_size,
-                                   const gvr::Rectf& texture_rect) {
-  float width = static_cast<float>(texture_size.width);
-  float height = static_cast<float>(texture_size.height);
-  gvr::Rectf rect = ModulateRect(texture_rect, width, height);
-  gvr::Recti result = {
-      static_cast<int>(rect.left), static_cast<int>(rect.right),
-      static_cast<int>(rect.bottom), static_cast<int>(rect.top)};
-  return result;
-}
-
 gvr::Vec3f getForwardVector(const gvr::Mat4f& matrix) {
   gvr::Vec3f forward;
   float* fp = &forward.x;
@@ -261,84 +230,6 @@ gvr::Vec3f getTranslation(const gvr::Mat4f& matrix) {
     tp[i] = matrix.m[i][3];
   }
   return translation;
-}
-
-GLuint CompileShader(GLenum shader_type,
-                     const GLchar* shader_source,
-                     std::string& error) {
-  GLuint shader_handle = glCreateShader(shader_type);
-  if (shader_handle != 0) {
-    // Pass in the shader source.
-    int len = strlen(shader_source);
-    glShaderSource(shader_handle, 1, &shader_source, &len);
-    // Compile the shader.
-    glCompileShader(shader_handle);
-    // Get the compilation status.
-    GLint status;
-    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE) {
-      GLint info_log_length;
-      glGetShaderiv(shader_handle, GL_INFO_LOG_LENGTH, &info_log_length);
-      GLchar* str_info_log = new GLchar[info_log_length + 1];
-      glGetShaderInfoLog(shader_handle, info_log_length, nullptr, str_info_log);
-      error = "Error compiling shader: ";
-      error += str_info_log;
-      delete[] str_info_log;
-      glDeleteShader(shader_handle);
-      shader_handle = 0;
-    }
-  }
-
-  return shader_handle;
-}
-
-GLuint CreateAndLinkProgram(GLuint vertext_shader_handle,
-                            GLuint fragment_shader_handle,
-                            int num_attributes,
-                            const GLchar** attributes,
-                            std::string& error) {
-  GLuint program_handle = glCreateProgram();
-
-  if (program_handle != 0) {
-    // Bind the vertex shader to the program.
-    glAttachShader(program_handle, vertext_shader_handle);
-
-    // Bind the fragment shader to the program.
-    glAttachShader(program_handle, fragment_shader_handle);
-
-    // Bind attributes. This is optional, no need to supply them if
-    // using glGetAttribLocation to look them up. Useful for a single
-    // vertex array object (VAO) that is used with multiple shaders.
-    if (attributes != nullptr) {
-      for (int i = 0; i < num_attributes; i++) {
-        glBindAttribLocation(program_handle, i, attributes[i]);
-      }
-    }
-
-    // Link the two shaders together into a program.
-    glLinkProgram(program_handle);
-
-    // Get the link status.
-    GLint link_status;
-    glGetProgramiv(program_handle, GL_LINK_STATUS, &link_status);
-
-    // If the link failed, delete the program.
-    if (link_status == GL_FALSE) {
-      GLint info_log_length;
-      glGetProgramiv(program_handle, GL_INFO_LOG_LENGTH, &info_log_length);
-
-      GLchar* str_info_log = new GLchar[info_log_length + 1];
-      glGetProgramInfoLog(program_handle, info_log_length, nullptr,
-                          str_info_log);
-      error = "Error compiling program: ";
-      error += str_info_log;
-      delete[] str_info_log;
-      glDeleteProgram(program_handle);
-      program_handle = 0;
-    }
-  }
-
-  return program_handle;
 }
 
 float VectorLength(const gvr::Vec3f& vec) {

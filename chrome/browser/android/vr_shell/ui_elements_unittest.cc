@@ -1,0 +1,167 @@
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/android/vr_shell/ui_elements.h"
+
+#include "base/macros.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/android/vr_shell/animation.h"
+#include "chrome/browser/android/vr_shell/easing.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#define EXPECT_VEC3F_EQ(a, b) \
+  EXPECT_FLOAT_EQ(a.x, b.x); \
+  EXPECT_FLOAT_EQ(a.y, b.y); \
+  EXPECT_FLOAT_EQ(a.z, b.z);
+
+#define EXPECT_RECTF_EQ(a, b) \
+  EXPECT_FLOAT_EQ(a.x, b.x); \
+  EXPECT_FLOAT_EQ(a.y, b.y); \
+  EXPECT_FLOAT_EQ(a.width, b.width); \
+  EXPECT_FLOAT_EQ(a.height, b.height);
+
+#define EXPECT_VECTOR_FLOAT_4_EQ(a, b) \
+  EXPECT_EQ(a.size(), 4u); \
+  EXPECT_EQ(b.size(), 4u); \
+  EXPECT_FLOAT_EQ(a[0], b[0]); \
+  EXPECT_FLOAT_EQ(a[1], b[1]); \
+  EXPECT_FLOAT_EQ(a[2], b[2]); \
+  EXPECT_FLOAT_EQ(a[3], b[3]);
+
+namespace vr_shell {
+
+TEST(UiElements, AnimateCopyRect) {
+  ContentRectangle rect;
+  rect.copy_rect = {10, 100, 1000, 10000};
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::COPYRECT,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {20, 200, 2000, 20000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_RECTF_EQ(rect.copy_rect, Rectf({10, 100, 1000, 10000}));
+  rect.Animate(60000);
+  EXPECT_RECTF_EQ(rect.copy_rect, Rectf({20, 200, 2000, 20000}));
+}
+
+TEST(UiElements, AnimateSize) {
+  ContentRectangle rect;
+  rect.size = {10, 100, 1000};
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::SIZE,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({10, 100, 1000}));
+  rect.Animate(60000);
+  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({20, 200, 2000}));
+}
+
+TEST(UiElements, AnimateTranslation) {
+  ContentRectangle rect;
+  rect.translation = {10, 100, 1000};
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({10, 100, 1000}));
+  rect.Animate(60000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({20, 200, 2000}));
+}
+
+TEST(UiElements, AnimateRotation) {
+  ContentRectangle rect;
+  rect.rotation_axis_angle = {10, 100, 1000, 10000};
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::ROTATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {20, 200, 2000, 20000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_VECTOR_FLOAT_4_EQ(rect.rotation_axis_angle,
+                           std::vector<float>({10, 100, 1000, 10000}));
+  rect.Animate(60000);
+  EXPECT_VECTOR_FLOAT_4_EQ(rect.rotation_axis_angle,
+                           std::vector<float>({20, 200, 2000, 20000}));
+}
+
+TEST(UiElements, AnimationHasNoEffectBeforeScheduledStart) {
+  ContentRectangle rect;
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {10, 100, 1000}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(49999);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({0, 0, 0}));
+}
+
+TEST(UiElements, AnimationPurgedWhenDone) {
+  ContentRectangle rect;
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {10, 100, 1000}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(60000);
+  EXPECT_EQ(0u, rect.animations.size());
+}
+
+TEST(UiElements, AnimationLinearEasing) {
+  ContentRectangle rect;
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {10, 100, 1000}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({10, 100, 1000}));
+  rect.Animate(55000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({15, 150, 1500}));
+  rect.Animate(60000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({20, 200, 2000}));
+}
+
+TEST(UiElements, AnimationStartFromSpecifiedLocation) {
+  ContentRectangle rect;
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {10, 100, 1000}, {20, 200, 2000}, 50000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.Animate(50000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({10, 100, 1000}));
+  rect.Animate(60000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({20, 200, 2000}));
+}
+
+// Ensure that when a new animation overlaps another of the same type, the
+// newly added animation overrides the original.  For example:
+//   Animation 1:  ? .......... 20
+//   Animation 2:        ?  .......... 50
+//   Result:       0 ... 10 ... 30 ... 50
+TEST(UiElements, AnimationOverlap) {
+  ContentRectangle rect;
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {20, 200, 2000}, 50000, 10000));
+  std::unique_ptr<Animation> animation2(new Animation(
+      0, Animation::Property::TRANSLATION,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {50, 500, 5000}, 55000, 10000));
+  rect.animations.emplace_back(std::move(animation));
+  rect.animations.emplace_back(std::move(animation2));
+  rect.Animate(55000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({10, 100, 1000}));
+  rect.Animate(60000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({30, 300, 3000}));
+  rect.Animate(65000);
+  EXPECT_VEC3F_EQ(rect.translation, gvr::Vec3f({50, 500, 5000}));
+}
+
+}  // namespace vr_shell

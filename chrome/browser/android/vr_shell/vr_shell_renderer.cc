@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 
-#include "chrome/browser/android/vr_shell/vr_util.h"
+#include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace {

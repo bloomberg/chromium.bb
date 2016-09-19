@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/vr_util.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace vr_shell {
 
