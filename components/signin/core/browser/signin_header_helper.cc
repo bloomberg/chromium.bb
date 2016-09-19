@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -43,6 +44,21 @@ bool IsDriveOrigin(const GURL& url) {
   const GURL kGoogleDriveURL("https://drive.google.com");
   const GURL kGoogleDocsURL("https://docs.google.com");
   return url == kGoogleDriveURL || url == kGoogleDocsURL;
+}
+
+bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request) {
+  if (is_header_request) {
+    // GAIA Id is only necessary for Drive. Don't set it otherwise.
+    return IsDriveOrigin(url);
+  }
+
+  // Cookie requests don't have the granularity to only include the GAIA Id for
+  // Drive origin. Set it on all google.com instead.
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  const GURL kGoogleDotComURL("https://google.com");
+  return url == kGoogleDotComURL;
 }
 
 // Determines the service type that has been passed from GAIA in the header.
@@ -86,7 +102,7 @@ MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
 }
 
 std::string BuildMirrorRequestIfPossible(
-    const char* pattern,
+    bool is_header_request,
     const GURL& url,
     const std::string& account_id,
     const content_settings::CookieSettings* cookie_settings,
@@ -103,11 +119,20 @@ std::string BuildMirrorRequestIfPossible(
   if (!signin::IsUrlEligibleForXChromeConnectedHeader(url))
     return std::string();
 
-  return base::StringPrintf(
-      pattern, kGaiaIdAttrName, account_id.c_str(), kProfileModeAttrName,
-      base::IntToString(profile_mode_mask).c_str(),
-      kEnableAccountConsistencyAttrName,
-      switches::IsEnableAccountConsistency() ? "true" : "false");
+  std::vector<std::string> parts;
+  if (IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
+    // Only google.com requires the GAIA ID, don't send it to other domains.
+    parts.push_back(
+        base::StringPrintf("%s=%s", kGaiaIdAttrName, account_id.c_str()));
+  }
+  parts.push_back(
+      base::StringPrintf("%s=%s", kProfileModeAttrName,
+                         base::IntToString(profile_mode_mask).c_str()));
+  parts.push_back(base::StringPrintf(
+      "%s=%s", kEnableAccountConsistencyAttrName,
+      switches::IsEnableAccountConsistency() ? "true" : "false"));
+
+  return base::JoinString(parts, is_header_request ? "," : ":");
 }
 
 }  // namespace
@@ -145,36 +170,37 @@ std::string BuildMirrorRequestCookieIfPossible(
     const std::string& account_id,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
-  return BuildMirrorRequestIfPossible("%s=%s:%s=%s:%s=%s", url, account_id,
-                                      cookie_settings, profile_mode_mask);
-  }
+  return BuildMirrorRequestIfPossible(false /* is_header_request */, url,
+                                      account_id, cookie_settings,
+                                      profile_mode_mask);
+}
 
-  bool AppendOrRemoveMirrorRequestHeaderIfPossible(
-      net::URLRequest* request,
-      const GURL& redirect_url,
-      const std::string& account_id,
-      const content_settings::CookieSettings* cookie_settings,
-      int profile_mode_mask) {
-    const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
-    std::string header_value =
-        BuildMirrorRequestIfPossible("%s=%s,%s=%s,%s=%s", url, account_id,
-                                     cookie_settings, profile_mode_mask);
-    if (header_value.empty()) {
-      // If the request is being redirected, and it has the x-chrome-connected
-      // header, and current url is a Google URL, and the redirected one is not,
-      // remove the header.
-      if (!redirect_url.is_empty() &&
-          request->extra_request_headers().HasHeader(
-              signin::kChromeConnectedHeader) &&
-          signin::IsUrlEligibleForXChromeConnectedHeader(request->url()) &&
-          !signin::IsUrlEligibleForXChromeConnectedHeader(redirect_url)) {
-        request->RemoveRequestHeaderByName(signin::kChromeConnectedHeader);
-      }
-      return false;
+bool AppendOrRemoveMirrorRequestHeaderIfPossible(
+    net::URLRequest* request,
+    const GURL& redirect_url,
+    const std::string& account_id,
+    const content_settings::CookieSettings* cookie_settings,
+    int profile_mode_mask) {
+  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+  std::string header_value = BuildMirrorRequestIfPossible(
+      true /* is_header_request */, url, account_id, cookie_settings,
+      profile_mode_mask);
+  if (header_value.empty()) {
+    // If the request is being redirected, and it has the x-chrome-connected
+    // header, and current url is a Google URL, and the redirected one is not,
+    // remove the header.
+    if (!redirect_url.is_empty() &&
+        request->extra_request_headers().HasHeader(
+            signin::kChromeConnectedHeader) &&
+        signin::IsUrlEligibleForXChromeConnectedHeader(request->url()) &&
+        !signin::IsUrlEligibleForXChromeConnectedHeader(redirect_url)) {
+      request->RemoveRequestHeaderByName(signin::kChromeConnectedHeader);
     }
-    request->SetExtraRequestHeaderByName(kChromeConnectedHeader, header_value,
-                                         false);
-    return true;
+    return false;
+  }
+  request->SetExtraRequestHeaderByName(kChromeConnectedHeader, header_value,
+                                       false);
+  return true;
 }
 
 ManageAccountsParams BuildManageAccountsParams(
