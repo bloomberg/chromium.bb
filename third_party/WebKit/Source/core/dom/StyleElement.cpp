@@ -105,18 +105,6 @@ void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
         document.styleEngine().setNeedsActiveStyleUpdate(removedSheet, AnalyzedStyleUpdate);
 }
 
-void StyleElement::clearDocumentData(Document& document, Element* element)
-{
-    if (m_sheet)
-        m_sheet->clearOwnerNode();
-
-    if (m_registeredAsCandidate) {
-        DCHECK(element->isConnected());
-        document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
-        m_registeredAsCandidate = false;
-    }
-}
-
 StyleElement::ProcessingResult StyleElement::childrenChanged(Element* element)
 {
     DCHECK(element);

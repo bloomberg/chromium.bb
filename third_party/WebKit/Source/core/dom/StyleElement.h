@@ -54,7 +54,6 @@ protected:
 
     void insertedInto(Element*, ContainerNode* insertionPoint);
     void removedFrom(Element*, ContainerNode* insertionPoint);
-    void clearDocumentData(Document&, Element*);
     ProcessingResult processStyleSheet(Document&, Element*);
     ProcessingResult childrenChanged(Element*);
     ProcessingResult finishParsingChildren(Element*);
