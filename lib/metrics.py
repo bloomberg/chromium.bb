@@ -174,7 +174,8 @@ def SecondsDistribution(name):
   (in seconds) in the range of 1 second to 32 days.
   """
   b = ts_mon.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR)
-  return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
+  return ts_mon.CumulativeDistributionMetric(
+      name, bucketer=b, units=ts_mon.MetricsDataUnits.SECONDS)
 
 
 @contextlib.contextmanager
