@@ -1041,9 +1041,7 @@ class DiscardCheckingGLES2Interface : public TestGLES2Interface {
 class NonReshapableOutputSurface : public FakeOutputSurface {
  public:
   explicit NonReshapableOutputSurface(std::unique_ptr<TestGLES2Interface> gl)
-      : FakeOutputSurface(TestContextProvider::Create(std::move(gl)),
-                          nullptr,
-                          false) {
+      : FakeOutputSurface(TestContextProvider::Create(std::move(gl))) {
     surface_size_ = gfx::Size(500, 500);
   }
   void Reshape(const gfx::Size& size,
@@ -1594,11 +1592,8 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
 class MockOutputSurface : public OutputSurface {
  public:
   MockOutputSurface()
-      : OutputSurface(
-            TestContextProvider::Create(
-                base::MakeUnique<StrictMock<OutputSurfaceMockContext>>()),
-            nullptr,
-            nullptr) {
+      : OutputSurface(TestContextProvider::Create(
+            base::MakeUnique<StrictMock<OutputSurfaceMockContext>>())) {
     surface_size_ = gfx::Size(100, 100);
   }
   virtual ~MockOutputSurface() {}

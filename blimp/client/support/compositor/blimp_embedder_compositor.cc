@@ -42,7 +42,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
  public:
   explicit DisplayOutputSurface(
       scoped_refptr<cc::ContextProvider> context_provider)
-      : cc::OutputSurface(std::move(context_provider), nullptr, nullptr) {}
+      : cc::OutputSurface(std::move(context_provider)) {}
 
   ~DisplayOutputSurface() override = default;
 

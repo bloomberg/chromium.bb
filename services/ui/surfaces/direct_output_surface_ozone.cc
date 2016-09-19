@@ -29,7 +29,7 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
     uint32_t internalformat)
-    : cc::OutputSurface(context_provider, nullptr, nullptr),
+    : cc::OutputSurface(context_provider),
       gl_helper_(context_provider->ContextGL(),
                  context_provider->ContextSupport()),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),

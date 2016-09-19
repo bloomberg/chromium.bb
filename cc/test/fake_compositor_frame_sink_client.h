@@ -20,10 +20,7 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
         memory_policy_(0) {}
 
   void SetBeginFrameSource(BeginFrameSource* source) override {}
-  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
   void DidSwapBuffersComplete() override;
-  void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses) override {}
   void ReclaimResources(const ReturnedResourceArray& resources) override {}
   void DidLoseCompositorFrameSink() override;
   void SetExternalTilePriorityConstraints(

@@ -20,7 +20,7 @@ namespace ui {
 DirectOutputSurface::DirectOutputSurface(
     scoped_refptr<SurfacesContextProvider> context_provider,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source)
-    : cc::OutputSurface(context_provider, nullptr, nullptr),
+    : cc::OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {
   context_provider->SetDelegate(this);

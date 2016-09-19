@@ -86,10 +86,7 @@ class FakeRenderWidgetCompositorDelegate
       context_provider->UnboundTestContext3d()->loseContextCHROMIUM(
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
-
-    auto s = cc::FakeCompositorFrameSink::Create3d(std::move(context_provider));
-    EXPECT_EQ(1, s->capabilities().max_frames_pending);
-    return std::move(s);
+    return cc::FakeCompositorFrameSink::Create3d(std::move(context_provider));
   }
 
   void add_success() {

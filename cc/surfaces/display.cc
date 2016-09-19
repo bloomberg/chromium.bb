@@ -168,13 +168,14 @@ void Display::SetOutputIsSecure(bool secure) {
 }
 
 void Display::InitializeRenderer() {
+  // Not relevant for display compositor since it's not delegated.
+  bool delegated_sync_points_required = false;
   resource_provider_.reset(new ResourceProvider(
       output_surface_->context_provider(), bitmap_manager_,
       gpu_memory_buffer_manager_, nullptr, settings_.highp_threshold_min,
       settings_.texture_id_allocation_chunk_size,
-      output_surface_->capabilities().delegated_sync_points_required,
-      settings_.use_gpu_memory_buffer_resources, false,
-      settings_.buffer_to_texture_target_map));
+      delegated_sync_points_required, settings_.use_gpu_memory_buffer_resources,
+      false, settings_.buffer_to_texture_target_map));
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);

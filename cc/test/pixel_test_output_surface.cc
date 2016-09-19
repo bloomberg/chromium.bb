@@ -15,29 +15,18 @@ namespace cc {
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
     bool flipped_output_surface)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+    : OutputSurface(std::move(context_provider)),
       external_stencil_test_(false) {
-  capabilities_.adjust_deadline_for_parent = false;
   capabilities_.flipped_output_surface = flipped_output_surface;
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    bool flipped_output_surface)
-    : PixelTestOutputSurface(std::move(context_provider),
-                             nullptr,
-                             flipped_output_surface) {}
-
-PixelTestOutputSurface::PixelTestOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(nullptr, nullptr, std::move(software_device)),
+    : OutputSurface(std::move(software_device)),
       external_stencil_test_(false) {}
 
-PixelTestOutputSurface::~PixelTestOutputSurface() {}
+PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float scale_factor,

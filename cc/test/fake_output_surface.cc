@@ -14,24 +14,12 @@
 namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
-    bool delegated_rendering)
-    : FakeOutputSurface(std::move(context_provider),
-                        std::move(worker_context_provider),
-                        nullptr,
-                        delegated_rendering) {}
+    scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(std::move(context_provider)) {}
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    bool delegated_rendering)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    std::move(software_device)) {
-  capabilities_.delegated_rendering = false;
-}
+    std::unique_ptr<SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(software_device)) {}
 
 FakeOutputSurface::~FakeOutputSurface() = default;
 

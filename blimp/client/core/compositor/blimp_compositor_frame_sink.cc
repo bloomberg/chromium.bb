@@ -24,14 +24,12 @@ BlimpCompositorFrameSink::BlimpCompositorFrameSink(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     base::WeakPtr<BlimpCompositorFrameSinkProxy> main_thread_proxy)
     : cc::CompositorFrameSink(std::move(compositor_context_provider),
-                              std::move(worker_context_provider),
-                              nullptr),
+                              std::move(worker_context_provider)),
       main_task_runner_(std::move(main_task_runner)),
       main_thread_proxy_(main_thread_proxy),
       bound_to_client_(false),
       weak_factory_(this) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  capabilities_.delegated_rendering = true;
 }
 
 BlimpCompositorFrameSink::~BlimpCompositorFrameSink() = default;
@@ -40,11 +38,6 @@ void BlimpCompositorFrameSink::ReclaimCompositorResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
   client_->ReclaimResources(resources);
-}
-
-uint32_t BlimpCompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  NOTREACHED() << "Should not be called on delegated output surface";
-  return 0;
 }
 
 bool BlimpCompositorFrameSink::BindToClient(
@@ -63,15 +56,6 @@ bool BlimpCompositorFrameSink::BindToClient(
   return success;
 }
 
-void BlimpCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::SwapCompositorFrame,
-                            main_thread_proxy_, base::Passed(&frame)));
-  cc::CompositorFrameSink::PostSwapBuffersComplete();
-}
-
 void BlimpCompositorFrameSink::DetachFromClient() {
   cc::CompositorFrameSink::DetachFromClient();
 
@@ -83,6 +67,15 @@ void BlimpCompositorFrameSink::DetachFromClient() {
   }
 
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void BlimpCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::SwapCompositorFrame,
+                            main_thread_proxy_, base::Passed(&frame)));
+  cc::CompositorFrameSink::PostSwapBuffersComplete();
 }
 
 }  // namespace client

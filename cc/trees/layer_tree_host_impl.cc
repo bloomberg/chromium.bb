@@ -1472,20 +1472,8 @@ void LayerTreeHostImpl::SetExternalTilePriorityConstraints(
   }
 }
 
-void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
-  if (damage_rect.IsEmpty())
-    return;
-  NotifySwapPromiseMonitorsOfSetNeedsRedraw();
-  client_->SetNeedsRedrawRectOnImplThread(damage_rect);
-}
-
 void LayerTreeHostImpl::DidSwapBuffersComplete() {
   client_->DidSwapBuffersCompleteOnImplThread();
-}
-
-void LayerTreeHostImpl::DidReceiveTextureInUseResponses(
-    const gpu::TextureInUseResponses& responses) {
-  NOTREACHED();
 }
 
 void LayerTreeHostImpl::ReclaimResources(
@@ -2304,7 +2292,6 @@ void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
 
 bool LayerTreeHostImpl::InitializeRenderer(
     CompositorFrameSink* compositor_frame_sink) {
-  DCHECK(compositor_frame_sink->capabilities().delegated_rendering);
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
 
   ReleaseCompositorFrameSink();
@@ -2356,15 +2343,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   // TODO(brianderson): Don't use a hard-coded parent draw time.
   base::TimeDelta parent_draw_time =
-      (!settings_.use_external_begin_frame_source &&
-       compositor_frame_sink_->capabilities().adjust_deadline_for_parent)
+      compositor_frame_sink_->capabilities().adjust_deadline_for_parent
           ? BeginFrameArgs::DefaultEstimatedParentDrawTime()
           : base::TimeDelta();
   client_->SetEstimatedParentDrawTime(parent_draw_time);
-
-  DCHECK_EQ(1, compositor_frame_sink_->capabilities().max_frames_pending);
   client_->OnCanDrawStateChanged(CanDraw());
-
   SetFullViewportDamage();
   // There will not be anything to draw here, so set high res
   // to avoid checkerboards, typically when we are recovering

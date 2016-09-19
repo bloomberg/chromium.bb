@@ -34,8 +34,7 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
     : CompositorFrameSink(std::move(context_provider),
-                          std::move(worker_context_provider),
-                          nullptr),
+                          std::move(worker_context_provider)),
       compositor_frame_sink_id_(compositor_frame_sink_id),
       compositor_frame_sink_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
@@ -47,7 +46,6 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   DCHECK(begin_frame_source_);
-  capabilities_.delegated_rendering = true;
 }
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
@@ -68,7 +66,6 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   DCHECK(begin_frame_source_);
-  capabilities_.delegated_rendering = true;
 }
 
 RendererCompositorFrameSink::~RendererCompositorFrameSink() = default;
@@ -121,17 +118,6 @@ void RendererCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
                                              messages_to_deliver_with_frame));
     // ~send_message_scope.
   }
-}
-
-void RendererCompositorFrameSink::BindFramebuffer() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-}
-
-uint32_t RendererCompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-  return 0;
 }
 
 void RendererCompositorFrameSink::OnMessageReceived(

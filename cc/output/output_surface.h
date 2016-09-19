@@ -48,45 +48,55 @@ class OutputSurfaceClient;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
-  // Constructor for GL-based and/or software compositing.
-  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                         scoped_refptr<ContextProvider> worker_context_provider,
-                         std::unique_ptr<SoftwareOutputDevice> software_device);
+  struct Capabilities {
+    Capabilities() = default;
 
+    int max_frames_pending = 1;
+    // Whether this output surface renders to the default OpenGL zero
+    // framebuffer or to an offscreen framebuffer.
+    bool uses_default_gl_framebuffer = true;
+    // Whether this OutputSurface is flipped or not.
+    bool flipped_output_surface = false;
+  };
+
+  // Constructor for GL-based compositing.
+  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
+  // Constructor for software compositing.
+  explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
   // Constructor for Vulkan-based compositing.
   explicit OutputSurface(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
   ~OutputSurface() override;
 
-  struct Capabilities {
-    Capabilities()
-        : delegated_rendering(false),
-          max_frames_pending(1),
-          adjust_deadline_for_parent(true),
-          uses_default_gl_framebuffer(true),
-          flipped_output_surface(false),
-          can_force_reclaim_resources(false),
-          delegated_sync_points_required(true) {}
-    bool delegated_rendering;
-    int max_frames_pending;
-    // This doesn't handle the <webview> case, but once BeginFrame is
-    // supported natively, we shouldn't need adjust_deadline_for_parent.
-    bool adjust_deadline_for_parent;
-    // Whether this output surface renders to the default OpenGL zero
-    // framebuffer or to an offscreen framebuffer.
-    bool uses_default_gl_framebuffer;
-    // Whether this OutputSurface is flipped or not.
-    bool flipped_output_surface;
-    // Whether ForceReclaimResources can be called to reclaim all resources
-    // from the OutputSurface.
-    bool can_force_reclaim_resources;
-    // True if sync points for resources are needed when swapping delegated
-    // frames.
-    bool delegated_sync_points_required;
-  };
+  // Called by the compositor on the compositor thread. This is a place where
+  // thread-specific data for the output surface can be initialized, since from
+  // this point to when DetachFromClient() is called the output surface will
+  // only be used on the compositor thread.
+  // The caller should call DetachFromClient() on the same thread before
+  // destroying the OutputSurface, even if this fails. And BindToClient should
+  // not be called twice for a given OutputSurface.
+  virtual bool BindToClient(OutputSurfaceClient* client);
 
-  // ============== DISPLAY COMPOSITOR ONLY =======================
+  // Called by the compositor on the compositor thread. This is a place where
+  // thread-specific data for the output surface can be uninitialized.
+  virtual void DetachFromClient();
+
+  bool HasClient() { return !!client_; }
+
+  const Capabilities& capabilities() const { return capabilities_; }
+
+  // Obtain the 3d context or the software device associated with this output
+  // surface. Either of these may return a null pointer, but not both.
+  // In the event of a lost context, the entire output surface should be
+  // recreated.
+  ContextProvider* context_provider() const { return context_provider_.get(); }
+  VulkanContextProvider* vulkan_context_provider() const {
+    return vulkan_context_provider_.get();
+  }
+  SoftwareOutputDevice* software_device() const {
+    return software_device_.get();
+  }
 
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
@@ -119,59 +129,14 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
 
+  virtual void BindFramebuffer();
+
   virtual bool HasExternalStencilTest() const;
   virtual void ApplyExternalStencil();
 
-  // ============== LAYER TREE COMPOSITOR ONLY ===================
-
-  // If supported, this causes a ReclaimResources for all resources that are
-  // currently in use.
-  virtual void ForceReclaimResources() {}
-
-  virtual void BindFramebuffer();
   // Gives the GL internal format that should be used for calling CopyTexImage2D
   // when the framebuffer is bound via BindFramebuffer().
   virtual uint32_t GetFramebufferCopyTextureFormat() = 0;
-
-  // Support for a pull-model where draws are requested by the output surface.
-  //
-  // OutputSurface::Invalidate is called by the compositor to notify that
-  // there's new content.
-  virtual void Invalidate() {}
-
-  // ============== BOTH TYPES OF COMPOSITOR ======================
-
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be initialized, since from
-  // this point to when DetachFromClient() is called the output surface will
-  // only be used on the compositor thread.
-  // The caller should call DetachFromClient() on the same thread before
-  // destroying the OutputSurface, even if this fails. And BindToClient should
-  // not be called twice for a given OutputSurface.
-  virtual bool BindToClient(OutputSurfaceClient* client);
-
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be uninitialized.
-  virtual void DetachFromClient();
-
-  bool HasClient() { return !!client_; }
-
-  const Capabilities& capabilities() const { return capabilities_; }
-
-  // Obtain the 3d context or the software device associated with this output
-  // surface. Either of these may return a null pointer, but not both.
-  // In the event of a lost context, the entire output surface should be
-  // recreated.
-  ContextProvider* context_provider() const { return context_provider_.get(); }
-  ContextProvider* worker_context_provider() const {
-    return worker_context_provider_.get();
-  }
-  VulkanContextProvider* vulkan_context_provider() const {
-    return vulkan_context_provider_.get();
-  }
-  SoftwareOutputDevice* software_device() const {
-    return software_device_.get();
-  }
 
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame
@@ -185,21 +150,16 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  // This is used by both display and delegating implementations.
   void PostSwapBuffersComplete();
 
-  // This is how LayerTreeHostImpl hears about context loss when the Display
-  // is the one listening for context loss. Also used internally for the
-  // context provider to inform the LayerTreeHostImpl or Display about loss.
-  // It would become display-compositor-only when LayerTreeHostImpl receives
-  // its contexts independently from the "OutputSurface".
+  // Used internally for the context provider to inform the client about loss,
+  // and can be overridden to change behaviour instead of informing the client.
   virtual void DidLoseOutputSurface();
 
   OutputSurfaceClient* client_ = nullptr;
 
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
-  scoped_refptr<ContextProvider> worker_context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   std::unique_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;

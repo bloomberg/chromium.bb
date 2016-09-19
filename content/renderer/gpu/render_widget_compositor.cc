@@ -1033,8 +1033,6 @@ void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
     return;
   }
 
-  DCHECK_EQ(surface->capabilities().max_frames_pending, 1);
-
   layer_tree_host_->SetCompositorFrameSink(std::move(surface));
 }
 

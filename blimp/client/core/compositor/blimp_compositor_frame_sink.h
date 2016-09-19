@@ -38,10 +38,9 @@ class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
   ~BlimpCompositorFrameSink() override;
 
   // cc::CompositorFrameSink implementation.
-  uint32_t GetFramebufferCopyTextureFormat() override;
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
   void DetachFromClient() override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
 
   // BlimpCompositorFrameSinkProxyClient implementation.
   void ReclaimCompositorResources(

@@ -150,7 +150,7 @@ class OverlayOutputSurface : public OutputSurface {
  public:
   explicit OverlayOutputSurface(
       scoped_refptr<TestContextProvider> context_provider)
-      : OutputSurface(std::move(context_provider), nullptr, nullptr) {
+      : OutputSurface(std::move(context_provider)) {
     surface_size_ = kDisplaySize;
     device_scale_factor_ = 1;
     is_displayed_as_overlay_plane_ = true;

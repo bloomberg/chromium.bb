@@ -41,12 +41,10 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   ~DirectCompositorFrameSink() override;
 
   // CompositorFrameSink implementation.
-  void SwapBuffers(CompositorFrame frame) override;
   bool BindToClient(CompositorFrameSinkClient* client) override;
-  void ForceReclaimResources() override;
   void DetachFromClient() override;
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
+  void SwapBuffers(CompositorFrame frame) override;
+  void ForceReclaimResources() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;

@@ -15,23 +15,9 @@ namespace cc {
 
 FakeCompositorFrameSink::FakeCompositorFrameSink(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
-    bool delegated_rendering)
-    : FakeCompositorFrameSink(std::move(context_provider),
-                              std::move(worker_context_provider),
-                              nullptr,
-                              delegated_rendering) {}
-
-FakeCompositorFrameSink::FakeCompositorFrameSink(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    bool delegated_rendering)
+    scoped_refptr<ContextProvider> worker_context_provider)
     : CompositorFrameSink(std::move(context_provider),
-                          std::move(worker_context_provider),
-                          std::move(software_device)) {
-  capabilities_.delegated_rendering = delegated_rendering;
-}
+                          std::move(worker_context_provider)) {}
 
 FakeCompositorFrameSink::~FakeCompositorFrameSink() = default;
 
@@ -66,22 +52,6 @@ void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   PostSwapBuffersComplete();
 }
 
-void FakeCompositorFrameSink::BindFramebuffer() {
-  if (framebuffer_) {
-    context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER,
-                                                    framebuffer_);
-  } else {
-    CompositorFrameSink::BindFramebuffer();
-  }
-}
-
-uint32_t FakeCompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  if (framebuffer_)
-    return framebuffer_format_;
-  else
-    return GL_RGB;
-}
-
 bool FakeCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (CompositorFrameSink::BindToClient(client)) {
     client_ = client;
@@ -94,19 +64,6 @@ bool FakeCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 void FakeCompositorFrameSink::DetachFromClient() {
   ReturnResourcesHeldByParent();
   CompositorFrameSink::DetachFromClient();
-}
-
-bool FakeCompositorFrameSink::HasExternalStencilTest() const {
-  return has_external_stencil_test_;
-}
-
-bool FakeCompositorFrameSink::SurfaceIsSuspendForRecycle() const {
-  return suspended_for_recycle_;
-}
-
-OverlayCandidateValidator*
-FakeCompositorFrameSink::GetOverlayCandidateValidator() const {
-  return overlay_candidate_validator_;
 }
 
 void FakeCompositorFrameSink::ReturnResourcesHeldByParent() {

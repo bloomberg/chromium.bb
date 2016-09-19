@@ -90,8 +90,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   ReflectorImpl* reflector_;
 
  private:
-  void Initialize();
-
   std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
       overlay_candidate_validator_;
 

@@ -27,52 +27,35 @@ class FakeOutputSurface : public OutputSurface {
 
   static std::unique_ptr<FakeOutputSurface> Create3d() {
     return base::WrapUnique(
-        new FakeOutputSurface(TestContextProvider::Create(), nullptr, false));
+        new FakeOutputSurface(TestContextProvider::Create()));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider) {
-    return base::WrapUnique(
-        new FakeOutputSurface(context_provider, nullptr, false));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> Create3d(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider) {
-    return base::WrapUnique(new FakeOutputSurface(
-        context_provider, worker_context_provider, false));
+    return base::WrapUnique(new FakeOutputSurface(context_provider));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
       std::unique_ptr<TestGLES2Interface> gl) {
-    return base::WrapUnique(new FakeOutputSurface(
-        TestContextProvider::Create(std::move(gl)), nullptr, false));
+    return base::WrapUnique(
+        new FakeOutputSurface(TestContextProvider::Create(std::move(gl))));
   }
 
   static std::unique_ptr<FakeOutputSurface> Create3d(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
-    return base::WrapUnique(new FakeOutputSurface(
-        TestContextProvider::Create(std::move(context)), nullptr, false));
+    return base::WrapUnique(
+        new FakeOutputSurface(TestContextProvider::Create(std::move(context))));
   }
 
   static std::unique_ptr<FakeOutputSurface> CreateSoftware(
       std::unique_ptr<SoftwareOutputDevice> software_device) {
-    return base::WrapUnique(new FakeOutputSurface(
-        nullptr, nullptr, std::move(software_device), false));
-  }
-
-  static std::unique_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
-      std::unique_ptr<TestWebGraphicsContext3D> context) {
-    std::unique_ptr<FakeOutputSurface> surface(Create3d(std::move(context)));
-    surface->capabilities_.delegated_sync_points_required = false;
-    return surface;
+    return base::WrapUnique(new FakeOutputSurface(std::move(software_device)));
   }
 
   static std::unique_ptr<FakeOutputSurface> CreateOffscreen(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
-    std::unique_ptr<FakeOutputSurface> surface(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
-                              TestContextProvider::CreateWorker(), false));
+    auto surface = base::WrapUnique(
+        new FakeOutputSurface(TestContextProvider::Create(std::move(context))));
     surface->capabilities_.uses_default_gl_framebuffer = false;
     return surface;
   }
@@ -126,14 +109,9 @@ class FakeOutputSurface : public OutputSurface {
   void ReturnResourcesHeldByParent();
 
  protected:
-  FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_refptr<ContextProvider> worker_context_provider,
-                    bool delegated_rendering);
-
-  FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_refptr<ContextProvider> worker_context_provider,
-                    std::unique_ptr<SoftwareOutputDevice> software_device,
-                    bool delegated_rendering);
+  explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);
+  explicit FakeOutputSurface(
+      std::unique_ptr<SoftwareOutputDevice> software_device);
 
   OutputSurfaceClient* client_ = nullptr;
   std::unique_ptr<CompositorFrame> last_sent_frame_;

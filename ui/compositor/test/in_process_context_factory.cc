@@ -49,12 +49,8 @@ class FakeReflector : public Reflector {
 // GL surface.
 class DirectOutputSurface : public cc::OutputSurface {
  public:
-  DirectOutputSurface(
-      scoped_refptr<InProcessContextProvider> context_provider,
-      scoped_refptr<InProcessContextProvider> worker_context_provider)
-      : cc::OutputSurface(std::move(context_provider),
-                          std::move(worker_context_provider),
-                          nullptr),
+  DirectOutputSurface(scoped_refptr<InProcessContextProvider> context_provider)
+      : cc::OutputSurface(std::move(context_provider)),
         weak_ptr_factory_(this) {}
 
   ~DirectOutputSurface() override {}
@@ -161,11 +157,10 @@ void InProcessContextFactory::CreateCompositorFrameSink(
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     display_output_surface = base::MakeUnique<cc::PixelTestOutputSurface>(
-        context_provider, shared_worker_context_provider_,
-        flipped_output_surface);
+        context_provider, flipped_output_surface);
   } else {
-    display_output_surface = base::MakeUnique<DirectOutputSurface>(
-        context_provider, shared_worker_context_provider_);
+    display_output_surface =
+        base::MakeUnique<DirectOutputSurface>(context_provider);
   }
 
   std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(

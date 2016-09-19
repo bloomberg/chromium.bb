@@ -127,20 +127,20 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
                                 bool flipped_output_surface) {
   enable_pixel_output_.reset(new gl::DisableNullDrawGLBindings);
 
-  scoped_refptr<TestInProcessContextProvider> compositor(
+  scoped_refptr<TestInProcessContextProvider> context_provider(
       new TestInProcessContextProvider(nullptr));
-  scoped_refptr<TestInProcessContextProvider> worker(
-      new TestInProcessContextProvider(compositor.get()));
-  output_surface_.reset(new PixelTestOutputSurface(
-      std::move(compositor), std::move(worker), flipped_output_surface));
+  output_surface_.reset(new PixelTestOutputSurface(std::move(context_provider),
+                                                   flipped_output_surface));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
+  // Not relevant for display compositor since it's not delegated.
+  bool delegated_sync_points_required = false;
   resource_provider_ = base::MakeUnique<ResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
-      output_surface_->capabilities().delegated_sync_points_required,
+      delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.enable_color_correct_rendering,
       settings_.renderer_settings.buffer_to_texture_target_map);

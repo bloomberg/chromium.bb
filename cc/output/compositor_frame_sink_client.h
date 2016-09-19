@@ -25,16 +25,6 @@ struct ManagedMemoryPolicy;
 
 class CC_EXPORT CompositorFrameSinkClient {
  public:
-  // ============== DISPLAY COMPOSITOR ONLY =======================
-
-  // From surfaceless/ozone browser compositor output surface.
-  virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
-  // For overlays.
-  virtual void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses) = 0;
-
-  // ============== LAYER TREE COMPOSITOR ONLY ====================
-
   // Pass the begin frame source for the client to observe.  Client does not own
   // the BeginFrameSource.  CompositorFrameSink should call this once after
   // binding to

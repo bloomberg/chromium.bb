@@ -144,9 +144,6 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void NotifyReadyToDraw() override {}
   void SetNeedsRedrawOnImplThread() override { did_request_redraw_ = true; }
-  void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) override {
-    did_request_redraw_ = true;
-  }
   void SetNeedsOneBeginImplFrameOnImplThread() override {
     did_request_next_frame_ = true;
   }
@@ -8663,7 +8660,9 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
         new SimpleSwapPromiseMonitor(
             NULL, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
-    host_impl_->SetNeedsRedrawRect(gfx::Rect(10, 10));
+    // Redraw with damage.
+    host_impl_->SetFullViewportDamage();
+    host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(2, set_needs_redraw_count);
     EXPECT_EQ(0, forward_to_main_count);
@@ -8674,17 +8673,18 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
         new SimpleSwapPromiseMonitor(
             NULL, host_impl_.get(), &set_needs_commit_count,
             &set_needs_redraw_count, &forward_to_main_count));
-    // Empty damage rect won't signal the monitor.
-    host_impl_->SetNeedsRedrawRect(gfx::Rect());
+    // Redraw without damage.
+    host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
-    EXPECT_EQ(2, set_needs_redraw_count);
+    EXPECT_EQ(3, set_needs_redraw_count);
     EXPECT_EQ(0, forward_to_main_count);
   }
 
+  set_needs_commit_count = 0;
+  set_needs_redraw_count = 0;
+  forward_to_main_count = 0;
+
   {
-    set_needs_commit_count = 0;
-    set_needs_redraw_count = 0;
-    forward_to_main_count = 0;
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(
             NULL, host_impl_.get(), &set_needs_commit_count,
@@ -11067,8 +11067,7 @@ class MockReclaimResourcesCompositorFrameSink : public FakeCompositorFrameSink {
  public:
   MockReclaimResourcesCompositorFrameSink()
       : FakeCompositorFrameSink(TestContextProvider::Create(),
-                                TestContextProvider::CreateWorker(),
-                                true) {}
+                                TestContextProvider::CreateWorker()) {}
 
   MOCK_METHOD0(ForceReclaimResources, void());
 };

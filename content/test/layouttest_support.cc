@@ -293,7 +293,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies {
                 automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
                 attributes, nullptr,
                 command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING)),
-            nullptr, flipped_output_surface));
+            flipped_output_surface));
 
     auto* task_runner = deps->GetCompositorImplThreadTaskRunner().get();
     bool synchronous_composite = !task_runner;

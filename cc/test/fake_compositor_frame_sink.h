@@ -26,31 +26,25 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   ~FakeCompositorFrameSink() override;
 
   static std::unique_ptr<FakeCompositorFrameSink> Create3d() {
-    return base::WrapUnique(
-        new FakeCompositorFrameSink(TestContextProvider::Create(),
-                                    TestContextProvider::CreateWorker(), true));
+    return base::WrapUnique(new FakeCompositorFrameSink(
+        TestContextProvider::Create(), TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeCompositorFrameSink> Create3d(
       scoped_refptr<TestContextProvider> context_provider) {
     return base::WrapUnique(new FakeCompositorFrameSink(
-        context_provider, TestContextProvider::CreateWorker(), true));
+        context_provider, TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeCompositorFrameSink> Create3d(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
     return base::WrapUnique(new FakeCompositorFrameSink(
         TestContextProvider::Create(std::move(context)),
-        TestContextProvider::CreateWorker(), true));
+        TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeCompositorFrameSink> CreateSoftware() {
-    return base::WrapUnique(
-        new FakeCompositorFrameSink(nullptr, nullptr, nullptr, true));
-  }
-
-  void set_max_frames_pending(int max) {
-    capabilities_.max_frames_pending = max;
+    return base::WrapUnique(new FakeCompositorFrameSink(nullptr, nullptr));
   }
 
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
@@ -62,32 +56,8 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
 
-  void set_framebuffer(GLint framebuffer, GLenum format) {
-    framebuffer_ = framebuffer;
-    framebuffer_format_ = format;
-  }
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
-
   const TransferableResourceArray& resources_held_by_parent() {
     return resources_held_by_parent_;
-  }
-
-  bool HasExternalStencilTest() const override;
-
-  bool SurfaceIsSuspendForRecycle() const override;
-
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
-  void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
-    overlay_candidate_validator_ = validator;
-  }
-
-  void set_has_external_stencil_test(bool has_test) {
-    has_external_stencil_test_ = has_test;
-  }
-
-  void set_suspended_for_recycle(bool suspended) {
-    suspended_for_recycle_ = suspended;
   }
 
   gfx::Rect last_swap_rect() const {
@@ -100,24 +70,12 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
  protected:
   FakeCompositorFrameSink(
       scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider,
-      bool delegated_rendering);
-
-  FakeCompositorFrameSink(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider,
-      std::unique_ptr<SoftwareOutputDevice> software_device,
-      bool delegated_rendering);
+      scoped_refptr<ContextProvider> worker_context_provider);
 
   CompositorFrameSinkClient* client_ = nullptr;
   std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
-  bool has_external_stencil_test_ = false;
-  bool suspended_for_recycle_ = false;
-  GLint framebuffer_ = 0;
-  GLenum framebuffer_format_ = 0;
   TransferableResourceArray resources_held_by_parent_;
-  OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
 };

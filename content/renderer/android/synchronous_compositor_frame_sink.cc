@@ -75,7 +75,7 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
     : public cc::OutputSurface {
  public:
   SoftwareOutputSurface(std::unique_ptr<SoftwareDevice> software_device)
-      : cc::OutputSurface(nullptr, nullptr, std::move(software_device)) {}
+      : cc::OutputSurface(std::move(software_device)) {}
 
   // cc::OutputSurface implementation.
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
@@ -101,8 +101,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::CompositorFrameSink(std::move(context_provider),
-                              std::move(worker_context_provider),
-                              nullptr),
+                              std::move(worker_context_provider)),
       routing_id_(routing_id),
       compositor_frame_sink_id_(compositor_frame_sink_id),
       registry_(registry),
@@ -117,10 +116,9 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
   DCHECK(sender_);
   DCHECK(begin_frame_source_);
   thread_checker_.DetachFromThread();
-  capabilities_.adjust_deadline_for_parent = false;
-  capabilities_.delegated_rendering = true;
   memory_policy_.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
+  capabilities_.adjust_deadline_for_parent = false;
 }
 
 SynchronousCompositorFrameSink::~SynchronousCompositorFrameSink() = default;
@@ -208,13 +206,6 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   CancelFallbackTick();
 }
 
-void SynchronousCompositorFrameSink::Reshape(const gfx::Size& size,
-                                             float scale_factor,
-                                             const gfx::ColorSpace& color_space,
-                                             bool has_alpha) {
-  // Intentional no-op: surface size is controlled by the embedder.
-}
-
 static void NoOpDrawCallback() {}
 
 void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
@@ -293,17 +284,6 @@ void SynchronousCompositorFrameSink::Invalidate() {
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
     fallback_tick_pending_ = true;
   }
-}
-
-void SynchronousCompositorFrameSink::BindFramebuffer() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-}
-
-uint32_t SynchronousCompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-  return 0;
 }
 
 void SynchronousCompositorFrameSink::DemandDrawHw(

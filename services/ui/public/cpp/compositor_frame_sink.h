@@ -27,11 +27,9 @@ class CompositorFrameSink : public cc::CompositorFrameSink,
   ~CompositorFrameSink() override;
 
   // cc::CompositorFrameSink implementation.
-  void SwapBuffers(cc::CompositorFrame frame) override;
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
 
  private:
   // WindowSurfaceClient implementation:

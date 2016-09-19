@@ -104,11 +104,9 @@ class LayerTreeHostImplClient {
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
   virtual void NotifyReadyToDraw() = 0;
-  // Please call these 3 functions through
-  // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsOneBeginImplFrame().
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsOneBeginImplFrame().
   virtual void SetNeedsRedrawOnImplThread() = 0;
-  virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) = 0;
   virtual void SetNeedsOneBeginImplFrameOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
@@ -369,14 +367,11 @@ class CC_EXPORT LayerTreeHostImpl
 
   // CompositorFrameSinkClient implementation.
   void SetBeginFrameSource(BeginFrameSource* source) override;
-  void SetNeedsRedrawRect(const gfx::Rect& rect) override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override;
   void DidLoseCompositorFrameSink() override;
   void DidSwapBuffersComplete() override;
-  void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses) override;
   void ReclaimResources(const ReturnedResourceArray& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override;

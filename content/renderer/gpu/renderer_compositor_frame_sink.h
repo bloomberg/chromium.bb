@@ -62,8 +62,6 @@ class RendererCompositorFrameSink
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SwapBuffers(cc::CompositorFrame frame) override;
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
 
  protected:
   uint32_t compositor_frame_sink_id_;

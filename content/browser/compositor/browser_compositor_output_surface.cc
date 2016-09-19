@@ -25,24 +25,21 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     cc::SyntheticBeginFrameSource* begin_frame_source,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : OutputSurface(std::move(context_provider), nullptr, nullptr),
+    : OutputSurface(std::move(context_provider)),
       vsync_manager_(std::move(vsync_manager)),
       synthetic_begin_frame_source_(begin_frame_source),
       reflector_(nullptr) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
-  Initialize();
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     cc::SyntheticBeginFrameSource* begin_frame_source)
-    : OutputSurface(nullptr, nullptr, std::move(software_device)),
+    : OutputSurface(std::move(software_device)),
       vsync_manager_(vsync_manager),
       synthetic_begin_frame_source_(begin_frame_source),
-      reflector_(nullptr) {
-  Initialize();
-}
+      reflector_(nullptr) {}
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
@@ -52,17 +49,12 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       vsync_manager_(vsync_manager),
       synthetic_begin_frame_source_(begin_frame_source),
       reflector_(nullptr) {
-  Initialize();
 }
 
 BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   if (reflector_)
     reflector_->DetachFromOutputSurface();
   DCHECK(!reflector_);
-}
-
-void BrowserCompositorOutputSurface::Initialize() {
-  capabilities_.adjust_deadline_for_parent = false;
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(

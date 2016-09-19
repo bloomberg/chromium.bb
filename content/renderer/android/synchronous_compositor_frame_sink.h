@@ -23,6 +23,8 @@
 #include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
+class SkCanvas;
+
 namespace cc {
 class ContextProvider;
 class CompositorFrameMetadata;
@@ -82,14 +84,8 @@ class SynchronousCompositorFrameSink
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
-  void Reshape(const gfx::Size& size,
-               float scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
   void SwapBuffers(cc::CompositorFrame frame) override;
   void Invalidate() override;
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
 
   // Partial SynchronousCompositor API implementation.
   void DemandDrawHw(const gfx::Size& viewport_size,

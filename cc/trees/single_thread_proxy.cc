@@ -249,8 +249,8 @@ void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsRedraw");
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
-  client_->RequestScheduleComposite();
-  SetNeedsRedrawRectOnImplThread(damage_rect);
+  layer_tree_host_impl_->SetViewportDamage(damage_rect);
+  SetNeedsRedrawOnImplThread();
 }
 
 void SingleThreadProxy::SetNextCommitWaitsForActivation() {
@@ -354,12 +354,6 @@ void SingleThreadProxy::SetNeedsPrepareTilesOnImplThread() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsPrepareTilesOnImplThread");
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsPrepareTiles();
-}
-
-void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
-    const gfx::Rect& damage_rect) {
-  layer_tree_host_impl_->SetViewportDamage(damage_rect);
-  SetNeedsRedrawOnImplThread();
 }
 
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {

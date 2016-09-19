@@ -1876,8 +1876,10 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    if (num_draws_ == 3)
-      host_impl->SetNeedsRedrawRect(invalid_rect_);
+    if (num_draws_ == 3) {
+      host_impl->SetViewportDamage(invalid_rect_);
+      host_impl->SetNeedsRedraw();
+    }
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -1895,7 +1897,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
         break;
       case 1:
       case 2:
-        EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(), root_damage_rect);
         break;
       case 3:
         EXPECT_EQ(invalid_rect_, root_damage_rect);

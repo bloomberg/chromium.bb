@@ -159,7 +159,8 @@ void ProxyImpl::SetDeferCommitsOnImpl(bool defer_commits) const {
 
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
   DCHECK(IsImplThread());
-  SetNeedsRedrawRectOnImplThread(damage_rect);
+  layer_tree_host_impl_->SetViewportDamage(damage_rect);
+  SetNeedsRedrawOnImplThread();
 }
 
 void ProxyImpl::SetNeedsCommitOnImpl() {
@@ -309,12 +310,6 @@ void ProxyImpl::SetNeedsRedrawOnImplThread() {
   TRACE_EVENT0("cc", "ProxyImpl::SetNeedsRedrawOnImplThread");
   DCHECK(IsImplThread());
   scheduler_->SetNeedsRedraw();
-}
-
-void ProxyImpl::SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) {
-  DCHECK(IsImplThread());
-  layer_tree_host_impl_->SetViewportDamage(damage_rect);
-  SetNeedsRedrawOnImplThread();
 }
 
 void ProxyImpl::SetNeedsOneBeginImplFrameOnImplThread() {

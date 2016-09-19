@@ -74,11 +74,9 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
-  // Please call these 3 functions through
-  // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
-  // SetNeedsOneBeginImplFrame().
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsOneBeginImplFrame().
   void SetNeedsRedrawOnImplThread() override;
-  void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
   void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;

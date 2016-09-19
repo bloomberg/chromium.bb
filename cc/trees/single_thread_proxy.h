@@ -84,7 +84,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
   void SetNeedsRedrawOnImplThread() override;
-  void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
   void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;

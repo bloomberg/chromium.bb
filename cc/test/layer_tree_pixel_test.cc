@@ -77,7 +77,7 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateDisplayOutputSurface(
         // Pixel tests use a separate context for the Display to more closely
         // mimic texture transport from the renderer process to the Display
         // compositor.
-        make_scoped_refptr(new TestInProcessContextProvider(nullptr)), nullptr,
+        make_scoped_refptr(new TestInProcessContextProvider(nullptr)),
         flipped_output_surface);
   } else {
     std::unique_ptr<PixelTestSoftwareOutputDevice> software_output_device(

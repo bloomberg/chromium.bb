@@ -121,11 +121,9 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 
 CompositorFrameSink::CompositorFrameSink(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
-    std::unique_ptr<SoftwareOutputDevice> software_device)
+    scoped_refptr<ContextProvider> worker_context_provider)
     : context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
-      software_device_(std::move(software_device)),
       weak_ptr_factory_(this) {
   client_thread_checker_.DetachFromThread();
 }
@@ -141,12 +139,6 @@ CompositorFrameSink::~CompositorFrameSink() {
   if (client_)
     DetachFromClientInternal();
 }
-
-bool CompositorFrameSink::HasExternalStencilTest() const {
-  return false;
-}
-
-void CompositorFrameSink::ApplyExternalStencil() {}
 
 bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
@@ -184,43 +176,6 @@ void CompositorFrameSink::DetachFromClient() {
   DetachFromClientInternal();
 }
 
-void CompositorFrameSink::EnsureBackbuffer() {
-  if (software_device_)
-    software_device_->EnsureBackbuffer();
-}
-
-void CompositorFrameSink::DiscardBackbuffer() {
-  if (context_provider_.get())
-    context_provider_->ContextGL()->DiscardBackbufferCHROMIUM();
-  if (software_device_)
-    software_device_->DiscardBackbuffer();
-}
-
-void CompositorFrameSink::Reshape(const gfx::Size& size,
-                                  float scale_factor,
-                                  const gfx::ColorSpace& color_space,
-                                  bool has_alpha) {
-  device_color_space_ = color_space;
-  if (size == surface_size_ && scale_factor == device_scale_factor_ &&
-      has_alpha == has_alpha_)
-    return;
-
-  surface_size_ = size;
-  device_scale_factor_ = scale_factor;
-  has_alpha_ = has_alpha;
-  if (context_provider_.get()) {
-    context_provider_->ContextGL()->ResizeCHROMIUM(size.width(), size.height(),
-                                                   scale_factor, has_alpha);
-  }
-  if (software_device_)
-    software_device_->Resize(size, scale_factor);
-}
-
-void CompositorFrameSink::BindFramebuffer() {
-  DCHECK(context_provider_.get());
-  context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void CompositorFrameSink::PostSwapBuffersComplete() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&CompositorFrameSink::OnSwapBuffersComplete,
@@ -231,28 +186,6 @@ void CompositorFrameSink::PostSwapBuffersComplete() {
 // after the CompositorFrameSink has been destroyed.
 void CompositorFrameSink::OnSwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
-}
-
-void CompositorFrameSink::DidReceiveTextureInUseResponses(
-    const gpu::TextureInUseResponses& responses) {
-  client_->DidReceiveTextureInUseResponses(responses);
-}
-
-OverlayCandidateValidator* CompositorFrameSink::GetOverlayCandidateValidator()
-    const {
-  return nullptr;
-}
-
-bool CompositorFrameSink::IsDisplayedAsOverlayPlane() const {
-  return false;
-}
-
-unsigned CompositorFrameSink::GetOverlayTextureId() const {
-  return 0;
-}
-
-bool CompositorFrameSink::SurfaceIsSuspendForRecycle() const {
-  return false;
 }
 
 bool CompositorFrameSink::OnMemoryDump(

@@ -19,10 +19,8 @@ CompositorFrameSink::CompositorFrameSink(
     std::unique_ptr<ui::WindowSurface> surface)
     : cc::CompositorFrameSink(
           make_scoped_refptr(new ContextProvider(std::move(gpu_channel_host))),
-          nullptr,
           nullptr),
       surface_(std::move(surface)) {
-  capabilities_.delegated_rendering = true;
 }
 
 CompositorFrameSink::~CompositorFrameSink() {}
@@ -45,17 +43,6 @@ void CompositorFrameSink::DetachFromClient() {
   begin_frame_source_.reset();
   surface_.reset();
   cc::CompositorFrameSink::DetachFromClient();
-}
-
-void CompositorFrameSink::BindFramebuffer() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-}
-
-uint32_t CompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-  return 0;
 }
 
 void CompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {

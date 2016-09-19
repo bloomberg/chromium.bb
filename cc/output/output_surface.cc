@@ -119,14 +119,16 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 
 }  // namespace
 
+OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
+    : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {
+  DCHECK(context_provider_);
+  client_thread_checker_.DetachFromThread();
+}
+
 OutputSurface::OutputSurface(
-    scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : context_provider_(std::move(context_provider)),
-      worker_context_provider_(std::move(worker_context_provider)),
-      software_device_(std::move(software_device)),
-      weak_ptr_factory_(this) {
+    : software_device_(std::move(software_device)), weak_ptr_factory_(this) {
+  DCHECK(software_device_);
   client_thread_checker_.DetachFromThread();
 }
 
@@ -134,6 +136,7 @@ OutputSurface::OutputSurface(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : vulkan_context_provider_(vulkan_context_provider),
       weak_ptr_factory_(this) {
+  DCHECK(vulkan_context_provider_);
   client_thread_checker_.DetachFromThread();
 }
 
@@ -263,16 +266,6 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
       gr_context->dumpMemoryStatistics(&trace_memory_dump);
     }
   }
-  if (auto* context_provider = worker_context_provider()) {
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
-
-    if (auto* gr_context = context_provider->GrContext()) {
-      SkiaGpuTraceMemoryDump trace_memory_dump(
-          pmd, context_provider->ContextSupport()->ShareGroupTracingGUID());
-      gr_context->dumpMemoryStatistics(&trace_memory_dump);
-    }
-  }
-
   return true;
 }
 

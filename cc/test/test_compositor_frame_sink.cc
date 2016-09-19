@@ -29,8 +29,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     bool synchronous_composite,
     bool force_disable_reclaim_resources)
     : CompositorFrameSink(std::move(compositor_context_provider),
-                          std::move(worker_context_provider),
-                          nullptr),
+                          std::move(worker_context_provider)),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(new SurfaceIdAllocator(kCompositorClientId)),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
@@ -60,7 +59,6 @@ TestCompositorFrameSink::TestCompositorFrameSink(
                   std::move(display_output_surface), std::move(scheduler),
                   base::MakeUnique<TextureMailboxDeleter>(task_runner)));
 
-  capabilities_.delegated_rendering = true;
   // Since this CompositorFrameSink and the Display are tightly coupled and in
   // the same process/thread, the LayerTreeHostImpl can reclaim resources from
   // the Display. But we allow tests to disable this to mimic an out-of-process
@@ -172,17 +170,6 @@ void TestCompositorFrameSink::ForceReclaimResources() {
                                             CompositorFrame(),
                                             SurfaceFactory::DrawCallback());
   }
-}
-
-void TestCompositorFrameSink::BindFramebuffer() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-}
-
-uint32_t TestCompositorFrameSink::GetFramebufferCopyTextureFormat() {
-  // This is a delegating output surface, no framebuffer/direct drawing support.
-  NOTREACHED();
-  return 0;
 }
 
 void TestCompositorFrameSink::ReturnResources(

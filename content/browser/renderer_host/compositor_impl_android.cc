@@ -212,14 +212,13 @@ void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
     obs->OnBeginFrame(last_begin_frame_args_);
 }
 
-// Used to override capabilities_.adjust_deadline_for_parent to false
 class AndroidOutputSurface : public cc::OutputSurface {
  public:
   AndroidOutputSurface(
       scoped_refptr<ContextProviderCommandBuffer> context_provider,
       const base::Callback<void(gpu::Capabilities)>&
           populate_gpu_capabilities_callback)
-      : cc::OutputSurface(std::move(context_provider), nullptr, nullptr),
+      : cc::OutputSurface(std::move(context_provider)),
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(
             base::Bind(&AndroidOutputSurface::OnSwapBuffersCompleted,
@@ -227,7 +226,6 @@ class AndroidOutputSurface : public cc::OutputSurface {
         overlay_candidate_validator_(
             new display_compositor::
                 CompositorOverlayCandidateValidatorAndroid()) {
-    capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
 
