@@ -89,10 +89,7 @@
     ],
     "QUIC": [
         {
-            "group_name": "Enabled",
-            "params": {
-                "delay_tcp_race": "true"
-            }
+            "group_name": "Enabled"
         }
     ],
     "SdchPersistence": [
