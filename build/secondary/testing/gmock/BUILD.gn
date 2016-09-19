@@ -27,6 +27,9 @@ static_library("gmock") {
     "include/gmock/internal/gmock-internal-utils.h",
     "include/gmock/internal/gmock-port.h",
 
+    # gmock helpers.
+    "../gmock_custom/gmock/internal/custom/gmock-port.h",
+
     #"src/gmock-all.cc",  # Not needed by our build.
     "src/gmock-cardinalities.cc",
     "src/gmock-internal-utils.cc",
