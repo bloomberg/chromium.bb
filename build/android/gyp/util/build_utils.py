@@ -420,7 +420,7 @@ def AddDepfileOption(parser):
   else:
     func = parser.add_argument
   func('--depfile',
-       help='Path to depfile. Must be specified as the action\'s first output.')
+       help='Path to depfile (refer to `gn help depfile`)')
 
 
 def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
