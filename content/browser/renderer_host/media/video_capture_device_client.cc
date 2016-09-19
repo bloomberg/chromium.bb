@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
@@ -59,20 +58,20 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
 
   const int id_;
   const scoped_refptr<VideoCaptureBufferPool> pool_;
-  const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+  const std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle_;
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
-    const base::WeakPtr<VideoCaptureController>& controller,
-    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
-    : controller_(controller),
+    std::unique_ptr<VideoFrameReceiver> receiver,
+    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+    const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory)
+    : receiver_(std::move(receiver)),
+      jpeg_decoder_factory_callback_(jpeg_decoder_factory),
       external_jpeg_decoder_initialized_(false),
       buffer_pool_(buffer_pool),
       use_gpu_memory_buffers_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseGpuMemoryBuffersForCapture)),
-      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-}
+      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {}
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   // This should be on the platform auxiliary thread since
@@ -98,9 +97,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     if (frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
         !external_jpeg_decoder_initialized_) {
       external_jpeg_decoder_initialized_ = true;
-      external_jpeg_decoder_.reset(new VideoCaptureGpuJpegDecoder(base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_)));
+      external_jpeg_decoder_ = jpeg_decoder_factory_callback_.Run();
       external_jpeg_decoder_->Initialize();
     }
   }
@@ -279,12 +276,8 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id = buffer_pool_->ReserveForProducer(
       frame_size, pixel_format, pixel_storage, &buffer_id_to_drop);
-  if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
-    BrowserThread::PostTask(BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&VideoCaptureController::DoBufferDestroyedOnIOThread,
-                   controller_, buffer_id_to_drop));
-  }
+  if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId)
+    receiver_->OnBufferDestroyed(buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return nullptr;
   return base::WrapUnique<Buffer>(
@@ -335,11 +328,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
 void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     std::unique_ptr<Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_, base::Passed(&buffer), frame));
+  receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), frame);
 }
 
 std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
@@ -365,20 +354,15 @@ void VideoCaptureDeviceClient::OnError(
           .c_str());
   DLOG(ERROR) << log_message;
   OnLog(log_message);
-  BrowserThread::PostTask(BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
+  receiver_->OnError();
 }
 
 void VideoCaptureDeviceClient::OnLog(
     const std::string& message) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&VideoCaptureController::DoLogOnIOThread,
-                                     controller_, message));
+  receiver_->OnLog(message);
 }
 
 double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
-  // VideoCaptureBufferPool::GetBufferPoolUtilization() is thread-safe.
   return buffer_pool_->GetBufferPoolUtilization();
 }
 

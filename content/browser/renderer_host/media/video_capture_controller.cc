@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_device_client.h"
+#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -78,6 +79,50 @@ void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
 #endif
 }
 
+std::unique_ptr<VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
+    const VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
+  return base::MakeUnique<VideoCaptureGpuJpegDecoder>(decode_done_cb);
+}
+
+// Decorator for VideoFrameReceiver that forwards all incoming calls
+// to the Browser IO thread.
+class VideoFrameReceiverOnIOThread : public VideoFrameReceiver {
+ public:
+  explicit VideoFrameReceiverOnIOThread(
+      const base::WeakPtr<VideoFrameReceiver>& receiver)
+      : receiver_(receiver) {}
+
+  void OnIncomingCapturedVideoFrame(
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      const scoped_refptr<media::VideoFrame>& frame) override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnIncomingCapturedVideoFrame, receiver_,
+                   base::Passed(&buffer), frame));
+  }
+
+  void OnError() override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnError, receiver_));
+  }
+
+  void OnLog(const std::string& message) override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnLog, receiver_, message));
+  }
+
+  void OnBufferDestroyed(int buffer_id_to_drop) override {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&VideoFrameReceiver::OnBufferDestroyed,
+                                       receiver_, buffer_id_to_drop));
+  }
+
+ private:
+  base::WeakPtr<VideoFrameReceiver> receiver_;
+};
+
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
@@ -131,7 +176,7 @@ struct VideoCaptureController::ControllerClient {
 };
 
 VideoCaptureController::VideoCaptureController(int max_buffers)
-    : buffer_pool_(new VideoCaptureBufferPool(max_buffers)),
+    : buffer_pool_(new VideoCaptureBufferPoolImpl(max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
@@ -147,7 +192,12 @@ std::unique_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::MakeUnique<VideoCaptureDeviceClient>(
-      this->GetWeakPtrForIOThread(), buffer_pool_);
+      base::MakeUnique<VideoFrameReceiverOnIOThread>(
+          this->GetWeakPtrForIOThread()),
+      buffer_pool_,
+      base::Bind(&CreateGpuJpegDecoder,
+                 base::Bind(&VideoFrameReceiver::OnIncomingCapturedVideoFrame,
+                            this->GetWeakPtrForIOThread())));
 }
 
 void VideoCaptureController::AddClient(
@@ -353,7 +403,7 @@ VideoCaptureController::GetVideoCaptureFormat() const {
 VideoCaptureController::~VideoCaptureController() {
 }
 
-void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
+void VideoCaptureController::OnIncomingCapturedVideoFrame(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -424,7 +474,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
   buffer_pool_->HoldForConsumers(buffer_id, count);
 }
 
-void VideoCaptureController::DoErrorOnIOThread() {
+void VideoCaptureController::OnError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
 
@@ -435,13 +485,12 @@ void VideoCaptureController::DoErrorOnIOThread() {
   }
 }
 
-void VideoCaptureController::DoLogOnIOThread(const std::string& message) {
+void VideoCaptureController::OnLog(const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
 }
 
-void VideoCaptureController::DoBufferDestroyedOnIOThread(
-    int buffer_id_to_drop) {
+void VideoCaptureController::OnBufferDestroyed(int buffer_id_to_drop) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (const auto& client : controller_clients_) {

@@ -31,17 +31,7 @@ class VideoFrame;
 
 namespace content {
 
-// Adapter to GpuJpegDecodeAccelerator for VideoCaptureDevice::Client. It takes
-// care of GpuJpegDecodeAccelerator creation, shared memory, and threading
-// issues.
-//
-// All public methods except JpegDecodeAccelerator::Client ones should be called
-// on the same thread. JpegDecodeAccelerator::Client methods should be called on
-// the IO thread.
-class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
-    : public media::JpegDecodeAccelerator::Client,
-      public base::NonThreadSafe,
-      public base::SupportsWeakPtr<VideoCaptureGpuJpegDecoder> {
+class CONTENT_EXPORT VideoCaptureJpegDecoder {
  public:
   // Enumeration of decoder status. The enumeration is published for clients to
   // decide the behavior according to STATUS.
@@ -52,31 +42,59 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
                    // decode error.
   };
 
-  typedef base::Callback<void(
+  using DecodeDoneCB = base::Callback<void(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>,
-      const scoped_refptr<media::VideoFrame>&)>
-      DecodeDoneCB;
+      const scoped_refptr<media::VideoFrame>&)>;
 
+  virtual ~VideoCaptureJpegDecoder() {}
+
+  // Creates and intializes decoder asynchronously.
+  virtual void Initialize() = 0;
+
+  // Returns initialization status.
+  virtual STATUS GetStatus() const = 0;
+
+  // Decodes a JPEG picture.
+  virtual void DecodeCapturedData(
+      const uint8_t* data,
+      size_t in_buffer_size,
+      const media::VideoCaptureFormat& frame_format,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+          out_buffer) = 0;
+};
+
+// Adapter to GpuJpegDecodeAccelerator for VideoCaptureDevice::Client. It takes
+// care of GpuJpegDecodeAccelerator creation, shared memory, and threading
+// issues.
+//
+// All public methods except JpegDecodeAccelerator::Client ones should be called
+// on the same thread. JpegDecodeAccelerator::Client methods should be called on
+// the IO thread.
+class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
+    : public VideoCaptureJpegDecoder,
+      public media::JpegDecodeAccelerator::Client,
+      public base::NonThreadSafe,
+      public base::SupportsWeakPtr<VideoCaptureGpuJpegDecoder> {
+ public:
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
   // be on any thread. |decode_done_cb| is never called after
   // VideoCaptureGpuJpegDecoder is destroyed.
   explicit VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb);
   ~VideoCaptureGpuJpegDecoder() override;
 
-  // Creates and intializes decoder asynchronously.
-  void Initialize();
-
-  // Returns initialization status.
-  STATUS GetStatus() const;
-
-  // Decodes a JPEG picture.
+  // Implementation of VideoCaptureJpegDecoder:
+  void Initialize() override;
+  STATUS GetStatus() const override;
   void DecodeCapturedData(
       const uint8_t* data,
       size_t in_buffer_size,
       const media::VideoCaptureFormat& frame_format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer);
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer)
+      override;
 
   // JpegDecodeAccelerator::Client implementation.
   // These will be called on IO thread.

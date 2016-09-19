@@ -412,7 +412,7 @@ void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
 
   DVLOG(3) << "DoStopDevice. Send stop request for device = " << entry->id
            << " serial_id = " << entry->serial_id << ".";
-  entry->video_capture_controller()->DoLogOnIOThread(
+  entry->video_capture_controller()->OnLog(
       base::StringPrintf("Stopping device: id: %s", entry->id.c_str()));
 
   if (entry->video_capture_device()) {
@@ -460,7 +460,7 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
       // held in the browser-side VideoCaptureDevice::Name structure.
       const DeviceInfo* found = GetDeviceInfoById(entry->id);
       if (found) {
-        entry->video_capture_controller()->DoLogOnIOThread(
+        entry->video_capture_controller()->OnLog(
             base::StringPrintf("Starting device: id: %s, name: %s, api: %s",
                                found->descriptor.device_id.c_str(),
                                found->descriptor.GetNameAndModel().c_str(),
@@ -480,8 +480,8 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
             "Error on %s:%d: device %s unknown. Maybe recently disconnected?",
             __FILE__, __LINE__, entry->id.c_str());
         DLOG(ERROR) << log_message;
-        entry->video_capture_controller()->DoLogOnIOThread(log_message);
-        entry->video_capture_controller()->DoErrorOnIOThread();
+        entry->video_capture_controller()->OnLog(log_message);
+        entry->video_capture_controller()->OnError();
         // Drop the failed start request.
         device_start_queue_.pop_front();
 

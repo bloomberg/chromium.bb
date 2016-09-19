@@ -119,7 +119,7 @@ class VideoCaptureBufferPoolTest
   class Buffer {
    public:
     Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
-           std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+           std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle,
            int id)
         : id_(id), pool_(pool), buffer_handle_(std::move(buffer_handle)) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
@@ -130,12 +130,12 @@ class VideoCaptureBufferPoolTest
    private:
     const int id_;
     const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+    const std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle_;
   };
 
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
-        pool_(new VideoCaptureBufferPool(kTestBufferPoolSize)) {}
+        pool_(new VideoCaptureBufferPoolImpl(kTestBufferPoolSize)) {}
 
 #if !defined(OS_ANDROID)
   void SetUp() override {
@@ -164,7 +164,7 @@ class VideoCaptureBufferPoolTest
       return std::unique_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
 
-    std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle =
+    std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle =
         pool_->GetBufferHandle(buffer_id);
     return std::unique_ptr<Buffer>(
         new Buffer(pool_, std::move(buffer_handle), buffer_id));

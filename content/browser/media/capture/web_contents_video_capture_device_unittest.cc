@@ -332,7 +332,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       const base::Closure& error_callback)
       : report_callback_(report_callback),
         error_callback_(error_callback) {
-    buffer_pool_ = new VideoCaptureBufferPool(2);
+    buffer_pool_ = new VideoCaptureBufferPoolImpl(2);
   }
   ~StubClient() override {}
 
@@ -424,7 +424,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
    public:
     AutoReleaseBuffer(
         const scoped_refptr<VideoCaptureBufferPool>& pool,
-        std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+        std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle,
         int buffer_id)
         : id_(buffer_id),
           pool_(pool),
@@ -451,7 +451,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
     const int id_;
     const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const std::unique_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+    const std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle_;
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

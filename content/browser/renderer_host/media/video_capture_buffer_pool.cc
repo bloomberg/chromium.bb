@@ -16,10 +16,8 @@
 
 namespace content {
 
-const int VideoCaptureBufferPool::kInvalidId = -1;
-
 // Tracker specifics for SharedMemory.
-class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
+class VideoCaptureBufferPoolImpl::SharedMemTracker final : public Tracker {
  public:
   SharedMemTracker() : Tracker() {}
 
@@ -58,11 +56,12 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
  private:
   // A simple proxy that implements the BufferHandle interface, providing
   // accessors to SharedMemTracker's memory and properties.
-  class SharedMemBufferHandle : public VideoCaptureBufferPool::BufferHandle {
+  class SharedMemBufferHandle
+      : public VideoCaptureBufferPoolImpl::BufferHandle {
    public:
     // |tracker| must outlive SimpleBufferHandle. This is ensured since a
     // tracker is pinned until ownership of this SimpleBufferHandle is returned
-    // to VideoCaptureBufferPool.
+    // to VideoCaptureBufferPoolImpl.
     explicit SharedMemBufferHandle(SharedMemTracker* tracker)
         : tracker_(tracker) {}
     ~SharedMemBufferHandle() override {}
@@ -94,7 +93,8 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
 
 // Tracker specifics for GpuMemoryBuffer. Owns GpuMemoryBuffers and its
 // associated pixel dimensions.
-class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
+class VideoCaptureBufferPoolImpl::GpuMemoryBufferTracker final
+    : public Tracker {
  public:
   GpuMemoryBufferTracker() : Tracker() {}
 
@@ -187,11 +187,11 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   // A simple proxy that implements the BufferHandle interface, providing
   // accessors to GpuMemoryBufferTracker's memory and properties.
   class GpuMemoryBufferBufferHandle
-      : public VideoCaptureBufferPool::BufferHandle {
+      : public VideoCaptureBufferPoolImpl::BufferHandle {
    public:
     // |tracker| must outlive GpuMemoryBufferBufferHandle. This is ensured since
     // a tracker is pinned until ownership of this GpuMemoryBufferBufferHandle
-    // is returned to VideoCaptureBufferPool.
+    // is returned to VideoCaptureBufferPoolImpl.
     explicit GpuMemoryBufferBufferHandle(GpuMemoryBufferTracker* tracker)
         : tracker_(tracker) {}
     ~GpuMemoryBufferBufferHandle() override {}
@@ -227,8 +227,8 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
 };
 
 // static
-std::unique_ptr<VideoCaptureBufferPool::Tracker>
-VideoCaptureBufferPool::Tracker::CreateTracker(
+std::unique_ptr<VideoCaptureBufferPoolImpl::Tracker>
+VideoCaptureBufferPoolImpl::Tracker::CreateTracker(
     media::VideoPixelStorage storage) {
   switch (storage) {
     case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
@@ -237,23 +237,23 @@ VideoCaptureBufferPool::Tracker::CreateTracker(
       return base::MakeUnique<SharedMemTracker>();
   }
   NOTREACHED();
-  return std::unique_ptr<VideoCaptureBufferPool::Tracker>();
+  return std::unique_ptr<VideoCaptureBufferPoolImpl::Tracker>();
 }
 
-VideoCaptureBufferPool::Tracker::~Tracker() {}
+VideoCaptureBufferPoolImpl::Tracker::~Tracker() {}
 
-VideoCaptureBufferPool::VideoCaptureBufferPool(int count)
+VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(int count)
     : count_(count),
       next_buffer_id_(0),
       last_relinquished_buffer_id_(kInvalidId) {
   DCHECK_GT(count, 0);
 }
 
-VideoCaptureBufferPool::~VideoCaptureBufferPool() {
+VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() {
   base::STLDeleteValues(&trackers_);
 }
 
-bool VideoCaptureBufferPool::ShareToProcess(
+bool VideoCaptureBufferPoolImpl::ShareToProcess(
     int buffer_id,
     base::ProcessHandle process_handle,
     base::SharedMemoryHandle* new_handle) {
@@ -270,7 +270,7 @@ bool VideoCaptureBufferPool::ShareToProcess(
   return false;
 }
 
-bool VideoCaptureBufferPool::ShareToProcess2(
+bool VideoCaptureBufferPoolImpl::ShareToProcess2(
     int buffer_id,
     int plane,
     base::ProcessHandle process_handle,
@@ -288,8 +288,8 @@ bool VideoCaptureBufferPool::ShareToProcess2(
   return false;
 }
 
-std::unique_ptr<VideoCaptureBufferPool::BufferHandle>
-VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
+std::unique_ptr<VideoCaptureBufferPoolImpl::BufferHandle>
+VideoCaptureBufferPoolImpl::GetBufferHandle(int buffer_id) {
   base::AutoLock lock(lock_);
 
   Tracker* tracker = GetTracker(buffer_id);
@@ -302,16 +302,17 @@ VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
   return tracker->GetBufferHandle();
 }
 
-int VideoCaptureBufferPool::ReserveForProducer(const gfx::Size& dimensions,
-                                               media::VideoPixelFormat format,
-                                               media::VideoPixelStorage storage,
-                                               int* buffer_id_to_drop) {
+int VideoCaptureBufferPoolImpl::ReserveForProducer(
+    const gfx::Size& dimensions,
+    media::VideoPixelFormat format,
+    media::VideoPixelStorage storage,
+    int* buffer_id_to_drop) {
   base::AutoLock lock(lock_);
   return ReserveForProducerInternal(dimensions, format, storage,
                                     buffer_id_to_drop);
 }
 
-void VideoCaptureBufferPool::RelinquishProducerReservation(int buffer_id) {
+void VideoCaptureBufferPoolImpl::RelinquishProducerReservation(int buffer_id) {
   base::AutoLock lock(lock_);
   Tracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
@@ -323,9 +324,8 @@ void VideoCaptureBufferPool::RelinquishProducerReservation(int buffer_id) {
   last_relinquished_buffer_id_ = buffer_id;
 }
 
-void VideoCaptureBufferPool::HoldForConsumers(
-    int buffer_id,
-    int num_clients) {
+void VideoCaptureBufferPoolImpl::HoldForConsumers(int buffer_id,
+                                                  int num_clients) {
   base::AutoLock lock(lock_);
   Tracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
@@ -341,8 +341,8 @@ void VideoCaptureBufferPool::HoldForConsumers(
   // wrapping this tracker, e.g. a media::VideoFrame).
 }
 
-void VideoCaptureBufferPool::RelinquishConsumerHold(int buffer_id,
-                                                    int num_clients) {
+void VideoCaptureBufferPoolImpl::RelinquishConsumerHold(int buffer_id,
+                                                        int num_clients) {
   base::AutoLock lock(lock_);
   Tracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
@@ -355,7 +355,7 @@ void VideoCaptureBufferPool::RelinquishConsumerHold(int buffer_id,
                                    num_clients);
 }
 
-int VideoCaptureBufferPool::ResurrectLastForProducer(
+int VideoCaptureBufferPoolImpl::ResurrectLastForProducer(
     const gfx::Size& dimensions,
     media::VideoPixelFormat format,
     media::VideoPixelStorage storage) {
@@ -385,7 +385,7 @@ int VideoCaptureBufferPool::ResurrectLastForProducer(
   return kInvalidId;
 }
 
-double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
+double VideoCaptureBufferPoolImpl::GetBufferPoolUtilization() const {
   base::AutoLock lock(lock_);
   int num_buffers_held = 0;
   for (const auto& entry : trackers_) {
@@ -396,7 +396,7 @@ double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
   return static_cast<double>(num_buffers_held) / count_;
 }
 
-int VideoCaptureBufferPool::ReserveForProducerInternal(
+int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
     const gfx::Size& dimensions,
     media::VideoPixelFormat pixel_format,
     media::VideoPixelStorage storage_type,
@@ -474,7 +474,7 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
   return buffer_id;
 }
 
-VideoCaptureBufferPool::Tracker* VideoCaptureBufferPool::GetTracker(
+VideoCaptureBufferPoolImpl::Tracker* VideoCaptureBufferPoolImpl::GetTracker(
     int buffer_id) {
   TrackerMap::const_iterator it = trackers_.find(buffer_id);
   return (it == trackers_.end()) ? NULL : it->second;

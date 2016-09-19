@@ -24,6 +24,93 @@
 
 namespace content {
 
+class VideoCaptureBufferPoolBufferHandle {
+ public:
+  virtual ~VideoCaptureBufferPoolBufferHandle() {}
+  virtual gfx::Size dimensions() const = 0;
+  virtual size_t mapped_size() const = 0;
+  virtual void* data(int plane) = 0;
+  virtual ClientBuffer AsClientBuffer(int plane) = 0;
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  virtual base::FileDescriptor AsPlatformFile() = 0;
+#endif
+};
+
+class CONTENT_EXPORT VideoCaptureBufferPool
+    : public base::RefCountedThreadSafe<VideoCaptureBufferPool> {
+ public:
+  static constexpr int kInvalidId = -1;
+
+  // One-time (per client/per-buffer) initialization to share a particular
+  // buffer to a process. The shared handle is returned as |new_handle|.
+  virtual bool ShareToProcess(int buffer_id,
+                              base::ProcessHandle process_handle,
+                              base::SharedMemoryHandle* new_handle) = 0;
+  virtual bool ShareToProcess2(int buffer_id,
+                               int plane,
+                               base::ProcessHandle process_handle,
+                               gfx::GpuMemoryBufferHandle* new_handle) = 0;
+
+  // Try and obtain a BufferHandle for |buffer_id|.
+  virtual std::unique_ptr<VideoCaptureBufferPoolBufferHandle> GetBufferHandle(
+      int buffer_id) = 0;
+
+  // Reserve or allocate a buffer to support a packed frame of |dimensions| of
+  // pixel |format| and return its id. This will fail (returning kInvalidId) if
+  // the pool already is at its |count| limit of the number of allocations, and
+  // all allocated buffers are in use by the producer and/or consumers.
+  //
+  // If successful, the reserved buffer remains reserved (and writable by the
+  // producer) until ownership is transferred either to the consumer via
+  // HoldForConsumers(), or back to the pool with
+  // RelinquishProducerReservation().
+  //
+  // On occasion, this call will decide to free an old buffer to make room for a
+  // new allocation at a larger size. If so, the ID of the destroyed buffer is
+  // returned via |buffer_id_to_drop|.
+  virtual int ReserveForProducer(const gfx::Size& dimensions,
+                                 media::VideoPixelFormat format,
+                                 media::VideoPixelStorage storage,
+                                 int* buffer_id_to_drop) = 0;
+
+  // Indicate that a buffer held for the producer should be returned back to the
+  // pool without passing on to the consumer. This effectively is the opposite
+  // of ReserveForProducer().
+  virtual void RelinquishProducerReservation(int buffer_id) = 0;
+
+  // Attempt to reserve the same buffer that was relinquished in the last call
+  // to RelinquishProducerReservation(). If the buffer is not still being
+  // consumed, and has not yet been re-used since being consumed, and the
+  // specified |dimensions|, |format|, and |storage| agree with its last
+  // reservation, this will succeed. Otherwise, |kInvalidId| will be returned.
+  //
+  // A producer may assume the content of the buffer has been preserved and may
+  // also make modifications.
+  virtual int ResurrectLastForProducer(const gfx::Size& dimensions,
+                                       media::VideoPixelFormat format,
+                                       media::VideoPixelStorage storage) = 0;
+
+  // Returns a snapshot of the current number of buffers in-use divided by the
+  // maximum |count_|.
+  virtual double GetBufferPoolUtilization() const = 0;
+
+  // Transfer a buffer from producer to consumer ownership.
+  // |buffer_id| must be a buffer index previously returned by
+  // ReserveForProducer(), and not already passed to HoldForConsumers().
+  virtual void HoldForConsumers(int buffer_id, int num_clients) = 0;
+
+  // Indicate that one or more consumers are done with a particular buffer. This
+  // effectively is the opposite of HoldForConsumers(). Once the consumers are
+  // done, a buffer is returned to the pool for reuse.
+  virtual void RelinquishConsumerHold(int buffer_id, int num_clients) = 0;
+
+ protected:
+  virtual ~VideoCaptureBufferPool() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
+};
+
 // A thread-safe class that does the bookkeeping and lifetime management for a
 // pool of pixel buffers cycled between an in-process producer (e.g. a
 // VideoCaptureDevice) and a set of out-of-process consumers. The pool is
@@ -44,88 +131,33 @@ namespace content {
 // over the lifetime of the buffer pool, as existing buffers are freed and
 // reallocated at larger size. When reallocation occurs, new buffer IDs will
 // circulate.
-class CONTENT_EXPORT VideoCaptureBufferPool
-    : public base::RefCountedThreadSafe<VideoCaptureBufferPool> {
+class CONTENT_EXPORT VideoCaptureBufferPoolImpl
+    : public VideoCaptureBufferPool {
  public:
-  static const int kInvalidId;
+  using BufferHandle = VideoCaptureBufferPoolBufferHandle;
 
-  // Abstraction of a pool's buffer data buffer and size for clients.
-  // TODO(emircan): See https://crbug.com/521059, refactor this class.
-  class BufferHandle {
-   public:
-    virtual ~BufferHandle() {}
-    virtual gfx::Size dimensions() const = 0;
-    virtual size_t mapped_size() const = 0;
-    virtual void* data(int plane) = 0;
-    virtual ClientBuffer AsClientBuffer(int plane) = 0;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    virtual base::FileDescriptor AsPlatformFile() = 0;
-#endif
-  };
+  explicit VideoCaptureBufferPoolImpl(int count);
 
-  explicit VideoCaptureBufferPool(int count);
-
-  // One-time (per client/per-buffer) initialization to share a particular
-  // buffer to a process. The shared handle is returned as |new_handle|.
+  // Implementation of VideoCaptureBufferPool interface:
   bool ShareToProcess(int buffer_id,
                       base::ProcessHandle process_handle,
-                      base::SharedMemoryHandle* new_handle);
+                      base::SharedMemoryHandle* new_handle) override;
   bool ShareToProcess2(int buffer_id,
                        int plane,
                        base::ProcessHandle process_handle,
-                       gfx::GpuMemoryBufferHandle* new_handle);
-
-  // Try and obtain a BufferHandle for |buffer_id|.
-  std::unique_ptr<BufferHandle> GetBufferHandle(int buffer_id);
-
-  // Reserve or allocate a buffer to support a packed frame of |dimensions| of
-  // pixel |format| and return its id. This will fail (returning kInvalidId) if
-  // the pool already is at its |count| limit of the number of allocations, and
-  // all allocated buffers are in use by the producer and/or consumers.
-  //
-  // If successful, the reserved buffer remains reserved (and writable by the
-  // producer) until ownership is transferred either to the consumer via
-  // HoldForConsumers(), or back to the pool with
-  // RelinquishProducerReservation().
-  //
-  // On occasion, this call will decide to free an old buffer to make room for a
-  // new allocation at a larger size. If so, the ID of the destroyed buffer is
-  // returned via |buffer_id_to_drop|.
+                       gfx::GpuMemoryBufferHandle* new_handle) override;
+  std::unique_ptr<BufferHandle> GetBufferHandle(int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
                          media::VideoPixelFormat format,
                          media::VideoPixelStorage storage,
-                         int* buffer_id_to_drop);
-
-  // Indicate that a buffer held for the producer should be returned back to the
-  // pool without passing on to the consumer. This effectively is the opposite
-  // of ReserveForProducer().
-  void RelinquishProducerReservation(int buffer_id);
-
-  // Transfer a buffer from producer to consumer ownership.
-  // |buffer_id| must be a buffer index previously returned by
-  // ReserveForProducer(), and not already passed to HoldForConsumers().
-  void HoldForConsumers(int buffer_id, int num_clients);
-
-  // Indicate that one or more consumers are done with a particular buffer. This
-  // effectively is the opposite of HoldForConsumers(). Once the consumers are
-  // done, a buffer is returned to the pool for reuse.
-  void RelinquishConsumerHold(int buffer_id, int num_clients);
-
-  // Attempt to reserve the same buffer that was relinquished in the last call
-  // to RelinquishProducerReservation(). If the buffer is not still being
-  // consumed, and has not yet been re-used since being consumed, and the
-  // specified |dimensions|, |format|, and |storage| agree with its last
-  // reservation, this will succeed. Otherwise, |kInvalidId| will be returned.
-  //
-  // A producer may assume the content of the buffer has been preserved and may
-  // also make modifications.
+                         int* buffer_id_to_drop) override;
+  void RelinquishProducerReservation(int buffer_id) override;
   int ResurrectLastForProducer(const gfx::Size& dimensions,
                                media::VideoPixelFormat format,
-                               media::VideoPixelStorage storage);
-
-  // Returns a snapshot of the current number of buffers in-use divided by the
-  // maximum |count_|.
-  double GetBufferPoolUtilization() const;
+                               media::VideoPixelStorage storage) override;
+  double GetBufferPoolUtilization() const override;
+  void HoldForConsumers(int buffer_id, int num_clients) override;
+  void RelinquishConsumerHold(int buffer_id, int num_clients) override;
 
  private:
   class GpuMemoryBufferTracker;
@@ -192,8 +224,8 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     int consumer_hold_count_;
   };
 
-  friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
-  virtual ~VideoCaptureBufferPool();
+  friend class base::RefCountedThreadSafe<VideoCaptureBufferPoolImpl>;
+  ~VideoCaptureBufferPoolImpl() override;
 
   int ReserveForProducerInternal(const gfx::Size& dimensions,
                                  media::VideoPixelFormat format,
@@ -219,7 +251,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   using TrackerMap = std::map<int, Tracker*>;
   TrackerMap trackers_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureBufferPool);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureBufferPoolImpl);
 };
 
 }  // namespace content
