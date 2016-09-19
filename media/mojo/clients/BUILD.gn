@@ -5,6 +5,7 @@
 # Implementations of media C++ interfaces using corresponding mojo services.
 source_set("clients") {
   visibility = [
+    "//chromecast/*",
     "//content/renderer",
 
     # TODO(xhwang): Only allow //media/mojo:media_mojo_unittests
