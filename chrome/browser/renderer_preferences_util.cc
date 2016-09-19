@@ -36,6 +36,7 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
 namespace {
 
 // Parses a string |range| with a port range in the form "<min>-<max>".
@@ -75,6 +76,7 @@ void ParsePortRange(const std::string& range,
 }
 
 }  // namespace
+#endif
 
 namespace renderer_preferences_util {
 
