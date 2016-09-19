@@ -56,7 +56,6 @@ android_library("sync_javatests") {
   ]
 }
 
-# GYP: //components/sync/sync_android.gypi:model_type_java
 java_cpp_enum("java_enums") {
   sources = [
     "//components/sync/base/model_type.h",

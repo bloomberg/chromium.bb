@@ -9,7 +9,6 @@ _jni_sources = [
   "java/src/org/chromium/policy/CombinedPolicyProvider.java",
 ]
 
-# GYP: //components/components.gyp:policy_java
 android_library("policy_java") {
   deps = [
     "//base:base_java",
@@ -22,7 +21,6 @@ android_library("policy_java") {
       ]
 }
 
-# GYP: //components/components.gyp:policy_test_support_java
 android_library("policy_java_test_support") {
   testonly = true
   deps = [
@@ -36,14 +34,12 @@ android_library("policy_java_test_support") {
   ]
 }
 
-# GYP: //components/components.gyp:policy_jni_headers
 generate_jni("jni_headers") {
   visibility = [ "//components/policy/*" ]
   sources = _jni_sources
   jni_package = "policy"
 }
 
-# GYP: //components/components_test.gyp:components_junit_tests
 junit_binary("components_policy_junit_tests") {
   java_files = [
     "junit/src/org/chromium/policy/AbstractAppRestrictionsProviderTest.java",

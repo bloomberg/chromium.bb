@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: //components/proximity_auth.gypi:cryptauth_proto
 proto_library("proto") {
   sources = [
     "cryptauth_api.proto",

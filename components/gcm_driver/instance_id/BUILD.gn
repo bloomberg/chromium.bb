@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/gcm_driver.gypi:instance_id_driver
 static_library("instance_id") {
   sources = [
     "android/component_jni_registrar.cc",
@@ -33,7 +32,6 @@ static_library("instance_id") {
   }
 }
 
-# GYP version: components/gcm_driver.gypi:instance_id_test_support
 static_library("test_support") {
   testonly = true
   sources = [

@@ -64,8 +64,6 @@ group("strings") {
   ]
 }
 
-# GYP version: components/components_strings.gyp:components_strings
-#              (generate_components_strings action)
 grit("components_strings") {
   source = "../components_strings.grd"
   outputs = [
@@ -91,8 +89,6 @@ if (is_android) {
   }
 }
 
-# GYP version: components/components_strings.gyp:components_strings
-#              (generate_components_chromium_strings action)
 grit("components_chromium_strings") {
   source = "../components_chromium_strings.grd"
   outputs = [
@@ -103,8 +99,6 @@ grit("components_chromium_strings") {
   }
 }
 
-# GYP version: components/components_strings.gyp:components_strings
-#              (generate_components_google_chrome_strings action)
 grit("components_google_chrome_strings") {
   source = "../components_google_chrome_strings.grd"
   outputs = [
@@ -164,8 +158,6 @@ if (is_android) {
   ]
 }
 
-# GYP version: components/components_strings.gyp:components_strings
-#              (generate_components_locale_settings action)
 grit("components_locale_settings") {
   source = "../components_locale_settings.grd"
   outputs = [

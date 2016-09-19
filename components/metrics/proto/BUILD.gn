@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: components/
 proto_library("proto") {
   sources = [
     "call_stack_profile.proto",

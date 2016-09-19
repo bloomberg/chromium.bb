@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //components/dom_distiller.gypi:dom_distiller_java
 android_library("dom_distiller_content_java") {
   deps = [
     "//base:base_java",

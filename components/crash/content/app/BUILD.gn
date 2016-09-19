@@ -26,7 +26,6 @@ static_library("lib") {
   }
 }
 
-# GYP version: components/crash.gypi:crash_component
 static_library("app") {
   sources = [
     "crash_switches.cc",
@@ -145,8 +144,6 @@ source_set("app_non_mac_win") {
     deps += [
       "//breakpad:breakpad_handler",
       "//sandbox",
-
-      #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
     ]
   } else if (is_posix && !is_ios) {
     deps += [ "//breakpad:client" ]

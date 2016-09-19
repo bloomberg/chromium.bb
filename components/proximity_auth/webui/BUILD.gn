@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/proximity_auth.gypi:proximity_auth_webui
 static_library("webui") {
   sources = [
     "proximity_auth_ui.cc",

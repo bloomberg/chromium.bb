@@ -8,7 +8,6 @@ import("//third_party/brotli/brotli.gni")
 about_credits_file = "$target_gen_dir/about_credits.html"
 about_credits_file_bro = "$target_gen_dir/about_credits.bro"
 
-# GYP version: components/components_resources.gyp:components_resources
 group("resources") {
   public_deps = [
     ":components_resources",
@@ -16,8 +15,6 @@ group("resources") {
   ]
 }
 
-# GYP version: components/components_resources.gyp
-#              (generate_components_resources action)
 grit("components_resources") {
   source = "components_resources.grd"
 
@@ -39,8 +36,6 @@ grit("components_resources") {
   ]
 }
 
-# GYP version: components/components_resources.gyp
-#              (generate_scaled_components_resources action)
 grit("components_scaled_resources") {
   source = "components_scaled_resources.grd"
 
@@ -65,7 +60,6 @@ compress_file_brotli("compressed_about_credits") {
   ]
 }
 
-# GYP version: components/components_resources.gyp:about_credits
 action("about_credits") {
   script = "//tools/licenses.py"
 

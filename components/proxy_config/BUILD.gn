@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/proxy_config.gypi:proxy_config
 component("proxy_config") {
   sources = [
     "pref_proxy_config_tracker.cc",

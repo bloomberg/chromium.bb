@@ -6,7 +6,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# GYP version: components/ntp_tiles.gypi:ntp_tiles
 static_library("ntp_tiles") {
   sources = [
     "constants.cc",

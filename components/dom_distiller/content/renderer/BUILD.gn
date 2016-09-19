@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/dom_distiller.gypi:dom_distiller_content_renderer
 static_library("renderer") {
   sources = [
     "distillability_agent.cc",

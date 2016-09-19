@@ -18,7 +18,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //components/components_test.gyp:components_junit_tests
   junit_binary("components_web_restrictions_junit_tests") {
     java_files = [
       "browser/junit/src/org/chromium/components/webrestrictions/browser/WebRestrictionsContentProviderTest.java",
@@ -39,7 +38,6 @@ if (is_android) {
     jni_package = "web_restrictions"
   }
 
-  # GYP: components.gyp:web_restrictions_browser
   static_library("browser") {
     sources = [
       "browser/web_restrictions_client.cc",

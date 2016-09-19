@@ -11,7 +11,6 @@ config("implementation") {
 }
 
 if (!is_ios) {
-  # GYP version: components/sessions.gypi:sessions_content
   component("sessions") {
     sources = [
       "content/content_live_tab.cc",

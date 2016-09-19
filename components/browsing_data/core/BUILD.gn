@@ -40,7 +40,6 @@ static_library("core") {
 }
 
 if (is_android) {
-  # GYP: //components/browsing_data.gypi:browsing_data_utils_java
   java_cpp_enum("browsing_data_utils_java") {
     sources = [
       "browsing_data_utils.h",

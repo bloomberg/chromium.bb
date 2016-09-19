@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/dom_distiller.gypi:dom_distiller_core
 static_library("core") {
   sources = [
     "article_attachments_data.cc",
@@ -89,7 +88,6 @@ static_library("core") {
   }
 }
 
-# GYP version: components/dom_distiller.gypi:dom_distiller_test_support
 static_library("test_support") {
   testonly = true
   sources = [

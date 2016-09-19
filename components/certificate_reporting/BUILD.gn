@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: components/certificate_reporting.gyp:certificate_reporting
 static_library("certificate_reporting") {
   sources = [
     "cert_logger.proto",
@@ -27,14 +26,12 @@ static_library("certificate_reporting") {
   ]
 }
 
-# GYP version: components/certificate_reporting.gypi:cert_logger_proto
 proto_library("cert_logger_proto") {
   sources = [
     "cert_logger.proto",
   ]
 }
 
-# GYP version: components/certificate_reporting.gypi:encrypted_cert_logger_proto
 proto_library("encrypted_cert_logger_proto") {
   sources = [
     "encrypted_cert_logger.proto",

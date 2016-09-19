@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/network_hints.gypi:network_hints_browser
 source_set("browser") {
   sources = [
     "network_hints_message_filter.cc",

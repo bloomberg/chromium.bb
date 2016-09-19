@@ -6,7 +6,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# GYP: //components/offline_pages.gypi:offline_pages_ui_adapter
 static_library("offline_pages_ui_adapter") {
   sources = [
     "download_notifying_observer.cc",

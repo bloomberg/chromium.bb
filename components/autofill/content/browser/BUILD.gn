@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: components/autofill.gypi:autofill_content_browser
 static_library("browser") {
   sources = [
     "content_autofill_driver.cc",

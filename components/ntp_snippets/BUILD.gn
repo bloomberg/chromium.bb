@@ -9,7 +9,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# GYP version: components/ntp_snippets.gypi:ntp_snippets
 static_library("ntp_snippets") {
   sources = [
     "bookmarks/bookmark_last_visit_utils.cc",

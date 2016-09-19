@@ -5,7 +5,6 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 if (is_chromeos) {
-  # GYP version: components/metrics.gypi:metrics_leak_detector
   source_set("leak_detector") {
     sources = [
       "call_stack_manager.cc",

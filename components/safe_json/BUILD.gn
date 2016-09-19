@@ -6,7 +6,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# GYP version: components/safe_json.gypi:safe_json
 static_library("safe_json") {
   sources = [
     "android/component_jni_registrar.cc",
@@ -45,7 +44,6 @@ static_library("safe_json") {
   }
 }
 
-# GYP version: components/safe_json.gypi:safe_json_unittest_sources
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -61,7 +59,6 @@ source_set("unit_tests") {
   ]
 }
 
-# GYP version: components/safe_json.gypi:safe_json_test_support
 static_library("test_support") {
   testonly = true
   sources = [

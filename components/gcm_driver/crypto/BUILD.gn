@@ -4,7 +4,6 @@
 
 import("//build/config/crypto.gni")
 
-# GYP version: components/gcm_driver.gypi:gcm_driver_crypto
 static_library("crypto") {
   sources = [
     "encryption_header_parsers.cc",
@@ -31,7 +30,6 @@ static_library("crypto") {
   ]
 }
 
-# GYP version: components/gcm_driver.gypi:gcm_driver_crypto_test_support
 static_library("test_support") {
   testonly = true
   sources = [

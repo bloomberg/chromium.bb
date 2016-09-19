@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 
-# GYP version: components/storage_monitor.gypi:storage_monitor
 static_library("storage_monitor") {
   sources = [
     "image_capture_device.h",
@@ -87,7 +86,6 @@ static_library("storage_monitor") {
   }
 }
 
-# GYP version: components/storage_monitor.gypi:storage_monitor_test_support
 static_library("test_support") {
   testonly = true
   sources = [

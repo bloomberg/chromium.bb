@@ -13,7 +13,6 @@ if (metrics_use_blimp) {
   defines = [ "OVERRIDE_OS_NAME_TO_BLIMP" ]
 }
 
-# GYP version: components/metrics.gypi:metrics
 static_library("metrics") {
   sources = [
     "call_stack_profile_metrics_provider.cc",
@@ -110,7 +109,6 @@ static_library("metrics") {
 }
 
 if (!is_ios) {
-  # GYP version: components/metrics.gypi:metrics_gpu
   static_library("gpu") {
     sources = [
       "gpu/gpu_metrics_provider.cc",
@@ -128,7 +126,6 @@ if (!is_ios) {
   }
 }
 
-# GYP version: components/metrics.gypi:metrics_net
 static_library("net") {
   sources = [
     "net/cellular_logic_helper.cc",
@@ -166,7 +163,6 @@ static_library("net") {
   }
 }
 
-# GYP version: components/metrics.gypi:metrics_profiler
 static_library("profiler") {
   sources = [
     "profiler/profiler_metrics_provider.cc",
@@ -187,7 +183,6 @@ static_library("profiler") {
   ]
 }
 
-# GYP version: components/metrics.gypi:metrics_ui
 static_library("ui") {
   sources = [
     "ui/screen_info_metrics_provider.cc",
@@ -206,7 +201,6 @@ static_library("ui") {
 }
 
 if (!is_ios) {
-  # GYP version: components/metrics.gypi:metrics_profiler_content
   static_library("profiler_content") {
     sources = [
       "profiler/content/content_tracking_synchronizer_delegate.cc",
@@ -224,7 +218,6 @@ if (!is_ios) {
     ]
   }
 } else {
-  # GYP version: components/metrics.gypi:metrics_profiler_ios
   static_library("profiler_ios") {
     sources = [
       "profiler/ios/ios_tracking_synchronizer_delegate.cc",
@@ -246,7 +239,6 @@ source_set("call_stacks") {
   ]
 }
 
-# GYP version: components/metrics.gypi:metrics_test_support
 static_library("test_support") {
   testonly = true
   sources = [
@@ -267,7 +259,6 @@ static_library("test_support") {
 }
 
 if (is_linux) {
-  # GYP version: components/metrics.gypi:metrics_serialization
   static_library("serialization") {
     sources = [
       "serialization/metric_sample.cc",
