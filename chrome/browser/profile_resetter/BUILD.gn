@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:probe_message_proto
 proto_library("profile_reset_report_proto") {
   sources = [
     "profile_reset_report.proto",

@@ -5,7 +5,6 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
-# GYP: //clank/native/clank.gyp:chrome_public_test_support_apk
 android_apk("chrome_public_test_support_apk") {
   deps = [
     "//chrome/test/android/cast_emulator:cast_emulator",

@@ -4,7 +4,6 @@
 
 import("//build/symlink.gni")
 
-# GYP: //tools/android/forwarder/forwarder.gyp:forwarder
 executable("forwarder") {
   sources = [
     "forwarder.cc",

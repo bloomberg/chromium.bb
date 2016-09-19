@@ -32,7 +32,6 @@ default_chrome_public_jinja_variables = [
   "enable_vr_shell=$enable_vr_shell",
 ]
 
-# GYP: //chrome/android/chrome_apk.gypi
 template("chrome_public_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")

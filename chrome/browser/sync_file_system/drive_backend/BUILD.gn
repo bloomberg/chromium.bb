@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:sync_file_system_drive_proto
 proto_library("sync_file_system_drive_proto") {
   sources = [
     "metadata_database.proto",

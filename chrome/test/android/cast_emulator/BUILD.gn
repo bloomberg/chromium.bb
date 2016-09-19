@@ -5,7 +5,6 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
-# GYP: //clank/native/clank.gyp:cast_emulator
 android_library("cast_emulator") {
   chromium_code = true
 

@@ -4,8 +4,6 @@
 
 # This is the part of the Chrome browser process responsible for launching and
 # communicating with app_shim processes on Mac.
-#
-# GYP version: chrome/browser/apps/app_shim/browser_app_shim.gypi:browser_app_shim
 source_set("app_shim") {
   sources = [
     "app_shim_handler_mac.cc",

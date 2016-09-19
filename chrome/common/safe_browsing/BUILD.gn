@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_common.gypi:safe_browsing_proto
 proto_library("proto") {
   sources = [
     "client_model.proto",

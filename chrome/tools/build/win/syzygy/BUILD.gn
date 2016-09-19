@@ -71,7 +71,6 @@ if (syzygy_optimize) {
 
     if (is_official_build) {
       # Copies the uninstrumented chrome_child.dll.
-      # GYP version: chrome/chrome_syzygy.gyp:chrome_child_dll_syzygy_copy
       copy("chrome_child_dll_syzygy_copy") {
         sources = [
           "$root_out_dir/chrome_child.dll",

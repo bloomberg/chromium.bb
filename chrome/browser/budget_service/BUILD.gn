@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:budget_proto
 proto_library("budget_proto") {
   sources = [
     "budget.proto",

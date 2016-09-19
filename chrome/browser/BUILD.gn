@@ -2156,11 +2156,6 @@ split_static_library("browser") {
       "download/drag_download_item_views.cc",
       "lifetime/application_lifetime_aura.cc",
       "platform_util_aura.cc",
-    ]
-
-    # These files are only built in a GN build because they bring in
-    # dependencies that don't build with GYP.
-    sources += [
       "ui/views/frame/browser_frame_mus.cc",
       "ui/views/frame/browser_frame_mus.h",
       "ui/views/frame/browser_non_client_frame_view_mus.cc",
@@ -3692,7 +3687,6 @@ split_static_library("browser") {
 }
 
 if (android_java_ui) {
-  # GYP version: chrome/chrome_browser.gypi:chrome_browser_jni_headers
   generate_jni("jni_headers") {
     sources = [
       "../android/java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
@@ -3869,14 +3863,12 @@ if (android_java_ui) {
     jni_package = "chrome"
   }
 
-  #GYP: '//chrome/chrome_browser.gypi:client_discourse_context_proto'
   proto_library("client_discourse_context_proto") {
     sources = [
       "android/proto/client_discourse_context.proto",
     ]
   }
 
-  #GYP: '//chrome/chrome_browser.gypi:delta_file_proto'
   proto_library("delta_file_proto") {
     sources = [
       "android/proto/delta_file.proto",
@@ -3906,8 +3898,6 @@ proto_library("resource_prefetch_predictor_proto") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_resources
-# (generate_browser_resources action)
 grit("resources") {
   source = "browser_resources.grd"
   use_qualified_include = true
@@ -3941,7 +3931,6 @@ grit("resources") {
   ]
 }
 
-# GYP version: chrome/chrome_resource.gyp:chrome_internal_resources_gen
 if (is_chrome_branded) {
   action("chrome_internal_resources_gen") {
     script = "internal/transform_additional_modules_list.py"
@@ -3960,8 +3949,6 @@ if (is_chrome_branded) {
   }
 }
 
-# In GYP this is part of test_support_common.
-#
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
@@ -4202,7 +4189,6 @@ static_library("test_support") {
   }
 }
 
-# In GYP this is part of test_support_ui.
 static_library("test_support_ui") {
   testonly = true
 

@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:safe_browsing_chunk_proto
 proto_library("chunk_proto") {
   sources = [
     "chunk.proto",

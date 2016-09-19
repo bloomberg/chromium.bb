@@ -16,7 +16,6 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 assert(is_linux && is_chrome_branded)
 
 # This target builds all "normal" Linux installers.
-# GYP version: chrome/chrome_installer.gypi:linux_packages_all
 #
 # The bot setup is to build stable, unstable, and beta packages for the current
 # build. Then a later step picks up the package corresponding to what the

@@ -5,7 +5,6 @@
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
-# GYP version: ui/resources/ui_resources.gyp:ui_resources
 group("resources") {
   public_deps = [
     ":ui_resources_grd",
@@ -66,9 +65,6 @@ if (!is_mac) {
 
 # On iOS and Mac the string resources need to go into a locale subfolder, which
 # introduces an extra dependency.
-#
-# GYP version: ui/resources/ui_resources.gyp:ui_test_pak
-#              (copy_ui_test_pak action)
 if (is_ios || is_mac) {
   group("ui_test_pak") {
     public_deps = [
@@ -152,7 +148,6 @@ group("ui_test_pak_data") {
   ]
 }
 
-# GYP version: ui/resources/ui_resources.gyp:ui_test_pak
 repack("repack_ui_test_pak") {
   # Depend on ui_test_pak or ui_test_pak_data instead of this one.
   visibility = [

@@ -76,8 +76,6 @@ if (is_android) {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings
-#              (generate_generated_resources action)
 grit("generated_resources") {
   source = "generated_resources.grd"
   use_qualified_include = true
@@ -156,8 +154,6 @@ if (is_android) {
   }
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings
-#              (generate_google_chrome_strings action)
 grit("google_chrome_strings") {
   source = "google_chrome_strings.grd"
   use_qualified_include = true
@@ -221,8 +217,6 @@ grit("google_chrome_strings") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings
-#              (generate_chromium_strings action)
 grit("chromium_strings") {
   source = "chromium_strings.grd"
   use_qualified_include = true

@@ -4,7 +4,6 @@
 
 import("//build/config/crypto.gni")
 
-# GYP version: chrome/chrome_common.gypi:common_net
 static_library("net") {
   sources = [
     "net_resource_provider.cc",

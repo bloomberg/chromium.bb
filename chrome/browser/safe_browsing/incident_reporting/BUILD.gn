@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: chrome/chrome_browser.gypi:incident_reporting_state_store_data_proto
 proto_library("state_store_data_proto") {
   sources = [
     "state_store_data.proto",

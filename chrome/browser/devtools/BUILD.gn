@@ -26,7 +26,6 @@ action("devtools_protocol_constants") {
   args += [ rebase_path(blink_protocol, root_build_dir) ]
 }
 
-# GYP version: chrome/chrome_debugger.gypi:debugger
 static_library("devtools") {
   # Note: new sources and deps should be generally added in (!is_android) below.
   sources = [

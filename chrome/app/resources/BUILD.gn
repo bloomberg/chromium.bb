@@ -5,8 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//tools/grit/grit_rule.gni")
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings
-#              (generate_locale_settings action)
 grit("locale_settings") {
   source = "locale_settings.grd"
   use_qualified_include = true
@@ -70,7 +68,6 @@ grit("locale_settings") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:platform_locale_settings
 grit("platform_locale_settings") {
   if (is_win) {
     source = "locale_settings_win.grd"

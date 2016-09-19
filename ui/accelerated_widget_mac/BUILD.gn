@@ -4,7 +4,6 @@
 
 import("//testing/test.gni")
 
-# GYP version: ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac
 component("accelerated_widget_mac") {
   sources = [
     "accelerated_widget_mac.h",
@@ -50,7 +49,6 @@ component("accelerated_widget_mac") {
   ]
 }
 
-# GYP version: ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac_unittests
 test("accelerated_widget_mac_unittests") {
   configs += [ "//build/config:precompiled_headers" ]
   sources = [

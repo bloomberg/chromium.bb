@@ -4,8 +4,6 @@
 
 # Intermediate target grouping the android tools needed to run native
 # unittests and instrumentation test apks.
-#
-# GYP: //tools/android/android_tools.gyp:android_tools
 group("android_tools") {
   deps = [
     "//build/android:wrapper_scripts",
@@ -21,35 +19,30 @@ group("android_tools") {
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:memdump
 group("memdump") {
   deps = [
     "//tools/android/memdump",
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:memconsumer
 group("memconsumer") {
   deps = [
     "//tools/android/memconsumer:memconsumer_apk",
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:memtrack_helper
 group("memtrack_helper") {
   deps = [
     "//tools/android/memtrack_helper",
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:ps_ext
 group("ps_ext") {
   deps = [
     "//tools/android/ps_ext",
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:spnego_authenticator
 group("spnego_authenticator") {
   testonly = true
   deps = [
@@ -57,14 +50,12 @@ group("spnego_authenticator") {
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:customtabs_benchmark
 group("customtabs_benchmark") {
   deps = [
     "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:audio_focus_grabber
 group("audio_focus_grabber") {
   testonly = true
   deps = [
@@ -72,7 +63,6 @@ group("audio_focus_grabber") {
   ]
 }
 
-# GYP: //tools/android/android_tools.gyp:push_apps_to_background
 group("push_apps_to_background") {
   testonly = true
   deps = [

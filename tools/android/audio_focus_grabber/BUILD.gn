@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //tools/android/audio_focus_grabber/audio_focus_grabber.gyp:audio_focus_grabber_apk
 android_apk("audio_focus_grabber_apk") {
   testonly = true
   android_manifest = "java/AndroidManifest.xml"

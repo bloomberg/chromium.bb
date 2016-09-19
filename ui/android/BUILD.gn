@@ -230,7 +230,6 @@ android_library("ui_javatests") {
   ]
 }
 
-# GYP: //ui/android/ui_android.gyp:ui_junit_tests
 junit_binary("ui_junit_tests") {
   java_files = [
     "junit/src/org/chromium/ui/picker/DateDialogNormalizerTest.java",

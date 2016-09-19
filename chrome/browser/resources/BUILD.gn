@@ -62,7 +62,6 @@ grit("translate_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-# GYP version: copy command of chrome_extra_resources
 copy("extension_resource_demo") {
   sources = [
     "extension_resource/demo/library.js",

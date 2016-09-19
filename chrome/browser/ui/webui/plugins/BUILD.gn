@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: chrome/chrome_web_ui_mojo_bindings.gyp:webui_mojo_bindings
 mojom("mojo_bindings") {
   sources = [
     "plugins.mojom",

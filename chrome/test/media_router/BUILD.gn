@@ -21,8 +21,6 @@ media_router_test_extension_resources = [
   "telemetry/extension/script.js",
 ]
 
-# GYP version: chrome/test/media_router/media_router_tests.gypi:
-# media_router_test_extension_files
 copy("test_extension_resource_files") {
   sources = media_router_test_extension_resources
   outputs = [
@@ -30,8 +28,6 @@ copy("test_extension_resource_files") {
   ]
 }
 
-# GYP version: chrome/test/media_router/media_router_tests.gypi:
-# media_router_integration_test_files
 copy("browser_tests_resource_files") {
   sources = media_router_integration_test_resources
   outputs = [

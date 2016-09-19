@@ -5,7 +5,6 @@
 import("//build/config/android/config.gni")
 import("//build/symlink.gni")
 
-# GYP: //tools/android/md5sum/md5sum.gyp:md5sum
 group("md5sum") {
   data_deps = [
     ":md5sum_prepare_dist($default_toolchain)",
@@ -16,7 +15,6 @@ group("md5sum") {
   deps = data_deps
 }
 
-# GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_device (and md5sum_bin_host)
 executable("md5sum_bin") {
   sources = [
     "md5sum.cc",
@@ -34,7 +32,6 @@ executable("md5sum_bin") {
 if (current_toolchain == default_toolchain) {
   import("//build/config/android/rules.gni")
 
-  # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_stripped_device_bin
   create_native_executable_dist("md5sum_prepare_dist") {
     dist_dir = "$root_build_dir/md5sum_dist"
     binary = "$root_build_dir/md5sum_bin"
@@ -43,7 +40,6 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
-  # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_host
   binary_symlink("md5sum_bin_host") {
     binary_label = ":md5sum_bin($host_toolchain)"
     output_name = "md5sum_bin_host"

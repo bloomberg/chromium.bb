@@ -4,7 +4,6 @@
 
 import("//build/symlink.gni")
 
-# GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
 group("forwarder2") {
   data_deps = [
     ":host_forwarder",
@@ -15,7 +14,6 @@ group("forwarder2") {
 if (current_toolchain == default_toolchain) {
   import("//build/config/android/rules.gni")
 
-  # GYP: //tools/android/forwarder2/forwarder.gyp:device_forwarder
   executable("device_forwarder") {
     sources = [
       "command.cc",
@@ -50,7 +48,6 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
-  # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
   create_native_executable_dist("device_forwarder_prepare_dist") {
     dist_dir = "$root_build_dir/forwarder_dist"
     binary = "$root_build_dir/device_forwarder"
@@ -61,7 +58,6 @@ if (current_toolchain == default_toolchain) {
 }
 
 if (current_toolchain != default_toolchain) {
-  # GYP: //tools/android/forwarder2/forwarder.gyp:host_forwarder
   executable("host_forwarder") {
     sources = [
       "command.cc",

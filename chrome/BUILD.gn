@@ -231,8 +231,6 @@ if (!is_android && !is_mac) {
         "//chrome/common:features",
       ]
 
-      # GYP has this in a 'profiling==0 and linux_disable_pie==0' condition.
-      # but GN doesn't have either of these flags.
       ldflags = [ "-pie" ]
 
       if (use_pango || use_cairo) {
@@ -380,7 +378,7 @@ if (is_win) {
   }
 
   if (is_multi_dll_chrome) {
-    # This manifest matches what GYP produces. It may not even be necessary.
+    # This manifest matches what GYP produced. It may not even be necessary.
     windows_manifest("chrome_child_manifest") {
       sources = [
         as_invoker_manifest,
@@ -1138,7 +1136,6 @@ if (is_win) {
   }
 }
 
-# GYP version: chromium_browser_dependencies variable in chrome.gyp
 group("browser_dependencies") {
   public_deps = [
     "//chrome/browser",
@@ -1171,7 +1168,6 @@ group("browser_dependencies") {
   }
 }
 
-# GYP version: chromium_child_dependencies variable in chrome.gyp
 group("child_dependencies") {
   public_deps = [
     "//chrome/browser/devtools",
@@ -1205,7 +1201,7 @@ if (is_win) {
     output = "$target_gen_dir/chrome_dll_version.rc"
   }
 
-  # This manifest matches what GYP produces. It may not even be necessary.
+  # This manifest matches what GYP produced. It may not even be necessary.
   windows_manifest("chrome_dll_manifest") {
     sources = [
       as_invoker_manifest,
@@ -1239,7 +1235,6 @@ if (is_win) {
   }
 }
 
-# GYP version: chrome/chrome_exe.gypi:visual_elements_resources
 copy("visual_elements_resources") {
   sources = [
     "//chrome/app/theme/$branding_path_component/win/tiles/Logo.png",
@@ -1259,19 +1254,14 @@ copy("visual_elements_resources") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_resources
 group("resources") {
   public_deps = [
-    # Note: GYP lists some dependencies in addition to these actions. However,
-    # these are just dependencies for the actions themselves, which our actions
-    # list individually when needed.
     "//chrome/browser:resources",
     "//chrome/common:resources",
     "//chrome/renderer:resources",
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_extra_resources
 group("extra_resources") {
   public_deps = [
     "//chrome/browser/resources:component_extension_resources",
@@ -1375,7 +1365,6 @@ chrome_extra_paks("packed_extra_resources") {
   }
 }
 
-# GYP version: chrome/chrome_resources.gyp:browser_tests_pak
 repack("browser_tests_pak") {
   sources = [
     "$root_gen_dir/chrome/options_test_resources.pak",
@@ -1388,7 +1377,6 @@ repack("browser_tests_pak") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_strings
 group("strings") {
   public_deps = [
     "//chrome/app:chromium_strings",
@@ -1399,49 +1387,42 @@ group("strings") {
 }
 
 if (is_android) {
-  # GYP: //chrome/chrome.gyp:data_use_ui_message_enum_java
   java_cpp_enum("data_use_ui_message_enum_javagen") {
     sources = [
       "browser/android/data_usage/data_use_tab_ui_manager_android.cc",
     ]
   }
 
-  # GYP: //chrome/chrome.gyp:content_setting_java
   java_cpp_enum("content_setting_javagen") {
     sources = [
       "../components/content_settings/core/common/content_settings.h",
     ]
   }
 
-  # GYP: //chrome/chrome.gyp:content_settings_type_java
   java_cpp_enum("content_settings_type_javagen") {
     sources = [
       "../components/content_settings/core/common/content_settings_types.h",
     ]
   }
 
-  # GYP: //chrome/chrome.gyp:signin_metrics_enum_java
   java_cpp_enum("signin_metrics_enum_javagen") {
     sources = [
       "../components/signin/core/browser/signin_metrics.h",
     ]
   }
 
-  # GYP: //chrome/chrome.gyp:page_info_connection_type_java
   java_cpp_enum("page_info_connection_type_javagen") {
     sources = [
       "browser/ui/android/website_settings_popup_android.h",
     ]
   }
 
-  # GYP: //chrome/chrome.gyp:website_settings_action_java
   java_cpp_enum("website_settings_action_javagen") {
     sources = [
       "browser/ui/website_settings/website_settings.h",
     ]
   }
 
-  # GYP: //chrome/chrome_android.gypi:chrome_android_core
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",
@@ -1548,7 +1529,7 @@ if (is_linux) {
 
       chrome_binary = "$root_out_dir/chrome"
       if (current_cpu == "x86") {
-        # Use "ia32" instead of "x86" for GYP compat.
+        # GYP used "ia32" so keep that naming for back-compat.
         symbol_file = "$root_out_dir/chrome.breakpad.ia32"
       } else {
         symbol_file = "$root_out_dir/chrome.breakpad.$current_cpu"

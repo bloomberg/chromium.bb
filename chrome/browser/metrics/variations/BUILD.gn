@@ -4,7 +4,6 @@
 
 import("//components/variations/service/generate_ui_string_overrider.gni")
 
-# GYP version: chrome/chrome_resources.gyp:chrome_ui_string_overrider_factory
 generate_ui_string_overrider("chrome_ui_string_overrider_factory") {
   inputs = [
     "$root_gen_dir/chrome/grit/chromium_strings.h",

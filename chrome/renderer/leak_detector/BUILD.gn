@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 if (is_chromeos) {
-  # GYP version: chrome/chrome_renderer.gypi:chrome_renderer_leak_detector_sources
   source_set("leak_detector") {
     sources = [
       "leak_detector_remote_client.cc",
