@@ -772,8 +772,7 @@
       <structure name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_HTML"
                  file="site_settings/site_settings_category.html"
                  type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_JS"
                  file="site_settings/site_settings_category.js"
                  type="chrome_html" />
