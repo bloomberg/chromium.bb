@@ -224,6 +224,10 @@ void ChromePluginPlaceholder::OpenAboutPluginsCallback() {
       new ChromeViewHostMsg_OpenAboutPlugins(routing_id()));
 }
 
+void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
+  // TODO(tommycli): Show a permission bubble in the browser process.
+}
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 void ChromePluginPlaceholder::OnDidNotFindMissingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
@@ -417,7 +421,9 @@ gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
               "didFinishLoading",
               &ChromePluginPlaceholder::DidFinishLoadingCallback)
           .SetMethod("openAboutPlugins",
-                     &ChromePluginPlaceholder::OpenAboutPluginsCallback);
+                     &ChromePluginPlaceholder::OpenAboutPluginsCallback)
+          .SetMethod("showPermissionBubble",
+                     &ChromePluginPlaceholder::ShowPermissionBubbleCallback);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePluginPlaceholderTesting)) {

@@ -829,6 +829,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_DISABLED, group_name));
         break;
       }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml: {
+        placeholder = create_blocked_plugin(
+            IDR_PREFER_HTML_PLUGIN_HTML,
+            l10n_util::GetStringFUTF16(IDS_PLUGIN_PREFER_HTML_BY_DEFAULT,
+                                       group_name));
+        break;
+      }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
         placeholder = create_blocked_plugin(

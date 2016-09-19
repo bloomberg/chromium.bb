@@ -32,16 +32,18 @@
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 
+// These are only used internally, so the order does not matter.
 enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kAllowed,
   kBlocked,
   kBlockedByPolicy,
+  kComponentUpdateRequired,
   kDisabled,
+  kFlashHiddenPreferHtml,
   kNotFound,
   kOutdatedBlocked,
   kOutdatedDisallowed,
   kPlayImportantContent,
-  kComponentUpdateRequired,
   kUnauthorized,
 };
 

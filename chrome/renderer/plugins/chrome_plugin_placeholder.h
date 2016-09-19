@@ -82,6 +82,8 @@ class ChromePluginPlaceholder final
   // Javascript callbacks:
   // Open chrome://plugins in a new tab.
   void OpenAboutPluginsCallback();
+  // Show the Plugins permission bubble.
+  void ShowPermissionBubbleCallback();
 
   // IPC message handlers:
 #if defined(ENABLE_PLUGIN_INSTALLATION)

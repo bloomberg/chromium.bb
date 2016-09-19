@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/component_updater/component_updater_service.h"
@@ -442,6 +443,15 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     // Otherwise, we only found disabled plugins, so we take the first one.
     i = 0;
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
+
+    if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+        matching_plugins[0].name ==
+            base::ASCIIToUTF16(content::kFlashPluginName)) {
+      // TODO(tommycli): This assumes that Flash can no longer be disabled
+      // via chrome://plugins. That should be fine since chrome://plugins is
+      // going away, but we should verify before launching HBD.
+      *status = ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
+    }
   }
 
   *plugin = matching_plugins[i];
