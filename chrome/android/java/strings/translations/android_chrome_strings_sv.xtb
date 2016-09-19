@@ -105,7 +105,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
-<translation id="21570240866965662">Långsam anslutning</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finjustera</translation>
@@ -159,7 +158,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
-<translation id="2833899785646504169">Kan inte lägga till WebAPK</translation>
+<translation id="2833899785646504169">Kan inte lägga till</translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2870560284913253234">Webbplats</translation>
@@ -519,7 +518,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031882061095297553">Synkronisera med</translation>
 <translation id="7053983685419859001">Blockera</translation>
-<translation id="7056999826593229648">En långsam anslutning upptäcktes</translation>
 <translation id="7057058088140140610">Kreditkort och adresser som används med Google Payments</translation>
 <translation id="7062545763355031412">Godkänn och byt konto</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
@@ -571,7 +569,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
 <translation id="7682287625158474539">Frakt</translation>
-<translation id="7690588279513156836">Läs in originalet</translation>
 <translation id="771135159654932189">Se vad som finns i närheten</translation>
 <translation id="7713873128508426081">Tillåt alltid</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>

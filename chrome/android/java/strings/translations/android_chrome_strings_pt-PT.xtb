@@ -105,7 +105,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
-<translation id="21570240866965662">Ligação lenta</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
@@ -124,7 +123,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="2349710944427398404">Total de dados utilizados pelo Chrome, incluindo contas, marcadores e definições guardadas</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2369533728426058518">separadores abertos</translation>
+<translation id="2369533728426058518">abrir separadores</translation>
 <translation id="2385560268894525395">da semana passada</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro ao transferir o conteúdo.</translation>
@@ -519,7 +518,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7053983685419859001">Bloquear</translation>
-<translation id="7056999826593229648">Ligação lenta detetada</translation>
 <translation id="7057058088140140610">Cartões de crédito e endereços com o Google Payments</translation>
 <translation id="7062545763355031412">Aceitar e mudar de contas</translation>
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
@@ -571,7 +569,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="7682287625158474539">Envio</translation>
-<translation id="7690588279513156836">Carregar original</translation>
 <translation id="771135159654932189">Ver o que há nas proximidades</translation>
 <translation id="7713873128508426081">Sempre permitido</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>

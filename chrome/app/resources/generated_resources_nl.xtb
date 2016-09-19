@@ -166,7 +166,6 @@
     Je moet je profiel weer instellen.<ph name="BR" />
     <ph name="BR" />
     Op het volgende scherm kun je feedback verzenden om ons te helpen bij het oplossen van het probleem.</translation>
-<translation id="121827551500866099">Alle downloads weergeven...</translation>
 <translation id="122082903575839559">Algoritme voor handtekening van certificaat</translation>
 <translation id="1221024147024329929">PKCS nr. 1 MD2 met RSA-encryptie</translation>
 <translation id="1221462285898798023">Voer <ph name="PRODUCT_NAME" /> uit als normale gebruiker. Als je deze als root wilt uitvoeren, moet je een alternatieve directory voor gebruikersgegevens opgeven voor de opslag van profielgegevens.</translation>
@@ -462,7 +461,6 @@
 <translation id="1589055389569595240">Toon spelling en grammatica</translation>
 <translation id="1593594475886691512">Formatteren...</translation>
 <translation id="159359590073980872">Cache met afbeeldingen</translation>
-<translation id="1594155067816010104">Dit bestand zal je computer beschadigen.</translation>
 <translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{Download wordt uitgevoerd}other{Downloads worden uitgevoerd}}</translation>
 <translation id="1594234040488055839">Aanbieden om automatisch op Google-sites in te loggen met dit account</translation>
 <translation id="1596174774107741586">Sandbox-servers van Google Payments gebruiken</translation>
@@ -738,7 +736,6 @@
 <translation id="1987139229093034863">Schakel over naar een andere gebruiker.</translation>
 <translation id="1989112275319619282">Browsen</translation>
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME" /> is niet toegestaan.</translation>
-<translation id="1992126135411334429">Niet-beveiligde beginpunten markeren als niet-veilig.</translation>
 <translation id="1992397118740194946">Niet ingesteld</translation>
 <translation id="1994173015038366702">Site-URL</translation>
 <translation id="1997616988432401742">Je certificaten</translation>
@@ -783,7 +780,6 @@
 <translation id="2074527029802029717">Tabblad losmaken</translation>
 <translation id="2075594581020578008"><ph name="IDS_SHORT_PRODUCT_NAME" />-browser</translation>
 <translation id="2076269580855484719">Deze plugin verbergen</translation>
-<translation id="2077084898869955643">Automatisch informatie over mogelijke beveiligingsincidenten aan Google melden. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2078019350989722914">Melding voor sluiten (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Als je een van je eigen certificaten verwijdert, kun je deze niet langer gebruiken om jezelf te identificeren.</translation>
@@ -966,7 +962,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt gemaakt, kun je zijn ins
 <translation id="2291643155573394834">Volgend tabblad</translation>
 <translation id="2294358108254308676">Wil je <ph name="PRODUCT_NAME" /> installeren?</translation>
 <translation id="2296019197782308739">EAP-methode:</translation>
-<translation id="2299552784526456191">Niet-beveiligde beginpunten markeren als neutraal.</translation>
 <translation id="2301382460326681002">Hoofddirectory van extensie is ongeldig.</translation>
 <translation id="2302685579236571180">Incognito gaan</translation>
 <translation id="23030561267973084">De extensie '<ph name="EXTENSION_NAME" />' heeft gevraagd om extra rechten.</translation>
@@ -1123,7 +1118,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2502441965851148920">Automatische updates zijn ingeschakeld. Handmatige updates zijn uitgeschakeld door je beheerder.</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Scherm #}other{Scherm #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> van <ph name="TOTAL_SIZE" /></translation>
-<translation id="2507649982651274960">Je apparaat is aangemeld voor zakelijk beheer, maar kan de item- en locatiegegevens niet verzenden. Voer deze gegevens handmatig in via je beheerconsole voor dit apparaat.</translation>
 <translation id="2509739495444557741">Er zijn geen plug-ins geïnstalleerd.</translation>
 <translation id="2509857212037838238"><ph name="PLUGIN_NAME" /> installeren</translation>
 <translation id="2510708650472996893">Kleurprofiel:</translation>
@@ -1428,7 +1422,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="288042212351694283">Toegang tot je Universal 2nd Factor-apparaten</translation>
 <translation id="2881966438216424900">Laatst geopend:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> wordt zo meteen opnieuw gestart en opnieuw ingesteld.</translation>
-<translation id="2885278018040587402">https://support.google.com/chrome/answer/3060053?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="2885378588091291677">Taakbeheer</translation>
 <translation id="2887525882758501333">Pdf-document</translation>
 <translation id="2888807692577297075">Er komen geen items overeen met &lt;b&gt;'<ph name="SEARCH_STRING" />'&lt;/b&gt;</translation>
@@ -1699,7 +1692,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="32279126412636473">Opnieuw laden (⌘R)</translation>
 <translation id="3228679360002431295">Verbinden en verifiëren<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Waarde:</translation>
-<translation id="32330993344203779">Je apparaat is aangemeld voor beheer via Enterprise.</translation>
 <translation id="3234666976984236645">Altijd belangrijke inhoud op deze site detecteren</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> is nu een gebruiker met beperkte rechten</translation>
 <translation id="323803881985677942">Extensie-opties openen</translation>
@@ -1748,7 +1740,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3297788108165652516">Dit netwerk wordt gedeeld met andere gebruikers.</translation>
 <translation id="3298076529330673844">Mag altijd worden uitgevoerd</translation>
 <translation id="329838636886466101">Repareren</translation>
-<translation id="3298461240075561421">Zelfs als je eerder bestanden van deze website hebt gedownload, kan de website zijn gehackt. Je kunt de download later opnieuw proberen in plaats van het bestand te herstellen.</translation>
 <translation id="3298789223962368867">Ongeldige URL opgegeven</translation>
 <translation id="3300394989536077382">Ondertekend door</translation>
 <translation id="3301256054007749965">Nieuwe inlogprocedure met afzonderlijk GAIA-wachtwoord inschakelen</translation>
@@ -1828,7 +1819,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3386219708421216619">Bladwijzer toegevoegd</translation>
 <translation id="3391392691301057522">Oude pincode:</translation>
 <translation id="3391716558283801616">Tabblad 7</translation>
-<translation id="3392020134425442298">Schadelijk bestand herstellen</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> wil gebruikmaken van je camera en microfoon.</translation>
 <translation id="3394279550557729862">Ondersteuning inschakelen voor het gebruik van de systeemeigen meldingstoasts en het systeemeigen meldingscentrum op platforms waar deze beschikbaar zijn.</translation>
 <translation id="3394862755749546286">Hiermee wordt de samengevoegde mediapijplijn (voor Android en desktop) uitgeschakeld voor Android.</translation>
@@ -1925,6 +1915,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Pagina's die niet kunnen worden geladen wanneer de browser offline is, worden alleen automatisch opnieuw geladen wanneer het betreffende tabblad zichtbaar is.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Download annuleren}other{Downloads annuleren}}</translation>
 <translation id="3512810056947640266">URL (optioneel):</translation>
+<translation id="3516765099410062445">Geschiedenis van je ingelogde apparaten wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3518086201899641494">Meldingen over captive portals</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Hiermee kunnen gebruikers zich aanmelden voor het verzamelen van ongeldige TLS/SSL-certificaatreeksen.</translation>
@@ -2324,8 +2315,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4044612648082411741">Geef je certificaatwachtwoord op</translation>
 <translation id="404493185430269859">Standaardzoekmachine</translation>
 <translation id="4047112090469382184">Waarom dit veilig is</translation>
-<translation id="4050577343529145854">Je simkaart wordt permanent uitgeschakeld als je geen correcte
-      PUK-code voor je simkaart kunt invoeren.</translation>
 <translation id="4052120076834320548">Heel klein</translation>
 <translation id="4055023634561256217">Opnieuw starten is vereist voordat je apparaat opnieuw kan worden ingesteld met Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2416,7 +2405,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4168015872538332605">Sommige instellingen die bij <ph name="PRIMARY_EMAIL" /> horen, worden met je gedeeld. Deze instellingen beïnvloeden je account alleen wanneer toegang tot meerdere accounts wordt gebruikt.</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
 <translation id="4172706149171596436">Proxyinstellingen wijzigen</translation>
-<translation id="417475959318757854">Centreer de App Launcher.</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
 <translation id="4179512409951755566">Overscrollen schermtoetsenbord inschakelen</translation>
 <translation id="4180788401304023883">Certificaat '<ph name="CERTIFICATE_NAME" />' van certificeringsinstantie verwijderen?</translation>
@@ -2497,7 +2485,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4289300219472526559">Inspreken starten</translation>
 <translation id="4289540628985791613">Overzicht</translation>
 <translation id="4291779358799919071">Capaciteit</translation>
-<translation id="4293409159363387562">Toch herstellen</translation>
 <translation id="4295944351946828969">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke programma's gevonden<ph name="END_LINK" /> op <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4296575653627536209">Gebruiker met beperkte rechten toevoegen</translation>
 <translation id="4297391862525234515">Minimaliseren van plank bij klikken</translation>
@@ -2615,7 +2602,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4487088045714738411">Belgisch toetsenbord</translation>
 <translation id="4492190037599258964">Zoekresultaten voor '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495419450179050807">Niet op deze pagina weergeven</translation>
-<translation id="449782841102640887">Blijf veilig</translation>
 <translation id="4498934959426056365">Sleutels genereren</translation>
 <translation id="450099669180426158">Uitroeptekenpictogram</translation>
 <translation id="4501530680793980440">Verwijderen bevestigen</translation>
@@ -2758,7 +2744,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4709726535665440636">Hiermee wordt de scrolpositie aangepast om zichtbare sprongen te voorkomen wanneer offscreen content verandert.</translation>
 <translation id="4711094779914110278">Turks</translation>
 <translation id="4711638718396952945">Instellingen herstellen</translation>
-<translation id="4712556365486669579">Malware herstellen?</translation>
 <translation id="4713544552769165154">Dit bestand is ontworpen voor een computer met Macintosh-software. Dit is niet compatibel met je apparaat met Chrome OS. Zoek in de <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> naar een geschikte, vervangende app.<ph name="BEGIN_LINK_HELP" />Meer informatie<ph name="END_LINK_HELP" /></translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME" /> kan nu je wachtwoorden synchroniseren.</translation>
 <translation id="471800408830181311">Uitvoer van persoonlijke sleutel is mislukt.</translation>
@@ -3272,6 +3257,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5382392428640372740">Navigatie traceren inschakelen</translation>
 <translation id="5382591305415226340">Ondersteunde links beheren</translation>
 <translation id="5388588172257446328">Gebruikersnaam:</translation>
+<translation id="5388885445722491159">Gekoppeld</translation>
 <translation id="5389237414310520250">De nieuwe gebruiker kan niet worden gemaakt. Controleer de ruimte op je harde schijf en je rechten, en probeer het opnieuw.</translation>
 <translation id="5390284375844109566">Geïndexeerde database</translation>
 <translation id="5392544185395226057">Ondersteuning voor systeemeigen client inschakelen.</translation>
@@ -3322,7 +3308,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5439568486246921931">Met deze actie worden de downloads, offline bestanden en browsergegevens van deze gebruiker definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="544083962418256601">Snelle links maken...</translation>
 <translation id="5441100684135434593">Bedraad netwerk</translation>
-<translation id="544291274896356069">Je verlaat de incognitomodus als deze link wordt geopend in een externe app. Doorgaan?</translation>
 <translation id="5448293924669608770">Er is een fout opgetreden tijdens het inloggen</translation>
 <translation id="5449551289610225147">Ongeldig wachtwoord</translation>
 <translation id="5449588825071916739">Bladwijzer toevoegen aan alle tabbladen</translation>
@@ -3500,7 +3485,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> bestaat niet meer.</translation>
 <translation id="5694501201003948907">$1 items inpakken...</translation>
 <translation id="5699533844376998780">De extensie '<ph name="EXTENSION_NAME" />' is toegevoegd.</translation>
-<translation id="5699678593090203286">PUK-code invoeren</translation>
 <translation id="5701101281789450335">Taal- en invoerinstellingen...</translation>
 <translation id="5701381305118179107">Centreren</translation>
 <translation id="5702898740348134351">Zo&amp;ekmachines bewerken...</translation>
@@ -3518,6 +3502,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5719603411793408026">Standaardzoekmachines</translation>
 <translation id="572328651809341494">Recent gebruikte tabbladen</translation>
 <translation id="5723508132121499792">Geen actieve achtergrondapps</translation>
+<translation id="572392919096807438">Mijn keuze onthouden</translation>
 <translation id="5725124651280963564">Log in bij <ph name="TOKEN_NAME" /> om een code te genereren voor <ph name="HOST_NAME" />.</translation>
 <translation id="5725199926572598591">DirectWrite</translation>
 <translation id="572525680133754531">Rendert een rand rond samengestelde renderlagen om fouten op te lossen en de samenstelling van lagen te onderzoeken.</translation>
@@ -3794,7 +3779,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6109228527970300988">Invoer van emoji, handschrift en spraak via optioneel IME-menu</translation>
 <translation id="6110466548232134880">De identiteit van <ph name="ORGANIZATION" /> op <ph name="LOCALITY" /> is geverifieerd door <ph name="ISSUER" />. Er zijn geen certificaattransparantiegegevens geleverd door de server.</translation>
 <translation id="6111770213269631447">Transliteratie (namaskar → নমস্কার)</translation>
-<translation id="6112952769866305444">Persoon bewerken, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
+<translation id="6112952769866305444">Persoon bewerken: <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6116921718742659598">Taal- en invoerinstellingen wijzigen</translation>
 <translation id="6120205520491252677">Deze pagina vastzetten op het startscherm...</translation>
 <translation id="6122081475643980456">Je internetverbinding wordt beheerd</translation>
@@ -3983,7 +3968,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6390799748543157332">De pagina's die je in dit venster bekijkt, worden niet in de browsergeschiedenis weergegeven en laten geen sporen op de computer achter (zoals cookies) nadat je alle geopende gastvensters hebt gesloten. Bestanden die je downloadt, blijven echter wel behouden.</translation>
 <translation id="639132970685294128">Naamservers</translation>
 <translation id="6391538222494443604">Er moet een invoerdirectory zijn.</translation>
-<translation id="639210578006174481">Experimentele App Launcher</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeeminformatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistische gegevens<ph name="END_LINK2" /> verzenden</translation>
 <translation id="6397363302884558537">Inspreken stoppen</translation>
@@ -4891,7 +4875,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7650511557061837441">'<ph name="TRIGGERING_EXTENSION_NAME" />' wil '<ph name="EXTENSION_NAME" />' verwijderen.</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME" /> wordt weergegeven in deze taal</translation>
-<translation id="7652808307838961528">Persoon bewerken, <ph name="PROFILE_NAME" /></translation>
+<translation id="7652808307838961528">Persoon bewerken: <ph name="PROFILE_NAME" /></translation>
 <translation id="7654941827281939388">Dit account wordt al gebruikt op deze computer.</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7659584679870740384">Je beschikt niet over de rechten om dit apparaat te gebruiken. Neem contact op met de beheerder voor toestemming om in te loggen.</translation>
@@ -5081,7 +5065,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7925192822915865931">Offline opslaan van onlangs bezochte pagina's inschakelen</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Geen mobiele gegevens gebruiken voor synchronisatie</translation>
-<translation id="7926906273904422255">Niet-beveiligde beginpunten markeren als niet-veilig of 'verdacht'.</translation>
 <translation id="7928710562641958568">Apparaat uitwerpen</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deelt je scherm en audio.</translation>
 <translation id="7938594894617528435">Op dit moment offline</translation>
@@ -5162,7 +5145,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8030656706657716245">Printer toevoegen</translation>
 <translation id="8031722894461705849">Slowaaks toetsenbord</translation>
 <translation id="8032244173881942855">Kan tabblad niet casten.</translation>
-<translation id="8034304765210371109">De experimentele versie van de App Launcher inschakelen.</translation>
 <translation id="8035871966943390569">Het effect voor omlaag trekken om te vernieuwen</translation>
 <translation id="8037117027592400564">Alle tekst lezen die wordt gesproken met gesynthetiseerde spraak</translation>
 <translation id="803771048473350947">Archief</translation>
@@ -6021,7 +6003,6 @@ Tijd berekenen tot vol</translation>
 <translation id="9203398526606335860">&amp;Profiling ingeschakeld</translation>
 <translation id="9203478404496196495">Dempen tabblad opheffen</translation>
 <translation id="9203962528777363226">De beheerder van dit apparaat heeft het toevoegen van nieuwe gebruikers uitgeschakeld</translation>
-<translation id="9205143043463108573">Hiermee wordt de App Launcher in het midden van het scherm gepositioneerd in liggende oriëntatie.</translation>
 <translation id="9205160891051296441">Ondersteuning voor het beleid SystemTimezoneAutomaticDetection</translation>
 <translation id="9206487995878691001">Cangjie-invoermethode</translation>
 <translation id="9208886416788010685">Adobe Reader is verouderd</translation>

@@ -117,7 +117,7 @@
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
 <translation id="229702904922032456">Wygasł certyfikat główny lub pośredniczący.</translation>
 <translation id="230155334948463882">Nowa karta?</translation>
-<translation id="2305919008529760154">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="2305919008529760154">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat mógł zostać wydany w celu dokonania oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> wymaga nazwy użytkownika i hasła.</translation>
 <translation id="2318774815570432836">Nie możesz teraz wejść na stronę <ph name="SITE" />, bo używa ona HSTS. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie później strona będzie działać. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2328300916057834155">Zignorowano nieprawidłową zakładkę w indeksie <ph name="ENTRY_INDEX" /></translation>
@@ -154,7 +154,7 @@
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2674170444375937751">Czy na pewno chcesz usunąć te strony z historii?</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
-<translation id="269990154133806163">Serwer przedstawił certyfikat, który nie został opublikowany za pomocą polityki Certificate Transparency. W przypadku niektórych certyfikatów to wymaganie musi być spełnione, ponieważ gwarantuje, że można im ufać i że chronią przed atakami. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="269990154133806163">Serwer przedstawił certyfikat, który nie został opublikowany za pomocą zasad Certificate Transparency. W przypadku niektórych certyfikatów to wymaganie musi być spełnione, ponieważ gwarantuje, że można im ufać i że chronią one przed atakami. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="2704951214193499422">Chromium nie może obecnie potwierdzić karty. Spróbuj ponownie później.</translation>
 <translation id="2705137772291741111">Zapisana w pamięci podręcznej kopia tej strony jest uszkodzona.</translation>
@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="5199729219167945352">Eksperymenty</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{Znaleziono 1 stronę internetową}few{Znaleziono # strony internetowe}many{Znaleziono # stron internetowych}other{Znaleziono # strony internetowej}}</translation>
 <translation id="5251803541071282808">Chmura</translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5300589172476337783">Pokaż</translation>
@@ -484,7 +483,7 @@
 <translation id="6445051938772793705">Kraj</translation>
 <translation id="6451458296329894277">Potwierdź ponowne przesłanie formularza</translation>
 <translation id="6458467102616083041">Ignorowana, ponieważ wyszukiwarka domyślna jest wyłączona przez zasadę.</translation>
-<translation id="6462969404041126431">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat mógł zostać odwołany. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="6462969404041126431">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat mógł zostać unieważniony. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
 <translation id="6489534406876378309">Rozpocznij przesyłanie informacji o awariach</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>

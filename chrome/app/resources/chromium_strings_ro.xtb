@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Astfel, va fi șters definitiv cel puțin $1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}few{Astfel, vor fi șterse definitiv cel puțin $1 elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}other{Astfel, vor fi șterse definitiv cel puțin $1 de elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}}</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
-<translation id="2103655854491303969">Lansatorul de aplicații Chromium nu va mai fi disponibil.</translation>
 <translation id="2117181891440368863">Chromium s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă acestea nu au fost valide.</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
 <translation id="2158734852934720349">Licențe open source pentru sistemul de operare Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">Acest site folosește pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalează-l și fă upgrade la un browser modern.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Pentru a se aplica actualizarea, sistemul de operare Chromium trebuie să fie repornit.</translation>
-<translation id="2595977381794111014">Folosește comanda rapidă <ph name="APPS_ICON_IMAGE" /> din bara de marcaje din Chromium pentru a accesa în continuare aplicațiile.</translation>
 <translation id="2605472041568654097">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale.</translation>
 <translation id="2636877269779209383">Chromium are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
 <translation id="2648074677641340862">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Chromium.</translation>

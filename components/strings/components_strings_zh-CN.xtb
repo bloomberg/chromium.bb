@@ -384,7 +384,6 @@
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5199729219167945352">实验</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{找到 1 个网页}other{找到 # 个网页}}</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
@@ -561,7 +560,7 @@
 <translation id="7469372306589899959">确认信用卡</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
-<translation id="7508255263130623398">返回的政策所用设备 ID 为空，或与当前的设备 ID 不一致</translation>
+<translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="7518003948725431193">找不到与以下网址对应的网页：<ph name="URL" /></translation>
 <translation id="7537536606612762813">强制</translation>

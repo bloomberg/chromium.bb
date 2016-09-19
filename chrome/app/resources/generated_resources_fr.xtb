@@ -166,7 +166,6 @@
     Vous devrez configurer votre profil de nouveau.<ph name="BR" />
     <ph name="BR" />
     Veuillez nous envoyer vos commentaires depuis l'écran suivant pour nous aider à résoudre le problème.</translation>
-<translation id="121827551500866099">Afficher tous les téléchargements...</translation>
 <translation id="122082903575839559">Algorithme de signature du certificat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 avec chiffrement RSA</translation>
 <translation id="1221462285898798023">Veuillez démarrer <ph name="PRODUCT_NAME" /> en tant qu'utilisateur normal. Pour l'exécuter en tant que root, vous devez indiquer un autre répertoire de données utilisateur pour stocker les informations du profil.</translation>
@@ -462,7 +461,6 @@
 <translation id="1589055389569595240">Afficher l'orthographe et la grammaire</translation>
 <translation id="1593594475886691512">Formatage en cours…</translation>
 <translation id="159359590073980872">Cache des images</translation>
-<translation id="1594155067816010104">Ce fichier va endommager votre ordinateur.</translation>
 <translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{Téléchargement en cours}one{Téléchargement en cours}other{Téléchargements en cours}}</translation>
 <translation id="1594234040488055839">Proposer la connexion automatique aux sites Google avec ce compte</translation>
 <translation id="1596174774107741586">Utiliser les serveurs de bac à sable Google Payments</translation>
@@ -738,7 +736,6 @@
 <translation id="1987139229093034863">Changer d'utilisateur</translation>
 <translation id="1989112275319619282">Parcourir</translation>
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME" /> n'est pas autorisé.</translation>
-<translation id="1992126135411334429">Marquer les origines non sécurisées comme non sécurisées</translation>
 <translation id="1992397118740194946">Non défini</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="1997616988432401742">Vos certificats</translation>
@@ -783,7 +780,6 @@
 <translation id="2074527029802029717">Retirer l'onglet</translation>
 <translation id="2075594581020578008">Navigateur <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="2076269580855484719">Masquer ce plug-in</translation>
-<translation id="2077084898869955643">Signaler automatiquement les incidents de sécurité potentiels à Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2078019350989722914">Confirmer avant de quitter (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Si vous supprimez l'un de vos propres certificats, vous ne pouvez plus l'utiliser pour vous identifier.</translation>
@@ -965,7 +961,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2291643155573394834">Onglet suivant</translation>
 <translation id="2294358108254308676">Souhaitez-vous installer <ph name="PRODUCT_NAME" /> ?</translation>
 <translation id="2296019197782308739">Méthode EAP :</translation>
-<translation id="2299552784526456191">Marquer les origines non sécurisées comme neutres</translation>
 <translation id="2301382460326681002">Le répertoire racine de l'extension est incorrect.</translation>
 <translation id="2302685579236571180">Passer en mode navigation privée</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" a demandé des autorisations supplémentaires.</translation>
@@ -1122,7 +1117,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2502441965851148920">Les mises à jour automatiques sont activées. L'administrateur a désactivé les mises à jour manuelles.</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Écran #}one{Écran #}other{Écran #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> sur <ph name="TOTAL_SIZE" /></translation>
-<translation id="2507649982651274960">Votre appareil a bien été enregistré pour bénéficier de la gestion d'entreprise, mais l'envoi d'informations concernant ses éléments et sa position a échoué. Veuillez saisir ces informations manuellement depuis la console d'administration de cet appareil.</translation>
 <translation id="2509739495444557741">Aucun plug-in n'est installé.</translation>
 <translation id="2509857212037838238">Installer <ph name="PLUGIN_NAME" /></translation>
 <translation id="2510708650472996893">Profil de couleurs :</translation>
@@ -1427,7 +1421,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="288042212351694283">Accès aux appareils U2F</translation>
 <translation id="2881966438216424900">Dernier accès :</translation>
 <translation id="2882943222317434580">Dans un instant, <ph name="IDS_SHORT_PRODUCT_NAME" /> va redémarrer et être réinitialisé.</translation>
-<translation id="2885278018040587402">https://support.google.com/chrome/answer/3060053?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="2885378588091291677">Gestionnaire de tâches</translation>
 <translation id="2887525882758501333">Document PDF</translation>
 <translation id="2888807692577297075">Aucun élément ne correspond à votre recherche ("<ph name="SEARCH_STRING" />").</translation>
@@ -1698,7 +1691,6 @@ Pour vérifier ce point et en savoir plus, veuillez consulter votre compte de me
 <translation id="32279126412636473">Actualiser (⌘ R)</translation>
 <translation id="3228679360002431295">Connexion et validation en cours<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Valeur :</translation>
-<translation id="32330993344203779">Votre périphérique est inscrit pour bénéficier de la gestion d'entreprise.</translation>
 <translation id="3234666976984236645">Toujours détecter du contenu important sur ce site</translation>
 <translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" /> est maintenant un utilisateur supervisé</translation>
 <translation id="323803881985677942">Ouvrir les options d'extension</translation>
@@ -1747,7 +1739,6 @@ Pour vérifier ce point et en savoir plus, veuillez consulter votre compte de me
 <translation id="3297788108165652516">Ce réseau est partagé avec d'autres utilisateurs.</translation>
 <translation id="3298076529330673844">Toujours autoriser l'exécution</translation>
 <translation id="329838636886466101">Réparer</translation>
-<translation id="3298461240075561421">Même si vous avez déjà téléchargé des fichiers depuis ce site, il se peut que ce dernier ait été piraté. Au lieu de récupérer le fichier, veuillez le télécharger une nouvelle fois ultérieurement.</translation>
 <translation id="3298789223962368867">L'URL indiquée est incorrecte.</translation>
 <translation id="3300394989536077382">Signé par :</translation>
 <translation id="3301256054007749965">Activer la nouvelle procédure de connexion séparée par mot de passe GAIA</translation>
@@ -1827,7 +1818,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3386219708421216619">Favori ajouté</translation>
 <translation id="3391392691301057522">Ancien code PIN :</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3392020134425442298">Récupérer le fichier malveillant</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> veut utiliser votre appareil photo et votre micro.</translation>
 <translation id="3394279550557729862">Activer l'utilisation des notifications toast et du centre de notifications natifs sur les plates-formes pour lesquelles ils dont disponibles.</translation>
 <translation id="3394862755749546286">Désactive le pipeline unifié (Android et bureau) pour les médias sur Android.</translation>
@@ -1924,6 +1914,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3512284449647229026">Les pages dont le chargement a échoué pendant que le navigateur était en mode hors connexion ne seront automatiquement rechargées que si l'onglet correspondant est visible.</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{Annuler le téléchargement}one{Annuler le téléchargement}other{Annuler les téléchargements}}</translation>
 <translation id="3512810056947640266">URL (facultatif) :</translation>
+<translation id="3516765099410062445">Affichage de l'historique des appareils auxquels vous êtes connecté : <ph name="BEGIN_LINK" />en savoir plus<ph name="END_LINK" /></translation>
 <translation id="3518086201899641494">Notifications au sujet des portails captifs</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
 <translation id="3522159121915794564">Autoriser les utilisateurs à récupérer les chaînes de certificats TLS/SSL non valides</translation>
@@ -2323,8 +2314,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4044612648082411741">Saisissez le mot de passe du certificat.</translation>
 <translation id="404493185430269859">Moteur de recherche par défaut</translation>
 <translation id="4047112090469382184">Niveau de sécurité</translation>
-<translation id="4050577343529145854">Votre carte SIM sera définitivement désactivée si vous ne saisissez pas
-      correctement la clé de déblocage du code.</translation>
 <translation id="4052120076834320548">Très petite</translation>
 <translation id="4055023634561256217">Vous devez redémarrer votre appareil avant de pouvoir le réinitialiser avec le Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2415,7 +2404,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4168015872538332605">Certains paramètres appartenant à <ph name="PRIMARY_EMAIL" /> sont partagés avec vous. Ces paramètres n'ont une influence sur votre compte que lorsque vous utilisez une connexion multicompte.</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="4172706149171596436">Modifier les paramètres du proxy</translation>
-<translation id="417475959318757854">Centrer le lanceur d'applications</translation>
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4179512409951755566">Activer le défilement tactile OSK</translation>
 <translation id="4180788401304023883">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" émis par l'autorité de certification ?</translation>
@@ -2496,7 +2484,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4289300219472526559">Commencer à parler</translation>
 <translation id="4289540628985791613">Présentation</translation>
 <translation id="4291779358799919071">Capacité</translation>
-<translation id="4293409159363387562">Récupérer quand même</translation>
 <translation id="4295944351946828969">La navigation sécurisée de Google a récemment <ph name="BEGIN_LINK" />détecté des programmes dangereux<ph name="END_LINK" /> sur le site <ph name="SITE" />. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4296575653627536209">Ajouter un utilisateur supervisé</translation>
 <translation id="4297391862525234515">Réduction de l'étagère suite à un clic</translation>
@@ -2614,7 +2601,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4487088045714738411">Clavier belge</translation>
 <translation id="4492190037599258964">Résultats de recherche pour "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">Ne pas afficher sur cette page</translation>
-<translation id="449782841102640887">Se protéger</translation>
 <translation id="4498934959426056365">Génération de clé</translation>
 <translation id="450099669180426158">Icône représentant un point d'exclamation</translation>
 <translation id="4501530680793980440">Confirmer la suppression</translation>
@@ -2757,7 +2743,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4709726535665440636">Règle la position de défilement pour éviter les saccades visibles lorsque le contenu hors écran change.</translation>
 <translation id="4711094779914110278">Turc</translation>
 <translation id="4711638718396952945">Restaurer les paramètres</translation>
-<translation id="4712556365486669579">Récupérer les logiciels malveillants ?</translation>
 <translation id="4713544552769165154">Ce fichier est conçu pour un ordinateur utilisant un logiciel Mac. Il n'est pas compatible avec votre appareil qui exécute Chrome OS. Veuillez effectuer une recherche sur le <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> pour trouver une application de remplacement appropriée. <ph name="BEGIN_LINK_HELP" />En savoir plus<ph name="END_LINK_HELP" /></translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME" /> peut maintenant synchroniser vos mots de passe.</translation>
 <translation id="471800408830181311">Échec de création de clé privée</translation>
@@ -3271,6 +3256,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5382392428640372740">Activer le suivi de la navigation</translation>
 <translation id="5382591305415226340">Gérer les liens compatibles</translation>
 <translation id="5388588172257446328">Nom d'utilisateur :</translation>
+<translation id="5388885445722491159">Associé</translation>
 <translation id="5389237414310520250">Impossible de créer l'utilisateur. Veuillez vérifier l'espace disponible sur votre disque dur et vos autorisations, puis réessayer.</translation>
 <translation id="5390284375844109566">Base de données indexée</translation>
 <translation id="5392544185395226057">Assure la compatibilité avec Native Client.</translation>
@@ -3321,7 +3307,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5439568486246921931">Les téléchargements, les fichiers hors connexion et les données de navigation de cet utilisateur seront supprimés définitivement. Cette action est irréversible.</translation>
 <translation id="544083962418256601">Créer des raccourcis…</translation>
 <translation id="5441100684135434593">Réseau câblé</translation>
-<translation id="544291274896356069">En ouvrant ce lien dans une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="5448293924669608770">Un problème est survenu lors de la connexion</translation>
 <translation id="5449551289610225147">Mot de passe incorrect</translation>
 <translation id="5449588825071916739">Ajouter tous les onglets aux favoris…</translation>
@@ -3500,7 +3485,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5691596662111998220">Désolé, le fichier <ph name="FILE_NAME" /> n'existe plus.</translation>
 <translation id="5694501201003948907">Compression de $1 éléments en cours…</translation>
 <translation id="5699533844376998780">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée.</translation>
-<translation id="5699678593090203286">Saisir la clé de déverrouillage du code</translation>
 <translation id="5701101281789450335">Paramètres de langue et de saisie</translation>
 <translation id="5701381305118179107">Centrer</translation>
 <translation id="5702898740348134351">Modifi&amp;er les moteurs de recherche...</translation>
@@ -3518,6 +3502,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5719603411793408026">Moteurs de recherche par défaut</translation>
 <translation id="572328651809341494">Onglets récents</translation>
 <translation id="5723508132121499792">Aucune application active en arrière plan</translation>
+<translation id="572392919096807438">Mémoriser ma décision</translation>
 <translation id="5725124651280963564">Connectez-vous à <ph name="TOKEN_NAME" /> afin de générer une clé pour <ph name="HOST_NAME" />.</translation>
 <translation id="5725199926572598591">DirectWrite</translation>
 <translation id="572525680133754531">Cette fonctionnalité affiche une bordure autour des couches de rendu afin de déboguer et d'étudier leur composition.</translation>
@@ -3983,7 +3968,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6390799748543157332">Les pages que vous consultez dans cette fenêtre ne sont pas consignées dans l'historique du navigateur et ne laissent aucune autre trace sur votre ordinateur (des cookies, par exemple), une fois que vous avez fermé toutes les fenêtres Invité ouvertes. Tous les fichiers téléchargés sont toutefois conservés.</translation>
 <translation id="639132970685294128">Serveurs de noms</translation>
 <translation id="6391538222494443604">Le répertoire d'extensions est obligatoire.</translation>
-<translation id="639210578006174481">Lanceur d'applications expérimental</translation>
 <translation id="6394627529324717982">Virgule</translation>
 <translation id="6395423953133416962">Envoyer les <ph name="BEGIN_LINK1" />informations système<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />statistiques<ph name="END_LINK2" /></translation>
 <translation id="6397363302884558537">Arrêter de parler</translation>
@@ -5078,7 +5062,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7925192822915865931">Activer la consultation hors connexion des pages consultées récemment</translation>
 <translation id="7925285046818567682">En attente de <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Ne pas utiliser les données mobiles pour la synchronisation</translation>
-<translation id="7926906273904422255">Marquer les origines non sécurisées comme non sécurisées ou douteuses</translation>
 <translation id="7928710562641958568">Éjecter l'appareil</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> partage votre écran et un contenu audio.</translation>
 <translation id="7938594894617528435">Actuellement hors connexion</translation>
@@ -5159,7 +5142,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8030656706657716245">Ajouter une imprimante</translation>
 <translation id="8031722894461705849">Clavier slovaque</translation>
 <translation id="8032244173881942855">Impossible de caster l'onglet.</translation>
-<translation id="8034304765210371109">Activer la version expérimentale du lanceur d'applications</translation>
 <translation id="8035871966943390569">Effet "Dérouler pour actualiser"</translation>
 <translation id="8037117027592400564">Accéder à l'ensemble du texte énoncé à l'aide de la synthèse vocale</translation>
 <translation id="803771048473350947">Fichier</translation>
@@ -6016,7 +5998,6 @@ Calcul de la durée restante</translation>
 <translation id="9203398526606335860">&amp;Profilage activé</translation>
 <translation id="9203478404496196495">Réactiver le son de l'onglet</translation>
 <translation id="9203962528777363226">L'administrateur de cet appareil a désactivé la fonctionnalité d'ajout de nouveaux utilisateurs</translation>
-<translation id="9205143043463108573">Positionner le lanceur d'applications au centre de l'écran (orientation paysage)</translation>
 <translation id="9205160891051296441">Autoriser la règle SystemTimezoneAutomaticDetection</translation>
 <translation id="9206487995878691001">Mode de saisie cangjie</translation>
 <translation id="9208886416788010685">Adobe Reader n'est pas à jour</translation>

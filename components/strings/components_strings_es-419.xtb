@@ -257,7 +257,7 @@
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3630155396527302611">Si ya está incluido como un programa con permiso para acceder a la red, intenta
       quitarlo de la lista y agregarlo de nuevo.</translation>
-<translation id="3638794133396384728">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad caducó. Es posible que se deba a una configuración incorrecta o a que un atacante haya interceptado tu conexión. El reloj de tu computadora está establecido a la siguiente hora: <ph name="CURRENT_TIME" />. ¿Es correcto? De lo contrario, deberás corregir el reloj de tu sistema y, luego, actualizar esta página. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="3638794133396384728">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad caducó. Es posible que se deba a una configuración incorrecta o a que un atacante haya interceptado tu conexión. El reloj de tu computadora está establecido con la siguiente hora: <ph name="CURRENT_TIME" />. ¿Es correcto? De lo contrario, deberás corregir el reloj de tu sistema y, luego, actualizar esta página. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3648607100222897006">Estas funciones experimentales pueden modificarse, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ninguna garantía para lo que pueda ocurrir si activas alguno de estos experimentos, y es posible que tu navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que actives, se activará  para todos los usuarios de este navegador, así que te recomendamos que actúes con precaución.</translation>
 <translation id="3650584904733503804">Validación correcta</translation>
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, haz clic aquí: <ph name="HELP_LINK" />.</translation>
@@ -388,7 +388,6 @@
 <translation id="5179510805599951267">¿No está en <ph name="ORIGINAL_LANGUAGE" />? Informa este error</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5199729219167945352">Experimentos</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{Se encontró 1 página web}other{Se encontraron # páginas web}}</translation>
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="5300589172476337783">Mostrar</translation>

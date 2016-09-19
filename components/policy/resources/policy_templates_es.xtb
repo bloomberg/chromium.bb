@@ -3,7 +3,7 @@
 <translationbundle lang="es">
 <translation id="1007441141628883408">Habilita las actualizaciones de todos los componentes en <ph name="PRODUCT_NAME" /> cuando no se establece la política o si se le asigna el valor True.
 
-      Si se le asigna el valor False, las actualizaciones de los componentes se inhabilitarán. Sin embargo, algunos componentes quedan exentos de esta política: no se inhabilitarán las actualizaciones de cualquier componente que no contenga ningún código ejecutable, que no influya en el funcionamiento del navegador de forma significativa o que afecte gravemente a su seguridad.
+      Si se le asigna el valor False, las actualizaciones de los componentes se inhabilitarán. Sin embargo, algunos componentes quedan exentos de esta política: no se inhabilitarán las actualizaciones de cualquier componente que no contenga ningún código ejecutable, que no influya en el funcionamiento del navegador de forma significativa o que sea esencial para garantizar su seguridad.
       Entre los ejemplos de estos componentes se incluyen las listas de revocación de certificados y los datos de navegación seguros. </translation>
 <translation id="101438888985615157">Girar la pantalla 180 grados</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de inicio de sesión</translation>
@@ -32,9 +32,9 @@
           Si se configura esta política, el host de acceso remoto utilizará esta URL para validar los tokens de autenticación de los clientes de acceso remoto y poder aceptar conexiones. Se debe aplicar junto con la política RemoteAccessHostTokenUrl.
 
           Esta función está inhabilitada en el servidor en estos momentos.</translation>
-<translation id="1093082332347834239">Si se habilita esta opción, el host de asistencia remota se ejecutará en un proceso con permisos de <ph name="UIACCESS_PERMISSION_NAME" />. Esto permitirá que los usuarios remotos interactúen con ventanas elevadas en el ordenador del usuario local.
+<translation id="1093082332347834239">Si se habilita esta opción, el host de asistencia remota se ejecutará en un proceso con permisos de <ph name="UIACCESS_PERMISSION_NAME" />. Esto permitirá que los usuarios remotos interactúen con ventanas a las que se puede acceder con permisos de administrador en el ordenador del usuario local.
 
-          Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas elevadas en el ordenador.</translation>
+          Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="1103860406762205913">Habilita el inicio de sesión basado en la Web antiguo</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para guardar los archivos almacenados en la memoria caché en el disco.
@@ -132,7 +132,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy que se incluya en la lista de hosts especificada.
 
-          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
+          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción "Seleccionar la forma de especificar la configuración del servidor proxy".
 
           No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
 
@@ -748,9 +748,9 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
           Si eliges la opción de detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
 
-          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en Dirección o URL de servidor proxy y en Lista de reglas de omisión de proxy separadas por comas. Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
+          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en "Dirección o URL de servidor proxy" y en "Lista de reglas de omisión de proxy separadas por comas". Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
 
-          Si decides usar una secuencia de comandos .pac de proxy, deberás especificar la URL de la secuencia en URL de un archivo .pac de proxy.
+          Si decides usar una secuencia de comandos .pac de proxy, deberás especificar la URL de la secuencia en "URL de un archivo .pac de proxy".
 
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL" />.
@@ -1192,7 +1192,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si eliges la opción de utilizar la configuración de proxy del sistema o detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
 
-          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en Dirección o URL de servidor proxy, URL de un archivo .pac de proxy y Lista de reglas de omisión de proxy separadas por comas. Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
+          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en "Dirección o URL de servidor proxy", "URL de un archivo .pac de proxy" y "Lista de reglas de omisión de proxy separadas por comas". Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
 
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL" />.
@@ -1445,7 +1445,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos.</translation>
-<translation id="5795001131770861387">Habilita la compatibilidad de HTTP/0.9 en puertos no predeterminados</translation>
+<translation id="5795001131770861387">Habilita la compatibilidad con HTTP/0.9 en puertos no utilizados de forma predeterminada</translation>
 <translation id="5809728392451418079">Establecer el nombre visible de cuentas locales del dispositivo</translation>
 <translation id="5814301096961727113">Establecer el estado predeterminado de los comentarios por voz en la pantalla de inicio de sesión</translation>
 <translation id="5815129011704381141">Reiniciar automáticamente después de la actualización</translation>
@@ -1543,7 +1543,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6076099373507468537">Define la lista de dispositivos USB que pueden separarse de su controlador de kernel para utilizarse en la API chrome.usb directamente en una aplicación web. Las entradas son pares del identificador de producto y el identificador de proveedor del USB que permiten reconocer hardware específico.
 
       Si no se configura esta política, la lista de dispositivos USB que se pueden separar está vacía.</translation>
-<translation id="6093156968240188330">Permite que los usuarios remotos interactúen con ventanas elevadas en sesiones de asistencia remota</translation>
+<translation id="6093156968240188330">Permite que los usuarios remotos interactúen con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
 <translation id="6095999036251797924">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el usuario está conectado a la red o utiliza la batería.
 
           Cuando el tiempo transcurrido se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -2076,9 +2076,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Esta política está inhabilitada de forma predeterminada. Si se habilita, expone a los usuarios al problema de seguridad que se indica en la página https://crbug.com/600352.
 
-      Esta política se ha diseñado para que las empresas puedan migrar sus servidores a partir de HTTP/0.9 y se retirará más adelante.
+      Esta política se ha diseñado con el objetivo de que las empresas puedan migrar sus servidores para que no utilicen HTTP/0.9 y se retirará más adelante.
 
-      Si no se configura esta política, HTTP/0.9 se inhabilitará en los puertos no predeterminados.</translation>
+      Si no se configura esta política, HTTP/0.9 se inhabilitará en los puertos no utilizados de forma predeterminada.</translation>
 <translation id="7749402620209366169">Permite habilitar la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
          Si se habilita esta opción, los usuarios deben proporcionar un código de dos factores válido al acceder a un host.

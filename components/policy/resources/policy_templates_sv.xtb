@@ -32,9 +32,9 @@
           Om policyn är inställd använder fjärråtkomstvärden denna webbadress för att validera autentiseringstoken från fjärråtkomstklienter för att kunna godkänna anslutningar. Måste användas i samband med RemoteAccessHostTokenUrl.
 
           Funktionen är för närvarande inaktiverad på servern.</translation>
-<translation id="1093082332347834239">Om inställningen är aktiverad körs fjärrhjälpsvärden i en process med behörigheter för <ph name="UIACCESS_PERMISSION_NAME" />.  Det innebär att fjärranvändare kan interagera med fönster som öppnats med adminbehörighet på den lokala användarens dator.
+<translation id="1093082332347834239">Om inställningen är aktiverad körs fjärrhjälpsvärden i en process med behörigheter för <ph name="UIACCESS_PERMISSION_NAME" />. Det innebär att fjärranvändare kan interagera med fönster som öppnats med högre behörighet på den lokala användarens dator.
 
-          Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med adminbehörighet på datorn.</translation>
+          Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="1103860406762205913">Aktiverar den gamla webbaserade inloggningen</translation>
 <translation id="1128903365609589950">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> ska använda för att lagra cachade filer på hårddisken.
@@ -871,7 +871,7 @@
       Om du inaktiverar den här inställningen eller inte anger något värde tvingas inte användningen av Säkert läge på YouTube fram.</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
 <translation id="3756011779061588474">Blockera utvecklarläget</translation>
-<translation id="3758089716224084329">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-apparna samt förhindra att användare ändrar sina proxyinställningar.
+<translation id="3758089716224084329">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och förhindra att användare ändrar sina proxyinställningar.
 
       Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
 
@@ -2097,9 +2097,9 @@
 
       Principen är inaktiverad som standard och om den aktiveras löper användare risk att utsättas för säkerhetsbristen https://crbug.com/600352.
 
-      Principen avsedd att ge företag möjlighet att migrera befintliga servrar från HTTP/0.9. Principen tas bort framöver.
+      Principen är avsedd att ge företag möjlighet att migrera befintliga servrar från HTTP/0.9. Principen tas bort framöver.
 
-      Om principen inte har angetts inaktiveras HTTP/0.9 på portar som inte har angetts som standard.</translation>
+      Om principen inte har angetts, inaktiveras HTTP/0.9 på portar som inte har angetts som standard.</translation>
 <translation id="7749402620209366169">Aktiverar tvåstegsverifiering för värdar för fjärråtkomst istället för en användarangiven PIN-kod.
 
           Om inställningen aktiveras måste användaren ange en giltig tvåstegskod för att komma åt värden.

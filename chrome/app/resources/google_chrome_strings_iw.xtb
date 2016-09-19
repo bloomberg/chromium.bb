@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏עזרה לשימוש ב-Chrome OS</translation>
 <translation id="1818142563254268765">‏העדכון העצמי של Chrome לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chrome.</translation>
-<translation id="1864458292167284385">‏Chrome App Launcher יוצא משימוש.</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="1924381329666691588">‏לא ניתן להציג את Google Chrome בשפה זו.</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
@@ -105,7 +104,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל Chrome לא זיהה אף אחד מהיומנים של שקיפות האישור.</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
-<translation id="396182988103551265">‏השתמש בקיצור הדרך <ph name="APPS_ICON_IMAGE" /> בסרגל הסימניות של Chrome כדי להמשיך לגשת לאפליקציות שלך.</translation>
 <translation id="4042449298237264661">‏מחשב זה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
@@ -248,7 +246,6 @@
 <translation id="8037887340639533879">‏לא נמצאה התקנה של Google Chrome שיש לעדכן.</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8183957050892517584">‏Chrome יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
-<translation id="8205111949707227942">‏אופציונלי: עזור לנו לשפר את Chrome OS על ידי שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="8211929904040702368">‏הפעולה תמחק לצמיתות מהמכשיר הזה <ph name="TOTAL_COUNT" /> פריטים לפחות. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chrome בתור $2.</translation>
 <translation id="8227755444512189073">‏Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME" /> קישורים הקישור המבוקש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>

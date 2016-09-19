@@ -706,7 +706,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           </translation>
 <translation id="3201273385265130876">Giver dig mulighed for at angive den proxyserver, som anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
 
-          Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder
+          Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder.
 
           Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
 
@@ -1133,7 +1133,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
 
-          Hvis du vælger manuelle proxyindstillinger kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps bruger kun den HTTP-proxyserver, der har højest prioritet.
+          Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps bruger kun den HTTP-proxyserver, der har højest prioritet.
 
           Få flere detaljerede eksempler på:
 
@@ -1705,7 +1705,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis indstillingen er deaktiveret eller ikke er angivet, kan enhver konto bruges til at dele hosts.
 
           Se også RemoteAccessHostClientDomain.</translation>
-<translation id="6979510692034647325">Aktiverer komponentopdateringer i <ph name="PRODUCT_NAME" /> .</translation>
+<translation id="6979510692034647325">Aktiverer komponentopdateringer i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6997592395211691850">Om der kræves online OCSP/CRL-kontroller for lokale tillidsankere</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="7003746348783715221">Præferencer for <ph name="PRODUCT_NAME" /></translation>

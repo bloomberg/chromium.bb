@@ -105,7 +105,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2139186145475833000">Add to Home screen</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2154710561487035718">Copy URL</translation>
-<translation id="21570240866965662">Slow connection</translation>
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refine</translation>
@@ -519,7 +518,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
 <translation id="7053983685419859001">Block</translation>
-<translation id="7056999826593229648">Slow connection detected</translation>
 <translation id="7057058088140140610">Credit cards and addresses using Google Payments</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
@@ -571,7 +569,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
 <translation id="7682287625158474539">Shipping</translation>
-<translation id="7690588279513156836">Load original</translation>
 <translation id="771135159654932189">See what's nearby</translation>
 <translation id="7713873128508426081">Always allowed?</translation>
 <translation id="7764225426217299476">Add address</translation>

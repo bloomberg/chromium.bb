@@ -37,7 +37,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtener ayuda de Chrome OS</translation>
 <translation id="1818142563254268765">Chrome no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que actualizar Chrome.</translation>
-<translation id="1864458292167284385">El menú de aplicaciones de Chrome va a desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="1924381329666691588">Google Chrome no se puede mostrar en este idioma.</translation>
 <translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
@@ -109,7 +108,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificado que <ph name="ISSUER" />emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero Chrome no ha reconocido ninguno de los registros de estos datos.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
-<translation id="396182988103551265">Utiliza el acceso directo de <ph name="APPS_ICON_IMAGE" /> situado en la barra de marcadores de Chrome para seguir accediendo a tus aplicaciones.</translation>
 <translation id="4042449298237264661">Este ordenador dejará de recibir actualizaciones de Google Chrome porque ya no es compatible con Windows XP y Windows Vista.</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
@@ -187,7 +185,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Regla entrante para que Google Chrome permita tráfico mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
-<translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu ordenador.</translation>
+<translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
 <translation id="629218512217695915">Utilizar contraseña generada por Chrome</translation>
 <translation id="6368805772029492593">Para mayor seguridad, Google Chrome cifrará tus datos.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
@@ -256,7 +254,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8037887340639533879">No se han encontrado actualizaciones de Google Chrome.</translation>
 <translation id="8129812357326543296">Información de &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome almacenará de forma segura tu información personal, de modo que no tendrás que volver a introducirla.</translation>
-<translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome OS enviando estadísticas de uso e informes de errores de forma automática.</translation>
 <translation id="8211929904040702368">Se eliminarán permanentemente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como $2.</translation>
 <translation id="8227755444512189073">Google Chrome debe ejecutar una aplicación externa para admitir enlaces de <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome está utilizando la cámara y el micrófono.</translation>

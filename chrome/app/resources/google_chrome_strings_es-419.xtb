@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtener ayuda para utilizar Chrome OS</translation>
 <translation id="1818142563254268765">Chrome no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes actualizar Chrome.</translation>
-<translation id="1864458292167284385">El Selector de aplicaciones de Chrome está por desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado.</translation>
 <translation id="1924381329666691588">Google Chrome no se puede mostrar en este idioma.</translation>
 <translation id="2063848847527508675">El Sistema operativo Chrome debe reiniciarse para que se aplique la actualización.</translation>
@@ -79,7 +78,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
-<translation id="3180085900771989961">Tu administrador debe quitarte y volverte a agregar en Chrome.</translation>
+<translation id="3180085900771989961">Tu administrador debe quitarte y volver a agregarte en Chrome.</translation>
 <translation id="3251381707915721925">Para establecer qué sitios web puede ver <ph name="NEW_PROFILE_NAME" />, puedes configurar restricciones y definir opciones de configuración en <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no cambias las opciones de configuración predeterminadas, <ph name="NEW_PROFILE_NAME" /> podrá navegar en la Web sin restricciones.
 
 Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate de bloquear tu perfil cuando no uses Chrome. Para hacerlo, haz clic en tu nombre de perfil que se encuentra en la esquina superior derecha del navegador y selecciona "Salir y bloquear para niños".
@@ -105,7 +104,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados, pero Chrome no reconoció ninguno de los registros de la transparencia de certificados.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
-<translation id="396182988103551265">Para seguir accediendo a tus apps, usa el acceso directo de <ph name="APPS_ICON_IMAGE" /> que aparece en la barra de marcadores de Chrome.</translation>
 <translation id="4042449298237264661">Esta computadora dejará de recibir actualizaciones de Google Chrome porque Windows XP y Windows Vista ya no se admiten.</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
@@ -248,7 +246,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8037887340639533879">No se encontraron actualizaciones de Google Chrome.</translation>
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chromium almacenará de forma segura tus datos personales para que no tengas que volver a escribirlos.</translation>
-<translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome SO enviando estadísticas de uso e informes sobre fallos automáticamente a Google.</translation>
 <translation id="8211929904040702368">Esta acción borrará de forma permanente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.</translation>
 <translation id="8227755444512189073">Google Chrome debe iniciar una aplicación externa para administrar <ph name="SCHEME" /> enlaces. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>

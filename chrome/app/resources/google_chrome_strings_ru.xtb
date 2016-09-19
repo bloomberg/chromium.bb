@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="1818142563254268765">Не удалось установить последнюю версию Chrome. Обновите браузер, чтобы применить исправления безопасности и воспользоваться новыми замечательными функциями.</translation>
-<translation id="1864458292167284385">Мы прекращаем поддержку Панели запуска приложений Chromе</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1924381329666691588">Интерфейс Google Chrome невозможно отобразить на этом языке.</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
@@ -105,7 +104,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Данные Chrome подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил временные метки сертификата, однако распознать их журналы не удалось.</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
-<translation id="396182988103551265">Используйте ярлык <ph name="APPS_ICON_IMAGE" /> в панели закладок Chrome, чтобы получить доступ к приложениям.</translation>
 <translation id="4042449298237264661">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -248,7 +246,6 @@
 <translation id="8037887340639533879">Невозможно выполнить обновление, так как приложение Google Chrome не найдено</translation>
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome будет хранить ваши данные в защищенном виде, поэтому их не придется вводить повторно.</translation>
-<translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
 <translation id="8211929904040702368">С устройства будет удалено несколько объектов (не менее <ph name="TOTAL_COUNT" />). Чтобы впоследствии загрузить данные, войдите в Chrome как $2.</translation>
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME" />. Запрошенная ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>

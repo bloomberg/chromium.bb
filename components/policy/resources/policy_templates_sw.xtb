@@ -65,7 +65,7 @@
 
      Ikiwa sera hii itaachwa bila kuwekwa, Usawazishaji wa Google utapatikana kwa watumiaji kuchagua kuutumia au kutoutumia.
 
-      Ili uzime kabisa Usawazishaji wa Google, unashauriwa uzime huduma ya Usawazishaji wa Google katika Google Admin console.</translation>
+      Ili uzime kabisa Usawazishaji wa Google, unashauriwa uzime huduma ya Usawazishaji wa Google katika dashibodi ya Google Admin.</translation>
 <translation id="1291880496936992484">Onyo: RC4 itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 52 (kufikia Septemba 2016) na sera hii kufanya kazi wakati huo.
 
      Sera hii isipowekwa, au ikiwekwa kuwa sivyo basi mipangilio ya kriptografia ya RC4 katika TLS haitawashwa. Vinginevyo inaweza kuwekwa kuwa ndivyo ili kudumisha muoano na seva iliyokwisha muda. Huu ni mkakati tu wa muda na seva inapaswa kuwekwa mipangilio.</translation>
@@ -733,7 +733,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           Ukichagua kugundua seva mbadala kiotomatiki, chaguo nyingine zote zitapuuzwa.
 
-          Ukichagua hali ya seva mbadala isiyobadilika, unaweza kubainisha chaguo zaidi katika 'Anwani au URL ya seva mbadala' na 'Orodha iliyotenganishwa kwa koma ya sheria za ukwepaji wa seva mbadala'. Ni seva mbadala ya HTTP yenye umuhimu mkubwa pekee inayopatikana kwa programu za ARC.
+          Ukichagua hali ya seva mbadala isiyobadilika, unaweza kubainisha chaguo zaidi katika 'Anwani au URL ya seva mbadala' na 'Orodha iliyotenganishwa kwa koma ya sheria za ukwepaji wa seva mbadala'. Ni seva mbadala ya HTTP yenye umuhimu mkubwa pekee ndiyo inayopatikana kwa programu za ARC.
 
           Ukichagua kutumia seva mbadala ya hati ya .pac, lazima ubainishe URL ya hati katika 'URL ya seva mbadala ya faili ya .pac'.
 
@@ -1171,7 +1171,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
           Ukichagua kutumia mipangilio ya mfumo wa seva mbadala au kugundua seva mbadala kiotomatiki, chaguo nyingine zote zitapuuzwa.
 
-          Ukichagua mipangilio ya seva mbadala ya kuweka mwenyewe, unaweza kubainisha chaguo zaidi katika ''Anwani au URL ya seva mbadala', 'URL ya seva mbadala ya faili ya .pac' na 'orodha iliyotenganishwa kwa koma ya sheria za ukwepaji wa seva mbadala'. Ni seva mbadala ya HTTP pekee yenye umuhimu mkubwa inayopatikana kwa programu za ARC.
+          Ukichagua mipangilio ya seva mbadala ya kuweka mwenyewe, unaweza kubainisha chaguo zaidi katika ''Anwani au URL ya seva mbadala', 'URL ya seva mbadala ya faili ya .pac' na 'orodha iliyotenganishwa kwa koma ya sheria za ukwepaji wa seva mbadala'. Ni seva mbadala ya HTTP pekee yenye umuhimu mkubwa ndiyo inayopatikana kwa programu za ARC.
 
           Kwa mifano ya kina, tembelea:
           <ph name="PROXY_HELP_URL" />.

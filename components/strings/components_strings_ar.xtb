@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">هل الصفحة ليست باللغة <ph name="ORIGINAL_LANGUAGE" />؟ الإبلاغ عن هذا الخطأ</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="5199729219167945352">التجارب</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{تم العثور على صفحة ويب واحدة}zero{تم العثور على # صفحة ويب}two{تم العثور على صفحتي ويب (#)}few{تم العثور على # صفحات ويب}many{تم العثور على # صفحة ويب}other{تم العثور على # صفحة ويب}}</translation>
 <translation id="5251803541071282808">السحاب</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
 <translation id="5300589172476337783">عرض</translation>

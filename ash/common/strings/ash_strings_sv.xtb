@@ -99,7 +99,7 @@
 <translation id="3683428399328702079">Upplösningen för <ph name="DISPLAY_NAME" /> ändrades till <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktivera Wi-Fi</translation>
 <translation id="3709443003275901162">9+</translation>
-<translation id="3712407551474845318">Markera ett område</translation>
+<translation id="3712407551474845318">Ta bild av skärmområde</translation>
 <translation id="372094107052732682">Avsluta genom att trycka på Ctrl + Skift + Q två gånger.</translation>
 <translation id="3742055079367172538">Skärmbilden har tagits</translation>
 <translation id="3775358506042162758">Du kan högst använda tre konton för multiinloggning.</translation>
@@ -134,7 +134,6 @@
 <translation id="5045002648206642691">Inställningar för Google Drive ...</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
-<translation id="5191140942132549112">VISA FRÅGOR</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5238774010593222950">Det går inte att logga in på ett annat konto.</translation>
 <translation id="532063867737390965">Den här nätverksinställningen har inaktiverats av administratören.</translation>
@@ -203,7 +202,7 @@
 <translation id="7097613348211027502">ChromeVox (talad feedback) har aktiverats.
 Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
-<translation id="7129360219436193655">Läge för laserpekare</translation>
+<translation id="7129360219436193655">Laserpekarläge</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK är på. Avbryt genom att trycka på Alt + Sök eller Skift.</translation>

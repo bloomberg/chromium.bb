@@ -5,7 +5,7 @@
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1032854598605920125">ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
-<translation id="1053591932240354961">এই মুহূর্তে আপনি <ph name="SITE" /> এ যেতে পারবেন না কারণ ওয়েবসাইটটি এমন অবোধ্য শংসাপত্র পাঠিয়েছে যেটি Google Chrome প্রক্রিয়া করতে পারছে না। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়ে থাকে, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
+<translation id="1053591932240354961">এই মুহূর্তে আপনি <ph name="SITE" /> এ যেতে পারবেন না কারণ ওয়েবসাইটটি এমন অবোধ্য শংসাপত্র পাঠিয়েছে যেটি Google Chrome চালাতে পারছে না। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত কিছুক্ষনের জন্য হয়ে থাকে, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="10614374240317010">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
@@ -388,7 +388,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="5199729219167945352">পরীক্ষাদি</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{১টি ওয়েব পৃষ্ঠা পাওয়া গেছে}one{#টি ওয়েব পৃষ্ঠা পাওয়া গেছে}other{#টি ওয়েব পৃষ্ঠা পাওয়া গেছে}}</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="5300589172476337783">দেখান</translation>

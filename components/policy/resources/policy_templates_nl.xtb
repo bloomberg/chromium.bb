@@ -151,7 +151,7 @@
      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
-<translation id="1606958238518590302">Wanneer dit beleid is ingesteld op Waar, kunnen gebruikers geen gegevens naar externe opslagapparaten schrijven.</translation>
+<translation id="1606958238518590302">Wanneer dit beleid is ingesteld op Waar (True), kunnen gebruikers geen gegevens naar externe opslagapparaten schrijven.</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
 <translation id="1617384279878333801">'Persoon toevoegen in profielbeheer' toestaan</translation>

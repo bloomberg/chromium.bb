@@ -57,7 +57,7 @@
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
-<translation id="127699919157094139">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite i servizi di sincronizzazione ospitati da Google e impedisce gli utenti di modificare questa impostazione.
+<translation id="127699919157094139">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite i servizi di sincronizzazione ospitati da Google e impedisce agli utenti di modificare questa impostazione.
 
       Se questa impostazione viene attivata, gli utenti non possono modificare o eseguire l'override dell'impostazione in <ph name="PRODUCT_NAME" />.
 
@@ -687,7 +687,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se l'utente sceglie di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
 
-          Se l'utente sceglie di utilizzare uno script proxy .pac, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy" e "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
+          Se l'utente sceglie di utilizzare la modalità server proxy definito, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy" ed "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
 
           Se l'utente sceglie di utilizzare uno script proxy .pac, deve specificare l'URL per lo script in "URL di un file proxy .pac".
 
@@ -696,7 +696,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
 
-          Se la norma non viene impostata gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
+          Se la norma non viene impostata, gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3206731874112238027">Disattiva anteprima di stampa (ritirata)</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.

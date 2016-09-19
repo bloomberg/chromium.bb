@@ -5,7 +5,7 @@
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
-<translation id="1053591932240354961">目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證是亂碼，Google Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1053591932240354961">目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證含有亂碼，Google Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
@@ -47,7 +47,7 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">列印</translation>
 <translation id="1442912890475371290">已封鎖<ph name="BEGIN_LINK" />造訪位於 <ph name="DOMAIN" /> 的網頁<ph name="END_LINK" />的要求。</translation>
-<translation id="1491663344921578213">目前無法造訪 <ph name="SITE" />，因為這個網站使用憑證固定功能。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1491663344921578213">目前無法造訪 <ph name="SITE" />，因為這個網站使用憑證鎖定功能。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">顯示這個網頁的儲存複本 (亦即現已不再使用的版本)。</translation>
 <translation id="1519264250979466059">建立日期</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
@@ -119,7 +119,7 @@
 <translation id="230155334948463882">新信用卡？</translation>
 <translation id="2305919008529760154">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證核發來源有詐欺嫌疑。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供使用者名稱和密碼。</translation>
-<translation id="2318774815570432836">目前無法造訪 <ph name="SITE" />，因為這個網站使用 HSTS。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2318774815570432836">目前無法造訪 <ph name="SITE" />，因為這個網站使用 HSTS。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2328300916057834155">已忽略索引「<ph name="ENTRY_INDEX" />」的無效書籤</translation>
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請回報此錯誤</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5199729219167945352">實驗性功能</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{找到 1 個網頁}other{找到 # 個網頁}}</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5300589172476337783">顯示</translation>
@@ -478,7 +477,7 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6389758589412724634">Chromium 嘗試顯示這個網頁時用盡了記憶體。</translation>
-<translation id="6416403317709441254">目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證是亂碼，Chromium 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6416403317709441254">目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證含有亂碼，Chromium 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6417515091412812850">無法檢查憑證是否已遭撤銷。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6445051938772793705">國家/地區</translation>

@@ -105,7 +105,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
-<translation id="21570240866965662">La connexió és lenta</translation>
 <translation id="219985413780390209">Protegeix-me a mi i el meu dispositiu de llocs perillosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicació web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Restringeix</translation>
@@ -291,7 +290,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4508440807153586353">Només els usuaris que sàpiguen la vostra frase de contrasenya poden llegir les dades que encripteu. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblideu o voleu canviar aquesta configuració, heu de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{fa # dia}other{fa # dies}}</translation>
 <translation id="4522570452068850558">Detalls</translation>
-<translation id="4526249700380860531">Consulteu i gestioneu les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
+<translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Trieu la carpeta</translation>
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
 <translation id="4572422548854449519">Inicia la sessió al compte gestionat</translation>
@@ -341,7 +340,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5131405117025179004">Edita el compte desat</translation>
 <translation id="5138299137310274655">La pàgina està en <ph name="SOURCE_LANGUAGE" />. Voleu traduir-la i que es mostri en <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Esborrar les dades emmagatzemades</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" />: <ph name="STYLE_BEGIN" />Instant<ph name="STYLE_END" /></translation>
+<translation id="5152837197884366695"><ph name="APP_NAME" />: <ph name="STYLE_BEGIN" />instantània<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Aquest és un compte infantil</translation>
 <translation id="5161254044473106830">Cal indicar un títol</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE" /> d'aquest lloc la propera vegada?</translation>
@@ -519,7 +518,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="7031882061095297553">Sincronitzeu amb</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
-<translation id="7056999826593229648">S'ha detectat una connexió lenta</translation>
 <translation id="7057058088140140610">Targetes de crèdit i adreces que fan servir Google Payments</translation>
 <translation id="7062545763355031412">Accepta i canvia de compte</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
@@ -571,7 +569,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
 <translation id="7682287625158474539">Enviament</translation>
-<translation id="7690588279513156836">Carrega la versió original</translation>
 <translation id="771135159654932189">Vegeu què teniu a prop</translation>
 <translation id="7713873128508426081">Sempre permès</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>

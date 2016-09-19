@@ -66,7 +66,7 @@
 
       Jika kebijakan ini dibiarkan tidak tersetel, Google Sync akan tersedia bagi pengguna tersebut untuk memilih apakah pengguna menggunakannya atau tidak.
 
-      Untuk menonaktifkan Google Sync sepenuhnya, sebaiknya Anda menonaktifkan layanan Google Sync di Konsol Admin Google.</translation>
+      Untuk menonaktifkan Google Sync sepenuhnya, sebaiknya Anda menonaktifkan layanan Google Sync di konsol Google Admin.</translation>
 <translation id="1291880496936992484">Peringatan: RC4 akan dihapus sepenuhnya dari <ph name="PRODUCT_NAME" /> setelah versi 52 (sekitar September 2016) dan sejak saat itu kebijakan ini tidak akan berlaku lagi.
 
       Jika kebijakan tidak disetel, atau disetel ke False, maka cipher suite RC4 di TLS tidak akan diaktifkan. Jika kebijakan disetel ke True, kebijakan akan tetap berlaku untuk mempertahankan kompatibilitas dengan server yang sudah usang. Tindakan ini hanya untuk sementara dan server sebaiknya dikonfigurasi ulang.</translation>
@@ -718,7 +718,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang disebutkan di baris perintah.
 
-          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy mereka sendiri.</translation>
+          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
 <translation id="3206731874112238027">Menonaktifkan Pratinjau Cetak (tak lagi digunakan)</translation>
 <translation id="3213821784736959823">Mengontrol apakah klien DNS di dalamnya digunakan di <ph name="PRODUCT_NAME" />.
@@ -835,7 +835,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang disebutkan di baris perintah.
 
 
-      Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy mereka sendiri.</translation>
+      Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
 <translation id="3768412594120638208">Mengontrol jenis aplikasi/ekstensi mana yang diizinkan untuk dipasang.
@@ -1128,7 +1128,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi terkait proxy yang disebutkan di baris perintah.
 
-          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy mereka sendiri.</translation>
+          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="4834526953114077364">Pengguna yang paling jarang digunakan yang belum masuk dalam 3 bulan terakhir dihapus sampai terdapat cukup ruang kosong</translation>

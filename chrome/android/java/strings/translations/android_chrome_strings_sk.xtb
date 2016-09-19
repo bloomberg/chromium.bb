@@ -13,7 +13,7 @@
 <translation id="1197267115302279827">Presunúť záložky</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
 <translation id="1201402288615127009">Ďalej</translation>
-<translation id="1204037785786432551">Stiahnuť obsahu odkazu</translation>
+<translation id="1204037785786432551">Stiahnuť obsah odkazu</translation>
 <translation id="1206892813135768548">Kopírovať text odkazu</translation>
 <translation id="1209206284964581585">Skryť</translation>
 <translation id="1211530540767271776">Nie sú tu žiadne zariadenia USB</translation>
@@ -105,7 +105,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2139186145475833000">Pridať na domovskú stránku</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
-<translation id="21570240866965662">Pomalé pripojenie</translation>
 <translation id="219985413780390209">Ochráňte seba aj svoje zariadenie pred nebezpečnými stránkami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Upraviť</translation>
@@ -519,7 +518,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="7031882061095297553">Kam synchronizovať</translation>
 <translation id="7053983685419859001">Blokovať</translation>
-<translation id="7056999826593229648">Bolo zistené pomalé pripojenie</translation>
 <translation id="7057058088140140610">Kreditné karty a adresy pomocou služby Google Payments</translation>
 <translation id="7062545763355031412">Prijať a prepnúť účty</translation>
 <translation id="7063006564040364415">Nepodarilo sa pripojiť k synchronizačnému serveru.</translation>
@@ -571,7 +569,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
 <translation id="7682287625158474539">Dodacia</translation>
-<translation id="7690588279513156836">Načítať originál</translation>
 <translation id="771135159654932189">Zobraziť webové stránky v okolí</translation>
 <translation id="7713873128508426081">Vždy povolené</translation>
 <translation id="7764225426217299476">Pridať adresu</translation>

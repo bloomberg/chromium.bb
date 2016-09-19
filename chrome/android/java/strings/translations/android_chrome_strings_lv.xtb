@@ -105,7 +105,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2139186145475833000">Pievienot sākuma ekrānam</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2154710561487035718">Kopēt URL</translation>
-<translation id="21570240866965662">Lēns savienojums</translation>
 <translation id="219985413780390209">Aizsargāt jūs un ierīci pret bīstamām vietnēm</translation>
 <translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME" />. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Uzlabot</translation>
@@ -519,7 +518,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="7031882061095297553">Sinhronizēt ar:</translation>
 <translation id="7053983685419859001">Bloķēt</translation>
-<translation id="7056999826593229648">Tika konstatēts, ka savienojums ir lēns</translation>
 <translation id="7057058088140140610">Kredītkartes un adreses, izmantojot Google Payments</translation>
 <translation id="7062545763355031412">Piekrist un pārslēgt kontus</translation>
 <translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
@@ -571,7 +569,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7665369617277396874">Pievienot kontu</translation>
 <translation id="7682287625158474539">Piegāde</translation>
-<translation id="7690588279513156836">Ielādēt sākotnējo</translation>
 <translation id="771135159654932189">Skatīt tuvumā esošos objektus</translation>
 <translation id="7713873128508426081">Vienmēr atļauts</translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>

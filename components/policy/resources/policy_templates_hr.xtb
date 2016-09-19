@@ -1944,7 +1944,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Tim se pravilom organizacijama želi pružiti prilika da premjeste postojeće poslužitelje s HTTP-a/0.9. Pravilo će se ukloniti u budućnosti.
 
-      Ako se to pravilo ne postavi, HTTP/0.9 bit će onemogućeni na priključcima koji nisu zadani.</translation>
+      Ako se to pravilo ne postavi, HTTP/0.9 onemogućit će se na priključcima koji nisu zadani.</translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 
           Ako je ta postavka omogućena, korisnici moraju unijeti važeći kôd s dva čimbenika kada pristupaju hostu.

@@ -2059,7 +2059,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Lưu ý rằng không nên chặn URL 'chrome://*' nội bộ vì điều này có thể gây ra lỗi không mong muốn.
 
       Nếu chính sách này không được đặt, sẽ không có URL nào bị liệt kê trong danh sách cấm của trình duyệt.</translation>
-<translation id="7724994675283793633">Chính sách này bật HTTP/0.9 trên cổng ngoài 80 cho HTTP và 443 cho HTTPS.
+<translation id="7724994675283793633">Chính sách này bật HTTP/0.9 trên cổng không phải 80 cho HTTP và 443 cho HTTPS.
 
       Chính sách này được tắt theo mặc định và nếu được bật sẽ khiến người dùng dễ gặp phải các sự cố bảo mật https://crbug.com/600352.
 

@@ -105,7 +105,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2154710561487035718">Copia URL</translation>
-<translation id="21570240866965662">Connessione lenta</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Perfeziona</translation>
@@ -462,7 +461,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6433490469411711332">Modifica informazioni di contatto</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Suggerimenti di ricerca e URL</translation>
-<translation id="6463070039183944536">Aggiunta...</translation>
+<translation id="6463070039183944536">Aggiunta in corso...</translation>
 <translation id="6464825623202322042">Questo dispositivo</translation>
 <translation id="6475951671322991020">Scarica video</translation>
 <translation id="6477460825583319731">Indirizzo email non valido</translation>
@@ -519,7 +518,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7029809446516969842">Password</translation>
 <translation id="7031882061095297553">Sincronizza con</translation>
 <translation id="7053983685419859001">Blocca</translation>
-<translation id="7056999826593229648">È stata rilevata una connessione lenta</translation>
 <translation id="7057058088140140610">Carte di credito e indirizzi che utilizzano Google Payments</translation>
 <translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
@@ -571,7 +569,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="7682287625158474539">Spedizione</translation>
-<translation id="7690588279513156836">Carica originale</translation>
 <translation id="771135159654932189">Scopri cosa c'è nelle vicinanze</translation>
 <translation id="7713873128508426081">Sempre consentito</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>

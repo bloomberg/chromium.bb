@@ -759,7 +759,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
 
-          Jika dasar ini dibiarkan tanpa ditetapkan pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3205825995289802549">Maksimumkan tetingkap penyemak imbas pertama pada kendalian pertama</translation>
 <translation id="3206731874112238027">Lumpuhkan Pratonton Cetak (ditamatkan)</translation>
 <translation id="3213821784736959823">Mengawal sama ada pelanggan DNS terbina dalam digunakan dalam <ph name="PRODUCT_NAME" />.

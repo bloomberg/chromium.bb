@@ -105,7 +105,6 @@
 <translation id="2139186145475833000">홈 화면에 추가</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2154710561487035718">URL 복사</translation>
-<translation id="21570240866965662">연결이 느림</translation>
 <translation id="219985413780390209">위험 사이트로부터 사용자와 기기를 보호합니다.</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, 웹 앱. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">상세검색</translation>
@@ -519,7 +518,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7053983685419859001">차단</translation>
-<translation id="7056999826593229648">느린 연결이 감지됨</translation>
 <translation id="7057058088140140610">Google Payments를 사용하는 신용카드 및 주소</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
@@ -571,7 +569,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
 <translation id="7682287625158474539">배송</translation>
-<translation id="7690588279513156836">원본 로드</translation>
 <translation id="771135159654932189">주변 URL 보기</translation>
 <translation id="7713873128508426081">항상 허용</translation>
 <translation id="7764225426217299476">주소 추가</translation>

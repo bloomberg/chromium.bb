@@ -387,7 +387,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5199729219167945352">試験運用機能</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{1 件のウェブページが見つかりました}other{# 件のウェブページが見つかりました}}</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>

@@ -105,7 +105,6 @@
 <translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
-<translation id="21570240866965662">Počasna povezava</translation>
 <translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
@@ -519,7 +518,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7029809446516969842">Gesla</translation>
 <translation id="7031882061095297553">Sinhroniziranje z</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
-<translation id="7056999826593229648">Zaznana je počasna povezava</translation>
 <translation id="7057058088140140610">Kreditne kartice in naslovi s storitvijo Google Payments</translation>
 <translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
@@ -571,7 +569,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="7682287625158474539">Pošiljanje</translation>
-<translation id="7690588279513156836">Naloži izvirno mesto</translation>
 <translation id="771135159654932189">Ogled strani v bližini</translation>
 <translation id="7713873128508426081">Vedno dovoljeno</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>

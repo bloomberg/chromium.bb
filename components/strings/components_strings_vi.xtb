@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5199729219167945352">Thử nghiệm</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{Đã tìm thấy 1 trang web}other{Đã tìm thấy # trang web}}</translation>
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
@@ -565,7 +564,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7469372306589899959">Đang xác nhận thẻ</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
-<translation id="7508255263130623398">ID trả lại của thiết bị chính sách trống hoặc không khớp với ID của thiết bị hiện tại</translation>
+<translation id="7508255263130623398">ID thiết bị thuộc chính sách trả lại trống hoặc không khớp với ID của thiết bị hiện tại</translation>
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="7518003948725431193">Không tìm thấy trang web nào ứng với địa chỉ web:<ph name="URL" /></translation>
 <translation id="7537536606612762813">Bắt buộc</translation>

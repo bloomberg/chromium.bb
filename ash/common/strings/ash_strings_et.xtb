@@ -5,7 +5,7 @@
 <translation id="1013923882670373915">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmes järgmine PIN-kood: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Järgmise sisestusmeetodi aktiveerimise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Riiuli automaatne peitmine</translation>
-<translation id="1127238861555034875">Suurendusklaasi režiim</translation>
+<translation id="1127238861555034875">Suurendusklaasirežiim</translation>
 <translation id="1195412055398077112">liighälvitus</translation>
 <translation id="1252999807265626933">Laadimine toiteallikast <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
@@ -135,7 +135,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="5045002648206642691">Google Drive'i seaded ...</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
-<translation id="5191140942132549112">KUVA KÜSIMUSED</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5238774010593222950">Teisele kontole ei saa sisse logida.</translation>
 <translation id="532063867737390965">Administraator on selle võrguseade keelanud.</translation>
@@ -204,7 +203,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
-<translation id="7129360219436193655">Laserkursori režiim</translation>
+<translation id="7129360219436193655">Laserkursorirežiim</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7209101170223508707">SUURTÄHELUKK on sisse lülitatud.

@@ -3,7 +3,7 @@
 <translationbundle lang="pt-BR">
 <translation id="1007441141628883408">Ativa atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando esta política não é definida ou é definida como True.
 
-      Se a política é definida como False, as atualizações dos componentes são desativadas. Entretanto, alguns componentes são isentos desta política: atualizações para quaisquer componentes que não contenham código executável ou não alterem significativamente o comportamento do navegador, ou que sejam essenciais para a segurança não serão desativadas.
+      Se a política é definida como False, as atualizações dos componentes são desativadas. Entretanto, alguns componentes são isentos desta política: atualizações para quaisquer componentes que não contenham código executável ou não alterem significativamente o comportamento do navegador, ou que sejam essenciais para a segurança, não serão desativadas.
       Entre os exemplos desses componentes estão as listas de revogação de certificado e os dados de navegação segura. </translation>
 <translation id="101438888985615157">Girar a tela em 180 graus</translation>
 <translation id="1017967144265860778">Gerenciamento de energia na tela de login</translation>

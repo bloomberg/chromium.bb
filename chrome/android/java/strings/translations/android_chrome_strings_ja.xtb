@@ -105,7 +105,6 @@
 <translation id="2139186145475833000">ホーム画面に追加</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
-<translation id="21570240866965662">低速な接続</translation>
 <translation id="219985413780390209">危険なサイトからユーザーとデバイスを保護する</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
 <translation id="2268044343513325586">絞り込み</translation>
@@ -509,7 +508,7 @@
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
-<translation id="6985347914332179298">ここにはダウンロードはありません</translation>
+<translation id="6985347914332179298">ここにダウンロードしたアイテムはありません</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
@@ -519,7 +518,6 @@
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7053983685419859001">ブロック</translation>
-<translation id="7056999826593229648">低速な接続が見つかりました</translation>
 <translation id="7057058088140140610">Google ペイメントのクレジット カードと住所</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
@@ -571,7 +569,6 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
 <translation id="7682287625158474539">発送先</translation>
-<translation id="7690588279513156836">元のサイトを表示</translation>
 <translation id="771135159654932189">近くの URL を表示</translation>
 <translation id="7713873128508426081">常に許可する</translation>
 <translation id="7764225426217299476">住所を追加</translation>

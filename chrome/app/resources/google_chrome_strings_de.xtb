@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="1818142563254268765">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chrome manuell.</translation>
-<translation id="1864458292167284385">Der Chrome App Launcher wird eingestellt.</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
 <translation id="1924381329666691588">Google Chrome kann in dieser Sprache nicht angezeigt werden.</translation>
 <translation id="2063848847527508675">Chrome OS muss neu gestartet werden, um das Update zu übernehmen.</translation>
@@ -105,7 +104,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Zwar hat der Server Informationen zur Zertifikatstransparenz bereitgestellt, Chrome hat die Zertifikatstransparenzprotokolle jedoch nicht erkannt.</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
-<translation id="396182988103551265">Verwenden Sie für den weiteren Zugriff auf Ihre Apps die Verknüpfung <ph name="APPS_ICON_IMAGE" /> in der Chrome-Lesezeichenleiste.</translation>
 <translation id="4042449298237264661">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden.</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="4053720452172726777">Google Chrome anpassen und einstellen</translation>
@@ -248,7 +246,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8037887340639533879">Keine zu aktualisierende Installation von Google Chrome gefunden</translation>
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Ihre personenbezogenen Daten werden von Chrome sicher gespeichert. Dadurch brauchen Sie sie nicht noch einmal einzugeben.</translation>
-<translation id="8205111949707227942">Optional: Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome OS automatisch an Google senden</translation>
 <translation id="8211929904040702368">Dadurch werden mindestens <ph name="TOTAL_COUNT" /> Elemente dauerhaft von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als $2 in Chrome an.</translation>
 <translation id="8227755444512189073">Google Chrome muss zum Verarbeiten von <ph name="SCHEME" />-Links eine externe App starten. Der angeforderte Link lautet <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome verwendet Ihre Kamera und Ihr Mikrofon.</translation>

@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente al menos $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}other{Esta acción borrará de forma permanente al menos $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
-<translation id="2103655854491303969">El Selector de aplicaciones de Chromium está por desaparecer.</translation>
 <translation id="2117181891440368863">Chromium verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados que no era válida.</translation>
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">Este sitio está usando el complemento Chromium Frame, que pronto dejará de ser compatible. Desinstálalo y obtén un navegador moderno.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">El Sistema operativo Chromium debe reiniciarse para que se aplique la actualización.</translation>
-<translation id="2595977381794111014">Para seguir accediendo a tus apps, usa el acceso directo de <ph name="APPS_ICON_IMAGE" /> que aparece en la barra de marcadores de Chromium.</translation>
 <translation id="2605472041568654097">Informa tu configuración actual para ayudarnos a mejorar Chromium.</translation>
 <translation id="2636877269779209383">Chromium necesita acceso a la cámara para compartirla con el sitio.</translation>
 <translation id="2648074677641340862">Se produjo un error del sistema operativo durante la instalación. Descarga Chromium nuevamente.</translation>
@@ -139,7 +137,7 @@
 <translation id="5634636535844844681">Para usar Chromium, se requiere Windows 7 o versiones posteriores.</translation>
 <translation id="5680901439334282664">acceder a Chromium</translation>
 <translation id="5698481217667032250">Mostrar Chromium en este idioma</translation>
-<translation id="5726838626470692954">Tu administrador debe quitarte y volverte a agregar en Chromium.</translation>
+<translation id="5726838626470692954">Tu administrador debe quitarte y volver a agregarte en Chromium.</translation>
 <translation id="5768914737813585044">Mostrar el SO Chromium en este idioma</translation>
 <translation id="5772805321386874569">(Es necesario <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium).</translation>
 <translation id="5796460469508169315">Chromium está casi listo.</translation>

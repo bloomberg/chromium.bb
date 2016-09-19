@@ -105,7 +105,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2139186145475833000">Agregar a la pantalla principal</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
-<translation id="21570240866965662">Conexión lenta</translation>
 <translation id="219985413780390209">Protegerte a ti y a tu dispositivo contra sitios peligrosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> (aplicación web), <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Definir mejor</translation>
@@ -519,7 +518,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7053983685419859001">Bloquear</translation>
-<translation id="7056999826593229648">Se detectó una conexión lenta</translation>
 <translation id="7057058088140140610">Tarjetas de crédito y direcciones que utilizan Google Payments</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
@@ -571,7 +569,6 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
 <translation id="7682287625158474539">Envío</translation>
-<translation id="7690588279513156836">Cargar el original</translation>
 <translation id="771135159654932189">Ver qué tengo cerca</translation>
 <translation id="7713873128508426081">Permitir siempre</translation>
 <translation id="7764225426217299476">Agregar dirección</translation>

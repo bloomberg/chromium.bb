@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Un modulo con lo stesso nome risulta in conflitto con Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Verrà eliminato definitivamente almeno $1 elemento da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chromium come $2.}other{Verranno eliminati definitivamente almeno $1 elementi da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chromium come $2.}}</translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
-<translation id="2103655854491303969">Avvio applicazioni di Chromium non sarà più disponibile.</translation>
 <translation id="2117181891440368863">Chromium ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Le informazioni su Certificate Transparency fornite dal server non sono valide.</translation>
 <translation id="2119636228670142020">Informazioni su &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenze open source di Chromium OS</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">Questo sito utilizza il plug-in Chromium Frame che a breve non sarà più supportato. Disinstallalo ed esegui l'upgrade a un browser recente.</translation>
 <translation id="2572494885440352020">Supporto Chromium</translation>
 <translation id="2587578672395088481">Per applicare l'aggiornamento è necessario riavviare Chromium OS.</translation>
-<translation id="2595977381794111014">Per continuare ad accedere alle tue app, utilizza la scorciatoia <ph name="APPS_ICON_IMAGE" /> nella barra dei Preferiti di Chromium.</translation>
 <translation id="2605472041568654097">Contribuisci a migliorare Chromium indicando le impostazioni attuali.</translation>
 <translation id="2636877269779209383">Chromium deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="2648074677641340862">Durante l'installazione si è verificato un errore del sistema operativo. Scarica di nuovo Chromium.</translation>

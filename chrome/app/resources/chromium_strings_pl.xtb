@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Spowoduje to trwałe usunięcie co najmniej $1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}few{Spowoduje to trwałe usunięcie co najmniej $1 elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}many{Spowoduje to trwałe usunięcie co najmniej $1 elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}other{Spowoduje to trwałe usunięcie co najmniej $1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}}</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
-<translation id="2103655854491303969">Wycofujemy program uruchamiający aplikacje Chromium.</translation>
 <translation id="2117181891440368863">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale były one nieprawidłowe.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">Ta strona korzysta z wtyczki Chromium Frame, która wkrótce nie będzie obsługiwana. Odinstaluj wtyczkę i przejdź na nowoczesną przeglądarkę.</translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="2587578672395088481">Zastosowanie aktualizacji wymaga ponownego uruchomienia systemu operacyjnego Chromium.</translation>
-<translation id="2595977381794111014">Aby nadal uruchamiać aplikacje, możesz korzystać ze skrótu <ph name="APPS_ICON_IMAGE" /> na pasku zakładek w Chromium.</translation>
 <translation id="2605472041568654097">Pomóż ulepszyć Chromium, zgłaszając bieżące ustawienia.</translation>
 <translation id="2636877269779209383">Chromium potrzebuje dostępu do kamery, by móc ją udostępnić tej stronie.</translation>
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
@@ -139,7 +137,7 @@
 <translation id="5634636535844844681">Chromium wymaga systemu Windows 7 lub nowszego.</translation>
 <translation id="5680901439334282664">zaloguj się w Chromium</translation>
 <translation id="5698481217667032250">Wyświetlaj Chromium w tym języku</translation>
-<translation id="5726838626470692954">Twój menedżer musi usunąć Cię i dodać z powrotem w Chromium.</translation>
+<translation id="5726838626470692954">Twój menedżer musi Cię usunąć i ponownie dodać w Chromium.</translation>
 <translation id="5768914737813585044">Wyświetlaj Chromium OS w tym języku</translation>
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium jest prawie gotowy.</translation>

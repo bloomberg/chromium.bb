@@ -387,7 +387,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5199729219167945352">실험실 기능</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{웹페이지를 1개 찾았습니다.}other{웹페이지를 #개 찾았습니다.}}</translation>
 <translation id="5251803541071282808">클라우드</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
 <translation id="5300589172476337783">표시</translation>

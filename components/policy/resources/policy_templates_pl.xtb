@@ -66,7 +66,7 @@
 
       Jeśli ta zasada nie zostanie skonfigurowana, użytkownik będzie mógł wybrać, czy chce korzystać z Google Sync.
 
-      Aby całkowicie wyłączyć Google Sync, zalecane jest wyłączenie usługi Google Sync w konsoli administracyjnej Google.</translation>
+      Aby całkowicie wyłączyć Google Sync, należy wyłączyć usługę Google Sync w konsoli administracyjnej Google.</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>

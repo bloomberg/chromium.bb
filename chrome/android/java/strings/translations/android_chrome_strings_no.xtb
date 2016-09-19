@@ -105,7 +105,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2139186145475833000">Legg til på startsiden</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
-<translation id="21570240866965662">Langsom tilkobling</translation>
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finstem</translation>
@@ -519,7 +518,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7053983685419859001">Blokkér</translation>
-<translation id="7056999826593229648">En langsom tilkobling ble oppdaget</translation>
 <translation id="7057058088140140610">Kredittkort og adresser ved bruk av Google Payments</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
@@ -571,7 +569,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Legg til konto</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
-<translation id="7690588279513156836">Last inn originalen</translation>
 <translation id="771135159654932189">Se hva som er i nærheten</translation>
 <translation id="7713873128508426081">Alltid tillatt</translation>
 <translation id="7764225426217299476">Legg til adresse</translation>

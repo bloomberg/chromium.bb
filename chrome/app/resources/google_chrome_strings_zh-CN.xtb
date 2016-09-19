@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
-<translation id="1864458292167284385">Chrome 应用启动器即将停用。</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
 <translation id="1924381329666691588">Google Chrome 无法以这种语言显示。</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
@@ -105,7 +104,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但 Chrome 无法识别任何 Certificate Transparency 日志。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
-<translation id="396182988103551265">请使用 Chrome 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式继续访问您的应用。</translation>
 <translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
@@ -249,7 +247,6 @@
 <translation id="8037887340639533879">未找到要更新的Google Chrome安装实例。</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
-<translation id="8205111949707227942">可选：将使用情况统计信息和崩溃报告自动发送给Google，帮助完善Chrome操作系统。</translation>
 <translation id="8211929904040702368">这会将至少 <ph name="TOTAL_COUNT" /> 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。</translation>
 <translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>

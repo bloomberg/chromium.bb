@@ -105,7 +105,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2139186145475833000">Føj til startskærm</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
-<translation id="21570240866965662">Langsom forbindelse</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Juster</translation>
@@ -519,7 +518,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7031882061095297553">Synkroniser til</translation>
 <translation id="7053983685419859001">Bloker</translation>
-<translation id="7056999826593229648">Der er registreret en langsom forbindelse.</translation>
 <translation id="7057058088140140610">Kreditkort og adresser via Google Payments</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7063006564040364415">Der kunne ikke oprettes forbindelse til synkroniseringsserveren.</translation>
@@ -571,7 +569,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
-<translation id="7690588279513156836">Indlæs originalen</translation>
 <translation id="771135159654932189">Se, hvad der er i nærheden</translation>
 <translation id="7713873128508426081">Tillad altid</translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>

@@ -105,7 +105,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2139186145475833000">Hozzáadás kezdőképernyőhöz</translation>
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2154710561487035718">URL másolása</translation>
-<translation id="21570240866965662">Lassú kapcsolat</translation>
 <translation id="219985413780390209">Védje meg magát és eszközét a veszélyes webhelyektől</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, internetes alkalmazás. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Pontosítás</translation>
@@ -519,7 +518,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="7031882061095297553">Szinkronizálás a következőknél</translation>
 <translation id="7053983685419859001">Letiltás</translation>
-<translation id="7056999826593229648">A rendszer lassú kapcsolatot észlelt</translation>
 <translation id="7057058088140140610">Google Payments szolgáltatást használó hitelkártyák és címek</translation>
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>
@@ -571,7 +569,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
 <translation id="7682287625158474539">Szállítási cím</translation>
-<translation id="7690588279513156836">Eredeti betöltése</translation>
 <translation id="771135159654932189">Közeli URL-ek megtekintése</translation>
 <translation id="7713873128508426081">Mindig engedélyezve</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>

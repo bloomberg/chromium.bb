@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{See kustutab sellest seadmest jäädavalt vähemalt $1 üksuse. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana $2.}other{See kustutab sellest seadmest jäädavalt vähemalt $1 üksust. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana $2.}}</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
-<translation id="2103655854491303969">Lõpetame Chromiumi rakenduste käivitaja toe pakkumise.</translation>
 <translation id="2117181891440368863">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse teabe, aga see oli kehtetu.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="2587578672395088481">Chromium OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
-<translation id="2595977381794111014">Oma rakendustele pääsete edaspidi juurde Chromiumi järjehoidjate ribal oleva otsetee <ph name="APPS_ICON_IMAGE" /> kaudu.</translation>
 <translation id="2605472041568654097">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest.</translation>
 <translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>

@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}other{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}}</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
-<translation id="2103655854491303969">Peluncur Aplikasi Chromium tidak akan digunakan lagi.</translation>
 <translation id="2117181891440368863">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat, namun informasi tersebut tidak valid.</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">Situs ini menggunakan plugin Chromium Frame yang akan segera tidak didukung. Copot pemasangannya dan tingkatkan versi ke browser modern.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
 <translation id="2587578672395088481">Chromium OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
-<translation id="2595977381794111014">Gunakan pintasan <ph name="APPS_ICON_IMAGE" /> di bilah bookmark Chromium untuk terus mengakses aplikasi.</translation>
 <translation id="2605472041568654097">Bantu jadikan Chromium lebih baik dengan melaporkan setelan saat ini.</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk membagikannya dengan situs ini.</translation>
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Unduh Chromium lagi.</translation>

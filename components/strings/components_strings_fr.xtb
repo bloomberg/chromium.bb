@@ -47,7 +47,7 @@
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1442912890475371290">Une tentative de <ph name="BEGIN_LINK" />consultation d'une page sur <ph name="DOMAIN" /><ph name="END_LINK" /> a été bloquée.</translation>
-<translation id="1491663344921578213">Vous ne pouvez pas consulter le site Web <ph name="SITE" /> pour le moment, car les certificats y sont persistants. Les attaques et les erreurs réseau sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1491663344921578213">Vous ne pouvez pas consulter le site Web <ph name="SITE" /> pour le moment, car les certificats y sont épinglés. Les attaques et les erreurs réseau sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1506687042165942984">Afficher une copie enregistrée (non actualisée) de cette page</translation>
 <translation id="1519264250979466059">Date de création</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="5199729219167945352">Prototypes</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{1 page Web trouvée}one{# page Web trouvée}other{# pages Web trouvées}}</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
 <translation id="5300589172476337783">Afficher</translation>

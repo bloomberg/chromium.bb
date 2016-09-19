@@ -105,7 +105,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2139186145475833000">Přidat na plochu</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
-<translation id="21570240866965662">Pomalé připojení</translation>
 <translation id="219985413780390209">Chránit mě i mé zařízení před nebezpečnými weby</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikace <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Upřesnit</translation>
@@ -519,7 +518,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="7031882061095297553">Synchronizace s účty</translation>
 <translation id="7053983685419859001">Blokovat</translation>
-<translation id="7056999826593229648">Bylo zjištěno pomalé připojení.</translation>
 <translation id="7057058088140140610">Platební karty a adresy pomocí služby Google Playments</translation>
 <translation id="7062545763355031412">Přijmout a přepnout účet</translation>
 <translation id="7063006564040364415">K synchronizačnímu serveru se nelze připojit.</translation>
@@ -571,7 +569,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
 <translation id="7682287625158474539">Doprava</translation>
-<translation id="7690588279513156836">Načíst originál</translation>
 <translation id="771135159654932189">Zobrazit weby v okolí</translation>
 <translation id="7713873128508426081">Vždy povoleno</translation>
 <translation id="7764225426217299476">Přidat adresu</translation>

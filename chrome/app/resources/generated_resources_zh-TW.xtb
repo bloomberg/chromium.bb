@@ -166,7 +166,6 @@
     您必須重新建立設定檔。<ph name="BR" />
     <ph name="BR" />
     請在下一個畫面中提供您的寶貴意見，協助我們修正這個問題。</translation>
-<translation id="121827551500866099">顯示所有下載...</translation>
 <translation id="122082903575839559">憑證簽章演算法</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 (使用 RSA 加密)</translation>
 <translation id="1221462285898798023">請以一般使用者身分啟動 <ph name="PRODUCT_NAME" />。如要以 root 身分執行，您必須指定替代的 user-data-dir 來儲存設定檔資訊。</translation>
@@ -462,7 +461,6 @@
 <translation id="1589055389569595240">顯示拼字與文法</translation>
 <translation id="1593594475886691512">正在格式化...</translation>
 <translation id="159359590073980872">圖片快取</translation>
-<translation id="1594155067816010104">這個檔案將會損害您的電腦。</translation>
 <translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{正在執行一項下載作業}other{正在執行多項下載作業}}</translation>
 <translation id="1594234040488055839">自動使用這個帳戶登入 Google 網站</translation>
 <translation id="1596174774107741586">使用 Google Payments 沙箱伺服器</translation>
@@ -692,7 +690,7 @@
 <translation id="192494336144674234">選擇開啟工具</translation>
 <translation id="1926339101652878330">這些設定受到公司政策管控。如需瞭解詳情，請與您的管理員聯絡。</translation>
 <translation id="192810479200670759">明確強制使用者介面採用從左到右或從右到左模式，覆寫預設的使用者介面語言方向。</translation>
-<translation id="1928202201223835302">輸入舊 PIN</translation>
+<translation id="1928202201223835302">輸入舊的 PIN 碼</translation>
 <translation id="1929546189971853037">讀取您已登入的所有裝置上的瀏覽紀錄</translation>
 <translation id="1931134289871235022">斯洛伐克文</translation>
 <translation id="1931152874660185993">未安裝任何元件。</translation>
@@ -738,7 +736,6 @@
 <translation id="1987139229093034863">切換至其他使用者。</translation>
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="1991402313603869273">不允許 <ph name="PLUGIN_NAME" />。</translation>
-<translation id="1992126135411334429">將不安全的來源標示為不安全。</translation>
 <translation id="1992397118740194946">尚未設定</translation>
 <translation id="1994173015038366702">網站網址</translation>
 <translation id="1997616988432401742">您的憑證</translation>
@@ -754,7 +751,7 @@
 <translation id="2018352199541442911">很抱歉，系統目前不支援您的外部儲存裝置。</translation>
 <translation id="2019718679933488176">在新分頁中開啟音效(&amp;O)</translation>
 <translation id="2021833227920703473">在總覽模式中使用穩定視窗順序</translation>
-<translation id="2023167225947895179">PIN 可能不難猜到</translation>
+<translation id="2023167225947895179">你所輸入的 PIN 碼可能很容易被別人猜到</translation>
 <translation id="202352106777823113">下載時間過長，網路已中止下載。</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> 當機了，請按一下這個提示框來重新載入擴充功能。</translation>
 <translation id="2028531481946156667">無法開始格式化程序。</translation>
@@ -766,7 +763,7 @@
 <translation id="204497730941176055">Microsoft 憑證範本名稱</translation>
 <translation id="2045969484888636535">繼續封鎖 Cookie</translation>
 <translation id="204622017488417136">您的裝置將還原至上一個安裝的 Chrome 版本，且所有使用者帳戶和本機資料都會遭到移除。這項操作無法復原。</translation>
-<translation id="204777864658259259">PIN 或密碼不正確。</translation>
+<translation id="204777864658259259">你所輸入的 PIN 碼或密碼不正確。</translation>
 <translation id="2048182445208425546">存取您的網路流量</translation>
 <translation id="2049137146490122801">您的管理員已停用您裝置上本機檔案的存取權。</translation>
 <translation id="204914487372604757">建立捷徑</translation>
@@ -783,7 +780,6 @@
 <translation id="2074527029802029717">取消分頁固定</translation>
 <translation id="2075594581020578008"><ph name="IDS_SHORT_PRODUCT_NAME" /> 瀏覽器</translation>
 <translation id="2076269580855484719">隱藏這個外掛程式</translation>
-<translation id="2077084898869955643">自動將疑似安全性事件的詳細資料回報給 Google。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2078019350989722914">結束前顯示警告訊息 (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">如果您刪除了您所擁有的某個憑證，那麼您將無法再使用這個憑證來識別您的身分。</translation>
@@ -965,7 +961,6 @@
 <translation id="2291643155573394834">下一個分頁</translation>
 <translation id="2294358108254308676">是否要安裝「<ph name="PRODUCT_NAME" />」？</translation>
 <translation id="2296019197782308739">EAP 方法：</translation>
-<translation id="2299552784526456191">將不安全的來源標示為不確定。</translation>
 <translation id="2301382460326681002">擴充功能根目錄無效。</translation>
 <translation id="2302685579236571180">進入無痕模式</translation>
 <translation id="23030561267973084">「<ph name="EXTENSION_NAME" />」要求其他權限。</translation>
@@ -1122,7 +1117,6 @@
 <translation id="2502441965851148920">自動更新功能已啟用。您的管理員停用了手動更新功能。</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{螢幕 #}other{螢幕 #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" />，總共 <ph name="TOTAL_SIZE" /></translation>
-<translation id="2507649982651274960">您的裝置已成功註冊企業管理服務，但無法傳送資產和位置資訊。請前往管理控制台，為這個裝置手動輸入這些資訊。</translation>
 <translation id="2509739495444557741">未安裝任何外掛程式。</translation>
 <translation id="2509857212037838238">安裝 <ph name="PLUGIN_NAME" /></translation>
 <translation id="2510708650472996893">色彩設定檔：</translation>
@@ -1427,7 +1421,6 @@
 <translation id="288042212351694283">存取您的 Universal 2nd Factor 裝置</translation>
 <translation id="2881966438216424900">最後存取日期；</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> 即將重新啟動並進行重設</translation>
-<translation id="2885278018040587402">https://support.google.com/chrome/answer/3060053?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="2885378588091291677">工作管理員</translation>
 <translation id="2887525882758501333">PDF 文件</translation>
 <translation id="2888807692577297075">找不到符合「<ph name="SEARCH_STRING" />」&lt;b&gt;&lt;/b&gt;的項目</translation>
@@ -1698,7 +1691,6 @@
 <translation id="32279126412636473">重新載入 (⌘R)</translation>
 <translation id="3228679360002431295">正在連線及驗證<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">值：</translation>
-<translation id="32330993344203779">您的裝置已成功註冊企業管理。</translation>
 <translation id="3234666976984236645">一律偵測這個網站的重要內容</translation>
 <translation id="3237784613213365159">「<ph name="NEW_PROFILE_NAME" />」現已成為受監管的使用者</translation>
 <translation id="323803881985677942">開啟擴充功能選項</translation>
@@ -1747,7 +1739,6 @@
 <translation id="3297788108165652516">有其他的使用者共用這個網路。</translation>
 <translation id="3298076529330673844">一律允許執行</translation>
 <translation id="329838636886466101">修復</translation>
-<translation id="3298461240075561421">如果您以前曾在這個網站下載檔案，該網站可能當時就已遭到駭客入侵。您可以不復原這個檔案，選擇日後再嘗試下載。</translation>
 <translation id="3298789223962368867">輸入的網址無效。</translation>
 <translation id="3300394989536077382">簽署者</translation>
 <translation id="3301256054007749965">啟用全新的 GAIA 密碼分離式登入流程</translation>
@@ -1827,7 +1818,6 @@
 <translation id="3386219708421216619">已新增書籤</translation>
 <translation id="3391392691301057522">舊 PIN：</translation>
 <translation id="3391716558283801616">分頁 7</translation>
-<translation id="3392020134425442298">還原惡意檔案</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> 要求使用相機和麥克風。</translation>
 <translation id="3394279550557729862">啟用原生快顯通知和通知中心支援功能，在適用的平台上使用。</translation>
 <translation id="3394862755749546286">針對 Android 裝置停用整合 (Android 和桌機) 媒體管道。</translation>
@@ -1882,7 +1872,7 @@
 <translation id="3465566417615315331">點選您的相片</translation>
 <translation id="3466147780910026086">正在掃描您的媒體裝置...</translation>
 <translation id="3467267818798281173">啟用 Google 拼字建議功能</translation>
-<translation id="3467789682390027873">PIN 或密碼</translation>
+<translation id="3467789682390027873">PIN 碼或密碼</translation>
 <translation id="3468522857997926824">已將 <ph name="FILE_COUNT" /> 張相片備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>
 <translation id="3470442499439619530">移除這個使用者</translation>
 <translation id="3470502288861289375">複製中...</translation>
@@ -1924,6 +1914,7 @@
 <translation id="3512284449647229026">如果網頁在瀏覽器離線時載入失敗，系統只會在分頁顯示情況下自動重新載入網頁。</translation>
 <translation id="3512410469020716447">{NUM_DOWNLOAD,plural, =1{取消一項下載作業}other{取消多項下載作業}}</translation>
 <translation id="3512810056947640266">網址 (選填)：</translation>
+<translation id="3516765099410062445">在已登入的裝置中顯示紀錄項目。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3518086201899641494">認證網頁通知</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
 <translation id="3522159121915794564">允許使用者選擇採用無效 TLS/SSL 憑證鏈集合。</translation>
@@ -2322,8 +2313,6 @@
 <translation id="4044612648082411741">輸入您的憑證密碼</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>
 <translation id="4047112090469382184">這項功能如何確保裝置安全性</translation>
-<translation id="4050577343529145854">如果無法輸入正確的 PIN 解鎖金鑰，
-      SIM 卡會遭到永久停用。</translation>
 <translation id="4052120076834320548">最小</translation>
 <translation id="4055023634561256217">您必須先重新啟動裝置，才能透過 Powerwash 重設裝置。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2414,7 +2403,6 @@
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> 的部分設定已與您共用。不過只有使用多重登入時，這些設定才會影響您的帳戶。</translation>
 <translation id="4172051516777682613">一律顯示</translation>
 <translation id="4172706149171596436">變更代理伺服器設定</translation>
-<translation id="417475959318757854">將應用程式啟動器置中。</translation>
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4179512409951755566">啟用 OSK 邊界捲動功能</translation>
 <translation id="4180788401304023883">刪除憑證授權單位(CA) 的「<ph name="CERTIFICATE_NAME" />」憑證？</translation>
@@ -2495,7 +2483,6 @@
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">總覽</translation>
 <translation id="4291779358799919071">容量</translation>
-<translation id="4293409159363387562">仍要還原</translation>
 <translation id="4295944351946828969">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />找到有害的應用程式<ph name="END_LINK" />。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4296575653627536209">新增受監管的使用者</translation>
 <translation id="4297391862525234515">允許檔案櫃在點擊後縮到最小</translation>
@@ -2613,7 +2600,6 @@
 <translation id="4487088045714738411">比利時文鍵盤</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」的搜尋結果</translation>
 <translation id="4495419450179050807">不要顯示這個網頁</translation>
-<translation id="449782841102640887">維持安全運作</translation>
 <translation id="4498934959426056365">金鑰產生</translation>
 <translation id="450099669180426158">驚嘆號圖示</translation>
 <translation id="4501530680793980440">確認移除</translation>
@@ -2756,7 +2742,6 @@
 <translation id="4709726535665440636">調整捲動位置，以免畫面外內容變更時造成檢視焦點位移。</translation>
 <translation id="4711094779914110278">土耳其文</translation>
 <translation id="4711638718396952945">還原設定</translation>
-<translation id="4712556365486669579">還原惡意軟體？</translation>
 <translation id="4713544552769165154">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome 作業系統的裝置不相容。請前往 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />尋找適合的替代應用程式。<ph name="BEGIN_LINK_HELP" />瞭解詳情<ph name="END_LINK_HELP" /></translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME" /> 現在提供了密碼同步功能。</translation>
 <translation id="471800408830181311">匯出私密金鑰失敗。</translation>
@@ -2841,7 +2826,7 @@
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="4828493911650550108">允許應用程式和服務掃描 Wi-Fi 網路和藍牙裝置，提升定位準確度。</translation>
 <translation id="4828937774870308359">澳洲式</translation>
-<translation id="4829768588131278040">設定 PIN</translation>
+<translation id="4829768588131278040">設定 PIN 碼</translation>
 <translation id="4830573902900904548">您的 <ph name="DEVICE_TYPE" /> 無法透過 <ph name="NETWORK_NAME" /> 連線至網際網路，請選擇其他網路。<ph name="LEARN_MORE_LINK_START" />瞭解詳情<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4830663122372455572"><ph name="ORGANIZATION" /> (所在地：<ph name="LOCALITY" />) 的身分已通過 <ph name="ISSUER" /> 驗證，且伺服器提供了有效的 Certificate Transparency 資訊。</translation>
 <translation id="4834912470034578916">為網路通知啟用自訂版面配置。</translation>
@@ -3023,7 +3008,7 @@
 <translation id="5068918910148307423">禁止最近關閉的網站完成資料的傳送及接收</translation>
 <translation id="5072836811783999860">顯示受管理書籤</translation>
 <translation id="5074318175948309511">您可能需要重新載入這個網頁，新設定才會生效。</translation>
-<translation id="5075131525758602494">輸入 SIM PIN</translation>
+<translation id="5075131525758602494">輸入 SIM 卡的 PIN 碼</translation>
 <translation id="5078638979202084724">將所有分頁加入書籤</translation>
 <translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="5081055027309504756">Seccomp-BPF 沙箱</translation>
@@ -3267,6 +3252,7 @@
 <translation id="5382392428640372740">啟用瀏覽追蹤</translation>
 <translation id="5382591305415226340">管理支援的連結</translation>
 <translation id="5388588172257446328">使用者名稱：</translation>
+<translation id="5388885445722491159">已配對</translation>
 <translation id="5389237414310520250">無法建立新的使用者。請檢查您的硬碟空間和權限，然後再試一次。</translation>
 <translation id="5390284375844109566">索引資料庫</translation>
 <translation id="5392544185395226057">啟用 Native Client 支援。</translation>
@@ -3317,7 +3303,6 @@
 <translation id="5439568486246921931">這個動作會永久刪除這位使用者的下載內容、離線檔案和瀏覽資料，且無法復原。</translation>
 <translation id="544083962418256601">建立捷徑...</translation>
 <translation id="5441100684135434593">有線網路</translation>
-<translation id="544291274896356069">如果使用外部應用程式開啟這個連結，無痕模式就會結束。要繼續嗎？</translation>
 <translation id="5448293924669608770">糟糕，登入帳戶時發生錯誤</translation>
 <translation id="5449551289610225147">密碼無效</translation>
 <translation id="5449588825071916739">將所有分頁加入書籤</translation>
@@ -3339,7 +3324,7 @@
 <translation id="5469868506864199649">義大利文</translation>
 <translation id="5469954281417596308">書籤管理員</translation>
 <translation id="5473279832922912143">啟用 V8 並使用實驗性 Ignition 解譯器執行 JavaScript。</translation>
-<translation id="5473333559083690127">再次輸入新 PIN</translation>
+<translation id="5473333559083690127">再次輸入新的 PIN 碼</translation>
 <translation id="5474139872592516422">完成更新 <ph name="PLUGIN_NAME" /> 後，請重新載入網頁以啟動外掛程式。</translation>
 <translation id="5480254151128201294">這個裝置已被擁有者鎖定。</translation>
 <translation id="5481941284378890518">新增附近的印表機</translation>
@@ -3475,7 +3460,7 @@
 <translation id="5662457369790254286">設定 Android 手機的網頁載入進度列動畫。</translation>
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5669462439438204699">儲存信用卡</translation>
-<translation id="5669691691057771421">輸入新 PIN</translation>
+<translation id="5669691691057771421">輸入新的 PIN 碼</translation>
 <translation id="5671961047338275645">管理網站</translation>
 <translation id="5675224880872496917">捲動網頁內容時平滑移動畫面。</translation>
 <translation id="5676267133227121599">在任何裝置上皆可透過 <ph name="MANAGEMENT_LINK" /> 存取您的密碼。</translation>
@@ -3495,7 +3480,6 @@
 <translation id="5691596662111998220">糟糕！「<ph name="FILE_NAME" />」已不存在。</translation>
 <translation id="5694501201003948907">正在壓縮 $1 個項目...</translation>
 <translation id="5699533844376998780">已安裝「<ph name="EXTENSION_NAME" />」擴充功能。</translation>
-<translation id="5699678593090203286">輸入 PIN 解鎖金鑰</translation>
 <translation id="5701101281789450335">語言和輸入設定...</translation>
 <translation id="5701381305118179107">置中</translation>
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
@@ -3513,6 +3497,7 @@
 <translation id="5719603411793408026">預設搜尋引擎</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5723508132121499792">沒有執行中的背景應用程式</translation>
+<translation id="572392919096807438">記住我的決定</translation>
 <translation id="5725124651280963564">登入 <ph name="TOKEN_NAME" /> 即可產生供 <ph name="HOST_NAME" /> 使用的金鑰。</translation>
 <translation id="5725199926572598591">DirectWrite</translation>
 <translation id="572525680133754531">在合成「轉譯圖層」周圍呈現邊框，有助於偵錯和解析圖層合成。</translation>
@@ -3839,7 +3824,7 @@
 <translation id="6185696379715117369">Page Up 鍵</translation>
 <translation id="6186096729871643580">LCD 文字消除鋸齒</translation>
 <translation id="6187344976531853059">將視窗移至其他桌面可能會導致非預期的行為。</translation>
-<translation id="618807527697571179">無法偵測到你的印表機型號，請從清單中選取註冊商和型號。</translation>
+<translation id="618807527697571179">偵測不到你的印表機型號，請從清單中選取製造商和型號。</translation>
 <translation id="6188939051578398125">輸入姓名或地址。</translation>
 <translation id="6189412234224385711">使用「<ph name="EXTENSION_NAME" />」開啟</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -3978,7 +3963,6 @@
 <translation id="6390799748543157332">您在這個視窗瀏覽的網頁不會顯示在瀏覽器紀錄中，而且在您關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他紀錄。不過，系統將會保留您下載的所有檔案。</translation>
 <translation id="639132970685294128">網域名稱伺服器</translation>
 <translation id="6391538222494443604">輸入項目目錄必須存在</translation>
-<translation id="639210578006174481">實驗性應用程式啟動器</translation>
 <translation id="6394627529324717982">逗號</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
@@ -4450,7 +4434,7 @@
 <translation id="7047998246166230966">指標裝置</translation>
 <translation id="7048141481140415714">按下 Ctrl+Alt+Shift+8 鍵即可切換 TouchView 最大化模式。</translation>
 <translation id="7051943809462976355">正在搜尋滑鼠...</translation>
-<translation id="7052215492372573690">PIN 至少需有 4 碼</translation>
+<translation id="7052215492372573690">PIN 碼至少需有 4 碼</translation>
 <translation id="7052237160939977163">傳送效能追蹤資料</translation>
 <translation id="7052633198403197513">F1 鍵</translation>
 <translation id="7052914147756339792">設定桌布...</translation>
@@ -5069,7 +5053,6 @@
 <translation id="7925192822915865931">允許離線存取最近造訪過的網頁</translation>
 <translation id="7925285046818567682">正在等候 <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">請勿使用行動數據進行同步處理</translation>
-<translation id="7926906273904422255">將不安全的來源標示為不安全或「可疑」。</translation>
 <translation id="7928710562641958568">退出裝置</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共用您的畫面和音訊。</translation>
 <translation id="7938594894617528435">目前離線</translation>
@@ -5150,7 +5133,6 @@
 <translation id="8030656706657716245">新增印表機</translation>
 <translation id="8031722894461705849">斯洛伐克文鍵盤</translation>
 <translation id="8032244173881942855">無法投放分頁。</translation>
-<translation id="8034304765210371109">啟用實驗版應用程式啟動器。</translation>
 <translation id="8035871966943390569">拉動即可重新整理效果</translation>
 <translation id="8037117027592400564">讀取使用合成語音朗讀的所有文字</translation>
 <translation id="803771048473350947">檔案</translation>
@@ -5189,7 +5171,7 @@
 <translation id="8090234456044969073">讀取最常造訪的網站清單</translation>
 <translation id="8091655032047076676">實驗性</translation>
 <translation id="8094917007353911263">目前使用的網路可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
-<translation id="80974698889265265">PIN 不符</translation>
+<translation id="80974698889265265">PIN 碼不符</translation>
 <translation id="8098975406164436557">使用這個手機為您的 <ph name="DEVICE_TYPE" /> 解鎖？</translation>
 <translation id="810066391692572978">檔案使用不受支援的功能。</translation>
 <translation id="8101987792947961127">必須在下次重新啟動時執行 Powerwash</translation>
@@ -5431,7 +5413,7 @@
 <translation id="8427933533533814946">拍攝者：</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8428634594422941299">我知道了</translation>
-<translation id="8431909052837336408">變更 SIM PIN</translation>
+<translation id="8431909052837336408">變更 SIM 卡的 PIN 碼</translation>
 <translation id="8432745813735585631">美式 Colemak 鍵盤</translation>
 <translation id="8434480141477525001">NaCl 偵錯通訊埠</translation>
 <translation id="8435334418765210033">已經記錄的網路</translation>
@@ -6005,7 +5987,6 @@
 <translation id="9203398526606335860">分析已啟用(&amp;P)</translation>
 <translation id="9203478404496196495">開啟分頁音訊</translation>
 <translation id="9203962528777363226">裝置管理員已停用新增使用者功能</translation>
-<translation id="9205143043463108573">將應用程式啟動器置於橫向畫面中央的位置。</translation>
 <translation id="9205160891051296441">SystemTimezoneAutomaticDetection 政策支援</translation>
 <translation id="9206487995878691001">倉頡輸入法</translation>
 <translation id="9208886416788010685">Adobe Reader 版本過舊</translation>

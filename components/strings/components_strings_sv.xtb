@@ -5,7 +5,7 @@
 <translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1038842779957582377">okänt namn</translation>
-<translation id="1053591932240354961">Det går inte att besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade krypterade användaruppgifter som Google Chrome inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1053591932240354961">Det går inte att besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade förvrängda användaruppgifter som Google Chrome inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1055184225775184556">&amp;Ångra Lägg till</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="106701514854093668">Bokmärken på skrivbordet</translation>
@@ -159,7 +159,7 @@
 <translation id="2704951214193499422">Chromium kunde inte bekräfta kortet. Försök igen senare.</translation>
 <translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
-<translation id="2712118517637785082">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som har återkallats av utfärdaren. Det innebär att säkerhetsuppgifterna som servern anger inte är tillförlitliga. Du kanske kommunicerar med en skadlig server. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="2712118517637785082">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som har återkallats av utfärdaren. Det innebär att säkerhetsuppgifterna som servern anger inte är tillförlitliga. Du kanske kommunicerar med en angripare. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Begär behörighet</translation>
 <translation id="2721148159707890343">Begäran genomfördes</translation>
 <translation id="2728127805433021124">Serverns certifikat är signerat med en svag signaturalgoritm.</translation>
@@ -283,7 +283,7 @@
 <translation id="3884278016824448484">Motstridiga enhetsidentifierare</translation>
 <translation id="3885155851504623709">Församling</translation>
 <translation id="3901925938762663762">Kortet gäller inte längre</translation>
-<translation id="3910267023907260648">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som har signerats med en svag signaturalgoritm. Det innebär att säkerhetsuppgifterna som servern anger kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="3910267023907260648">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som har signerats med en svag signaturalgoritm. Det innebär att säkerhetsuppgifterna som servern anger kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en angripare). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="3933571093587347751">{1,plural, =1{Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla i morgon. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla om # dagar. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.}}</translation>
 <translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="3963721102035795474">Läsarläge</translation>
@@ -387,7 +387,6 @@
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5199729219167945352">Experiment</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{1 webbsida hittades}other{# webbsidor hittades}}</translation>
 <translation id="5251803541071282808">Moln</translation>
 <translation id="5299298092464848405">Det uppstod ett fel när policyn analyserades</translation>
 <translation id="5300589172476337783">Visa</translation>
@@ -434,7 +433,7 @@
 <translation id="5810442152076338065">Anslutningen till <ph name="DOMAIN" /> är krypterad med en gammal krypteringssvit.</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
 <translation id="5814352347845180253">Du kan förlora tillgång till premiuminnehåll från <ph name="SITE" /> och några andra webbplatser.</translation>
-<translation id="5843436854350372569">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som signerats med en svag nyckel. Det innebär att den privata nyckeln som servern anger kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="5843436854350372569">Du försökte öppna <ph name="DOMAIN" />, men servern angav ett certifikat som signerats med en svag nyckel. Det innebär att den privata nyckeln som servern anger kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en angripare). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5855235287355719921">Det här meddelandet visas eftersom din chef har blockerat den här webbplatsen.</translation>
 <translation id="5857090052475505287">Ny mapp</translation>
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
@@ -478,7 +477,7 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
 <translation id="6387478394221739770">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår betakanal på chrome.com/beta.</translation>
 <translation id="6389758589412724634">Minnet tog slut när den här webbsidan skulle visas i Chromium.</translation>
-<translation id="6416403317709441254">Det går inte att besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade krypterade användaruppgifter som Chromium inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="6416403317709441254">Det går inte att besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade förvrängda användaruppgifter som Chromium inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6417515091412812850">Det gick inte att kontrollera om certifikatet har återkallats.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6445051938772793705">Land</translation>

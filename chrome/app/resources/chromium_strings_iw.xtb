@@ -33,7 +33,6 @@
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
-<translation id="2103655854491303969">‏Chromium App Launcher יוצא משימוש.</translation>
 <translation id="2117181891440368863">‏Chromium אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל הם אינם חוקיים.</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2158734852934720349">‏רישיונות קוד פתוח של מערכת ההפעלה של Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="2558641060352364164">‏האתר הזה משתמש בפלאגין Chromium Frame. התמיכה בפלאגין הזה תסתיים בקרוב. הסר את ההתקנה שלו ושדרג לדפדפן מודרני.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">‏כדי להחיל עדכון זה, יש להפעיל מחדש את Chromium OS.</translation>
-<translation id="2595977381794111014">‏השתמש בקיצור הדרך <ph name="APPS_ICON_IMAGE" /> בסרגל הסימניות של Chromium כדי להמשיך לגשת לאפליקציות שלך.</translation>
 <translation id="2605472041568654097">‏עזור לשפר את Chromium על ידי דיווח על ההגדרות הנוכחיות.</translation>
 <translation id="2636877269779209383">‏Chromium זקוק לגישה אל המצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="2648074677641340862">‏במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Chromium.</translation>

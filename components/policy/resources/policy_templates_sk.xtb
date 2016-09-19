@@ -1435,7 +1435,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
-<translation id="5795001131770861387">Toto pravidlo povoľuje podporu protokolu HTTP/0.9 v portoch, ktoré nie sú predvolené</translation>
+<translation id="5795001131770861387">Toto pravidlo povoľuje podporu protokolu HTTP/0.9 na portoch, ktoré nie sú predvolené</translation>
 <translation id="5809728392451418079">Nastaviť zobrazovaný názov pre miestne účty na zariadení</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
 <translation id="5815129011704381141">Automaticky reštartovať po aktualizácii</translation>
@@ -2072,7 +2072,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
 
       Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
-<translation id="7724994675283793633">Toto pravidlo povoľuje protokol HTTP/0.9 v portoch iných ako 80 (v prípade protokolu HTTP) a 443 (v prípade protokolu HTTPS).
+<translation id="7724994675283793633">Toto pravidlo povoľuje protokol HTTP/0.9 na portoch iných ako 80 (v prípade protokolu HTTP) a 443 (v prípade protokolu HTTPS).
 
       Toto pravidlo je predvolene zakázané a po povolení vystavuje používateľov problému so zabezpečením – https://crbug.com/600352.
 

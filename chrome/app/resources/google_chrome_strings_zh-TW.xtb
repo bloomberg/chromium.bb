@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
-<translation id="1864458292167284385">Chrome 應用程式啟動器即將停止服務。</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="1924381329666691588">Google Chrome 的介面文字無法設為這種語言。</translation>
 <translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
@@ -105,7 +104,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了 Certificate Transparency 資訊，但 Chrome 無法辨識任何 Certificate Transparency 紀錄。</translation>
 <translation id="3889417619312448367">解除安裝 Google Chrome</translation>
-<translation id="396182988103551265">您可以繼續使用 Chrome 書籤列中的 <ph name="APPS_ICON_IMAGE" /> 捷徑存取各項應用程式。</translation>
 <translation id="4042449298237264661">Google Chrome 已停止支援 Windows XP 和 Windows Vista，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="4053720452172726777">自訂及管理 Google Chrome</translation>
@@ -250,7 +248,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8037887340639533879">找不到安裝的 Google Chrome，無法更新。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
-<translation id="8205111949707227942">選擇性：把使用統計資料及當機報告自動傳送給 Google，將有助於 Chrome OS 更臻完美。</translation>
 <translation id="8211929904040702368">這會將至少 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。 </translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的攝影機和麥克風。</translation>

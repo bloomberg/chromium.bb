@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏دریافت راهنمایی برای استفاده از سیستم عامل Chrome </translation>
 <translation id="1818142563254268765">‏Chrome به‌طور خودکار به جدیدترین نسخه به‌روزرسانی نشد، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست خواهید داد. باید Chrome را به‌روزرسانی کنید.</translation>
-<translation id="1864458292167284385">‏راه‌انداز برنامه Chrome از دور خارج می‌شود.</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="1924381329666691588">‏Google Chrome نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="2063848847527508675">‏برای اعمال به‌روزرسانی، سیستم‌عامل Chrome باید راه‌اندازی مجدد شود.</translation>
@@ -105,7 +104,6 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» را ارائه کرد اما Chrome هیچ‌یک از گزارش‌های «شفافیت گواهی‌نامه» را تشخیص نداد.</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
-<translation id="396182988103551265">‏برای ادامه دسترسی به برنامه‌هایتان از میان‌بر <ph name="APPS_ICON_IMAGE" /> در نوار نشانک‌های Chrome استفاده کنید.</translation>
 <translation id="4042449298237264661">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
@@ -249,7 +247,6 @@
 <translation id="8037887340639533879">‏هیچ مورد نصب شده‌ای از Google Chrome برای به‌روزرسانی یافت نشد.</translation>
 <translation id="8129812357326543296">‏درباره &amp;Google Chrome</translation>
 <translation id="8183957050892517584">‏Chrome به‌طور امن جزئیات شخصی‌تان را ذخیره خواهد کرد تا نیازی نباشد دوباره آن‌ها را تایپ کنید.</translation>
-<translation id="8205111949707227942">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Google، به پیشرفت سیستم عامل Chrome کمک کنید.</translation>
 <translation id="8211929904040702368">‏این کار حداقل <ph name="TOTAL_COUNT" /> مورد را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chrome شوید.</translation>
 <translation id="8227755444512189073">‏برای کار با پیوندهای <ph name="SCHEME" />، Google Chrome باید برنامه خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK" /> مورد نیاز است.</translation>
 <translation id="8255190535488645436">‏Google Chrome درحال استفاده از دوربین و میکروفون شما است.</translation>

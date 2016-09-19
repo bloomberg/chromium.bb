@@ -105,7 +105,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2139186145475833000">Zum Startbildschirm hinzu</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
-<translation id="21570240866965662">Langsame Verbindung</translation>
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Verfeinern</translation>
@@ -204,7 +203,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
 <translation id="3351441609270267898">Vorhandene Daten importieren</translation>
-<translation id="3365671512111106261">Nicht verfügbar, wenn die Datenkomprimierung aktiviert ist</translation>
+<translation id="3365671512111106261">Nicht verfügbar, wenn der Datensparmodus aktiviert ist</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
 <translation id="3386292677130313581">Nachfragen, bevor Websites Ihr Standort angezeigt wird (empfohlen)</translation>
@@ -440,7 +439,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
-<translation id="6177390657002841081">Datenkomprimierung aktivieren</translation>
+<translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
@@ -519,7 +518,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7031882061095297553">Synchronisieren mit</translation>
 <translation id="7053983685419859001">Blockieren</translation>
-<translation id="7056999826593229648">Langsame Verbindung gefunden</translation>
 <translation id="7057058088140140610">Kreditkarten und Adressen für Google Payments</translation>
 <translation id="7062545763355031412">Akzeptieren und Konto wechseln</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
@@ -571,7 +569,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
 <translation id="7682287625158474539">Versand</translation>
-<translation id="7690588279513156836">Original laden</translation>
 <translation id="771135159654932189">URLs in der Nähe</translation>
 <translation id="7713873128508426081">Immer erlaubt</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>

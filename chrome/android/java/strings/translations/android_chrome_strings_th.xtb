@@ -105,7 +105,6 @@
 <translation id="2139186145475833000">เพิ่มไปยังหน้าจอหลัก</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
-<translation id="21570240866965662">การเชื่อมต่อช้า</translation>
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
@@ -519,7 +518,6 @@
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7031882061095297553">ซิงค์กับ</translation>
 <translation id="7053983685419859001">บล็อก</translation>
-<translation id="7056999826593229648">ตรวจพบการเชื่อมต่อที่ช้า</translation>
 <translation id="7057058088140140610">ใช้ข้อมูลบัตรเครดิตและที่อยู่จาก Google Payments</translation>
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
@@ -571,7 +569,6 @@
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="7682287625158474539">จัดส่ง</translation>
-<translation id="7690588279513156836">โหลดต้นฉบับ</translation>
 <translation id="771135159654932189">ดูว่ามีอะไรอยู่ใกล้เคียง</translation>
 <translation id="7713873128508426081">อนุญาตเสมอ</translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>

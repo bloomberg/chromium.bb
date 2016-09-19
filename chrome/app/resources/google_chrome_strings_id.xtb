@@ -33,7 +33,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
 <translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
-<translation id="1864458292167284385">Peluncur Aplikasi Chrome tidak akan digunakan lagi.</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="1924381329666691588">Google Chrome tidak dapat ditampilkan dalam bahasa ini.</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
@@ -105,7 +104,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat, namun Chrome tidak mengenali log Transparansi Sertifikat apa pun.</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
-<translation id="396182988103551265">Gunakan pintasan <ph name="APPS_ICON_IMAGE" /> di bilah bookmark Chrome untuk terus mengakses aplikasi.</translation>
 <translation id="4042449298237264661">Komputer ini tidak akan menerima pembaruan Google Chrome lagi karena Windows XP dan Windows Vista sudah tidak didukung.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
@@ -248,7 +246,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8037887340639533879">Tidak ditemukan pemasangan Google Chrome untuk diperbarui.</translation>
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome akan meyimpan informasi pribadi Anda dengan aman sehingga Anda tidak perlu mengetiknya lagi.</translation>
-<translation id="8205111949707227942">Opsional: Bantu kami membuat Chrome OS lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
 <translation id="8211929904040702368">Tindakan ini akan menghapus setidaknya <ph name="TOTAL_COUNT" /> item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME" />. Link yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>

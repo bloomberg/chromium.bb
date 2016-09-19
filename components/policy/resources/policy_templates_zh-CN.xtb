@@ -803,7 +803,7 @@
 
       要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
 
-      如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 和 ARC 应用将会忽略通过命令行指定的所有代理相关选项。。
+      如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 和 ARC 应用将会忽略通过命令行指定的所有代理相关选项。
 
       如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>

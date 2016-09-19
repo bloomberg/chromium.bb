@@ -35,7 +35,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
 <translation id="1818142563254268765">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chrome.</translation>
-<translation id="1864458292167284385">‏إيقاف Launcher تطبيقات Chrome.</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="1924381329666691588">‏لا يمكن عرض Google Chrome بهذه اللغة.</translation>
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
@@ -107,7 +106,6 @@
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3881912906674381083">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكن لم يتعرّف Chrome على أي سجلات لشفافية الشهادة.</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
-<translation id="396182988103551265">‏استخدام الاختصار <ph name="APPS_ICON_IMAGE" /> في شريط الإشارات المرجعية لـ Chrome لمواصلة الدخول إلى تطبيقاتك.</translation>
 <translation id="4042449298237264661">‏لن يستلم هذا الكمبيوتر تحديثات لـ Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
@@ -252,7 +250,6 @@
 <translation id="8037887340639533879">‏لم يتم العثور على تثبيت Google Chrome لإجراء التحديث.</translation>
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>
 <translation id="8183957050892517584">‏سيخزّن Chrome معلوماتك الشخصية بشكلٍ آمن لكي لا تُضطر إلى كتابتها مرة أخرى.</translation>
-<translation id="8205111949707227942">‏اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="8211929904040702368">‏سيؤدي هذا إلى حذف <ph name="TOTAL_COUNT" /> من العناصر على الأقل من هذا الجهاز نهائيًا. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome باعتبارك ($2).</translation>
 <translation id="8227755444512189073">تقتضي معالجة روابط <ph name="SCHEME" /> تشغيل تطبيق خارجيّ. والرّابط المطلوب هو <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>

@@ -37,7 +37,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Få hjälp med att använda Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste uppdatera Chrome.</translation>
-<translation id="1864458292167284385">Startprogrammet för appar försvinner.</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="1924381329666691588">Det går inte att visa Google Chrome på det här språket.</translation>
 <translation id="2063848847527508675">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
@@ -109,7 +108,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Certifikattransparensuppgifter har skickats från servern, men Chrome kunde inte känna igen någon av certifikattransparensloggarna.</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
-<translation id="396182988103551265">Använd genvägen <ph name="APPS_ICON_IMAGE" /> i bokmärkesfältet i Chrome om du fortfarande vill ha tillgång till apparna.</translation>
 <translation id="4042449298237264661">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
@@ -256,7 +254,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8037887340639533879">Det finns ingen installation av Google Chrome att uppdatera.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
-<translation id="8205111949707227942">Valfritt: Hjälp till att göra Chrome bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
 <translation id="8211929904040702368">Det här innebär att minst <ph name="TOTAL_COUNT" /> objekt raderas från enheten. Logga in i Chrome som $2 om du vill kunna återställa data senare.</translation>
 <translation id="8227755444512189073">Google Chrome måste starta ett externt program för att hantera <ph name="SCHEME" />-länkar. Den begärda länken är <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>
