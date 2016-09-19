@@ -424,7 +424,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private int mPotentiallyActiveFlingCount;
 
     private SmartClipDataListener mSmartClipDataListener = null;
-    private final ObserverList<ContainerViewObserver> mContainerViewObservers;
 
     /**
      * PID used to indicate an invalid render process.
@@ -486,7 +485,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mGestureStateListeners = new ObserverList<GestureStateListener>();
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
-        mContainerViewObservers = new ObserverList<ContainerViewObserver>();
         mWindowAndroidChangedObservers = new ObserverList<WindowAndroidChangedObserver>();
     }
 
@@ -718,20 +716,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
             mContainerView = containerView;
             mContainerView.setClickable(true);
-            for (ContainerViewObserver observer : mContainerViewObservers) {
-                observer.onContainerViewChanged(mContainerView);
-            }
         } finally {
             TraceEvent.end("ContentViewCore.setContainerView");
         }
-    }
-
-    public void addContainerViewObserver(ContainerViewObserver observer) {
-        mContainerViewObservers.addObserver(observer);
-    }
-
-    public void removeContainerViewObserver(ContainerViewObserver observer) {
-        mContainerViewObservers.removeObserver(observer);
     }
 
     @CalledByNative
@@ -849,7 +836,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         }
         mGestureStateListeners.clear();
         ScreenOrientationListener.getInstance().removeObserver(this);
-        mContainerViewObservers.clear();
         hidePopupsAndPreserveSelection();
         mPastePopupMenu = null;
 

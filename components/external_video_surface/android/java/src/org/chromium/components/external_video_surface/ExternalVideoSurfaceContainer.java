@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContainerViewObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 
@@ -69,7 +68,6 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private final long mNativeExternalVideoSurfaceContainer;
     private final ContentViewCore mContentViewCore;
     private ViewGroup mContainerView;
-    private ContainerViewObserver mContainerViewObserver;
     private int mPlayerId = INVALID_PLAYER_ID;
     private SurfaceView mSurfaceView;
 
@@ -185,36 +183,23 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private void createSurfaceView() {
         assert mSurfaceView == null;
         assert mContainerView == null;
-        assert mContainerViewObserver == null;
 
         mSurfaceView = new NoPunchingSurfaceView(mContentViewCore.getContext());
         mSurfaceView.getHolder().addCallback(this);
-        // SurfaceHoder.surfaceCreated() will be called after the SurfaceView is attached to
+        // SurfaceHolder.surfaceCreated() will be called after the SurfaceView is attached to
         // the Window and becomes visible.
         mContainerView = mContentViewCore.getContainerView();
         mContainerView.addView(mSurfaceView);
-        mContainerViewObserver = new ContainerViewObserver() {
-            @Override
-            public void onContainerViewChanged(ViewGroup newContainerView) {
-                mContainerView.removeView(mSurfaceView);
-                mContainerView = newContainerView;
-                mContainerView.addView(mSurfaceView);
-            }
-        };
-        mContentViewCore.addContainerViewObserver(mContainerViewObserver);
     }
 
     private void removeSurfaceView() {
         assert mSurfaceView != null;
         assert mContainerView != null;
-        assert mContainerViewObserver != null;
 
-        // SurfaceHoder.surfaceDestroyed() will be called in ViewGroup.removeView()
+        // SurfaceHolder.surfaceDestroyed() will be called in ViewGroup.removeView()
         // as soon as the SurfaceView is detached from the Window.
-        mContentViewCore.removeContainerViewObserver(mContainerViewObserver);
         mContainerView.removeView(mSurfaceView);
 
-        mContainerViewObserver = null;
         mSurfaceView = null;
         mContainerView = null;
     }
@@ -309,4 +294,3 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private native void nativeSurfaceDestroyed(
             long nativeExternalVideoSurfaceContainerImpl, int playerId);
 }
-
