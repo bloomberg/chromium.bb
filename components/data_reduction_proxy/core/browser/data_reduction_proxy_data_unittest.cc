@@ -42,13 +42,13 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   EXPECT_FALSE(data->lofi_requested());
 
   EXPECT_EQ(std::string(), data->session_key());
-  EXPECT_EQ(GURL(std::string()), data->original_request_url());
+  EXPECT_EQ(GURL(std::string()), data->request_url());
   std::string session_key = "test-key";
   data->set_session_key(session_key);
   EXPECT_EQ(session_key, data->session_key());
   GURL test_url("test-url");
-  data->set_original_request_url(test_url);
-  EXPECT_EQ(test_url, data->original_request_url());
+  data->set_request_url(test_url);
+  EXPECT_EQ(test_url, data->request_url());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             data->effective_connection_type());
   data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
@@ -62,12 +62,12 @@ TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
       GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr));
   DataReductionProxyData* data =
       DataReductionProxyData::GetData(*fake_request.get());
-  EXPECT_TRUE(!data);
+  EXPECT_FALSE(data);
   data =
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
-  EXPECT_FALSE(!data);
+  EXPECT_TRUE(data);
   data = DataReductionProxyData::GetData(*fake_request.get());
-  EXPECT_FALSE(!data);
+  EXPECT_TRUE(data);
   DataReductionProxyData* data2 =
       DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
   EXPECT_EQ(data, data2);
@@ -99,16 +99,29 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     data->set_used_data_reduction_proxy(tests[i].data_reduction_used);
     data->set_lofi_requested(tests[i].lofi_on);
     data->set_session_key(kSessionKey);
-    data->set_original_request_url(kTestURL);
+    data->set_request_url(kTestURL);
     data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
     EXPECT_EQ(tests[i].lofi_on, copy->lofi_requested());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
     EXPECT_EQ(kSessionKey, copy->session_key());
-    EXPECT_EQ(kTestURL, copy->original_request_url());
+    EXPECT_EQ(kTestURL, copy->request_url());
     EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
               copy->effective_connection_type());
   }
+}
+
+TEST_F(DataReductionProxyDataTest, ClearData) {
+  std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
+  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
+      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr));
+
+  DataReductionProxyData* data =
+      DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
+  EXPECT_TRUE(data);
+  DataReductionProxyData::ClearData(fake_request.get());
+  data = DataReductionProxyData::GetData(*fake_request.get());
+  EXPECT_FALSE(data);
 }
 
 }  // namespace

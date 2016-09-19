@@ -25,8 +25,8 @@ namespace data_reduction_proxy {
 
 namespace {
 
-const char kDefaultTestUrl[] = "https://google.com";
-const char kDefaultTestUrl2[] = "https://example.com";
+const char kDefaultTestUrl[] = "http://google.com";
+const char kDefaultTestUrl2[] = "http://example.com";
 
 data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
     content::WebContents* web_contents,

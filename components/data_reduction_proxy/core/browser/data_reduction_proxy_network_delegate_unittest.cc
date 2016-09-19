@@ -556,7 +556,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
                                 : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
                 data->effective_connection_type());
       EXPECT_TRUE(data->used_data_reduction_proxy());
-      EXPECT_EQ(GURL("http://www.google.com/"), data->original_request_url());
+      EXPECT_EQ(GURL("http://www.google.com/"), data->request_url());
       EXPECT_EQ("fake-session", data->session_key());
       EXPECT_EQ(test.lofi_on, data->lofi_requested());
     }
@@ -608,6 +608,49 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       EXPECT_TRUE(data->used_data_reduction_proxy());
     }
   }
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
+  net::ProxyInfo data_reduction_proxy_info;
+  std::string data_reduction_proxy;
+  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
+  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+
+  // Main frame loaded. Lo-Fi should be used.
+  net::HttpRequestHeaders headers;
+  net::ProxyRetryInfoMap proxy_retry_info;
+
+  std::map<std::string, std::string> network_quality_estimator_params;
+  TestNetworkQualityEstimator test_network_quality_estimator(
+      network_quality_estimator_params, net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  context()->set_network_quality_estimator(&test_network_quality_estimator);
+
+  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
+      GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
+  request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
+  lofi_decider()->SetIsUsingLoFiMode(true);
+  io_data()->request_options()->SetSecureSession("fake-session");
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  DataReductionProxyData* data =
+      DataReductionProxyData::GetData(*request.get());
+
+  EXPECT_TRUE(data);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+            data->effective_connection_type());
+  EXPECT_TRUE(data->used_data_reduction_proxy());
+  EXPECT_EQ(GURL("http://www.google.com/"), data->request_url());
+  EXPECT_EQ("fake-session", data->session_key());
+  EXPECT_TRUE(data->lofi_requested());
+
+  data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
+
+  // Simulate a redirect by calling NotifyBeforeSendHeaders again with different
+  // proxy info.
+  network_delegate()->NotifyBeforeSendHeaders(
+      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+  data = DataReductionProxyData::GetData(*request.get());
+  EXPECT_FALSE(data);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {

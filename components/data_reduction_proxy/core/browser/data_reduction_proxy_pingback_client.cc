@@ -40,8 +40,8 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_allocated_first_request_time(
       protobuf_parser::CreateTimestampFromTime(timing.navigation_start)
           .release());
-  if (request_data.original_request_url().is_valid())
-    request->set_first_request_url(request_data.original_request_url().spec());
+  if (request_data.request_url().is_valid())
+    request->set_first_request_url(request_data.request_url().spec());
   if (timing.first_contentful_paint) {
     request->set_allocated_time_to_first_contentful_paint(
         protobuf_parser::CreateDurationFromTimeDelta(

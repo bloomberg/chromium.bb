@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace data_reduction_proxy {
 
@@ -115,6 +116,9 @@ void DataReductionProxyMetricsObserver::OnCommit(
   if (!data)
     return;
   data_ = data->DeepCopy();
+  // DataReductionProxy page loads should only occur on HTTP navigations.
+  DCHECK(!data_->used_data_reduction_proxy() ||
+         !navigation_handle->GetURL().SchemeIsCryptographic());
 }
 
 void DataReductionProxyMetricsObserver::OnComplete(

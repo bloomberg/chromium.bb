@@ -237,6 +237,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(request);
+
+  // If this is after a redirect, reset |request|'s DataReductionProxyData.
+  DataReductionProxyData::ClearData(request);
+
   if (params::IsIncludedInHoldbackFieldTrial()) {
     if (!WasEligibleWithoutHoldback(*request, proxy_info, proxy_retry_info))
       return;
@@ -266,7 +270,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     data->set_used_data_reduction_proxy(true);
     data->set_session_key(
         data_reduction_proxy_request_options_->GetSecureSession());
-    data->set_original_request_url(request->original_url());
+    data->set_request_url(request->url());
     if ((request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) &&
         request->context()->network_quality_estimator()) {
       data->set_effective_connection_type(request->context()

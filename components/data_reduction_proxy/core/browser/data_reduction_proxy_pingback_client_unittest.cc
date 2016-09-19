@@ -113,7 +113,7 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
   void CreateAndSendPingback() {
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
-    request_data.set_original_request_url(GURL(kFakeURL));
+    request_data.set_request_url(GURL(kFakeURL));
     request_data.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     factory()->set_remove_fetcher_on_delete(true);
