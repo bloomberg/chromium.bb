@@ -169,6 +169,22 @@ PanelMenu.prototype = {
   },
 
   /**
+   * Sets the active menu item index to be 0.
+   */
+  scrollToTop: function() {
+    this.activeIndex_ = 0;
+    this.items_[this.activeIndex_].element.focus();
+  },
+
+  /**
+   * Sets the active menu item index to be the last index.
+   */
+  scrollToBottom: function() {
+    this.activeIndex_ = this.items_.length - 1;
+    this.items_[this.activeIndex_].element.focus();
+  },
+
+  /**
    * Get the callback for the active menu item.
    * @return {Function} The callback.
    */
