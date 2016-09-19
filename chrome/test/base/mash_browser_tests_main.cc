@@ -121,7 +121,7 @@ std::unique_ptr<content::MojoShellConnection> CreateMojoShellConnection(
 }
 
 void StartChildApp(shell::mojom::ServiceRequest service_request) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
   base::RunLoop run_loop;
   mash::MashPackagedService service;
   std::unique_ptr<shell::ServiceContext> context =

@@ -126,7 +126,10 @@ void MashRunner::RunChild() {
 
 void MashRunner::StartChildApp(
     shell::mojom::ServiceRequest service_request) {
-  // TODO(sky): use MessagePumpMojo.
+  // TODO(sad): Normally, this would be a TYPE_DEFAULT message loop. However,
+  // TYPE_UI is needed for mojo:ui. But it is not known whether the child app is
+  // going to be mojo:ui at this point. So always create a TYPE_UI message loop
+  // for now.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   service_.reset(new mash::MashPackagedService);
   service_->set_context(base::MakeUnique<shell::ServiceContext>(
@@ -148,7 +151,6 @@ int MashMain() {
                        true,   // Timestamp
                        true);  // Tick count
 
-  // TODO(sky): use MessagePumpMojo.
   std::unique_ptr<base::MessageLoop> message_loop;
 #if defined(OS_LINUX)
   base::AtExitManager exit_manager;

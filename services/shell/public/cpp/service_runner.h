@@ -61,8 +61,7 @@ class ServiceRunner {
  private:
   std::unique_ptr<Service> service_;
 
-  // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
-  // the underlying message pump).
+  // MessageLoop type. Default is TYPE_DEFAULT.
   base::MessageLoop::Type message_loop_type_;
   // Whether Run() has been called.
   bool has_run_;

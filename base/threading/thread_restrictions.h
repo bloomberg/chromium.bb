@@ -54,9 +54,6 @@ namespace gpu {
 class GpuChannelHost;
 }
 namespace mojo {
-namespace common {
-class MessagePumpMojo;
-}
 class SyncCallRestrictions;
 }
 namespace ui {
@@ -208,7 +205,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class ThreadTestHelper;
   friend class PlatformThread;
   friend class android::JavaHandlerThread;
-  friend class mojo::common::MessagePumpMojo;
   friend class mojo::SyncCallRestrictions;
   friend class ui::CommandBufferClientImpl;
   friend class ui::CommandBufferLocal;
