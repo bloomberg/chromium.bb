@@ -45,18 +45,18 @@ class Layer;
 
 namespace cc_blink {
 
-class WebLayerImpl : public blink::WebLayer {
+class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
  public:
-  CC_BLINK_EXPORT WebLayerImpl();
-  CC_BLINK_EXPORT explicit WebLayerImpl(scoped_refptr<cc::Layer>);
+  WebLayerImpl();
+  explicit WebLayerImpl(scoped_refptr<cc::Layer>);
   ~WebLayerImpl() override;
 
-  CC_BLINK_EXPORT cc::Layer* layer() const;
+  cc::Layer* layer() const;
 
   // If set to true, content opaqueness cannot be changed using setOpaque.
   // However, it can still be modified using SetContentsOpaque on the
   // cc::Layer.
-  CC_BLINK_EXPORT void SetContentsOpaqueIsFixed(bool fixed);
+  void SetContentsOpaqueIsFixed(bool fixed);
 
   // WebLayer implementation.
   int id() const override;
@@ -80,7 +80,7 @@ class WebLayerImpl : public blink::WebLayer {
   blink::WebBlendMode blendMode() const override;
   void setIsRootForIsolatedGroup(bool root) override;
   bool isRootForIsolatedGroup() override;
-  CC_BLINK_EXPORT void setOpaque(bool opaque) override;
+  void setOpaque(bool opaque) override;
   bool opaque() const override;
   void setPosition(const blink::WebFloatPoint& position) override;
   blink::WebFloatPoint position() const override;

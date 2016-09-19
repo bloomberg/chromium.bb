@@ -22,12 +22,12 @@ namespace cc_blink {
 namespace {
 
 TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
-  std::unique_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
-  layer->SetFixedBounds(gfx::Size(100, 100));
-  layer->setBounds(WebSize(100, 100));
-  EXPECT_EQ(WebSize(100, 100), layer->bounds());
-  EXPECT_EQ(gfx::Size(100, 100), layer->layer()->bounds());
-  EXPECT_EQ(gfx::Transform(), layer->layer()->transform());
+  WebLayerImplFixedBounds layer;
+  layer.SetFixedBounds(gfx::Size(100, 100));
+  layer.setBounds(WebSize(100, 100));
+  EXPECT_EQ(WebSize(100, 100), layer.bounds());
+  EXPECT_EQ(gfx::Size(100, 100), layer.layer()->bounds());
+  EXPECT_EQ(gfx::Transform(), layer.layer()->transform());
 }
 
 gfx::Point3F TransformPoint(const gfx::Transform& transform,
@@ -59,12 +59,12 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
 }
 
 TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
-  std::unique_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
-  CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(150, 250));
+  WebLayerImplFixedBounds layer;
+  CheckBoundsScaleSimple(&layer, WebSize(100, 200), gfx::Size(150, 250));
   // Change fixed_bounds.
-  CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(75, 100));
+  CheckBoundsScaleSimple(&layer, WebSize(100, 200), gfx::Size(75, 100));
   // Change bounds.
-  CheckBoundsScaleSimple(layer.get(), WebSize(300, 100), gfx::Size(75, 100));
+  CheckBoundsScaleSimple(&layer, WebSize(300, 100), gfx::Size(75, 100));
 }
 
 void ExpectEqualLayerRectsInTarget(cc::Layer* layer1, cc::Layer* layer2) {
@@ -87,56 +87,54 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   WebFloatPoint position(20, 30);
   gfx::Size fixed_bounds(160, 70);
 
-  std::unique_ptr<WebLayerImplFixedBounds> root_layer(
-      new WebLayerImplFixedBounds());
+  WebLayerImplFixedBounds root_layer;
 
-  WebLayerImplFixedBounds* fixed_bounds_layer =
-      new WebLayerImplFixedBounds(cc::PictureImageLayer::Create());
-  fixed_bounds_layer->setBounds(bounds);
-  fixed_bounds_layer->SetFixedBounds(fixed_bounds);
-  fixed_bounds_layer->setTransform(transform.matrix());
-  fixed_bounds_layer->setPosition(position);
-  root_layer->addChild(fixed_bounds_layer);
+  WebLayerImplFixedBounds fixed_bounds_layer(cc::PictureImageLayer::Create());
+  fixed_bounds_layer.setBounds(bounds);
+  fixed_bounds_layer.SetFixedBounds(fixed_bounds);
+  fixed_bounds_layer.setTransform(transform.matrix());
+  fixed_bounds_layer.setPosition(position);
+  root_layer.addChild(&fixed_bounds_layer);
 
-  WebLayerImpl* normal_layer(new WebLayerImpl(cc::PictureImageLayer::Create()));
+  WebLayerImpl normal_layer(cc::PictureImageLayer::Create());
 
-  normal_layer->setBounds(bounds);
-  normal_layer->setTransform(transform.matrix());
-  normal_layer->setPosition(position);
-  root_layer->addChild(normal_layer);
+  normal_layer.setBounds(bounds);
+  normal_layer.setTransform(transform.matrix());
+  normal_layer.setPosition(position);
+  root_layer.addChild(&normal_layer);
 
   cc::FakeLayerTreeHostClient client;
   cc::TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<cc::FakeLayerTreeHost> host =
       cc::FakeLayerTreeHost::Create(&client, &task_graph_runner);
-  host->SetRootLayer(root_layer->layer());
+  host->SetRootLayer(root_layer.layer());
 
   {
     cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_layer->layer(), kDeviceViewportSize);
+        root_layer.layer(), kDeviceViewportSize);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_layer = root_layer->layer(),
+    inputs.page_scale_layer = root_layer.layer(),
     cc::LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    ExpectEqualLayerRectsInTarget(normal_layer->layer(),
-                                  fixed_bounds_layer->layer());
+    ExpectEqualLayerRectsInTarget(normal_layer.layer(),
+                                  fixed_bounds_layer.layer());
   }
 
   // Change of fixed bounds should not affect the target geometries.
-  fixed_bounds_layer->SetFixedBounds(
+  fixed_bounds_layer.SetFixedBounds(
       gfx::Size(fixed_bounds.width() / 2, fixed_bounds.height() * 2));
 
   {
     cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_layer->layer(), kDeviceViewportSize);
+        root_layer.layer(), kDeviceViewportSize);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_layer = root_layer->layer(),
+    inputs.page_scale_layer = root_layer.layer(),
     cc::LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    ExpectEqualLayerRectsInTarget(normal_layer->layer(),
-                                  fixed_bounds_layer->layer());
+    ExpectEqualLayerRectsInTarget(normal_layer.layer(),
+                                  fixed_bounds_layer.layer());
   }
 }
 
