@@ -33,7 +33,9 @@ struct wl_resource;
  * the interface version number is reset.
  *
  * @section page_ifaces_vsync_feedback_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_vsync_feedback_v1 - Protocol for providing vertical synchronization timing
+ * - @subpage page_iface_zcr_vsync_feedback_v1 - Protocol for providing vertical synchronization timing
+ * - @subpage page_iface_zcr_vsync_timing_v1 - 
+ * - @subpage page_iface_zwp_vsync_feedback_v1 - DEPRECATED
  * - @subpage page_iface_zwp_vsync_timing_v1 - 
  * @section page_copyright_vsync_feedback_unstable_v1 Copyright
  * <pre>
@@ -61,9 +63,36 @@ struct wl_resource;
  * </pre>
  */
 struct wl_output;
+struct zcr_vsync_feedback_v1;
+struct zcr_vsync_timing_v1;
 struct zwp_vsync_feedback_v1;
 struct zwp_vsync_timing_v1;
 
+/**
+ * @page page_iface_zcr_vsync_feedback_v1 zcr_vsync_feedback_v1
+ * @section page_iface_zcr_vsync_feedback_v1_desc Description
+ *
+ * The global interface that allows clients to subscribe for vertical
+ * synchronization timing data for given wl_output.
+ * @section page_iface_zcr_vsync_feedback_v1_api API
+ * See @ref iface_zcr_vsync_feedback_v1.
+ */
+/**
+ * @defgroup iface_zcr_vsync_feedback_v1 The zcr_vsync_feedback_v1 interface
+ *
+ * The global interface that allows clients to subscribe for vertical
+ * synchronization timing data for given wl_output.
+ */
+extern const struct wl_interface zcr_vsync_feedback_v1_interface;
+/**
+ * @page page_iface_zcr_vsync_timing_v1 zcr_vsync_timing_v1
+ * @section page_iface_zcr_vsync_timing_v1_api API
+ * See @ref iface_zcr_vsync_timing_v1.
+ */
+/**
+ * @defgroup iface_zcr_vsync_timing_v1 The zcr_vsync_timing_v1 interface
+ */
+extern const struct wl_interface zcr_vsync_timing_v1_interface;
 /**
  * @page page_iface_zwp_vsync_feedback_v1 zwp_vsync_feedback_v1
  * @section page_iface_zwp_vsync_feedback_v1_desc Description
@@ -89,6 +118,74 @@ extern const struct wl_interface zwp_vsync_feedback_v1_interface;
  * @defgroup iface_zwp_vsync_timing_v1 The zwp_vsync_timing_v1 interface
  */
 extern const struct wl_interface zwp_vsync_timing_v1_interface;
+
+/**
+ * @ingroup iface_zcr_vsync_feedback_v1
+ * @struct zcr_vsync_feedback_v1_interface
+ */
+struct zcr_vsync_feedback_v1_interface {
+	/**
+	 * destroy vsync feedback object
+	 *
+	 * Destroy this vsync feedback object. Existing vsync timing
+	 * objects shall not be affected by this request.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+	/**
+	 * get vsync timing object for given wl_output
+	 *
+	 * Create a new vsync timing object that represents a
+	 * subscription to vertical synchronization timing updates of given
+	 * wl_output object.
+	 *
+	 * The newly created object will immediately signal an update to
+	 * notify the subscriber of initial timing parameters.
+	 * @param id the new vsync timing interface id
+	 * @param output the wl_output object to subscribe for timings of
+	 */
+	void (*get_vsync_timing)(struct wl_client *client,
+				 struct wl_resource *resource,
+				 uint32_t id,
+				 struct wl_resource *output);
+};
+
+
+/**
+ * @ingroup iface_zcr_vsync_timing_v1
+ * @struct zcr_vsync_timing_v1_interface
+ */
+struct zcr_vsync_timing_v1_interface {
+	/**
+	 * destroy vsync timing object
+	 *
+	 * Destroy this vsync timing object.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+};
+
+#define ZCR_VSYNC_TIMING_V1_UPDATE	0
+
+/**
+ * @ingroup iface_zcr_vsync_timing_v1
+ */
+#define ZCR_VSYNC_TIMING_V1_UPDATE_SINCE_VERSION	1
+
+/**
+ * @ingroup iface_zcr_vsync_timing_v1
+ * Sends an update event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param timebase_l new vsync timebase (lower 32 bits)
+ * @param timebase_h new vsync timebase (upper 32 bits)
+ * @param interval_l new vsync interval (lower 32 bits)
+ * @param interval_h new vsync interval (upper 32 bits)
+ */
+static inline void
+zcr_vsync_timing_v1_send_update(struct wl_resource *resource_, uint32_t timebase_l, uint32_t timebase_h, uint32_t interval_l, uint32_t interval_h)
+{
+	wl_resource_post_event(resource_, ZCR_VSYNC_TIMING_V1_UPDATE, timebase_l, timebase_h, interval_l, interval_h);
+}
 
 /**
  * @ingroup iface_zwp_vsync_feedback_v1

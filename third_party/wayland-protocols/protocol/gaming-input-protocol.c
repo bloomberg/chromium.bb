@@ -28,6 +28,7 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_seat_interface;
+extern const struct wl_interface zcr_gamepad_v1_interface;
 extern const struct wl_interface zwp_gamepad_v1_interface;
 
 static const struct wl_interface *types[] = {
@@ -35,12 +36,41 @@ static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	&zcr_gamepad_v1_interface,
+	&wl_seat_interface,
 	&zwp_gamepad_v1_interface,
 	&wl_seat_interface,
 };
 
-static const struct wl_message zwp_gaming_input_v1_requests[] = {
+static const struct wl_message zcr_gaming_input_v1_requests[] = {
 	{ "get_gamepad", "no", types + 4 },
+};
+
+WL_EXPORT const struct wl_interface zcr_gaming_input_v1_interface = {
+	"zcr_gaming_input_v1", 1,
+	1, zcr_gaming_input_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zcr_gamepad_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+};
+
+static const struct wl_message zcr_gamepad_v1_events[] = {
+	{ "state_change", "u", types + 0 },
+	{ "axis", "uuf", types + 0 },
+	{ "button", "uuuf", types + 0 },
+	{ "frame", "u", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_gamepad_v1_interface = {
+	"zcr_gamepad_v1", 1,
+	1, zcr_gamepad_v1_requests,
+	4, zcr_gamepad_v1_events,
+};
+
+static const struct wl_message zwp_gaming_input_v1_requests[] = {
+	{ "get_gamepad", "no", types + 6 },
 };
 
 WL_EXPORT const struct wl_interface zwp_gaming_input_v1_interface = {

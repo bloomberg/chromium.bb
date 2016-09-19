@@ -33,8 +33,10 @@ struct wl_resource;
  * reset.
  *
  * @section page_ifaces_alpha_compositing_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_alpha_compositing_v1 - alpha_compositing
- * - @subpage page_iface_zwp_blending_v1 - blending interface to a wl_surface
+ * - @subpage page_iface_zcr_alpha_compositing_v1 - alpha_compositing
+ * - @subpage page_iface_zcr_blending_v1 - blending interface to a wl_surface
+ * - @subpage page_iface_zwp_alpha_compositing_v1 - DEPRECATED
+ * - @subpage page_iface_zwp_blending_v1 - DEPRECATED
  * @section page_copyright_alpha_compositing_unstable_v1 Copyright
  * <pre>
  *
@@ -61,9 +63,63 @@ struct wl_resource;
  * </pre>
  */
 struct wl_surface;
+struct zcr_alpha_compositing_v1;
+struct zcr_blending_v1;
 struct zwp_alpha_compositing_v1;
 struct zwp_blending_v1;
 
+/**
+ * @page page_iface_zcr_alpha_compositing_v1 zcr_alpha_compositing_v1
+ * @section page_iface_zcr_alpha_compositing_v1_desc Description
+ *
+ * The global interface exposing compositing and blending capabilities is
+ * used to instantiate an interface extension for a wl_surface object.
+ * This extended interface will then allow the client to specify the
+ * blending equation and alpha value used for compositing the wl_surface.
+ * @section page_iface_zcr_alpha_compositing_v1_api API
+ * See @ref iface_zcr_alpha_compositing_v1.
+ */
+/**
+ * @defgroup iface_zcr_alpha_compositing_v1 The zcr_alpha_compositing_v1 interface
+ *
+ * The global interface exposing compositing and blending capabilities is
+ * used to instantiate an interface extension for a wl_surface object.
+ * This extended interface will then allow the client to specify the
+ * blending equation and alpha value used for compositing the wl_surface.
+ */
+extern const struct wl_interface zcr_alpha_compositing_v1_interface;
+/**
+ * @page page_iface_zcr_blending_v1 zcr_blending_v1
+ * @section page_iface_zcr_blending_v1_desc Description
+ *
+ * An additional interface to a wl_surface object, which allows the
+ * client to specify the blending equation used for compositing and
+ * an alpha value applied to the whole surface.
+ *
+ * If the wl_surface associated with the bledning object is destroyed,
+ * the blending object becomes inert.
+ *
+ * If the blending object is destroyed, the blending state is removed
+ * from the wl_surface. The change will be applied on the next
+ * wl_surface.commit.
+ * @section page_iface_zcr_blending_v1_api API
+ * See @ref iface_zcr_blending_v1.
+ */
+/**
+ * @defgroup iface_zcr_blending_v1 The zcr_blending_v1 interface
+ *
+ * An additional interface to a wl_surface object, which allows the
+ * client to specify the blending equation used for compositing and
+ * an alpha value applied to the whole surface.
+ *
+ * If the wl_surface associated with the bledning object is destroyed,
+ * the blending object becomes inert.
+ *
+ * If the blending object is destroyed, the blending state is removed
+ * from the wl_surface. The change will be applied on the next
+ * wl_surface.commit.
+ */
+extern const struct wl_interface zcr_blending_v1_interface;
 /**
  * @page page_iface_zwp_alpha_compositing_v1 zwp_alpha_compositing_v1
  * @section page_iface_zwp_alpha_compositing_v1_desc Description
@@ -116,6 +172,113 @@ extern const struct wl_interface zwp_alpha_compositing_v1_interface;
  * wl_surface.commit.
  */
 extern const struct wl_interface zwp_blending_v1_interface;
+
+#ifndef ZCR_ALPHA_COMPOSITING_V1_ERROR_ENUM
+#define ZCR_ALPHA_COMPOSITING_V1_ERROR_ENUM
+enum zcr_alpha_compositing_v1_error {
+	/**
+	 * the surface already has a blending object associated
+	 */
+	ZCR_ALPHA_COMPOSITING_V1_ERROR_BLENDING_EXISTS = 0,
+};
+#endif /* ZCR_ALPHA_COMPOSITING_V1_ERROR_ENUM */
+
+/**
+ * @ingroup iface_zcr_alpha_compositing_v1
+ * @struct zcr_alpha_compositing_v1_interface
+ */
+struct zcr_alpha_compositing_v1_interface {
+	/**
+	 * unbind from the blending interface
+	 *
+	 * Informs the server that the client will not be using this
+	 * protocol object anymore. This does not affect any other objects,
+	 * blending objects included.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+	/**
+	 * extend surface interface for blending
+	 *
+	 * Instantiate an interface extension for the given wl_surface to
+	 * provide surface blending. If the given wl_surface already has a
+	 * blending object associated, the blending_exists protocol error
+	 * is raised.
+	 * @param id the new blending interface id
+	 * @param surface the surface
+	 */
+	void (*get_blending)(struct wl_client *client,
+			     struct wl_resource *resource,
+			     uint32_t id,
+			     struct wl_resource *surface);
+};
+
+
+#ifndef ZCR_BLENDING_V1_BLENDING_EQUATION_ENUM
+#define ZCR_BLENDING_V1_BLENDING_EQUATION_ENUM
+/**
+ * @ingroup iface_zcr_blending_v1
+ * different blending equations for compositing
+ *
+ * Blending equations that can be used when compositing a surface.
+ */
+enum zcr_blending_v1_blending_equation {
+	/**
+	 * no blending
+	 */
+	ZCR_BLENDING_V1_BLENDING_EQUATION_NONE = 0,
+	/**
+	 * one / one_minus_src_alpha
+	 */
+	ZCR_BLENDING_V1_BLENDING_EQUATION_PREMULT = 1,
+	/**
+	 * src_alpha / one_minus_src_alpha
+	 */
+	ZCR_BLENDING_V1_BLENDING_EQUATION_COVERAGE = 2,
+};
+#endif /* ZCR_BLENDING_V1_BLENDING_EQUATION_ENUM */
+
+/**
+ * @ingroup iface_zcr_blending_v1
+ * @struct zcr_blending_v1_interface
+ */
+struct zcr_blending_v1_interface {
+	/**
+	 * remove blending from the surface
+	 *
+	 * The associated wl_surface's blending state is removed. The
+	 * change is applied on the next wl_surface.commit.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+	/**
+	 * set the blending equation
+	 *
+	 * Set the blending equation for compositing the wl_surface. See
+	 * wp_alpha_compositing for the description.
+	 *
+	 * The blending equation state is double-buffered state, and will
+	 * be applied on the next wl_surface.commit.
+	 * @param equation the new blending equation
+	 */
+	void (*set_blending)(struct wl_client *client,
+			     struct wl_resource *resource,
+			     uint32_t equation);
+	/**
+	 * set the alpha value
+	 *
+	 * Set the alpha value applied to the whole surface for
+	 * compositing. See wp_alpha_compositing for the description.
+	 *
+	 * The alpha value state is double-buffered state, and will be
+	 * applied on the next wl_surface.commit.
+	 * @param value the new alpha value
+	 */
+	void (*set_alpha)(struct wl_client *client,
+			  struct wl_resource *resource,
+			  wl_fixed_t value);
+};
+
 
 #ifndef ZWP_ALPHA_COMPOSITING_V1_ERROR_ENUM
 #define ZWP_ALPHA_COMPOSITING_V1_ERROR_ENUM

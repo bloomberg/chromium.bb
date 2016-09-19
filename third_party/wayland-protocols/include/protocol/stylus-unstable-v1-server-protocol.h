@@ -17,8 +17,10 @@ struct wl_resource;
 /**
  * @page page_stylus_unstable_v1 The stylus_unstable_v1 protocol
  * @section page_ifaces_stylus_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_stylus_v1 - extends wl_pointer with events for on-screen stylus
- * - @subpage page_iface_zwp_pointer_stylus_v1 - stylus extension for pointer
+ * - @subpage page_iface_zcr_stylus_v1 - extends wl_pointer with events for on-screen stylus
+ * - @subpage page_iface_zcr_pointer_stylus_v1 - stylus extension for pointer
+ * - @subpage page_iface_zwp_stylus_v1 - DEPRECATED
+ * - @subpage page_iface_zwp_pointer_stylus_v1 - DEPRECATED
  * @section page_copyright_stylus_unstable_v1 Copyright
  * <pre>
  *
@@ -45,9 +47,71 @@ struct wl_resource;
  * </pre>
  */
 struct wl_pointer;
+struct zcr_pointer_stylus_v1;
+struct zcr_stylus_v1;
 struct zwp_pointer_stylus_v1;
 struct zwp_stylus_v1;
 
+/**
+ * @page page_iface_zcr_stylus_v1 zcr_stylus_v1
+ * @section page_iface_zcr_stylus_v1_desc Description
+ *
+ * Allows a wl_pointer to represent an on-screen stylus. The client can
+ * interpret the on-screen stylus like any other mouse device, and use
+ * this protocol to obtain detail information about the type of stylus,
+ * as well as the force and tilt of the tool.
+ *
+ * These events are to be fired by the server within the same frame as other
+ * wl_pointer events.
+ *
+ * Warning! The protocol described in this file is experimental and
+ * backward incompatible changes may be made. Backward compatible changes
+ * may be added together with the corresponding uinterface version bump.
+ * Backward incompatible changes are done by bumping the version number in
+ * the protocol and uinterface names and resetting the interface version.
+ * Once the protocol is to be declared stable, the 'z' prefix and the
+ * version number in the protocol and interface names are removed and the
+ * interface version number is reset.
+ * @section page_iface_zcr_stylus_v1_api API
+ * See @ref iface_zcr_stylus_v1.
+ */
+/**
+ * @defgroup iface_zcr_stylus_v1 The zcr_stylus_v1 interface
+ *
+ * Allows a wl_pointer to represent an on-screen stylus. The client can
+ * interpret the on-screen stylus like any other mouse device, and use
+ * this protocol to obtain detail information about the type of stylus,
+ * as well as the force and tilt of the tool.
+ *
+ * These events are to be fired by the server within the same frame as other
+ * wl_pointer events.
+ *
+ * Warning! The protocol described in this file is experimental and
+ * backward incompatible changes may be made. Backward compatible changes
+ * may be added together with the corresponding uinterface version bump.
+ * Backward incompatible changes are done by bumping the version number in
+ * the protocol and uinterface names and resetting the interface version.
+ * Once the protocol is to be declared stable, the 'z' prefix and the
+ * version number in the protocol and interface names are removed and the
+ * interface version number is reset.
+ */
+extern const struct wl_interface zcr_stylus_v1_interface;
+/**
+ * @page page_iface_zcr_pointer_stylus_v1 zcr_pointer_stylus_v1
+ * @section page_iface_zcr_pointer_stylus_v1_desc Description
+ *
+ * The zcr_pointer_stylus_v1 interface extends the wl_pointer interface with
+ * events to describe details about a stylus acting as a pointer.
+ * @section page_iface_zcr_pointer_stylus_v1_api API
+ * See @ref iface_zcr_pointer_stylus_v1.
+ */
+/**
+ * @defgroup iface_zcr_pointer_stylus_v1 The zcr_pointer_stylus_v1 interface
+ *
+ * The zcr_pointer_stylus_v1 interface extends the wl_pointer interface with
+ * events to describe details about a stylus acting as a pointer.
+ */
+extern const struct wl_interface zcr_pointer_stylus_v1_interface;
 /**
  * @page page_iface_zwp_stylus_v1 zwp_stylus_v1
  * @section page_iface_zwp_stylus_v1_desc Description
@@ -108,6 +172,120 @@ extern const struct wl_interface zwp_stylus_v1_interface;
  * events to describe details about a stylus acting as a pointer.
  */
 extern const struct wl_interface zwp_pointer_stylus_v1_interface;
+
+/**
+ * @ingroup iface_zcr_stylus_v1
+ * @struct zcr_stylus_v1_interface
+ */
+struct zcr_stylus_v1_interface {
+	/**
+	 * get stylus interface for pointer
+	 *
+	 * Create pointer_stylus object. See zcr_pointer_stylus_v1
+	 * interface for details.
+	 */
+	void (*get_pointer_stylus)(struct wl_client *client,
+				   struct wl_resource *resource,
+				   uint32_t id,
+				   struct wl_resource *pointer);
+};
+
+
+#ifndef ZCR_POINTER_STYLUS_V1_TOOL_TYPE_ENUM
+#define ZCR_POINTER_STYLUS_V1_TOOL_TYPE_ENUM
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ * tool type of device.
+ */
+enum zcr_pointer_stylus_v1_tool_type {
+	/**
+	 * Mouse or touchpad, not a stylus.
+	 */
+	ZCR_POINTER_STYLUS_V1_TOOL_TYPE_MOUSE = 0,
+	/**
+	 * Pen
+	 */
+	ZCR_POINTER_STYLUS_V1_TOOL_TYPE_PEN = 1,
+	/**
+	 * Touch
+	 */
+	ZCR_POINTER_STYLUS_V1_TOOL_TYPE_TOUCH = 2,
+	/**
+	 * Eraser
+	 */
+	ZCR_POINTER_STYLUS_V1_TOOL_TYPE_ERASER = 3,
+};
+#endif /* ZCR_POINTER_STYLUS_V1_TOOL_TYPE_ENUM */
+
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ * @struct zcr_pointer_stylus_v1_interface
+ */
+struct zcr_pointer_stylus_v1_interface {
+	/**
+	 * destroy stylus object
+	 *
+	 * 
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+};
+
+#define ZCR_POINTER_STYLUS_V1_TOOL_CHANGE	0
+#define ZCR_POINTER_STYLUS_V1_FORCE	1
+#define ZCR_POINTER_STYLUS_V1_TILT	2
+
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ */
+#define ZCR_POINTER_STYLUS_V1_TOOL_CHANGE_SINCE_VERSION	1
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ */
+#define ZCR_POINTER_STYLUS_V1_FORCE_SINCE_VERSION	1
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ */
+#define ZCR_POINTER_STYLUS_V1_TILT_SINCE_VERSION	1
+
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ * Sends an tool_change event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param type new device type
+ */
+static inline void
+zcr_pointer_stylus_v1_send_tool_change(struct wl_resource *resource_, uint32_t type)
+{
+	wl_resource_post_event(resource_, ZCR_POINTER_STYLUS_V1_TOOL_CHANGE, type);
+}
+
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ * Sends an force event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param time timestamp with millisecond granularity
+ * @param force new value of force
+ */
+static inline void
+zcr_pointer_stylus_v1_send_force(struct wl_resource *resource_, uint32_t time, wl_fixed_t force)
+{
+	wl_resource_post_event(resource_, ZCR_POINTER_STYLUS_V1_FORCE, time, force);
+}
+
+/**
+ * @ingroup iface_zcr_pointer_stylus_v1
+ * Sends an tilt event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param time timestamp with millisecond granularity
+ * @param tilt_x tilt in x direction
+ * @param tilt_y tilt in y direction
+ */
+static inline void
+zcr_pointer_stylus_v1_send_tilt(struct wl_resource *resource_, uint32_t time, wl_fixed_t tilt_x, wl_fixed_t tilt_y)
+{
+	wl_resource_post_event(resource_, ZCR_POINTER_STYLUS_V1_TILT, time, tilt_x, tilt_y);
+}
 
 /**
  * @ingroup iface_zwp_stylus_v1

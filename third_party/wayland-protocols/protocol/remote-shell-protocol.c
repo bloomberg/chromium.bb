@@ -28,6 +28,8 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zcr_notification_surface_v1_interface;
+extern const struct wl_interface zcr_remote_surface_v1_interface;
 extern const struct wl_interface zwp_notification_surface_v1_interface;
 extern const struct wl_interface zwp_remote_surface_v1_interface;
 
@@ -41,6 +43,14 @@ static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	&zcr_remote_surface_v1_interface,
+	&wl_surface_interface,
+	NULL,
+	&zcr_notification_surface_v1_interface,
+	&wl_surface_interface,
+	NULL,
+	&wl_surface_interface,
+	&wl_surface_interface,
 	&zwp_remote_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
@@ -51,15 +61,74 @@ static const struct wl_interface *types[] = {
 	&wl_surface_interface,
 };
 
-static const struct wl_message zwp_remote_shell_v1_requests[] = {
+static const struct wl_message zcr_remote_shell_v1_requests[] = {
 	{ "destroy", "", types + 0 },
 	{ "get_remote_surface", "nou", types + 9 },
-	{ "get_notification_surface", "6nos", types + 12 },
+	{ "get_notification_surface", "nos", types + 12 },
+};
+
+static const struct wl_message zcr_remote_shell_v1_events[] = {
+	{ "activated", "?o?o", types + 15 },
+	{ "configuration_changed", "iiifiiiiu", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
+	"zcr_remote_shell_v1", 1,
+	3, zcr_remote_shell_v1_requests,
+	2, zcr_remote_shell_v1_events,
+};
+
+static const struct wl_message zcr_remote_surface_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+	{ "set_app_id", "s", types + 0 },
+	{ "set_window_geometry", "iiii", types + 0 },
+	{ "set_scale", "f", types + 0 },
+	{ "set_rectangular_shadow", "iiii", types + 0 },
+	{ "set_rectangular_shadow_background_opacity", "f", types + 0 },
+	{ "set_title", "s", types + 0 },
+	{ "set_top_inset", "i", types + 0 },
+	{ "activate", "u", types + 0 },
+	{ "maximize", "", types + 0 },
+	{ "minimize", "", types + 0 },
+	{ "restore", "", types + 0 },
+	{ "fullscreen", "", types + 0 },
+	{ "unfullscreen", "", types + 0 },
+	{ "pin", "i", types + 0 },
+	{ "unpin", "", types + 0 },
+	{ "set_system_modal", "", types + 0 },
+	{ "unset_system_modal", "", types + 0 },
+};
+
+static const struct wl_message zcr_remote_surface_v1_events[] = {
+	{ "close", "", types + 0 },
+	{ "state_type_changed", "u", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
+	"zcr_remote_surface_v1", 1,
+	18, zcr_remote_surface_v1_requests,
+	2, zcr_remote_surface_v1_events,
+};
+
+static const struct wl_message zcr_notification_surface_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_notification_surface_v1_interface = {
+	"zcr_notification_surface_v1", 1,
+	1, zcr_notification_surface_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zwp_remote_shell_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+	{ "get_remote_surface", "nou", types + 17 },
+	{ "get_notification_surface", "6nos", types + 20 },
 };
 
 static const struct wl_message zwp_remote_shell_v1_events[] = {
 	{ "configure", "iiiiii", types + 0 },
-	{ "activated", "?o?o", types + 15 },
+	{ "activated", "?o?o", types + 23 },
 	{ "layout_mode_changed", "8u", types + 0 },
 	{ "configuration_changed", "9iiifiiiiu", types + 0 },
 };

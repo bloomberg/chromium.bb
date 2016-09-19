@@ -28,18 +28,47 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_pointer_interface;
+extern const struct wl_interface zcr_pointer_stylus_v1_interface;
 extern const struct wl_interface zwp_pointer_stylus_v1_interface;
 
 static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	&zcr_pointer_stylus_v1_interface,
+	&wl_pointer_interface,
 	&zwp_pointer_stylus_v1_interface,
 	&wl_pointer_interface,
 };
 
-static const struct wl_message zwp_stylus_v1_requests[] = {
+static const struct wl_message zcr_stylus_v1_requests[] = {
 	{ "get_pointer_stylus", "no", types + 3 },
+};
+
+WL_EXPORT const struct wl_interface zcr_stylus_v1_interface = {
+	"zcr_stylus_v1", 1,
+	1, zcr_stylus_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zcr_pointer_stylus_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+};
+
+static const struct wl_message zcr_pointer_stylus_v1_events[] = {
+	{ "tool_change", "u", types + 0 },
+	{ "force", "uf", types + 0 },
+	{ "tilt", "uff", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_pointer_stylus_v1_interface = {
+	"zcr_pointer_stylus_v1", 1,
+	1, zcr_pointer_stylus_v1_requests,
+	3, zcr_pointer_stylus_v1_events,
+};
+
+static const struct wl_message zwp_stylus_v1_requests[] = {
+	{ "get_pointer_stylus", "no", types + 5 },
 };
 
 WL_EXPORT const struct wl_interface zwp_stylus_v1_interface = {

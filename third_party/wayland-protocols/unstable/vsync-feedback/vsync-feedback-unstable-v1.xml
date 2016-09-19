@@ -38,8 +38,66 @@
     the interface version number is reset.
   </description>
 
-  <interface name="zwp_vsync_feedback_v1" version="1">
+  <interface name="zcr_vsync_feedback_v1" version="1">
     <description summary="Protocol for providing vertical synchronization timing">
+      The global interface that allows clients to subscribe for vertical
+      synchronization timing data for given wl_output.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy vsync feedback object">
+        Destroy this vsync feedback object. Existing vsync timing objects shall
+        not be affected by this request.
+      </description>
+    </request>
+
+    <request name="get_vsync_timing">
+      <description summary="get vsync timing object for given wl_output">
+        Create a new vsync timing object that represents a subscription to
+        vertical synchronization timing updates of given wl_output object.
+
+        The newly created object will immediately signal an update to notify
+        the subscriber of initial timing parameters.
+      </description>
+      <arg name="id" type="new_id" interface="zcr_vsync_timing_v1" summary="the new vsync timing interface id"/>
+      <arg name="output" type="object" interface="wl_output" summary="the wl_output object to subscribe for timings of" allow-null="true"/>
+    </request>
+  </interface>
+
+  <interface name="zcr_vsync_timing_v1" version="1">
+    <request name="destroy" type="destructor">
+      <description summary="destroy vsync timing object">
+        Destroy this vsync timing object.
+      </description>
+    </request>
+
+    <event name="update">
+      <description summary="vsync timing updated">
+        Notifies client that vertical synchronization timing of given wl_output
+        has changed.
+
+        Timing information consists of two data, timebase and interval. Timebase
+        is an absolute timestamp of the vsync event that caused the timing to
+        change. Interval is a period of time between subsequent vsync events.
+
+        The unit of all above mentioned time values shall be microseconds and
+        absolute timestamps should match the realm of the primary system
+        monotonic counter, i.e. the POSIX clock_gettime(CLOCK_MONOTONIC). Data
+        type of both values is defined to be a 64-bit unsigned integer, but
+        since the biggest unsigned integer datatype defined by the Wayland
+        protocol is the 32-bit uint, both timebase and interval are split into
+        most significant and least significant part, suffixed by "_h" and "_l"
+        respectively.
+      </description>
+      <arg name="timebase_l" type="uint" summary="new vsync timebase (lower 32 bits)"/>
+      <arg name="timebase_h" type="uint" summary="new vsync timebase (upper 32 bits)"/>
+      <arg name="interval_l" type="uint" summary="new vsync interval (lower 32 bits)"/>
+      <arg name="interval_h" type="uint" summary="new vsync interval (upper 32 bits)"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_vsync_feedback_v1" version="1">
+    <description summary="DEPRECATED">
       The global interface that allows clients to subscribe for vertical
       synchronization timing data for given wl_output.
     </description>

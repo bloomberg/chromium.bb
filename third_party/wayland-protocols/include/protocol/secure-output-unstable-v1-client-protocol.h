@@ -39,8 +39,10 @@ extern "C" {
  * reset.
  *
  * @section page_ifaces_secure_output_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_secure_output_v1 - secure output
- * - @subpage page_iface_zwp_security_v1 - security interface to a wl_surface
+ * - @subpage page_iface_zcr_secure_output_v1 - secure output
+ * - @subpage page_iface_zcr_security_v1 - security interface to a wl_surface
+ * - @subpage page_iface_zwp_secure_output_v1 - DEPRECATED
+ * - @subpage page_iface_zwp_security_v1 - DEPRECATED
  * @section page_copyright_secure_output_unstable_v1 Copyright
  * <pre>
  *
@@ -67,9 +69,63 @@ extern "C" {
  * </pre>
  */
 struct wl_surface;
+struct zcr_secure_output_v1;
+struct zcr_security_v1;
 struct zwp_secure_output_v1;
 struct zwp_security_v1;
 
+/**
+ * @page page_iface_zcr_secure_output_v1 zcr_secure_output_v1
+ * @section page_iface_zcr_secure_output_v1_desc Description
+ *
+ * The global interface exposing secure output capabilities is used
+ * to instantiate an interface extension for a wl_surface object.
+ * This extended interface will then allow surfaces to be marked as
+ * as only visible on secure outputs.
+ * @section page_iface_zcr_secure_output_v1_api API
+ * See @ref iface_zcr_secure_output_v1.
+ */
+/**
+ * @defgroup iface_zcr_secure_output_v1 The zcr_secure_output_v1 interface
+ *
+ * The global interface exposing secure output capabilities is used
+ * to instantiate an interface extension for a wl_surface object.
+ * This extended interface will then allow surfaces to be marked as
+ * as only visible on secure outputs.
+ */
+extern const struct wl_interface zcr_secure_output_v1_interface;
+/**
+ * @page page_iface_zcr_security_v1 zcr_security_v1
+ * @section page_iface_zcr_security_v1_desc Description
+ *
+ * An additional interface to a wl_surface object, which allows the
+ * client to specify that a surface should not appear in screenshots
+ * or be visible on non-secure outputs.
+ *
+ * If the wl_surface associated with the security object is destroyed,
+ * the security object becomes inert.
+ *
+ * If the security object is destroyed, the security state is removed
+ * from the wl_surface. The change will be applied on the next
+ * wl_surface.commit.
+ * @section page_iface_zcr_security_v1_api API
+ * See @ref iface_zcr_security_v1.
+ */
+/**
+ * @defgroup iface_zcr_security_v1 The zcr_security_v1 interface
+ *
+ * An additional interface to a wl_surface object, which allows the
+ * client to specify that a surface should not appear in screenshots
+ * or be visible on non-secure outputs.
+ *
+ * If the wl_surface associated with the security object is destroyed,
+ * the security object becomes inert.
+ *
+ * If the security object is destroyed, the security state is removed
+ * from the wl_surface. The change will be applied on the next
+ * wl_surface.commit.
+ */
+extern const struct wl_interface zcr_security_v1_interface;
 /**
  * @page page_iface_zwp_secure_output_v1 zwp_secure_output_v1
  * @section page_iface_zwp_secure_output_v1_desc Description
@@ -122,6 +178,146 @@ extern const struct wl_interface zwp_secure_output_v1_interface;
  * wl_surface.commit.
  */
 extern const struct wl_interface zwp_security_v1_interface;
+
+#ifndef ZCR_SECURE_OUTPUT_V1_ERROR_ENUM
+#define ZCR_SECURE_OUTPUT_V1_ERROR_ENUM
+enum zcr_secure_output_v1_error {
+	/**
+	 * the surface already has a security object associated
+	 */
+	ZCR_SECURE_OUTPUT_V1_ERROR_SECURITY_EXISTS = 0,
+};
+#endif /* ZCR_SECURE_OUTPUT_V1_ERROR_ENUM */
+
+#define ZCR_SECURE_OUTPUT_V1_DESTROY	0
+#define ZCR_SECURE_OUTPUT_V1_GET_SECURITY	1
+
+/**
+ * @ingroup iface_zcr_secure_output_v1
+ */
+#define ZCR_SECURE_OUTPUT_V1_DESTROY_SINCE_VERSION	1
+/**
+ * @ingroup iface_zcr_secure_output_v1
+ */
+#define ZCR_SECURE_OUTPUT_V1_GET_SECURITY_SINCE_VERSION	1
+
+/** @ingroup iface_zcr_secure_output_v1 */
+static inline void
+zcr_secure_output_v1_set_user_data(struct zcr_secure_output_v1 *zcr_secure_output_v1, void *user_data)
+{
+	wl_proxy_set_user_data((struct wl_proxy *) zcr_secure_output_v1, user_data);
+}
+
+/** @ingroup iface_zcr_secure_output_v1 */
+static inline void *
+zcr_secure_output_v1_get_user_data(struct zcr_secure_output_v1 *zcr_secure_output_v1)
+{
+	return wl_proxy_get_user_data((struct wl_proxy *) zcr_secure_output_v1);
+}
+
+static inline uint32_t
+zcr_secure_output_v1_get_version(struct zcr_secure_output_v1 *zcr_secure_output_v1)
+{
+	return wl_proxy_get_version((struct wl_proxy *) zcr_secure_output_v1);
+}
+
+/**
+ * @ingroup iface_zcr_secure_output_v1
+ *
+ * Informs the server that the client will not be using this
+ * protocol object anymore. This does not affect any other objects,
+ * security objects included.
+ */
+static inline void
+zcr_secure_output_v1_destroy(struct zcr_secure_output_v1 *zcr_secure_output_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_secure_output_v1,
+			 ZCR_SECURE_OUTPUT_V1_DESTROY);
+
+	wl_proxy_destroy((struct wl_proxy *) zcr_secure_output_v1);
+}
+
+/**
+ * @ingroup iface_zcr_secure_output_v1
+ *
+ * Instantiate an interface extension for the given wl_surface to
+ * provide surface security. If the given wl_surface already has
+ * a security object associated, the security_exists protocol error
+ * is raised.
+ */
+static inline struct zcr_security_v1 *
+zcr_secure_output_v1_get_security(struct zcr_secure_output_v1 *zcr_secure_output_v1, struct wl_surface *surface)
+{
+	struct wl_proxy *id;
+
+	id = wl_proxy_marshal_constructor((struct wl_proxy *) zcr_secure_output_v1,
+			 ZCR_SECURE_OUTPUT_V1_GET_SECURITY, &zcr_security_v1_interface, NULL, surface);
+
+	return (struct zcr_security_v1 *) id;
+}
+
+#define ZCR_SECURITY_V1_DESTROY	0
+#define ZCR_SECURITY_V1_ONLY_VISIBLE_ON_SECURE_OUTPUT	1
+
+/**
+ * @ingroup iface_zcr_security_v1
+ */
+#define ZCR_SECURITY_V1_DESTROY_SINCE_VERSION	1
+/**
+ * @ingroup iface_zcr_security_v1
+ */
+#define ZCR_SECURITY_V1_ONLY_VISIBLE_ON_SECURE_OUTPUT_SINCE_VERSION	1
+
+/** @ingroup iface_zcr_security_v1 */
+static inline void
+zcr_security_v1_set_user_data(struct zcr_security_v1 *zcr_security_v1, void *user_data)
+{
+	wl_proxy_set_user_data((struct wl_proxy *) zcr_security_v1, user_data);
+}
+
+/** @ingroup iface_zcr_security_v1 */
+static inline void *
+zcr_security_v1_get_user_data(struct zcr_security_v1 *zcr_security_v1)
+{
+	return wl_proxy_get_user_data((struct wl_proxy *) zcr_security_v1);
+}
+
+static inline uint32_t
+zcr_security_v1_get_version(struct zcr_security_v1 *zcr_security_v1)
+{
+	return wl_proxy_get_version((struct wl_proxy *) zcr_security_v1);
+}
+
+/**
+ * @ingroup iface_zcr_security_v1
+ *
+ * The associated wl_surface's security state is removed.
+ * The change is applied on the next wl_surface.commit.
+ */
+static inline void
+zcr_security_v1_destroy(struct zcr_security_v1 *zcr_security_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_security_v1,
+			 ZCR_SECURITY_V1_DESTROY);
+
+	wl_proxy_destroy((struct wl_proxy *) zcr_security_v1);
+}
+
+/**
+ * @ingroup iface_zcr_security_v1
+ *
+ * Constrain visibility of wl_surface contents to secure outputs.
+ * See wp_secure_output for the description.
+ *
+ * The only visible on secure output state is double-buffered state,
+ * and will be applied on the next wl_surface.commit.
+ */
+static inline void
+zcr_security_v1_only_visible_on_secure_output(struct zcr_security_v1 *zcr_security_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_security_v1,
+			 ZCR_SECURITY_V1_ONLY_VISIBLE_ON_SECURE_OUTPUT);
+}
 
 #ifndef ZWP_SECURE_OUTPUT_V1_ERROR_ENUM
 #define ZWP_SECURE_OUTPUT_V1_ERROR_ENUM

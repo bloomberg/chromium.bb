@@ -28,17 +28,43 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zcr_blending_v1_interface;
 extern const struct wl_interface zwp_blending_v1_interface;
 
 static const struct wl_interface *types[] = {
 	NULL,
+	&zcr_blending_v1_interface,
+	&wl_surface_interface,
 	&zwp_blending_v1_interface,
 	&wl_surface_interface,
 };
 
-static const struct wl_message zwp_alpha_compositing_v1_requests[] = {
+static const struct wl_message zcr_alpha_compositing_v1_requests[] = {
 	{ "destroy", "", types + 0 },
 	{ "get_blending", "no", types + 1 },
+};
+
+WL_EXPORT const struct wl_interface zcr_alpha_compositing_v1_interface = {
+	"zcr_alpha_compositing_v1", 1,
+	2, zcr_alpha_compositing_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zcr_blending_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+	{ "set_blending", "u", types + 0 },
+	{ "set_alpha", "f", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_blending_v1_interface = {
+	"zcr_blending_v1", 1,
+	3, zcr_blending_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zwp_alpha_compositing_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+	{ "get_blending", "no", types + 3 },
 };
 
 WL_EXPORT const struct wl_interface zwp_alpha_compositing_v1_interface = {
