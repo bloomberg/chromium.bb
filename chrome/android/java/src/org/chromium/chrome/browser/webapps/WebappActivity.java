@@ -233,6 +233,13 @@ public class WebappActivity extends FullScreenActivity {
         return mWebappInfo;
     }
 
+    /**
+     * @return A string containing the scope of the webapp opened in this activity.
+     */
+    public String getWebappScope() {
+        return mWebappInfo.scopeUri().toString();
+    }
+
     private void initializeWebappData() {
         final int backgroundColor = ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.webapp_default_bg)));

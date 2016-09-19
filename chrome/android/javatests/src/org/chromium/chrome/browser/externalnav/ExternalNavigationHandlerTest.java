@@ -229,6 +229,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    public void testInWebapp() {
+        // Don't override if the URL is within the current webapp scope.
+        mDelegate.setIsWithinCurrentWebappScope(true);
+        checkUrl("http://youtube.com/")
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @SmallTest
     public void testWtai() {
         // Start the telephone application with the given number.
         checkUrl("wtai://wp/mc;0123456789")
@@ -995,6 +1003,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         }
 
         @Override
+        public boolean isWithinCurrentWebappScope(String url) {
+            return mIsWithinCurrentWebappScope;
+        }
+
+        @Override
         public int countSpecializedHandlers(List<ResolveInfo> resolveInfos) {
             return getSpecializedHandlers(resolveInfos).size();
         }
@@ -1120,6 +1133,10 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             mIsChromeAppInForeground = value;
         }
 
+        public void setIsWithinCurrentWebappScope(boolean value) {
+            mIsWithinCurrentWebappScope = value;
+        }
+
         public Intent startActivityIntent = null;
         public boolean startIncognitoIntentCalled = false;
 
@@ -1129,6 +1146,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         public boolean mIsChromeAppInForeground = true;
+        public boolean mIsWithinCurrentWebappScope;
 
         public boolean shouldRequestFileAccess;
         public boolean startFileIntentCalled;

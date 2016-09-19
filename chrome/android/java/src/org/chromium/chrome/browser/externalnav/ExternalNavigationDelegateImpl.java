@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -237,6 +238,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos) {
         return countSpecializedHandlers(infos) > 0;
+    }
+
+    @Override
+    public boolean isWithinCurrentWebappScope(String url) {
+        Context context = getAvailableContext();
+        if (context instanceof WebappActivity) {
+            String scope = ((WebappActivity) context).getWebappScope();
+            return url.startsWith(scope);
+        }
+        return false;
     }
 
     @Override

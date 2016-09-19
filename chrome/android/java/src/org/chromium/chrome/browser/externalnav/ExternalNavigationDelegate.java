@@ -35,6 +35,12 @@ interface ExternalNavigationDelegate {
     boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos);
 
     /**
+     * Returns true if the current activity is a webapp and {@params url} lies within the scope of
+     * that webapp.
+     */
+    boolean isWithinCurrentWebappScope(String url);
+
+    /**
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
      * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
      */

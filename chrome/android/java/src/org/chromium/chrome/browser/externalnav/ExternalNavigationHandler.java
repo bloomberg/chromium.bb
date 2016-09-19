@@ -216,6 +216,11 @@ public class ExternalNavigationHandler {
             }
         }
 
+        // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
+        if (mDelegate.isWithinCurrentWebappScope(params.getUrl())) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
         // below).
