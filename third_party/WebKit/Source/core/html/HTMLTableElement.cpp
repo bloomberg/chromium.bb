@@ -108,15 +108,15 @@ HTMLTableSectionElement* HTMLTableElement::tFoot() const
 
 void HTMLTableElement::setTFoot(HTMLTableSectionElement* newFoot, ExceptionState& exceptionState)
 {
-    deleteTFoot();
-
-    HTMLElement* child;
-    for (child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
-        if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
-            break;
+    if (newFoot && !newFoot->hasTagName(tfootTag)) {
+        exceptionState.throwDOMException(HierarchyRequestError, "Not a tfoot element.");
+        return;
     }
 
-    insertBefore(newFoot, child, exceptionState);
+    deleteTFoot();
+
+    if (newFoot)
+        appendChild(newFoot, exceptionState);
 }
 
 HTMLTableSectionElement* HTMLTableElement::createTHead()

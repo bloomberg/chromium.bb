@@ -9,15 +9,18 @@
 
         var t = document.createElement('table');
 
-        // TODO(foolip): Setting caption/tHead/tFoot to null should not throw
-        // an exception, it should just remove the old caption/thead/tfoot.
+        // TODO(foolip): Setting caption/tHead to null should not throw
+        // an exception, it should just remove the old caption/thead.
         shouldThrow("t.caption = null");
         shouldThrow("t.caption = document.body");
 
         shouldThrow("t.tHead = null");
         shouldThrow("t.tHead = document.body");
 
-        shouldThrow("t.tFoot = null");
+        shouldBe("t.createTFoot()", "t.tFoot");
+        shouldBeNonNull("t.tFoot");
+        shouldNotThrow("t.tFoot = null");
+        shouldBeNull("t.tFoot");
         shouldThrow("t.tFoot = document.body");
 
         shouldThrow("t.insertRow(-2)");
