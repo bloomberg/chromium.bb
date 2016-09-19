@@ -11,6 +11,11 @@ interface TestFilePath {
       => (mojo.common.mojom.FilePath out);
 };
 
+interface TestUnguessableToken {
+  BounceNonce(mojo.common.mojom.UnguessableToken in)
+      => (mojo.common.mojom.UnguessableToken out);
+};
+
 interface TestTime {
   BounceTime(mojo.common.mojom.Time time) => (mojo.common.mojom.Time time);
   BounceTimeDelta(mojo.common.mojom.TimeDelta time_delta)

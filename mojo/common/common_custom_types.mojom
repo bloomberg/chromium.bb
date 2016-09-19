@@ -26,6 +26,12 @@ struct TimeTicks;
 [Native]
 struct String16;
 
+// Corresponds to |base::UnguessableToken| in base/unguessable_token.h
+struct UnguessableToken {
+  uint64 high;
+  uint64 low;
+};
+
 // Corresponds to |base::Version| in base/version.h
 struct Version {
   array<uint32> components;

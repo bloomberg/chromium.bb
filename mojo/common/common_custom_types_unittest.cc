@@ -90,6 +90,21 @@ class TestFilePathImpl : public TestFilePath {
   mojo::Binding<TestFilePath> binding_;
 };
 
+class TestUnguessableTokenImpl : public TestUnguessableToken {
+ public:
+  explicit TestUnguessableTokenImpl(TestUnguessableTokenRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestUnguessableToken implementation:
+  void BounceNonce(const base::UnguessableToken& in,
+                   const BounceNonceCallback& callback) override {
+    callback.Run(in);
+  }
+
+ private:
+  mojo::Binding<TestUnguessableToken> binding_;
+};
+
 class TestTimeImpl : public TestTime {
  public:
   explicit TestTimeImpl(TestTimeRequest request)
@@ -172,6 +187,19 @@ TEST_F(CommonCustomTypesTest, FilePath) {
   base::FilePath file = dir.Append(FILE_PATH_LITERAL("world"));
 
   ptr->BounceFilePath(file, ExpectResponse(&file, run_loop.QuitClosure()));
+
+  run_loop.Run();
+}
+
+TEST_F(CommonCustomTypesTest, UnguessableToken) {
+  base::RunLoop run_loop;
+
+  TestUnguessableTokenPtr ptr;
+  TestUnguessableTokenImpl impl(GetProxy(&ptr));
+
+  base::UnguessableToken token = base::UnguessableToken::Create();
+
+  ptr->BounceNonce(token, ExpectResponse(&token, run_loop.QuitClosure()));
 
   run_loop.Run();
 }

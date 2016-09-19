@@ -40,6 +40,7 @@ class NullableString16;
 class Time;
 class TimeDelta;
 class TimeTicks;
+class UnguessableToken;
 struct FileDescriptor;
 
 #if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
@@ -658,6 +659,17 @@ struct IPC_EXPORT ParamTraits<base::TimeDelta> {
 template <>
 struct IPC_EXPORT ParamTraits<base::TimeTicks> {
   typedef base::TimeTicks param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct IPC_EXPORT ParamTraits<base::UnguessableToken> {
+  typedef base::UnguessableToken param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

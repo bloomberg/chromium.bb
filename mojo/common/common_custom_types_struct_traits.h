@@ -5,8 +5,10 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
+#include "base/unguessable_token.h"
 #include "base/version.h"
 #include "mojo/common/common_custom_types.mojom-shared.h"
+#include "mojo/common/mojo_common_export.h"
 
 namespace mojo {
 
@@ -21,6 +23,26 @@ struct StructTraits<mojo::common::mojom::VersionDataView, base::Version> {
   static const std::vector<uint32_t>& components(const base::Version& version);
   static bool Read(mojo::common::mojom::VersionDataView data,
                    base::Version* out);
+};
+
+// If base::UnguessableToken is no longer 128 bits, the logic below and the
+// mojom::UnguessableToken type should be updated.
+static_assert(sizeof(base::UnguessableToken) == 2 * sizeof(uint64_t),
+              "base::UnguessableToken should be of size 2 * sizeof(uint64_t).");
+
+template <>
+struct StructTraits<mojo::common::mojom::UnguessableTokenDataView,
+                 base::UnguessableToken> {
+  static uint64_t high(const base::UnguessableToken& token) {
+    return token.GetHighForSerialization();
+  }
+
+  static uint64_t low(const base::UnguessableToken& token) {
+    return token.GetLowForSerialization();
+  }
+
+  static bool Read(mojo::common::mojom::UnguessableTokenDataView data,
+                   base::UnguessableToken* out);
 };
 
 template <>

@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
@@ -996,6 +997,45 @@ bool ParamTraits<base::TimeTicks>::Read(const base::Pickle* m,
 
 void ParamTraits<base::TimeTicks>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
+}
+
+// If base::UnguessableToken is no longer 128 bits, the IPC serialization logic
+// below should be updated.
+static_assert(sizeof(base::UnguessableToken) == 2 * sizeof(uint64_t),
+              "base::UnguessableToken should be of size 2 * sizeof(uint64_t).");
+
+void ParamTraits<base::UnguessableToken>::GetSize(base::PickleSizer* sizer,
+                                                  const param_type& p) {
+  sizer->AddBytes(2 * sizeof(uint64_t));
+}
+
+void ParamTraits<base::UnguessableToken>::Write(base::Pickle* m,
+                                                const param_type& p) {
+  DCHECK(!p.is_empty());
+
+  ParamTraits<uint64_t>::Write(m, p.GetHighForSerialization());
+  ParamTraits<uint64_t>::Write(m, p.GetLowForSerialization());
+}
+
+bool ParamTraits<base::UnguessableToken>::Read(const base::Pickle* m,
+                                               base::PickleIterator* iter,
+                                               param_type* r) {
+  uint64_t high, low;
+  if (!ParamTraits<uint64_t>::Read(m, iter, &high) ||
+      !ParamTraits<uint64_t>::Read(m, iter, &low))
+    return false;
+
+  // Receiving a zeroed UnguessableToken is a security issue.
+  if (high == 0 && low == 0)
+    return false;
+
+  *r = base::UnguessableToken::Deserialize(high, low);
+  return true;
+}
+
+void ParamTraits<base::UnguessableToken>::Log(const param_type& p,
+                                              std::string* l) {
+  l->append(p.ToString());
 }
 
 void ParamTraits<IPC::ChannelHandle>::GetSize(base::PickleSizer* sizer,
