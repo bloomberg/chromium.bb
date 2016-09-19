@@ -109,6 +109,9 @@ class MockAudioRendererHost : public AudioRendererHost {
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.
+  // Note: this means that file descriptors won't be duplicated,
+  // leading to double-close errors from SyncSocket.
+  // See crbug.com/647659.
   virtual bool Send(IPC::Message* message) {
     CHECK(message);
 

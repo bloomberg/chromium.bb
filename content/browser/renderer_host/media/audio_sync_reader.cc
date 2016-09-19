@@ -5,9 +5,12 @@
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 
 #include <algorithm>
+#include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -40,11 +43,16 @@ void LogAudioGlitchResult(AudioGlitchResult result) {
 
 namespace content {
 
-AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
-                                 const media::AudioParameters& params)
-    : shared_memory_(shared_memory),
+AudioSyncReader::AudioSyncReader(
+    const media::AudioParameters& params,
+    std::unique_ptr<base::SharedMemory> shared_memory,
+    std::unique_ptr<base::CancelableSyncSocket> socket,
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket)
+    : shared_memory_(std::move(shared_memory)),
       mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
+      socket_(std::move(socket)),
+      foreign_socket_(std::move(foreign_socket)),
       packet_size_(shared_memory_->requested_size()),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
@@ -107,6 +115,30 @@ AudioSyncReader::~AudioSyncReader() {
   DVLOG(1) << log_string;
 }
 
+// static
+std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
+    const media::AudioParameters& params) {
+  base::CheckedNumeric<size_t> memory_size =
+      sizeof(media::AudioOutputBufferParameters);
+  memory_size += AudioBus::CalculateMemorySize(params);
+
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  std::unique_ptr<base::CancelableSyncSocket> socket(
+      new base::CancelableSyncSocket());
+  std::unique_ptr<base::CancelableSyncSocket> foreign_socket(
+      new base::CancelableSyncSocket());
+
+  if (!memory_size.IsValid() ||
+      !shared_memory->CreateAndMapAnonymous(memory_size.ValueOrDie()) ||
+      !base::CancelableSyncSocket::CreatePair(socket.get(),
+                                              foreign_socket.get())) {
+    return nullptr;
+  }
+  return base::WrapUnique(new AudioSyncReader(params, std::move(shared_memory),
+                                              std::move(socket),
+                                              std::move(foreign_socket)));
+}
+
 // media::AudioOutputController::SyncReader implementations.
 void AudioSyncReader::UpdatePendingBytes(uint32_t bytes,
                                          uint32_t frames_skipped) {
@@ -150,19 +182,6 @@ void AudioSyncReader::Read(AudioBus* dest) {
 
 void AudioSyncReader::Close() {
   socket_->Close();
-}
-
-bool AudioSyncReader::Init() {
-  socket_.reset(new base::CancelableSyncSocket());
-  foreign_socket_.reset(new base::CancelableSyncSocket());
-  return base::CancelableSyncSocket::CreatePair(socket_.get(),
-                                                foreign_socket_.get());
-}
-
-bool AudioSyncReader::PrepareForeignSocket(
-    base::ProcessHandle process_handle,
-    base::SyncSocket::TransitDescriptor* descriptor) {
-  return foreign_socket_->PrepareTransitDescriptor(process_handle, descriptor);
 }
 
 bool AudioSyncReader::WaitUntilDataIsReady() {

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/process/process.h"
@@ -33,26 +34,33 @@ namespace content {
 // process.
 class AudioSyncReader : public media::AudioOutputController::SyncReader {
  public:
-  AudioSyncReader(base::SharedMemory* shared_memory,
-                  const media::AudioParameters& params);
-
   ~AudioSyncReader() override;
+
+  // Returns null on failure.
+  static std::unique_ptr<AudioSyncReader> Create(
+      const media::AudioParameters& params);
+
+  base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
+  base::CancelableSyncSocket* foreign_socket() const {
+    return foreign_socket_.get();
+  }
 
   // media::AudioOutputController::SyncReader implementations.
   void UpdatePendingBytes(uint32_t bytes, uint32_t frames_skipped) override;
   void Read(media::AudioBus* dest) override;
   void Close() override;
 
-  bool Init();
-  bool PrepareForeignSocket(base::ProcessHandle process_handle,
-                            base::SyncSocket::TransitDescriptor* descriptor);
-
  private:
+  AudioSyncReader(const media::AudioParameters& params,
+                  std::unique_ptr<base::SharedMemory> shared_memory,
+                  std::unique_ptr<base::CancelableSyncSocket> socket,
+                  std::unique_ptr<base::CancelableSyncSocket> foreign_socket);
+
   // Blocks until data is ready for reading or a timeout expires.  Returns false
   // if an error or timeout occurs.
   bool WaitUntilDataIsReady();
 
-  const base::SharedMemory* const shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.
@@ -61,8 +69,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // Socket for transmitting audio data.
   std::unique_ptr<base::CancelableSyncSocket> socket_;
 
-  // Socket to be used by the renderer. The reference is released after
-  // PrepareForeignSocketHandle() is called and ran successfully.
+  // Socket to be used by the renderer.
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
 
   // Shared memory wrapper used for transferring audio data to Read() callers.
