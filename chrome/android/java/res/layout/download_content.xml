@@ -4,7 +4,6 @@
      found in the LICENSE file. -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffffff"
@@ -35,28 +34,17 @@
         android:layout_height="10dp"
         android:layout_below="@id/action_bar" />
 
-    <LinearLayout
+    <TextView
         android:id="@+id/empty_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:orientation="vertical"
+        android:drawablePadding="3dp"
         android:gravity="center"
-        android:visibility="gone" >
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
-            app:srcCompat="@drawable/downloads_big" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/download_manager_ui_empty"
-            android:textColor="#5B5B5B"
-            android:textSize="16sp" />
-    </LinearLayout>
+        android:text="@string/download_manager_ui_empty"
+        android:textColor="#5B5B5B"
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <org.chromium.chrome.browser.widget.LoadingView
         android:id="@+id/loading_view"

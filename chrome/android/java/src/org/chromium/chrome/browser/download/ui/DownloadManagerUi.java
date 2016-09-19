@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
@@ -25,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContentUriUtils;
@@ -137,7 +139,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final SpaceDisplay mSpaceDisplay;
     private final ListView mFilterView;
     private final RecyclerView mRecyclerView;
-    private final View mEmptyView;
+    private final TextView mEmptyView;
     private final LoadingView mLoadingView;
 
     private BasicNativePage mNativePage;
@@ -167,7 +169,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
-        mEmptyView = mMainView.findViewById(R.id.empty_view);
+        mEmptyView = (TextView) mMainView.findViewById(R.id.empty_view);
+        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, VectorDrawableCompat
+                .create(activity.getResources(), R.drawable.downloads_big, activity.getTheme()),
+                null, null);
         mLoadingView = (LoadingView) mMainView.findViewById(R.id.loading_view);
         mLoadingView.showLoadingUI();
 
