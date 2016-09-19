@@ -284,7 +284,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   if (compositor_frame_sink_id != last_compositor_frame_sink_id_ ||
       frame_size != current_surface_size_ ||
       scale_factor != current_surface_scale_factor_ ||
-      guest_->has_attached_since_surface_set()) {
+      (guest_ && guest_->has_attached_since_surface_set())) {
     ClearCompositorSurfaceIfNecessary();
     last_compositor_frame_sink_id_ = compositor_frame_sink_id;
     current_surface_size_ = frame_size;
@@ -306,8 +306,14 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     // SurfaceLayer.
     cc::SurfaceManager* manager = GetSurfaceManager();
     manager->GetSurfaceForId(surface_id_)->AddDestructionDependency(sequence);
-    guest_->SetChildFrameSurface(surface_id_, frame_size, scale_factor,
-                                 sequence);
+    // TODO(wjmaclean): I'm not sure what it means to create a surface id
+    // without setting it on the child, though since we will in this case be
+    // guaranteed to call ClearCompositorSurfaceIfNecessary() below, I suspect
+    // skipping SetChildFrameSurface() here is irrelevant.
+    if (guest_ && !guest_->is_in_destruction()) {
+      guest_->SetChildFrameSurface(surface_id_, frame_size, scale_factor,
+                                   sequence);
+    }
   }
 
   cc::SurfaceFactory::DrawCallback ack_callback = base::Bind(
