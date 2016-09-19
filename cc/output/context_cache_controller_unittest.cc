@@ -25,7 +25,7 @@ class MockContextSupport : public TestContextSupport {
 
 TEST(ContextCacheControllerTest, ScopedVisibilityBasic) {
   StrictMock<MockContextSupport> context_support;
-  ContextCacheController cache_controller(&context_support);
+  ContextCacheController cache_controller(&context_support, nullptr);
 
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
   std::unique_ptr<ContextCacheController::ScopedVisibility> visibility =
@@ -38,7 +38,7 @@ TEST(ContextCacheControllerTest, ScopedVisibilityBasic) {
 
 TEST(ContextCacheControllerTest, ScopedVisibilityMulti) {
   StrictMock<MockContextSupport> context_support;
-  ContextCacheController cache_controller(&context_support);
+  ContextCacheController cache_controller(&context_support, nullptr);
 
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
   std::unique_ptr<ContextCacheController::ScopedVisibility> visibility_1 =

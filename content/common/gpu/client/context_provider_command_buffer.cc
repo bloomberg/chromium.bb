@@ -158,7 +158,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
       task_runner = base::ThreadTaskRunnerHandle::Get();
     command_buffer_ = gpu::CommandBufferProxyImpl::Create(
         std::move(channel_), surface_handle_, shared_command_buffer, stream_id_,
-        stream_priority_, attributes_, active_url_, std::move(task_runner));
+        stream_priority_, attributes_, active_url_, task_runner);
     if (!command_buffer_) {
       DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
       command_buffer_metrics::UmaRecordContextInitFailed(context_type_);
@@ -216,6 +216,9 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
       return false;
 
     shared_providers_->list.push_back(this);
+
+    cache_controller_.reset(new cc::ContextCacheController(
+        gles2_impl_.get(), std::move(task_runner)));
   }
   set_bind_failed.Reset();
   bind_succeeded_ = true;
@@ -225,8 +228,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
                  // |this| owns the GLES2Implementation which holds the
                  // callback.
                  base::Unretained(this)));
-
-  cache_controller_.reset(new cc::ContextCacheController(gles2_impl_.get()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuClientTracing)) {

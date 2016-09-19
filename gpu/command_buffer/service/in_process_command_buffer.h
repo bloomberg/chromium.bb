@@ -87,7 +87,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   const gles2::ContextCreationAttribHelper& attribs,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                  ImageFactory* image_factory);
+                  ImageFactory* image_factory,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // CommandBuffer implementation:
   State GetLastState() override;

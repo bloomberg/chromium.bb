@@ -256,16 +256,22 @@ bool InProcessCommandBuffer::Initialize(
     const gles2::ContextCreationAttribHelper& attribs,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    ImageFactory* image_factory) {
+    ImageFactory* image_factory,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!share_group || service_.get() == share_group->service_.get());
 
   if (surface) {
+    // If a surface is provided, we are running in a webview and should not have
+    // a task runner.
+    DCHECK(!task_runner);
+
     // GPU thread must be the same as client thread due to GLSurface not being
     // thread safe.
     sequence_checker_.reset(new base::SequenceChecker);
     surface_ = surface;
   } else {
-    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    DCHECK(task_runner);
+    origin_task_runner_ = std::move(task_runner);
     client_thread_weak_ptr_ = client_thread_weak_ptr_factory_.GetWeakPtr();
   }
 

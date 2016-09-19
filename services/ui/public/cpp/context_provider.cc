@@ -18,10 +18,11 @@ ContextProvider::ContextProvider(
     : gpu_channel_host_(std::move(gpu_channel_host)) {}
 
 bool ContextProvider::BindToCurrentThread() {
-  context_ = GLES2Context::CreateOffscreenContext(gpu_channel_host_);
+  context_ = GLES2Context::CreateOffscreenContext(
+      gpu_channel_host_, base::ThreadTaskRunnerHandle::Get());
   if (context_) {
-    cache_controller_.reset(
-        new cc::ContextCacheController(context_->context_support()));
+    cache_controller_.reset(new cc::ContextCacheController(
+        context_->context_support(), base::ThreadTaskRunnerHandle::Get()));
   }
   return !!context_;
 }

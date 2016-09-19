@@ -26,7 +26,8 @@ GLES2Context::GLES2Context() {}
 GLES2Context::~GLES2Context() {}
 
 bool GLES2Context::Initialize(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(gpu_channel_host);
   gpu::SurfaceHandle surface_handle = gfx::kNullAcceleratedWidget;
   // TODO(penghuang): support shared group.
@@ -36,8 +37,6 @@ bool GLES2Context::Initialize(
   gpu::gles2::ContextCreationAttribHelper attributes;
   // TODO(penghuang): figure a useful active_url.
   GURL active_url;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
   command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
       std::move(gpu_channel_host), surface_handle, shared_command_buffer,
       stream_id, stream_priority, attributes, active_url,
@@ -74,14 +73,16 @@ bool GLES2Context::Initialize(
 
 // static
 std::unique_ptr<GLES2Context> GLES2Context::CreateOffscreenContext(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!gpu_channel_host)
     return nullptr;
 
   // Return the GLES2Context only if it is successfully initialized. If
   // initialization fails, then return null.
   std::unique_ptr<GLES2Context> gles2_context(new GLES2Context);
-  if (!gles2_context->Initialize(std::move(gpu_channel_host)))
+  if (!gles2_context->Initialize(std::move(gpu_channel_host),
+                                 std::move(task_runner)))
     gles2_context.reset();
   return gles2_context;
 }

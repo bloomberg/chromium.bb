@@ -9,9 +9,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 
 class GrContext;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace gpu {
 class ContextSupport;
@@ -41,7 +46,9 @@ class CC_EXPORT ContextCacheController {
     bool released_ = false;
   };
 
-  explicit ContextCacheController(gpu::ContextSupport* context_support);
+  ContextCacheController(
+      gpu::ContextSupport* context_support,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~ContextCacheController();
 
   void SetGrContext(GrContext* gr_context);
@@ -64,6 +71,7 @@ class CC_EXPORT ContextCacheController {
 
  private:
   gpu::ContextSupport* context_support_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   GrContext* gr_context_ = nullptr;
 
   uint32_t num_clients_visible_ = 0;

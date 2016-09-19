@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -22,8 +23,9 @@ void ContextCacheController::ScopedVisibility::Release() {
 }
 
 ContextCacheController::ContextCacheController(
-    gpu::ContextSupport* context_support)
-    : context_support_(context_support) {}
+    gpu::ContextSupport* context_support,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : context_support_(context_support), task_runner_(std::move(task_runner)) {}
 
 ContextCacheController::~ContextCacheController() = default;
 

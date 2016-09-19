@@ -27,6 +27,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/display_compositor/gl_helper.h"
@@ -74,7 +75,8 @@ class GLHelperTest : public testing::Test {
         nullptr,                     /* share_context */
         attributes, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
-        nullptr /* image_factory */));
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get()));
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 

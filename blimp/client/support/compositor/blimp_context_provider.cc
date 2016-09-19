@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/context_cache_controller.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -46,12 +47,12 @@ BlimpContextProvider::BlimpContextProvider(
       nullptr /* service */, nullptr /* surface */,
       widget == gfx::kNullAcceleratedWidget /* is_offscreen */, widget,
       nullptr /* share_context */, attribs_for_gles2, gpu::SharedMemoryLimits(),
-      gpu_memory_buffer_manager, nullptr /* memory_limits */));
+      gpu_memory_buffer_manager, nullptr /* memory_limits */,
+      base::ThreadTaskRunnerHandle::Get()));
   context_->GetImplementation()->SetLostContextCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));
-
-  cache_controller_.reset(
-      new cc::ContextCacheController(context_->GetImplementation()));
+  cache_controller_.reset(new cc::ContextCacheController(
+      context_->GetImplementation(), base::ThreadTaskRunnerHandle::Get()));
 }
 
 BlimpContextProvider::~BlimpContextProvider() {

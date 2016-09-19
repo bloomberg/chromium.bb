@@ -23,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/display_compositor/gl_helper.h"
 #include "components/display_compositor/gl_helper_scaling.h"
@@ -74,7 +75,8 @@ class GLHelperBenchmark : public testing::Test {
         nullptr,                     /* share_context */
         attributes, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
-        nullptr /* image_factory */));
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get()));
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 

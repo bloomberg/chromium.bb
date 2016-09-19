@@ -26,6 +26,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -58,7 +59,8 @@ class GLInProcessContextImpl
                   const scoped_refptr<InProcessCommandBuffer::Service>& service,
                   const SharedMemoryLimits& mem_limits,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                  ImageFactory* image_factory);
+                  ImageFactory* image_factory,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // GLInProcessContext implementation:
   gles2::GLES2Implementation* GetImplementation() override;
@@ -99,7 +101,8 @@ bool GLInProcessContextImpl::Initialize(
     const scoped_refptr<InProcessCommandBuffer::Service>& service,
     const SharedMemoryLimits& mem_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    ImageFactory* image_factory) {
+    ImageFactory* image_factory,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_GE(attribs.offscreen_framebuffer_size.width(), 0);
   DCHECK_GE(attribs.offscreen_framebuffer_size.height(), 0);
 
@@ -116,13 +119,9 @@ bool GLInProcessContextImpl::Initialize(
     DCHECK(share_command_buffer);
   }
 
-  if (!command_buffer_->Initialize(surface,
-                                   is_offscreen,
-                                   window,
-                                   attribs,
-                                   share_command_buffer,
-                                   gpu_memory_buffer_manager,
-                                   image_factory)) {
+  if (!command_buffer_->Initialize(
+          surface, is_offscreen, window, attribs, share_command_buffer,
+          gpu_memory_buffer_manager, image_factory, std::move(task_runner))) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return false;
   }
@@ -144,14 +143,10 @@ bool GLInProcessContextImpl::Initialize(
   const bool support_client_side_arrays = false;
 
   // Create the object exposing the OpenGL API.
-  gles2_implementation_.reset(
-      new gles2::GLES2Implementation(gles2_helper_.get(),
-                                     share_group.get(),
-                                     transfer_buffer_.get(),
-                                     bind_generates_resource,
-                                     attribs.lose_context_when_out_of_memory,
-                                     support_client_side_arrays,
-                                     command_buffer_.get()));
+  gles2_implementation_.reset(new gles2::GLES2Implementation(
+      gles2_helper_.get(), share_group.get(), transfer_buffer_.get(),
+      bind_generates_resource, attribs.lose_context_when_out_of_memory,
+      support_client_side_arrays, command_buffer_.get()));
 
   if (!gles2_implementation_->Initialize(
           mem_limits.start_transfer_buffer_size,
@@ -193,8 +188,13 @@ GLInProcessContext* GLInProcessContext::Create(
     const ::gpu::gles2::ContextCreationAttribHelper& attribs,
     const SharedMemoryLimits& memory_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    ImageFactory* image_factory) {
-  if (surface.get()) {
+    ImageFactory* image_factory,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // If a surface is provided, we are running in a webview and should not have
+  // a task runner. We must have a task runner in all other cases.
+  DCHECK_EQ(!!surface, !task_runner);
+
+  if (surface) {
     DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
     DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
   }
@@ -202,7 +202,8 @@ GLInProcessContext* GLInProcessContext::Create(
   std::unique_ptr<GLInProcessContextImpl> context(new GLInProcessContextImpl);
   if (!context->Initialize(surface, is_offscreen, share_context, window,
                            attribs, service, memory_limits,
-                           gpu_memory_buffer_manager, image_factory))
+                           gpu_memory_buffer_manager, image_factory,
+                           std::move(task_runner)))
     return NULL;
 
   return context.release();

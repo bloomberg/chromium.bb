@@ -55,7 +55,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      ImageFactory* image_factory);
+      ImageFactory* image_factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.

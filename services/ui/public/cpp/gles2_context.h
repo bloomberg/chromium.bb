@@ -36,11 +36,13 @@ class GLES2Context {
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
   static std::unique_ptr<GLES2Context> CreateOffscreenContext(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   GLES2Context();
-  bool Initialize(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
+  bool Initialize(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;

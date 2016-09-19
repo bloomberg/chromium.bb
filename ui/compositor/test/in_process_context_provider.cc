@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
@@ -90,13 +91,13 @@ bool InProcessContextProvider::BindToCurrentThread() {
         !window_, /* is_offscreen */
         window_, (shared_context_ ? shared_context_->context_.get() : nullptr),
         attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
-        image_factory_));
+        image_factory_, base::ThreadTaskRunnerHandle::Get()));
 
     if (!context_)
       return false;
 
-    cache_controller_.reset(
-        new cc::ContextCacheController(context_->GetImplementation()));
+    cache_controller_.reset(new cc::ContextCacheController(
+        context_->GetImplementation(), base::ThreadTaskRunnerHandle::Get()));
   }
 
   std::string unique_context_name =

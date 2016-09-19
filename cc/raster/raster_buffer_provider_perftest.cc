@@ -81,7 +81,8 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 class PerfContextProvider : public ContextProvider {
  public:
   PerfContextProvider()
-      : context_gl_(new PerfGLES2Interface), cache_controller_(&support_) {}
+      : context_gl_(new PerfGLES2Interface),
+        cache_controller_(&support_, nullptr) {}
 
   bool BindToCurrentThread() override { return true; }
   gpu::Capabilities ContextCapabilities() override {

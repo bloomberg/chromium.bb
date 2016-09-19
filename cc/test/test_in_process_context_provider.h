@@ -30,7 +30,8 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
-    gpu::GLInProcessContext* shared_context);
+    gpu::GLInProcessContext* shared_context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 class TestInProcessContextProvider : public ContextProvider {
  public:

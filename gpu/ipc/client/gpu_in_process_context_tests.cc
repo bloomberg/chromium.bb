@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -39,7 +40,8 @@ class ContextTestBase : public testing::Test {
         nullptr,                     /* share_context */
         attributes, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
-        nullptr /* image_factory */));
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get()));
     gl_ = context_->GetImplementation();
     context_support_ = context_->GetImplementation();
   }

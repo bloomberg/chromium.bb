@@ -61,8 +61,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
       flushed_fence_sync_release_(0),
       verified_fence_sync_release_(0),
       next_signal_id_(0),
-      weak_this_(AsWeakPtr()),
-      callback_thread_(base::ThreadTaskRunnerHandle::Get()) {
+      weak_this_(AsWeakPtr()) {
   DCHECK(route_id);
   DCHECK_NE(stream_id, GPU_STREAM_INVALID);
 }
@@ -218,8 +217,7 @@ bool CommandBufferProxyImpl::Initialize(
 
   // Route must be added before sending the message, otherwise messages sent
   // from the GPU process could race against adding ourselves to the filter.
-  channel->AddRouteWithTaskRunner(route_id_, AsWeakPtr(),
-                                  std::move(task_runner));
+  channel->AddRouteWithTaskRunner(route_id_, AsWeakPtr(), task_runner);
 
   // We're blocking the UI thread, which is generally undesirable.
   // In this case we need to wait for this before we can show any UI /anyway/,
@@ -236,6 +234,7 @@ bool CommandBufferProxyImpl::Initialize(
 
   channel_ = std::move(channel);
   capabilities_.image = true;
+  callback_thread_ = std::move(task_runner);
 
   return true;
 }

@@ -84,7 +84,10 @@ TestContextProvider::TestContextProvider(
   context_thread_checker_.DetachFromThread();
   context_gl_->set_test_context(context3d_.get());
   context3d_->set_test_support(support_.get());
-  cache_controller_.reset(new ContextCacheController(support_.get()));
+  // Just pass nullptr to the ContextCacheController for its task runner. Idle
+  // handling is tested directly in ContextCacheController's unittests, and
+  // isn't needed here.
+  cache_controller_.reset(new ContextCacheController(support_.get(), nullptr));
 }
 
 TestContextProvider::~TestContextProvider() {

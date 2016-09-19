@@ -15,6 +15,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace gpu {
 
 class CommandBufferProxyImpl;
@@ -90,6 +94,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   gfx::AcceleratedWidget widget_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   gl::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -43,7 +44,8 @@ void BitmapUploader::Init(ui::GpuService* gpu_service) {
   surface_->set_client(this);
 
   gles2_context_ = GLES2Context::CreateOffscreenContext(
-      gpu_service->EstablishGpuChannelSync());
+      gpu_service->EstablishGpuChannelSync(),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 BitmapUploader::~BitmapUploader() {}
