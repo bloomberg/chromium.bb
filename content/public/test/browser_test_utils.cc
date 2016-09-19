@@ -408,6 +408,30 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
   } while (status != net::Filter::FILTER_DONE);
 }
 
+// Queries for video input devices on the current system using the getSources
+// API.
+//
+// This does not guarantee that a getUserMedia with video will succeed, as the
+// camera could be busy for instance.
+//
+// Returns has-video-input-device to the test if there is a webcam available,
+// no-video-input-devices otherwise.
+const char kHasVideoInputDeviceOnSystem[] =
+    "(function() {"
+      "navigator.mediaDevices.enumerateDevices()"
+      ".then(function(devices) {"
+        "devices.forEach(function(device) {"
+          "if (device.kind == 'video-input') {"
+            "window.domAutomationController.send('has-video-input-device');"
+            "return;"
+          "}"
+        "});"
+        "window.domAutomationController.send('no-video-input-devices');"
+      "});"
+    "})()";
+
+const char kHasVideoInputDevice[] = "has-video-input-device";
+
 }  // namespace
 
 bool NavigateIframeToURL(WebContents* web_contents,
@@ -740,6 +764,13 @@ void SimulateKeyPress(WebContents* web_contents,
   }
 
   ASSERT_EQ(modifiers, 0);
+}
+
+bool IsWebcamAvailableOnSystem(WebContents* web_contents) {
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, kHasVideoInputDeviceOnSystem, &result));
+  return result == kHasVideoInputDevice;
 }
 
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents) {

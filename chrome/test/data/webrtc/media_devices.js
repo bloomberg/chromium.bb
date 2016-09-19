@@ -27,27 +27,3 @@ function getSources() {
   });
 }
 
-/**
- * Queries for video input devices on the current system using the
- * getSources API.
- *
- * This does not guarantee that a getUserMedia with video will succeed, as the
- * camera could be busy for instance.
- *
- * Returns has-video-input-device to the test if there is a webcam available,
- * no-video-input-devices otherwise.
- */
-function hasVideoInputDeviceOnSystem() {
-  MediaStreamTrack.getSources(function(devices) {
-    var hasVideoInputDevice = false;
-    devices.forEach(function(device) {
-      if (device.kind == 'video')
-        hasVideoInputDevice = true;
-    });
-
-    if (hasVideoInputDevice)
-      returnToTest('has-video-input-device');
-    else
-      returnToTest('no-video-input-devices');
-  });
-}

@@ -78,8 +78,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  if (!HasWebcamAvailableOnSystem(tab)) {
-    LOG(INFO) << "No webcam found on bot: skipping...";
+  if (!content::IsWebcamAvailableOnSystem(tab)) {
+    DVLOG(0) << "No webcam found on bot: skipping...";
     return;
   }
 

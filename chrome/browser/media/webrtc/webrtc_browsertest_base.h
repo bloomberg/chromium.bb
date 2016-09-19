@@ -151,9 +151,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
   std::string GetStreamSize(content::WebContents* tab_contents,
                             const std::string& video_element) const;
 
-  // Methods to check what devices we have on the system.
-  bool HasWebcamAvailableOnSystem(content::WebContents* tab_contents) const;
-
   // Returns true if we're on win 8.
   bool OnWin8() const;
 
