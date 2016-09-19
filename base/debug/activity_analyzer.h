@@ -114,9 +114,9 @@ class BASE_EXPORT GlobalActivityAnalyzer {
       const FilePath& file_path);
 #endif  // !defined(OS_NACL)
 
-  // Iterates over all known analyzers or returns null if there are no more.
-  // Ownership stays with the global analyzer object and all existing analyzer
-  // pointers are invalidated when GetFirstAnalyzer() is called.
+  // Iterates over all known valid analyzers or returns null if there are no
+  // more. Ownership stays with the global analyzer object and all existing
+  // analyzer pointers are invalidated when GetFirstAnalyzer() is called.
   ThreadActivityAnalyzer* GetFirstAnalyzer();
   ThreadActivityAnalyzer* GetNextAnalyzer();
 

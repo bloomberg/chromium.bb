@@ -330,6 +330,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ActivityTracker.Collect.Status"
+    enum="ActivityTrackerCollectStatus">
+  <owner>manzagop@chromium.org</owner>
+  <summary>Status for the collection of a stability debug file.</summary>
+</histogram>
+
 <histogram name="ActivityTracker.ThreadTrackers.Count" units="count">
   <owner>bcwhite@chromium.org</owner>
   <summary>
@@ -69825,6 +69831,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Fullscreen"/>
   <int value="4" label="Snapped"/>
   <int value="5" label="Docked"/>
+</enum>
+
+<enum name="ActivityTrackerCollectStatus" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Sucess"/>
+  <int value="2" label="Analyzer creation failed"/>
+  <int value="3" label="Debug file has no data"/>
+  <int value="4" label="Prepare new crash report failed"/>
+  <int value="5" label="Write to minidump failed"/>
+  <int value="6" label="Debug file deletion failed"/>
+  <int value="7" label="Finished writing crash report failed"/>
 </enum>
 
 <enum name="AddressFamily" type="int">

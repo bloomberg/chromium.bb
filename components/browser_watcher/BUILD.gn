@@ -56,6 +56,21 @@ static_library("postmortem_minidump_writer") {
   ]
 }
 
+static_library("postmortem_report_collector") {
+  sources = [
+    "postmortem_report_collector.cc",
+    "postmortem_report_collector.h",
+  ]
+  deps = [
+    ":postmortem_minidump_writer",
+    ":stability_report_proto",
+    "//base",
+    "//components/version_info",
+    "//third_party/crashpad/crashpad/client",
+    "//third_party/crashpad/crashpad/util",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -63,6 +78,7 @@ source_set("unit_tests") {
     "exit_code_watcher_win_unittest.cc",
     "exit_funnel_win_unittest.cc",
     "postmortem_minidump_writer_win_unittest.cc",
+    "postmortem_report_collector_unittest.cc",
     "watcher_client_win_unittest.cc",
     "watcher_metrics_provider_win_unittest.cc",
     "window_hang_monitor_win_unittest.cc",
@@ -72,9 +88,11 @@ source_set("unit_tests") {
     ":browser_watcher",
     ":browser_watcher_client",
     ":postmortem_minidump_writer",
+    ":postmortem_report_collector",
     ":stability_report_proto",
     "//base",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/crashpad/crashpad/client",
 
