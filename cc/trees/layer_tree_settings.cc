@@ -32,6 +32,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.main_frame_before_activation_enabled &&
          using_synchronous_renderer_compositor ==
              other.using_synchronous_renderer_compositor &&
+         enable_latency_recovery == other.enable_latency_recovery &&
          can_use_lcd_text == other.can_use_lcd_text &&
          use_distance_field_text == other.use_distance_field_text &&
          gpu_rasterization_enabled == other.gpu_rasterization_enabled &&
@@ -96,6 +97,7 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       timeout_and_draw_when_animation_checkerboards;
   scheduler_settings.using_synchronous_renderer_compositor =
       using_synchronous_renderer_compositor;
+  scheduler_settings.enable_latency_recovery = enable_latency_recovery;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
   scheduler_settings.abort_commit_before_compositor_frame_sink_creation =

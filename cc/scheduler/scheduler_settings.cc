@@ -33,6 +33,7 @@ SchedulerSettings::AsValue() const {
                     background_frame_interval.InMicroseconds());
   state->SetBoolean("abort_commit_before_compositor_frame_sink_creation",
                     abort_commit_before_compositor_frame_sink_creation);
+  state->SetBoolean("enable_latency_recovery", enable_latency_recovery);
   return std::move(state);
 }
 

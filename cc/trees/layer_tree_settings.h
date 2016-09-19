@@ -44,6 +44,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_compositor_frame_sink_begin_frame_source = true;
   bool main_frame_before_activation_enabled = false;
   bool using_synchronous_renderer_compositor = false;
+  bool enable_latency_recovery = true;
   bool can_use_lcd_text = true;
   bool use_distance_field_text = false;
   bool gpu_rasterization_enabled = false;

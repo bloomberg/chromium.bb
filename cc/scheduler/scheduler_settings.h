@@ -33,6 +33,7 @@ class CC_EXPORT SchedulerSettings {
   bool timeout_and_draw_when_animation_checkerboards = true;
   bool using_synchronous_renderer_compositor = false;
   bool abort_commit_before_compositor_frame_sink_creation = true;
+  bool enable_latency_recovery = true;
 
   int maximum_number_of_failed_draws_before_draw_is_forced = 3;
   base::TimeDelta background_frame_interval = base::TimeDelta::FromSeconds(1);

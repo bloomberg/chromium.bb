@@ -756,6 +756,9 @@ bool Scheduler::ShouldRecoverMainLatency(
     bool can_activate_before_deadline) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
+  if (!settings_.enable_latency_recovery)
+    return false;
+
   // The main thread is in a low latency mode and there's no need to recover.
   if (!state_machine_.main_thread_missed_last_deadline())
     return false;
@@ -772,6 +775,9 @@ bool Scheduler::ShouldRecoverImplLatency(
     const BeginFrameArgs& args,
     bool can_activate_before_deadline) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
+
+  if (!settings_.enable_latency_recovery)
+    return false;
 
   // Disable impl thread latency recovery when using the unthrottled
   // begin frame source since we will always get a BeginFrame before
