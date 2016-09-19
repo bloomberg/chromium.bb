@@ -7,15 +7,15 @@ div {
 }
 #target {
   background: red;
-  transform: translateY(100px);
+  transform: translateX(100px);
   animation: test 1e8s;
 }
 #expected {
   background: green;
-  transform: translateY(50px);
+  transform: translateX(50px);
 }
 @keyframes test {
-  to { transform: translateX(100px); }
+  to { transform: translateX(50px); }
 }
 </style>
 <div id="target"></div>
@@ -24,13 +24,14 @@ div {
 if (window.testRunner)
   testRunner.waitUntilDone();
 
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    target.style.transform = 'translateY(50px)';
-    requestAnimationFrame(() => {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    });
-  });
+function waitForCompositor() {
+  return target.animate({opacity: ['1', '1']}, 1).ready;
+}
+
+waitForCompositor().then(() => {
+  target.style.transform = 'translateX(50px)';
+}).then(() => waitForCompositor()).then(() => {
+  if (window.testRunner)
+    testRunner.notifyDone();
 });
 </script>
