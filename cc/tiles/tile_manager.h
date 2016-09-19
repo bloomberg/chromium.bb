@@ -343,7 +343,6 @@ class CC_EXPORT TileManager {
   uint64_t next_tile_id_;
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
-  std::vector<DrawImage> locked_images_;
   std::vector<scoped_refptr<TileTask>> locked_image_tasks_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;

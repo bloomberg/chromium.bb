@@ -10,6 +10,14 @@ ImageManager::ImageManager() = default;
 ImageManager::~ImageManager() = default;
 
 void ImageManager::SetImageDecodeController(ImageDecodeController* controller) {
+  // We can only switch from null to non-null and back.
+  DCHECK(controller || controller_);
+  DCHECK(!controller || !controller_);
+
+  if (!controller) {
+    SetPredecodeImages(std::vector<DrawImage>(),
+                       ImageDecodeController::TracingInfo());
+  }
   controller_ = controller;
 }
 
@@ -41,6 +49,16 @@ void ImageManager::UnrefImages(const std::vector<DrawImage>& images) {
 void ImageManager::ReduceMemoryUsage() {
   DCHECK(controller_);
   controller_->ReduceCacheUsage();
+}
+
+std::vector<scoped_refptr<TileTask>> ImageManager::SetPredecodeImages(
+    std::vector<DrawImage> images,
+    const ImageDecodeController::TracingInfo& tracing_info) {
+  std::vector<scoped_refptr<TileTask>> new_tasks;
+  GetTasksForImagesAndRef(&images, &new_tasks, tracing_info);
+  UnrefImages(predecode_locked_images_);
+  predecode_locked_images_ = std::move(images);
+  return new_tasks;
 }
 
 }  // namespace cc

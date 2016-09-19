@@ -28,9 +28,13 @@ class CC_EXPORT ImageManager {
       const ImageDecodeController::TracingInfo& tracing_info);
   void UnrefImages(const std::vector<DrawImage>& images);
   void ReduceMemoryUsage();
+  std::vector<scoped_refptr<TileTask>> SetPredecodeImages(
+      std::vector<DrawImage> predecode_images,
+      const ImageDecodeController::TracingInfo& tracing_info);
 
  private:
-  ImageDecodeController* controller_;
+  ImageDecodeController* controller_ = nullptr;
+  std::vector<DrawImage> predecode_locked_images_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
 };

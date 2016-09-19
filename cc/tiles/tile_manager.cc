@@ -361,8 +361,7 @@ void TileManager::FinishTasksAndCleanUp() {
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  image_manager_.UnrefImages(locked_images_);
-  locked_images_.clear();
+  image_manager_.SetImageDecodeController(nullptr);
   locked_image_tasks_.clear();
 }
 
@@ -845,20 +844,24 @@ void TileManager::ScheduleTasks(
   const std::vector<PrioritizedTile>& tiles_to_process_for_images =
       work_to_schedule.tiles_to_process_for_images;
   std::vector<DrawImage> new_locked_images;
-  std::vector<scoped_refptr<TileTask>> new_locked_image_tasks;
   for (const PrioritizedTile& prioritized_tile : tiles_to_process_for_images) {
     Tile* tile = prioritized_tile.tile();
 
     std::vector<DrawImage> images;
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
         tile->enclosing_layer_rect(), tile->contents_scale(), &images);
-    ImageDecodeController::TracingInfo tracing_info(
-        prepare_tiles_count_, prioritized_tile.priority().priority_bin);
-    image_manager_.GetTasksForImagesAndRef(&images, &new_locked_image_tasks,
-                                           tracing_info);
     new_locked_images.insert(new_locked_images.end(), images.begin(),
                              images.end());
   }
+
+  // TODO(vmpstr): SOON is misleading here, but these images can come from
+  // several diffent tiles. Rethink what we actually want to trace here. Note
+  // that I'm using SOON, since it can't be NOW (these are prepaint).
+  ImageDecodeController::TracingInfo tracing_info(prepare_tiles_count_,
+                                                  TilePriority::SOON);
+  std::vector<scoped_refptr<TileTask>> new_locked_image_tasks =
+      image_manager_.SetPredecodeImages(std::move(new_locked_images),
+                                        tracing_info);
 
   for (auto& task : new_locked_image_tasks) {
     auto decode_it = std::find_if(graph_.nodes.begin(), graph_.nodes.end(),
@@ -874,10 +877,11 @@ void TileManager::ScheduleTasks(
     graph_.edges.push_back(TaskGraph::Edge(task.get(), all_done_task.get()));
   }
 
-  image_manager_.UnrefImages(locked_images_);
-  // The old locked images have to stay around until past the ScheduleTasks call
-  // below, so we do a swap instead of a move.
-  locked_images_.swap(new_locked_images);
+  // The old locked images tasks have to stay around until past the
+  // ScheduleTasks call below, so we do a swap instead of a move.
+  // TODO(crbug.com/647402): Have the tile_task_manager keep a ref on the tasks,
+  // since it makes it awkward for the callers to keep refs on tasks that only
+  // exist within the task graph runner.
   locked_image_tasks_.swap(new_locked_image_tasks);
 
   // We must reduce the amount of unused resources before calling
@@ -997,8 +1001,7 @@ void TileManager::OnRasterTaskCompleted(
 
   // Unref all the images.
   auto images_it = scheduled_draw_images_.find(tile->id());
-  const std::vector<DrawImage>& images = images_it->second;
-  image_manager_.UnrefImages(images);
+  image_manager_.UnrefImages(images_it->second);
   scheduled_draw_images_.erase(images_it);
 
   if (was_canceled) {
@@ -1148,8 +1151,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // If we're not in SMOOTHNESS_TAKES_PRIORITY  mode, we should unlock all
   // images since we're technically going idle here at least for this frame.
   if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
-    image_manager_.UnrefImages(locked_images_);
-    locked_images_.clear();
+    image_manager_.SetPredecodeImages(std::vector<DrawImage>(),
+                                      ImageDecodeController::TracingInfo());
     locked_image_tasks_.clear();
   }
 
