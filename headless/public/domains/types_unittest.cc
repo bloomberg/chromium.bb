@@ -9,23 +9,23 @@
 namespace headless {
 
 TEST(TypesTest, IntegerProperty) {
-  std::unique_ptr<accessibility::GetAXNodeParams> object(
-      accessibility::GetAXNodeParams::Builder().SetNodeId(123).Build());
+  std::unique_ptr<page::NavigateToHistoryEntryParams> object(
+      page::NavigateToHistoryEntryParams::Builder().SetEntryId(123).Build());
   EXPECT_TRUE(object);
-  EXPECT_EQ(123, object->GetNodeId());
+  EXPECT_EQ(123, object->GetEntryId());
 
-  std::unique_ptr<accessibility::GetAXNodeParams> clone(object->Clone());
+  std::unique_ptr<page::NavigateToHistoryEntryParams> clone(object->Clone());
   EXPECT_TRUE(clone);
-  EXPECT_EQ(123, clone->GetNodeId());
+  EXPECT_EQ(123, clone->GetEntryId());
 }
 
 TEST(TypesTest, IntegerPropertyParseError) {
-  const char* json = "{\"nodeId\": \"foo\"}";
+  const char* json = "{\"entryId\": \"foo\"}";
   std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
   EXPECT_TRUE(object);
 
   ErrorReporter errors;
-  EXPECT_FALSE(accessibility::GetAXNodeParams::Parse(*object, &errors));
+  EXPECT_FALSE(page::NavigateToHistoryEntryParams::Parse(*object, &errors));
   EXPECT_TRUE(errors.HasErrors());
 }
 
