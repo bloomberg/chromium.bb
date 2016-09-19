@@ -37,8 +37,7 @@ PaletteToolId CaptureRegionMode::GetToolId() const {
 }
 
 const gfx::VectorIcon& CaptureRegionMode::GetActiveTrayIcon() const {
-  // TODO(jdufault): Update to real icon once new tray icons are ready.
-  return kPaletteTrayIconMagnifyIcon;
+  return kPaletteTrayIconCaptureRegionIcon;
 }
 
 void CaptureRegionMode::OnEnable() {

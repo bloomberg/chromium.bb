@@ -41,8 +41,6 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
  private:
   PaletteDelegateChromeOS();
 
-  class ProxyScreenshotDelegate;
-
   // ash::PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) override;
@@ -76,8 +74,6 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
 
   base::CallbackList<void(bool)> palette_enabled_callback_list_;
   OnStylusStateChangedCallback on_stylus_state_changed_;
-
-  std::unique_ptr<ProxyScreenshotDelegate> proxy_screenshot_delegate_;
 
   // Unowned pointer to the active profile.
   Profile* profile_ = nullptr;

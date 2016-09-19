@@ -308,6 +308,14 @@ void ScreenshotController::CancelScreenshotSession() {
   base::STLDeleteValues(&layers_);
   cursor_setter_.reset();
   EnableMouseWarp(true);
+
+  if (on_screenshot_session_done_) {
+    // Copy the closure to a temporary value so that if it calls
+    // CancelScreenshotSession we do not loop forever.
+    base::Closure on_done = on_screenshot_session_done_;
+    on_screenshot_session_done_.Reset();
+    on_done.Run();
+  }
 }
 
 void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {

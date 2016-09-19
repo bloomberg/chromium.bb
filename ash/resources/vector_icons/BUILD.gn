@@ -18,6 +18,8 @@ action("aggregate_vector_icons") {
     "palette_mode_laser_pointer.icon",
     "palette_mode_magnify.1x.icon",
     "palette_mode_magnify.icon",
+    "palette_tray_icon_capture_region.1x.icon",
+    "palette_tray_icon_capture_region.icon",
     "palette_tray_icon_default.1x.icon",
     "palette_tray_icon_default.icon",
     "palette_tray_icon_laser_pointer.1x.icon",
