@@ -99,7 +99,14 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
+// Flaky on Windows. https://crbug.com/644614
+#if defined(OS_WIN)
+#define MAYBE_DoneCallbackCalledOnOkButtonPressed DISABLED_DoneCallbackCalledOnOkButtonPressed
+#else
+#define MAYBE_DoneCallbackCalledOnOkButtonPressed DoneCallbackCalledOnOkButtonPressed
+#endif
+
+TEST_F(DesktopMediaPickerViewsTest, MAYBE_DoneCallbackCalledOnOkButtonPressed) {
   const DesktopMediaID kFakeId(DesktopMediaID::TYPE_WINDOW, 222);
   EXPECT_CALL(*this, OnPickerDone(kFakeId));
 
