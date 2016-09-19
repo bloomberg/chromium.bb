@@ -11,10 +11,10 @@ is a Python script that defines a list of `solutions` with the following format:
 
     solutions = [
       { "name"        : "src",
-        "url"         : "svn://svnserver/component/trunk/src",
+        "url"         : "https://chromium.googlesource.com/chromium/src.git",
         "custom_deps" : {
           # To use the trunk of a component instead of what's in DEPS:
-          #"component": "https://svnserver/component/trunk/",
+          #"component": "https://github.com/luci/luci-go",
           # To exclude a component from your working copy:
           #"data/really_large_component": None,
         }
@@ -58,7 +58,7 @@ Each item in the `deps` dictionary consists of a key-value pair. The key is the
 directory into which the component will be checked out, relative to the
 directory containing the `.gclient` file. The value is the URL from which that
 directory will be checked out. If there is no address scheme (that is, no
-`http:` or `svn:` prefix), then the value must begin with a slash and is treated
+`http:` prefix), then the value must begin with a slash and is treated
 relative to the root of the solution's repository.
 
 The URL typically contains a specific revision or change number (as appropriate

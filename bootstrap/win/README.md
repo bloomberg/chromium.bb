@@ -57,10 +57,3 @@ Python installs are sourced from gs://chrome-infra/python276_bin.zip .
 
 The process to create them is sort-of-documented in the README of the python
 zip file.
-
-### Subversion
-
-Subversion installs are sourced from gs://chrome-infra/svn_bin.zip .
-
-There will likely never be an update to SVN in `depot_tools` from the current
-version.

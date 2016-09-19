@@ -32,8 +32,7 @@ disable auto update, set the environment variable `DEPOT_TOOLS_UPDATE=0`.
 To update package manually, run `update_depot_tools.bat` on Windows,
 or `./update_depot_tools` on Linux or Mac.
 
-On Windows only, running `gclient` will install `svn` (not for long), `git`,
-`python`.
+On Windows only, running `gclient` will install `git` and `python`.  
 
 
 ## Contributing
