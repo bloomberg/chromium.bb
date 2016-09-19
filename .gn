@@ -256,8 +256,6 @@ exec_script_whitelist = [
   "//third_party/catapult/tracing/BUILD.gn",
   "//third_party/google_input_tools/inputview.gni",
   "//third_party/skia/gn/shared_sources.gni",
-  "//v8/test/cctest/BUILD.gn",
-  "//v8/test/unittests/BUILD.gn",
 
   # CLD2 should be removed soon, delete this when we do.
   "//third_party/cld_2/BUILD.gn",
