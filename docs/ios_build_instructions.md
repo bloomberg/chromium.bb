@@ -7,97 +7,72 @@ the web layer), and various unit tests.
 
 ## Prerequisites
 
-*   A Mac with a version of OS X capable of running the latest version
-    of Xcode.
-*   The latest version of [Xcode](https://developer.apple.com/xcode/),
-    including the current iOS SDK.
+*   A Mac running 10.11+.
+*   [Xcode] 8.0+.
+*   [depot\_tools].
 *   The current version of the JDK (required for the closure compiler).
-*   [depot\_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools).
 
-## Setting Up
+## Getting the source
 
-### With GYP
-
-In the directory where you are going to check out the code, create a
-`chromium.gyp_env` to set the build to use iOS targets (and to use
-hybrid builds; see [Building](#Building) below):
+To checkout the source, use `fetch ios` command from [depot\_tools] in a new
+empty directory.
 
 ```shell
-cat > chromium.gyp_env <<EOF
-{
-  "GYP_DEFINES": "OS=ios",
-  "GYP_GENERATORS": "ninja,xcode-ninja",
-}
-EOF
-```
-
-If you aren't set up to sign iOS build products via a developer account,
-you should instead use:
-
-```shell
-cat > chromium.gyp_env <<EOF
-{
-  "GYP_DEFINES": "OS=ios chromium_ios_signing=0",
-  "GYP_GENERATORS": "ninja,xcode-ninja",
-}
-EOF
-```
-
-### With GN
-
-Use `gn args out/Debug-iphonesimulator` (or replace
-`out/Debug-iphonesimulator` with your chosen `out/` directory) to open up an
-editor to set the following gn variables and regenerate:
-
-```
-# Set to true if you have a valid code signing key.
-ios_enable_code_signing = false
-target_os = "ios"
-# Set to "x86", "x64", "arm", "armv7", "arm64". "x86" and "x64" will create a
-# build to run on the iOS simulator (and set use_ios_simulator = true), all
-# others are for an iOS device.
-target_cpu = "x64"
-# Release vs debug build.
-is_debug = true
-```
-
-### API Keys
-
-Before you build, you may want to
-[install API keys](https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys)
-so that Chrome-integrated Google services work. This step is optional if you
-aren't testing those features.
-
-## Getting the Code
-
-Next, [check out the
-code](https://www.chromium.org/developers/how-tos/get-the-code), with:
-
-```shell
+# You can use a different location for your checkout of Chromium on iOS
+# by updating this variable. All shell snippets will refer to it.
+CHROMIUM_IOS="$HOME/chromium_ios"
+mkdir "$CHROMIUM_IOS"
+cd "$CHROMIUM_IOS"
 fetch ios
 ```
 
-## Building
+## Setting up
 
-Build the target you are interested in. The instructions above select
-the ninja/Xcode hybrid mode, which uses ninja to do the actual build,
-but provides a wrapper Xcode project that can be used to build targets
-and navigate the source. (The Xcode project just shells out to ninja to
-do the builds, so you can't actually inspect/change target-level
-settings from within Xcode; this mode avoids generating a large tree of
-Xcode projects, which leads to performance issues in Xcode). To build
-with ninja (simulator and device, respectively):
+Chromium on iOS is built using the [Ninja](ninja_build.md) tool and
+the [Clang](clang.md) compiler. See both of those pages for further details on
+how to tune the build.
+
+Before you build, you may want to [install API keys](api-keys) so that
+Chrome-integrated Google services work. This step is optional if you aren't
+testing those features.
+
+### Quick setup
+
+To setup the repository for building Chromium on iOS code, it is recommended
+to use the `src/ios/build/tools/setup-gn.py` script that creates a Xcode
+workspace configured to build the different targets for device and simulator.
 
 ```shell
-ninja -C out/Debug-iphonesimulator All
-ninja -C out/Debug-iphoneos All
+cd "$CHROMIUM_IOS/src"
+ios/build/tools/setup-gn.py
+open out/build/all.xcworkspace
 ```
 
-To build with Xcode, open `build/all.ninja.xcworkspace`, and choose the
-target you want to build.
+You can customize the build by editing the file `$HOME/.setup-gn` (create it
+if it does not exists).  Look at `src/ios/build/tools/setup-gn.config` for
+available configuration options.
 
-You should always be able to build All, since targets are added there for iOS
-only when they compile.
+From this point, you can either build from Xcode or from the command-line
+using `ninja`. The script `setup-gn.py` creates sub-directories named
+`out/${configuration}-${platform}`, so for a `Debug` build for simulator
+use:
+
+```shell
+ninja -C out/Debug-iphonesimulator gn_all
+```
+
+Note: you need to run `setup-gn.py` script every time one of the `BUILD.gn`
+file is updated (either by you or after rebasing). If you forget to run it,
+the list of targets and files in the Xcode solution may be stale.
+
+### Advanced setup
+
+You can run `gn` manually to configure the build yourself. In that case,
+refer to [mac build instructions] for help on how to do that.
+
+To build for iOS, you have to set `target_os` to `"ios"`. Please also note
+that `is_component_build` is not supported when building for iOS and must
+be set to `false`.
 
 ## Running
 
@@ -114,37 +89,16 @@ example, to run a debug build of ios\_web\_shell:
 out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
 ```
 
-## Converting an existing Mac checkout into an iOS checkout
-
-If you want to convert your Mac checkout into an iOS checkout, follow the steps
-below:
-
-1.  Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
-file.
-
-2.  For gyp, make sure you have the following in your
-`chromium/chromium.gyp_env` file (removing the `chromium_ios_signing=0` if you
-want to make developer-signed builds):
-
-    ```json
-    {
-      "GYP_DEFINES" : "OS=ios chromium_ios_signing=0",
-      "GYP_GENERATORS" : "ninja,xcode-ninja",
-    }
-    ```
-
-    For gn, add the arguments specified [above](#With-GN) to your gn setup.
-
-3.  Make sure to sync again to fetch the iOS specific dependencies and
-regenerate build rules using:
-
-    ```shell
-    gclient sync
-    ```
-
 ## Troubleshooting
 
 If your build fails, check the iOS columns of [the Mac
 waterfall](http://build.chromium.org/p/chromium.mac/console) (the last two) to
 see if the bots are green. In general they should be, since failures on those
 bots will close the tree.
+
+[Xcode]: https://developer.apple.com/xcode
+[depot\_tools]: https://dev.chromium.org/developers/how-tos/depottools
+[Ninja]: ninja.md
+[Clang]: clang.md
+[api-keys]: https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys
+[mac build instructions]: mac_build_instructions.md
