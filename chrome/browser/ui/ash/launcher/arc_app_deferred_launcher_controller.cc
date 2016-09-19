@@ -131,7 +131,7 @@ void ArcAppDeferredLauncherController::OnAppReadyChanged(
 
   Close(app_id);
 
-  arc::LaunchApp(owner_->GetProfile(), app_id);
+  arc::LaunchApp(observed_profile_, app_id);
 }
 
 void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
