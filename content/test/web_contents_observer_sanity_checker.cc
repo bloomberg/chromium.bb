@@ -201,9 +201,6 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
   CHECK(!(navigation_handle->HasCommitted() &&
           !navigation_handle->IsErrorPage()) ||
         navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK(!(navigation_handle->HasCommitted() &&
-          navigation_handle->IsErrorPage()) ||
-        navigation_handle->GetNetErrorCode() != net::OK);
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   CHECK(!navigation_handle->HasCommitted() ||

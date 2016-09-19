@@ -105,75 +105,44 @@ void NetErrorTabHelper::RenderFrameCreated(
   client->SetCanShowNetworkDiagnosticsDialog(CanShowNetworkDiagnosticsDialog());
 }
 
-void NetErrorTabHelper::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!is_error_page_)
+void NetErrorTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
     return;
 
-  // Only record reloads.
-  if (reload_type != content::ReloadType::NONE) {
+  if (navigation_handle->IsErrorPage() &&
+      navigation_handle->GetPageTransition() == ui::PAGE_TRANSITION_RELOAD) {
     error_page::RecordEvent(
         error_page::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
   }
-}
-
-void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (render_frame_host->GetParent())
-    return;
-
-  is_error_page_ = is_error_page;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  UpdateHasOfflinePages(render_frame_host);
+  UpdateHasOfflinePages(navigation_handle->GetFrameTreeNodeId());
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
-void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    PageTransition transition_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (render_frame_host->GetParent())
+void NetErrorTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
     return;
+
+  if (IsDnsError(navigation_handle->GetNetErrorCode())) {
+    dns_error_active_ = true;
+    OnMainFrameDnsError();
+  }
 
   // Resend status every time an error page commits; this is somewhat spammy,
   // but ensures that the status will make it to the real error page, even if
   // the link doctor loads a blank intermediate page or the tab switches
   // renderer processes.
-  if (is_error_page_ && dns_error_active_) {
+  if (navigation_handle->IsErrorPage() && dns_error_active_) {
     dns_error_page_committed_ = true;
     DVLOG(1) << "Committed error page; resending status.";
     SendInfo();
-  } else {
+  } else if (navigation_handle->HasCommitted() &&
+             !navigation_handle->IsErrorPage()) {
     dns_error_active_ = false;
     dns_error_page_committed_ = false;
-  }
-}
-
-void NetErrorTabHelper::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (render_frame_host->GetParent())
-    return;
-
-  if (IsDnsError(error_code)) {
-    dns_error_active_ = true;
-    OnMainFrameDnsError();
   }
 }
 
@@ -304,10 +273,9 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
 }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-void NetErrorTabHelper::UpdateHasOfflinePages(
-    content::RenderFrameHost* render_frame_host) {
+void NetErrorTabHelper::UpdateHasOfflinePages(int frame_tree_node_id) {
   // TODO(chili): remove entirely in M55 if AsyncLoading does not need this.
-  SetHasOfflinePages(render_frame_host->GetFrameTreeNodeId(), false);
+  SetHasOfflinePages(frame_tree_node_id, false);
 }
 
 void NetErrorTabHelper::SetHasOfflinePages(int frame_tree_node_id,

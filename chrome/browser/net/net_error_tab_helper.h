@@ -54,28 +54,10 @@ class NetErrorTabHelper
 
   // content::WebContentsObserver implementation.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
-
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
-
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
@@ -113,7 +95,7 @@ class NetErrorTabHelper
 
   // Relates to offline pages handling.
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  void UpdateHasOfflinePages(content::RenderFrameHost* render_frame_host);
+  void UpdateHasOfflinePages(int frame_tree_node_id);
   void SetHasOfflinePages(int frame_tree_node_id, bool has_offline_pages);
   void ShowOfflinePages();
   bool IsFromErrorPage() const;

@@ -24,7 +24,9 @@ WebContents* NavigationHandle::GetWebContents() {
 std::unique_ptr<NavigationHandle>
 NavigationHandle::CreateNavigationHandleForTesting(
     const GURL& url,
-    RenderFrameHost* render_frame_host) {
+    RenderFrameHost* render_frame_host,
+    bool committed,
+    net::Error error) {
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, static_cast<RenderFrameHostImpl*>(render_frame_host)
@@ -33,6 +35,12 @@ NavigationHandle::CreateNavigationHandleForTesting(
           false,  // is_synchronous
           false,  // is_srcdoc
           base::TimeTicks::Now(), 0);
+  handle_impl->set_render_frame_host(
+      static_cast<RenderFrameHostImpl*>(render_frame_host));
+  if (error != net::OK)
+    handle_impl->set_net_error_code(error);
+  if (committed)
+    handle_impl->CallDidCommitNavigationForTesting(url);
   return std::unique_ptr<NavigationHandle>(std::move(handle_impl));
 }
 

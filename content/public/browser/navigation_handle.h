@@ -152,6 +152,8 @@ class CONTENT_EXPORT NavigationHandle {
   virtual bool HasCommitted() = 0;
 
   // Whether the navigation resulted in an error page.
+  // Note that if an error page reloads, this will return true even though
+  // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
 
   // Returns the response headers for the request or nullptr if there are none.
@@ -175,7 +177,9 @@ class CONTENT_EXPORT NavigationHandle {
 
   static std::unique_ptr<NavigationHandle> CreateNavigationHandleForTesting(
       const GURL& url,
-      RenderFrameHost* render_frame_host);
+      RenderFrameHost* render_frame_host,
+      bool committed = false,
+      net::Error error = net::OK);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will

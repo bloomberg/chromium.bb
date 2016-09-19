@@ -18,6 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -461,7 +462,14 @@ void NavigationHandleImpl::DidCommitNavigation(
   render_frame_host_ = render_frame_host;
   is_same_page_ = same_page;
 
-  state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
+  // If an error page reloads, net_error_code might be 200 but we still want to
+  // count it as an error page.
+  if (params.base_url.spec() == kUnreachableWebDataURL ||
+      net_error_code_ != net::OK) {
+    state_ = DID_COMMIT_ERROR_PAGE;
+  } else {
+    state_ = DID_COMMIT;
+  }
 }
 
 NavigationThrottle::ThrottleCheckResult
