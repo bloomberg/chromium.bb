@@ -1585,9 +1585,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();
+                RecordUserAction.record("MobileMenuStop");
             } else {
                 currentTab.reload();
-                RecordUserAction.record("MobileToolbarReload");
+                RecordUserAction.record("MobileMenuReload");
             }
         } else if (id == R.id.info_menu_id) {
             WebsiteSettingsPopup.show(

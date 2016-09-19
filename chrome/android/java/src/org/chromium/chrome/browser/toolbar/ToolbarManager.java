@@ -863,6 +863,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (currentTab != null) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();
+                RecordUserAction.record("MobileToolbarStop");
             } else {
                 currentTab.reload();
                 RecordUserAction.record("MobileToolbarReload");

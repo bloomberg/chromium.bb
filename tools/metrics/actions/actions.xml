@@ -9369,9 +9369,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuReload">
-  <owner>aurimas@chromium.org</owner>
-  <description>User pressed 'Reload' in the app menu.</description>
-  <obsolete>This menu item was never added to the app menu.</obsolete>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    User pressed the reload option in the app menu.  This was added in M55.
+    Prior to M55, the menu reload counts were combined with the toolbar counts,
+    which were all reported as MobileToolbarReload.
+  </description>
 </action>
 
 <action name="MobileMenuRequestDesktopSite">
@@ -9394,6 +9397,11 @@ should be able to be added at any place in this file.
 <action name="MobileMenuShow">
   <owner>aurimas@chromium.org</owner>
   <description>User opened the app menu.</description>
+</action>
+
+<action name="MobileMenuStop">
+  <owner>tedchoc@chromium.org</owner>
+  <description>User pressed the stop option in the app menu.</description>
 </action>
 
 <action name="MobileNTP.Interests.Click">
@@ -9789,8 +9797,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarReload">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    User pressed the reload icon in the toolbar.  Pre-M55, MobileToolbarReload
+    accounted for all reload actions.  M55+, this metric only refers to reloads
+    that occurred from the toolbar.
+  </description>
 </action>
 
 <action name="MobileToolbarShowMenu">
@@ -9806,6 +9818,11 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarStackViewNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileToolbarStop">
+  <owner>tedchoc@chromium.org</owner>
+  <description>User pressed the stop icon in the toolbar.</description>
 </action>
 
 <action name="MobileToolbarToggleBookmark">
