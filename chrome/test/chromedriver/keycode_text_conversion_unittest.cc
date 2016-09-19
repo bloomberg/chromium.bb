@@ -9,9 +9,9 @@
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
-#include "chrome/test/chromedriver/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/keyboard_layout.h"
 
 namespace {
 
@@ -32,13 +32,11 @@ void CheckCharToKeyCode(char character, ui::KeyboardCode key_code,
                        key_code, modifiers);
 }
 
-#if defined(OS_WIN)
 void CheckCharToKeyCode(wchar_t character, ui::KeyboardCode key_code,
                         int modifiers) {
   CheckCharToKeyCode16(base::WideToUTF16(std::wstring(1, character))[0],
                        key_code, modifiers);
 }
-#endif
 
 void CheckCantConvertChar(wchar_t character) {
   std::wstring character_string;
@@ -127,14 +125,12 @@ TEST(KeycodeTextConversionTest, MAYBE_CharToKeyCode) {
 #endif
 
 TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
-  RestoreKeyboardLayoutOnDestruct restore;
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_GERMAN);
 #if defined(OS_WIN)
-  ASSERT_TRUE(SwitchKeyboardLayout("00000407"));  // german
   int ctrl_and_alt = kControlKeyModifierMask | kAltKeyModifierMask;
   CheckCharToKeyCode('@', ui::VKEY_Q, ctrl_and_alt);
   EXPECT_EQ("@", ConvertKeyCodeToTextNoError(ui::VKEY_Q, ctrl_and_alt));
 #elif defined(OS_MACOSX)
-  ASSERT_TRUE(SwitchKeyboardLayout("com.apple.keylayout.German"));
   EXPECT_EQ("@", ConvertKeyCodeToTextNoError(
       ui::VKEY_L, kAltKeyModifierMask));
 #endif
@@ -142,26 +138,30 @@ TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
 
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 // Not implemented on Linux.
-// Fails if German layout is not installed on Mac.
+// Fails if tested layouts are not installed on Mac.
 #define MAYBE_NonEnglish DISABLED_NonEnglish
 #else
 #define MAYBE_NonEnglish NonEnglish
 #endif
 
 TEST(KeycodeTextConversionTest, MAYBE_NonEnglish) {
-  RestoreKeyboardLayoutOnDestruct restore;
-#if defined(OS_WIN)
-  ASSERT_TRUE(SwitchKeyboardLayout("00000408"));  // greek
-  CheckCharToKeyCode(';', ui::VKEY_Q, 0);
-  EXPECT_EQ(";", ConvertKeyCodeToTextNoError(ui::VKEY_Q, 0));
-  // Regression test for chromedriver bug #405.
-  ASSERT_TRUE(SwitchKeyboardLayout("00000419"));  // russian
-  CheckCharToKeyCode(L'\u0438', ui::VKEY_B, 0);
-  EXPECT_EQ(base::UTF16ToUTF8(L"\u0438"),
-            ConvertKeyCodeToTextNoError(ui::VKEY_B, 0));
-#elif defined(OS_MACOSX)
-  ASSERT_TRUE(SwitchKeyboardLayout("com.apple.keylayout.German"));
-  CheckCharToKeyCode('z', ui::VKEY_Y, 0);
-  EXPECT_EQ("z", ConvertKeyCodeToTextNoError(ui::VKEY_Y, 0));
-#endif
+  // For Greek and Russian keyboard layouts, which are very different from
+  // QWERTY, Windows just uses virtual key codes that match the QWERTY layout,
+  // and translates them to other characters.  If we wanted to test something
+  // like German, whose layout is very similar to QWERTY, we'd need to be
+  // careful, as in this case Windows maps the keyboard scan codes to the
+  // appropriate (different) VKEYs instead of mapping the VKEYs to different
+  // characters.
+  {
+    ui::ScopedKeyboardLayout greek_layout(ui::KEYBOARD_LAYOUT_GREEK);
+    CheckCharToKeyCode(';', ui::VKEY_Q, 0);
+    EXPECT_EQ(";", ConvertKeyCodeToTextNoError(ui::VKEY_Q, 0));
+  }
+  {
+    // Regression test for chromedriver bug #405.
+    ui::ScopedKeyboardLayout russian_layout(ui::KEYBOARD_LAYOUT_RUSSIAN);
+    CheckCharToKeyCode(L'\u0438', ui::VKEY_B, 0);
+    EXPECT_EQ(base::WideToUTF8(L"\u0438"),
+              ConvertKeyCodeToTextNoError(ui::VKEY_B, 0));
+  }
 }

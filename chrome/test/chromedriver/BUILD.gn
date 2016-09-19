@@ -388,8 +388,6 @@ test("chromedriver_tests") {
     "net/test_http_server.cc",
     "net/test_http_server.h",
     "net/websocket_unittest.cc",
-    "test_util.cc",
-    "test_util.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -403,6 +401,7 @@ test("chromedriver_tests") {
     "//net:http_server",
     "//net:test_support",
     "//testing/gtest",
+    "//ui/events:test_support",
     "//url",
   ]
 }
