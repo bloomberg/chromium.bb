@@ -179,7 +179,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kOzonePlatform,
 #endif
     app_list::switches::kDisableSyncAppList,
-    app_list::switches::kEnableCenteredAppList,
     app_list::switches::kEnableSyncAppList,
     ash::switches::kAshEnableTouchView,
     ash::switches::kAshEnablePalette,

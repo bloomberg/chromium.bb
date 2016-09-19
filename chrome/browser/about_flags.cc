@@ -1409,16 +1409,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kPrefetchSearchResults)},
 #endif
-#if defined(ENABLE_APP_LIST)
-    {"enable-experimental-app-list", IDS_FLAGS_EXPERIMENTAL_APP_LIST_NAME,
-     IDS_FLAGS_EXPERIMENTAL_APP_LIST_DESCRIPTION, kOsWin | kOsLinux | kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         app_list::switches::kEnableExperimentalAppList,
-         app_list::switches::kDisableExperimentalAppList)},
-    {"enable-centered-app-list", IDS_FLAGS_CENTERED_APP_LIST_NAME,
-     IDS_FLAGS_CENTERED_APP_LIST_DESCRIPTION, kOsWin | kOsLinux | kOsCrOS,
-     SINGLE_VALUE_TYPE(app_list::switches::kEnableCenteredAppList)},
-#endif
     {"disable-threaded-scrolling", IDS_FLAGS_THREADED_SCROLLING_NAME,
      IDS_FLAGS_THREADED_SCROLLING_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableThreadedScrolling)},

@@ -171,8 +171,6 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         ::switches::kAppsGalleryURL, embedded_test_server()->base_url().spec());
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAppList);
 
     mock_controller_.reset(new AppListControllerDelegateForTest);
     webstore_provider_.reset(new WebstoreProvider(

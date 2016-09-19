@@ -22,14 +22,6 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
 
-// If set, the app list will be centered and wide instead of tall.
-const char kEnableCenteredAppList[] = "enable-centered-app-list";
-
-// Enable/disable the experimental app list. If enabled, implies
-// --enable-centered-app-list.
-const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
-const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
-
 // Enable/disable syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 const char kDisableSyncAppList[] = "disable-sync-app-list";
@@ -69,25 +61,13 @@ bool IsVoiceSearchEnabled() {
 }
 
 bool IsExperimentalAppListEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableExperimentalAppList))
-    return true;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableExperimentalAppList))
-    return false;
-
-#if defined(OS_CHROMEOS)
+  // TODO(mgiuca): Remove this function. (https://crbug.com/531059)
   return true;
-#else
-  return false;
-#endif
 }
 
 bool IsCenteredAppListEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kEnableCenteredAppList) ||
-         IsExperimentalAppListEnabled();
+  // TODO(mgiuca): Remove this function. (https://crbug.com/531059)
+  return true;
 }
 
 bool ShouldNotDismissOnBlur() {

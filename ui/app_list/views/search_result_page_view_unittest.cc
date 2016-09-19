@@ -26,10 +26,7 @@ namespace test {
 class SearchResultPageViewTest : public views::ViewsTestBase,
                                  public SearchResultListViewDelegate {
  public:
-  SearchResultPageViewTest() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAppList);
-  }
+  SearchResultPageViewTest() {}
   ~SearchResultPageViewTest() override {}
 
   // Overridden from testing::Test:

@@ -23,23 +23,18 @@
 namespace ash {
 
 namespace {
-const int kMinimalCenteredAppListMargin = 10;
+const int kMinimalAppListMargin = 10;
 }
 
-// The parameter is true to test the centered app list, false for normal.
-// (The test name ends in "/0" for normal, "/1" for centered.)
-class AppListPresenterDelegateTest
-    : public test::AshTestBase,
-      public ::testing::WithParamInterface<bool> {
+class AppListPresenterDelegateTest : public test::AshTestBase {
  public:
   AppListPresenterDelegateTest();
-  virtual ~AppListPresenterDelegateTest();
+  ~AppListPresenterDelegateTest() override;
 
   // testing::Test:
   void SetUp() override;
 
   app_list::AppListPresenterImpl* GetAppListPresenter();
-  bool IsCentered() const;
 };
 
 AppListPresenterDelegateTest::AppListPresenterDelegateTest() {}
@@ -48,12 +43,8 @@ AppListPresenterDelegateTest::~AppListPresenterDelegateTest() {}
 
 void AppListPresenterDelegateTest::SetUp() {
   AshTestBase::SetUp();
-  if (IsCentered()) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(app_list::switches::kEnableCenteredAppList);
-  }
 
-  // Make the display big enough to hold the experimental app list.
+  // Make the display big enough to hold the app list.
   UpdateDisplay("1024x768");
 }
 
@@ -62,12 +53,8 @@ AppListPresenterDelegateTest::GetAppListPresenter() {
   return ash_test_helper()->test_shell_delegate()->app_list_presenter();
 }
 
-bool AppListPresenterDelegateTest::IsCentered() const {
-  return GetParam();
-}
-
 // Tests that app launcher hides when focus moves to a normal window.
-TEST_P(AppListPresenterDelegateTest, HideOnFocusOut) {
+TEST_F(AppListPresenterDelegateTest, HideOnFocusOut) {
   WmShell::Get()->ShowAppList();
   EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
 
@@ -79,7 +66,7 @@ TEST_P(AppListPresenterDelegateTest, HideOnFocusOut) {
 
 // Tests that app launcher remains visible when focus is moved to a different
 // window in kShellWindowId_AppListContainer.
-TEST_P(AppListPresenterDelegateTest,
+TEST_F(AppListPresenterDelegateTest,
        RemainVisibleWhenFocusingToApplistContainer) {
   WmShell::Get()->ShowAppList();
   EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
@@ -94,7 +81,7 @@ TEST_P(AppListPresenterDelegateTest,
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_P(AppListPresenterDelegateTest, ClickOutsideBubbleClosesBubble) {
+TEST_F(AppListPresenterDelegateTest, ClickOutsideBubbleClosesBubble) {
   WmShell::Get()->ShowAppList();
   aura::Window* app_window = GetAppListPresenter()->GetWindow();
   ASSERT_TRUE(app_window);
@@ -115,7 +102,7 @@ TEST_P(AppListPresenterDelegateTest, ClickOutsideBubbleClosesBubble) {
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_P(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
+TEST_F(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
   WmShell::Get()->ShowAppList();
 
   aura::Window* app_window = GetAppListPresenter()->GetWindow();
@@ -137,7 +124,7 @@ TEST_P(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
 
 // Tests opening the app launcher on a non-primary display, then deleting the
 // display.
-TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
+TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -162,14 +149,7 @@ TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
 
 // Tests opening the app launcher on a tiny display that is too small to contain
 // it.
-TEST_P(AppListPresenterDelegateTest, TinyDisplay) {
-  // Don't test this for the non-centered app list case; it isn't designed for
-  // small displays. The most common case of a small display --- when the
-  // virtual keyboard is open --- switches into the centered app list mode, so
-  // we just want to run this test in that case.
-  if (!IsCentered())
-    return;
-
+TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
   // UpdateDisplay is not supported in this case, so just skip the test.
   if (!SupportsHostWindowResize())
     return;
@@ -188,11 +168,7 @@ TEST_P(AppListPresenterDelegateTest, TinyDisplay) {
   app_list::AppListView* app_list = GetAppListPresenter()->GetView();
   int app_list_view_top =
       app_list->anchor_rect().y() - app_list->bounds().height() / 2;
-  EXPECT_GE(app_list_view_top, kMinimalCenteredAppListMargin);
+  EXPECT_GE(app_list_view_top, kMinimalAppListMargin);
 }
-
-INSTANTIATE_TEST_CASE_P(AppListPresenterDelegateTestInstance,
-                        AppListPresenterDelegateTest,
-                        ::testing::Bool());
 
 }  // namespace ash

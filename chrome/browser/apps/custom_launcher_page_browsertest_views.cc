@@ -56,9 +56,6 @@ class CustomLauncherPageBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
 
-    // Custom launcher pages only work in the experimental app list.
-    command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
-
     // Ensure the app list does not close during the test.
     command_line->AppendSwitch(
         app_list::switches::kDisableAppListDismissOnBlur);
