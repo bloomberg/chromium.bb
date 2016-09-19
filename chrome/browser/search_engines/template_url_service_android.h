@@ -35,7 +35,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
                            const base::android::JavaParamRef<jobject>& obj);
   jboolean IsLoaded(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobject> GetPrepopulatedTemplateUrlAt(
+  base::android::ScopedJavaLocalRef<jobject> GetTemplateUrlAt(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint index);

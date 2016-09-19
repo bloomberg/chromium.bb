@@ -47,16 +47,17 @@ public class TemplateUrlService {
     public static class TemplateUrl {
         private final int mIndex;
         private final String mShortName;
+        private boolean mIsPrepopulated;
 
         @CalledByNative("TemplateUrl")
-        public static TemplateUrl create(
-                int id, String shortName) {
-            return new TemplateUrl(id, shortName);
+        public static TemplateUrl create(int id, String shortName, boolean isPrepopulated) {
+            return new TemplateUrl(id, shortName, isPrepopulated);
         }
 
-        public TemplateUrl(int index, String shortName) {
+        public TemplateUrl(int index, String shortName, boolean isPrepopulated) {
             mIndex = index;
             mShortName = shortName;
+            mIsPrepopulated = isPrepopulated;
         }
 
         public int getIndex() {
@@ -128,9 +129,8 @@ public class TemplateUrlService {
         int templateUrlCount = nativeGetTemplateUrlCount(mNativeTemplateUrlServiceAndroid);
         List<TemplateUrl> templateUrls = new ArrayList<TemplateUrl>(templateUrlCount);
         for (int i = 0; i < templateUrlCount; i++) {
-            TemplateUrl templateUrl = nativeGetPrepopulatedTemplateUrlAt(
-                    mNativeTemplateUrlServiceAndroid, i);
-            if (templateUrl != null) {
+            TemplateUrl templateUrl = nativeGetTemplateUrlAt(mNativeTemplateUrlServiceAndroid, i);
+            if (templateUrl != null && templateUrl.mIsPrepopulated) {
                 templateUrls.add(templateUrl);
             }
         }
@@ -176,8 +176,7 @@ public class TemplateUrlService {
         assert defaultSearchEngineIndex < nativeGetTemplateUrlCount(
                 mNativeTemplateUrlServiceAndroid);
 
-        return nativeGetPrepopulatedTemplateUrlAt(
-                mNativeTemplateUrlServiceAndroid, defaultSearchEngineIndex);
+        return nativeGetTemplateUrlAt(mNativeTemplateUrlServiceAndroid, defaultSearchEngineIndex);
     }
 
     public void setSearchEngine(int selectedIndex) {
@@ -306,8 +305,7 @@ public class TemplateUrlService {
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);
     private native int nativeGetTemplateUrlCount(long nativeTemplateUrlServiceAndroid);
-    private native TemplateUrl nativeGetPrepopulatedTemplateUrlAt(
-            long nativeTemplateUrlServiceAndroid, int i);
+    private native TemplateUrl nativeGetTemplateUrlAt(long nativeTemplateUrlServiceAndroid, int i);
     private native void nativeSetUserSelectedDefaultSearchProvider(
             long nativeTemplateUrlServiceAndroid, int selectedIndex);
     private native int nativeGetDefaultSearchProvider(long nativeTemplateUrlServiceAndroid);
