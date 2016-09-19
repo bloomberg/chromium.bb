@@ -146,6 +146,13 @@ bool IsRemoraRequisition() {
       ->IsRemoraRequisition();
 }
 
+bool IsSharkRequisition() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetDeviceCloudPolicyManager()
+      ->IsSharkRequisition();
+}
+
 // Checks if a controller device ("Master") is detected during the bootstrapping
 // or shark/remora setup process.
 bool IsControllerDetected() {
@@ -183,11 +190,6 @@ void InitializeCrashReporter() {
   breakpad::InitCrashReporter(std::string());
 }
 #endif
-
-bool UseMDOobe() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableMdOobe);
-}
 
 }  // namespace
 
@@ -319,9 +321,22 @@ void WizardController::Init(const std::string& first_screen_name) {
   // an eligible controller is detected later.
   SetControllerDetectedPref(false);
 
-  // If flag disappeared after restart, disable.
-  if (!UseMDOobe())
-    GetLocalState()->SetBoolean(prefs::kOobeMdMode, false);
+  // Show Material Design unless explicitly disabled or for an untested UX,
+  // or when resuming an OOBE that had it disabled or unset. We use an if/else
+  // here to try and not set state when it is the default value so it can
+  // change and affect the OOBE again.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMdOobe))
+    SetShowMdOobe(false);
+  else if ((screen_pref.empty() ||
+            GetLocalState()->HasPrefPath(prefs::kOobeMdMode)) ||
+           GetLocalState()->GetBoolean(prefs::kOobeMdMode))
+    SetShowMdOobe(true);
+
+  // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
+  if (IsRemoraPairingOobe() || IsSharkRequisition() || IsRemoraRequisition()) {
+    SetShowMdOobe(false);
+  }
 
   AdvanceToScreen(first_screen_name_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
@@ -540,6 +555,8 @@ void WizardController::ShowSupervisedUserCreationScreen() {
 
 void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
+  // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
+  SetShowMdOobe(false);  // Disable the MD OOBE from there on.
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(kHIDDetectionScreenName));
   MaybeStartListeningForSharkConnection();
@@ -628,11 +645,7 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  const bool is_shark = g_browser_process->platform_part()
-                            ->browser_policy_connector_chromeos()
-                            ->GetDeviceCloudPolicyManager()
-                            ->IsSharkRequisition();
-  if (is_shark || IsBootstrappingMaster()) {
+  if (IsSharkRequisition() || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
   } else if (IsControllerDetected()) {
     ShowHostPairingScreen();
@@ -925,6 +938,10 @@ void WizardController::SetStatusAreaVisible(bool visible) {
   host_->SetStatusAreaVisible(visible);
 }
 
+void WizardController::SetShowMdOobe(bool show) {
+  GetLocalState()->SetBoolean(prefs::kOobeMdMode, show);
+}
+
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (!oobe_ui_)
     return;
@@ -932,9 +949,6 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (screen_needed) {
     ShowHIDDetectionScreen();
   } else {
-    if (UseMDOobe())
-      GetLocalState()->SetBoolean(prefs::kOobeMdMode, true);
-
     ShowNetworkScreen();
   }
 }
@@ -990,9 +1004,6 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
             weak_factory_.GetWeakPtr());
         oobe_ui_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
-        if (UseMDOobe())
-          GetLocalState()->SetBoolean(prefs::kOobeMdMode, true);
-
         ShowNetworkScreen();
       }
     } else {

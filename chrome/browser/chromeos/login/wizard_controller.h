@@ -280,6 +280,9 @@ class WizardController : public BaseScreenDelegate,
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
 
+  // Changes whether to show the Material Design OOBE or not.
+  void SetShowMdOobe(bool show);
+
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
 
