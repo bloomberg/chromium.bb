@@ -92,6 +92,10 @@ class VIEWS_EXPORT PlatformStyle {
   static std::unique_ptr<Border> CreateThemedLabelButtonBorder(
       LabelButton* button);
 
+  // Called whenever a textfield keypress is unhandled for any reason. Gives
+  // visual/audio feedback about the unhandled key if platform-appropriate.
+  static void OnTextfieldKeypressUnhandled();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);
 };

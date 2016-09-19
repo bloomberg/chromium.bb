@@ -17,6 +17,8 @@
 #include "ui/views/style/mac/combobox_background_mac.h"
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
+#import <Cocoa/Cocoa.h>
+
 namespace views {
 
 const int PlatformStyle::kComboboxNormalArrowPadding = 0;
@@ -94,6 +96,11 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
   ButtonColorByState& colors = *color_by_state;
   colors[Button::STATE_PRESSED] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
+}
+
+// static
+void PlatformStyle::OnTextfieldKeypressUnhandled() {
+  NSBeep();
 }
 
 }  // namespace views

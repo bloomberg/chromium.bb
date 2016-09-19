@@ -89,6 +89,9 @@ SkColor PlatformStyle::TextColorForButton(
   return color_by_state[button.state()];
 }
 
+// static
+void PlatformStyle::OnTextfieldKeypressUnhandled() {}
+
 #endif  // OS_MACOSX
 
 #if !defined(DESKTOP_LINUX) && !defined(OS_MACOSX)

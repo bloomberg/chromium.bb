@@ -685,6 +685,9 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
     ExecuteTextEditCommand(edit_command);
     handled = true;
   }
+
+  if (!handled)
+    OnKeypressUnhandled();
   return handled;
 }
 
@@ -1275,6 +1278,11 @@ void Textfield::InsertText(const base::string16& new_text) {
 }
 
 void Textfield::InsertChar(const ui::KeyEvent& event) {
+  if (read_only()) {
+    OnKeypressUnhandled();
+    return;
+  }
+
   // Filter out all control characters, including tab and new line characters,
   // and all characters with Alt modifier (and Search on ChromeOS). But allow
   // characters with the AltGr modifier. On Windows AltGr is represented by
@@ -2031,6 +2039,10 @@ void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
     UpdateAfterChange(true, true);
   }
   OnAfterUserAction();
+}
+
+void Textfield::OnKeypressUnhandled() {
+  PlatformStyle::OnTextfieldKeypressUnhandled();
 }
 
 }  // namespace views
