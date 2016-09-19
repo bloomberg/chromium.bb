@@ -171,6 +171,41 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     pointer_type_ = new_pointer_type;
   }
 
+  if (focus_ && event->IsMouseEvent() && event->type() != ui::ET_MOUSE_EXITED) {
+    bool send_frame = false;
+
+    // Generate motion event if location changed. We need to check location
+    // here as mouse movement can generate both "moved" and "entered" events
+    // but OnPointerMotion should only be called if location changed since
+    // OnPointerEnter was called.
+    if (!SameLocation(event, location_)) {
+      location_ = event->location_f();
+      delegate_->OnPointerMotion(event->time_stamp(), location_);
+      send_frame = true;
+    }
+    if (stylus_delegate_ &&
+        pointer_type_ != ui::EventPointerType::POINTER_TYPE_MOUSE) {
+      constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
+      gfx::Vector2dF new_tilt = gfx::Vector2dF(event->pointer_details().tilt_x,
+                                               event->pointer_details().tilt_y);
+      if (std::abs(new_tilt.x() - tilt_.x()) > kEpsilon ||
+          std::abs(new_tilt.y() - tilt_.y()) > kEpsilon) {
+        tilt_ = new_tilt;
+        stylus_delegate_->OnPointerTilt(event->time_stamp(), new_tilt);
+        send_frame = true;
+      }
+
+      float new_force = event->pointer_details().force;
+      if (std::abs(new_force - force_) > kEpsilon) {
+        force_ = new_force;
+        stylus_delegate_->OnPointerForce(event->time_stamp(), new_force);
+        send_frame = true;
+      }
+    }
+    if (send_frame)
+      delegate_->OnPointerFrame();
+  }
+
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_RELEASED:
@@ -179,42 +214,6 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
                                    event->changed_button_flags(),
                                    event->type() == ui::ET_MOUSE_PRESSED);
         delegate_->OnPointerFrame();
-      }
-      break;
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
-      if (focus_) {
-        bool send_frame = false;
-        // Generate motion event if location changed. We need to check location
-        // here as mouse movement can generate both "moved" and "entered" events
-        // but OnPointerMotion should only be called if location changed since
-        // OnPointerEnter was called.
-        if (!SameLocation(event, location_)) {
-          location_ = event->location_f();
-          delegate_->OnPointerMotion(event->time_stamp(), location_);
-          send_frame = true;
-        }
-        if (stylus_delegate_ &&
-            pointer_type_ != ui::EventPointerType::POINTER_TYPE_MOUSE) {
-          constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
-          gfx::Vector2dF new_tilt = gfx::Vector2dF(
-              event->pointer_details().tilt_x, event->pointer_details().tilt_y);
-          if (std::abs(new_tilt.x() - tilt_.x()) > kEpsilon ||
-              std::abs(new_tilt.y() - tilt_.y()) > kEpsilon) {
-            tilt_ = new_tilt;
-            stylus_delegate_->OnPointerTilt(event->time_stamp(), new_tilt);
-            send_frame = true;
-          }
-
-          float new_force = event->pointer_details().force;
-          if (std::abs(new_force - force_) > kEpsilon) {
-            force_ = new_force;
-            stylus_delegate_->OnPointerForce(event->time_stamp(), new_force);
-            send_frame = true;
-          }
-        }
-        if (send_frame)
-          delegate_->OnPointerFrame();
       }
       break;
     case ui::ET_SCROLL:
@@ -247,6 +246,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
         delegate_->OnPointerFrame();
       }
       break;
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSE_CAPTURE_CHANGED:
