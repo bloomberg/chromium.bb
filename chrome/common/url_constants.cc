@@ -275,6 +275,10 @@ const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
 const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 #endif
 
+#if defined(ENABLE_VR_SHELL)
+const char kChromeUIVrShellUIHost[] = "vr-shell-ui";
+#endif
+
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIAppLaunchHost[] = "app-launch";

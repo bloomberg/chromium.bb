@@ -258,6 +258,10 @@ extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUISnippetsInternalsHost[];
 #endif
 
+#if defined(ENABLE_VR_SHELL)
+extern const char kChromeUIVrShellUIHost[];
+#endif
+
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIAppLaunchHost[];

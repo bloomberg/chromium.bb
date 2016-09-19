@@ -39,6 +39,9 @@ declare_args() {
   # Enables vr shell.
   enable_vr_shell = false
 
+  # Enables vr shell UI development on local or remote page.
+  enable_vr_shell_ui_dev = false
+
   # Enable native notifications via XPC services (mac only).
   enable_xpc_notifications = false
 
@@ -54,5 +57,6 @@ chrome_grit_defines = [
   "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
   "enable_hotwording=$enable_hotwording",
+  "enable_vr_shell=$enable_vr_shell",
   "use_vulcanize=$use_vulcanize",
 ]

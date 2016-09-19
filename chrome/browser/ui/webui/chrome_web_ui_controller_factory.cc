@@ -107,6 +107,9 @@
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
+#if defined(ENABLE_VR_SHELL)
+#include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_ui.h"
+#endif
 #else
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
@@ -521,6 +524,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUISnippetsInternalsHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<SnippetsInternalsUI>;
+#if defined(ENABLE_VR_SHELL)
+  if (url.host() == chrome::kChromeUIVrShellUIHost)
+    return &NewWebUI<VrShellUIUI>;
+#endif  // defined(ENABLE_VR_SHELL)
 #else
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return &NewWebUI<DevToolsUI>;

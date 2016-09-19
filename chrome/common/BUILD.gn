@@ -504,6 +504,10 @@ static_library("common") {
       ]
     }
   }
+
+  if (enable_vr_shell) {
+    defines += [ "ENABLE_VR_SHELL" ]
+  }
 }
 
 process_version("version_header") {

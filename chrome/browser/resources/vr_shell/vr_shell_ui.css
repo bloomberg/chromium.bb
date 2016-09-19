@@ -1,0 +1,17 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 20px;
+}
+
+.ui-button {
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  position: absolute;
+  text-align: center;
+  vertical-align: middle;
+}
