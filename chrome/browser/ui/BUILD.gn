@@ -201,6 +201,8 @@ split_static_library("ui") {
     "website_settings/website_settings_ui.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
+    "webui/bluetooth_internals/bluetooth_internals_ui.cc",
+    "webui/bluetooth_internals/bluetooth_internals_ui.h",
     "webui/browsing_history_handler.cc",
     "webui/browsing_history_handler.h",
     "webui/chrome_web_ui_controller_factory.cc",
