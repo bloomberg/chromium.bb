@@ -340,35 +340,6 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_CHROMEOS)
-// This should be used on ChromeOS only - other platforms do not bundle Flash.
-bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
-#if defined(FLAPPER_AVAILABLE)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
-  // command-line.
-  if (command_line->HasSwitch(switches::kPpapiFlashPath))
-    return false;
-
-  bool force_disable =
-      command_line->HasSwitch(switches::kDisableBundledPpapiFlash);
-  if (force_disable)
-    return false;
-
-  base::FilePath flash_path;
-  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
-    return false;
-
-  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING, false,
-                                  false, true);
-  return true;
-#else
-  return false;
-#endif  // FLAPPER_AVAILABLE
-}
-#endif  // defined(OS_CHROMEOS)
-
 bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Do not try and find System Pepper Flash if there is a specific path on
@@ -535,13 +506,6 @@ void ChromeContentClient::AddPepperPlugins(
   if (GetComponentUpdatedPepperFlash(component_flash.get()))
     flash_versions.push_back(component_flash.release());
 #endif  // defined(OS_LINUX)
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<content::PepperPluginInfo> bundled_flash(
-      new content::PepperPluginInfo);
-  if (GetBundledPepperFlash(bundled_flash.get()))
-    flash_versions.push_back(bundled_flash.release());
-#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<content::PepperPluginInfo> system_flash(
       new content::PepperPluginInfo);
