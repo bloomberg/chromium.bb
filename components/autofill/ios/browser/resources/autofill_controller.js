@@ -11,9 +11,6 @@
 // (chromium/src/components/autofill/core/common/form_data.h) for further
 // processing.
 
-/* Beginning of anonymous object. */
-(function() {
-
 /** @typedef {HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement} */
 var FormControlElement;
 
@@ -45,6 +42,9 @@ var AutofillFormFieldData;
   * }}
   */
 var AutofillFormData;
+
+/* Beginning of anonymous object. */
+(function() {
 
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
