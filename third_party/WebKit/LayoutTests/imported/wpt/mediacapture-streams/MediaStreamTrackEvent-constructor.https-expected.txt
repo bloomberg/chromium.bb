@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL The eventInitDict argument is required MediaStreamTrackEvent is not defined
+FAIL The eventInitDict's track member is required. assert_throws: function "function () {
+    new MediaStreamTrackEvent("type", {});
+  }" threw object "ReferenceError: MediaStreamTrackEvent is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
+FAIL The MediaStreamTrackEvent instance's track attribute is set. promise_test: Unhandled rejection with value: object "ReferenceError: MediaStreamTrackEvent is not defined"
+Harness: the test ran to completion.
+
