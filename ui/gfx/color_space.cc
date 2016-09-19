@@ -12,33 +12,6 @@
 
 namespace gfx {
 
-ColorSpace::PrimaryID ColorSpace::PrimaryIDFromInt(int primary_id) {
-  if (primary_id < 0 || primary_id > static_cast<int>(PrimaryID::LAST))
-    return PrimaryID::UNKNOWN;
-  if (primary_id > static_cast<int>(PrimaryID::LAST_STANDARD_VALUE) &&
-      primary_id < 1000)
-    return PrimaryID::UNKNOWN;
-  return static_cast<PrimaryID>(primary_id);
-}
-
-ColorSpace::TransferID ColorSpace::TransferIDFromInt(int transfer_id) {
-  if (transfer_id < 0 || transfer_id > static_cast<int>(TransferID::LAST))
-    return TransferID::UNKNOWN;
-  if (transfer_id > static_cast<int>(TransferID::LAST_STANDARD_VALUE) &&
-      transfer_id < 1000)
-    return TransferID::UNKNOWN;
-  return static_cast<TransferID>(transfer_id);
-}
-
-ColorSpace::MatrixID ColorSpace::MatrixIDFromInt(int matrix_id) {
-  if (matrix_id < 0 || matrix_id > static_cast<int>(MatrixID::LAST))
-    return MatrixID::UNKNOWN;
-  if (matrix_id > static_cast<int>(MatrixID::LAST_STANDARD_VALUE) &&
-      matrix_id < 1000)
-    return MatrixID::UNKNOWN;
-  return static_cast<MatrixID>(matrix_id);
-}
-
 ColorSpace::ColorSpace() {
   memset(custom_primary_matrix_, 0, sizeof(custom_primary_matrix_));
 }
@@ -50,15 +23,6 @@ ColorSpace::ColorSpace(PrimaryID primaries,
     : primaries_(primaries),
       transfer_(transfer),
       matrix_(matrix),
-      range_(range) {
-  memset(custom_primary_matrix_, 0, sizeof(custom_primary_matrix_));
-  // TODO: Set profile_id_
-}
-
-ColorSpace::ColorSpace(int primaries, int transfer, int matrix, RangeID range)
-    : primaries_(PrimaryIDFromInt(primaries)),
-      transfer_(TransferIDFromInt(transfer)),
-      matrix_(MatrixIDFromInt(matrix)),
       range_(range) {
   memset(custom_primary_matrix_, 0, sizeof(custom_primary_matrix_));
   // TODO: Set profile_id_
