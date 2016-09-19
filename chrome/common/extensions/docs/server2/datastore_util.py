@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import cPickle
-import googledatastore as datastore
 import logging
 
 from future import Future
+from gcloud import datastore
 
 # N.B.: In order to use this module you should have a working cloud development
 # environment configured with the googledatastore module installed.
@@ -14,7 +14,7 @@ from future import Future
 # Please see https://cloud.google.com/datastore/docs/getstarted/start_python/
 
 
-_DATASET_NAME = 'chrome-apps-doc'
+_PROJECT_NAME = 'chrome-apps-doc'
 _PERSISTENT_OBJECT_KIND = 'PersistentObjectStoreItem'
 _VALUE_PROPERTY_NAME = 'pickled_value'
 
@@ -32,24 +32,24 @@ _MAX_ENTITY_SIZE = 1024*1024
 _MAX_REQUEST_SIZE = 5*1024*1024
 
 
-def _CreateEntity(name, value):
-  entity = datastore.Entity(exclude_from_indexes=[_VALUE_PROPERTY_NAME])
-  path = entity.key.path.add()
-  path.kind = _PERSISTENT_OBJECT_KIND
-  path.name = name
-  entity.update({_VALUE_PROPERTY_NAME: value})
+def _CreateEntity(client, name, value):
+  key = client.key(_PERSISTENT_OBJECT_KIND, name)
+  entity = datastore.Entity(
+      key=key, exclude_from_indexes=[_VALUE_PROPERTY_NAME])
+  entity[_VALUE_PROPERTY_NAME] = value
   return entity
 
 
-def _CreateBatches(data):
+def _CreateBatches(client, data):
   '''Constructs batches of at most _MAX_BATCH_SIZE entities to cover all
   entities defined in |data| without exceeding the transaction size limit.
   This is a generator emitting lists of entities.
   '''
   def get_size(entity):
-    return len(entity.properties[_VALUE_PROPERTY_NAME].value.blob_value)
+    return len(entity[_VALUE_PROPERTY_NAME])
 
-  entities = [_CreateEntity(name, value) for name, value in data.iteritems()]
+  entities = [_CreateEntity(client, name, value)
+              for name, value in data.iteritems()]
   batch_start = 0
   batch_end = 1
   batch_size = get_size(entities[0])
@@ -104,7 +104,7 @@ def PushData(data, original_data={}):
   its key order. This means that objects will often be seen as changed even when
   they haven't changed.
   '''
-  datastore.set_options(dataset=_DATASET_NAME)
+  client = datastore.Client(_PROJECT_NAME)
 
   def flatten(dataset):
     flat = {}
@@ -123,10 +123,9 @@ def PushData(data, original_data={}):
         (len(data[k]) > _MAX_ENTITY_SIZE)):
       del data[k]
 
-  for batch, n, total in _CreateBatches(data):
-    commit_request = datastore.CommitRequest()
-    commit_request.mode = datastore.CommitRequest.NON_TRANSACTIONAL
-    commit_request.mutations.upsert.extend(list(batch))
-
+  for entities, n, total in _CreateBatches(client, data):
+    batch = client.batch()
+    for e in entities:
+      batch.put(e)
     logging.info('Committing %s/%s entities...' % (n, total))
-    datastore.commit(commit_request)
+    batch.commit()
