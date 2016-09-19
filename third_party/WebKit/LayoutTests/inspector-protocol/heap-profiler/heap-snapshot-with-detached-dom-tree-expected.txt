@@ -3,5 +3,6 @@ Test that all nodes from the detached DOM tree will get into one group in the he
  Took heap snapshot
 Parsed snapshot
 SUCCESS: found (Detached DOM trees)
-FAIL: unexpected detached DOM tree: Detached DOM tree / 2 entries
+SUCCESS: found Detached DOM tree / 3 entries
+SUCCESS: found 3 DIVs in Detached DOM tree / 3 entries
 

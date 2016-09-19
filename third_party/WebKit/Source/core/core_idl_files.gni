@@ -574,7 +574,6 @@ core_testing_dictionary_idl_files =
 
 webcore_testing_idl_files =
     get_path_info([
-                    "testing/DeathAwareScriptWrappable.idl",
                     "testing/DictionaryTest.idl",
                     "testing/GCObservation.idl",
                     "testing/GarbageCollectedScriptWrappable.idl",

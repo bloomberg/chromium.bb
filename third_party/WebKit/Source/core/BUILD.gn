@@ -213,8 +213,6 @@ source_set("testing") {
   sources = [
     "$blink_core_output_dir/testing/InternalSettingsGenerated.cpp",
     "$blink_core_output_dir/testing/InternalSettingsGenerated.h",
-    "testing/DeathAwareScriptWrappable.cpp",
-    "testing/DeathAwareScriptWrappable.h",
     "testing/DictionaryTest.cpp",
     "testing/DictionaryTest.h",
     "testing/DummyPageHolder.cpp",

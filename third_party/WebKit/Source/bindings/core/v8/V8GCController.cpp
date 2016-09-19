@@ -391,16 +391,12 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
-void V8GCController::collectGarbage(v8::Isolate* isolate, bool onlyMinorGC)
+void V8GCController::collectGarbage(v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);
     RefPtr<ScriptState> scriptState = ScriptState::create(v8::Context::New(isolate), DOMWrapperWorld::create(isolate));
     ScriptState::Scope scope(scriptState.get());
-    StringBuilder builder;
-    builder.append("if (gc) gc(");
-    builder.append(onlyMinorGC ? "true" : "false");
-    builder.append(")");
-    V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, builder.toString()), isolate);
+    V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, "if (gc) gc();"), isolate);
     scriptState->disposePerContextData();
 }
 
