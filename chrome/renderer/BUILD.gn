@@ -56,6 +56,8 @@ static_library("renderer") {
     "page_load_metrics/metrics_render_frame_observer.h",
     "page_load_metrics/page_timing_metrics_sender.cc",
     "page_load_metrics/page_timing_metrics_sender.h",
+    "page_load_metrics/renderer_page_track_decider.cc",
+    "page_load_metrics/renderer_page_track_decider.h",
     "plugins/non_loadable_plugin_placeholder.cc",
     "plugins/non_loadable_plugin_placeholder.h",
     "plugins/plugin_uma.cc",

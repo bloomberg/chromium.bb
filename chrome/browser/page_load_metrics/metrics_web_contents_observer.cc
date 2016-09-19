@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/page_load_metrics/browser_page_track_decider.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
@@ -819,6 +820,13 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       std::move(provisional_loads_[navigation_handle]));
   provisional_loads_.erase(navigation_handle);
 
+  // Ignore same-page navigations.
+  if (navigation_handle->HasCommitted() && navigation_handle->IsSamePage()) {
+    if (finished_nav)
+      finished_nav->StopTracking();
+    return;
+  }
+
   const bool should_track =
       finished_nav && ShouldTrackNavigation(navigation_handle);
 
@@ -826,10 +834,6 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     finished_nav->StopTracking();
 
   if (navigation_handle->HasCommitted()) {
-    // Ignore same-page navigations.
-    if (navigation_handle->IsSamePage())
-      return;
-
     // Notify other loads that they may have been aborted by this committed
     // load. is_certainly_browser_timestamp is set to false because
     // NavigationStart() could be set in either the renderer or browser process.
@@ -1061,18 +1065,11 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 bool MetricsWebContentsObserver::ShouldTrackNavigation(
     content::NavigationHandle* navigation_handle) const {
   DCHECK(navigation_handle->IsInMainFrame());
-  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
-    return false;
-  if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
-    return false;
-  if (navigation_handle->HasCommitted()) {
-    if (navigation_handle->IsSamePage() || navigation_handle->IsErrorPage())
-      return false;
-    const std::string& mime_type = web_contents()->GetContentsMimeType();
-    if (mime_type != "text/html" && mime_type != "application/xhtml+xml")
-      return false;
-  }
-  return true;
+  DCHECK(!navigation_handle->HasCommitted() ||
+         !navigation_handle->IsSamePage());
+
+  return BrowserPageTrackDecider(embedder_interface_.get(), web_contents(),
+                                 navigation_handle).ShouldTrack();
 }
 
 }  // namespace page_load_metrics

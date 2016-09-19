@@ -8,19 +8,26 @@
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/http/failing_http_transaction_factory.h"
+#include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/url_request/url_request_failed_job.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
-class MetricsWebContentsObserverBrowserTest : public InProcessBrowserTest {
+class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
-  MetricsWebContentsObserverBrowserTest() {}
-  ~MetricsWebContentsObserverBrowserTest() override {}
+  PageLoadMetricsBrowserTest() {}
+  ~PageLoadMetricsBrowserTest() override {}
 
  protected:
   void NavigateToUntrackedUrl() {
@@ -29,10 +36,23 @@ class MetricsWebContentsObserverBrowserTest : public InProcessBrowserTest {
 
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoNavigation) {
+void FailAllNetworkTransactions(net::URLRequestContextGetter* getter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::HttpCache* cache(
+      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
+  DCHECK(cache);
+  std::unique_ptr<net::FailingHttpTransactionFactory> factory(
+      new net::FailingHttpTransactionFactory(cache->GetSession(),
+                                             net::ERR_FAILED));
+  // Throw away old version; since this is a browser test, there is no
+  // need to restore the old state.
+  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
@@ -41,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -58,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
       internal::kHistogramParseBlockedOnScriptExecution, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       SamePageNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SamePageNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -73,8 +92,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       SameUrlNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -90,8 +108,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       NonHtmlMainResource) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -99,20 +116,55 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
+  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
+                                     0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       NonHttpOrHttpsUrl) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   NavigateToUntrackedUrl();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
+  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
+                                     0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       PreloadDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, HttpErrorPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/page_load_metrics/404.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
+  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
+                                     0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Configure the network stack to fail all attempted loads with a network
+  // error, which will cause Chrome to display an error page.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      browser()->profile()->GetRequestContext();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&FailAllNetworkTransactions,
+                 base::RetainedRef(url_request_context_getter)));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
+  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
+                                     0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -124,8 +176,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       NoPreloadDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPreloadDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -137,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -149,8 +200,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NoDocumentWrite) {
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       DocumentWriteBlock) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -162,8 +212,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       DocumentWriteReload) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -191,8 +240,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteBlockReloadCount, 2);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       DocumentWriteAsync) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteAsync) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -204,8 +252,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       DocumentWriteSameDomain) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteSameDomain) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -217,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       NoDocumentWriteScript) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
@@ -230,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, BadXhtml) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, BadXhtml) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // When an XHTML page contains invalid XML, it causes a paint of the error
@@ -252,8 +298,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, BadXhtml) {
 // Test code that aborts provisional navigations.
 // TODO(csharrison): Move these to unit tests once the navigation API in content
 // properly calls NavigationHandle/NavigationThrottle methods.
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       AbortNewNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortNewNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -276,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramAbortNewNavigationBeforeCommit, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortReload) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -297,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortReload) {
       internal::kHistogramAbortReloadBeforeCommit, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortClose) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClose) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -316,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortClose) {
                                      1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortMultiple) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -351,8 +396,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AbortMultiple) {
       internal::kHistogramAbortNewNavigationBeforeCommit, 2);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
-                       AbortClientRedirect) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClientRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL first_url(embedded_test_server()->GetURL("/title1.html"));
@@ -380,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramAbortClientRedirectBeforeCommit, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -409,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
       internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintNotRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

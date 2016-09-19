@@ -10,9 +10,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
+#include "chrome/renderer/page_load_metrics/renderer_page_track_decider.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -86,33 +86,12 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
   if (HasNoRenderFrame())
     return false;
   const blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  // We only generate historgrams for main frames.
+  // We only track metrics for main frames.
   if (frame->parent())
     return false;
 
   const blink::WebDocument& document = frame->document();
-  // Ignore non-HTTP schemes (e.g. chrome://).
-  const GURL& url = document.url();
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return false;
-
-  // Ignore NTP loads.
-  if (SearchBouncer::GetInstance()->IsNewTabPage(url))
-    return false;
-
-  // Ignore non-HTML documents (e.g. SVG). Note that images are treated by
-  // Blink as HTML documents, so to exclude images, we must perform
-  // additional mime type checking below.
-  if (!document.isHTMLDocument() && !document.isXHTMLDocument())
-    return false;
-
-  // Ignore non-HTML mime types (e.g. images).
-  const blink::WebURLResponse& url_response = frame->dataSource()->response();
-  std::string mime_type = url_response.mimeType().utf8();
-  if (mime_type != "text/html" && mime_type != "application/xhtml+xml")
-    return false;
-
-  return true;
+  return RendererPageTrackDecider(&document, frame->dataSource()).ShouldTrack();
 }
 
 PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
