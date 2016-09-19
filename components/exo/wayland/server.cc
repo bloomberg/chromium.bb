@@ -2337,7 +2337,7 @@ void bind_remote_shell_DEPRECATED(wl_client* client,
       std::min(version, remote_shell_version_DEPRECATED), id);
 
   SetImplementation(resource, &remote_shell_implementation_DEPRECATED,
-                    base::MakeUnique<WaylandRemoteShell>(
+                    base::MakeUnique<WaylandRemoteShell_DEPRECATED>(
                         static_cast<Display*>(data), resource));
 }
 
@@ -2544,8 +2544,9 @@ void vsync_feedback_get_vsync_timing_DEPRECATED(wl_client* client,
   ui::Compositor* compositor =
       ash::Shell::GetPrimaryRootWindow()->layer()->GetCompositor();
 
-  SetImplementation(timing_resource, &vsync_timing_implementation_DEPRECATED,
-                    VSyncTiming::Create(compositor, timing_resource));
+  SetImplementation(
+      timing_resource, &vsync_timing_implementation_DEPRECATED,
+      VSyncTiming_DEPRECATED::Create(compositor, timing_resource));
 }
 
 const struct zwp_vsync_feedback_v1_interface
