@@ -1366,10 +1366,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       d_node->current_frame_host()->GetRenderWidgetHost());
 
   gfx::Point point_in_a_frame(2, 2);
-  gfx::Point point_in_b_frame(rwhv_b->GetViewBounds().x(),
-                              rwhv_b->GetViewBounds().y());
-  gfx::Point point_in_d_frame(rwhv_d->GetViewBounds().x(),
-                              rwhv_d->GetViewBounds().y());
+  gfx::Point point_in_b_frame(313, 147);
+  gfx::Point point_in_d_frame(471, 207);
 
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseMove;
