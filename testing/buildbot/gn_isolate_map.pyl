@@ -909,7 +909,7 @@
     "type": "junit_test",
   },
   "webapk_shell_apk_junit_tests": {
-    "label": "///chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests",
+    "label": "//chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests",
     "type": "junit_test",
   },
   "webkit_unit_tests": {
