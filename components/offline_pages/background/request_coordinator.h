@@ -21,6 +21,7 @@
 #include "components/offline_pages/background/request_notifier.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/scheduler.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -63,7 +64,9 @@ class RequestCoordinator : public KeyedService,
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<OfflinerFactory> factory,
                      std::unique_ptr<RequestQueue> queue,
-                     std::unique_ptr<Scheduler> scheduler);
+                     std::unique_ptr<Scheduler> scheduler,
+                     net::NetworkQualityEstimator::NetworkQualityProvider*
+                         network_quality_estimator);
 
   ~RequestCoordinator() override;
 
@@ -261,6 +264,9 @@ class RequestCoordinator : public KeyedService,
     current_conditions_.reset(new DeviceConditions(current_conditions));
   }
 
+  // KeyedService implementation:
+  void Shutdown() override;
+
   friend class RequestCoordinatorTest;
 
   // The offliner can only handle one request at a time - if the offliner is
@@ -291,6 +297,9 @@ class RequestCoordinator : public KeyedService,
   std::unique_ptr<RequestQueue> queue_;
   // Scheduler. Used to request a callback when network is available.  Owned.
   std::unique_ptr<Scheduler> scheduler_;
+  // Unowned pointer to the Network Quality Estimator.
+  net::NetworkQualityEstimator::NetworkQualityProvider*
+      network_quality_estimator_;
   // Holds copy of the active request, if any.
   std::unique_ptr<SavePageRequest> active_request_;
   // Status of the most recent offlining.

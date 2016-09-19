@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/nqe/network_quality_estimator.h"
 
 // A class that sets itself as an observer of the EffectiveconnectionType for
 // the browser IO thread. It reports any change in EffectiveConnectionType back

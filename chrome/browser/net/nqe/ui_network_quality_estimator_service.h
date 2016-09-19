@@ -9,15 +9,18 @@
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator.h"
 
 // UI service to determine the current EffectiveConnectionType.
-class UINetworkQualityEstimatorService : public KeyedService {
+class UINetworkQualityEstimatorService
+    : public KeyedService,
+      public net::NetworkQualityEstimator::NetworkQualityProvider {
  public:
   UINetworkQualityEstimatorService();
   ~UINetworkQualityEstimatorService() override;
 
   // The current EffectiveConnectionType.
-  net::EffectiveConnectionType GetEffectiveConnectionType() const;
+  net::EffectiveConnectionType GetEffectiveConnectionType() const override;
 
   // Tests can manually set EffectiveConnectionType, but browser tests should
   // expect that the EffectiveConnectionType could change.

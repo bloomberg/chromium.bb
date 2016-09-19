@@ -120,6 +120,21 @@ class NET_EXPORT NetworkQualityEstimator
     DISALLOW_COPY_AND_ASSIGN(ThroughputObserver);
   };
 
+  // Provides simple interface to obtain the effective connection type.
+  class NET_EXPORT NetworkQualityProvider {
+   public:
+    // Returns the current effective connection type.
+    virtual EffectiveConnectionType GetEffectiveConnectionType() const = 0;
+
+    virtual ~NetworkQualityProvider() {}
+
+   protected:
+    NetworkQualityProvider() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NetworkQualityProvider);
+  };
+
   // Creates a new NetworkQualityEstimator.
   // |variation_params| is the map containing all field trial parameters
   // related to NetworkQualityEstimator field trial.

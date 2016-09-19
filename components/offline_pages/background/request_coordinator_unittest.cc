@@ -127,6 +127,25 @@ class OfflinerFactoryStub : public OfflinerFactory {
   std::unique_ptr<OfflinerStub> offliner_;
 };
 
+class NetworkQualityEstimatorStub
+    : public net::NetworkQualityEstimator::NetworkQualityProvider {
+ public:
+  NetworkQualityEstimatorStub()
+      : connection_type_(
+            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G) {}
+
+  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
+    return connection_type_;
+  }
+
+  void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
+    connection_type_ = type;
+  }
+
+ private:
+  net::EffectiveConnectionType connection_type_;
+};
+
 class ObserverStub : public RequestCoordinator::Observer {
  public:
   ObserverStub()
@@ -246,6 +265,10 @@ class RequestCoordinatorTest
     coordinator()->SetNetworkConditionsForTest(connection);
   }
 
+  void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
+    network_quality_estimator_->SetEffectiveConnectionTypeForTest(type);
+  }
+
   void ScheduleForTest() { coordinator_->ScheduleAsNeeded(); }
 
   void CallRequestNotPicked(bool non_user_requested_tasks_remaining) {
@@ -282,6 +305,7 @@ class RequestCoordinatorTest
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
+  std::unique_ptr<NetworkQualityEstimatorStub> network_quality_estimator_;
   std::unique_ptr<RequestCoordinator> coordinator_;
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
@@ -308,10 +332,15 @@ void RequestCoordinatorTest::SetUp() {
       store(new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
+  network_quality_estimator_.reset(new NetworkQualityEstimatorStub());
   coordinator_.reset(new RequestCoordinator(
       std::move(policy), std::move(factory), std::move(queue),
-      std::move(scheduler_stub)));
+      std::move(scheduler_stub), network_quality_estimator_.get()));
   coordinator_->AddObserver(&observer_);
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
 }
 
 void RequestCoordinatorTest::PumpLoop() {
@@ -358,8 +387,6 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 }
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
   // Put the request on the queue.
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
 
@@ -962,8 +989,8 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
 
 TEST_F(RequestCoordinatorTest,
        SavePageStartsProcessingWhenConnectedAndNotLowEndDevice) {
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
   PumpLoop();
 
@@ -977,8 +1004,15 @@ TEST_F(RequestCoordinatorTest,
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  PumpLoop();
+  EXPECT_FALSE(is_busy());
+}
+
+TEST_F(RequestCoordinatorTest,
+       SavePageDoesntStartProcessingWhenPoorlyConnected) {
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
   PumpLoop();
   EXPECT_FALSE(is_busy());
@@ -986,8 +1020,6 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
 
 TEST_F(RequestCoordinatorTest,
        ResumeStartsProcessingWhenConnectedAndNotLowEndDevice) {
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
 
   // Add a request to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
@@ -1013,9 +1045,9 @@ TEST_F(RequestCoordinatorTest,
   coordinator()->PauseRequests(request_ids);
   PumpLoop();
 
-  // Now simulate being connected.
-  SetNetworkConditionsForTest(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  // Now simulate reasonable connection.
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
 
   // Resume the request while connected.
   coordinator()->ResumeRequests(request_ids);

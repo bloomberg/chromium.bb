@@ -75,10 +75,13 @@ void EmptySchedulerCallback(bool started) {}
 
 }  // namespace
 
-RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
-                                       std::unique_ptr<OfflinerFactory> factory,
-                                       std::unique_ptr<RequestQueue> queue,
-                                       std::unique_ptr<Scheduler> scheduler)
+RequestCoordinator::RequestCoordinator(
+    std::unique_ptr<OfflinerPolicy> policy,
+    std::unique_ptr<OfflinerFactory> factory,
+    std::unique_ptr<RequestQueue> queue,
+    std::unique_ptr<Scheduler> scheduler,
+    net::NetworkQualityEstimator::NetworkQualityProvider*
+        network_quality_estimator)
     : is_busy_(false),
       is_starting_(false),
       is_stopped_(false),
@@ -89,6 +92,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
+      network_quality_estimator_(network_quality_estimator),
       active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       offliner_timeout_(base::TimeDelta::FromSeconds(
@@ -370,22 +374,30 @@ bool RequestCoordinator::StartProcessing(
 }
 
 void RequestCoordinator::StartProcessingIfConnected() {
-  // Makes sure not already busy processing.
+  // Make sure not already busy processing.
   if (is_busy_) return;
 
   // Make sure we are not on svelte device to start immediately.
   if (base::SysInfo::IsLowEndDevice()) return;
 
-  // Check for network connectivity.
-  net::NetworkChangeNotifier::ConnectionType connection = GetConnectionType();
-
-  if ((connection !=
-       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)) {
-    // Create conservative device conditions for the connectivity
-    // (assume no battery).
-    DeviceConditions device_conditions(false, 0, connection);
-    StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
+  // Make sure we have reasonable network quality (or at least a connection).
+  if (network_quality_estimator_) {
+    // TODO(dougarnett): Add UMA for quality type experienced.
+    net::EffectiveConnectionType quality =
+        network_quality_estimator_->GetEffectiveConnectionType();
+    if (quality < net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G) {
+      return;
+    }
+  } else if (GetConnectionType() ==
+             net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
+    return;
   }
+
+  // Start processing with manufactured conservative battery conditions
+  // (i.e., assume no battery).
+  // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
+  DeviceConditions device_conditions(false, 0, GetConnectionType());
+  StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
 }
 
 void RequestCoordinator::TryNextRequest() {
@@ -586,6 +598,10 @@ void RequestCoordinator::GetOffliner() {
   if (!offliner_) {
     offliner_ = factory_->GetOffliner(policy_.get());
   }
+}
+
+void RequestCoordinator::Shutdown() {
+  network_quality_estimator_ = nullptr;
 }
 
 }  // namespace offline_pages
