@@ -107,9 +107,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // explicilty save the offset between the title and the close button since
     // we can just get that value for the close button's frame.
     NSRect titleFrame = NSMakeRect(35, 6, 92, 17);
-    if (!isModeMaterial) {
-      titleFrame.size.height = 14;
-    }
 
     // Close button.
     NSRect closeButtonFrame = NSMakeRect(129, 6, 16, 16);
