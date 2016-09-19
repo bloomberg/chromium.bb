@@ -132,6 +132,7 @@ fontWeight
 getPropertyPriority
 getPropertyValue
 height
+hyphens
 imageRendering
 isolation
 item
