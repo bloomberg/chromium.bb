@@ -13,18 +13,33 @@ class CSSValue;
 
 enum class CSSSyntaxType {
     TokenStream,
+    Ident,
     Length,
-    // TODO(timloh): Add all the other types
+    Number,
+    Percentage,
+    LengthPercentage,
+    Color,
+    Image,
+    Url,
+    Integer,
+    Angle,
+    Time,
+    Resolution,
+    TransformFunction,
+    CustomIdent,
 };
 
 struct CSSSyntaxComponent {
-    CSSSyntaxComponent(CSSSyntaxType type)
+    CSSSyntaxComponent(CSSSyntaxType type, const String& string, bool repeatable)
         : m_type(type)
+        , m_string(string)
+        , m_repeatable(repeatable)
     {
     }
 
     CSSSyntaxType m_type;
-    // TODO(timloh): This will need to support arbitrary idents and list types
+    String m_string; // Only used when m_type is CSSSyntaxType::Ident
+    bool m_repeatable;
 };
 
 class CSSSyntaxDescriptor {
