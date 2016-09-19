@@ -64,6 +64,19 @@ void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
   display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
 }
 
+void PlatformScreenOzone::RequestCloseDisplay(int64_t display_id) {
+  if (!fake_display_controller_ || wait_for_display_config_update_)
+    return;
+
+  CachedDisplayIterator iter = GetCachedDisplayIterator(display_id);
+  if (iter != cached_displays_.end()) {
+    // Tell the NDD to remove the display. PlatformScreen will get an update
+    // that the display configuration has changed and the display will be gone.
+    wait_for_display_config_update_ =
+        fake_display_controller_->RemoveDisplay(iter->id);
+  }
+}
+
 int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }

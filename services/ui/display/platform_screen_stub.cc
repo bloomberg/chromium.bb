@@ -43,6 +43,14 @@ void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void PlatformScreenStub::RequestCloseDisplay(int64_t display_id) {
+  if (display_id == kDisplayId) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PlatformScreenDelegate::OnDisplayRemoved,
+                              base::Unretained(delegate_), display_id));
+  }
+}
+
 int64_t PlatformScreenStub::GetPrimaryDisplayId() const {
   return kDisplayId;
 }

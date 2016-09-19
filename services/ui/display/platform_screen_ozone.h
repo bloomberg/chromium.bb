@@ -37,6 +37,7 @@ class PlatformScreenOzone
   // PlatformScreen:
   void AddInterfaces(shell::InterfaceRegistry* registry) override;
   void Init(PlatformScreenDelegate* delegate) override;
+  void RequestCloseDisplay(int64_t display_id) override;
   int64_t GetPrimaryDisplayId() const override;
 
   // mojom::DisplayController:

@@ -182,7 +182,6 @@ void DisplayManager::OnDisplayRemoved(int64_t id) {
   Display* display = GetDisplayById(id);
   if (display)
     DestroyDisplay(display);
-  // TODO(kylechar): What if the display is still pending?
 }
 
 void DisplayManager::OnDisplayModified(int64_t id, const gfx::Rect& bounds) {

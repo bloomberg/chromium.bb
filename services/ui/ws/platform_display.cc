@@ -255,13 +255,10 @@ void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
 }
 
 void DefaultPlatformDisplay::OnCloseRequest() {
-  platform_window_->Close();
+  display::PlatformScreen::GetInstance()->RequestCloseDisplay(GetId());
 }
 
-void DefaultPlatformDisplay::OnClosed() {
-  if (delegate_)
-    delegate_->OnDisplayClosed();
-}
+void DefaultPlatformDisplay::OnClosed() {}
 
 void DefaultPlatformDisplay::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {}

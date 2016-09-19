@@ -302,10 +302,6 @@ void Display::OnNativeCaptureLost() {
     display_root->window_manager_state()->SetCapture(nullptr, kInvalidClientId);
 }
 
-void Display::OnDisplayClosed() {
-  display_manager()->DestroyDisplay(this);
-}
-
 void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
                                        const ViewportMetrics& new_metrics) {
   gfx::Rect new_bounds(new_metrics.bounds.size());

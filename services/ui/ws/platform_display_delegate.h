@@ -28,9 +28,6 @@ class PlatformDisplayDelegate {
 
   virtual bool IsInHighContrastMode() = 0;
 
-  // Called when the window managed by the PlatformDisplay is closed.
-  virtual void OnDisplayClosed() = 0;
-
   // Called when an event arrives.
   virtual void OnEvent(const ui::Event& event) = 0;
 

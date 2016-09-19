@@ -172,7 +172,6 @@ class Display : public PlatformDisplayDelegate,
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
-  void OnDisplayClosed() override;
   void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
                                 const ViewportMetrics& new_metrics) override;
   void OnCompositorFrameDrawn() override;
