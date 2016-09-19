@@ -4,91 +4,97 @@ Non-hidden element inside dialog
 {
   "id": "<int>",
   "result": {
-    "accessibilityNode": {
-      "nodeId": "<string>",
-      "ignored": true,
-      "ignoredReasons": [
-        {
-          "name": "activeModalDialog",
-          "value": {
-            "type": "idref",
-            "relatedNodes": [
-              {
-                "nodeResult": "dialog"
-              }
-            ]
+    "nodes": [
+      {
+        "nodeId": "<string>",
+        "ignored": true,
+        "ignoredReasons": [
+          {
+            "name": "activeModalDialog",
+            "value": {
+              "type": "idref",
+              "relatedNodes": [
+                {
+                  "nodeResult": "dialog"
+                }
+              ]
+            }
           }
+        ],
+        "role": {
+          "type": "internalRole",
+          "value": "Div"
         }
-      ],
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
       }
-    }
+    ]
   }
 }
 {
   "id": "<int>",
   "result": {
-    "accessibilityNode": {
-      "nodeId": "<string>",
-      "ignored": false,
-      "role": {
-        "type": "role",
-        "value": "dialog"
-      },
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      },
-      "properties": []
-    }
+    "nodes": [
+      {
+        "nodeId": "<string>",
+        "ignored": false,
+        "role": {
+          "type": "role",
+          "value": "dialog"
+        },
+        "name": {
+          "type": "computedString",
+          "value": "",
+          "sources": [
+            {
+              "type": "relatedElement",
+              "attribute": "aria-labelledby"
+            },
+            {
+              "type": "attribute",
+              "attribute": "aria-label"
+            },
+            {
+              "type": "attribute",
+              "attribute": "title"
+            }
+          ]
+        },
+        "properties": []
+      }
+    ]
   }
 }
 {
   "id": "<int>",
   "result": {
-    "accessibilityNode": {
-      "nodeId": "<string>",
-      "ignored": false,
-      "role": {
-        "type": "internalRole",
-        "value": "Div"
-      },
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title"
-          }
-        ]
-      },
-      "properties": []
-    }
+    "nodes": [
+      {
+        "nodeId": "<string>",
+        "ignored": false,
+        "role": {
+          "type": "internalRole",
+          "value": "Div"
+        },
+        "name": {
+          "type": "computedString",
+          "value": "",
+          "sources": [
+            {
+              "type": "relatedElement",
+              "attribute": "aria-labelledby"
+            },
+            {
+              "type": "attribute",
+              "attribute": "aria-label"
+            },
+            {
+              "type": "attribute",
+              "attribute": "title"
+            }
+          ]
+        },
+        "properties": []
+      }
+    ]
   }
 }
 

@@ -54,9 +54,9 @@ function getAXNodes(msg)
     var promise;
     msg.result.nodeIds.forEach((id) => {
         if (promise)
-            promise = promise.then(() => { return sendCommandPromise("Accessibility.getAXNode", { "nodeId": id }); });
+            promise = promise.then(() => { return sendCommandPromise("Accessibility.getAXNodeChain", { "nodeId": id, "fetchAncestors": false }); });
         else
-            promise = sendCommandPromise("Accessibility.getAXNode", { "nodeId": id });
+            promise = sendCommandPromise("Accessibility.getAXNodeChain", { "nodeId": id, "fetchAncestors": false });
         promise = promise.then((msg) => { return rewriteRelatedNodes(msg); })
                          .then((msg) => { return dumpNode(null, msg); });
     });
@@ -109,12 +109,23 @@ function checkExists(path, obj)
     var currentPath = [];
     var currentObject = obj;
     for (var component of pathComponents) {
+        var isArray = false;
+        var index = -1;
+        var matches = component.match(/(\w+)\[(\d+)\]/);
+        if (matches) {
+            isArray = true;
+            component = matches[1];
+            index = Number.parseInt(matches[2], 10);
+        }
         currentPath.push(component);
         if (!(component in currentObject)) {
-            throw new Error("Could not find " + currentPath.join(".") + " in " + JSON.stringify(obj, null, "  "));
-            return false;
+            InspectorTest.log("Could not find " + currentPath.join(".") + " in " + JSON.stringify(obj, null, "  "));
+            InspectorTest.completeTest();
         }
-        currentObject = currentObject[component];
+        if (isArray)
+            currentObject = currentObject[component][index];
+        else
+            currentObject = currentObject[component];
     }
     return true;
 }
@@ -142,12 +153,13 @@ function rewriteRelatedNodes(msg)
         throw new Error(msg.error.message);
     }
 
-    var node = msg.result.accessibilityNode;
+    var node = msg.result.nodes[0];
+
     if (node.ignored) {
-        checkExists("result.accessibilityNode.ignoredReasons", msg);
+        checkExists("result.nodes[0].ignoredReasons", msg);
         var properties = node.ignoredReasons;
     } else {
-        checkExists("result.accessibilityNode.properties", msg);
+        checkExists("result.nodes[0].properties", msg);
         var properties = node.properties;
     }
     var promises = [];
