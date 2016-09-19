@@ -132,28 +132,49 @@ SKIP = {
 
 
 SKIP_GN_ISOLATE_MAP_TARGETS = {
-  # TODO(GYP): These targets have not been ported to GN yet.
-  'android_webview_unittests',
-  'angle_deqp_gles2_tests',
-  'angle_deqp_gles3_tests',
-  'cast_media_unittests',
-  'cast_shell_browser_test',
-  'chromevox_tests',
-  'nacl_helper_nonsfi_unittests',
+  # This target is magic and not present in gn_isolate_map.pyl.
+  'all',
 
-  # TODO(kbr): teach this script about isolated_scripts tests.
-  # crbug.com/620531
-  'telemetry_gpu_integration_test',
-  'telemetry_gpu_test',
-  'telemetry_gpu_unittests',
-  'telemetry_perf_tests',
-  'telemetry_perf_unittests',
-  'telemetry_unittests',
+  # These targets are listed only in build-side recipes.
+  'All_syzygy',
+  'aura_builder',
+  'blink_tests',
+  'cast_shell',
+  'cast_shell_apk',
+  'chrome_official_builder_no_unittests',
+  'chromium_builder_asan',
+  'chromium_builder_dbg_drmemory_win',
+  'chromium_builder_lkgr_drmemory_win',
+  'chromium_builder_perf',
+  'chromium_builder_tests',
+  'chromium_swarm_tests',
+  'chromiumos_preflight',
+  'ios_chrome_unittests',
+  'ios_net_unittests',
+  'ios_web_inttests',
+  'ios_web_unittests',
+  'mini_installer',
+  'next_version_mini_installer',
+
+  # These are listed in Builders that are skipped for other reasons.
+  'chrome_junit_tests',
+  'components_invalidation_impl_junit_tests',
+  'components_policy_junit_tests',
+  'components_web_restrictions_junit_tests',
+  'content_junit_tests',
+  'content_junit_tests',
+  'junit_unit_tests',
+  'net_junit_tests',
+  'net_junit_tests',
+  'ui_junit_tests',
+  'webapk_client_junit_tests',
+  'webapk_shell_apk_junit_tests',
 
   # These tests are only run on WebRTC CI.
   'audio_decoder_unittests',
   'common_audio_unittests',
   'common_video_unittests',
+  'frame_analyzer',
   'modules_tests',
   'modules_unittests',
   'peerconnection_unittests',
@@ -233,23 +254,45 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
       continue
     if not isinstance(data, dict):
       raise Error('%s: %s is broken: %s' % (filename, builder, data))
-    if 'gtest_tests' not in data:
+    if ('gtest_tests' not in data and
+        'isolated_scripts' not in data and
+        'additional_compile_targets' not in data):
       continue
-    if not isinstance(data['gtest_tests'], list):
+
+    for d in data.get('junit_tests', []):
+      test = d['test']
+      if (test not in ninja_targets and
+          test not in SKIP_GN_ISOLATE_MAP_TARGETS):
+        raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl' %
+                    (filename, builder, test))
+      elif test in ninja_targets:
+        ninja_targets_seen.add(test)
+
+    for target in data.get('additional_compile_targets', []):
+      if (target not in ninja_targets and
+          target not in SKIP_GN_ISOLATE_MAP_TARGETS):
+        raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl' %
+                    (filename, builder, target))
+      elif target in ninja_targets:
+        ninja_targets_seen.add(target)
+
+    gtest_tests = data.get('gtest_tests', [])
+    if not isinstance(gtest_tests, list):
       raise Error(
-          '%s: %s is broken: %s' % (filename, builder, data['gtest_tests']))
-    if not all(isinstance(g, dict) for g in data['gtest_tests']):
+          '%s: %s is broken: %s' % (filename, builder, gtest_tests))
+    if not all(isinstance(g, dict) for g in gtest_tests):
       raise Error(
-          '%s: %s is broken: %s' % (filename, builder, data['gtest_tests']))
+          '%s: %s is broken: %s' % (filename, builder, gtest_tests))
 
     seen = set()
-    for d in data['gtest_tests']:
-      if (d['test'] not in ninja_targets and
-          d['test'] not in SKIP_GN_ISOLATE_MAP_TARGETS):
+    for d in gtest_tests:
+      test = d['test']
+      if (test not in ninja_targets and
+          test not in SKIP_GN_ISOLATE_MAP_TARGETS):
         raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
-                    (filename, builder, d['test']))
-      elif d['test'] in ninja_targets:
-        ninja_targets_seen.add(d['test'])
+                    (filename, builder, test))
+      elif test in ninja_targets:
+        ninja_targets_seen.add(test)
 
       name = d.get('name', d['test'])
       if name in seen:
@@ -259,8 +302,18 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
       d.setdefault('swarming', {}).setdefault(
           'can_use_on_swarming_builders', False)
 
-    config[builder]['gtest_tests'] = sorted(
-        data['gtest_tests'], key=lambda x: x['test'])
+    if gtest_tests:
+      config[builder]['gtest_tests'] = sorted(
+          gtest_tests, key=lambda x: x['test'])
+
+    for d in data.get('isolated_scripts', []):
+      name = d['isolate_name']
+      if (name not in ninja_targets and
+          name not in SKIP_GN_ISOLATE_MAP_TARGETS):
+        raise Error('%s: %s / %s is not listed in gn_isolate_map.pyl.' %
+                    (filename, builder, name))
+      elif name in ninja_targets:
+        ninja_targets_seen.add(name)
 
     # The trick here is that process_builder_remaining() is called before
     # process_builder_convert() so tests_location can be used to know how many
