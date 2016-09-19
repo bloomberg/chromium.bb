@@ -80,6 +80,11 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
         }
 
         @Override
+        protected boolean isDistillerHeuristicAlwaysTrue() {
+            return true;
+        }
+
+        @Override
         protected void recordPanelVisibilityForNavigation(boolean visible) {
             mRecordedCount++;
             mVisibleCount += visible ? 1 : 0;

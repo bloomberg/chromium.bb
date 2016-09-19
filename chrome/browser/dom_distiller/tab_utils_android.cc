@@ -68,6 +68,13 @@ jboolean IsDistillerHeuristicsEnabled(JNIEnv* env,
       != dom_distiller::DistillerHeuristicsType::NONE;
 }
 
+// Returns true if distiller is reporting every page as distillable.
+jboolean IsHeuristicAlwaysTrue(JNIEnv* env,
+                               const JavaParamRef<jclass>& clazz) {
+  return dom_distiller::GetDistillerHeuristicsType()
+      == dom_distiller::DistillerHeuristicsType::ALWAYS_TRUE;
+}
+
 }  // namespace android
 
 bool RegisterDomDistillerTabUtils(JNIEnv* env) {

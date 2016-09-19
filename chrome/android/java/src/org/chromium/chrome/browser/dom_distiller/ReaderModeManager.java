@@ -92,6 +92,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     // InfoBar tracking.
     private boolean mIsInfoBarContainerShown;
 
+    // If Reader Mode is detecting all pages as distillable.
+    private boolean mIsReaderHeuristicAlwaysTrue;
+
 
     public ReaderModeManager(TabModelSelector selector, ChromeActivity activity) {
         super(selector);
@@ -99,6 +102,15 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         mTabModelSelector = selector;
         mChromeActivity = activity;
         mTabStatusMap = new HashMap<>();
+        mIsReaderHeuristicAlwaysTrue = isDistillerHeuristicAlwaysTrue();
+    }
+
+    /**
+     * This function wraps a method that calls native code and is overridden by tests.
+     * @return True if the heuristic is ALWAYS_TRUE.
+     */
+    protected boolean isDistillerHeuristicAlwaysTrue() {
+        return DomDistillerTabUtils.isHeuristicAlwaysTrue();
     }
 
     /**
@@ -508,7 +520,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         int currentTabId = mTabModelSelector.getCurrentTabId();
         if (currentTabId == Tab.INVALID_TAB_ID) return;
 
+        // Test if the user is requesting the desktop site. Ignore this if distiller is set to
+        // ALWAYS_TRUE.
+        boolean usingRequestDesktopSite = getBasePageWebContents() != null
+                && getBasePageWebContents().getNavigationController().getUseDesktopUserAgent()
+                && !mIsReaderHeuristicAlwaysTrue;
+
         if (mReaderModePanel == null || !mTabStatusMap.containsKey(currentTabId)
+                || usingRequestDesktopSite
                 || mTabStatusMap.get(currentTabId).getStatus() != POSSIBLE
                 || mTabStatusMap.get(currentTabId).isDismissed()
                 || mIsInfoBarContainerShown
