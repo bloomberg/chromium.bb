@@ -7396,6 +7396,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The exit codes for crashed renderer processes.</summary>
 </histogram>
 
+<histogram name="Crashpad.CrashReportSize" units="bytes">
+  <owner>scottmg@chromium.org</owner>
+  <summary>The size of a crash report minidump on disk when captured.</summary>
+</histogram>
+
 <histogram name="CrashReport.BreakpadCrashDumpOutcome" enum="DumpOutcome">
   <obsolete>
     Deprecated as of 04/2016 as CrashPad does not implement this.
