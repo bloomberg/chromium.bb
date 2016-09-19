@@ -109,7 +109,7 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateInternal(
   // TODO(mattm): should distinguish between unsupported algorithms and parsing
   // errors.
   result->signature_algorithm_ =
-      SignatureAlgorithm::CreateFromDer(result->signature_algorithm_tlv_);
+      SignatureAlgorithm::Create(result->signature_algorithm_tlv_, errors);
 
   der::Input subject_value;
   if (!GetSequenceValue(result->tbs_.subject_tlv, &subject_value) ||

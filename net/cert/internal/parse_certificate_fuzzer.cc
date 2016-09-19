@@ -38,7 +38,7 @@ void ParseCertificateForFuzzer(const der::Input& in) {
                         &signature_value, &errors))
     return;
   std::unique_ptr<SignatureAlgorithm> sig_alg(
-      SignatureAlgorithm::CreateFromDer(signature_algorithm_tlv));
+      SignatureAlgorithm::Create(signature_algorithm_tlv, &errors));
 
   ParsedTbsCertificate tbs;
   if (!ParseTbsCertificate(tbs_certificate_tlv, {}, &tbs, &errors))

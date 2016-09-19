@@ -326,7 +326,7 @@ bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
     return false;
 
   std::unique_ptr<SignatureAlgorithm> signature_algorithm =
-      SignatureAlgorithm::CreateFromDer(signature_algorithm_tlv);
+      SignatureAlgorithm::Create(signature_algorithm_tlv, nullptr);
   if (!signature_algorithm)
     return false;
 
