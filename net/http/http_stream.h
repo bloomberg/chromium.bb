@@ -22,7 +22,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/base/upload_progress.h"
 
 namespace crypto {
 class ECPrivateKey;
@@ -176,9 +175,6 @@ class NET_EXPORT_PRIVATE HttpStream {
 
   // Called when the priority of the parent transaction changes.
   virtual void SetPriority(RequestPriority priority) = 0;
-
-  // Queries the UploadDataStream for its progress (bytes sent).
-  virtual UploadProgress GetUploadProgress() const = 0;
 
   // Returns a new (not initialized) stream using the same underlying
   // connection and invalidates the old stream - no further methods should be

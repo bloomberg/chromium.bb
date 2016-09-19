@@ -49,7 +49,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,
                   const CompletionCallback& callback) override;
-  UploadProgress GetUploadProgress() const override;
   int ReadResponseHeaders(const CompletionCallback& callback) override;
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,

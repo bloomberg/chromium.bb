@@ -99,7 +99,6 @@ class MockHttpStream : public HttpStream {
                   const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }
-  UploadProgress GetUploadProgress() const override { return UploadProgress(); }
   int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }

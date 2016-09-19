@@ -127,7 +127,6 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   void Drain(HttpNetworkSession* session) override {}
   void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
   void SetPriority(RequestPriority priority) override {}
-  UploadProgress GetUploadProgress() const override { return UploadProgress(); }
   HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   std::unique_ptr<WebSocketStream> Upgrade() override {

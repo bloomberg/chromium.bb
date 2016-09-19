@@ -70,8 +70,6 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   void SetAuth(const AuthCredentials& credentials) override;
   void CancelAuth() override;
 
-  // TODO(ibrar):  Yet to give another look at this function.
-  UploadProgress GetUploadProgress() const override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;
 
   void HandleAuthNeededResponse();

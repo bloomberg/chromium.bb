@@ -32,7 +32,6 @@ class HttpResponseInfo;
 class HttpNetworkSession;
 class IOBuffer;
 struct LoadTimingInfo;
-class UploadProgress;
 class X509Certificate;
 }  // namespace net
 
@@ -79,7 +78,6 @@ class DevToolsNetworkTransaction
   void DoneReading() override;
   const net::HttpResponseInfo* GetResponseInfo() const override;
   net::LoadState GetLoadState() const override;
-  net::UploadProgress GetUploadProgress() const override;
   void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(net::IPEndPoint* endpoint) const override;

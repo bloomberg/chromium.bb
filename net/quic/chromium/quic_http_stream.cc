@@ -280,14 +280,6 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   return rv > 0 ? OK : rv;
 }
 
-UploadProgress QuicHttpStream::GetUploadProgress() const {
-  if (!request_body_stream_)
-    return UploadProgress();
-
-  return UploadProgress(request_body_stream_->position(),
-                        request_body_stream_->size());
-}
-
 int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   CHECK(callback_.is_null());
   CHECK(!callback.is_null());

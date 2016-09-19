@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/base/upload_progress.h"
 #include "net/log/net_log.h"
 
 namespace net {
@@ -89,6 +90,11 @@ class NET_EXPORT UploadDataStream {
   // Returns a list of element readers owned by |this|, if it has any.
   virtual const std::vector<std::unique_ptr<UploadElementReader>>*
   GetElementReaders() const;
+
+  // Returns the upload progress. If the stream was not initialized
+  // successfully, or has been reset and not yet re-initialized, returns an
+  // empty UploadProgress.
+  virtual UploadProgress GetUploadProgress() const;
 
  protected:
   // Must be called by subclasses when InitInternal and ReadInternal complete

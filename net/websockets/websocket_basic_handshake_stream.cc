@@ -465,10 +465,6 @@ void WebSocketBasicHandshakeStream::SetPriority(RequestPriority priority) {
   // gone, then copy whatever has happened there over here.
 }
 
-UploadProgress WebSocketBasicHandshakeStream::GetUploadProgress() const {
-  return UploadProgress();
-}
-
 HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
   // Return null because we don't support renewing the stream.
   return nullptr;

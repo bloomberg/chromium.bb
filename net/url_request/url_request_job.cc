@@ -220,10 +220,6 @@ LoadState URLRequestJob::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
-UploadProgress URLRequestJob::GetUploadProgress() const {
-  return UploadProgress();
-}
-
 bool URLRequestJob::GetCharset(std::string* charset) {
   return false;
 }

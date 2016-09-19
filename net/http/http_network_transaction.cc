@@ -378,13 +378,6 @@ LoadState HttpNetworkTransaction::GetLoadState() const {
   }
 }
 
-UploadProgress HttpNetworkTransaction::GetUploadProgress() const {
-  if (!stream_.get())
-    return UploadProgress();
-
-  return stream_->GetUploadProgress();
-}
-
 void HttpNetworkTransaction::SetQuicServerInfo(
     QuicServerInfo* quic_server_info) {}
 

@@ -217,8 +217,6 @@ class MockNetworkTransaction
 
   LoadState GetLoadState() const override;
 
-  UploadProgress GetUploadProgress() const override;
-
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;

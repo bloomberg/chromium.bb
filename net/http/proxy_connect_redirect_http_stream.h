@@ -66,7 +66,6 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
   // This function may be called.
   void SetPriority(RequestPriority priority) override;
 
-  UploadProgress GetUploadProgress() const override;
   HttpStream* RenewStreamForAuth() override;
 
  private:

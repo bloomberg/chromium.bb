@@ -19,7 +19,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/base/upload_progress.h"
 #include "net/log/net_log.h"
 
 namespace net {
@@ -71,10 +70,6 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
                        const CompletionCallback& callback);
 
   void Close(bool not_reusable);
-
-  // Returns the progress of uploading. When data is chunked, size is set to
-  // zero, but position will not be.
-  UploadProgress GetUploadProgress() const;
 
   bool IsResponseBodyComplete() const;
 

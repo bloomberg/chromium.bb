@@ -325,10 +325,6 @@ void URLRequestFtpJob::CancelAuth() {
   OnStartCompletedAsync(OK);
 }
 
-UploadProgress URLRequestFtpJob::GetUploadProgress() const {
-  return UploadProgress();
-}
-
 int URLRequestFtpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!read_in_progress_);

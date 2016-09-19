@@ -38,10 +38,6 @@ int HttpBasicStream::SendRequest(const HttpRequestHeaders& headers,
       state_.GenerateRequestLine(), headers, response, callback);
 }
 
-UploadProgress HttpBasicStream::GetUploadProgress() const {
-  return parser()->GetUploadProgress();
-}
-
 int HttpBasicStream::ReadResponseHeaders(const CompletionCallback& callback) {
   return parser()->ReadResponseHeaders(callback);
 }

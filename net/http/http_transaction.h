@@ -148,10 +148,6 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Returns the load state for this transaction.
   virtual LoadState GetLoadState() const = 0;
 
-  // Returns the upload progress in bytes.  If there is no upload data,
-  // zero will be returned.  This does not include the request headers.
-  virtual UploadProgress GetUploadProgress() const = 0;
-
   // SetQuicServerInfo sets a object which reads and writes public information
   // about a QUIC server.
   virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) = 0;

@@ -99,14 +99,6 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-UploadProgress SpdyHttpStream::GetUploadProgress() const {
-  if (!request_info_ || !HasUploadData())
-    return UploadProgress();
-
-  return UploadProgress(request_info_->upload_data_stream->position(),
-                        request_info_->upload_data_stream->size());
-}
-
 int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   CHECK(!callback.is_null());
   if (stream_closed_)

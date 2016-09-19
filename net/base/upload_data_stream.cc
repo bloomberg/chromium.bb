@@ -188,4 +188,12 @@ void UploadDataStream::OnReadCompleted(int result) {
     base::ResetAndReturn(&callback_).Run(result);
 }
 
+UploadProgress UploadDataStream::GetUploadProgress() const {
+  // While initialization / rewinding is in progress, return nothing.
+  if (!initialized_successfully_)
+    return UploadProgress();
+
+  return UploadProgress(current_position_, total_size_);
+}
+
 }  // namespace net

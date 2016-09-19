@@ -352,10 +352,6 @@ LoadState MockNetworkTransaction::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
-UploadProgress MockNetworkTransaction::GetUploadProgress() const {
-  return UploadProgress();
-}
-
 void MockNetworkTransaction::SetQuicServerInfo(
     QuicServerInfo* quic_server_info) {
 }

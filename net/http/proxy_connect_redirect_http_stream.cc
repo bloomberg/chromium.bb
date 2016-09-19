@@ -122,10 +122,6 @@ void ProxyConnectRedirectHttpStream::SetPriority(RequestPriority priority) {
   // Nothing to do.
 }
 
-UploadProgress ProxyConnectRedirectHttpStream::GetUploadProgress() const {
-  return UploadProgress();
-}
-
 HttpStream* ProxyConnectRedirectHttpStream::RenewStreamForAuth() {
   NOTREACHED();
   return NULL;

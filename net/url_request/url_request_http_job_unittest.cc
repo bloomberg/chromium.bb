@@ -906,10 +906,6 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   void SetPriority(RequestPriority priority) override {}
 
-  UploadProgress GetUploadProgress() const override {
-    return UploadProgress();
-  }
-
   HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)

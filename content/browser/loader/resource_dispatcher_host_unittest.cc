@@ -59,6 +59,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
+#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -503,18 +504,13 @@ class URLRequestLoadInfoJob : public net::URLRequestJob {
  public:
   URLRequestLoadInfoJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
-                        const net::LoadState& load_state,
-                        const net::UploadProgress& upload_progress)
+                        const net::LoadState& load_state)
       : net::URLRequestJob(request, network_delegate),
-        load_state_(load_state),
-        upload_progress_(upload_progress) {}
+        load_state_(load_state) {}
 
   // net::URLRequestJob implementation:
   void Start() override {}
   net::LoadState GetLoadState() const override { return load_state_; }
-  net::UploadProgress GetUploadProgress() const override {
-    return upload_progress_;
-  }
 
  private:
   ~URLRequestLoadInfoJob() override {}
@@ -532,7 +528,6 @@ class URLRequestLoadInfoJob : public net::URLRequestJob {
   }
 
   const net::LoadState load_state_;
-  const net::UploadProgress upload_progress_;
 };
 
 class ResourceDispatcherHostTest;

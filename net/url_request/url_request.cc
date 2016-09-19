@@ -356,13 +356,18 @@ UploadProgress URLRequest::GetUploadProgress() const {
     // We haven't started or the request was cancelled
     return UploadProgress();
   }
+
   if (final_upload_progress_.position()) {
     // The first job completed and none of the subsequent series of
     // GETs when following redirects will upload anything, so we return the
     // cached results from the initial job, the POST.
     return final_upload_progress_;
   }
-  return job_->GetUploadProgress();
+
+  if (upload_data_stream_)
+    return upload_data_stream_->GetUploadProgress();
+
+  return UploadProgress();
 }
 
 void URLRequest::GetResponseHeaderByName(const string& name,
@@ -961,8 +966,8 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
     return ERR_UNSAFE_REDIRECT;
   }
 
-  if (!final_upload_progress_.position())
-    final_upload_progress_ = job_->GetUploadProgress();
+  if (!final_upload_progress_.position() && upload_data_stream_)
+    final_upload_progress_ = upload_data_stream_->GetUploadProgress();
   PrepareToRestart();
 
   if (redirect_info.new_method != method_) {

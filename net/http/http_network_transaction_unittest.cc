@@ -1205,6 +1205,11 @@ TEST_F(HttpNetworkTransactionTest, Ignores100) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
+  // Check the upload progress returned before initialization is correct.
+  UploadProgress progress = request.upload_data_stream->GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
@@ -14200,8 +14205,6 @@ class FakeStream : public HttpStream,
 
   void SetPriority(RequestPriority priority) override { priority_ = priority; }
 
-  UploadProgress GetUploadProgress() const override { return UploadProgress(); }
-
   HttpStream* RenewStreamForAuth() override { return NULL; }
 
  private:
@@ -14435,11 +14438,6 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   void PopulateNetErrorDetails(NetErrorDetails* details) override { return; }
 
   void SetPriority(RequestPriority priority) override { NOTREACHED(); }
-
-  UploadProgress GetUploadProgress() const override {
-    NOTREACHED();
-    return UploadProgress();
-  }
 
   HttpStream* RenewStreamForAuth() override {
     NOTREACHED();

@@ -1101,14 +1101,6 @@ void HttpStreamParser::CalculateResponseBodySize() {
   }
 }
 
-UploadProgress HttpStreamParser::GetUploadProgress() const {
-  if (!request_->upload_data_stream)
-    return UploadProgress();
-
-  return UploadProgress(request_->upload_data_stream->position(),
-                        request_->upload_data_stream->size());
-}
-
 bool HttpStreamParser::IsResponseBodyComplete() const {
   if (chunked_decoder_.get())
     return chunked_decoder_->reached_eof();

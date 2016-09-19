@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
-#include "net/base/upload_progress.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/connection_attempts.h"
 
@@ -58,7 +57,6 @@ class FailingHttpTransaction : public HttpTransaction {
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
-  UploadProgress GetUploadProgress() const override;
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
@@ -145,10 +143,6 @@ const HttpResponseInfo* FailingHttpTransaction::GetResponseInfo() const  {
 
 LoadState FailingHttpTransaction::GetLoadState() const  {
   return LOAD_STATE_IDLE;
-}
-
-UploadProgress FailingHttpTransaction::GetUploadProgress() const  {
-  return UploadProgress();
 }
 
 void FailingHttpTransaction::SetQuicServerInfo(

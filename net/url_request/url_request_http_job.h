@@ -113,7 +113,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void SetUpload(UploadDataStream* upload) override;
   void SetExtraRequestHeaders(const HttpRequestHeaders& headers) override;
   LoadState GetLoadState() const override;
-  UploadProgress GetUploadProgress() const override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(HttpResponseInfo* info) override;

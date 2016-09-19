@@ -168,24 +168,6 @@ class SpdyHttpStreamTest : public testing::Test {
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
-// SpdyHttpStream::GetUploadProgress() should still work even before the
-// stream is initialized.
-TEST_F(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
-  MockRead reads[] = {
-    MockRead(ASYNC, 0, 0)  // EOF
-  };
-
-  InitSession(reads, arraysize(reads), nullptr, 0);
-
-  SpdyHttpStream stream(session_, false);
-  UploadProgress progress = stream.GetUploadProgress();
-  EXPECT_EQ(0u, progress.size());
-  EXPECT_EQ(0u, progress.position());
-
-  // Pump the event loop so |reads| is consumed before the function returns.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(SpdyHttpStreamTest, SendRequest) {
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));

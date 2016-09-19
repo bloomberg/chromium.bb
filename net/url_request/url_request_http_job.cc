@@ -1088,11 +1088,6 @@ LoadState URLRequestHttpJob::GetLoadState() const {
       transaction_->GetLoadState() : LOAD_STATE_IDLE;
 }
 
-UploadProgress URLRequestHttpJob::GetUploadProgress() const {
-  return transaction_.get() ?
-      transaction_->GetUploadProgress() : UploadProgress();
-}
-
 bool URLRequestHttpJob::GetMimeType(std::string* mime_type) const {
   DCHECK(transaction_.get());
 

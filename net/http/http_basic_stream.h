@@ -48,8 +48,6 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
                   HttpResponseInfo* response,
                   const CompletionCallback& callback) override;
 
-  UploadProgress GetUploadProgress() const override;
-
   int ReadResponseHeaders(const CompletionCallback& callback) override;
 
   int ReadResponseBody(IOBuffer* buf,

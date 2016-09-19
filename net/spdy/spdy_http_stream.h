@@ -52,7 +52,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   int SendRequest(const HttpRequestHeaders& headers,
                   HttpResponseInfo* response,
                   const CompletionCallback& callback) override;
-  UploadProgress GetUploadProgress() const override;
   int ReadResponseHeaders(const CompletionCallback& callback) override;
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,

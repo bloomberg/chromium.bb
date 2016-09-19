@@ -24,7 +24,6 @@
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/request_priority.h"
-#include "net/base/upload_progress.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -151,7 +150,6 @@ class HttpCache::Transaction : public HttpTransaction {
   void DoneReading() override;
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
-  UploadProgress GetUploadProgress(void) const override;
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
@@ -467,7 +465,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int effective_load_flags_;
   int write_len_;
   std::unique_ptr<PartialData> partial_;  // We are dealing with range requests.
-  UploadProgress final_upload_progress_;
   CompletionCallback io_callback_;
 
   // Members used to track data for histograms.

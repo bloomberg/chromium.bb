@@ -473,12 +473,6 @@ LoadState HttpCache::Transaction::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
-UploadProgress HttpCache::Transaction::GetUploadProgress() const {
-  if (network_trans_.get())
-    return network_trans_->GetUploadProgress();
-  return final_upload_progress_;
-}
-
 void HttpCache::Transaction::SetQuicServerInfo(
     QuicServerInfo* quic_server_info) {}
 
@@ -1555,7 +1549,6 @@ int HttpCache::Transaction::DoUpdateCachedResponseComplete(int result) {
       mode_ = READ;
     }
     // We no longer need the network transaction, so destroy it.
-    final_upload_progress_ = network_trans_->GetUploadProgress();
     ResetNetworkTransaction();
   } else if (entry_ && handling_206_ && truncated_ &&
              partial_->initial_validation()) {

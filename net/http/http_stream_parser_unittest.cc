@@ -112,9 +112,20 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
+
+  // Test upload progress before init.
+  UploadProgress progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+
   ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback(),
                                       BoundNetLog()),
               IsOk());
+
+  // Test upload progress after init.
+  progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -133,6 +144,10 @@ TEST(HttpStreamParser, DataReadErrorSynchronous) {
   int result = parser.SendRequest("POST / HTTP/1.1\r\n", headers, &response,
                                   callback.callback());
   EXPECT_THAT(callback.GetResult(result), IsError(ERR_FAILED));
+
+  progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
 
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
 }
@@ -171,8 +186,94 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
                                   callback.callback());
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));
 
+  UploadProgress progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+
   EXPECT_THAT(callback.GetResult(result), IsError(ERR_FAILED));
+
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+}
+
+class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
+ public:
+  explicit InitAsyncUploadDataStream(int64_t identifier)
+      : ChunkedUploadDataStream(identifier), weak_factory_(this) {}
+
+ private:
+  void CompleteInit() { UploadDataStream::OnInitCompleted(OK); }
+
+  int InitInternal(const BoundNetLog& net_log) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&InitAsyncUploadDataStream::CompleteInit,
+                              weak_factory_.GetWeakPtr()));
+    return ERR_IO_PENDING;
+  }
+
+  base::WeakPtrFactory<InitAsyncUploadDataStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitAsyncUploadDataStream);
+};
+
+TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
+  InitAsyncUploadDataStream upload_data_stream(0);
+
+  TestCompletionCallback callback;
+  int result = upload_data_stream.Init(callback.callback(), BoundNetLog());
+  ASSERT_THAT(result, IsError(ERR_IO_PENDING));
+
+  // Should be empty progress while initialization is in progress.
+  UploadProgress progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+  EXPECT_THAT(callback.GetResult(result), IsOk());
+
+  // Initialization complete.
+  progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://localhost");
+  request.upload_data_stream = &upload_data_stream;
+
+  static const char kChunk[] = "Chunk 1";
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0, "POST / HTTP/1.1\r\n"),
+      MockWrite(ASYNC, 1, "Transfer-Encoding: chunked\r\n\r\n"),
+      MockWrite(ASYNC, 2, "7\r\nChunk 1\r\n"),
+  };
+
+  SequencedSocketData data(nullptr, 0, writes, arraysize(writes));
+  std::unique_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), &request, read_buffer.get(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  headers.SetHeader("Transfer-Encoding", "chunked");
+
+  HttpResponseInfo response;
+  TestCompletionCallback callback1;
+  int result1 = parser.SendRequest("POST / HTTP/1.1\r\n", headers, &response,
+                                   callback1.callback());
+  EXPECT_EQ(ERR_IO_PENDING, result1);
+  base::RunLoop().RunUntilIdle();
+  upload_data_stream.AppendData(kChunk, arraysize(kChunk) - 1, true);
+
+  // Check progress after read completes.
+  progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(7u, progress.position());
+
+  // Check progress after reset.
+  upload_data_stream.Reset();
+  progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
 }
 
 // The empty payload is how the last chunk is encoded.
@@ -477,6 +578,10 @@ TEST(HttpStreamParser, SentBytesPost) {
                                    callback.callback()));
 
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+
+  UploadProgress progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(12u, progress.size());
+  EXPECT_EQ(12u, progress.position());
 }
 
 TEST(HttpStreamParser, SentBytesChunkedPostError) {
@@ -524,6 +629,10 @@ TEST(HttpStreamParser, SentBytesChunkedPostError) {
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
+
+  UploadProgress progress = upload_data_stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(14u, progress.position());
 }
 
 // Test to ensure the HttpStreamParser state machine does not get confused
