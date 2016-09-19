@@ -13,10 +13,11 @@
   <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
     <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
   </message>
-  <message name="IDS_SECURE_VERBOSE_STATE" desc="Text for the Secure Omnibox Verbose State. Displayed when the current page has a HTTPS connection.">
+
+  <message name="IDS_SECURE_VERBOSE_STATE" desc="An adjective or short adjective phrase shown next to the green lock icon in the omnibox to describe a secure site (valid HTTPS connection). Note that 'secure' in this case primarily refers to HTTPS connection security, so prefer translations with a connotation of 'private' (no one can intercept your communication with the site) rather than 'trustworthy' (which would be a judgment of site reputation). This phrase takes away space from the URL in the omnibox, so it should ideally be as short as possible while staying accurate. This phrase should also make sense compared to the companion phrase 'Not Secure'." meaning="Omnibox phrase to describe a secure site.">
     Secure
   </message>
-  <message name="IDS_NOT_SECURE_VERBOSE_STATE" desc="Text for the Not Secure Omnibox Verbose State. Displayed when the current page has a HTTP or invalid HTTPS connection.">
+  <message name="IDS_NOT_SECURE_VERBOSE_STATE" desc="An adjective or short adjective phrase shown next to the security indicator icon in the omnibox to describe a site that is not secure (unencrypted HTTP or invalid HTTPS connection). Note that 'not secure' in this case primarily refers to HTTPS connection security, so prefer translations with a connotation of 'not private' (someone can intercept your communication with the site) rather than 'not trustworthy' (which would be a judgment of site reputation). This phrase takes away space from the URL in the omnibox, so it should ideally be as short as possible while staying accurate. This phrase should also make sense compared to the companion phrase 'Secure'." meaning="Omnibox phrase to describe a site that is not secure.">
     Not Secure
   </message>
   <message name="IDS_DANGEROUS_VERBOSE_STATE" desc="Text for the Dangerous Omnibox Verbose State. Displayed when the current page fails the malware check.">
