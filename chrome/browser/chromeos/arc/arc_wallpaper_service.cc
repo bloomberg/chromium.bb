@@ -141,27 +141,12 @@ void ArcWallpaperService::OnDecodeImageFailed() {
 
 void ArcWallpaperService::OnWallpaperDataChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojom::WallpaperInstance* instance =
-      GetWallpaperInstance(kMinOnWallpaperChangedVersion);
-  if (!instance)
+  auto* wallpaper_instance =
+      arc_bridge_service()->wallpaper()->GetInstanceForMethod(
+          "OnWallpaperChanged", kMinOnWallpaperChangedVersion);
+  if (!wallpaper_instance)
     return;
-  instance->OnWallpaperChanged();
-}
-
-mojom::WallpaperInstance* ArcWallpaperService::GetWallpaperInstance(
-    uint32_t min_version) {
-  uint32_t version = arc_bridge_service()->wallpaper()->version();
-  if (version < min_version) {
-    VLOG(1) << "ARC wallpaper instance is too old. required: " << min_version
-            << ", actual: " << version;
-    return nullptr;
-  }
-
-  mojom::WallpaperInstance* instance =
-      arc_bridge_service()->wallpaper()->instance();
-  if (!instance)
-    VLOG(2) << "ARC wallpaper instance is not ready.";
-  return instance;
+  wallpaper_instance->OnWallpaperChanged();
 }
 
 }  // namespace arc

@@ -39,8 +39,6 @@ class ArcStorageManager : public ArcService {
   bool DeleteApplicationsCache(const base::Callback<void()>& callback);
 
  private:
-  mojom::StorageManagerInstance* GetStorageManagerInstance();
-
   DISALLOW_COPY_AND_ASSIGN(ArcStorageManager);
 };
 

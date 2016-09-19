@@ -27,7 +27,10 @@
 
 namespace {
 
-const int kGetNetworksListLimit = 100;
+constexpr int kGetNetworksListLimit = 100;
+constexpr uint32_t kScanCompletedMinInstanceVersion = 1;
+constexpr uint32_t kDefaultNetworkChangedMinInstanceVersion = 2;
+constexpr uint32_t kWifiEnabledStateChanged = 3;
 
 chromeos::NetworkStateHandler* GetStateHandler() {
   return chromeos::NetworkHandler::Get()->network_state_handler();
@@ -572,16 +575,12 @@ void ArcNetHostImpl::StartScan() {
 }
 
 void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
-  if (!arc_bridge_service()->net()->instance()) {
-    VLOG(2) << "NetInstance not ready yet";
+  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
+      "ScanCompleted", kScanCompletedMinInstanceVersion);
+  if (!net_instance)
     return;
-  }
-  if (arc_bridge_service()->net()->version() < 1) {
-    VLOG(1) << "NetInstance does not support ScanCompleted.";
-    return;
-  }
 
-  arc_bridge_service()->net()->instance()->ScanCompleted();
+  net_instance->ScanCompleted();
 }
 
 void ArcNetHostImpl::GetDefaultNetwork(
@@ -605,26 +604,23 @@ void ArcNetHostImpl::GetDefaultNetwork(
 void ArcNetHostImpl::DefaultNetworkSuccessCallback(
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
-  if (!arc_bridge_service()->net()->instance()) {
-    VLOG(2) << "NetInstance is null.";
+  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
+      "DefaultNetworkChanged", kDefaultNetworkChangedMinInstanceVersion);
+  if (!net_instance)
     return;
-  }
-  arc_bridge_service()->net()->instance()->DefaultNetworkChanged(
-      TranslateONCConfiguration(&dictionary),
-      TranslateONCConfiguration(&dictionary));
+
+  net_instance->DefaultNetworkChanged(TranslateONCConfiguration(&dictionary),
+                                      TranslateONCConfiguration(&dictionary));
 }
 
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
-  if (arc_bridge_service()->net()->version() < 2) {
-    VLOG(1) << "ArcBridgeService does not support DefaultNetworkChanged.";
-    return;
-  }
-
   if (!network) {
     VLOG(1) << "No default network";
-    arc_bridge_service()->net()->instance()->DefaultNetworkChanged(nullptr,
-                                                                   nullptr);
+    auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
+        "DefaultNetworkChanged", kDefaultNetworkChangedMinInstanceVersion);
+    if (net_instance)
+      net_instance->DefaultNetworkChanged(nullptr, nullptr);
     return;
   }
 
@@ -638,14 +634,14 @@ void ArcNetHostImpl::DefaultNetworkChanged(
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
-  if (arc_bridge_service()->net()->version() < 3) {
-    VLOG(1) << "ArcBridgeService does not support DeviceListChanged.";
+  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
+      "WifiEnabledStateChanged", kWifiEnabledStateChanged);
+  if (!net_instance)
     return;
-  }
 
   bool is_enabled = GetStateHandler()->IsTechnologyEnabled(
       chromeos::NetworkTypePattern::WiFi());
-  arc_bridge_service()->net()->instance()->WifiEnabledStateChanged(is_enabled);
+  net_instance->WifiEnabledStateChanged(is_enabled);
 }
 
 void ArcNetHostImpl::OnShuttingDown() {

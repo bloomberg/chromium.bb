@@ -16,8 +16,8 @@
 namespace arc {
 namespace {
 
-constexpr int kMinVersionForOnKeyboardsBoundsChanging = 3;
-constexpr int kMinVersionForExtendSelectionAndDelete = 4;
+constexpr uint32_t kMinVersionForOnKeyboardsBoundsChanging = 3;
+constexpr uint32_t kMinVersionForExtendSelectionAndDelete = 4;
 
 ui::TextInputType ConvertTextInputType(arc::mojom::TextInputType ipc_type) {
   // The two enum types are similar, but intentionally made not identical.
@@ -94,64 +94,49 @@ void ArcImeBridgeImpl::OnInstanceReady() {
 
 void ArcImeBridgeImpl::SendSetCompositionText(
     const ui::CompositionText& composition) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
-  if (!ime_instance) {
-    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+  auto* ime_instance =
+      bridge_service_->ime()->GetInstanceForMethod("SetCompositionText");
+  if (!ime_instance)
     return;
-  }
 
   ime_instance->SetCompositionText(base::UTF16ToUTF8(composition.text),
                                    ConvertSegments(composition));
 }
 
 void ArcImeBridgeImpl::SendConfirmCompositionText() {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
-  if (!ime_instance) {
-    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+  auto* ime_instance =
+      bridge_service_->ime()->GetInstanceForMethod("ConfirmCompositionText");
+  if (!ime_instance)
     return;
-  }
 
   ime_instance->ConfirmCompositionText();
 }
 
 void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
-  if (!ime_instance) {
-    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+  auto* ime_instance =
+      bridge_service_->ime()->GetInstanceForMethod("InsertText");
+  if (!ime_instance)
     return;
-  }
 
   ime_instance->InsertText(base::UTF16ToUTF8(text));
 }
 
 void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
-  if (!ime_instance) {
-    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+  auto* ime_instance = bridge_service_->ime()->GetInstanceForMethod(
+      "OnKeyboardBoundsChanging", kMinVersionForOnKeyboardsBoundsChanging);
+  if (!ime_instance)
     return;
-  }
-  if (bridge_service_->ime()->version() <
-      kMinVersionForOnKeyboardsBoundsChanging) {
-    LOG(ERROR) << "ArcImeInstance is too old for OnKeyboardsBoundsChanging.";
-    return;
-  }
 
   ime_instance->OnKeyboardBoundsChanging(new_bounds);
 }
 
 void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
     size_t before, size_t after) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
-  if (!ime_instance) {
-    LOG(ERROR) << "ArcImeInstance method called before being ready.";
+  auto* ime_instance = bridge_service_->ime()->GetInstanceForMethod(
+      "ExtendSelectionAndDelete", kMinVersionForExtendSelectionAndDelete);
+  if (!ime_instance)
     return;
-  }
-  if (bridge_service_->ime()->version() <
-      kMinVersionForExtendSelectionAndDelete) {
-    LOG(ERROR) << "ArcImeInstance is too old for ExtendSelectionAndDelete.";
-    return;
-  }
 
   ime_instance->ExtendSelectionAndDelete(before, after);
 }

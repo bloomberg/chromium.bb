@@ -48,8 +48,6 @@ class ArcWallpaperService
   void OnWallpaperDataChanged() override;
 
  private:
-  mojom::WallpaperInstance* GetWallpaperInstance(uint32_t min_version);
-
   mojo::Binding<mojom::WallpaperHost> binding_;
   DISALLOW_COPY_AND_ASSIGN(ArcWallpaperService);
 };

@@ -31,14 +31,14 @@ constexpr int kNexus5Width = 410;
 constexpr int kNexus5Height = 690;
 
 // Minimum required versions.
-constexpr int kMinVersion = 0;
-constexpr int kCanHandleResolutionMinVersion = 1;
-constexpr int kSendBroadcastMinVersion = 1;
-constexpr int kUninstallPackageMinVersion = 2;
-constexpr int kTaskSupportMinVersion = 3;
-constexpr int kShowPackageInfoMinVersion = 5;
-constexpr int kRemoveIconMinVersion = 9;
-constexpr int kShowPackageInfoOnPageMinVersion = 10;
+constexpr uint32_t kMinVersion = 0;
+constexpr uint32_t kCanHandleResolutionMinVersion = 1;
+constexpr uint32_t kSendBroadcastMinVersion = 1;
+constexpr uint32_t kUninstallPackageMinVersion = 2;
+constexpr uint32_t kTaskSupportMinVersion = 3;
+constexpr uint32_t kShowPackageInfoMinVersion = 5;
+constexpr uint32_t kRemoveIconMinVersion = 9;
+constexpr uint32_t kShowPackageInfoOnPageMinVersion = 10;
 
 // Service name strings.
 constexpr char kCanHandleResolutionStr[] = "get resolution capability";
@@ -51,7 +51,7 @@ constexpr char kUninstallPackageStr[] = "uninstall package";
 
 // Helper function which returns the AppInstance. Create related logs when error
 // happens.
-arc::mojom::AppInstance* GetAppInstance(int required_version,
+arc::mojom::AppInstance* GetAppInstance(uint32_t required_version,
                                         const std::string& service_name) {
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   if (!bridge_service) {
@@ -60,21 +60,8 @@ arc::mojom::AppInstance* GetAppInstance(int required_version,
     return nullptr;
   }
 
-  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
-  if (!app_instance) {
-    VLOG(2) << "Request to " << service_name
-            << " when mojom::app_instance is not ready.";
-    return nullptr;
-  }
-
-  int bridge_version = bridge_service->app()->version();
-  if (bridge_version < required_version) {
-    VLOG(2) << "Request to " << service_name << " when Arc version "
-            << bridge_version << " does not support it.";
-    return nullptr;
-  }
-
-  return app_instance;
+  return bridge_service->app()->GetInstanceForMethod(service_name.c_str(),
+                                                     required_version);
 }
 
 void PrioritizeArcInstanceCallback(bool success) {
@@ -304,16 +291,11 @@ void ShowTalkBackSettings() {
     return;
   }
 
-  arc::mojom::IntentHelperInstance *intent_helper_instance =
-      bridge_service->intent_helper()->instance();
-  if (!intent_helper_instance) {
-    VLOG(2) << "ARC intent helper instance is not ready";
+  auto* intent_helper_instance =
+      bridge_service->intent_helper()->GetInstanceForMethod(
+          "SendBroadcast", kSendBroadcastMinVersion);
+  if (!intent_helper_instance)
     return;
-  }
-  if (bridge_service->intent_helper()->version() < kSendBroadcastMinVersion) {
-    VLOG(2) << "ARC intent helper instance is too old";
-    return;
-  }
 
   intent_helper_instance->SendBroadcast(
           "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS",

@@ -4,6 +4,9 @@
 
 #include "ui/arc/notification/arc_notification_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
@@ -207,20 +210,10 @@ void ArcNotificationManager::CreateNotificationWindow(const std::string& key) {
   }
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
-  // On shutdown, the ARC channel may quit earlier then notifications.
-  if (!notifications_instance) {
-    VLOG(2) << "Request to create window for ARC Notification (key: " << key
-            << "), but the ARC channel has already gone.";
+      arc_bridge_service()->notifications()->GetInstanceForMethod(
+          "CreateNotificationWindow", kMinVersionNotificationWindow);
+  if (!notifications_instance)
     return;
-  }
-
-  if (arc_bridge_service()->notifications()->version() <
-      kMinVersionNotificationWindow) {
-    VLOG(2)
-        << "NotificationInstance does not support CreateNotificationWindow.";
-    return;
-  }
 
   notifications_instance->CreateNotificationWindow(key);
 }
@@ -233,19 +226,10 @@ void ArcNotificationManager::CloseNotificationWindow(const std::string& key) {
   }
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
-  // On shutdown, the ARC channel may quit earlier then notifications.
-  if (!notifications_instance) {
-    VLOG(2) << "Request to close window for ARC Notification (key: " << key
-            << "), but the ARC channel has already gone.";
+      arc_bridge_service()->notifications()->GetInstanceForMethod(
+          "CloseNotificationWindow", kMinVersionNotificationWindow);
+  if (!notifications_instance)
     return;
-  }
-
-  if (arc_bridge_service()->notifications()->version() <
-      kMinVersionNotificationWindow) {
-    VLOG(2) << "NotificationInstance does not support CloseNotificationWindow.";
-    return;
-  }
 
   notifications_instance->CloseNotificationWindow(key);
 }

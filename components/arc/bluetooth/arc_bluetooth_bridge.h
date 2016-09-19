@@ -331,8 +331,6 @@ class ArcBluetoothBridge
       device::BluetoothDevice* device) const;
 
   void SendCachedDevicesFound() const;
-  bool HasBluetoothInstance() const;
-  bool CheckBluetoothInstanceVersion(uint32_t version_need) const;
 
   device::BluetoothRemoteGattCharacteristic* FindGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,

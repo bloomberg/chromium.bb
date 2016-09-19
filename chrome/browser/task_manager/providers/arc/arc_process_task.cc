@@ -20,6 +20,8 @@ namespace task_manager {
 
 namespace {
 
+constexpr uint32_t kKillProcessMinInstanceVersion = 1;
+
 base::string16 MakeTitle(const std::string& process_name,
                          arc::mojom::ProcessState process_state) {
   int name_template = IDS_TASK_MANAGER_ARC_PREFIX;
@@ -126,18 +128,12 @@ bool ArcProcessTask::IsKillable() {
 }
 
 void ArcProcessTask::Kill() {
-  arc::mojom::ProcessInstance* arc_process_instance =
-      arc::ArcBridgeService::Get()->process()->instance();
-  if (!arc_process_instance) {
-    LOG(ERROR) << "ARC process instance is not ready.";
+  auto* process_instance =
+      arc::ArcBridgeService::Get()->process()->GetInstanceForMethod(
+          "KillProcess", kKillProcessMinInstanceVersion);
+  if (!process_instance)
     return;
-  }
-  if (arc::ArcBridgeService::Get()->process()->version() < 1) {
-    LOG(ERROR) << "ARC KillProcess IPC is unavailable.";
-    return;
-  }
-  arc_process_instance->KillProcess(nspid_,
-                                    "Killed manually from Task Manager");
+  process_instance->KillProcess(nspid_, "Killed manually from Task Manager");
 }
 
 void ArcProcessTask::OnInstanceReady() {

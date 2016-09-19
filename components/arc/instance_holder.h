@@ -42,6 +42,31 @@ class InstanceHolder {
   T* instance() const { return instance_; }
   uint32_t version() const { return version_; }
 
+  // Gets the Mojo interface that's intended to call for
+  // |method_name_for_logging|, but only if its reported version is at least
+  // |min_version|. Returns nullptr if the instance is either not ready or does
+  // not have the requested version, and logs appropriately.
+  T* GetInstanceForMethod(const char* method_name_for_logging,
+                          uint32_t min_version) {
+    if (!instance_) {
+      VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
+              << " not available.";
+      return nullptr;
+    }
+    if (version_ < min_version) {
+      VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
+              << " version mismatch. Expected " << min_version << " got "
+              << version_;
+      return nullptr;
+    }
+    return instance_;
+  }
+
+  // Same as the above, but for the version zero.
+  T* GetInstanceForMethod(const char* method_name_for_logging) {
+    return GetInstanceForMethod(method_name_for_logging, 0u);
+  }
+
   // Adds or removes observers. This can only be called on the thread that this
   // class was created on. RemoveObserver does nothing if |observer| is not in
   // the list.

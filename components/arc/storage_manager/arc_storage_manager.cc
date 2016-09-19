@@ -40,49 +40,35 @@ ArcStorageManager* ArcStorageManager::Get() {
 }
 
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
-  auto* storage_manager_instance = GetStorageManagerInstance();
-  if (!storage_manager_instance) {
+  auto* storage_manager_instance =
+      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
+          "OpenPrivateVolumeSettings", kMinInstanceVersion);
+  if (!storage_manager_instance)
     return false;
-  }
   storage_manager_instance->OpenPrivateVolumeSettings();
   return true;
 }
 
 bool ArcStorageManager::GetApplicationsSize(
     const GetApplicationsSizeCallback& callback) {
-  auto* storage_manager_instance = GetStorageManagerInstance();
-  if (!storage_manager_instance) {
+  auto* storage_manager_instance =
+      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
+          "GetApplicationsSize", kMinInstanceVersion);
+  if (!storage_manager_instance)
     return false;
-  }
   storage_manager_instance->GetApplicationsSize(callback);
   return true;
 }
 
 bool ArcStorageManager::DeleteApplicationsCache(
     const base::Callback<void()>& callback) {
-  auto* storage_manager_instance = GetStorageManagerInstance();
-  if (!storage_manager_instance) {
+  auto* storage_manager_instance =
+      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
+          "DeleteApplicationsCache", kMinInstanceVersion);
+  if (!storage_manager_instance)
     return false;
-  }
   storage_manager_instance->DeleteApplicationsCache(callback);
   return true;
-}
-
-mojom::StorageManagerInstance* ArcStorageManager::GetStorageManagerInstance() {
-  auto* bridge_service = arc_bridge_service();
-  auto* storage_manager_instance =
-      bridge_service->storage_manager()->instance();
-  if (!storage_manager_instance) {
-    DLOG(WARNING) << "ARC storage manager instance is not ready.";
-    return nullptr;
-  }
-  auto storage_manager_version = bridge_service->storage_manager()->version();
-  if (storage_manager_version < kMinInstanceVersion) {
-    DLOG(ERROR) << "ARC storage manager instance (version "
-                << storage_manager_version << ") is too old.";
-    return nullptr;
-  }
-  return storage_manager_instance;
 }
 
 }  // namespace arc

@@ -354,17 +354,10 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
     return;
   }
 
-  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
-  if (!app_instance) {
-    // AppInstance should be ready since we have app_id in ready_apps_.
-    NOTREACHED();
+  auto* app_instance = app_instance_holder_->GetInstanceForMethod(
+      "SetNotificationsEnabled", kSetNotificationsEnabledMinVersion);
+  if (!app_instance)
     return;
-  }
-
-  if (app_instance_holder_->version() < kSetNotificationsEnabledMinVersion) {
-    VLOG(2) << "app version is too small to set notifications enabled.";
-    return;
-  }
 
   SetNotificationsEnabledDeferred(prefs_).Remove(app_id);
   app_instance->SetNotificationsEnabled(app_info->package_name, enabled);
@@ -1145,7 +1138,6 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
       prefs_->GetDictionary(prefs::kArcPackages);
   for (base::DictionaryValue::Iterator package(*package_prefs);
        !package.IsAtEnd(); package.Advance()) {
-
     bool uninstalled = false;
     package_prefs->GetBoolean(kSystem, &uninstalled);
     if (installed != !uninstalled)
