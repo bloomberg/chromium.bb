@@ -703,9 +703,17 @@
     "label": "//ui/ozone/gl:ozone_gl_unittests",
     "type": "console_test_launcher",
   },
+  "pdfium_test": {
+    "label": "//third_party/pdfium/samples:pdfium_test",
+    "type": "additional_compile_target",
+  },
   "peerconnection_unittests": {
     "label": "//webrtc/api:peerconnection_unittests",
     "type": "console_test_launcher",
+  },
+  "postmortem-metadata": {
+    "label": "//v8:postmortem-metadata",
+    "type": "additional_compile_target",
   },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",
