@@ -1,20 +1,12 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
-# before-unload issues
-  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
-
 # https://crbug.com/608372: PlzNavigate: support POST navigations
+  fast/forms/form-submit-in-submit-event.html [ Failure ]
   fast/forms/submit-to-url-fragment.html [ Failure ]
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
   fast/loader/form-state-restore-with-frames.html [ Failure ]
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/navigation/post-goback-same-url.html [ Failure ]
-
-# Failing due to error page supression in layout tests
-  fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
-
-# Failing due to extra error due to bad timing.
-  fast/events/before-unload-in-subframe.html [ Crash ]
 
 # Failing due to empty data url
   editing/execCommand/apply-style-command-crash.html [ Crash ]
@@ -37,11 +29,8 @@
 # https://crbug.com/575210: PlzNavigate: history navigation support
   fast/history/history-length-append-subframe-with-hash.html [ Failure ]
   fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
-  http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
-  http/tests/navigation/back-to-dynamic-iframe.html [ Failure Crash ]
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
-  http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
   http/tests/navigation/rename-subframe-goback.html [ Failure ]
   imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
   imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
@@ -54,7 +43,6 @@
   http/tests/inspector/console-resource-errors.html [ Failure ]
   http/tests/inspector/extensions-ignore-cache.html [ Failure ]
   http/tests/inspector/extensions-network-redirect.html [ Timeout ]
-  http/tests/inspector/extensions-useragent.html [ Failure ]
   http/tests/inspector/network/network-document-initiator.html [ Failure ]
   http/tests/inspector/network/network-initiator.html [ Failure ]
   http/tests/inspector/resource-har-conversion.html [ Failure ]
@@ -62,8 +50,6 @@
   http/tests/inspector/resource-parameters.html [ Failure ]
   inspector-protocol/page/frameAttachedDetached.html [ Failure ]
   inspector-protocol/page/frameStartedLoading.html [ Failure ]
-  inspector-protocol/runtime/runtime-await-promise.html [ Failure ]
-  inspector-protocol/runtime/runtime-execution-contexts-events.html [ Crash Timeout ]
   inspector/tracing/timeline-js/timeline-script-tag-1.html [ Failure Timeout Crash ]
   inspector/tracing/timeline-misc/timeline-auto-record.html [ Failure Crash ]
   inspector/tracing/timeline-misc/timeline-load-event.html [ Failure Crash ]
@@ -78,13 +64,11 @@
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
-  imported/wpt/web-animations/animation-timeline/document-timeline.html [ Failure ]
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
   http/tests/history/post-replace-state-reload.html [ Failure ]
   http/tests/navigation/location-reload-after-post.php [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post-redirect.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
@@ -95,19 +79,13 @@
   fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
   http/tests/cache/iframe-304-crash.html [ Failure ]
   imported/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-  mhtml/multi_frames_contentid.mht [ Timeout Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
-  http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html [ Failure ]
   http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-allowed.html [ Failure ]
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored.html [ Failure ]
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-  http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
@@ -144,7 +122,6 @@
   http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
   http/tests/loading/redirect-methods.html [ Crash Failure ]
   http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
-  http/tests/misc/timer-vs-loading.html [ Crash ]
   http/tests/navigation/form-targets-cross-site-frame-no-referrer.html [ Failure ]
   http/tests/navigation/form-targets-cross-site-frame-post.html [ Failure ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
@@ -174,24 +151,17 @@
 
 # Untriaged other
   css3/fonts/font-style-matching-7.html [ Failure ]
-  editing/selection/iframe.html [ Failure ]
   fast/css/acid2-pixel.html [ Crash Timeout Failure ]
   fast/css/acid2.html [ Crash Timeout Failure ]
   fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
-  fast/dom/frame-loading-via-document-write.html [ Failure ]
-  fast/layout/scroll-anchoring/history-restore-anchors.html [ Failure ]
   fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
   fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
   fast/table/giantCellspacing.html [ Failure ]
   http/tests/misc/policy-delegate-called-twice.html [ Failure ]
-  http/tests/misc/window-dot-stop.html [ Failure ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
   imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
-  virtual/pointerevent/fast/events/drag-file-crash.html [ Failure ]
-  virtual/pointerevent/fast/events/iframe-object-onload.html [ Failure ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Timeout ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
 
 # https://crbug.com/440463: Make ServiceWorker and PlzNavigate play well
