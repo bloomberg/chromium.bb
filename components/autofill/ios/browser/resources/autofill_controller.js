@@ -265,7 +265,7 @@ function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
 
     if (__gCrWeb.autofill.hasTagName(elements[i], 'fieldset') &&
         !isElementInsideFormOrFieldSet(elements[i])) {
-      fieldset.push(elements[i]);
+      fieldsets.push(elements[i]);
     }
   }
   return __gCrWeb.autofill.extractAutofillableElementsFromSet(
