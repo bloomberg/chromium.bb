@@ -5,7 +5,7 @@
   "comments": [
     "Clang tip-of-tree builder for iOS."
   ],
-  "xcode version": "7.0",
+  "xcode version": "8.0",
   "GYP_DEFINES": [
     "OS=ios",
     "chromium_ios_signing=0",
@@ -28,7 +28,7 @@
   "compiler": "ninja",
   "additional_compile_targets": ["gn_all"],
   "configuration": "Release",
-  "sdk": "iphoneos9.0",
+  "sdk": "iphoneos10.0",
   "tests": [
   ]
 }
