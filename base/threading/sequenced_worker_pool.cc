@@ -652,7 +652,9 @@ SequencedWorkerPool::Inner::Inner(SequencedWorkerPool* worker_pool,
       cleanup_idlers_(0),
       cleanup_cv_(&lock_),
       testing_observer_(observer),
-      task_priority_(task_priority) {}
+      task_priority_(task_priority) {
+  DCHECK_GT(max_threads_, 1U);
+}
 
 SequencedWorkerPool::Inner::~Inner() {
   // You must call Shutdown() before destroying the pool.
@@ -848,22 +850,6 @@ SequencedWorkerPool::Inner::GetTaskSchedulerTaskRunner(
   if (!task_runner) {
     ExecutionMode execution_mode =
         sequence_token_id ? ExecutionMode::SEQUENCED : ExecutionMode::PARALLEL;
-
-    if (max_threads_ == 1U) {
-      // Tasks posted to single-threaded pools can assume thread affinity.
-      execution_mode = ExecutionMode::SINGLE_THREADED;
-
-      // Disallow posting tasks with different sequence tokens to single-
-      // threaded pools since the TaskScheduler can't force different sequences
-      // to run on the same thread.
-      DCHECK_LE(sequenced_task_runner_map_.size(), 1U);
-
-      // Disallow posting tasks without a sequence token to a single-threaded
-      // pool. No users do that currently and we don't want to support new use
-      // cases.
-      DCHECK(sequence_token_id);
-    }
-
     task_runner = CreateTaskRunnerWithTraits(traits, execution_mode);
   }
 

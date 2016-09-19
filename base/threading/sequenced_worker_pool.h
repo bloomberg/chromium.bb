@@ -180,8 +180,6 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // Ideally, call this on the main thread of a process, before any other
   // threads are created and before any tasks are posted to that process'
   // SequencedWorkerPools.
-  // Note: SequencedWorkerPool instances with |max_threads == 1| will be special
-  // cased to send all of their work as ExecutionMode::SINGLE_THREADED.
   // TODO(gab): Remove this if http://crbug.com/622400 fails
   // (SequencedWorkerPool will be phased out completely otherwise).
   static void RedirectToTaskSchedulerForProcess();
@@ -198,11 +196,12 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // ThreadTaskRunnerHandle on the current thread unless you plan to
   // deliberately leak it.
 
-  // Pass the maximum number of threads (they will be lazily created as needed)
-  // and a prefix for the thread name to aid in debugging. |task_priority| will
-  // be used to hint base::TaskScheduler for an experiment in which all
-  // SequencedWorkerPool tasks will be redirected to it in processes where a
-  // base::TaskScheduler was instantiated.
+  // Constructs a SequencedWorkerPool which will lazily create up to
+  // |max_threads| and a prefix for the thread name to aid in debugging.
+  // |max_threads| must be greater than 1. |task_priority| will be used to hint
+  // base::TaskScheduler for an experiment in which all SequencedWorkerPool
+  // tasks will be redirected to it in processes where a base::TaskScheduler was
+  // instantiated.
   SequencedWorkerPool(size_t max_threads,
                       const std::string& thread_name_prefix,
                       base::TaskPriority task_priority);
