@@ -115,7 +115,7 @@ void UserClassifier::UpdateMetricOnEvent(const char* metric_pref_name,
   //   avg_events := 1 + e^{-discount_rate_per_hour * hours_since} * avg_events.
   double new_avg_events_per_hour =
       1 +
-      std::exp(discount_rate_per_hour_ * hours_since_last_time) *
+      std::exp(-discount_rate_per_hour_ * hours_since_last_time) *
           avg_events_per_hour;
   pref_service_->SetDouble(metric_pref_name, new_avg_events_per_hour);
 }
@@ -131,7 +131,11 @@ double UserClassifier::GetEstimateHoursBetweenEvents(
   // This is the estimate with the assumption that last event happened right
   // now and the system is in the steady-state. Solve estimate_hours in the
   // steady-state equation:
-  //   avg_events = 1 + e^{-discount_rate * estimate_hours} * avg_events.
+  //   avg_events = 1 + e^{-discount_rate * estimate_hours} * avg_events,
+  // i.e.
+  //   -discount_rate * estimate_hours = log((avg_events - 1) / avg_events),
+  //   discount_rate * estimate_hours = log(avg_events / (avg_events - 1)),
+  //   estimate_hours = log(avg_events / (avg_events - 1)) / discount_rate.
   return std::min(kMaxHours,
                   std::log(avg_events_per_hour / (avg_events_per_hour - 1)) /
                       discount_rate_per_hour_);
