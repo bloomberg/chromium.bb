@@ -26,6 +26,8 @@ verify_result = False
 errors = """[Context] Processing Certificate
   index: 1
       [Error] RSA modulus too small
+        actual: 512
+        minimum: 1024
       [Error] Unacceptable modulus length for RSA key
       [Error] VerifySignedData failed
 """

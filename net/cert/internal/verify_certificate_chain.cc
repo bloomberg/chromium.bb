@@ -69,7 +69,7 @@ class CertErrorScoperForCert : public CertErrorScoper {
   std::unique_ptr<CertErrorNode> BuildRootNode() override {
     return base::MakeUnique<CertErrorNode>(
         CertErrorNodeType::TYPE_CONTEXT, kContextCertificate,
-        CreateCertErrorParamsSizeT("index", index_));
+        CreateCertErrorParams1SizeT("index", index_));
   }
 
  private:

@@ -48,12 +48,14 @@ class CertErrorParams2Der : public CertErrorParams {
 
   const char* name2_;
   std::string der2_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertErrorParams2Der);
 };
 
 // Parameters subclass for describing (and pretty-printing) a single size_t.
-class CertErrorParamsSizeT : public CertErrorParams {
+class CertErrorParams1SizeT : public CertErrorParams {
  public:
-  CertErrorParamsSizeT(const char* name, size_t value)
+  CertErrorParams1SizeT(const char* name, size_t value)
       : name_(name), value_(value) {}
 
   std::string ToDebugString() const override {
@@ -63,6 +65,32 @@ class CertErrorParamsSizeT : public CertErrorParams {
  private:
   const char* name_;
   size_t value_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertErrorParams1SizeT);
+};
+
+// Parameters subclass for describing (and pretty-printing) two size_t
+// values.
+class CertErrorParams2SizeT : public CertErrorParams {
+ public:
+  CertErrorParams2SizeT(const char* name1,
+                        size_t value1,
+                        const char* name2,
+                        size_t value2)
+      : name1_(name1), value1_(value1), name2_(name2), value2_(value2) {}
+
+  std::string ToDebugString() const override {
+    return name1_ + std::string(": ") + base::SizeTToString(value1_) + "\n" +
+           name2_ + std::string(": ") + base::SizeTToString(value2_);
+  }
+
+ private:
+  const char* name1_;
+  size_t value1_;
+  const char* name2_;
+  size_t value2_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertErrorParams2SizeT);
 };
 
 }  // namespace
@@ -71,9 +99,10 @@ CertErrorParams::CertErrorParams() = default;
 CertErrorParams::~CertErrorParams() = default;
 
 std::unique_ptr<CertErrorParams> CreateCertErrorParams1Der(
-    const char* name1,
-    const der::Input& der1) {
-  return base::MakeUnique<CertErrorParams2Der>(name1, der1, nullptr,
+    const char* name,
+    const der::Input& der) {
+  DCHECK(name);
+  return base::MakeUnique<CertErrorParams2Der>(name, der, nullptr,
                                                der::Input());
 }
 
@@ -82,12 +111,25 @@ std::unique_ptr<CertErrorParams> CreateCertErrorParams2Der(
     const der::Input& der1,
     const char* name2,
     const der::Input& der2) {
+  DCHECK(name1);
+  DCHECK(name2);
   return base::MakeUnique<CertErrorParams2Der>(name1, der1, name2, der2);
 }
 
-std::unique_ptr<CertErrorParams> CreateCertErrorParamsSizeT(const char* name,
-                                                            size_t value) {
-  return base::MakeUnique<CertErrorParamsSizeT>(name, value);
+std::unique_ptr<CertErrorParams> CreateCertErrorParams1SizeT(const char* name,
+                                                             size_t value) {
+  DCHECK(name);
+  return base::MakeUnique<CertErrorParams1SizeT>(name, value);
+}
+
+NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams2SizeT(
+    const char* name1,
+    size_t value1,
+    const char* name2,
+    size_t value2) {
+  DCHECK(name1);
+  DCHECK(name2);
+  return base::MakeUnique<CertErrorParams2SizeT>(name1, value1, name2, value2);
 }
 
 }  // namespace net

@@ -43,11 +43,11 @@ class NET_EXPORT CertErrorParams {
 // so error consumers can access their data directly? (Without having to go
 // through the generic virtuals).
 
-// Creates a parameter object that holds a copy of |der1|, and names it |name1|
+// Creates a parameter object that holds a copy of |der|, and names it |name|
 // in debug string outputs.
 NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams1Der(
-    const char* name1,
-    const der::Input& der1);
+    const char* name,
+    const der::Input& der);
 
 // Same as CreateCertErrorParams1Der() but has a second DER blob.
 NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams2Der(
@@ -58,9 +58,16 @@ NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams2Der(
 
 // Creates a parameter object that holds a single size_t value. |name| is used
 // when pretty-printing the parameters.
-NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParamsSizeT(
+NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams1SizeT(
     const char* name,
     size_t value);
+
+// Same as CreateCertErrorParams1SizeT() but has a second size_t.
+NET_EXPORT std::unique_ptr<CertErrorParams> CreateCertErrorParams2SizeT(
+    const char* name1,
+    size_t value1,
+    const char* name2,
+    size_t value2);
 
 }  // namespace net
 
