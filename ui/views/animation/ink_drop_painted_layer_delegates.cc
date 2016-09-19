@@ -6,7 +6,6 @@
 
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPath.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -154,24 +153,21 @@ gfx::Vector2dF BorderShadowLayerDelegate::GetCenteringOffset() const {
 void BorderShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   SkPaint paint;
   paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows_));
-  paint.setStyle(SkPaint::kStrokeAndFill_Style);
+  paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
   paint.setColor(SK_ColorTRANSPARENT);
-  paint.setStrokeJoin(SkPaint::kRound_Join);
-  SkRect path_bounds = gfx::RectFToSkRect(
-      gfx::RectF(bounds_ - GetPaintedBounds().OffsetFromOrigin()));
+  gfx::RectF rrect_bounds =
+      gfx::RectF(bounds_ - GetPaintedBounds().OffsetFromOrigin());
 
   ui::PaintRecorder recorder(context, GetPaintedBounds().size());
-  const SkScalar corner = SkFloatToScalar(corner_radius_);
-  SkPath path;
-  path.addRoundRect(path_bounds, corner, corner, SkPath::kCCW_Direction);
-  recorder.canvas()->DrawPath(path, paint);
+  recorder.canvas()->DrawRoundRect(rrect_bounds, corner_radius_, paint);
 
   SkPaint clear_paint;
   clear_paint.setAntiAlias(true);
   clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  recorder.canvas()->sk_canvas()->drawRoundRect(path_bounds, corner, corner,
-                                                clear_paint);
+  // If we don't care about actually clearing preexisting buffer content,
+  // this could be replaced with a kDifference clip for the draw above.
+  recorder.canvas()->DrawRoundRect(rrect_bounds, corner_radius_, clear_paint);
 }
 
 }  // namespace views
