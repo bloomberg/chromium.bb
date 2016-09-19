@@ -1,0 +1,85 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_NTP_SNIPPETS_SESSIONS_FOREIGN_SESSIONS_SUGGESTIONS_PROVIDER_H_
+#define COMPONENTS_NTP_SNIPPETS_SESSIONS_FOREIGN_SESSIONS_SUGGESTIONS_PROVIDER_H_
+
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/macros.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_status.h"
+#include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/sessions/core/session_types.h"
+#include "components/sync_sessions/synced_session.h"
+
+class PrefRegistrySimple;
+class PrefService;
+
+namespace ntp_snippets {
+
+// Simple interface to get foreign tab data on demand and on change.
+class ForeignSessionsProvider {
+ public:
+  virtual ~ForeignSessionsProvider() {}
+  virtual bool HasSessionsData() = 0;
+  virtual std::vector<const sync_sessions::SyncedSession*>
+  GetAllForeignSessions() = 0;
+  // Should only be called at most once.
+  virtual void SubscribeForForeignTabChange(
+      const base::Closure& change_callback) = 0;
+};
+
+// Provides content suggestions from foreign sessions.
+class ForeignSessionsSuggestionsProvider : public ContentSuggestionsProvider {
+ public:
+  ForeignSessionsSuggestionsProvider(
+      ContentSuggestionsProvider::Observer* observer,
+      CategoryFactory* category_factory,
+      std::unique_ptr<ForeignSessionsProvider> foreign_sessions_provider,
+      PrefService* pref_service);
+  ~ForeignSessionsSuggestionsProvider() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+ private:
+  friend class ForeignSessionsSuggestionsProviderTest;
+  struct SessionData;
+
+  // ContentSuggestionsProvider implementation.
+  CategoryStatus GetCategoryStatus(Category category) override;
+  CategoryInfo GetCategoryInfo(Category category) override;
+  void DismissSuggestion(const std::string& suggestion_id) override;
+  void FetchSuggestionImage(const std::string& suggestion_id,
+                            const ImageFetchedCallback& callback) override;
+  void ClearHistory(
+      base::Time begin,
+      base::Time end,
+      const base::Callback<bool(const GURL& url)>& filter) override;
+  void ClearCachedSuggestions(Category category) override;
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback) override;
+  void ClearDismissedSuggestionsForDebugging(Category category) override;
+
+  void OnForeignTabChange();
+  std::vector<ContentSuggestion> BuildSuggestions();
+  std::vector<SessionData> GetSuggestionCandidates();
+  ContentSuggestion BuildSuggestion(const SessionData& data);
+
+  CategoryStatus category_status_;
+  const Category provided_category_;
+  std::unique_ptr<ForeignSessionsProvider> foreign_sessions_provider_;
+  PrefService* pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForeignSessionsSuggestionsProvider);
+};
+
+}  // namespace ntp_snippets
+
+#endif  // COMPONENTS_NTP_SNIPPETS_SESSIONS_FOREIGN_SESSIONS_SUGGESTIONS_PROVIDER_H_

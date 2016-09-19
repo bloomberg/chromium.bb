@@ -29,6 +29,8 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
+namespace ntp_snippets {
+
 namespace {
 
 const int kMaxBookmarks = 10;
@@ -43,53 +45,37 @@ const char* kUseCreationDateFallbackForDaysParamName =
     "bookmarks_creation_date_fallback_days";
 const char* kShowIfEmptyParamName = "bookmarks_show_if_empty";
 
+// Any bookmark created or visited after this time will be considered recent.
+// Note that bookmarks can be shown that do not meet this threshold.
 base::Time GetThresholdTime() {
-  std::string age_in_days_string = variations::GetVariationParamValueByFeature(
-    ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarkAgeInDaysParamName);
-  int age_in_days = 0;
-  if (!base::StringToInt(age_in_days_string, &age_in_days)) {
-    if (!age_in_days_string.empty())
-      LOG(WARNING) << "Failed to parse bookmark age " << age_in_days_string;
-    age_in_days = kMaxBookmarkAgeInDays;
-  }
-  return base::Time::Now() - base::TimeDelta::FromDays(age_in_days);
+  return base::Time::Now() -
+         base::TimeDelta::FromDays(GetParamAsInt(
+             ntp_snippets::kBookmarkSuggestionsFeature,
+             kMaxBookmarkAgeInDaysParamName, kMaxBookmarkAgeInDays));
 }
 
+// The number of days used as a threshold where if this is larger than the time
+// since M54 started, then the creation timestamp of a bookmark be used as a
+// fallback if no last visited timestamp is present.
 int UseCreationDateFallbackForDays() {
-  std::string days_string = variations::GetVariationParamValueByFeature(
-      ntp_snippets::kBookmarkSuggestionsFeature,
-      kUseCreationDateFallbackForDaysParamName);
-  int days = 0;
-  if (!base::StringToInt(days_string, &days)) {
-    if (!days_string.empty())
-      LOG(WARNING) << "Failed to parse bookmark fallback days " << days_string;
-    days = kUseCreationDateFallbackForDays;
-  }
-  return days;
+  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
+                       kUseCreationDateFallbackForDaysParamName,
+                       kUseCreationDateFallbackForDays);
 }
 
+// The maximum number of suggestions ever provided.
 int GetMaxCount() {
-  std::string max_count_string = variations::GetVariationParamValueByFeature(
-      ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName);
-  int max_count = 0;
-  if (base::StringToInt(max_count_string, &max_count))
-    return max_count;
-  if (!max_count_string.empty())
-    LOG(WARNING) << "Failed to parse max bookmarks count " << max_count_string;
-
-  return kMaxBookmarks;
+  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
+                       kMaxBookmarksParamName, kMaxBookmarks);
 }
 
+// The minimum number of suggestions to try to provide. Depending on other
+// parameters this may or not be respected. Currently creation date fallback
+// must be active in order for older bookmarks to be incorporated to meet this
+// min.
 int GetMinCount() {
-  std::string min_count_string = variations::GetVariationParamValueByFeature(
-      ntp_snippets::kBookmarkSuggestionsFeature, kMinBookmarksParamName);
-  int min_count = 0;
-  if (base::StringToInt(min_count_string, &min_count))
-    return min_count;
-  if (!min_count_string.empty())
-    LOG(WARNING) << "Failed to parse min bookmarks count " << min_count_string;
-
-  return kMinBookmarks;
+  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
+                       kMinBookmarksParamName, kMinBookmarks);
 }
 
 bool ShouldShowIfEmpty() {
@@ -105,8 +91,6 @@ bool ShouldShowIfEmpty() {
 }
 
 }  // namespace
-
-namespace ntp_snippets {
 
 BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
@@ -163,9 +147,8 @@ CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
   return CategoryInfo(
       l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
-      /* has_more_button */ true,
-      /* show_if_empty */ ShouldShowIfEmpty() &&
-          bookmark_model_->HasBookmarks());
+      /*has_more_button=*/true,
+      /*show_if_empty=*/ShouldShowIfEmpty() && bookmark_model_->HasBookmarks());
   // TODO(treib): Setting show_if_empty to true is a temporary hack, see
   // crbug.com/640568.
 }

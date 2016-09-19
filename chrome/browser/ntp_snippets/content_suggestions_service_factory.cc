@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -16,8 +18,10 @@
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
@@ -33,6 +37,8 @@
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
+#include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -70,9 +76,12 @@ using ntp_snippets::NTPSnippetsFetcher;
 using ntp_snippets::NTPSnippetsService;
 using ntp_snippets::NTPSnippetsScheduler;
 using ntp_snippets::NTPSnippetsStatusService;
+using ntp_snippets::ForeignSessionsSuggestionsProvider;
+using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
+using sync_driver::SyncService;
 
 namespace {
 
@@ -169,6 +178,19 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   service->RegisterProvider(std::move(ntp_snippets_service));
 }
 
+void RegisterForeignSessionsProvider(SyncService* sync_service,
+                                     ContentSuggestionsService* service,
+                                     CategoryFactory* category_factory,
+                                     PrefService* pref_service) {
+  std::unique_ptr<TabDelegateSyncAdapter> sync_adapter =
+      base::MakeUnique<TabDelegateSyncAdapter>(sync_service);
+  std::unique_ptr<ForeignSessionsSuggestionsProvider>
+      foreign_sessions_suggestions_provider =
+          base::MakeUnique<ForeignSessionsSuggestionsProvider>(
+              service, category_factory, std::move(sync_adapter), pref_service);
+  service->RegisterProvider(std::move(foreign_sessions_suggestions_provider));
+}
+
 }  // namespace
 
 // static
@@ -201,6 +223,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(OfflinePageModelFactory::GetInstance());
 #endif  // OS_ANDROID
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
 }
@@ -243,6 +266,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile);
+  SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
 #if defined(OS_ANDROID)
   bool recent_tabs_enabled = base::FeatureList::IsEnabled(
@@ -272,6 +297,12 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     RegisterArticleProvider(signin_manager, token_service, suggestions_service,
                             service, category_factory, pref_service, profile);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kForeignSessionsSuggestionsFeature)) {
+    RegisterForeignSessionsProvider(sync_service, service, category_factory,
+                                    pref_service);
   }
 
   return service;

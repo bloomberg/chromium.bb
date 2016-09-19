@@ -29,6 +29,8 @@ const char kDismissedRecentOfflineTabSuggestions[] =
     "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
 const char kDismissedDownloadSuggestions[] =
     "ntp_suggestions.offline_pages.downloads.dismissed_ids";
+const char kDismissedForeignSessionsSuggestions[] =
+    "ntp_suggestions.foreign_sessions.dismissed_ids";
 
 const char kBookmarksFirstM54Start[] =
     "ntp_suggestions.bookmarks.first_M54_start";
@@ -46,7 +48,6 @@ const char kUserClassifierLastTimeToShowSuggestions[] =
     "ntp_suggestions.user_classifier.last_time_to_show_suggestions";
 const char kUserClassifierLastTimeToUseSuggestions[] =
     "ntp_suggestions.user_classifier.last_time_to_use_suggestions";
-
 
 }  // namespace prefs
 }  // namespace ntp_snippets

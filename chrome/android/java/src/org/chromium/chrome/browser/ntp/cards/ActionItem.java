@@ -61,6 +61,8 @@ class ActionItem implements NewTabPageItem {
                                 manager.navigateToBookmarks();
                             } else if (category == KnownCategories.DOWNLOADS) {
                                 manager.navigateToDownloadManager();
+                            } else if (category == KnownCategories.FOREIGN_TABS) {
+                                manager.navigateToRecentTabs();
                             } else {
                                 // TODO(pke): This should redirect to the C++ backend. Once it does,
                                 // change the condition in the SuggestionsSection constructor.

@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/guid.h"
@@ -14,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/pref_util.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -115,21 +117,21 @@ CategoryInfo OfflinePageSuggestionsProvider::GetCategoryInfo(
     return CategoryInfo(l10n_util::GetStringUTF16(
                             IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_HEADER),
                         ContentSuggestionsCardLayout::MINIMAL_CARD,
-                        /* has_more_button */ false,
-                        /* show_if_empty */ false);
+                        /*has_more_button=*/false,
+                        /*show_if_empty=*/false);
   }
   if (category == downloads_category_) {
     return CategoryInfo(
         l10n_util::GetStringUTF16(IDS_NTP_DOWNLOAD_SUGGESTIONS_SECTION_HEADER),
         ContentSuggestionsCardLayout::MINIMAL_CARD,
-        /* has_more_button */ download_manager_ui_enabled_,
-        /* show_if_empty */ false);
+        /*has_more_button=*/download_manager_ui_enabled_,
+        /*show_if_empty=*/false);
   }
   NOTREACHED() << "Unknown category " << category.id();
   return CategoryInfo(base::string16(),
                       ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /* has_more_button */ false,
-                      /* show_if_empty */ false);
+                      /*has_more_button=*/false,
+                      /*show_if_empty=*/false);
 }
 
 void OfflinePageSuggestionsProvider::DismissSuggestion(
@@ -370,25 +372,15 @@ std::string OfflinePageSuggestionsProvider::GetDismissedPref(
 
 std::set<std::string> OfflinePageSuggestionsProvider::ReadDismissedIDsFromPrefs(
     Category category) const {
-  std::set<std::string> dismissed_ids;
-  const base::ListValue* list =
-      pref_service_->GetList(GetDismissedPref(category));
-  for (const std::unique_ptr<base::Value>& value : *list) {
-    std::string dismissed_id;
-    bool success = value->GetAsString(&dismissed_id);
-    DCHECK(success) << "Failed to parse dismissed offline page ID from prefs";
-    dismissed_ids.insert(dismissed_id);
-  }
-  return dismissed_ids;
+  return prefs::ReadDismissedIDsFromPrefs(*pref_service_,
+                                          GetDismissedPref(category));
 }
 
 void OfflinePageSuggestionsProvider::StoreDismissedIDsToPrefs(
     Category category,
     const std::set<std::string>& dismissed_ids) {
-  base::ListValue list;
-  for (const std::string& dismissed_id : dismissed_ids)
-    list.AppendString(dismissed_id);
-  pref_service_->Set(GetDismissedPref(category), list);
+  prefs::StoreDismissedIDsToPrefs(pref_service_, GetDismissedPref(category),
+                                  dismissed_ids);
 }
 
 }  // namespace ntp_snippets

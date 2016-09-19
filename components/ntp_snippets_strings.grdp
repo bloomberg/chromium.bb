@@ -38,4 +38,8 @@
     Recent bookmarks
   </message>
 
+  <message name="IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER" desc="Header of the foreign sessions, which is a list of the user's most recently visited tabs on other devices displayed as cards on the New Tab Page.">
+    Continue from another device
+  </message>
+
 </grit-part>

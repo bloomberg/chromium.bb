@@ -100758,6 +100758,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Bookmarks" label="Bookmarks"/>
   <suffix name="PhysicalWeb" label="Physical Web pages"/>
   <suffix name="Articles" label="Articles for you"/>
+  <suffix name="ForeignTabs" label="Open tabs on other devices"/>
   <suffix name="Experimental" label="Experimental"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.MenuOpened"/>

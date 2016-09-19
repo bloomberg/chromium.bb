@@ -31,6 +31,9 @@ enum class KnownCategories {
   // Physical Web page available in the vicinity.
   PHYSICAL_WEB_PAGES,
 
+  // Pages recently browsed to on other devices.
+  FOREIGN_TABS,
+
   // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
 

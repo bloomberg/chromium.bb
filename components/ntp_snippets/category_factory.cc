@@ -14,6 +14,7 @@ CategoryFactory::CategoryFactory() {
   // Add all local categories in a fixed order.
   AddKnownCategory(KnownCategories::DOWNLOADS);
   AddKnownCategory(KnownCategories::RECENT_TABS);
+  AddKnownCategory(KnownCategories::FOREIGN_TABS);
   AddKnownCategory(KnownCategories::BOOKMARKS);
   AddKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
 

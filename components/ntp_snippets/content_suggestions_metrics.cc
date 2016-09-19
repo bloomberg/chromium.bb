@@ -45,6 +45,8 @@ const char kHistogramMoreButtonClicked[] =
 
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
+// Each suffix here should correspond to an entry under histogram suffix
+// ContentSuggestionCategory in histograms.xml.
 std::string GetCategorySuffix(Category category) {
   static_assert(
       std::is_same<decltype(category.id()), typename base::underlying_type<
@@ -64,6 +66,8 @@ std::string GetCategorySuffix(Category category) {
       return "Bookmarks";
     case KnownCategories::PHYSICAL_WEB_PAGES:
       return "PhysicalWeb";
+    case KnownCategories::FOREIGN_TABS:
+      return "ForeignTabs";
     case KnownCategories::ARTICLES:
       return "Articles";
     case KnownCategories::LOCAL_CATEGORIES_COUNT:

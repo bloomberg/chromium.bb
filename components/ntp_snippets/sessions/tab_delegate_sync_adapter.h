@@ -1,0 +1,53 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_NTP_SNIPPETS_SESSIONS_TAB_DELEGATE_SYNC_ADAPTER_H_
+#define COMPONENTS_NTP_SNIPPETS_SESSIONS_TAB_DELEGATE_SYNC_ADAPTER_H_
+
+#include <vector>
+
+#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "base/macros.h"
+#include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
+#include "components/sync/driver/sync_service_observer.h"
+
+namespace sync_driver {
+class SyncService;
+}  // namespace sync_driver
+
+namespace ntp_snippets {
+
+// Adapter that sits on top of SyncService and OpenTabsUIDelegate and provides
+// simplified notifications and accessors for foreign tabs data.
+class TabDelegateSyncAdapter : public sync_driver::SyncServiceObserver,
+                               public ForeignSessionsProvider {
+ public:
+  explicit TabDelegateSyncAdapter(sync_driver::SyncService* sync_service);
+  ~TabDelegateSyncAdapter() override;
+
+  // ForeignSessionsProvider implementation.
+  bool HasSessionsData() override;
+  std::vector<const sync_sessions::SyncedSession*> GetAllForeignSessions()
+      override;
+  void SubscribeForForeignTabChange(
+      const base::Closure& change_callback) override;
+
+ private:
+  // sync_driver::SyncServiceObserver implementation.
+  void OnStateChanged() override;
+  void OnSyncConfigurationCompleted() override;
+  void OnForeignSessionUpdated() override;
+
+  void InvokeCallback();
+
+  sync_driver::SyncService* sync_service_;
+  base::Closure change_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabDelegateSyncAdapter);
+};
+
+}  // namespace ntp_snippets
+
+#endif  // COMPONENTS_NTP_SNIPPETS_SESSIONS_TAB_DELEGATE_SYNC_ADAPTER_H_
