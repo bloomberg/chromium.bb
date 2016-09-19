@@ -105,9 +105,6 @@ size_t RegisterEngineCrashKeys() {
       // Temporary for https://crbug.com/630496.
       { "swdh_get_registration_cannot_host_url", crash_keys::kLargeSize },
       { "swdh_get_registration_cannot_document_url", crash_keys::kLargeSize },
-
-      // Temporary for https://crbug.com/647068.
-      { "received_quit_message", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),
