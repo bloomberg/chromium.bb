@@ -506,6 +506,21 @@ TEST(SkBitmapOperationsTest, CreateTransposedBitmap) {
   }
 }
 
+void DrawRectWithColor(SkCanvas* canvas,
+                       int left,
+                       int top,
+                       int right,
+                       int bottom,
+                       SkColor color) {
+  SkPaint paint;
+  paint.setColor(color);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas->drawRect(
+      SkRect::MakeLTRB(SkIntToScalar(left), SkIntToScalar(top),
+                       SkIntToScalar(right), SkIntToScalar(bottom)),
+      paint);
+}
+
 // Check that Rotate provides the desired results
 TEST(SkBitmapOperationsTest, RotateImage) {
   const int src_w = 6, src_h = 4;
@@ -519,22 +534,13 @@ TEST(SkBitmapOperationsTest, RotateImage) {
 
   SkCanvas canvas(src);
   src.eraseARGB(0, 0, 0, 0);
-  SkRegion region;
 
-  region.setRect(0, 0, src_w / 2, src_h / 2);
-  canvas.setClipRegion(region);
   // This region is a semi-transparent red to test non-opaque pixels.
-  canvas.drawColor(0x1FFF0000, SkXfermode::kSrc_Mode);
-  region.setRect(src_w / 2, 0, src_w, src_h / 2);
-  canvas.setClipRegion(region);
-  canvas.drawColor(SK_ColorBLUE, SkXfermode::kSrc_Mode);
-  region.setRect(0, src_h / 2, src_w / 2, src_h);
-  canvas.setClipRegion(region);
-  canvas.drawColor(SK_ColorGREEN, SkXfermode::kSrc_Mode);
-  region.setRect(src_w / 2, src_h / 2, src_w, src_h);
-  canvas.setClipRegion(region);
-  canvas.drawColor(SK_ColorYELLOW, SkXfermode::kSrc_Mode);
-  canvas.flush();
+  DrawRectWithColor(&canvas, 0, 0, src_w / 2, src_h / 2, 0x1FFF0000);
+  DrawRectWithColor(&canvas, src_w / 2, 0, src_w, src_h / 2, SK_ColorBLUE);
+  DrawRectWithColor(&canvas, 0, src_h / 2, src_w / 2, src_h, SK_ColorGREEN);
+  DrawRectWithColor(&canvas, src_w / 2, src_h / 2, src_w, src_h,
+                    SK_ColorYELLOW);
 
   SkBitmap rotate90, rotate180, rotate270;
   rotate90 = SkBitmapOperations::Rotate(src,
