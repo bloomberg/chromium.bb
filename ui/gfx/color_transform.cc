@@ -609,6 +609,13 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
           from_.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
           break;
 
+        case ColorSpace::TransferID::ARIB_STD_B67:
+          // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
+          // displays. Once we have HDR output capabilies, we'll need to
+          // change this.
+          from_.transfer_ = ColorSpace::TransferID::GAMMA24;
+          break;
+
         default:  // Do nothing
           break;
       }
