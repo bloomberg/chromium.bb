@@ -317,7 +317,9 @@ class BlinkPerfXMLHttpRequest(perf_benchmark.PerfBenchmark):
 
 
 # Disabled on Windows and ChromeOS due to https://crbug.com/521887
-@benchmark.Disabled('win', 'chromeos')
+#@benchmark.Disabled('win', 'chromeos')
+# Disabling on remaining platforms due to heavy flake https://crbug.com/646938
+@benchmark.Disabled('all')
 class BlinkPerfPywebsocket(perf_benchmark.PerfBenchmark):
   """The blink_perf.pywebsocket tests measure turn-around-time of 10MB
   send/receive for XHR, Fetch API and WebSocket. We might ignore < 10%
