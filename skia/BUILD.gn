@@ -48,7 +48,10 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = [ "SK_IGNORE_DW_GRAY_FIX" ]
+  defines = [
+    "SK_IGNORE_DW_GRAY_FIX",
+    "SK_ADDING_src_ports_SkFontConfigInterface_cpp",
+  ]
   defines += skia_for_chromium_defines
 
   defines += []
