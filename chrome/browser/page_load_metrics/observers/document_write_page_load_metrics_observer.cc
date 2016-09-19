@@ -84,18 +84,25 @@ const char kHistogramDocWriteParseStartToFirstContentfulPaintImmediate[] =
     "ParseStartToFirstContentfulPaint";
 const char kHistogramDocWriteParseDurationImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseDuration";
-const char kHistogramDocWriteParseBlockedOnScriptImmediate[] =
+const char kHistogramDocWriteParseBlockedOnScriptLoadImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoad";
 const char kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.ParseTiming."
     "ParseBlockedOnScriptLoadFromDocumentWrite";
+const char kHistogramDocWriteParseBlockedOnScriptExecutionImmediate[] =
+    "PageLoad.Clients.DocWrite.Evaluator.ParseTiming."
+    "ParseBlockedOnScriptExecution";
+const char
+    kHistogramDocWriteParseBlockedOnScriptExecutionDocumentWriteImmediate[] =
+        "PageLoad.Clients.DocWrite.Evaluator.ParseTiming."
+        "ParseBlockedOnScriptExecutionFromDocumentWrite";
 const char kBackgroundHistogramDocWriteFirstContentfulPaintImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.PaintTiming."
     "NavigationToFirstContentfulPaint."
     "Background";
 const char kBackgroundHistogramDocWriteParseDurationImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseDuration.Background";
-const char kBackgroundHistogramDocWriteParseBlockedOnScriptImmediate[] =
+const char kBackgroundHistogramDocWriteParseBlockedOnScriptLoadImmediate[] =
     "PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoad."
     "Background";
 const char
@@ -109,18 +116,25 @@ const char kHistogramDocWriteBlockFirstContentfulPaintImmediate[] =
 const char kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate[] =
     "PageLoad.Clients.DocWrite.Block.PaintTiming."
     "ParseStartToFirstContentfulPaint";
-const char kHistogramDocWriteBlockParseBlockedOnScriptImmediate[] =
+const char kHistogramDocWriteBlockParseBlockedOnScriptLoadImmediate[] =
     "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad";
 const char
     kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWriteImmediate[] =
         "PageLoad.Clients.DocWrite.Block.ParseTiming."
         "ParseBlockedOnScriptLoadFromDocumentWrite";
+const char kHistogramDocWriteBlockParseBlockedOnScriptExecutionImmediate[] =
+    "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptExecution";
+const char
+    kHistogramDocWriteBlockParseBlockedOnScriptExecutionDocumentWriteImmediate
+        [] = "PageLoad.Clients.DocWrite.Block.ParseTiming."
+             "ParseBlockedOnScriptExecutionFromDocumentWrite";
 const char kHistogramDocWriteBlockParseDurationImmediate[] =
     "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseDuration";
 
-const char kBackgroundHistogramDocWriteBlockParseBlockedOnScriptImmediate[] =
-    "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad."
-    "Background";
+const char
+    kBackgroundHistogramDocWriteBlockParseBlockedOnScriptLoadImmediate[] =
+        "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad."
+        "Background";
 const char
     kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWriteImmediate[] =
         "PageLoad.Clients.DocWrite.Block.ParseTiming."
@@ -262,19 +276,27 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorParseStop(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseDurationImmediate,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramDocWriteParseBlockedOnScriptImmediate,
+        internal::kHistogramDocWriteParseBlockedOnScriptLoadImmediate,
         timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteImmediate,
         timing.parse_blocked_on_script_load_from_document_write_duration
             .value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteParseBlockedOnScriptExecutionImmediate,
+        timing.parse_blocked_on_script_execution_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kHistogramDocWriteParseBlockedOnScriptExecutionDocumentWriteImmediate,
+        timing.parse_blocked_on_script_execution_from_document_write_duration
+            .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteParseDurationImmediate,
         parse_duration);
     PAGE_LOAD_HISTOGRAM(
-        internal::kBackgroundHistogramDocWriteParseBlockedOnScriptImmediate,
+        internal::kBackgroundHistogramDocWriteParseBlockedOnScriptLoadImmediate,
         timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
@@ -379,12 +401,20 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseDurationImmediate,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramDocWriteBlockParseBlockedOnScriptImmediate,
+        internal::kHistogramDocWriteBlockParseBlockedOnScriptLoadImmediate,
         timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWriteImmediate,
         timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteBlockParseBlockedOnScriptExecutionImmediate,
+        timing.parse_blocked_on_script_execution_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kHistogramDocWriteBlockParseBlockedOnScriptExecutionDocumentWriteImmediate,
+        timing.parse_blocked_on_script_execution_from_document_write_duration
             .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
@@ -392,7 +422,7 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::
-            kBackgroundHistogramDocWriteBlockParseBlockedOnScriptImmediate,
+            kBackgroundHistogramDocWriteBlockParseBlockedOnScriptLoadImmediate,
         timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::

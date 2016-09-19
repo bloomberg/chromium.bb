@@ -104471,6 +104471,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadBackgrounded2" separator=".">
+  <suffix name="Background"
+      label="The page was backgrounded at least once from navigation start to
+             this event."/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Block.ParseTiming.ParseBlockedOnScriptLoad"/>
   <affected-histogram
@@ -104489,7 +104492,6 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.Clients.DocWrite.Block.Timing2.ParseDuration"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.PaintTiming.NavigationToFirstContentfulPaint"/>
-  ;
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.ParseTiming.ParseBlockedOnScriptLoad"/>
   <affected-histogram
@@ -104517,9 +104519,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
-  <suffix name="Background"
-      label="The page was backgrounded at least once from navigation start to
-             this event."/>
   <affected-histogram name="PageLoad.Events.Committed"/>
   <affected-histogram name="PageLoad.Events.Provisional"/>
   <affected-histogram
@@ -104620,6 +104619,47 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PageLoadMetricsClients" separator="."
     ordering="prefix">
+  <suffix name="Clients.CssScanner"
+      label="Metrics from pages scanned by the preload scanner for @import
+             CSS rules"/>
+  <suffix name="Clients.DataReductionProxy"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy."/>
+  <suffix name="Clients.DataReductionProxy.LoFiOn"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy with session in LoFi enabled or control
+             field trial, and when the connection was slow."/>
+  <suffix name="Clients.DocWrite.Block"
+      label="PageLoadMetrics from a page that has synchronous, cross-origin
+             document.written scripts that could be blocked if the
+             document.write script blocking feature is enabled."/>
+  <suffix name="Clients.DocWrite.Evaluator"
+      label="PageLoadMetrics from a page that could have been evaluated by
+             the DocumentWriteEvaluator"/>
+  <suffix name="Clients.FromGoogleSearch"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search"/>
+  <suffix name="Clients.Previews.OfflinePages"
+      label="PageLoadMetrics that are a result of a navigation that shows
+             users an offline page preview. Offline page previews are shown
+             when a user's effective connection type is prohibitively slow."/>
+  <suffix name="Clients.ServiceWorker"
+      label="PageLoadMetrics from a page that is controlled by a Service
+             Worker"/>
+  <suffix name="Clients.FromGWS"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search">
+    <obsolete>
+      Deprecated in favor of Clients.FromGoogleSearch.
+    </obsolete>
+  </suffix>
+  <suffix name="Clients.FromGWS2"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search">
+    <obsolete>
+      Deprecated in favor of Clients.FromGoogleSearch.
+    </obsolete>
+  </suffix>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
@@ -104635,54 +104675,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecution"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
   <affected-histogram
       name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
-  <suffix name="Clients.FromGWS"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search">
-    <obsolete>
-      Deprecated in favor of Clients.FromGoogleSearch.
-    </obsolete>
-  </suffix>
-  <suffix name="Clients.FromGWS2"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search">
-    <obsolete>
-      Deprecated in favor of Clients.FromGoogleSearch.
-    </obsolete>
-  </suffix>
-  <suffix name="Clients.FromGoogleSearch"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search"/>
-  <suffix name="Clients.CssScanner"
-      label="Metrics from pages scanned by the preload scanner for @import
-             CSS rules"/>
-  <suffix name="Clients.DataReductionProxy"
-      label="PageLoadMetrics that are a result of a navigation through the
-             data reduction proxy."/>
-  <suffix name="Clients.DataReductionProxy.LoFiOn"
-      label="PageLoadMetrics that are a result of a navigation through the
-             data reduction proxy with session in LoFi enabled or control
-             field trial, and when the connection was slow."/>
-  <suffix name="Clients.DocWrite.Evaluator"
-      label="PageLoadMetrics from a page that could have been evaluated by
-             the DocumentWriteEvaluator"/>
-  <suffix name="Clients.Previews.OfflinePages"
-      label="PageLoadMetrics that are a result of a navigation that shows
-             users an offline page preview. Offline page previews are shown
-             when a user's effective connection type is prohibitively slow."/>
-  <suffix name="Clients.ServiceWorker"
-      label="PageLoadMetrics from a page that is controlled by a Service
-             Worker"/>
   <affected-histogram
       name="PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.DOMLoadingToFirstContentfulPaint"/>
-  <suffix name="Clients.DocWrite.Block"
-      label="PageLoadMetrics from a page that has synchronous, cross-origin
-             document.written scripts that could be blocked if the
-             document.write script blocking feature is enabled."/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
