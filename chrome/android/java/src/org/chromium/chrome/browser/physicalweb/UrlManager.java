@@ -252,18 +252,6 @@ class UrlManager {
     }
 
     /**
-     * Gets all UrlInfos and PwsResults for resolved URLs.
-     */
-    public PwCollection getPwCollection() {
-        List<PwsResult> nearbyPwsResults = new ArrayList<>();
-        for (String url : mNearbyUrls) {
-            nearbyPwsResults.add(mPwsResultMap.get(url));
-        }
-        return new PwCollection(getUrlInfoList(mNearbyUrls).toArray(new UrlInfo[0]),
-                nearbyPwsResults.toArray(new PwsResult[0]));
-    }
-
-    /**
      * Forget all stored URLs and clear the notification.
      */
     public void clearAllUrls() {

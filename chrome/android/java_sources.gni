@@ -690,7 +690,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebEnvironment.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebOptInActivity.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebUma.java",
-  "java/src/org/chromium/chrome/browser/physicalweb/PwCollection.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsClient.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsClientImpl.java",
   "java/src/org/chromium/chrome/browser/physicalweb/PwsResult.java",
