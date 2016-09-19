@@ -56,6 +56,8 @@ gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {
 #endif
     case content::PermissionType::MIDI_SYSEX:
       return gfx::VectorIconId::MIDI;
+    case content::PermissionType::PLUGINS:
+      return gfx::VectorIconId::EXTENSION;
     default:
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
@@ -80,6 +82,9 @@ int PermissionRequestImpl::GetIconId() const {
 #endif
     case content::PermissionType::MIDI_SYSEX:
       icon_id = IDR_ALLOWED_MIDI_SYSEX;
+      break;
+    case content::PermissionType::PLUGINS:
+      icon_id = IDR_ALLOWED_PLUGINS;
       break;
     default:
       NOTREACHED();
@@ -108,6 +113,9 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;
 #endif
+    case content::PermissionType::PLUGINS:
+      message_id = IDS_FLASH_PERMISSION_FRAGMENT;
+      break;
     default:
       NOTREACHED();
       return base::string16();
@@ -161,6 +169,8 @@ PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
 #endif
+    case content::PermissionType::PLUGINS:
+      return PermissionRequestType::PERMISSION_PLUGINS;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;

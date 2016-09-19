@@ -496,6 +496,10 @@ void PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
       UMA_HISTOGRAM_BOOLEAN(
           "Permissions.Prompt.Accepted.Persisted.VideoCapture", toggle_enabled);
       break;
+    case PermissionType::PLUGINS:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Accepted.Persisted.Plugins",
+                            toggle_enabled);
+      break;
     // The user is not prompted for these permissions, thus there is no accept
     // recorded for them.
     case PermissionType::MIDI:
@@ -541,6 +545,10 @@ void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
       break;
     case PermissionType::VIDEO_CAPTURE:
       UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.VideoCapture",
+                            toggle_enabled);
+      break;
+    case PermissionType::PLUGINS:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.Plugins",
                             toggle_enabled);
       break;
     // The user is not prompted for these permissions, thus there is no deny
@@ -660,6 +668,12 @@ void PermissionUmaUtil::RecordPermissionAction(
     case PermissionType::VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
                                 PERMISSION_ACTION_NUM);
+      break;
+    case PermissionType::PLUGINS:
+      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Plugins",
+                            "Permissions.Action.SecureOrigin.Plugins",
+                            "Permissions.Action.InsecureOrigin.Plugins",
+                            action);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.

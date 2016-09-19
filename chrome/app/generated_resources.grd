@@ -7935,6 +7935,9 @@ the Bookmarks menu.">
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
         Adobe Flash Player storage settings...
       </message>
+      <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'">
+        Run Flash
+      </message>
       <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour. In English this finishes the sentence that starts with 'Delete the following items from'.">
         the past hour
       </message>

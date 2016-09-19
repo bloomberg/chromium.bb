@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -27,6 +29,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugins_permission_context.h"
+#endif
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -99,6 +105,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
     case PermissionType::BACKGROUND_SYNC:
       return CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+    case PermissionType::PLUGINS:
+      return CONTENT_SETTINGS_TYPE_PLUGINS;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -248,6 +256,10 @@ PermissionManager::PermissionManager(Profile* profile)
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   permission_contexts_[PermissionType::BACKGROUND_SYNC] =
       base::MakeUnique<BackgroundSyncPermissionContext>(profile);
+#if defined(ENABLE_PLUGINS)
+  permission_contexts_[PermissionType::PLUGINS] =
+      base::MakeUnique<PluginsPermissionContext>(profile);
+#endif
 }
 
 PermissionManager::~PermissionManager() {

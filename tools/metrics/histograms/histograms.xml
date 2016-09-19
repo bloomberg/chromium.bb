@@ -91403,6 +91403,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="PERMISSION_AUDIO_CAPTURE"/>
   <int value="9" label="PERMISSION_VIDEO_CAPTURE"/>
   <int value="10" label="PERMISSION_BACKGROUND_SYNC"/>
+  <int value="11" label="PERMISSION_PLUGINS"/>
 </enum>
 
 <enum name="PersistentHistogramsInitResult" type="int">
@@ -104782,6 +104783,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="DurableStorage" label="Durable Storage permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
+  <suffix name="Plugins" label="Plugins permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>

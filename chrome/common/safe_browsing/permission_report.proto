@@ -95,6 +95,8 @@ message PermissionReport {
     DURABLE_STORAGE = 7;
     AUDIO_CAPTURE = 8;
     VIDEO_CAPTURE = 9;
+    BACKGROUND_SYNC = 10;
+    PLUGINS = 11;
   }
 
   // Whether the decision on a prompt was persisted.

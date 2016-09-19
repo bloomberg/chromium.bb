@@ -23,6 +23,7 @@ enum class PermissionType {
   AUDIO_CAPTURE = 8,
   VIDEO_CAPTURE = 9,
   BACKGROUND_SYNC = 10,
+  PLUGINS = 11,
 
   // Always keep this at the end.
   NUM,

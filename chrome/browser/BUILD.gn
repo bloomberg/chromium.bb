@@ -1883,6 +1883,8 @@ split_static_library("browser") {
       "plugins/plugin_status_pref_setter.h",
       "plugins/plugins_field_trial.cc",
       "plugins/plugins_field_trial.h",
+      "plugins/plugins_permission_context.cc",
+      "plugins/plugins_permission_context.h",
       "renderer_host/pepper/chrome_browser_pepper_host_factory.cc",
       "renderer_host/pepper/chrome_browser_pepper_host_factory.h",
       "renderer_host/pepper/device_id_fetcher.cc",

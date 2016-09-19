@@ -45,6 +45,8 @@ std::string PermissionUtil::GetPermissionString(
       return "Midi";
     case content::PermissionType::BACKGROUND_SYNC:
       return "BackgroundSync";
+    case content::PermissionType::PLUGINS:
+      return "Plugins";
     case content::PermissionType::NUM:
       break;
   }
