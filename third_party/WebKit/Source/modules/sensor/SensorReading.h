@@ -16,7 +16,7 @@ class ExecutionContext;
 class ScriptState;
 
 class SensorReading
-    : public GarbageCollectedMixin
+    : public GarbageCollected<SensorReading>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:

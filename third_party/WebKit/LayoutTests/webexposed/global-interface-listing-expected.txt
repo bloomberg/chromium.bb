@@ -17,14 +17,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 [INTERFACES]
-interface AmbientLightSensor : Sensor
-    attribute @@toStringTag
-    getter reading
-    method constructor
-interface AmbientLightSensorReading : SensorReading
-    attribute @@toStringTag
-    getter illuminance
-    method constructor
 interface AnalyserNode : AudioNode
     attribute @@toStringTag
     getter fftSize

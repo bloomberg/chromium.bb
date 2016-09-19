@@ -14,6 +14,7 @@ namespace blink {
 SensorReading::SensorReading(SensorProxy* sensorProxy)
     : m_sensorProxy(sensorProxy)
 {
+    DCHECK(m_sensorProxy);
 }
 
 DEFINE_TRACE(SensorReading)
@@ -29,15 +30,6 @@ DOMHighResTimeStamp SensorReading::timeStamp(ScriptState* scriptState) const
 
     Performance* performance = DOMWindowPerformance::performance(*window);
     DCHECK(performance);
-
-    if (!m_sensorProxy) {
-        // In cases when SensorReading derived classes are constructed from JS
-        // side, e.g. to create syntetic SensorReadingEvent for testing
-        // purposes, |m_sensorProxy| will be null and SensorReading.timeStamp
-        // would return current DOMHighResTimeStamp, while reading value should
-        // be provided by derived classes.
-        return performance->now();
-    }
 
     return performance->monotonicTimeToDOMHighResTimeStamp(m_sensorProxy->reading().timestamp);
 }
