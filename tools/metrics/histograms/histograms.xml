@@ -100595,6 +100595,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="RecentTabs" label="Recent (offline) tabs"/>
   <suffix name="Downloads" label="Downloads"/>
   <suffix name="Bookmarks" label="Bookmarks"/>
+  <suffix name="PhysicalWeb" label="Physical Web pages"/>
   <suffix name="Articles" label="Articles for you"/>
   <suffix name="Experimental" label="Experimental"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened"/>

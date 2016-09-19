@@ -34,6 +34,7 @@ enum class KnownCategories {
   // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
 
+  // Remote categories come after this.
   REMOTE_CATEGORIES_OFFSET = 10000,
 
   // Articles for you.
@@ -55,6 +56,7 @@ class Category {
   // the application, so they should not be persisted.
   int id() const { return id_; }
 
+  // Returns whether this category matches the given |known_category|.
   bool IsKnownCategory(KnownCategories known_category) const;
 
  private:

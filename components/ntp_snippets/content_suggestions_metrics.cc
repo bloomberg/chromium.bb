@@ -5,10 +5,12 @@
 #include "components/ntp_snippets/content_suggestions_metrics.h"
 
 #include <string>
+#include <type_traits>
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/template_util.h"
 
 namespace ntp_snippets {
 namespace metrics {
@@ -44,17 +46,32 @@ const char kHistogramMoreButtonClicked[] =
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
 std::string GetCategorySuffix(Category category) {
-  // TODO(treib): Find a way to produce a compile error if a known category
-  // isn't listed here.
-  if (category.IsKnownCategory(KnownCategories::RECENT_TABS))
-    return "RecentTabs";
-  if (category.IsKnownCategory(KnownCategories::DOWNLOADS))
-    return "Downloads";
-  if (category.IsKnownCategory(KnownCategories::BOOKMARKS))
-    return "Bookmarks";
-  if (category.IsKnownCategory(KnownCategories::ARTICLES))
-    return "Articles";
-  // All other categories go into a single "Experimental" bucket.
+  static_assert(
+      std::is_same<decltype(category.id()), typename base::underlying_type<
+                                                KnownCategories>::type>::value,
+      "KnownCategories must have the same underlying type as category.id()");
+  // Note: Since the underlying type of KnownCategories is int, it's legal to
+  // cast from int to KnownCategories, even if the given value isn't listed in
+  // the enumeration. The switch still makes sure that all known values are
+  // listed here.
+  KnownCategories known_category = static_cast<KnownCategories>(category.id());
+  switch (known_category) {
+    case KnownCategories::RECENT_TABS:
+      return "RecentTabs";
+    case KnownCategories::DOWNLOADS:
+      return "Downloads";
+    case KnownCategories::BOOKMARKS:
+      return "Bookmarks";
+    case KnownCategories::PHYSICAL_WEB_PAGES:
+      return "PhysicalWeb";
+    case KnownCategories::ARTICLES:
+      return "Articles";
+    case KnownCategories::LOCAL_CATEGORIES_COUNT:
+    case KnownCategories::REMOTE_CATEGORIES_OFFSET:
+      NOTREACHED();
+      break;
+  }
+  // All other (unknown) categories go into a single "Experimental" bucket.
   return "Experimental";
 }
 

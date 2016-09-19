@@ -16,6 +16,9 @@ CategoryFactory::CategoryFactory() {
   AddKnownCategory(KnownCategories::RECENT_TABS);
   AddKnownCategory(KnownCategories::BOOKMARKS);
   AddKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
+
+  DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
+            ordered_categories_.size());
 }
 
 CategoryFactory::~CategoryFactory() {}
