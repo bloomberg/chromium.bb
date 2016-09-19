@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -43,15 +44,14 @@ class LoadFailObserver : public content::WebContentsObserver {
         failed_load_(false),
         error_code_(net::OK) { }
 
-  void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetNetErrorCode() == net::OK)
+      return;
+
     failed_load_ = true;
-    error_code_ = static_cast<net::Error>(error_code);
-    validated_url_ = validated_url;
+    error_code_ = navigation_handle->GetNetErrorCode();
+    validated_url_ = navigation_handle->GetURL();
   }
 
   bool failed_load() const { return failed_load_; }
