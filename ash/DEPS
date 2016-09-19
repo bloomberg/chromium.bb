@@ -18,6 +18,15 @@ include_rules = [
   "+win8",
   "-ash/host",
   "-content",
+
+  # Only allow D-Bus clients accessible to the ash process on mustash.
+  "-chromeos/dbus",
+  "+chromeos/dbus/dbus_client_types.h",
+  "+chromeos/dbus/dbus_thread_manager.h",
+  "+chromeos/dbus/fake_power_manager_client.h",
+  "+chromeos/dbus/fake_session_manager_client.h",
+  "+chromeos/dbus/power_manager_client.h",
+  "+chromeos/dbus/session_manager_client.h",
 ]
 
 specific_include_rules = {

@@ -46,7 +46,8 @@ void InitializeComponents() {
 #if defined(OS_CHROMEOS)
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init().
-  chromeos::DBusThreadManager::Initialize();
+  chromeos::DBusThreadManager::Initialize(
+      chromeos::DBusThreadManager::PROCESS_ASH);
 
   // See ChromeBrowserMainPartsChromeos for ordering details.
   bluez::BluezDBusManager::Initialize(

@@ -9,7 +9,7 @@
 
 namespace chromeos {
 
-// Tests that clients can be created.
+// Tests that real and fake clients can be created.
 TEST(DBusThreadManagerTest, Initialize) {
   DBusThreadManager::Initialize();
   EXPECT_TRUE(DBusThreadManager::IsInitialized());
@@ -18,15 +18,121 @@ TEST(DBusThreadManagerTest, Initialize) {
   ASSERT_TRUE(manager);
 
   // In tests, clients are fake.
+  // NOTE: Order matches DBusClientType enum.
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::BLUETOOTH));
   EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CRAS));
   EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CROS_DISKS));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CRYPTOHOME));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::DEBUG_DAEMON));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::EASY_UNLOCK));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::LORGNETTE_MANAGER));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SHILL));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::GSM_SMS));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::IMAGE_BURNER));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::MODEM_MESSAGING));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::PERMISSION_BROKER));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::POWER_MANAGER));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SMS));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SYSTEM_CLOCK));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::UPDATE_ENGINE));
+  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::ARC_OBB_MOUNTER));
 
   // Clients were created.
+  EXPECT_TRUE(manager->GetArcObbMounterClient());
   EXPECT_TRUE(manager->GetCrasAudioClient());
   EXPECT_TRUE(manager->GetCrosDisksClient());
+  EXPECT_TRUE(manager->GetCryptohomeClient());
+  EXPECT_TRUE(manager->GetDebugDaemonClient());
+  EXPECT_TRUE(manager->GetEasyUnlockClient());
+  EXPECT_TRUE(manager->GetGsmSMSClient());
+  EXPECT_TRUE(manager->GetImageBurnerClient());
+  EXPECT_TRUE(manager->GetLorgnetteManagerClient());
+  EXPECT_TRUE(manager->GetModemMessagingClient());
+  EXPECT_TRUE(manager->GetPermissionBrokerClient());
+  EXPECT_TRUE(manager->GetPowerManagerClient());
+  EXPECT_TRUE(manager->GetSessionManagerClient());
+  EXPECT_TRUE(manager->GetShillDeviceClient());
+  EXPECT_TRUE(manager->GetShillIPConfigClient());
+  EXPECT_TRUE(manager->GetShillManagerClient());
+  EXPECT_TRUE(manager->GetShillServiceClient());
+  EXPECT_TRUE(manager->GetShillProfileClient());
+  EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
+  EXPECT_TRUE(manager->GetSMSClient());
+  EXPECT_TRUE(manager->GetSystemClockClient());
+  EXPECT_TRUE(manager->GetUpdateEngineClient());
 
   DBusThreadManager::Shutdown();
   EXPECT_FALSE(DBusThreadManager::IsInitialized());
+}
+
+// Tests that clients can be created for the browser process.
+TEST(DBusThreadManagerTest, InitializeForBrowser) {
+  DBusThreadManager::Initialize(DBusThreadManager::PROCESS_BROWSER);
+  DBusThreadManager* manager = DBusThreadManager::Get();
+  ASSERT_TRUE(manager);
+
+  // Common clients were created.
+  EXPECT_TRUE(manager->GetCrasAudioClient());
+  EXPECT_TRUE(manager->GetCryptohomeClient());
+  EXPECT_TRUE(manager->GetGsmSMSClient());
+  EXPECT_TRUE(manager->GetModemMessagingClient());
+  EXPECT_TRUE(manager->GetPermissionBrokerClient());
+  EXPECT_TRUE(manager->GetPowerManagerClient());
+  EXPECT_TRUE(manager->GetSessionManagerClient());
+  EXPECT_TRUE(manager->GetShillDeviceClient());
+  EXPECT_TRUE(manager->GetShillIPConfigClient());
+  EXPECT_TRUE(manager->GetShillManagerClient());
+  EXPECT_TRUE(manager->GetShillProfileClient());
+  EXPECT_TRUE(manager->GetShillServiceClient());
+  EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
+  EXPECT_TRUE(manager->GetSMSClient());
+  EXPECT_TRUE(manager->GetSystemClockClient());
+  EXPECT_TRUE(manager->GetUpdateEngineClient());
+
+  // Clients for the browser were created.
+  EXPECT_TRUE(manager->GetArcObbMounterClient());
+  EXPECT_TRUE(manager->GetCrosDisksClient());
+  EXPECT_TRUE(manager->GetDebugDaemonClient());
+  EXPECT_TRUE(manager->GetEasyUnlockClient());
+  EXPECT_TRUE(manager->GetImageBurnerClient());
+  EXPECT_TRUE(manager->GetLorgnetteManagerClient());
+
+  DBusThreadManager::Shutdown();
+}
+
+// Tests that clients can be created for the ash process.
+TEST(DBusThreadManagerTest, InitializeForAsh) {
+  DBusThreadManager::Initialize(DBusThreadManager::PROCESS_ASH);
+  DBusThreadManager* manager = DBusThreadManager::Get();
+  ASSERT_TRUE(manager);
+
+  // Common clients were created.
+  EXPECT_TRUE(manager->GetCrasAudioClient());
+  EXPECT_TRUE(manager->GetCryptohomeClient());
+  EXPECT_TRUE(manager->GetGsmSMSClient());
+  EXPECT_TRUE(manager->GetModemMessagingClient());
+  EXPECT_TRUE(manager->GetPermissionBrokerClient());
+  EXPECT_TRUE(manager->GetPowerManagerClient());
+  EXPECT_TRUE(manager->GetSessionManagerClient());
+  EXPECT_TRUE(manager->GetShillDeviceClient());
+  EXPECT_TRUE(manager->GetShillIPConfigClient());
+  EXPECT_TRUE(manager->GetShillManagerClient());
+  EXPECT_TRUE(manager->GetShillProfileClient());
+  EXPECT_TRUE(manager->GetShillServiceClient());
+  EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
+  EXPECT_TRUE(manager->GetSMSClient());
+  EXPECT_TRUE(manager->GetSystemClockClient());
+  EXPECT_TRUE(manager->GetUpdateEngineClient());
+
+  // Clients for other processes were not created.
+  EXPECT_FALSE(manager->GetArcObbMounterClient());
+  EXPECT_FALSE(manager->GetCrosDisksClient());
+  EXPECT_FALSE(manager->GetDebugDaemonClient());
+  EXPECT_FALSE(manager->GetEasyUnlockClient());
+  EXPECT_FALSE(manager->GetImageBurnerClient());
+  EXPECT_FALSE(manager->GetLorgnetteManagerClient());
+
+  DBusThreadManager::Shutdown();
 }
 
 }  // namespace chromeos

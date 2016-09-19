@@ -2,28 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/dbus_client_bundle.h"
-
-#include <stddef.h>
-
-#include <vector>
+#include "chromeos/dbus/dbus_clients_common.h"
 
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/dbus/easy_unlock_client.h"
-#include "chromeos/dbus/fake_arc_obb_mounter_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_debug_daemon_client.h"
-#include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
-#include "chromeos/dbus/fake_image_burner_client.h"
-#include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
@@ -35,8 +23,6 @@
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -54,42 +40,17 @@
 
 namespace chromeos {
 
-DBusClientBundle::DBusClientBundle(DBusClientTypeMask real_client_mask)
+DBusClientsCommon::DBusClientsCommon(DBusClientTypeMask real_client_mask)
     : real_client_mask_(real_client_mask) {
-  if (IsUsingReal(DBusClientType::ARC_OBB_MOUNTER))
-    arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
-  else
-    arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
-
   if (IsUsingReal(DBusClientType::CRAS))
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
     cras_audio_client_.reset(new FakeCrasAudioClient);
 
-  cros_disks_client_.reset(
-      CrosDisksClient::Create(IsUsingReal(DBusClientType::CROS_DISKS)
-                                  ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                  : FAKE_DBUS_CLIENT_IMPLEMENTATION));
-
   if (IsUsingReal(DBusClientType::CRYPTOHOME))
     cryptohome_client_.reset(CryptohomeClient::Create());
   else
     cryptohome_client_.reset(new FakeCryptohomeClient);
-
-  if (IsUsingReal(DBusClientType::DEBUG_DAEMON))
-    debug_daemon_client_.reset(DebugDaemonClient::Create());
-  else
-    debug_daemon_client_.reset(new FakeDebugDaemonClient);
-
-  if (IsUsingReal(DBusClientType::EASY_UNLOCK))
-    easy_unlock_client_.reset(EasyUnlockClient::Create());
-  else
-    easy_unlock_client_.reset(new FakeEasyUnlockClient);
-
-  if (IsUsingReal(DBusClientType::LORGNETTE_MANAGER))
-    lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
-  else
-    lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
 
   if (IsUsingReal(DBusClientType::SHILL)) {
     shill_manager_client_.reset(ShillManagerClient::Create());
@@ -118,11 +79,6 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask real_client_mask)
             chromeos::switches::kSmsTestMessages));
     gsm_sms_client_.reset(gsm_sms_client);
   }
-
-  if (IsUsingReal(DBusClientType::IMAGE_BURNER))
-    image_burner_client_.reset(ImageBurnerClient::Create());
-  else
-    image_burner_client_.reset(new FakeImageBurnerClient);
 
   if (IsUsingReal(DBusClientType::MODEM_MESSAGING))
     modem_messaging_client_.reset(ModemMessagingClient::Create());
@@ -160,18 +116,32 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask real_client_mask)
                                      : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 }
 
-DBusClientBundle::~DBusClientBundle() {}
+DBusClientsCommon::~DBusClientsCommon() {}
 
-bool DBusClientBundle::IsUsingReal(DBusClientType client) const {
+bool DBusClientsCommon::IsUsingReal(DBusClientType client) const {
   return real_client_mask_ & static_cast<DBusClientTypeMask>(client);
 }
 
-bool DBusClientBundle::IsUsingAnyRealClient() const {
-  return real_client_mask_ !=
-         static_cast<DBusClientTypeMask>(DBusClientType::NONE);
-}
+void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
+  DCHECK(DBusThreadManager::IsInitialized());
 
-void DBusClientBundle::SetupDefaultEnvironment() {
+  cras_audio_client_->Init(system_bus);
+  cryptohome_client_->Init(system_bus);
+  gsm_sms_client_->Init(system_bus);
+  modem_messaging_client_->Init(system_bus);
+  permission_broker_client_->Init(system_bus);
+  power_manager_client_->Init(system_bus);
+  session_manager_client_->Init(system_bus);
+  shill_device_client_->Init(system_bus);
+  shill_ipconfig_client_->Init(system_bus);
+  shill_manager_client_->Init(system_bus);
+  shill_service_client_->Init(system_bus);
+  shill_profile_client_->Init(system_bus);
+  shill_third_party_vpn_driver_client_->Init(system_bus);
+  sms_client_->Init(system_bus);
+  system_clock_client_->Init(system_bus);
+  update_engine_client_->Init(system_bus);
+
   ShillManagerClient::TestInterface* manager =
       shill_manager_client_->GetTestInterface();
   if (manager)

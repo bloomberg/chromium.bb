@@ -96,7 +96,8 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Initialize();
+  chromeos::DBusThreadManager::Initialize(
+      chromeos::DBusThreadManager::PROCESS_ASH);
 #endif
 }
 

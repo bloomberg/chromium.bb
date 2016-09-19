@@ -198,9 +198,14 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
+    // Under mash, some D-Bus clients are owned by other processes.
+    DBusThreadManager::ProcessMask process_mask =
+        chrome::IsRunningInMash() ? DBusThreadManager::PROCESS_BROWSER
+                                  : DBusThreadManager::PROCESS_ALL;
+
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
-    DBusThreadManager::Initialize();
+    DBusThreadManager::Initialize(process_mask);
 
     bluez::BluezDBusManager::Initialize(
         DBusThreadManager::Get()->GetSystemBus(),

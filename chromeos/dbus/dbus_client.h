@@ -26,7 +26,8 @@ class DBusClient {
   virtual void Init(dbus::Bus* bus) = 0;
 
  private:
-  friend class DBusThreadManager;
+  friend class DBusClientsBrowser;
+  friend class DBusClientsCommon;
 
   DISALLOW_ASSIGN(DBusClient);
 };

@@ -93,7 +93,8 @@ void AshTestHelper::SetUp(bool start_session,
 #if defined(OS_CHROMEOS)
   // Create DBusThreadManager for testing.
   if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::DBusThreadManager::Initialize(
+        chromeos::DBusThreadManager::PROCESS_ASH);
     dbus_thread_manager_initialized_ = true;
   }
 
