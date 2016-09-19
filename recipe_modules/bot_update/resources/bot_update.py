@@ -555,7 +555,8 @@ def _download(url):
 
 
 def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
-                         email_file, key_file, whitelist=None, blacklist=None):
+                         email_file, key_file, oauth2_file,
+                         whitelist=None, blacklist=None):
   apply_issue_bin = ('apply_issue.bat' if sys.platform.startswith('win')
                      else 'apply_issue')
   cmd = [apply_issue_bin,
@@ -570,8 +571,10 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
          # Don't run gclient sync when it sees a DEPS change.
          '--ignore_deps',
   ]
-  # Use an oauth key file if specified.
-  if email_file and key_file:
+  # Use an oauth key or json file if specified.
+  if oauth2_file:
+    cmd.extend(['--auth-refresh-token-json', oauth2_file])
+  elif email_file and key_file:
     cmd.extend(['--email-file', email_file, '--private-key-file', key_file])
   else:
     cmd.append('--no-auth')
@@ -714,8 +717,9 @@ def ensure_deps_revisions(deps_url_mapping, solutions, revisions):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, rietveld_server, gerrit_repo,
                     gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
-                    apply_issue_email_file, apply_issue_key_file, shallow, refs,
-                    git_cache_dir, gerrit_reset):
+                    apply_issue_email_file, apply_issue_key_file,
+                    apply_issue_oauth2_file, shallow, refs, git_cache_dir,
+                    gerrit_reset):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -738,7 +742,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       if issue:
         apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
                              revision_mapping, git_ref, apply_issue_email_file,
-                             apply_issue_key_file, whitelist=[target])
+                             apply_issue_key_file, apply_issue_oauth2_file,
+                             whitelist=[target])
         already_patched.append(target)
       elif gerrit_ref:
         apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset,
@@ -765,8 +770,9 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Apply the rest of the patch here (sans DEPS)
   if issue:
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
-                         revision_mapping, git_ref, apply_issue_email_file,
-                         apply_issue_key_file, blacklist=already_patched)
+                         revision_mapping, apply_issue_oauth2_file, git_ref,
+                         apply_issue_email_file, apply_issue_key_file,
+                         blacklist=already_patched)
   elif gerrit_ref and not applied_gerrit_patch:
     # If gerrit_ref was for solution's main repository, it has already been
     # applied above. This chunk is executed only for patches to DEPS-ed in
@@ -834,6 +840,9 @@ def parse_args():
                    help='--email-file option passthrough for apply_patch.py.')
   parse.add_option('--apply_issue_key_file',
                    help='--private-key-file option passthrough for '
+                        'apply_patch.py.')
+  parse.add_option('--apply_issue_oauth2_file',
+                   help='--auth-refresh-token-json option passthrough for '
                         'apply_patch.py.')
   parse.add_option('--root', dest='patch_root',
                    help='DEPRECATED: Use --patch_root.')
@@ -972,6 +981,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           revision_mapping=options.revision_mapping,
           apply_issue_email_file=options.apply_issue_email_file,
           apply_issue_key_file=options.apply_issue_key_file,
+          apply_issue_oauth2_file=options.apply_issue_oauth2_file,
 
           # Finally, extra configurations such as shallowness of the clone.
           shallow=shallow,
