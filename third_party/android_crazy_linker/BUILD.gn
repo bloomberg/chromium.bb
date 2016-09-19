@@ -10,7 +10,6 @@ config("crazy_config") {
   ]
 }
 
-# GYP: //third_party/android_crazy_linker/crazy_linker.gyp:crazy_linker
 source_set("android_crazy_linker") {
   sources = [
     "src/src/crazy_linker_api.cpp",

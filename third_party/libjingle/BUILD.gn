@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 
-# From third_party/libjingle/libjingle.gyp's target_defaults.
 config("jingle_unexported_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
@@ -15,7 +14,6 @@ config("jingle_unexported_configs") {
   ]
 }
 
-# From third_party/libjingle/libjingle.gyp's target_defaults.
 config("jingle_public_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
@@ -24,7 +22,6 @@ config("jingle_public_configs") {
   ]
 }
 
-# From third_party/libjingle/libjingle.gyp's target_defaults.
 group("jingle_deps") {
   public_deps = [
     "//third_party/expat",
@@ -36,7 +33,6 @@ group("jingle_deps") {
   ]
 }
 
-# GYP version: third_party/libjingle.gyp:libjingle
 static_library("libjingle") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

@@ -6,7 +6,6 @@ import("//testing/test.gni")
 import("config.gni")
 
 if (current_toolchain == host_toolchain) {
-  # GYP: //third_party/android_platform/relocation_packer.gyp:android_lib_relocation_packer
   source_set("android_lib_relocation_packer") {
     deps = [
       "//third_party/elfutils:libelf",
@@ -28,7 +27,6 @@ if (current_toolchain == host_toolchain) {
     ]
   }
 
-  # GYP: //third_party/android_platform/relocation_packer.gyp:android_relocation_packer
   executable("android_relocation_packer") {
     deps = [
       ":android_lib_relocation_packer",
@@ -59,7 +57,6 @@ if (current_toolchain == host_toolchain) {
     ]
   }
 
-  # GYP: //third_party/android_platform/relocation_packer.gyp:android_relocation_packer_unittests
   test("android_relocation_packer_unittests") {
     deps = [
       ":android_lib_relocation_packer",

@@ -6,7 +6,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//third_party/kasko/kasko.gni")
 
-# GYP version: target 'kasko_features' in third_party/kasko/kasko.gyp
 buildflag_header("kasko_features") {
   header = "kasko_features.h"
   flags = [ "ENABLE_KASKO=$enable_kasko" ]
@@ -28,7 +27,6 @@ if (enable_kasko) {
     libs = [ "kasko.dll.lib" ]
   }
 
-  # GYP version: target 'copy_kasko_dll' in third_party/kasko/kasko.gyp
   copy("copy_kasko_dll") {
     visibility = [ ":*" ]
     sources = [
@@ -40,7 +38,6 @@ if (enable_kasko) {
     ]
   }
 
-  # GYP version: target 'kasko' in third_party/kasko/kasko.gyp
   group("kasko") {
     public_deps = [
       ":copy_kasko_dll",

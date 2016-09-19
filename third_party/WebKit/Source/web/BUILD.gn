@@ -278,7 +278,6 @@ component("web") {
   }
 }
 
-# GYP version: WebKit/Source/web/web.gyp:blink_web_test_support
 static_library("test_support") {
   deps = [
     "//skia",
@@ -304,7 +303,6 @@ group("webkit_unit_tests_data") {
   ]
 }
 
-# GYP version: WebKit/Source/web/web_tests.gyp:webkit_unit_tests
 test("webkit_unit_tests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]

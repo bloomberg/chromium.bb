@@ -4,7 +4,6 @@
 
 assert(is_android)
 
-# GYP: //third_party/android_opengl/etc1/etc1.gyp:etc1
 source_set("etc1") {
   sources = [
     "etc1.cpp",

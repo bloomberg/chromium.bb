@@ -51,7 +51,6 @@ if (is_android) {
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
 }
 
-# GYP version: third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h
 copy("version_h") {
   sources = [
     widevine_cdm_version_h_file,
@@ -65,7 +64,6 @@ copy("version_h") {
   ]
 }
 
-# GYP version: third_party/widevine/cdm/widevine_cdm.gyp:widevinecdm
 if (widevine_cdm_binary_files != []) {
   copy("widevinecdm") {
     sources = widevine_cdm_binary_files
@@ -104,8 +102,6 @@ if (widevine_cdm_binary_files != []) {
       #TODO(jrummell) Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
     } else if (is_posix && !is_mac) {
       cflags = [ "-fvisibility=hidden" ]
-      # Note GYP sets rpath but this is set by default on shared libraries in
-      # the GN build.
     }
   }
 } else {

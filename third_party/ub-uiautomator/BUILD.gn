@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //third_party/ub-uiautomator/ub-uiautomator.gyp:ub_uiautomator_jar
 android_java_prebuilt("ub_uiautomator_java") {
   jar_path = "lib/ub-uiautomator.jar"
 }

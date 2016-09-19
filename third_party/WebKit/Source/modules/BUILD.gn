@@ -169,7 +169,6 @@ target(modules_target_type, "modules") {
   }
 }
 
-# GYP version: WebKit/Source/modules/modules.gyp:modules_testing
 source_set("modules_testing") {
   sources = [
     "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",

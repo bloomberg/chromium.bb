@@ -36,7 +36,6 @@ config("libphonenumber_config_internal") {
   }
 }
 
-# GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber_without_metadata
 static_library("libphonenumber_without_metadata") {
   sources = [
     "dist/cpp/src/phonenumbers/alternate_format.cc",
@@ -80,7 +79,6 @@ static_library("libphonenumber_without_metadata") {
 }
 
 # Library used by clients that includes production metadata.
-# GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber
 static_library("libphonenumber") {
   sources = [
     # Comment next line and uncomment the line after, if complete metadata
@@ -94,7 +92,6 @@ static_library("libphonenumber") {
   ]
 }
 
-# GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests
 test("libphonenumber_unittests") {
   sources = [
     "dist/cpp/src/phonenumbers/test_metadata.cc",
