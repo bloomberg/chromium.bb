@@ -40,6 +40,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   void OnClosed() override;
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
+  gfx::ICCProfile GetICCProfileForCurrentDisplay() override;
 
   NativeWidgetMus* native_widget_;
   std::unique_ptr<InputMethodMus> input_method_;

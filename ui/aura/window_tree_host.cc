@@ -69,11 +69,8 @@ void WindowTreeHost::InitCompositor() {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                GetBounds().size());
   compositor_->SetRootLayer(window()->layer());
-
-  // TODO(hubbe): Get the color space from the *current* monitor and
-  // update it when window is moved or color space configuration changes.
   compositor_->SetDisplayColorSpace(
-      gfx::ICCProfile::FromBestMonitor().GetColorSpace());
+      GetICCProfileForCurrentDisplay().GetColorSpace());
 }
 
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
@@ -311,6 +308,12 @@ void WindowTreeHost::OnHostLostWindowCapture() {
   Window* capture_window = client::GetCaptureWindow(window());
   if (capture_window && capture_window->GetRootWindow() == window())
     capture_window->ReleaseCapture();
+}
+
+gfx::ICCProfile WindowTreeHost::GetICCProfileForCurrentDisplay() {
+  // TODO(hubbe): Get the color space from the *current* monitor and
+  // update it when window is moved or color space configuration changes.
+  return gfx::ICCProfile::FromBestMonitor();
 }
 
 ui::EventProcessor* WindowTreeHost::GetEventProcessor() {

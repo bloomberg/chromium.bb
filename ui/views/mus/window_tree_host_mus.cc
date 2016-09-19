@@ -94,4 +94,9 @@ void WindowTreeHostMus::OnCloseRequest() {
   OnHostCloseRequested();
 }
 
+gfx::ICCProfile WindowTreeHostMus::GetICCProfileForCurrentDisplay() {
+  // TODO: This should read the profile from mus. crbug.com/647510
+  return gfx::ICCProfile();
+}
+
 }  // namespace views
