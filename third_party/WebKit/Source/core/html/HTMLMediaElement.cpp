@@ -971,7 +971,7 @@ void HTMLMediaElement::loadSourceFromAttribute()
     // If the src attribute's value is the empty string ... jump down to the failed step below
     if (srcValue.isEmpty()) {
         mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
-        BLINK_MEDIA_LOG << "selectMediaResource(" << (void*)this << "), empty 'src'";
+        BLINK_MEDIA_LOG << "loadSourceFromAttribute(" << (void*)this << "), empty 'src'";
         return;
     }
 
@@ -1437,7 +1437,7 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         if (m_currentSourceNode)
             m_currentSourceNode->scheduleErrorEvent();
         else
-            BLINK_MEDIA_LOG << "setNetworkState(" << (void*)this << ") - error event not sent, <source> was removed";
+            BLINK_MEDIA_LOG << "mediaLoadingFailed(" << (void*)this << ") - error event not sent, <source> was removed";
 
         // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous section consists of all the remaining steps of this algorithm until the algorithm says the synchronous section has ended.
 
@@ -1445,10 +1445,10 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
         forgetResourceSpecificTracks();
 
         if (havePotentialSourceChild()) {
-            BLINK_MEDIA_LOG << "setNetworkState(" << (void*)this << ") - scheduling next <source>";
+            BLINK_MEDIA_LOG << "mediaLoadingFailed(" << (void*)this << ") - scheduling next <source>";
             scheduleNextSourceChild();
         } else {
-            BLINK_MEDIA_LOG << "setNetworkState(" << (void*)this << ") - no more <source> elements, waiting";
+            BLINK_MEDIA_LOG << "mediaLoadingFailed(" << (void*)this << ") - no more <source> elements, waiting";
             waitForSourceChange();
         }
 
