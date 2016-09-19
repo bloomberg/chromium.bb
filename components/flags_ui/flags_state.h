@@ -74,10 +74,15 @@ class FlagsState {
                               const char* enable_features_flag_name,
                               const char* disable_features_flag_name);
 
-  // Reads the state from |flags_storage| and returns the set of command line
-  // flags that correspond to enabled entries. Does not populate any information
-  // about entries that enable/disable base::Feature states.
+  // Reads the state from |flags_storage| and returns a set of strings
+  // corresponding to enabled entries. Does not populate any information about
+  // entries that enable/disable base::Feature states.
   std::set<std::string> GetSwitchesFromFlags(FlagsStorage* flags_storage);
+
+  // Reads the state from |flags_storage| and returns a set of strings
+  // corresponding to enabled/disabled base::Feature states. Feature names are
+  // suffixed with ":enabled" or ":disabled" depending on their state.
+  std::set<std::string> GetFeaturesFromFlags(FlagsStorage* flags_storage);
 
   bool IsRestartNeededToCommitChanges();
   void SetFeatureEntryEnabled(FlagsStorage* flags_storage,

@@ -2169,6 +2169,49 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   return false;
 }
 
+// Records a set of feature switches (prefixed with "--").
+void ReportAboutFlagsHistogramSwitches(const std::string& uma_histogram_name,
+                                       const std::set<std::string>& switches) {
+  for (const std::string& flag : switches) {
+    int uma_id = about_flags::testing::kBadSwitchFormatHistogramId;
+    if (base::StartsWith(flag, "--", base::CompareCase::SENSITIVE)) {
+      // Skip '--' before switch name.
+      std::string switch_name(flag.substr(2));
+
+      // Kill value, if any.
+      const size_t value_pos = switch_name.find('=');
+      if (value_pos != std::string::npos)
+        switch_name.resize(value_pos);
+
+      uma_id = GetSwitchUMAId(switch_name);
+    } else {
+      NOTREACHED() << "ReportAboutFlagsHistogram(): flag '" << flag
+                   << "' has incorrect format.";
+    }
+    DVLOG(1) << "ReportAboutFlagsHistogram(): histogram='" << uma_histogram_name
+             << "' '" << flag << "', uma_id=" << uma_id;
+
+    // Sparse histogram macro does not cache the histogram, so it's safe
+    // to use macro with non-static histogram name here.
+    UMA_HISTOGRAM_SPARSE_SLOWLY(uma_histogram_name, uma_id);
+  }
+}
+
+// Records a set of FEATURE_VALUE_TYPE features (suffixed with ":enabled" or
+// "disabled", depending on their state).
+void ReportAboutFlagsHistogramFeatures(const std::string& uma_histogram_name,
+                                       const std::set<std::string>&features) {
+  for (const std::string& feature : features) {
+    int uma_id = GetSwitchUMAId(feature);
+    DVLOG(1) << "ReportAboutFlagsHistogram(): histogram='" << uma_histogram_name
+             << "' '" << feature << "', uma_id=" << uma_id;
+
+    // Sparse histogram macro does not cache the histogram, so it's safe
+    // to use macro with non-static histogram name here.
+    UMA_HISTOGRAM_SPARSE_SLOWLY(uma_histogram_name, uma_id);
+  }
+}
+
 }  // namespace
 
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
@@ -2239,7 +2282,9 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
   const std::set<std::string> switches =
       FlagsStateSingleton::GetFlagsState()->GetSwitchesFromFlags(flags_storage);
-  ReportAboutFlagsHistogram("Launch.FlagsAtStartup", switches);
+  const std::set<std::string> features =
+      FlagsStateSingleton::GetFlagsState()->GetFeaturesFromFlags(flags_storage);
+  ReportAboutFlagsHistogram("Launch.FlagsAtStartup", switches, features);
 }
 
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
@@ -2247,31 +2292,12 @@ base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
       base::HashMetricName(switch_name));
 }
 
-void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
-                               const std::set<std::string>& flags) {
-  for (const std::string& flag : flags) {
-    int uma_id = about_flags::testing::kBadSwitchFormatHistogramId;
-    if (base::StartsWith(flag, "--", base::CompareCase::SENSITIVE)) {
-      // Skip '--' before switch name.
-      std::string switch_name(flag.substr(2));
-
-      // Kill value, if any.
-      const size_t value_pos = switch_name.find('=');
-      if (value_pos != std::string::npos)
-        switch_name.resize(value_pos);
-
-      uma_id = GetSwitchUMAId(switch_name);
-    } else {
-      NOTREACHED() << "ReportAboutFlagsHistogram(): flag '" << flag
-                   << "' has incorrect format.";
-    }
-    DVLOG(1) << "ReportAboutFlagsHistogram(): histogram='" << uma_histogram_name
-             << "' '" << flag << "', uma_id=" << uma_id;
-
-    // Sparse histogram macro does not cache the histogram, so it's safe
-    // to use macro with non-static histogram name here.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(uma_histogram_name, uma_id);
-  }
+void ReportAboutFlagsHistogram(
+    const std::string& uma_histogram_name,
+    const std::set<std::string>& switches,
+    const std::set<std::string>& features) {
+  ReportAboutFlagsHistogramSwitches(uma_histogram_name, switches);
+  ReportAboutFlagsHistogramFeatures(uma_histogram_name, features);
 }
 
 namespace testing {

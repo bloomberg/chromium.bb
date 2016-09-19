@@ -286,6 +286,29 @@ std::set<std::string> FlagsState::GetSwitchesFromFlags(
   return switches;
 }
 
+std::set<std::string> FlagsState::GetFeaturesFromFlags(
+    FlagsStorage* flags_storage) {
+  std::set<std::string> enabled_entries;
+  std::map<std::string, SwitchEntry> name_to_switch_map;
+  GenerateFlagsToSwitchesMapping(flags_storage, &enabled_entries,
+                                 &name_to_switch_map);
+
+  std::set<std::string> features;
+  for (const std::string& entry_name : enabled_entries) {
+    const auto& entry_it = name_to_switch_map.find(entry_name);
+    DCHECK(entry_it != name_to_switch_map.end());
+
+    const SwitchEntry& entry = entry_it->second;
+    if (!entry.feature_name.empty()) {
+      if (entry.feature_state)
+        features.insert(entry.feature_name + ":enabled");
+      else
+        features.insert(entry.feature_name + ":disabled");
+    }
+  }
+  return features;
+}
+
 bool FlagsState::IsRestartNeededToCommitChanges() {
   return needs_restart_;
 }

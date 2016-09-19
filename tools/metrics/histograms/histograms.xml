@@ -86232,10 +86232,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2047832738" label="enable-system-timezone-automatic-detection"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
+  <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
+  <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2008272679" label="disable-webrtc-hw-encoding"/>
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
@@ -86244,6 +86246,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1980328793" label="trace-upload-url"/>
   <int value="-1972383451" label="disable-pinch"/>
+  <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
+  <int value="-1963427770" label="EmojiHandwritingVoiceInput:disabled"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
   <int value="-1961648833" label="show_summary"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
@@ -86257,8 +86261,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1915854488" label="enable-offline-pages"/>
+  <int value="-1912999136" label="enable-automatic-password-saving:enabled"/>
   <int value="-1911153473" label="enable-easy-signin"/>
+  <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
+  <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
   <int value="-1887053262"
       label="enable-zero-suggest-most-visited-without-serp"/>
@@ -86269,6 +86276,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1869845022" label="force-show-update-menu-item"/>
+  <int value="-1867382602" label="WebRTC-H264WithOpenH264FFmpeg:enabled"/>
+  <int value="-1867342522" label="MaterialDesignHistory:enabled"/>
+  <int value="-1849706663" label="enable-password-force-saving:disabled"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
@@ -86279,7 +86289,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1804485171" label="disable-fullscreen-tab-detaching"/>
+  <int value="-1802502753" label="enable-manual-password-generation:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>
+  <int value="-1797739460" label="brotli-encoding:disabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
@@ -86296,9 +86308,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
+  <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
   <int value="-1691281364" label="enable-notification-action-icons"/>
+  <int value="-1670137340"
+      label="OptimizeLoadingIPCForSmallResources:disabled"/>
+  <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
   <int value="-1663410466" label="top-document-isolation"/>
+  <int value="-1663125441" label="OptInImeMenu:enabled"/>
+  <int value="-1662646099" label="NTPOfflinePageSuggestions:enabled"/>
   <int value="-1662447331" label="wake-on-packets"/>
   <int value="-1660972490" label="gpu-rasterization-msaa-sample-count"/>
   <int value="-1655535052" label="enable-pointer-events"/>
@@ -86306,12 +86324,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
+  <int value="-1620568042" label="FeaturePolicy:disabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
+  <int value="-1617183455" label="OfflineRecentPages:disabled"/>
+  <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
+  <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
+  <int value="-1586642651" label="MaterialDesignExtensions:disabled"/>
+  <int value="-1583728573" label="AutofillCreditCardSigninPromo:disabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
@@ -86320,15 +86344,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
+  <int value="-1504305449" label="NTPPhysicalWebPageSuggestions:enabled"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
+  <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1460462432" label="disable-media-source"/>
+  <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
+  <int value="-1438279809" label="GamepadExtensions:disabled"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
@@ -86342,6 +86370,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
+  <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
   <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
   <int value="-1349872906"
@@ -86355,7 +86384,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
+  <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
+  <int value="-1289678848" label="SystemDownloadManager:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
@@ -86363,6 +86394,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
+  <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
@@ -86370,10 +86402,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
+  <int value="-1205790119" label="CredentialManagementAPI:enabled"/>
+  <int value="-1203955801" label="enable-password-change-support:disabled"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1184904651" label="enable-npapi"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
+  <int value="-1176748003"
+      label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
@@ -86386,6 +86422,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1125133283" label="disable-threaded-scrolling"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
+  <int value="-1099142083" label="V8Ignition:disabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
@@ -86398,11 +86435,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1052415111" label="malware-interstitial-v2"/>
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
+  <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
+  <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
+  <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>
+  <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
+  <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
@@ -86411,28 +86453,38 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-972425050" label="gesture-editing"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-951394314" label="top-chrome-md"/>
+  <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
+  <int value="-945806012" label="DownloadsUi:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
+  <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
+  <int value="-908421850" label="PointerEvent:enabled"/>
+  <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
   <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
+  <int value="-894214299" label="fill-on-account-select:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
   <int value="-856915246" label="enable-new-audio-rendering-mixing-strategy"/>
+  <int value="-856016114" label="NTPOfflinePages:disabled"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
+  <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
+  <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813474479" label="site-per-process"/>
+  <int value="-812461825" label="AutofillCreditCardSigninPromo:enabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-795600188" label="disable-async-dns"/>
@@ -86443,6 +86495,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-749048160" label="enable-panels"/>
   <int value="-744159181" label="disable-spdy-proxy-dev-auth-origin"/>
   <int value="-743103250" label="enable-linkable-ephemeral-apps"/>
+  <int value="-741806604" label="DownloadsUi:disabled"/>
+  <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-699767107" label="enable-sync-app-list"/>
@@ -86453,11 +86507,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
+  <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-617452890" label="media-router"/>
   <int value="-610411643" label="enable-printer-app-search"/>
+  <int value="-606898702" label="MaterialDesignSettings:disabled"/>
   <int value="-604814313" label="enable-pinch"/>
   <int value="-604068396" label="disable-input-ime-api"/>
   <int value="-601384286" label="disable-contextual-search"/>
@@ -86467,23 +86523,29 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
+  <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-535208779" label="enable-native-cups"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
+  <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
+  <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
+  <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-488779992" label="blink-settings"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-475049740" label="disable-vr-shell"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>
+  <int value="-472013317" label="WebRTC-H264WithOpenH264FFmpeg:disabled"/>
   <int value="-462205750" label="enable-service-worker-sync"/>
   <int value="-455203267" label="use_new_features_summary"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
   <int value="-430360431" label="disable-password-generation"/>
+  <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-385337473" label="enable-fast-unload"/>
@@ -86494,6 +86556,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-362022976" label="disable-quirks-client"/>
   <int value="-361948582" label="material-security-verbose"/>
   <int value="-360038744" label="invert-viewport-scroll-order"/>
+  <int value="-354783358" label="NTPSaveToOffline:disabled"/>
   <int value="-351552989" label="disable-hosted-apps-in-windows"/>
   <int value="-351127770" label="enable-offline-pages-as-bookmarks"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
@@ -86504,31 +86567,44 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
+  <int value="-323831744" label="token-binding:enabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
+  <int value="-315604713" label="WebUSB:enabled"/>
   <int value="-314910380" label="disable-distance-field-text"/>
+  <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
+  <int value="-279920685" label="affiliation-based-matching:enabled"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
+  <int value="-234966279" label="PointerEvent:disabled"/>
+  <int value="-234687894"
+      label="NonValidatingReloadOnRefreshContentV2:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
+  <int value="-213518852" label="protect-sync-credential:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-201208150" label="ash-max-previews-to-use-mask"/>
+  <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
+  <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
+  <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
   <int value="-158197254" label="enable-credential-manager-api"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
+  <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
+  <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
@@ -86541,6 +86617,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-52483823" label="disable-new-video-renderer"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
   <int value="-48920737" label="enable-smooth-scrolling"/>
+  <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45063580" label="ash-max-previews-to-use-shape"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
@@ -86556,34 +86633,47 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
+  <int value="33778663" label="OriginTrials:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
+  <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="56723110" label="enable-webfonts-intervention"/>
+  <int value="59784035" label="ImeThread:disabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="75747474" label="disable-webview-signin-flow"/>
   <int value="78998551" label="disable-hosted-app-shim-creation"/>
   <int value="79503461" label="disable-account-consistency"/>
+  <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
+  <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="120429808" label="disable-new-profile-management"/>
+  <int value="121684313" label="QuickUnlockPin:enabled"/>
   <int value="121858954" label="enable-supervised-user-safesites"/>
   <int value="125934378" label="enable-password-link"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
+  <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
+  <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
+  <int value="201343576" label="enable-password-change-support:enabled"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
+  <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280322118" label="enable-unsafe-es3-apis"/>
+  <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
+  <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
   <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
+  <int value="327045548" label="SafeSearchUrlReporting:enabled"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
@@ -86596,12 +86686,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
+  <int value="405329388"
+      label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
+  <int value="411250226" label="AutoplayMutedVideos:disabled"/>
   <int value="412957264" label="tab-close-buttons-hidden-with-touch"/>
   <int value="413081240" label="enable-new-md-input-view"/>
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="416887895" label="enable-password-change-support"/>
+  <int value="422307097" label="PhysicalWeb:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
+  <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="455698038"
@@ -86612,12 +86707,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="466248382" label="disable-push-api-background-mode"/>
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
+  <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
   <int value="477967119" label="enable-unified-media-pipeline"/>
+  <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
   <int value="493903641" label="disable-appcontainer"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
   <int value="503245473" label="disable-translate-new-ux"/>
+  <int value="510814146" label="OfflineBookmarks:enabled"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
+  <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="546710806" label="disable-easy-signin"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
@@ -86625,24 +86724,36 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
+  <int value="602117675" label="NTPBookmarkSuggestions:enabled"/>
+  <int value="603326800" label="UsePasswordSeparatedSigninFlow:enabled"/>
+  <int value="605150752" label="WebUSB:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="609112512" label="touch-selection-strategy"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="625273056" label="disable-boot-animation"/>
+  <int value="628302973" label="NTPSnippets:enabled"/>
   <int value="630947363" label="touch-events"/>
   <int value="636425179" label="mhtml-generator-option"/>
+  <int value="637396292" label="AllBookmarks:enabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
+  <int value="646252875" label="ReadItLaterInMenu:enabled"/>
   <int value="646738320" label="disable-gesture-editing"/>
   <int value="650602639" label="enable-autofill-keyboard-accessory-view"/>
   <int value="683410401"
       label="enable-proximity-auth-bluetooth-low-energy-discovery"/>
+  <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="689489984" label="disable-zero-suggest"/>
+  <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
+  <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
+  <int value="715617684" label="OriginTrials:disabled"/>
   <int value="716080990" label="restrict-iframe-permissions"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
+  <int value="746944193" label="enable-automatic-password-saving:disabled"/>
+  <int value="747847237" label="PhysicalWeb:enabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
@@ -86650,6 +86761,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="805567148"
       label="enable-canvas-2d-dynamic-rendering-mode-switching"/>
+  <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="820650704" label="disable-ntp-popular-sites"/>
@@ -86664,6 +86776,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
+  <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
@@ -86672,17 +86785,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="903267263" label="disable-offline-pages"/>
+  <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
+  <int value="935655516" label="password-import-export:disabled"/>
+  <int value="936341613" label="OfflinePagesCT:disabled"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
   <int value="939554480" label="enable-credit-card-scan"/>
+  <int value="939603162" label="BackgroundLoadingForDownloads:disabled"/>
   <int value="943319566" label="enable-intent-picker"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="983311394" label="tab-management-experiment-type"/>
+  <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
+  <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1019857902"
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
@@ -86692,6 +86811,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1054910800" label="enable-timezone-tracking-option"/>
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
+  <int value="1064288458" label="OfflineRecentPages:enabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1070300488" label="disable-webgl"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
@@ -86705,13 +86825,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
+  <int value="1127183523" label="PassiveEventListenersDueToFling:enabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1142515376" label="enable-nacl"/>
+  <int value="1142788238" label="FontCacheScaling:disabled"/>
   <int value="1149823105" label="enable-input-ime-api"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
+  <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1167613030" label="enable-permission-action-reporting"/>
@@ -86721,13 +86844,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1183431946" label="v8-cache-options"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1192302892" label="gesture-typing"/>
+  <int value="1192913630" label="OfflinePagesBackgroundLoading:disabled"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>
+  <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
+  <int value="1235800887" label="V8Ignition:enabled"/>
   <int value="1237297772" label="no-pings"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1247293682" label="topchrome-md"/>
@@ -86739,10 +86865,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1276209777" label="ntp-switch-to-existing-tab"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1283960113" label="disable-fixed-position-compositing"/>
+  <int value="1291966558" label="ScrollAnchoring:disabled"/>
   <int value="1298981651" label="disable-new-task-manager"/>
+  <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
+  <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
+  <int value="1317562265" label="SeccompSandboxAndroid:disabled"/>
+  <int value="1318073661" label="MaterialDesignExtensions:enabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
+  <int value="1344833841" label="ImeThread:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
   <int value="1359972809" label="enable-gesture-deletion"/>
@@ -86759,11 +86891,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1384614036" label="disable-unified-media-pipeline"/>
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
+  <int value="1406354320" label="MacViewsWebUIDialogs:enabled"/>
   <int value="1407625309"
       label="disable-minimize-on-second-launcher-item-click"/>
   <int value="1408331660" label="enhanced-bookmarks-experiment"/>
   <int value="1410697724" label="mediadrm-enable-non-compositing"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
+  <int value="1418054870" label="SpecialLocale:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1454363479" label="disable-storage-manager"/>
@@ -86786,12 +86920,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
+  <int value="1548776701" label="AllBookmarks:disabled"/>
+  <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
+  <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1612446645" label="enable-weak-memorycache"/>
   <int value="1612974229" label="allow-insecure-localhost"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
+  <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1646498561" label="OfflineBookmarks:disabled"/>
   <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
   <int value="1658644418" label="disable-app-list-voice-search"/>
   <int value="1661925474" label="silent-debugger-extension-api"/>
@@ -86806,16 +86945,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1731522433" label="enable-offer-store-unmasked-wallet-cards"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
+  <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
+  <int value="1777806335" label="UsePasswordSeparatedSigninFlow:disabled"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1791904609" label="disable-autofill-keyboard-accessory-view"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
+  <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1817312143" label="num-raster-threads"/>
@@ -86823,47 +86965,64 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1819536169" label="disable-cast-streaming-hw-encoding"/>
   <int value="1820451991" label="enable-offline-auto-reload"/>
   <int value="1821723343" label="disable-saml-signin"/>
+  <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
+  <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
+  <int value="1860597983" label="AndroidSpellChecker:disabled"/>
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1862207743" label="enable-android-spellchecker"/>
   <int value="1865068568" label="disable-audio-support-for-desktop-share"/>
   <int value="1865799183" label="javascript-harmony"/>
+  <int value="1867085340" label="brotli-encoding:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
   <int value="1889076955" label="disable-app-link"/>
   <int value="1891210939" label="enable-blink-features"/>
   <int value="1892201400" label="enable-password-separated-signin-flow"/>
+  <int value="1895587769" label="CredentialManagementAPI:disabled"/>
   <int value="1896456311" label="enable-password-save-in-page-navigation"/>
   <int value="1898231011" label="enable-native-notifications"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1915178511" label="disable-blink-features"/>
+  <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
+  <int value="1931309368" label="fill-on-account-select:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1942911276" label="enable-grouped-history"/>
   <int value="1944156526" label="sync-url"/>
+  <int value="1947350992" label="drop-sync-credential:disabled"/>
   <int value="1955677113" label="trace-export-events-to-etw"/>
+  <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
   <int value="1961425320" label="force-qtkit"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
   <int value="1980011075" label="debug-packed-apps"/>
+  <int value="1980648371" label="PointerEventV1SpecCapturing:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
   <int value="1993258379" label="enable-icon-ntp"/>
+  <int value="1994431722" label="MaterialDesignUserMenu:disabled"/>
+  <int value="1995322219" label="EmojiHandwritingVoiceInput:enabled"/>
+  <int value="1996125159" label="AutoplayMutedVideos:enabled"/>
   <int value="2000091128" label="enable-touch-hover"/>
   <int value="2004483175" label="multi-instance-merge-tabs"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
+  <int value="2014331873" label="NTPDownloadSuggestions:disabled"/>
+  <int value="2020107447" label="AndroidPayIntegrationV1:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2059322877" label="new-avatar-menu"/>
+  <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
   <int value="2076903744" label="progress-bar-animation"/>
   <int value="2077917024"
       label="enable-supervised-user-managed-bookmarks-folder"/>
+  <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2101151142" label="disable-direct-write"/>
@@ -86872,6 +87031,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
+  <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>

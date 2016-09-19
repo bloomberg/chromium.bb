@@ -88,10 +88,11 @@ void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage);
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name);
 
 // Sends stats (as UMA histogram) about a set of command line |flags| in
-// a histogram, with an enum value for each flag in |flags|, based on the
-// hash of the flag name.
+// a histogram, with an enum value for each flag in |switches| and |features|,
+// based on the hash of the flag name.
 void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
-                               const std::set<std::string>& flags);
+                               const std::set<std::string>& switches,
+                               const std::set<std::string>& features);
 
 namespace testing {
 
