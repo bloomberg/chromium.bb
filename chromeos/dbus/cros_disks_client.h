@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_types.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace base {
 class FilePath;

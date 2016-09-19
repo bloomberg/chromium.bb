@@ -6,11 +6,9 @@
 #define CHROMEOS_DBUS_DBUS_CLIENTS_COMMON_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_types.h"
 
 namespace dbus {
 class Bus;
@@ -38,13 +36,10 @@ class UpdateEngineClient;
 // D-Bus clients used in multiple processes (e.g. ash, browser, mus).
 class CHROMEOS_EXPORT DBusClientsCommon {
  public:
-  // Creates real implementations for |real_client_mask| and fakes for all
-  // others. Fakes are used when running on Linux desktop and in tests.
-  explicit DBusClientsCommon(DBusClientTypeMask real_client_mask);
+  // Creates real implementations if |use_real_clients| is true and fakes
+  // otherwise. Fakes are used when running on Linux desktop and in tests.
+  explicit DBusClientsCommon(bool use_real_clients);
   ~DBusClientsCommon();
-
-  // Returns true if |client| has a real (non-fake) client implementation.
-  bool IsUsingReal(DBusClientType client) const;
 
   // Initialize proper runtime environment for its dbus clients.
   void Initialize(dbus::Bus* system_bus);
@@ -52,9 +47,6 @@ class CHROMEOS_EXPORT DBusClientsCommon {
  private:
   friend class DBusThreadManager;
   friend class DBusThreadManagerSetter;
-
-  // Bitmask for clients with real implementations.
-  const DBusClientTypeMask real_client_mask_;
 
   std::unique_ptr<CrasAudioClient> cras_audio_client_;
   std::unique_ptr<CryptohomeClient> cryptohome_client_;

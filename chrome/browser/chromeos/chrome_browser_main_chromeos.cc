@@ -100,7 +100,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/console_service_provider.h"
@@ -209,8 +208,7 @@ class DBusServices {
 
     bluez::BluezDBusManager::Initialize(
         DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFake(
-            chromeos::DBusClientType::BLUETOOTH));
+        chromeos::DBusThreadManager::Get()->IsUsingFakes());
 
     PowerPolicyController::Initialize(
         DBusThreadManager::Get()->GetPowerManagerClient());

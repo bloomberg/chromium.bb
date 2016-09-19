@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -47,8 +46,7 @@ TestingIOThreadState::TestingIOThreadState() {
   chromeos::DBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingFake(
-          chromeos::DBusClientType::BLUETOOTH));
+      chromeos::DBusThreadManager::Get()->IsUsingFakes());
   chromeos::NetworkHandler::Initialize();
 #endif
 

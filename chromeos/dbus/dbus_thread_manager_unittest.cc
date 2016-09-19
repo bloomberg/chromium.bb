@@ -4,7 +4,6 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 
-#include "chromeos/dbus/dbus_client_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -18,24 +17,7 @@ TEST(DBusThreadManagerTest, Initialize) {
   ASSERT_TRUE(manager);
 
   // In tests, clients are fake.
-  // NOTE: Order matches DBusClientType enum.
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::BLUETOOTH));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CRAS));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CROS_DISKS));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::CRYPTOHOME));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::DEBUG_DAEMON));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::EASY_UNLOCK));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::LORGNETTE_MANAGER));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SHILL));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::GSM_SMS));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::IMAGE_BURNER));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::MODEM_MESSAGING));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::PERMISSION_BROKER));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::POWER_MANAGER));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SMS));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::SYSTEM_CLOCK));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::UPDATE_ENGINE));
-  EXPECT_TRUE(manager->IsUsingFake(DBusClientType::ARC_OBB_MOUNTER));
+  EXPECT_TRUE(manager->IsUsingFakes());
 
   // Clients were created.
   EXPECT_TRUE(manager->GetArcObbMounterClient());

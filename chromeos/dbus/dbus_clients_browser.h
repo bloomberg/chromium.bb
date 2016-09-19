@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_types.h"
 
 namespace dbus {
 class Bus;
@@ -29,9 +28,9 @@ class LorgnetteManagerClient;
 // TODO(jamescook): Move this under //chrome/browser. http://crbug.com/647367
 class CHROMEOS_EXPORT DBusClientsBrowser {
  public:
-  // Creates real implementations for |real_clients| and fakes for all others.
-  // Fakes are used when running on Linux desktop and in tests.
-  explicit DBusClientsBrowser(DBusClientTypeMask real_clients);
+  // Creates real implementations if |use_real_clients| is true and fakes
+  // otherwise. Fakes are used when running on Linux desktop and in tests.
+  explicit DBusClientsBrowser(bool use_real_clients);
   ~DBusClientsBrowser();
 
   void Initialize(dbus::Bus* system_bus);

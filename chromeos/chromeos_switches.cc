@@ -101,15 +101,6 @@ const char kDataSaverPromptDemoMode[] = "demo";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
-// Comma-separated list of dbus clients that use real implementations, even
-// when running on Linux desktop, for example "bluetooth,shill". See
-// chromeos/dbus/dbus_client_types.cc for names.
-const char kDbusRealClients[] = "dbus-real-clients";
-
-// DEPRECATED: Use --dbus-real-clients above.
-// TODO(jamescook): Delete this code after M56 branches.
-const char kDbusUnstubClients[] = "dbus-unstub-clients";
-
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
 // downloadable from Google).

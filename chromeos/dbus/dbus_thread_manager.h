@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_types.h"
 
 namespace base {
 class Thread;
@@ -107,8 +106,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // Returns true if |client| is faked.
-  bool IsUsingFake(DBusClientType client);
+  // Returns true if clients are faked.
+  bool IsUsingFakes();
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   dbus::Bus* GetSystemBus();
@@ -143,28 +142,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
  private:
   friend class DBusThreadManagerSetter;
 
-  DBusThreadManager(ProcessMask process_mask,
-                    DBusClientTypeMask real_client_mask);
+  // Creates dbus clients for all process types in |process_mask|. Creates real
+  // clients if |use_real_clients| is set, otherwise creates fakes.
+  DBusThreadManager(ProcessMask process_mask, bool use_real_clients);
   ~DBusThreadManager();
-
-  // Creates a global instance of DBusThreadManager with the real
-  // implementations for all clients that are listed in |real_client_mask| and
-  // fake implementations for all clients that are not included. Cannot be
-  // called more than once.
-  static void CreateGlobalInstance(ProcessMask process_mask,
-                                   DBusClientTypeMask real_client_mask);
-
-  // Initialize global thread manager instance with all real dbus client
-  // implementations.
-  static void InitializeWithRealClients(ProcessMask process_mask);
-
-  // Initialize global thread manager instance with fake dbus clients.
-  static void InitializeWithFakeClients(ProcessMask process_mask);
-
-  // Initialize with fake implementations for only certain clients that are
-  // not included in the comma-separated |force_real_clients| list.
-  static void InitializeWithPartialFakes(ProcessMask process_mask,
-                                         const std::string& force_real_clients);
 
   // Initializes all currently stored DBusClients with the system bus and
   // performs additional setup.
@@ -172,6 +153,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
+
+  // Whether to use real or fake dbus clients.
+  const bool use_real_clients_;
 
   // Clients used by multiple processes.
   std::unique_ptr<DBusClientsCommon> clients_common_;

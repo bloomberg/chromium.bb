@@ -31,7 +31,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_client_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
@@ -52,8 +51,7 @@ void InitializeComponents() {
   // See ChromeBrowserMainPartsChromeos for ordering details.
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingFake(
-          chromeos::DBusClientType::BLUETOOTH));
+      chromeos::DBusThreadManager::Get()->IsUsingFakes());
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
   PowerStatus::Initialize();

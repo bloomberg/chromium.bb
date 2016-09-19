@@ -45,16 +45,16 @@ static DBusThreadManager* g_dbus_thread_manager = NULL;
 static bool g_using_dbus_thread_manager_for_testing = false;
 
 DBusThreadManager::DBusThreadManager(ProcessMask process_mask,
-                                     DBusClientTypeMask real_client_mask)
-    : clients_common_(new DBusClientsCommon(real_client_mask)) {
+                                     bool use_real_clients)
+    : use_real_clients_(use_real_clients),
+      clients_common_(new DBusClientsCommon(use_real_clients)) {
   if (process_mask & PROCESS_BROWSER)
-    clients_browser_.reset(new DBusClientsBrowser(real_client_mask));
+    clients_browser_.reset(new DBusClientsBrowser(use_real_clients));
   // NOTE: When there are clients only used by ash, create them here.
 
   dbus::statistics::Initialize();
 
-  if (real_client_mask != 0) {
-    // At least one real DBusClient is used.
+  if (use_real_clients) {
     // Create the D-Bus thread.
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -200,13 +200,21 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 }
 
 void DBusThreadManager::InitializeClients() {
+  // Some clients call DBusThreadManager::Get() during initialization.
+  DCHECK(g_dbus_thread_manager);
+
   clients_common_->Initialize(GetSystemBus());
   if (clients_browser_)
     clients_browser_->Initialize(GetSystemBus());
+
+  if (use_real_clients_)
+    VLOG(1) << "DBusThreadManager initialized for Chrome OS";
+  else
+    VLOG(1) << "DBusThreadManager created for testing";
 }
 
-bool DBusThreadManager::IsUsingFake(DBusClientType client) {
-  return !clients_common_->IsUsingReal(client);
+bool DBusThreadManager::IsUsingFakes() {
+  return !use_real_clients_;
 }
 
 // static
@@ -217,24 +225,11 @@ void DBusThreadManager::Initialize(ProcessMask process_mask) {
     return;
 
   CHECK(!g_dbus_thread_manager);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool use_fakes = !base::SysInfo::IsRunningOnChromeOS() ||
-                   command_line->HasSwitch(chromeos::switches::kDbusStub);
-  // TODO(jamescook): Delete this after M56 branches.
-  if (command_line->HasSwitch(chromeos::switches::kDbusUnstubClients))
-    LOG(FATAL) << "Use --dbus-real-clients instead of --dbus-unstub-clients.";
-  bool force_real_clients =
-      command_line->HasSwitch(chromeos::switches::kDbusRealClients);
-  // Determine whether we use fake or real client implementations.
-  if (force_real_clients) {
-    InitializeWithPartialFakes(process_mask,
-                               command_line->GetSwitchValueASCII(
-                                   chromeos::switches::kDbusRealClients));
-  } else if (use_fakes) {
-    InitializeWithFakeClients(process_mask);
-  } else {
-    InitializeWithRealClients(process_mask);
-  }
+  bool use_real_clients = base::SysInfo::IsRunningOnChromeOS() &&
+                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              chromeos::switches::kDbusStub);
+  g_dbus_thread_manager = new DBusThreadManager(process_mask, use_real_clients);
+  g_dbus_thread_manager->InitializeClients();
 }
 
 // static
@@ -249,47 +244,12 @@ DBusThreadManager::GetSetterForTesting() {
     g_using_dbus_thread_manager_for_testing = true;
     // TODO(jamescook): Don't initialize clients as a side-effect of using a
     // test API. For now, assume the caller wants all clients.
-    InitializeWithFakeClients(PROCESS_ALL);
+    g_dbus_thread_manager =
+        new DBusThreadManager(PROCESS_ALL, false /* use_real_clients */);
+    g_dbus_thread_manager->InitializeClients();
   }
 
   return base::WrapUnique(new DBusThreadManagerSetter());
-}
-
-// static
-void DBusThreadManager::CreateGlobalInstance(
-    ProcessMask process_mask,
-    DBusClientTypeMask real_client_mask) {
-  CHECK(!g_dbus_thread_manager);
-  g_dbus_thread_manager = new DBusThreadManager(process_mask, real_client_mask);
-  g_dbus_thread_manager->InitializeClients();
-}
-
-// static
-void DBusThreadManager::InitializeWithRealClients(ProcessMask process_mask) {
-  CreateGlobalInstance(process_mask,
-                       static_cast<DBusClientTypeMask>(DBusClientType::ALL));
-  VLOG(1) << "DBusThreadManager initialized for Chrome OS";
-}
-
-// static
-void DBusThreadManager::InitializeWithFakeClients(ProcessMask process_mask) {
-  CreateGlobalInstance(process_mask,
-                       static_cast<DBusClientTypeMask>(DBusClientType::NONE));
-  VLOG(1) << "DBusThreadManager created for testing";
-}
-
-// static
-void DBusThreadManager::InitializeWithPartialFakes(
-    ProcessMask process_mask,
-    const std::string& force_real_clients) {
-  DBusClientTypeMask real_client_mask =
-      ParseDBusRealClientsList(force_real_clients);
-  // We should have something parsed correctly here.
-  LOG_IF(FATAL, real_client_mask == 0)
-      << "Switch values for --" << chromeos::switches::kDbusRealClients
-      << " cannot be parsed: " << real_client_mask;
-  VLOG(1) << "DBusThreadManager initialized for mixed runtime environment";
-  CreateGlobalInstance(process_mask, real_client_mask);
 }
 
 // static

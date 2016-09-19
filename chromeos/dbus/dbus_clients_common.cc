@@ -8,6 +8,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -40,19 +41,18 @@
 
 namespace chromeos {
 
-DBusClientsCommon::DBusClientsCommon(DBusClientTypeMask real_client_mask)
-    : real_client_mask_(real_client_mask) {
-  if (IsUsingReal(DBusClientType::CRAS))
+DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
+  if (use_real_clients)
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
     cras_audio_client_.reset(new FakeCrasAudioClient);
 
-  if (IsUsingReal(DBusClientType::CRYPTOHOME))
+  if (use_real_clients)
     cryptohome_client_.reset(CryptohomeClient::Create());
   else
     cryptohome_client_.reset(new FakeCryptohomeClient);
 
-  if (IsUsingReal(DBusClientType::SHILL)) {
+  if (use_real_clients) {
     shill_manager_client_.reset(ShillManagerClient::Create());
     shill_device_client_.reset(ShillDeviceClient::Create());
     shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
@@ -70,7 +70,7 @@ DBusClientsCommon::DBusClientsCommon(DBusClientTypeMask real_client_mask)
         new FakeShillThirdPartyVpnDriverClient);
   }
 
-  if (IsUsingReal(DBusClientType::GSM_SMS)) {
+  if (use_real_clients) {
     gsm_sms_client_.reset(GsmSMSClient::Create());
   } else {
     FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
@@ -80,47 +80,40 @@ DBusClientsCommon::DBusClientsCommon(DBusClientTypeMask real_client_mask)
     gsm_sms_client_.reset(gsm_sms_client);
   }
 
-  if (IsUsingReal(DBusClientType::MODEM_MESSAGING))
+  if (use_real_clients)
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
 
-  if (IsUsingReal(DBusClientType::PERMISSION_BROKER))
+  if (use_real_clients)
     permission_broker_client_.reset(PermissionBrokerClient::Create());
   else
     permission_broker_client_.reset(new FakePermissionBrokerClient);
 
-  power_manager_client_.reset(
-      PowerManagerClient::Create(IsUsingReal(DBusClientType::POWER_MANAGER)
-                                     ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                     : FAKE_DBUS_CLIENT_IMPLEMENTATION));
+  power_manager_client_.reset(PowerManagerClient::Create(
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  session_manager_client_.reset(
-      SessionManagerClient::Create(IsUsingReal(DBusClientType::SESSION_MANAGER)
-                                       ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
+  session_manager_client_.reset(SessionManagerClient::Create(
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (IsUsingReal(DBusClientType::SMS))
+  if (use_real_clients)
     sms_client_.reset(SMSClient::Create());
   else
     sms_client_.reset(new FakeSMSClient);
 
-  if (IsUsingReal(DBusClientType::SYSTEM_CLOCK))
+  if (use_real_clients)
     system_clock_client_.reset(SystemClockClient::Create());
   else
     system_clock_client_.reset(new FakeSystemClockClient);
 
-  update_engine_client_.reset(
-      UpdateEngineClient::Create(IsUsingReal(DBusClientType::UPDATE_ENGINE)
-                                     ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                     : FAKE_DBUS_CLIENT_IMPLEMENTATION));
+  update_engine_client_.reset(UpdateEngineClient::Create(
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 }
 
 DBusClientsCommon::~DBusClientsCommon() {}
-
-bool DBusClientsCommon::IsUsingReal(DBusClientType client) const {
-  return real_client_mask_ & static_cast<DBusClientTypeMask>(client);
-}
 
 void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());

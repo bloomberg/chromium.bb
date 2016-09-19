@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_types.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace power_manager {

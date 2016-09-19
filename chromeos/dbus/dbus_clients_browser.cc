@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
@@ -19,42 +20,33 @@
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
 namespace chromeos {
-namespace {
 
-// Avoid ugly casts below.
-bool IsUsingReal(DBusClientTypeMask real_clients, DBusClientType type) {
-  return real_clients & static_cast<DBusClientTypeMask>(type);
-}
-
-}  // namespace
-
-DBusClientsBrowser::DBusClientsBrowser(DBusClientTypeMask real_clients) {
-  if (IsUsingReal(real_clients, DBusClientType::ARC_OBB_MOUNTER))
+DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
+  if (use_real_clients)
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
   else
     arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
 
   cros_disks_client_.reset(CrosDisksClient::Create(
-      IsUsingReal(real_clients, DBusClientType::CROS_DISKS)
-          ? REAL_DBUS_CLIENT_IMPLEMENTATION
-          : FAKE_DBUS_CLIENT_IMPLEMENTATION));
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
 
-  if (IsUsingReal(real_clients, DBusClientType::DEBUG_DAEMON))
+  if (use_real_clients)
     debug_daemon_client_.reset(DebugDaemonClient::Create());
   else
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
-  if (IsUsingReal(real_clients, DBusClientType::EASY_UNLOCK))
+  if (use_real_clients)
     easy_unlock_client_.reset(EasyUnlockClient::Create());
   else
     easy_unlock_client_.reset(new FakeEasyUnlockClient);
 
-  if (IsUsingReal(real_clients, DBusClientType::IMAGE_BURNER))
+  if (use_real_clients)
     image_burner_client_.reset(ImageBurnerClient::Create());
   else
     image_burner_client_.reset(new FakeImageBurnerClient);
 
-  if (IsUsingReal(real_clients, DBusClientType::LORGNETTE_MANAGER))
+  if (use_real_clients)
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);

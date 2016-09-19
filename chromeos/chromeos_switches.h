@@ -41,8 +41,6 @@ CHROMEOS_EXPORT extern const char kCrosRegionsModeHide[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeOverride[];
 CHROMEOS_EXPORT extern const char kDataSaverPromptDemoMode[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
-CHROMEOS_EXPORT extern const char kDbusRealClients[];
-CHROMEOS_EXPORT extern const char kDbusUnstubClients[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperIsOem[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperSmall[];
