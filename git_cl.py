@@ -2632,6 +2632,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if options.private:
       refspec_opts.append('draft')
 
+    if options.topic:
+      # Documentation on Gerrit topics is here:
+      # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
+      refspec_opts.append('topic=%s' % options.topic)
+
     refspec_suffix = ''
     if refspec_opts:
       refspec_suffix = '%' + ','.join(refspec_opts)
@@ -3932,6 +3937,8 @@ def CMDupload(parser, args):
   parser.add_option('--no-squash', action='store_true',
                     help='Don\'t squash multiple commits into one ' +
                          '(Gerrit only)')
+  parser.add_option('--topic', default=None,
+                    help='Topic to specify when uploading (Gerrit only)')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
