@@ -53,8 +53,7 @@ def GetDefaultWaterfall(build_config):
 class HWTestList(object):
   """Container for methods to generate HWTest lists."""
 
-  @classmethod
-  def DefaultList(cls, **kwargs):
+  def DefaultList(self, **kwargs):
     """Returns a default list of HWTestConfig's for a build
 
     Args:
@@ -105,8 +104,7 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
                                     **async_kwargs)]
 
-  @classmethod
-  def DefaultListCanary(cls, **kwargs):
+  def DefaultListCanary(self, **kwargs):
     """Returns a default list of config_lib.HWTestConfig's for a canary build.
 
     Args:
@@ -117,10 +115,9 @@ class HWTestList(object):
     # the suite job for canary builds.
     kwargs.setdefault('minimum_duts', 4)
     kwargs.setdefault('file_bugs', True)
-    return HWTestList.DefaultList(**kwargs)
+    return self.DefaultList(**kwargs)
 
-  @classmethod
-  def AFDOList(cls, **kwargs):
+  def AFDOList(self, **kwargs):
     """Returns a default list of HWTestConfig's for a AFDO build.
 
     Args:
@@ -132,8 +129,7 @@ class HWTestList(object):
     afdo_dict.update(kwargs)
     return [config_lib.HWTestConfig('perf_v2', **afdo_dict)]
 
-  @classmethod
-  def DefaultListNonCanary(cls, **kwargs):
+  def DefaultListNonCanary(self, **kwargs):
     """Return a default list of HWTestConfig's for a non-canary build.
 
     Optional arguments may be overridden in `kwargs`, except that
@@ -142,8 +138,7 @@ class HWTestList(object):
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, **kwargs)]
 
-  @classmethod
-  def DefaultListCQ(cls, **kwargs):
+  def DefaultListCQ(self, **kwargs):
     """Return a default list of HWTestConfig's for a CQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
@@ -155,10 +150,9 @@ class HWTestList(object):
                         minimum_duts=4, offload_failures_only=True)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
-    return HWTestList.DefaultListNonCanary(**default_dict)
+    return self.DefaultListNonCanary(**default_dict)
 
-  @classmethod
-  def DefaultListPFQ(cls, **kwargs):
+  def DefaultListPFQ(self, **kwargs):
     """Return a default list of HWTestConfig's for a PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
@@ -169,10 +163,9 @@ class HWTestList(object):
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    return HWTestList.DefaultListNonCanary(**default_dict)
+    return self.DefaultListNonCanary(**default_dict)
 
-  @classmethod
-  def SharedPoolPFQ(cls, **kwargs):
+  def SharedPoolPFQ(self, **kwargs):
     """Return a list of HWTestConfigs for PFQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
@@ -190,11 +183,10 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
-    suite_list.extend(HWTestList.DefaultListPFQ(**default_dict))
+    suite_list.extend(self.DefaultListPFQ(**default_dict))
     return suite_list
 
-  @classmethod
-  def DefaultListAndroidPFQ(cls, **kwargs):
+  def DefaultListAndroidPFQ(self, **kwargs):
     """Return a default list of HWTestConfig's for a PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
@@ -216,8 +208,7 @@ class HWTestList(object):
                                     num=3, pool=constants.HWTEST_MACH_POOL,
                                     **default_dict)]
 
-  @classmethod
-  def SharedPoolAndroidPFQ(cls, **kwargs):
+  def SharedPoolAndroidPFQ(self, **kwargs):
     """Return a list of HWTestConfigs for PFQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
@@ -234,11 +225,10 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
-    suite_list.extend(HWTestList.DefaultListAndroidPFQ(**default_dict))
+    suite_list.extend(self.DefaultListAndroidPFQ(**default_dict))
     return suite_list
 
-  @classmethod
-  def SharedPoolCQ(cls, **kwargs):
+  def SharedPoolCQ(self, **kwargs):
     """Return a list of HWTestConfigs for CQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
@@ -256,11 +246,10 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
-    suite_list.extend(HWTestList.DefaultListCQ(**default_dict))
+    suite_list.extend(self.DefaultListCQ(**default_dict))
     return suite_list
 
-  @classmethod
-  def SharedPoolCanary(cls, **kwargs):
+  def SharedPoolCanary(self, **kwargs):
     """Return a list of HWTestConfigs for Canary which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
@@ -276,11 +265,10 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
-    suite_list.extend(HWTestList.DefaultListCanary(**default_dict))
+    suite_list.extend(self.DefaultListCanary(**default_dict))
     return suite_list
 
-  @classmethod
-  def AFDORecordTest(cls, **kwargs):
+  def AFDORecordTest(self, **kwargs):
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         warn_only=True, num=1, file_bugs=True,
                         timeout=constants.AFDO_GENERATE_TIMEOUT,
@@ -289,8 +277,7 @@ class HWTestList(object):
     default_dict.update(kwargs)
     return config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
-  @classmethod
-  def WiFiCellPoolPreCQ(cls, **kwargs):
+  def WiFiCellPoolPreCQ(self, **kwargs):
     """Return a list of HWTestConfigs which run wifi tests.
 
     This should be used by the ChromeOS WiFi team to ensure changes pass the
@@ -305,8 +292,7 @@ class HWTestList(object):
                                           **default_dict)]
     return suite_list
 
-  @classmethod
-  def AsanTest(cls, **kwargs):
+  def AsanTest(self, **kwargs):
     """Return a list of HWTESTConfigs which run asan tests."""
     default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
@@ -316,8 +302,7 @@ class HWTestList(object):
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict)]
 
-  @classmethod
-  def ToolchainTestFull(cls, **kwargs):
+  def ToolchainTestFull(self, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
     default_dict = dict(pool=constants.HWTEST_SUITES_POOL, async=False,
                         file_bugs=False,
@@ -336,8 +321,7 @@ class HWTestList(object):
             config_lib.HWTestConfig('kernel_daily_benchmarks',
                                     **default_dict)]
 
-  @classmethod
-  def ToolchainTestMedium(cls, **kwargs):
+  def ToolchainTestMedium(self, **kwargs):
     """Return list of HWTESTConfigs to run toolchain LLVM correctness tests.
 
     Since the kernel is not built with LLVM, it makes no sense for the
@@ -356,8 +340,7 @@ class HWTestList(object):
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
-  @classmethod
-  def ToolchainTestLight(cls, **kwargs):
+  def ToolchainTestLight(self, **kwargs):
     """Return miminal list of HWTESTConfigs to run toolchain correctness tests.
 
     This is a minimum set of tests, currently for some x86 boards.
@@ -873,20 +856,21 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def CreateBuilderTemplates(site_config):
+def CreateBuilderTemplates(site_config, hw_test_list):
   """CreateBuilderTemplates defines all BuildConfig templates.
 
   Args:
     site_config: A SiteConfig object to add the templates too.
+    hw_test_list: Object to help create lists of standard HW Tests.
   """
   default_hw_tests_override = config_lib.BuildConfig(
-      hw_tests_override=HWTestList.DefaultList(
+      hw_tests_override=hw_test_list.DefaultList(
           num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
   )
 
   default_paladin_hw_tests_override = config_lib.BuildConfig(
-      hw_tests_override=HWTestList.DefaultListNonCanary(
+      hw_tests_override=hw_test_list.DefaultListNonCanary(
           num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
   )
@@ -1156,8 +1140,8 @@ def CreateBuilderTemplates(site_config):
   site_config.AddTemplate(
       'chrome_pfq_cheets_informational',
       site_config.templates.chrome_pfq_informational,
-      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
-      hw_tests_override=HWTestList.SharedPoolAndroidPFQ()
+      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      hw_tests_override=hw_test_list.SharedPoolAndroidPFQ()
   )
 
   site_config.AddTemplate(
@@ -1353,7 +1337,7 @@ def CreateBuilderTemplates(site_config):
           config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=HWTestList.SharedPoolCanary(),
+      hw_tests=hw_test_list.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
       trybot_list=True,
@@ -1372,8 +1356,8 @@ def CreateBuilderTemplates(site_config):
       site_config.templates.release,
       trybot_list=False,
       hw_tests=(
-          HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
-          HWTestList.AFDOList()
+          hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
+          hw_test_list.AFDOList()
       ),
       push_image=False,
       paygen=False,
@@ -1387,8 +1371,8 @@ def CreateBuilderTemplates(site_config):
       afdo_use=False,
       afdo_update_ebuild=True,
 
-      hw_tests=[HWTestList.AFDORecordTest()],
-      hw_tests_override=[HWTestList.AFDORecordTest(
+      hw_tests=[hw_test_list.AFDORecordTest()],
+      hw_tests_override=[hw_test_list.AFDORecordTest(
           num=constants.HWTEST_TRYBOT_NUM,
           pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False,
@@ -1438,8 +1422,8 @@ def CreateBuilderTemplates(site_config):
       'wificell_pre_cq',
       site_config.templates.pre_cq,
       unittests=False,
-      hw_tests=HWTestList.WiFiCellPoolPreCQ(),
-      hw_tests_override=HWTestList.WiFiCellPoolPreCQ(),
+      hw_tests=hw_test_list.WiFiCellPoolPreCQ(),
+      hw_tests_override=hw_test_list.WiFiCellPoolPreCQ(),
       archive=True,
       image_test=False,
       description='WiFi tests acting as pre-cq for WiFi related changes',
@@ -1582,12 +1566,13 @@ def CreateBoardConfigs(site_config, ge_build_config):
   return result
 
 
-def ToolchainBuilders(site_config):
+def ToolchainBuilders(site_config, hw_test_list):
   """Define templates used for toolchain builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    hw_test_list: Object to help create lists of standard HW Tests.
   """
   site_config.AddTemplate(
       'toolchain',
@@ -1631,15 +1616,15 @@ def ToolchainBuilders(site_config):
       description='Full release build with next minor GCC toolchain revision',
       gcc_githash='svn-mirror/google/gcc-4_9',
       latest_toolchain=True,
-      hw_tests=HWTestList.ToolchainTestFull(),
-      hw_tests_override=HWTestList.ToolchainTestFull(),
+      hw_tests=hw_test_list.ToolchainTestFull(),
+      hw_tests_override=hw_test_list.ToolchainTestFull(),
   )
   site_config.AddTemplate(
       'llvm_builder',
       description='Full release build with LLVM toolchain',
       profile='llvm',
-      hw_tests=HWTestList.ToolchainTestMedium(),
-      hw_tests_override=HWTestList.ToolchainTestMedium(),
+      hw_tests=hw_test_list.ToolchainTestMedium(),
+      hw_tests_override=hw_test_list.ToolchainTestMedium(),
   )
   site_config.AddTemplate(
       'llvm_next_builder',
@@ -1649,8 +1634,8 @@ def ToolchainBuilders(site_config):
   )
   site_config.AddTemplate(
       'test_light',
-      hw_tests=HWTestList.ToolchainTestLight(),
-      hw_tests_override=HWTestList.ToolchainTestLight(),
+      hw_tests=hw_test_list.ToolchainTestLight(),
+      hw_tests_override=hw_test_list.ToolchainTestLight(),
   )
 
   ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
@@ -1745,7 +1730,7 @@ def ToolchainBuilders(site_config):
   )
 
 
-def _GetConfig(site_config, ge_build_config, board_configs):
+def _GetConfig(site_config, ge_build_config, board_configs, hw_test_list):
   """Method with un-refactored build configs/templates.
 
   Args:
@@ -1753,6 +1738,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
     board_configs: Dictionary mapping board names to per-board configurations.
+    hw_test_list: Object to help create lists of standard HW Tests.
   """
 
   _base_configs = board_configs
@@ -1934,49 +1920,49 @@ def _GetConfig(site_config, ge_build_config, board_configs):
       afdo_generate=True,
       # Disable hugepages before collecting AFDO profile.
       useflags=append_useflags(['-transparent_hugepage']),
-      hw_tests=[HWTestList.AFDORecordTest()] + HWTestList.SharedPoolPFQ(),
+      hw_tests=[hw_test_list.AFDORecordTest()] + hw_test_list.SharedPoolPFQ(),
   )
 
   site_config.Add(
       'cyan-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['cyan'],
-      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
   )
 
   site_config.Add(
       'daisy_skate-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['daisy_skate'],
-      hw_tests=HWTestList.SharedPoolPFQ(),
+      hw_tests=hw_test_list.SharedPoolPFQ(),
   )
 
   site_config.Add(
       'falco-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['falco'],
-      hw_tests=HWTestList.SharedPoolPFQ(),
+      hw_tests=hw_test_list.SharedPoolPFQ(),
   )
 
   site_config.Add(
       'veyron_minnie-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['veyron_minnie'],
-      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
   )
 
   site_config.Add(
       'peach_pit-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['peach_pit'],
-      hw_tests=HWTestList.SharedPoolPFQ(),
+      hw_tests=hw_test_list.SharedPoolPFQ(),
   )
 
   site_config.Add(
       'tricky-chrome-pfq',
       site_config.templates.chrome_pfq,
       _base_configs['tricky'],
-      hw_tests=HWTestList.SharedPoolPFQ(),
+      hw_tests=hw_test_list.SharedPoolPFQ(),
   )
 
   _android_pfq_hwtest_boards = frozenset([
@@ -2007,8 +1993,8 @@ def _GetConfig(site_config, ge_build_config, board_configs):
       site_config.templates.incremental,
       boards=['x86-generic'],
       chroot_replace=True,
-      hw_tests=HWTestList.AsanTest(),
-      hw_tests_override=HWTestList.AsanTest(),
+      hw_tests=hw_test_list.AsanTest(),
+      hw_tests_override=hw_test_list.AsanTest(),
       description='Build with Address Sanitizer (Clang)',
       trybot_list=True,
   )
@@ -2182,7 +2168,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
       afdo_generate=True,
       afdo_update_ebuild=True,
       vm_tests=[],
-      hw_tests=[HWTestList.AFDORecordTest()],
+      hw_tests=[hw_test_list.AFDORecordTest()],
   )
 
   site_config.AddGroup(
@@ -2245,7 +2231,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
       boards=['wolf'],
       do_not_apply_cq_patches=True,
       prebuilts=False,
-      hw_tests=HWTestList.SharedPoolCQ(),
+      hw_tests=hw_test_list.SharedPoolCQ(),
   )
 
   _paladin_boards = _all_boards
@@ -2366,7 +2352,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
       customizations = config_lib.BuildConfig()
       base_config = _base_configs[board]
       if board in _paladin_hwtest_boards:
-        customizations.update(hw_tests=HWTestList.DefaultListCQ())
+        customizations.update(hw_tests=hw_test_list.DefaultListCQ())
       if board in _paladin_moblab_hwtest_boards:
         customizations.update(
             hw_tests=[
@@ -2742,7 +2728,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
         _chrome_informational_hwtest_boards,
         'tot-chrome-pfq-informational',
         important=False,
-        hw_tests=HWTestList.DefaultListPFQ(
+        hw_tests=hw_test_list.DefaultListPFQ(
             pool=constants.HWTEST_CONTINUOUS_POOL))
     informational_boards = list(set(_all_release_boards) - set(_cheets_boards))
     _CreateConfigsForBoards(
@@ -2771,7 +2757,7 @@ def _GetConfig(site_config, ge_build_config, board_configs):
         site_config.templates.android_pfq,
         _android_pfq_hwtest_boards,
         'android-pfq',
-        hw_tests=HWTestList.SharedPoolAndroidPFQ())
+        hw_tests=hw_test_list.SharedPoolAndroidPFQ())
     _CreateConfigsForBoards(
         site_config.templates.android_pfq,
         _android_pfq_no_hwtest_boards,
@@ -3201,23 +3187,24 @@ def _GetConfig(site_config, ge_build_config, board_configs):
   _AddPayloadConfigs()
 
 
-def InsertHwTestsOverrideDefaults(build):
+def InsertHwTestsOverrideDefaults(build, hw_test_list):
   """Insert default hw_tests values for a given build.
 
   Also updates child builds.
 
   Args:
     build: BuildConfig instance to modify in place.
+    hw_test_list: Object to help create lists of standard HW Tests.
   """
   for child in build['child_configs']:
-    InsertHwTestsOverrideDefaults(child)
+    InsertHwTestsOverrideDefaults(child, hw_test_list)
 
   if build['hw_tests_override'] is not None:
     # Explicitly set, no need to insert defaults.
     return
 
   if not build['hw_tests']:
-    build['hw_tests_override'] = HWTestList.DefaultList(
+    build['hw_tests_override'] = hw_test_list.DefaultList(
         num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
         file_bugs=False)
   else:
@@ -3267,22 +3254,24 @@ def GetConfig():
 
   ge_build_config = config_lib.LoadGEBuildConfigFromFile()
 
+  hw_test_list = HWTestList()
+
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
 
-  CreateBuilderTemplates(site_config)
+  CreateBuilderTemplates(site_config, hw_test_list)
 
   board_configs = CreateBoardConfigs(site_config, ge_build_config)
 
-  ToolchainBuilders(site_config)
+  ToolchainBuilders(site_config, hw_test_list)
 
   # Fill in templates and build configurations.
-  _GetConfig(site_config, ge_build_config, board_configs)
+  _GetConfig(site_config, ge_build_config, board_configs, hw_test_list)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
-    InsertHwTestsOverrideDefaults(build)
+    InsertHwTestsOverrideDefaults(build, hw_test_list)
 
   # Assign waterfalls to builders that don't have them yet.
   InsertWaterfallDefaults(site_config)
