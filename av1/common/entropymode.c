@@ -1015,10 +1015,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < PARTITION_CONTEXTS; i++) {
     aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
-#if CONFIG_DAALA_EC
-    av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
-                    fc->partition_cdf[i]);
-#endif
   }
 #endif
 
