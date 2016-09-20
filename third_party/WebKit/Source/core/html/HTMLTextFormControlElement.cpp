@@ -400,7 +400,7 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
         return VisiblePosition();
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return createVisiblePositionDeprecated(it.endPosition(), TextAffinity::Upstream);
+    return createVisiblePosition(it.endPosition(), TextAffinity::Upstream);
 }
 
 int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& pos) const

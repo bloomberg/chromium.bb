@@ -1397,6 +1397,11 @@ bool WebLocalFrameImpl::selectionStartHasSpellingMarkerFor(int from, int length)
 {
     if (!frame())
         return false;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return frame()->spellChecker().selectionStartHasSpellingMarkerFor(from, length);
 }
 

@@ -1588,6 +1588,7 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length)
     if (!document->frame())
         return false;
 
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
     return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
@@ -1660,6 +1661,7 @@ bool Internals::hasGrammarMarker(Document* document, int from, int length)
     if (!document->frame())
         return false;
 
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
     return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Grammar, from, length);
 }
 
