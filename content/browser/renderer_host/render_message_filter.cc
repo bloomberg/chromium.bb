@@ -89,6 +89,11 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#include "base/threading/platform_thread.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -204,6 +209,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         OnAllocateLockedDiscardableSharedMemory)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
                         OnDeletedDiscardableSharedMemory)
+#if defined(OS_LINUX)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
+                        OnSetThreadPriority)
+#endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(RenderProcessHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
@@ -413,6 +422,35 @@ void RenderMessageFilter::OnDeletedDiscardableSharedMemory(
           &RenderMessageFilter::DeletedDiscardableSharedMemoryOnFileThread,
           this, id));
 }
+
+#if defined(OS_LINUX)
+void RenderMessageFilter::SetThreadPriorityOnFileThread(
+    base::PlatformThreadId ns_tid,
+    base::ThreadPriority priority) {
+  bool ns_pid_supported = false;
+  pid_t peer_tid = base::FindThreadID(peer_pid(), ns_tid, &ns_pid_supported);
+  if (peer_tid == -1) {
+    if (ns_pid_supported)
+      DLOG(WARNING) << "Could not find tid";
+    return;
+  }
+
+  if (peer_tid == peer_pid()) {
+    DLOG(WARNING) << "Changing priority of main thread is not allowed";
+    return;
+  }
+
+  base::PlatformThread::SetThreadPriority(peer_tid, priority);
+}
+
+void RenderMessageFilter::OnSetThreadPriority(base::PlatformThreadId ns_tid,
+                                              base::ThreadPriority priority) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::Bind(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
+                 ns_tid, priority));
+}
+#endif
 
 void RenderMessageFilter::OnCacheableMetadataAvailable(
     const GURL& url,

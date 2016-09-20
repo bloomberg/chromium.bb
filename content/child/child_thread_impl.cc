@@ -749,6 +749,13 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
   return shared_buf;
 }
 
+#if defined(OS_LINUX)
+void ChildThreadImpl::SetThreadPriority(base::PlatformThreadId id,
+                                        base::ThreadPriority priority) {
+  Send(new ChildProcessHostMsg_SetThreadPriority(id, priority));
+}
+#endif
+
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))

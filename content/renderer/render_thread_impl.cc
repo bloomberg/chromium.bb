@@ -858,6 +858,13 @@ void RenderThreadImpl::Init(
   time_zone_monitor->AddClient(
       time_zone_monitor_binding_.CreateInterfacePtrAndBind());
 
+#if defined(OS_LINUX)
+  ChildProcess::current()->SetIOThreadPriority(base::ThreadPriority::DISPLAY);
+  ChildThreadImpl::current()->SetThreadPriority(
+      categorized_worker_pool_->background_worker_thread_id(),
+      base::ThreadPriority::BACKGROUND);
+#endif
+
   is_renderer_suspended_ = false;
 }
 
@@ -1134,6 +1141,10 @@ void RenderThreadImpl::InitializeCompositorThread() {
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed), false));
+#if defined(OS_LINUX)
+  ChildThreadImpl::current()->SetThreadPriority(compositor_thread_->threadId(),
+                                                base::ThreadPriority::DISPLAY);
+#endif
 
   SynchronousInputHandlerProxyClient* synchronous_input_handler_proxy_client =
       nullptr;

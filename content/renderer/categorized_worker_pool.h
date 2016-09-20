@@ -69,6 +69,10 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // Create a new sequenced task graph runner.
   scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner();
 
+  base::PlatformThreadId background_worker_thread_id() const {
+    return threads_.back()->tid();
+  }
+
  protected:
   ~CategorizedWorkerPool() override;
 

@@ -27,6 +27,10 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
+#if defined(OS_LINUX)
+#include "base/threading/platform_thread.h"
+#endif
+
 IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
                           tracked_objects::ThreadData::STATUS_LAST)
 
@@ -65,6 +69,11 @@ IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(phased_snapshots)
   IPC_STRUCT_TRAITS_MEMBER(process_id)
 IPC_STRUCT_TRAITS_END()
+
+#if defined(OS_LINUX)
+IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
+                          base::ThreadPriority::REALTIME_AUDIO)
+#endif
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -211,3 +220,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(
 // memory.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
                      content::DiscardableSharedMemoryId)
+
+#if defined(OS_LINUX)
+// Asks the browser to change the priority of thread.
+IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_SetThreadPriority,
+                     base::PlatformThreadId,
+                     base::ThreadPriority)
+#endif

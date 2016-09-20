@@ -171,6 +171,13 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void DeletedDiscardableSharedMemoryOnFileThread(DiscardableSharedMemoryId id);
   void OnDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id);
 
+#if defined(OS_LINUX)
+  void SetThreadPriorityOnFileThread(base::PlatformThreadId ns_tid,
+                                     base::ThreadPriority priority);
+  void OnSetThreadPriority(base::PlatformThreadId ns_tid,
+                           base::ThreadPriority priority);
+#endif
+
   void OnCacheableMetadataAvailable(const GURL& url,
                                     base::Time expected_response_time,
                                     const std::vector<char>& data);

@@ -33,6 +33,12 @@ BASE_EXPORT pid_t FindThreadIDWithSyscall(pid_t pid,
                                           const std::string& expected_data,
                                           bool* syscall_supported);
 
+// For a given process |pid|, look through all its threads and find the first
+// thread with /proc/[pid]/task/[thread_id]/status where NSpid matches |ns_tid|.
+// Returns the thread id or -1 on error.  If |ns_pid_supported| is
+// set to false the kernel does not support NSpid in procfs.
+BASE_EXPORT pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported);
+
 }  // namespace base
 
 #endif  // BASE_LINUX_UTIL_H_

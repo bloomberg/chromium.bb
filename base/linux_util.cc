@@ -20,6 +20,8 @@
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -71,6 +73,28 @@ class LinuxDistroHelper {
   LinuxDistroState state_;
 };
 #endif  // if defined(OS_LINUX)
+
+bool GetTasksForProcess(pid_t pid, std::vector<pid_t>* tids) {
+  char buf[256];
+  snprintf(buf, sizeof(buf), "/proc/%d/task", pid);
+
+  DIR* task = opendir(buf);
+  if (!task) {
+    DLOG(WARNING) << "Cannot open " << buf;
+    return false;
+  }
+
+  struct dirent* dent;
+  while ((dent = readdir(task))) {
+    char* endptr;
+    const unsigned long int tid_ul = strtoul(dent->d_name, &endptr, 10);
+    if (tid_ul == ULONG_MAX || *endptr)
+      continue;
+    tids->push_back(tid_ul);
+  }
+  closedir(task);
+  return true;
+}
 
 }  // namespace
 
@@ -132,34 +156,17 @@ void SetLinuxDistro(const std::string& distro) {
 
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
                               bool* syscall_supported) {
-  char buf[256];
-  snprintf(buf, sizeof(buf), "/proc/%d/task", pid);
-
   if (syscall_supported != NULL)
     *syscall_supported = false;
 
-  DIR* task = opendir(buf);
-  if (!task) {
-    DLOG(WARNING) << "Cannot open " << buf;
-    return -1;
-  }
-
   std::vector<pid_t> tids;
-  struct dirent* dent;
-  while ((dent = readdir(task))) {
-    char* endptr;
-    const unsigned long int tid_ul = strtoul(dent->d_name, &endptr, 10);
-    if (tid_ul == ULONG_MAX || *endptr)
-      continue;
-    tids.push_back(tid_ul);
-  }
-  closedir(task);
+  if (!GetTasksForProcess(pid, &tids))
+    return -1;
 
   std::unique_ptr<char[]> syscall_data(new char[expected_data.length()]);
-  for (std::vector<pid_t>::const_iterator
-       i = tids.begin(); i != tids.end(); ++i) {
-    const pid_t current_tid = *i;
-    snprintf(buf, sizeof(buf), "/proc/%d/task/%d/syscall", pid, current_tid);
+  for (pid_t tid : tids) {
+    char buf[256];
+    snprintf(buf, sizeof(buf), "/proc/%d/task/%d/syscall", pid, tid);
     int fd = open(buf, O_RDONLY);
     if (fd < 0)
       continue;
@@ -172,7 +179,45 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
 
     if (0 == strncmp(expected_data.c_str(), syscall_data.get(),
                      expected_data.length())) {
-      return current_tid;
+      return tid;
+    }
+  }
+  return -1;
+}
+
+pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported) {
+  if (ns_pid_supported)
+    *ns_pid_supported = false;
+
+  std::vector<pid_t> tids;
+  if (!GetTasksForProcess(pid, &tids))
+    return -1;
+
+  for (pid_t tid : tids) {
+    char buf[256];
+    snprintf(buf, sizeof(buf), "/proc/%d/task/%d/status", pid, tid);
+    std::string status;
+    if (!ReadFileToString(FilePath(buf), &status))
+      return -1;
+    StringPairs pairs;
+    SplitStringIntoKeyValuePairs(status, ':', '\n', &pairs);
+    for (const auto& pair : pairs) {
+      const std::string& key = pair.first;
+      const std::string& value_str = pair.second;
+      if (key == "NSpid") {
+        if (ns_pid_supported)
+          *ns_pid_supported = true;
+        std::vector<StringPiece> split_value_str = SplitStringPiece(
+            value_str, "\t", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
+        DCHECK_NE(split_value_str.size(), 0u);
+        int value;
+        // The last value in the list is the PID in the namespace.
+        if (StringToInt(split_value_str.back(), &value) && value == ns_tid) {
+          // The first value in the list is the real PID.
+          if (StringToInt(split_value_str.front(), &value))
+            return value;
+        }
+      }
     }
   }
   return -1;

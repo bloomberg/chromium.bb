@@ -69,6 +69,10 @@ class CONTENT_EXPORT ChildProcess {
   void AddRefProcess();
   void ReleaseProcess();
 
+#if defined(OS_LINUX)
+  void SetIOThreadPriority(base::ThreadPriority io_thread_priority);
+#endif
+
   // Getter for the one ChildProcess object for this process. Can only be called
   // on the main thread.
   static ChildProcess* current();

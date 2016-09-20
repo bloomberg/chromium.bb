@@ -128,6 +128,11 @@ class CONTENT_EXPORT ChildThreadImpl
       IPC::Sender* sender,
       bool* out_of_memory);
 
+#if defined(OS_LINUX)
+  void SetThreadPriority(base::PlatformThreadId id,
+                         base::ThreadPriority priority);
+#endif
+
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
   }
