@@ -196,9 +196,9 @@ IntRect FrameCaret::absoluteCaretBounds()
             if (isVisuallyEquivalentCandidate(caretPosition().position()))
                 updateCaretRect(caretPosition());
             else
-                updateCaretRect(createVisiblePositionDeprecated(caretPosition()));
+                updateCaretRect(createVisiblePosition(caretPosition()));
         } else {
-            updateCaretRect(createVisiblePositionDeprecated(caretPosition()));
+            updateCaretRect(createVisiblePosition(caretPosition()));
         }
     }
     return absoluteBoundsForLocalRect(caretPosition().position().anchorNode(), localCaretRectWithoutUpdate());
