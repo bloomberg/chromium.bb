@@ -527,6 +527,7 @@ void PageLoadTracker::OnLoadedSubresource(bool was_cached) {
 
 void PageLoadTracker::StopTracking() {
   did_stop_tracking_ = true;
+  observers_.clear();
 }
 
 void PageLoadTracker::AddObserver(
