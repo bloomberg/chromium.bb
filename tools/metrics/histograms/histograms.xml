@@ -88367,6 +88367,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Message Post"/>
   <int value="1" label="Completion Post"/>
   <int value="2" label="Set Timer"/>
+  <int value="3" label="Received WM_QUIT"/>
 </enum>
 
 <enum name="MetadataReadResult" type="int">
