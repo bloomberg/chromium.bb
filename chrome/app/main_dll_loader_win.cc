@@ -183,7 +183,8 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
                            "RelaunchChromeBrowserWithNewCommandLineIfNeeded"));
   if (!relaunch_function) {
     LOG(ERROR) << "Could not find exported function "
-               << "RelaunchChromeBrowserWithNewCommandLineIfNeeded";
+               << "RelaunchChromeBrowserWithNewCommandLineIfNeeded "
+               << "(" << process_type_ << " process)";
   } else {
     relaunch_function();
   }
