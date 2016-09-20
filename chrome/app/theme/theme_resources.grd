@@ -288,35 +288,6 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="cros/icon_power_white.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFO" file="common/info_small.png" />
-      <if expr="(toolkit_views and not is_macosx) or mac_views_browser">
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM" file="common/infobarbutton_bottom_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_LEFT" file="common/infobarbutton_bottom_left_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_BOTTOM_RIGHT" file="common/infobarbutton_bottom_right_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_CENTER" file="common/infobarbutton_center_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_LEFT" file="common/infobarbutton_left_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_RIGHT" file="common/infobarbutton_right_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP" file="common/infobarbutton_top_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_LEFT" file="common/infobarbutton_top_left_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_HOVER_TOP_RIGHT" file="common/infobarbutton_top_right_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM" file="common/infobarbutton_bottom_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_LEFT" file="common/infobarbutton_bottom_left_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_BOTTOM_RIGHT" file="common/infobarbutton_bottom_right_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_CENTER" file="common/infobarbutton_center_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_LEFT" file="common/infobarbutton_left_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_RIGHT" file="common/infobarbutton_right_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP" file="common/infobarbutton_top_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_LEFT" file="common/infobarbutton_top_left_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_NORMAL_TOP_RIGHT" file="common/infobarbutton_top_right_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM" file="common/infobarbutton_bottom_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_LEFT" file="common/infobarbutton_bottom_left_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_BOTTOM_RIGHT" file="common/infobarbutton_bottom_right_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_CENTER" file="common/infobarbutton_center_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_LEFT" file="common/infobarbutton_left_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_RIGHT" file="common/infobarbutton_right_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP" file="common/infobarbutton_top_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_LEFT" file="common/infobarbutton_top_left_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_INFOBARBUTTON_PRESSED_TOP_RIGHT" file="common/infobarbutton_top_right_pressed.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_3D_BLOCKED" file="common/infobar_3d_blocked.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_ALT_NAV_URL" file="common/infobar_alt_nav_url.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_APP_BANNER" file="common/infobar_apps.png" />

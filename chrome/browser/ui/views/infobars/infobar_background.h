@@ -19,11 +19,6 @@ class InfoBarBackground : public views::Background {
   // views::Background:
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
-  void PaintMd(gfx::Canvas* canvas, views::View* view) const;
-
-  SkColor top_color_;
-  SkColor bottom_color_;
-
   DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);
 };
 

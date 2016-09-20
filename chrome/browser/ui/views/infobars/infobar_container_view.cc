@@ -10,7 +10,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view_targeter.h"
@@ -64,12 +63,10 @@ class ContentShadow : public views::View {
 const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
 
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
-    : infobars::InfoBarContainer(delegate), content_shadow_(nullptr) {
+    : infobars::InfoBarContainer(delegate),
+      content_shadow_(new ContentShadow()) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    content_shadow_ = new ContentShadow();
-    AddChildView(content_shadow_);
-  }
+  AddChildView(content_shadow_);
 }
 
 InfoBarContainerView::~InfoBarContainerView() {
@@ -83,8 +80,7 @@ gfx::Size InfoBarContainerView::GetPreferredSize() const {
 
   // No need to reserve space for the bottom bar's separator; the shadow is good
   // enough.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    total_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
+  total_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
 
   gfx::Size size(0, total_height);
   for (int i = 0; i < child_count(); ++i)
@@ -110,16 +106,13 @@ void InfoBarContainerView::Layout() {
     // Trim off the bottom bar's separator; the shadow is good enough.
     // The last infobar is the second to last child overall (followed by
     // |content_shadow_|).
-    if (ui::MaterialDesignController::IsModeMaterial() &&
-        i == child_count() - 2) {
+    if (i == child_count() - 2)
       child_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
-    }
     child->SetBounds(0, top, width(), child_height);
     top += child_height;
   }
 
-  if (ui::MaterialDesignController::IsModeMaterial())
-    content_shadow_->SetBounds(0, top, width(), kLargeShadowHeight);
+  content_shadow_->SetBounds(0, top, width(), kLargeShadowHeight);
 }
 
 void InfoBarContainerView::GetAccessibleState(ui::AXViewState* state) {

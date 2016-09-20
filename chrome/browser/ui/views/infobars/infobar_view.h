@@ -21,15 +21,14 @@ class MenuModel;
 }
 
 namespace views {
-class ImageButton;
 class ImageView;
 class Label;
 class LabelButton;
 class Link;
 class LinkListener;
-class MdTextButton;
 class MenuButton;
 class MenuRunner;
+class VectorIconButton;
 }  // namespace views
 
 class InfoBarView : public infobars::InfoBar,
@@ -41,8 +40,6 @@ class InfoBarView : public infobars::InfoBar,
   explicit InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate);
 
   const infobars::InfoBarContainer::Delegate* container_delegate() const;
-  const SkPath& fill_path() const { return fill_path_; }
-  const SkPath& stroke_path() const { return stroke_path_; }
 
  protected:
   typedef std::vector<views::Label*> Labels;
@@ -60,12 +57,6 @@ class InfoBarView : public infobars::InfoBar,
   // NOTE: Subclasses must ignore link clicks if we're unowned.
   views::Link* CreateLink(const base::string16& text,
                           views::LinkListener* listener) const;
-
-  // Creates a focusable button for use on an infobar. The appearance is
-  // customized for infobars. Used for pre-MD only.
-  // NOTE: Subclasses must ignore button presses if we're unowned.
-  static views::LabelButton* CreateTextButton(views::ButtonListener* listener,
-                                              const base::string16& text);
 
   // Given |labels| and the total |available_width| to display them in, sets
   // each label's size so that the longest label shrinks until it reaches the
@@ -140,12 +131,7 @@ class InfoBarView : public infobars::InfoBar,
   views::ImageView* icon_;
 
   // The close button at the right edge of the InfoBar.
-  views::ImageButton* close_button_;
-
-  // The paths for the InfoBarBackground to draw, sized according to the heights
-  // above. TODO(estade): remove these when MD is default.
-  SkPath fill_path_;
-  SkPath stroke_path_;
+  views::VectorIconButton* close_button_;
 
   // Used to run the menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;

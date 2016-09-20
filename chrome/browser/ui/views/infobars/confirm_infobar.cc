@@ -72,15 +72,9 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     AddViewToContentArea(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-      if (ui::MaterialDesignController::IsModeMaterial()) {
-        views::MdTextButton* button = views::MdTextButton::Create(
-            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-        button->SetCallToAction(true);
-        ok_button_ = button;
-      } else {
-        ok_button_ = CreateTextButton(
-            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-      }
+      ok_button_ = views::MdTextButton::Create(
+          this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      ok_button_->SetCallToAction(true);
       if (delegate->OKButtonTriggersUACPrompt()) {
         elevation_icon_setter_.reset(new ElevationIconSetter(
             ok_button_,
@@ -91,26 +85,19 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     }
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      if (ui::MaterialDesignController::IsModeMaterial()) {
-        views::MdTextButton* button = views::MdTextButton::Create(
-            this,
-            delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-        if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-          // Apply CTA only if the cancel button is the only button.
-          button->SetCallToAction(true);
-        } else {
-          // Otherwise set the bg color to white and the text color to black.
-          // TODO(estade): These should be removed and moved into the native
-          // theme. Also, infobars should always use the normal (non-incognito)
-          // native theme.
-          button->set_bg_color_override(SK_ColorWHITE);
-          button->SetEnabledTextColors(kTextColor);
-        }
-        cancel_button_ = button;
+      cancel_button_ = views::MdTextButton::Create(
+          this,
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL) {
+        // Apply CTA only if the cancel button is the only button.
+        cancel_button_->SetCallToAction(true);
       } else {
-        cancel_button_ = CreateTextButton(
-            this,
-            delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+        // Otherwise set the bg color to white and the text color to black.
+        // TODO(estade): These should be removed and moved into the native
+        // theme. Also, infobars should always use the normal (non-incognito)
+        // native theme.
+        cancel_button_->set_bg_color_override(SK_ColorWHITE);
+        cancel_button_->SetEnabledTextColors(kTextColor);
       }
       AddViewToContentArea(cancel_button_);
       cancel_button_->SizeToPreferredSize();

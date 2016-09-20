@@ -19,8 +19,6 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -28,9 +26,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -55,13 +51,6 @@ const int kBeforeCloseButtonSpacing = views::kUnrelatedControlHorizontalSpacing;
 bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
   return label_1->GetPreferredSize().width() >
       label_2->GetPreferredSize().width();
-}
-
-const gfx::FontList& GetFontList() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::MaterialDesignController::IsModeMaterial()
-                            ? ui::ResourceBundle::BaseFont
-                            : ui::ResourceBundle::MediumFont);
 }
 
 constexpr SkColor GetInfobarTextColor() {
@@ -94,14 +83,11 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    child_container_->SetPaintToLayer(true);
-    child_container_->layer()->SetMasksToBounds(true);
-    // Since MD doesn't use a gradient, we can set a solid bg color.
-    child_container_->set_background(
-        views::Background::CreateSolidBackground(infobars::InfoBar::GetTopColor(
-            infobars::InfoBar::delegate()->GetInfoBarType())));
-  }
+  child_container_->SetPaintToLayer(true);
+  child_container_->layer()->SetMasksToBounds(true);
+  child_container_->set_background(
+      views::Background::CreateSolidBackground(infobars::InfoBar::GetTopColor(
+          infobars::InfoBar::delegate()->GetInfoBarType())));
 }
 
 const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
@@ -118,7 +104,7 @@ InfoBarView::~InfoBarView() {
 }
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
-  views::Label* label = new views::Label(text, GetFontList());
+  views::Label* label = new views::Label(text);
   label->SizeToPreferredSize();
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(GetInfobarTextColor());
@@ -129,43 +115,11 @@ views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
 views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
   views::Link* link = new views::Link(text);
-  link->SetFontList(GetFontList());
   link->SizeToPreferredSize();
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_listener(listener);
   link->SetBackgroundColor(background()->get_color());
   return link;
-}
-
-// static
-views::LabelButton* InfoBarView::CreateTextButton(
-    views::ButtonListener* listener,
-    const base::string16& text) {
-  DCHECK(!ui::MaterialDesignController::IsModeMaterial());
-  views::LabelButton* button = new views::LabelButton(listener, text);
-  std::unique_ptr<views::LabelButtonAssetBorder> button_border(
-      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
-  const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
-  button_border->SetPainter(
-      false, views::Button::STATE_NORMAL,
-      views::Painter::CreateImageGridPainter(kNormalImageSet));
-  const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
-  button_border->SetPainter(
-      false, views::Button::STATE_HOVERED,
-      views::Painter::CreateImageGridPainter(kHoveredImageSet));
-  const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
-  button_border->SetPainter(
-      false, views::Button::STATE_PRESSED,
-      views::Painter::CreateImageGridPainter(kPressedImageSet));
-  button->SetBorder(std::move(button_border));
-  button->set_animate_on_state_change(false);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  button->SetFocusForPlatform();
-  button->set_request_focus_on_press(true);
-  button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
-  button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
-  return button;
 }
 
 // static
@@ -175,52 +129,6 @@ void InfoBarView::AssignWidths(Labels* labels, int available_width) {
 }
 
 void InfoBarView::Layout() {
-  // Calculate the fill and stroke paths.  We do this here, rather than in
-  // PlatformSpecificRecalculateHeight(), because this is also reached when our
-  // width is changed, which affects both paths.
-  // TODO(estade): these paths aren't used for MD; remove when MD is default.
-  stroke_path_.rewind();
-  fill_path_.rewind();
-  const infobars::InfoBarContainer::Delegate* delegate = container_delegate();
-  if (delegate) {
-    int arrow_x;
-    SkScalar arrow_fill_height = SkIntToScalar(std::max(
-        arrow_height() - InfoBarContainerDelegate::kSeparatorLineHeight, 0));
-    SkScalar arrow_fill_half_width = SkIntToScalar(arrow_half_width());
-    SkScalar separator_height =
-        SkIntToScalar(InfoBarContainerDelegate::kSeparatorLineHeight);
-    if (delegate->DrawInfoBarArrows(&arrow_x) && arrow_fill_height) {
-      // Skia pixel centers are at the half-values, so the arrow is horizontally
-      // centered at |arrow_x| + 0.5.  Vertically, the stroke path is the center
-      // of the separator, while the fill path is a closed path that extends up
-      // through the entire height of the separator and down to the bottom of
-      // the arrow where it joins the bar.
-      stroke_path_.moveTo(
-          SkIntToScalar(arrow_x) + SK_ScalarHalf - arrow_fill_half_width,
-          SkIntToScalar(arrow_height()) - (separator_height * SK_ScalarHalf));
-      stroke_path_.rLineTo(arrow_fill_half_width, -arrow_fill_height);
-      stroke_path_.rLineTo(arrow_fill_half_width, arrow_fill_height);
-
-      fill_path_ = stroke_path_;
-      // Move the top of the fill path up to the top of the separator and then
-      // extend it down all the way through.
-      fill_path_.offset(0, -separator_height * SK_ScalarHalf);
-      // This 0.01 hack prevents the fill from filling more pixels on the right
-      // edge of the arrow than on the left.
-      const SkScalar epsilon = 0.01f;
-      fill_path_.rLineTo(-epsilon, 0);
-      fill_path_.rLineTo(0, separator_height);
-      fill_path_.rLineTo(epsilon - (arrow_fill_half_width * 2), 0);
-      fill_path_.close();
-    }
-  }
-  if (bar_height()) {
-    fill_path_.addRect(
-        0.0, SkIntToScalar(arrow_height()), SkIntToScalar(width()),
-        SkIntToScalar(
-            height() - InfoBarContainerDelegate::kSeparatorLineHeight));
-  }
-
   child_container_->SetBounds(
       0, arrow_height(), width(),
       bar_height() - InfoBarContainerDelegate::kSeparatorLineHeight);
@@ -262,21 +170,8 @@ void InfoBarView::ViewHierarchyChanged(
       child_container_->AddChildView(icon_);
     }
 
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      views::VectorIconButton* close = new views::VectorIconButton(this);
-      close->SetIcon(gfx::VectorIconId::BAR_CLOSE);
-      close_button_ = close;
-    } else {
-      close_button_ = new views::ImageButton(this);
-      close_button_->set_request_focus_on_press(true);
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                              rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());
-      close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                              rb.GetImageNamed(IDR_CLOSE_1_H).ToImageSkia());
-      close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                              rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
-    }
+    close_button_ = new views::VectorIconButton(this);
+    close_button_->SetIcon(gfx::VectorIconId::BAR_CLOSE);
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusForPlatform();
@@ -286,9 +181,7 @@ void InfoBarView::ViewHierarchyChanged(
   }
 
   // Ensure the infobar is tall enough to display its contents.
-  int height = ui::MaterialDesignController::IsModeMaterial()
-                   ? InfoBarContainerDelegate::kDefaultBarTargetHeightMd
-                   : InfoBarContainerDelegate::kDefaultBarTargetHeight;
+  int height = InfoBarContainerDelegate::kDefaultBarTargetHeightMd;
   const int kMinimumVerticalPadding = 6;
   for (int i = 0; i < child_container_->child_count(); ++i) {
     const int child_height = child_container_->child_at(i)->height();
