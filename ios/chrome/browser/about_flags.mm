@@ -207,11 +207,7 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   }
 
   // Populate command line flag for Spotlight Actions.
-  NSString* enableSpotlightActions =
-      [defaults stringForKey:@"EnableSpotlightActions"];
-  if ([enableSpotlightActions isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableSpotlightActions);
-  } else if ([enableSpotlightActions isEqualToString:@"Disabled"]) {
+  if ([defaults boolForKey:@"DisableSpotlightActions"]) {
     command_line->AppendSwitch(switches::kDisableSpotlightActions);
   }
 
