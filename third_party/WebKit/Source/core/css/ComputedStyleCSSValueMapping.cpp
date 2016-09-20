@@ -2723,19 +2723,22 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyMotion:
         return valuesForShorthandProperty(motionShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
 
-    case CSSPropertyMotionPath:
-        if (const StylePath* styleMotionPath = style.motionPath())
+    case CSSPropertyOffset:
+        return valuesForShorthandProperty(offsetShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
+
+    case CSSPropertyOffsetPath:
+        if (const StylePath* styleMotionPath = style.offsetPath())
             return styleMotionPath->computedCSSValue();
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
-    case CSSPropertyMotionOffset:
-        return zoomAdjustedPixelValueForLength(style.motionOffset(), style);
+    case CSSPropertyOffsetDistance:
+        return zoomAdjustedPixelValueForLength(style.offsetDistance(), style);
 
-    case CSSPropertyMotionRotation: {
+    case CSSPropertyOffsetRotation: {
         CSSValueList* list = CSSValueList::createSpaceSeparated();
-        if (style.motionRotation().type == MotionRotationAuto)
+        if (style.offsetRotation().type == OffsetRotationAuto)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValueAuto));
-        list->append(*CSSPrimitiveValue::create(style.motionRotation().angle, CSSPrimitiveValue::UnitType::Degrees));
+        list->append(*CSSPrimitiveValue::create(style.offsetRotation().angle, CSSPrimitiveValue::UnitType::Degrees));
         return list;
     }
 

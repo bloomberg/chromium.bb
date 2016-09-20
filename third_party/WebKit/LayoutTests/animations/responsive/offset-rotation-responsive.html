@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<script src="resources/responsive-test.js"></script>
+<script>
+assertCSSResponsive({
+  property: 'offset-rotation',
+  from: 'inherit',
+  to: 'auto 40deg',
+  configurations: [{
+    state: {inherited: '50deg'},
+    expect: [
+      {at: 0.25, is: '50deg'},
+      {at: 0.75, is: 'auto 40deg'},
+    ],
+  }, {
+    state: {inherited: 'auto 20deg'},
+    expect: [
+      {at: 0.25, is: 'auto 25deg'},
+      {at: 0.75, is: 'auto 35deg'},
+    ],
+  }],
+});
+
+assertCSSResponsive({
+  property: 'offset-rotation',
+  from: neutralKeyframe,
+  to: '80deg',
+  configurations: [{
+    state: {underlying: 'auto 50deg'},
+    expect: [
+      {at: 0.25, is: 'auto 50deg'},
+      {at: 0.75, is: '80deg'},
+    ],
+  }, {
+    state: {underlying: '40deg'},
+    expect: [
+      {at: 0.25, is: '50deg'},
+      {at: 0.75, is: '70deg'},
+    ],
+  }],
+});
+</script>

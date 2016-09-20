@@ -552,10 +552,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     }
     case CSSPropertyTransformOrigin:
         return createFromTransformOrigin(style.transformOrigin(), style);
-    case CSSPropertyMotionOffset:
-        return createFromLength(style.motionOffset(), style);
-    case CSSPropertyMotionRotation:
-        return createFromDoubleAndBool(style.motionRotation().angle, style.motionRotation().type == MotionRotationAuto, style);
+    case CSSPropertyOffsetDistance:
+        return createFromLength(style.offsetDistance(), style);
+    case CSSPropertyOffsetRotation:
+        return createFromDoubleAndBool(style.offsetRotation().angle, style.offsetRotation().type == OffsetRotationAuto, style);
     case CSSPropertyWebkitPerspectiveOriginX:
         return createFromLength(style.perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:

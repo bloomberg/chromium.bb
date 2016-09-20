@@ -169,8 +169,8 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
     case CSSPropertyMinWidth:
         result = style.minWidth();
         return true;
-    case CSSPropertyMotionOffset:
-        result = style.motionOffset();
+    case CSSPropertyOffsetDistance:
+        result = style.offsetDistance();
         return true;
     case CSSPropertyPaddingBottom:
         result = style.paddingBottom();
@@ -354,8 +354,8 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property, ComputedStyle& s
     case CSSPropertyMinWidth:
         style.setMinWidth(value);
         return true;
-    case CSSPropertyMotionOffset:
-        style.setMotionOffset(value);
+    case CSSPropertyOffsetDistance:
+        style.setOffsetDistance(value);
         return true;
     case CSSPropertyPaddingBottom:
         style.setPaddingBottom(value);

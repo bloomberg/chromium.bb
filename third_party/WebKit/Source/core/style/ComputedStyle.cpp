@@ -1098,7 +1098,7 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const LayoutSiz
 
 void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath, ApplyIndependentTransformProperties applyIndependentTransformProperties) const
 {
-    if (!hasMotionPath())
+    if (!hasOffsetPath())
         applyMotionPath = ExcludeMotionPath;
     bool applyTransformOrigin = requireTransformOrigin(applyOrigin, applyMotionPath);
 
@@ -1146,7 +1146,7 @@ void ComputedStyle::applyMotionPathTransform(float originX, float originY, Trans
     ASSERT(motionData.m_path);
     const StylePath& motionPath = *motionData.m_path;
     float pathLength = motionPath.length();
-    float distance = floatValueForLength(motionData.m_offset, pathLength);
+    float distance = floatValueForLength(motionData.m_distance, pathLength);
     float computedDistance;
     if (motionPath.isClosed() && pathLength > 0) {
         computedDistance = fmod(distance, pathLength);
@@ -1160,7 +1160,7 @@ void ComputedStyle::applyMotionPathTransform(float originX, float originY, Trans
     float angle;
     motionPath.path().pointAndNormalAtLength(computedDistance, point, angle);
 
-    if (motionData.m_rotation.type == MotionRotationFixed)
+    if (motionData.m_rotation.type == OffsetRotationFixed)
         angle = 0;
 
     transform.translate(point.x() - originX, point.y() - originY);
@@ -1856,7 +1856,7 @@ void ComputedStyle::setMarginEnd(const Length& margin)
     }
 }
 
-void ComputedStyle::setMotionPath(PassRefPtr<StylePath> path)
+void ComputedStyle::setOffsetPath(PassRefPtr<StylePath> path)
 {
     m_rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
 }

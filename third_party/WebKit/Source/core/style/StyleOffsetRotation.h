@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleMotionRotation_h
-#define StyleMotionRotation_h
+#ifndef StyleOffsetRotation_h
+#define StyleOffsetRotation_h
 
 #include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 
-struct StyleMotionRotation {
-    StyleMotionRotation(float angle, MotionRotationType type)
+struct StyleOffsetRotation {
+    StyleOffsetRotation(float angle, OffsetRotationType type)
         : angle(angle)
         , type(type)
     { }
 
-    bool operator==(const StyleMotionRotation& other) const
+    bool operator==(const StyleOffsetRotation& other) const
     {
         return angle == other.angle
             && type == other.type;
     }
-    bool operator!=(const StyleMotionRotation& other) const { return !(*this == other); }
+    bool operator!=(const StyleOffsetRotation& other) const { return !(*this == other); }
 
     float angle;
-    MotionRotationType type;
+    OffsetRotationType type;
 };
 
 } // namespace blink
 
-#endif // StyleMotionRotation_h
+#endif // StyleOffsetRotation_h

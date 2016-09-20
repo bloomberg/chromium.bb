@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#div2 {
+    offset-rotation: auto;
+}
+#div3 {
+    offset-rotation: reverse;
+}
+#div4 {
+    offset-rotation: 180deg;
+}
+#div5 {
+    offset-rotation: 0rad;
+}
+#div6 {
+    offset-rotation: -400grad auto;
+}
+#div7 {
+    offset-rotation: 2turn reverse;
+}
+#div8 {
+    offset-rotation: reverse 30deg;
+}
+#div9 {
+    offset-rotation: inherit;
+}
+</style>
+</head>
+<body>
+<div id="div1"></div>
+<div id="div2"></div>
+<div id="div3"></div>
+<div id="div4"></div>
+<div id="div5"></div>
+<div id="div6"></div>
+<div id="div7"></div>
+<div id="div8">
+    <div id="div9"></div>
+    <div id="div10"></div>
+</div>
+<span id="span1" style="offset-rotation: auto -45deg"></span>
+
+<script>
+"use strict";
+
+test(function() {
+    assert_equals(getComputedStyle(div1, null).offsetRotation, 'auto 0deg');
+}, 'offset-rotation default is auto');
+
+test(function() {
+    assert_equals(getComputedStyle(div2, null).offsetRotation, 'auto 0deg');
+}, 'offset-rotation auto expands to auto 0deg');
+
+test(function() {
+    assert_equals(getComputedStyle(div3, null).offsetRotation, 'auto 180deg');
+}, 'offset-rotation reverse expands to auto 180deg');
+
+test(function() {
+    assert_equals(getComputedStyle(div4, null).offsetRotation, '180deg');
+}, 'offset-rotation can be a fixed angle');
+
+test(function() {
+    assert_equals(getComputedStyle(div5, null).offsetRotation, '0deg');
+}, 'offset-rotation angles are converted to degrees');
+
+test(function() {
+    assert_equals(getComputedStyle(div6, null).offsetRotation, 'auto -360deg');
+}, 'offset-rotation can be supplied with angle before auto');
+
+test(function() {
+    assert_equals(getComputedStyle(div7, null).offsetRotation, 'auto 900deg');
+}, 'offset-rotation can be supplied with angle before reverse');
+
+test(function() {
+    assert_equals(getComputedStyle(div8, null).offsetRotation, 'auto 210deg');
+}, 'offset-rotation is unaffected by child elements');
+
+test(function() {
+    assert_equals(getComputedStyle(div9, null).offsetRotation, 'auto 210deg');
+}, 'offset-rotation can be explicitly inherited');
+
+test(function() {
+    assert_equals(getComputedStyle(div10, null).offsetRotation, 'auto 0deg');
+}, 'offset-rotation is not inherited by default');
+
+test(function() {
+    assert_equals(span1.style.offsetRotation, 'auto -45deg');
+}, 'offset-rotation style can be set inline');
+
+</script>
+</body>
+</html>

@@ -203,11 +203,11 @@ max-width: none
 min-height: 0px
 min-width: 0px
 mix-blend-mode: normal
-motion-offset: 0px
-motion-path: none
-motion-rotation: auto 0deg
 object-fit: fill
 object-position: 50% 50%
+offset-distance: 0px
+offset-path: none
+offset-rotation: auto 0deg
 opacity: 1
 order: 0
 orphans: 2

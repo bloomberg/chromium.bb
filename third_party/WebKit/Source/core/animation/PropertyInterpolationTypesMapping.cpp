@@ -18,8 +18,8 @@
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/CSSLengthListInterpolationType.h"
 #include "core/animation/CSSLengthPairInterpolationType.h"
-#include "core/animation/CSSMotionRotationInterpolationType.h"
 #include "core/animation/CSSNumberInterpolationType.h"
+#include "core/animation/CSSOffsetRotationInterpolationType.h"
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
@@ -87,7 +87,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyMaxWidth:
         case CSSPropertyMinHeight:
         case CSSPropertyMinWidth:
-        case CSSPropertyMotionOffset:
+        case CSSPropertyOffsetDistance:
         case CSSPropertyOutlineOffset:
         case CSSPropertyOutlineWidth:
         case CSSPropertyPaddingBottom:
@@ -187,8 +187,8 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyClip:
             applicableTypes->append(wrapUnique(new CSSClipInterpolationType(cssProperty)));
             break;
-        case CSSPropertyMotionRotation:
-            applicableTypes->append(wrapUnique(new CSSMotionRotationInterpolationType(cssProperty)));
+        case CSSPropertyOffsetRotation:
+            applicableTypes->append(wrapUnique(new CSSOffsetRotationInterpolationType(cssProperty)));
             break;
         case CSSPropertyBackgroundPositionX:
         case CSSPropertyBackgroundPositionY:
@@ -196,8 +196,8 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWebkitMaskPositionY:
             applicableTypes->append(wrapUnique(new CSSPositionAxisListInterpolationType(cssProperty)));
             break;
-        case CSSPropertyPerspectiveOrigin:
         case CSSPropertyObjectPosition:
+        case CSSPropertyPerspectiveOrigin:
             applicableTypes->append(wrapUnique(new CSSPositionInterpolationType(cssProperty)));
             break;
         case CSSPropertyBorderBottomLeftRadius:

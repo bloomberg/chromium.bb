@@ -44,8 +44,8 @@
 #include "core/style/StyleGridData.h"
 #include "core/style/StyleGridItemData.h"
 #include "core/style/StyleInheritedData.h"
-#include "core/style/StyleMotionRotation.h"
 #include "core/style/StyleMultiColData.h"
+#include "core/style/StyleOffsetRotation.h"
 #include "core/style/StyleRareInheritedData.h"
 #include "core/style/StyleRareNonInheritedData.h"
 #include "core/style/StyleReflection.h"
@@ -970,21 +970,6 @@ public:
     WebBlendMode blendMode() const { return static_cast<WebBlendMode>(m_rareNonInheritedData->m_effectiveBlendMode); }
     void setBlendMode(WebBlendMode v) { m_rareNonInheritedData.access()->m_effectiveBlendMode = v; }
 
-    // motion-path
-    static StylePath* initialMotionPath() { return nullptr; }
-    StylePath* motionPath() const { return m_rareNonInheritedData->m_transform->m_motion.m_path.get(); }
-    void setMotionPath(PassRefPtr<StylePath>);
-
-    // motion-offset
-    static Length initialMotionOffset() { return Length(0, Fixed); }
-    const Length& motionOffset() const { return m_rareNonInheritedData->m_transform->m_motion.m_offset; }
-    void setMotionOffset(const Length& motionOffset) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_offset, motionOffset); }
-
-    // motion-rotation
-    static StyleMotionRotation initialMotionRotation() { return StyleMotionRotation(0, MotionRotationAuto); }
-    const StyleMotionRotation& motionRotation() const { return m_rareNonInheritedData->m_transform->m_motion.m_rotation; }
-    void setMotionRotation(const StyleMotionRotation& motionRotation) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_rotation, motionRotation); }
-
     // object-fit
     static ObjectFit initialObjectFit() { return ObjectFitFill; }
     ObjectFit getObjectFit() const { return static_cast<ObjectFit>(m_rareNonInheritedData->m_objectFit); }
@@ -994,6 +979,21 @@ public:
     static LengthPoint initialObjectPosition() { return LengthPoint(Length(50.0, Percent), Length(50.0, Percent)); }
     LengthPoint objectPosition() const { return m_rareNonInheritedData->m_objectPosition; }
     void setObjectPosition(LengthPoint position) { SET_VAR(m_rareNonInheritedData, m_objectPosition, position); }
+
+    // offset-distance
+    static Length initialOffsetDistance() { return Length(0, Fixed); }
+    const Length& offsetDistance() const { return m_rareNonInheritedData->m_transform->m_motion.m_distance; }
+    void setOffsetDistance(const Length& offsetDistance) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_distance, offsetDistance); }
+
+    // offset-path
+    static StylePath* initialOffsetPath() { return nullptr; }
+    StylePath* offsetPath() const { return m_rareNonInheritedData->m_transform->m_motion.m_path.get(); }
+    void setOffsetPath(PassRefPtr<StylePath>);
+
+    // offset-rotation
+    static StyleOffsetRotation initialOffsetRotation() { return StyleOffsetRotation(0, OffsetRotationAuto); }
+    const StyleOffsetRotation& offsetRotation() const { return m_rareNonInheritedData->m_transform->m_motion.m_rotation; }
+    void setOffsetRotation(const StyleOffsetRotation& offsetRotation) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_rotation, offsetRotation); }
 
     // opacity (aka -webkit-opacity)
     static float initialOpacity() { return 1.0f; }
@@ -2134,7 +2134,7 @@ public:
     bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }
 
     // Motion utility functions.
-    bool hasMotionPath() const { return motionPath(); }
+    bool hasOffsetPath() const { return offsetPath(); }
 
     // Direction utility functions.
     bool isLeftToRightDirection() const { return direction() == LTR; }
@@ -2242,7 +2242,7 @@ public:
 
     // Filter/transform utility functions.
     bool has3DTransform() const { return m_rareNonInheritedData->m_transform->has3DTransform(); }
-    bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
+    bool hasTransform() const { return hasTransformOperations() || hasOffsetPath() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
     bool hasTransformOperations() const { return !m_rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     ETransformStyle3D usedTransformStyle3D() const { return hasGroupingProperty() ? TransformStyle3DFlat : transformStyle3D(); }
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return m_rareNonInheritedData->m_transform == otherStyle.m_rareNonInheritedData->m_transform; }

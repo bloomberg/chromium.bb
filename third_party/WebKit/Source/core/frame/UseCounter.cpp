@@ -43,7 +43,7 @@ namespace {
 int totalPagesMeasuredCSSSampleId() { return 1; }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-int maximumCSSSampleId() { return 539; }
+int maximumCSSSampleId() { return 543; }
 
 } // namespace
 
@@ -488,9 +488,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPrope
     case CSSPropertyGrid: return 453;
     case CSSPropertyAll: return 454;
     case CSSPropertyJustifyItems: return 455;
-    case CSSPropertyMotionPath: return 457;
-    case CSSPropertyMotionOffset: return 458;
-    case CSSPropertyMotionRotation: return 459;
+    case CSSPropertyAliasMotionPath: return 457;
+    case CSSPropertyAliasMotionOffset: return 458;
+    case CSSPropertyAliasMotionRotation: return 459;
     case CSSPropertyMotion: return 460;
     case CSSPropertyX: return 461;
     case CSSPropertyY: return 462;
@@ -571,6 +571,10 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPrope
     case CSSPropertyAliasWebkitTextSizeAdjust: return 537;
     case CSSPropertyOverflowAnchor: return 538;
     case CSSPropertyUserSelect: return 539;
+    case CSSPropertyOffsetDistance: return 540;
+    case CSSPropertyOffsetPath: return 541;
+    case CSSPropertyOffsetRotation: return 542;
+    case CSSPropertyOffset: return 543;
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
     // 2. Update maximumCSSSampleId() with the new maximum value.

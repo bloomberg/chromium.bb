@@ -255,11 +255,14 @@ max-width interpolable, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height interpolable, initial=initialMinSize, converter=convertLengthSizing
 min-width interpolable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode type_name=blink::WebBlendMode, name_for_methods=BlendMode
-motion-offset interpolable, converter=convertLength
-motion-path converter=convertPathOrNone
-motion-rotation interpolable, converter=convertMotionRotation
+motion-offset alias_for=offset-distance
+motion-path alias_for=offset-path
+motion-rotation alias_for=offset-rotation
 object-fit type_name=ObjectFit
 object-position interpolable, converter=convertPosition
+offset-distance interpolable, converter=convertLength
+offset-path converter=convertPathOrNone
+offset-rotation interpolable, converter=convertOffsetRotation
 opacity interpolable, type_name=float
 order type_name=int
 orphans interpolable, inherited, type_name=short
@@ -498,7 +501,8 @@ grid-template runtime_flag=CSSGridLayout, longhands=grid-template-rows;grid-temp
 list-style longhands=list-style-type;list-style-position;list-style-image
 margin longhands=margin-top;margin-right;margin-bottom;margin-left
 marker longhands=marker-start;marker-mid;marker-end
-motion longhands=motion-path;motion-offset;motion-rotation
+motion longhands=offset-path;offset-distance;offset-rotation
+offset longhands=offset-path;offset-distance;offset-rotation
 outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left

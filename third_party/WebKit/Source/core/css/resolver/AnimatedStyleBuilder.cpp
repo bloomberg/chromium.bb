@@ -641,13 +641,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyTransformOrigin:
         style->setTransformOrigin(animatableValueToTransformOrigin(value, state));
         return;
-    case CSSPropertyMotionOffset:
-        style->setMotionOffset(animatableValueToLength(value, state));
+    case CSSPropertyOffsetDistance:
+        style->setOffsetDistance(animatableValueToLength(value, state));
         return;
-    case CSSPropertyMotionRotation:
-        style->setMotionRotation(StyleMotionRotation(
+    case CSSPropertyOffsetRotation:
+        style->setOffsetRotation(StyleOffsetRotation(
             toAnimatableDoubleAndBool(value)->toDouble(),
-            toAnimatableDoubleAndBool(value)->flag() ? MotionRotationAuto : MotionRotationFixed));
+            toAnimatableDoubleAndBool(value)->flag() ? OffsetRotationAuto : OffsetRotationFixed));
         return;
     case CSSPropertyWebkitPerspectiveOriginX:
         style->setPerspectiveOriginX(animatableValueToLength(value, state));

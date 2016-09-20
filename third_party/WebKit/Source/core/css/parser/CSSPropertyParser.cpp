@@ -1529,7 +1529,7 @@ static CSSValue* consumePathOrNone(CSSParserTokenRange& range)
     return consumePath(range);
 }
 
-static CSSValue* consumeMotionRotation(CSSParserTokenRange& range)
+static CSSValue* consumeOffsetRotation(CSSParserTokenRange& range)
 {
     CSSValue* angle = consumeAngle(range);
     CSSValue* keyword = consumeIdent<CSSValueAuto, CSSValueReverse>(range);
@@ -3331,12 +3331,12 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
     case CSSPropertyD:
-    case CSSPropertyMotionPath:
+    case CSSPropertyOffsetPath:
         return consumePathOrNone(m_range);
-    case CSSPropertyMotionOffset:
+    case CSSPropertyOffsetDistance:
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
-    case CSSPropertyMotionRotation:
-        return consumeMotionRotation(m_range);
+    case CSSPropertyOffsetRotation:
+        return consumeOffsetRotation(m_range);
     case CSSPropertyWebkitTextEmphasisStyle:
         return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:
@@ -4607,6 +4607,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consume4Values(paddingShorthand(), important);
     case CSSPropertyMotion:
         return consumeShorthandGreedily(motionShorthand(), important);
+    case CSSPropertyOffset:
+        return consumeShorthandGreedily(offsetShorthand(), important);
     case CSSPropertyWebkitTextEmphasis:
         return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     case CSSPropertyOutline:

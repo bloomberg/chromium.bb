@@ -87392,7 +87392,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="70" label="caption-side"/>
   <int value="71" label="clear"/>
   <int value="72" label="clip"/>
-  <int value="73" label="webkit-clip-path"/>
+  <int value="73" label="alias-webkit-clip-path"/>
   <int value="74" label="content"/>
   <int value="75" label="counter-increment"/>
   <int value="76" label="counter-reset"/>
@@ -87776,9 +87776,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="454" label="all"/>
   <int value="455" label="justify-items"/>
   <int value="456" label="scroll-blocks-on"/>
-  <int value="457" label="motion-path"/>
-  <int value="458" label="motion-offset"/>
-  <int value="459" label="motion-rotation"/>
+  <int value="457" label="alias-motion-path"/>
+  <int value="458" label="alias-motion-offset"/>
+  <int value="459" label="alias-motion-rotation"/>
   <int value="460" label="motion"/>
   <int value="461" label="x"/>
   <int value="462" label="y"/>
@@ -87859,6 +87859,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="537" label="alias-webkit-text-size-adjust"/>
   <int value="538" label="overflow-anchor"/>
   <int value="539" label="user-select"/>
+  <int value="540" label="offset-distance"/>
+  <int value="541" label="offset-path"/>
+  <int value="542" label="offset-rotation"/>
+  <int value="543" label="offset"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

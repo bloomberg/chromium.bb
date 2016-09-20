@@ -749,23 +749,23 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
     return primitiveValue.getFloatValue() / 100.0f;
 }
 
-StyleMotionRotation StyleBuilderConverter::convertMotionRotation(StyleResolverState&, const CSSValue& value)
+StyleOffsetRotation StyleBuilderConverter::convertOffsetRotation(StyleResolverState&, const CSSValue& value)
 {
-    return convertMotionRotation(value);
+    return convertOffsetRotation(value);
 }
 
-StyleMotionRotation StyleBuilderConverter::convertMotionRotation(const CSSValue& value)
+StyleOffsetRotation StyleBuilderConverter::convertOffsetRotation(const CSSValue& value)
 {
-    StyleMotionRotation result(0, MotionRotationFixed);
+    StyleOffsetRotation result(0, OffsetRotationFixed);
 
     const CSSValueList& list = toCSSValueList(value);
     ASSERT(list.length() == 1 || list.length() == 2);
     for (const auto& item : list) {
         const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
         if (primitiveValue.getValueID() == CSSValueAuto) {
-            result.type = MotionRotationAuto;
+            result.type = OffsetRotationAuto;
         } else if (primitiveValue.getValueID() == CSSValueReverse) {
-            result.type = MotionRotationAuto;
+            result.type = OffsetRotationAuto;
             result.angle += 180;
         } else {
             result.angle += primitiveValue.computeDegrees();
