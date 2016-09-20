@@ -107,7 +107,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
       response->head.ssl_connection_status =
           request->ssl_info().connection_status;
       response->head.ssl_key_exchange_group =
-          request->ssl_info().GetKeyExchangeGroup();
+          request->ssl_info().key_exchange_group;
       response->head.signed_certificate_timestamps =
           request->ssl_info().signed_certificate_timestamps;
       std::string encoded;
@@ -126,7 +126,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);
     DCHECK_EQ(request->ssl_info().security_bits, -1);
-    DCHECK_EQ(request->ssl_info().key_exchange_info, 0);
+    DCHECK_EQ(request->ssl_info().key_exchange_group, 0);
     DCHECK(!request->ssl_info().connection_status);
   }
 }

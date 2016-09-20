@@ -4,6 +4,8 @@
 
 #include "net/socket/ssl_client_socket_pool.h"
 
+#include <openssl/ssl.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -25,7 +27,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
@@ -372,23 +373,12 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite", cipher_suite);
 
-    const char *str, *cipher_str, *mac_str;
-    bool is_aead;
-    bool is_cecpq1 = false;
-    SSLCipherSuiteToStrings(&str, &cipher_str, &mac_str, &is_aead,
-                            cipher_suite);
-    // UMA_HISTOGRAM_... macros cache the Histogram instance and thus only work
-    // if the histogram name is constant, so don't generate it dynamically.
-    if (strncmp(str, "DHE_", 4) == 0) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.DHE",
-                                  ssl_info.key_exchange_info);
-    } else if (strncmp(str, "ECDHE_", 6) == 0) {
+    const SSL_CIPHER* cipher = SSL_get_cipher_by_value(cipher_suite);
+    bool is_cecpq1 = cipher && SSL_CIPHER_is_CECPQ1(cipher);
+
+    if (ssl_info.key_exchange_group != 0) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_KeyExchange.ECDHE",
-                                  ssl_info.key_exchange_info);
-    } else if (strncmp(str, "CECPQ1_", 7) == 0) {
-      is_cecpq1 = true;
-    } else {
-      DCHECK_EQ(0, strcmp(str, "RSA"));
+                                  ssl_info.key_exchange_group);
     }
 
     if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {

@@ -25,7 +25,7 @@ SSLStatus::SSLStatus(SecurityStyle security_style,
       certificate(certificate),
       cert_status(ssl_info.cert_status),
       security_bits(ssl_info.security_bits),
-      key_exchange_group(ssl_info.GetKeyExchangeGroup()),
+      key_exchange_group(ssl_info.key_exchange_group),
       connection_status(ssl_info.connection_status),
       content_status(NORMAL_CONTENT),
       pkp_bypassed(ssl_info.pkp_bypassed) {

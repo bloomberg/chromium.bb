@@ -783,11 +783,8 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
-  if (SSL_CIPHER_is_ECDHE(cipher)) {
-    ssl_info->key_exchange_info = SSL_get_curve_id(ssl_);
-  } else if (SSL_CIPHER_is_DHE(cipher)) {
-    ssl_info->key_exchange_info = SSL_get_dhe_group_size(ssl_);
-  }
+  // Historically, the "group" was known as "curve".
+  ssl_info->key_exchange_group = SSL_get_curve_id(ssl_);
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),

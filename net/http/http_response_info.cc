@@ -4,6 +4,8 @@
 
 #include "net/http/http_response_info.h"
 
+#include <openssl/ssl.h>
+
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
@@ -15,6 +17,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 
 using base::Time;
 
@@ -32,6 +35,19 @@ X509Certificate::PickleType GetPickleTypeForVersion(int version) {
     default:
       return X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3;
   }
+}
+
+bool KeyExchangeGroupIsValid(int ssl_connection_status) {
+  // TLS 1.3 and later always treat the field correctly.
+  if (SSLConnectionStatusToVersion(ssl_connection_status) >=
+      SSL_CONNECTION_VERSION_TLS1_3) {
+    return true;
+  }
+
+  // Prior to TLS 1.3, only ECDHE ciphers have groups.
+  const SSL_CIPHER* cipher = SSL_get_cipher_by_value(
+      SSLConnectionStatusToCipherSuite(ssl_connection_status));
+  return cipher && SSL_CIPHER_is_ECDHE(cipher);
 }
 
 }  // namespace
@@ -94,8 +110,8 @@ enum {
 
   RESPONSE_INFO_UNUSED_SINCE_PREFETCH = 1 << 21,
 
-  // This bit is set if the response has a key-exchange-info field at the end.
-  RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO = 1 << 22,
+  // This bit is set if the response has a key exchange group.
+  RESPONSE_INFO_HAS_KEY_EXCHANGE_GROUP = 1 << 22,
 
   // This bit is set if ssl_info recorded that PKP was bypassed due to a local
   // trust anchor.
@@ -286,12 +302,17 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     }
   }
 
-  // Read key_exchange_info
-  if (flags & RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO) {
-    int key_exchange_info;
-    if (!iter.ReadInt(&key_exchange_info))
+  // Read key_exchange_group
+  if (flags & RESPONSE_INFO_HAS_KEY_EXCHANGE_GROUP) {
+    int key_exchange_group;
+    if (!iter.ReadInt(&key_exchange_group))
       return false;
-    ssl_info.key_exchange_info = key_exchange_info;
+
+    // Historically, the key_exchange_group field was key_exchange_info which
+    // conflated a number of different values based on the cipher suite, so some
+    // values must be discarded. See https://crbug.com/639421.
+    if (KeyExchangeGroupIsValid(ssl_info.connection_status))
+      ssl_info.key_exchange_group = key_exchange_group;
   }
 
   was_fetched_via_spdy = (flags & RESPONSE_INFO_WAS_SPDY) != 0;
@@ -320,8 +341,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_HAS_CERT_STATUS;
     if (ssl_info.security_bits != -1)
       flags |= RESPONSE_INFO_HAS_SECURITY_BITS;
-    if (ssl_info.key_exchange_info != 0)
-      flags |= RESPONSE_INFO_HAS_KEY_EXCHANGE_INFO;
+    if (ssl_info.key_exchange_group != 0)
+      flags |= RESPONSE_INFO_HAS_KEY_EXCHANGE_GROUP;
     if (ssl_info.connection_status != 0)
       flags |= RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS;
   }
@@ -396,8 +417,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
   if (connection_info != CONNECTION_INFO_UNKNOWN)
     pickle->WriteInt(static_cast<int>(connection_info));
 
-  if (ssl_info.is_valid() && ssl_info.key_exchange_info != 0)
-    pickle->WriteInt(ssl_info.key_exchange_info);
+  if (ssl_info.is_valid() && ssl_info.key_exchange_group != 0)
+    pickle->WriteInt(ssl_info.key_exchange_group);
 }
 
 HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(

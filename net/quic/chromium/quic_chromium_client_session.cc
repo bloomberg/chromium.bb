@@ -564,19 +564,17 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
                                 &ssl_connection_status);
 
   // Report the QUIC key exchange as the corresponding TLS curve.
-  uint16_t curve;
   switch (crypto_stream_->crypto_negotiated_params().key_exchange) {
     case kP256:
-      curve = SSL_CURVE_SECP256R1;
+      ssl_info->key_exchange_group = SSL_CURVE_SECP256R1;
       break;
     case kC255:
-      curve = SSL_CURVE_X25519;
+      ssl_info->key_exchange_group = SSL_CURVE_X25519;
       break;
     default:
       NOTREACHED();
       return false;
   }
-  ssl_info->key_exchange_info = curve;
 
   ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
   ssl_info->is_issued_by_known_root =
