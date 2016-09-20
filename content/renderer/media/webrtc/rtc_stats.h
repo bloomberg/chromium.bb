@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebRTCStats.h"
-#include "third_party/webrtc/api/rtcstats.h"
-#include "third_party/webrtc/api/rtcstatsreport.h"
+#include "third_party/webrtc/api/stats/rtcstats.h"
+#include "third_party/webrtc/api/stats/rtcstatsreport.h"
 
 namespace content {
 

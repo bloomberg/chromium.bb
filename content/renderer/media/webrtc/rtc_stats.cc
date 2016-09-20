@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "third_party/webrtc/api/rtcstats.h"
 
 namespace content {
 

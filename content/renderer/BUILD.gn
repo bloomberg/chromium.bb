@@ -684,6 +684,7 @@ target(link_target_type, "renderer") {
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libvpx",
       "//third_party/webrtc/api:libjingle_peerconnection",
+      "//third_party/webrtc/api:rtc_stats_api",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/common_video",
       "//third_party/webrtc/media:rtc_media",
