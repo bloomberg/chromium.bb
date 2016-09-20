@@ -118,7 +118,6 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
   thread_checker_.DetachFromThread();
   memory_policy_.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-  capabilities_.adjust_deadline_for_parent = false;
 }
 
 SynchronousCompositorFrameSink::~SynchronousCompositorFrameSink() = default;

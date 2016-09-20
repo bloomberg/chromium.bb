@@ -51,10 +51,6 @@ class CC_EXPORT CompositorFrameSink
   struct Capabilities {
     Capabilities() = default;
 
-    // TODO(enne): Remove this since everything uses begin frames now, but it
-    // causes some racey unit tests to fail.
-    bool adjust_deadline_for_parent = true;
-
     // Whether ForceReclaimResources can be called to reclaim all resources
     // from the CompositorFrameSink.
     bool can_force_reclaim_resources = false;
