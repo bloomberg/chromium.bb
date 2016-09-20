@@ -28,6 +28,13 @@ fuzzer_test("pdfium_fuzzer") {
   dict = "dicts/pdf.dict"
 }
 
+fuzzer_test("pdf_codec_fax_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_codec_fax_fuzzer",
+  ]
+}
+
 fuzzer_test("pdf_hint_table_fuzzer") {
   sources = []
   deps = [
