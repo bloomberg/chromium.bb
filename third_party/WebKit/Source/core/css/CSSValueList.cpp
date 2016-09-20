@@ -22,9 +22,15 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParser.h"
+#include "wtf/SizeAssertions.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
+
+struct SameSizeAsCSSValueList : CSSValue {
+    Vector<Member<CSSValue>, 4> list_values;
+};
+ASSERT_SIZE(CSSValueList, SameSizeAsCSSValueList);
 
 CSSValueList::CSSValueList(ClassType classType, ValueListSeparator listSeparator)
     : CSSValue(classType)

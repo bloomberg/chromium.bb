@@ -26,6 +26,7 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSValuePool.h"
 #include "platform/LayoutUnit.h"
+#include "wtf/SizeAssertions.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace WTF;
@@ -40,6 +41,11 @@ const int maxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
 const int minValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
 
 } // namespace
+
+struct SameSizeAsCSSPrimitiveValue : CSSValue {
+    double num;
+};
+ASSERT_SIZE(CSSPrimitiveValue, SameSizeAsCSSPrimitiveValue);
 
 float CSSPrimitiveValue::clampToCSSLengthRange(double value)
 {
