@@ -5168,7 +5168,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state |= STATE_SYSTEM_FOCUSABLE;
       break;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
-      if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
+      if (PlatformChildCount()) {
         // Windows screen readers assume that IA2_ROLE_EMBEDDED_OBJECT
         // doesn't have any children, but it may be something like a
         // browser plugin that has a document inside.
