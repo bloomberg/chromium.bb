@@ -295,6 +295,11 @@ gin::Dictionary CreateSharedBuffer(const gin::Arguments& args,
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
   MojoHandle handle = MOJO_HANDLE_INVALID;
   MojoCreateSharedBufferOptions options;
+  // The |flags| is mandatory parameter for CreateSharedBuffer, and it will
+  // be always initialized in MojoCreateSharedBufferOptions struct. For
+  // forward compatibility, set struct_size to be 8 bytes (struct_size + flags),
+  // so that validator will only check the field that is set.
+  options.struct_size = 8;
   options.flags = flags;
   MojoResult result = MojoCreateSharedBuffer(&options, num_bytes, &handle);
   if (result != MOJO_RESULT_OK) {
@@ -316,11 +321,10 @@ gin::Dictionary DuplicateBufferHandle(
   MojoHandle duped = MOJO_HANDLE_INVALID;
   MojoDuplicateBufferHandleOptions options;
   // The |flags| is mandatory parameter for DuplicateBufferHandle, and it will
-  // be always initialized in MojoDuplicateBufferHandleOptions struct. For now,
-  // since the struct has only one options field (flags), set struct_size to be
-  // equal to the size of MojoDuplicateBufferHandleOptions.
-  options.struct_size =
-      static_cast<uint32_t>(sizeof(MojoDuplicateBufferHandleOptions));
+  // be always initialized in MojoDuplicateBufferHandleOptions struct. For
+  // forward compatibility, set struct_size to be 8 bytes (struct_size + flags),
+  // so that validator will only check the field that is set.
+  options.struct_size = 8;
   options.flags = flags;
   MojoResult result =
       MojoDuplicateBufferHandle(handle.value(), &options, &duped);
