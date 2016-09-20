@@ -23,7 +23,6 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
@@ -659,20 +658,26 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    //@SmallTest
-    //@Feature({"TextInput"})
-    //@RetryOnFailure
-    // Disabled, see crbug.com/646231.
-    @DisabledTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeStaysOnLongPressingDifferentNonEmptyInputs() throws Exception {
         DOMUtils.focusNode(mWebContents, "input_text");
         assertWaitForKeyboardStatus(true);
+
         commitText("Sample Text", 1);
+        // We should wait to avoid race condition.
+        waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
+
         DOMUtils.focusNode(mWebContents, "textarea");
+        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+
         commitText("Sample Text", 1);
+        waitAndVerifyUpdateSelection(2, 11, 11, -1, -1);
+
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
         assertWaitForSelectActionBarStatus(true);
+
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(true);
     }
