@@ -39,6 +39,7 @@ const char kCapabilityClass_ClientProcess[] = "shell:client_process";
 const char kCapabilityClass_InstanceName[] = "shell:instance_name";
 const char kCapabilityClass_AllUsers[] = "shell:all_users";
 const char kCapabilityClass_ExplicitClass[] = "shell:explicit_class";
+const char kCapabilityClass_Unsandboxed[] = "shell:unsandboxed";
 
 }  // namespace
 
@@ -216,10 +217,10 @@ class ServiceManager::Instance
     StartWithService(std::move(service));
   }
 
-  void StartWithFilePath(const base::FilePath& path) {
+  void StartWithFilePath(const base::FilePath& path, bool unsandboxed) {
     CHECK(!service_);
     runner_ = service_manager_->native_runner_factory_->Create(path);
-    bool start_sandboxed = false;
+    bool start_sandboxed = !unsandboxed;
     mojom::ServicePtr service = runner_->Start(
         path, identity_, start_sandboxed,
         base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
@@ -821,7 +822,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                        instance_name);
       CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
-      instance->StartWithFilePath(result->package_path);
+      bool unsandboxed = HasClass(capabilities, kCapabilityClass_Unsandboxed);
+      instance->StartWithFilePath(result->package_path, unsandboxed);
     }
   }
 

@@ -215,6 +215,14 @@ class MojoTestConnector::NativeRunnerDelegateImpl
       if (target.name() == "exe:mash_browser_tests")
         RemoveMashFromBrowserTests(command_line);
       command_line->AppendSwitch(MojoTestConnector::kMashApp);
+      if (target.instance() == "font_service" || target.instance() == "ui") {
+        base::CommandLine::StringVector argv(command_line->argv());
+        auto iter = std::find(argv.begin(), argv.end(),
+                              FILE_PATH_LITERAL("--enable-sandbox"));
+        if (iter != argv.end())
+          argv.erase(iter);
+        *command_line = base::CommandLine(argv);
+      }
       return;
     }
 
