@@ -200,3 +200,20 @@ TEST_F(AnalyzerTest, WrongInputFields) {
       "\"invalid_targets\":[]"
       "}");
 }
+
+TEST_F(AnalyzerTest, BuildFilesWereModified) {
+  // This tests that if a build file is modified, we bail out early with
+  // "Found dependency (all)" error since we can't handle changes to
+  // build files yet (crbug.com/555273).
+  RunBasicTest(
+      "{"
+      "  \"files\": [ \"//a.cc\", \"//BUILD.gn\" ],"
+      "  \"additional_compile_targets\": [],"
+      "  \"test_targets\": [ \"//:a\" ]"
+      "}",
+      "{"
+      "\"compile_targets\":[],"
+      "\"status\":\"Found dependency (all)\","
+      "\"test_targets\":[\"//:a\"]"
+      "}");
+}

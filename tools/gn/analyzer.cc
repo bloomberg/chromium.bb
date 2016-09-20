@@ -252,21 +252,21 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
-  TargetSet affected_targets = AllAffectedTargets(inputs.source_files);
-  if (affected_targets.empty()) {
-    outputs.status = "No dependency";
-    return OutputsToJSON(outputs, default_toolchain_, err);
-  }
-
-  // TODO: We can do smarter things when we detect changes to build files.
-  // For example, if all of the ninja files are unchanged, we know that we
-  // can ignore changes to these files. Also, for most .gn files, we can
-  // treat a change as simply affecting every target, config, or toolchain
-  // defined in that file.
+  // TODO(crbug.com/555273): We can do smarter things when we detect changes
+  // to build files. For example, if all of the ninja files are unchanged,
+  // we know that we can ignore changes to these files. Also, for most .gn
+  // files, we can treat a change as simply affecting every target, config,
+  // or toolchain defined in that file.
   if (AnyBuildFilesWereModified(inputs.source_files)) {
     outputs.status = "Found dependency (all)";
     outputs.compile_labels = inputs.compile_labels;
     outputs.test_labels = inputs.test_labels;
+    return OutputsToJSON(outputs, default_toolchain_, err);
+  }
+
+  TargetSet affected_targets = AllAffectedTargets(inputs.source_files);
+  if (affected_targets.empty()) {
+    outputs.status = "No dependency";
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
