@@ -299,16 +299,16 @@ def CreateChromeToolsShim():
 
 
 def DownloadHostGcc(args):
-  """Downloads gcc 4.8.2 and makes sure args.gcc_toolchain is set."""
+  """Downloads gcc 4.8.5 and makes sure args.gcc_toolchain is set."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
     return
   # Unconditionally download a prebuilt gcc to guarantee the included libstdc++
   # works on Ubuntu Precise.
-  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482precise')
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc485precise')
   if not os.path.exists(gcc_dir):
-    print 'Downloading pre-built GCC 4.8.2...'
+    print 'Downloading pre-built GCC 4.8.5...'
     DownloadAndUnpack(
-        CDS_URL + '/tools/gcc482precise.tgz', LLVM_BUILD_TOOLS_DIR)
+        CDS_URL + '/tools/gcc485precise.tgz', LLVM_BUILD_TOOLS_DIR)
   args.gcc_toolchain = gcc_dir
 
 
