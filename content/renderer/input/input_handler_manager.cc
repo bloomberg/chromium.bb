@@ -276,4 +276,13 @@ void InputHandlerManager::NeedsMainFrame(int routing_id) {
   it->second->NeedsMainFrame();
 }
 
+void InputHandlerManager::DispatchNonBlockingEventToMainThread(
+    int routing_id,
+    ui::ScopedWebInputEvent event,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->DispatchNonBlockingEventToMainThread(routing_id, std::move(event),
+                                                latency_info);
+}
+
 }  // namespace content

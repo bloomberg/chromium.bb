@@ -108,6 +108,19 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
   SendMessage(base::MakeUnique<InputHostMsg_DidStopFlinging>(routing_id));
 }
 
+void InputEventFilter::DispatchNonBlockingEventToMainThread(
+    int routing_id,
+    ui::ScopedWebInputEvent event,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK(target_task_runner_->BelongsToCurrentThread());
+  RouteQueueMap::iterator iter = route_queues_.find(routing_id);
+  if (iter != route_queues_.end()) {
+    iter->second->HandleEvent(std::move(event), latency_info,
+                              DISPATCH_TYPE_NON_BLOCKING,
+                              INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  }
+}
+
 void InputEventFilter::NotifyInputEventHandled(int routing_id,
                                                blink::WebInputEvent::Type type,
                                                InputEventAckState ack_result) {

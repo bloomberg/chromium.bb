@@ -93,6 +93,16 @@ void BlimpInputHandlerWrapper::TransferActiveWheelFlingAnimation(
       << "Transferring Fling Animations to the engine is not supported";
 }
 
+void BlimpInputHandlerWrapper::DispatchNonBlockingEventToMainThread(
+    ui::ScopedWebInputEvent event,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK(compositor_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(event->type, blink::WebInputEvent::MouseWheel);
+
+  NOTIMPLEMENTED()
+      << "Dispatching Non Blocking Events to the engine is not supported";
+}
+
 blink::WebGestureCurve* BlimpInputHandlerWrapper::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,

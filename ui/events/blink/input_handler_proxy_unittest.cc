@@ -55,6 +55,21 @@ double InSecondsF(const base::TimeTicks& time) {
   return (time - base::TimeTicks()).InSecondsF();
 }
 
+bool WheelEventsMatch(const WebInputEvent& lhs, const WebInputEvent& rhs) {
+  if (lhs.size == rhs.size && lhs.type == rhs.type &&
+      lhs.type == WebInputEvent::MouseWheel) {
+    WebMouseWheelEvent rhs_timestamped =
+        static_cast<const WebMouseWheelEvent&>(rhs);
+    rhs_timestamped.timeStampSeconds = lhs.timeStampSeconds;
+    return memcmp(&rhs_timestamped, &lhs, rhs.size) == 0;
+  }
+  return false;
+}
+
+MATCHER_P(WheelEventsMatch, expected, "") {
+  return WheelEventsMatch(arg, expected);
+}
+
 WebGestureEvent CreateFling(base::TimeTicks timestamp,
                             WebGestureDevice source_device,
                             WebFloatPoint velocity,
@@ -214,6 +229,16 @@ class MockInputHandlerProxyClient
 
   MOCK_METHOD1(TransferActiveWheelFlingAnimation,
                void(const WebActiveWheelFlingParameters&));
+
+  MOCK_METHOD1(DispatchNonBlockingEventToMainThread_,
+               void(const WebInputEvent&));
+
+  void DispatchNonBlockingEventToMainThread(
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info) override {
+    CHECK(event.get());
+    DispatchNonBlockingEventToMainThread_(*event.get());
+  }
 
   blink::WebGestureCurve* CreateFlingAnimationCurve(
       WebGestureDevice deviceSource,
@@ -1001,54 +1026,40 @@ TEST_P(InputHandlerProxyTest, GestureFlingPassiveListener) {
 
   VERIFY_AND_RESET_MOCKS();
 
-  // The second call should punt the fling to the main thread
-  // because of a passive event listener.
-  EXPECT_SET_NEEDS_ANIMATE_INPUT(0);
+  // The second call should punt activate the fling and call the method
+  // dispatching the events for the passive event listeners.
+  EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_,
               GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kPassive));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
-  // Expected wheel fling animation parameters:
-  // *) fling_delta and fling_point should match the original GestureFlingStart
-  // event
-  // *) startTime should be 10 to match the time parameter of the first
-  // Animate() call after the GestureFlingStart
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
-      mock_client_,
-      TransferActiveWheelFlingAnimation(testing::AllOf(
-          testing::Field(&WebActiveWheelFlingParameters::delta,
-                         testing::Eq(fling_delta)),
-          testing::Field(&WebActiveWheelFlingParameters::point,
-                         testing::Eq(fling_point)),
-          testing::Field(&WebActiveWheelFlingParameters::globalPoint,
-                         testing::Eq(fling_global_point)),
-          testing::Field(&WebActiveWheelFlingParameters::modifiers,
-                         testing::Eq(modifiers)),
-          testing::Field(&WebActiveWheelFlingParameters::startTime,
-                         testing::Eq(10)),
-          testing::Field(&WebActiveWheelFlingParameters::cumulativeScroll,
-                         testing::_))));
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  WebMouseWheelEvent expected_wheel;
+  expected_wheel.type = WebInputEvent::MouseWheel;
+  expected_wheel.modifiers = modifiers;
+  expected_wheel.x = fling_point.x;
+  expected_wheel.y = fling_point.y;
+  expected_wheel.globalX = fling_global_point.x;
+  expected_wheel.globalY = fling_global_point.y;
+  expected_wheel.deltaX = fling_delta.x / 10;
+  expected_wheel.hasPreciseScrollingDeltas = true;
+
+  EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(
+                                WheelEventsMatch(expected_wheel)))
+      .Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(1);
+
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
 
-  // Since we've aborted the fling, the next animation should be a no-op and
-  // should not result in another
-  // frame being requested.
-  EXPECT_SET_NEEDS_ANIMATE_INPUT(0);
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .Times(0);
-  time += base::TimeDelta::FromMilliseconds(100);
-  Animate(time);
-
-  // Since we've transferred the fling to the main thread, we need to pass the
-  // next GestureFlingCancel to the main
-  // thread as well.
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  // Ensure we can cancel the gesture.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   gesture_.type = WebInputEvent::GestureFlingCancel;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 

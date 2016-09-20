@@ -107,7 +107,9 @@ class InputHandlerProxy
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
       const blink::WebMouseWheelEvent& event);
-  EventDisposition ScrollByMouseWheel(const blink::WebMouseWheelEvent& event);
+  EventDisposition ScrollByMouseWheel(
+      const blink::WebMouseWheelEvent& event,
+      cc::EventListenerProperties listener_properties);
   EventDisposition HandleGestureScrollBegin(
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollUpdate(

@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_CLIENT_H_
 #define UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_CLIENT_H_
 
+#include "ui/events/blink/scoped_web_input_event.h"
+
 namespace blink {
 class WebGestureCurve;
 struct WebActiveWheelFlingParameters;
@@ -24,6 +26,14 @@ class InputHandlerProxyClient {
   // handled input event out to the client.
   virtual void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params) = 0;
+
+  // Dispatch a non blocking event to the main thread. This is used when a
+  // gesture fling from a touchpad is processed and the target only has
+  // passive event listeners. If the target has blocking event listeners
+  // |TransferActiveWheelFlingAnimation| will be used instead.
+  virtual void DispatchNonBlockingEventToMainThread(
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info) = 0;
 
   // Creates a new fling animation curve instance for device |device_source|
   // with |velocity| and already scrolled |cumulative_scroll| pixels.

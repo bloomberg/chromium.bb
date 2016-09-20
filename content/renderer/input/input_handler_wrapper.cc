@@ -46,6 +46,13 @@ void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
                             render_view_impl_, params));
 }
 
+void InputHandlerWrapper::DispatchNonBlockingEventToMainThread(
+    ui::ScopedWebInputEvent event,
+    const ui::LatencyInfo& latency_info) {
+  input_handler_manager_->DispatchNonBlockingEventToMainThread(
+      routing_id_, std::move(event), latency_info);
+}
+
 void InputHandlerWrapper::WillShutdown() {
   input_handler_manager_->RemoveInputHandler(routing_id_);
 }

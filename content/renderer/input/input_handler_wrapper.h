@@ -42,6 +42,9 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
   void WillShutdown() override;
   void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params) override;
+  void DispatchNonBlockingEventToMainThread(
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info) override;
   blink::WebGestureCurve* CreateFlingAnimationCurve(
       blink::WebGestureDevice deviceSource,
       const blink::WebFloatPoint& velocity,

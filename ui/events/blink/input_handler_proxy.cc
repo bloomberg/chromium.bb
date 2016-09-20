@@ -21,6 +21,7 @@
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -487,9 +488,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
-    const WebMouseWheelEvent& wheel_event) {
-  InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
-  cc::InputHandlerScrollResult scroll_result;
+    const WebMouseWheelEvent& wheel_event,
+    cc::EventListenerProperties listener_properties) {
+  DCHECK(listener_properties == cc::EventListenerProperties::kPassive ||
+         listener_properties == cc::EventListenerProperties::kNone);
 
   // TODO(ccameron): The rail information should be pushed down into
   // InputHandler.
@@ -504,10 +506,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
   if (wheel_event.scrollByPage) {
     // TODO(jamesr): We don't properly handle scroll by page in the compositor
     // thread, so punt it to the main thread. http://crbug.com/236639
-    result = DID_NOT_HANDLE;
     RecordMainThreadScrollingReasons(
         blink::WebGestureDeviceTouchpad,
         cc::MainThreadScrollingReason::kPageBasedScrolling);
+    return DID_NOT_HANDLE;
   } else {
     DCHECK(!ShouldAnimate(wheel_event.hasPreciseScrollingDeltas));
     cc::ScrollStateData scroll_state_begin_data;
@@ -536,7 +538,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         scroll_state_update_data.position_y = wheel_event.y;
         cc::ScrollState scroll_state_update(scroll_state_update_data);
 
-        scroll_result = input_handler_->ScrollBy(&scroll_state_update);
+        cc::InputHandlerScrollResult scroll_result =
+            input_handler_->ScrollBy(&scroll_state_update);
         HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y),
                          scroll_result, false);
 
@@ -545,23 +548,27 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         cc::ScrollState scroll_state_end(scroll_state_end_data);
         input_handler_->ScrollEnd(&scroll_state_end);
 
-        result = scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
-        break;
+        if (scroll_result.did_scroll) {
+          return listener_properties == cc::EventListenerProperties::kPassive
+                     ? DID_HANDLE_NON_BLOCKING
+                     : DID_HANDLE;
+        }
+        return DROP_EVENT;
       }
       case cc::InputHandler::SCROLL_IGNORED:
         // TODO(jamesr): This should be DROP_EVENT, but in cases where we fail
         // to properly sync scrollability it's safer to send the event to the
         // main thread. Change back to DROP_EVENT once we have synchronization
         // bugs sorted out.
-        result = DID_NOT_HANDLE;
-        break;
+        return DID_NOT_HANDLE;
       case cc::InputHandler::SCROLL_UNKNOWN:
       case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
-        result = DID_NOT_HANDLE;
-        break;
+        return DID_NOT_HANDLE;
+      default:
+        NOTREACHED();
+        return DID_NOT_HANDLE;
     }
   }
-  return result;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
@@ -1230,12 +1237,10 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       input_handler_->GetEventListenerProperties(
           cc::EventListenerClass::kMouseWheel);
   switch (properties) {
-    case cc::EventListenerProperties::kPassive:
-      disposition = DID_HANDLE_NON_BLOCKING;
-      break;
     case cc::EventListenerProperties::kBlocking:
       disposition = DID_NOT_HANDLE;
       break;
+    case cc::EventListenerProperties::kPassive:
     case cc::EventListenerProperties::kNone: {
       WebMouseWheelEvent synthetic_wheel;
       synthetic_wheel.type = WebInputEvent::MouseWheel;
@@ -1249,7 +1254,13 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       synthetic_wheel.globalY = fling_parameters_.globalPoint.y;
       synthetic_wheel.modifiers = fling_parameters_.modifiers;
 
-      disposition = ScrollByMouseWheel(synthetic_wheel);
+      disposition = ScrollByMouseWheel(synthetic_wheel, properties);
+
+      // Send the event over to the main thread.
+      if (disposition == DID_HANDLE_NON_BLOCKING) {
+        client_->DispatchNonBlockingEventToMainThread(
+            ui::WebInputEventTraits::Clone(synthetic_wheel), ui::LatencyInfo());
+      }
       break;
     }
     default:
@@ -1259,13 +1270,10 @@ bool InputHandlerProxy::TouchpadFlingScroll(
 
   switch (disposition) {
     case DID_HANDLE:
+    case DID_HANDLE_NON_BLOCKING:
       return true;
     case DROP_EVENT:
       break;
-    case DID_HANDLE_NON_BLOCKING:
-    // TODO(dtapuska): Process the fling on the compositor thread
-    // but post the events to the main thread; for now just pass it to the
-    // main thread.
     case DID_NOT_HANDLE:
       TRACE_EVENT_INSTANT0("input",
                            "InputHandlerProxy::scrollBy::AbortFling",

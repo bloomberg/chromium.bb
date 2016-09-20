@@ -54,6 +54,9 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   void WillShutdown() override;
   void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params) override;
+  void DispatchNonBlockingEventToMainThread(
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info) override;
   blink::WebGestureCurve* CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,

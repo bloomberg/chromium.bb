@@ -133,6 +133,11 @@ class TestInputHandlerManagerClient
                      const ui::DidOverscrollParams& params) override {}
   void DidStartFlinging(int routing_id) override {}
   void DidStopFlinging(int routing_id) override {}
+  void DispatchNonBlockingEventToMainThread(
+      int routing_id,
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info) override {}
+
   void NotifyInputEventHandled(
       int routing_id,
       blink::WebInputEvent::Type type,

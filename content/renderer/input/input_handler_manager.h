@@ -104,6 +104,12 @@ class CONTENT_EXPORT InputHandlerManager {
   // Called from the compositor's thread.
   void NeedsMainFrame(int routing_id);
 
+  // Called from the compositor's thread.
+  void DispatchNonBlockingEventToMainThread(
+      int routing_id,
+      ui::ScopedWebInputEvent event,
+      const ui::LatencyInfo& latency_info);
+
  private:
   // Called from the compositor's thread.
   void AddInputHandlerOnCompositorThread(
