@@ -19,6 +19,12 @@ Polymer({
   is: 'settings-reset-page',
 
   properties: {
+<if expr="chromeos">
+    /** @private */
+    showPowerwashDialog_: Boolean,
+</if>
+
+    /** @private */
     allowPowerwash_: {
       type: Boolean,
       value: cr.isChromeOS ? loadTimeData.getBoolean('allowPowerwash') : false
@@ -27,27 +33,18 @@ Polymer({
 
   /** @private */
   onShowResetProfileDialog_: function() {
-    this.showDialog_('settings-reset-profile-dialog');
+    this.$.resetProfileDialog.get().open();
+  },
+
+<if expr="chromeos">
+  /** @private */
+  onShowPowerwashDialog_: function() {
+    this.showPowerwashDialog_ = true;
   },
 
   /** @private */
-  onShowPowerwashDialog_: function() {
-    this.showDialog_('settings-powerwash-dialog');
+  onPowerwashDialogClose_: function() {
+    this.showPowerwashDialog_ = false;
   },
-
-
-  /**
-   * Creates and shows the specified dialog.
-   * @param {string} dialogName
-   * @private
-   */
-  showDialog_: function(dialogName) {
-    var dialog = document.createElement(dialogName);
-    this.shadowRoot.appendChild(dialog);
-    dialog.open();
-
-    dialog.addEventListener('close', function() {
-      dialog.remove();
-    });
-  },
+</if>
 });

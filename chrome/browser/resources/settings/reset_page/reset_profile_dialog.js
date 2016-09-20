@@ -50,8 +50,9 @@ Polymer({
     this.browserProxy_.performResetProfileSettings(
         this.$.sendSettings.checked).then(function() {
       this.clearingInProgress_ = false;
-      this.$.dialog.close();
-      this.dispatchEvent(new CustomEvent('reset-done'));
+      if (this.$.dialog.open)
+        this.$.dialog.close();
+      this.fire('reset-done');
     }.bind(this));
   },
 

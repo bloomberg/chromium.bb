@@ -95,7 +95,7 @@ cr.define('settings_reset_page', function() {
         dialog = resetBanner.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
 
-        dialog.dispatchEvent(new CustomEvent('reset-done'));
+        dialog.fire('reset-done');
         Polymer.dom.flush();
         assertEquals('none', dialog.style.display);
         return Promise.resolve();
@@ -149,9 +149,9 @@ cr.define('settings_reset_page', function() {
 
         // Open reset profile dialog.
         MockInteractions.tap(resetPage.$.resetProfile);
+        Polymer.dom.flush();
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
-        assertTrue(dialog.$.dialog.open);
         var onDialogClosed = new Promise(
             function(resolve, reject) {
               dialog.addEventListener('close', function() {
@@ -162,6 +162,7 @@ cr.define('settings_reset_page', function() {
 
         return resetPageBrowserProxy.whenCalled(
               'onShowResetProfileDialog').then(function() {
+          assertTrue(dialog.$.dialog.open);
           closeDialogFn(dialog);
           return Promise.all([
             onDialogClosed,
@@ -189,6 +190,7 @@ cr.define('settings_reset_page', function() {
       test(TestNames.ResetProfileDialogAction, function() {
         // Open reset profile dialog.
         MockInteractions.tap(resetPage.$.resetProfile);
+        Polymer.dom.flush();
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
 
@@ -202,6 +204,7 @@ cr.define('settings_reset_page', function() {
               assertFalse(dialog.$.resetSpinner.active);
               MockInteractions.tap(dialog.$.reset);
               assertTrue(dialog.$.reset.disabled);
+              assertTrue(dialog.$.cancel.disabled);
               assertTrue(dialog.$.resetSpinner.active);
               return resetPageBrowserProxy.whenCalled(
                   'performResetProfileSettings');
@@ -218,6 +221,7 @@ cr.define('settings_reset_page', function() {
         function testOpenClosePowerwashDialog(closeButtonFn) {
           // Open powerwash dialog.
           MockInteractions.tap(resetPage.$.powerwash);
+          Polymer.dom.flush();
           var dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
           assertTrue(dialog.$.dialog.open);
@@ -239,14 +243,15 @@ cr.define('settings_reset_page', function() {
         // Tests that the powerwash dialog opens and closes correctly, and
         // that chrome.send calls are propagated as expected.
         test(TestNames.PowerwashDialogOpenClose, function() {
-          return Promise.all([
-            // Test case where the 'cancel' button is clicked.
-            testOpenClosePowerwashDialog(
-                function(dialog) { return dialog.$.cancel; }),
+          // Test case where the 'cancel' button is clicked.
+          return testOpenClosePowerwashDialog(function(dialog) {
+            return dialog.$.cancel;
+          }).then(function() {
             // Test case where the 'close' button is clicked.
-            testOpenClosePowerwashDialog(
-                function(dialog) { return dialog.$.dialog.getCloseButton(); }),
-          ]);
+            return testOpenClosePowerwashDialog(function(dialog) {
+              return dialog.$.dialog.getCloseButton();
+            });
+          });
         });
 
         // Tests that when powerwash is requested chrome.send calls are
@@ -254,6 +259,7 @@ cr.define('settings_reset_page', function() {
         test(TestNames.PowerwashDialogAction, function() {
           // Open powerwash dialog.
           MockInteractions.tap(resetPage.$.powerwash);
+          Polymer.dom.flush();
           var dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
           MockInteractions.tap(dialog.$.powerwash);

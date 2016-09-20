@@ -484,6 +484,7 @@
                  preprocess="true" />
       <structure name="IDR_SETTINGS_RESET_PAGE_JS"
                  file="reset_page/reset_page.js"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PROFILE_DIALOG_HTML"
                  file="reset_page/reset_profile_dialog.html"
