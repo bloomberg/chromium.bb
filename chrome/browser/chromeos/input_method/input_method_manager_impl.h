@@ -175,6 +175,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::string& engine_id,
       const std::vector<InputMethodManager::MenuItem>& items) override;
   void MaybeNotifyImeMenuActivationChanged() override;
+  void OverrideKeyboardUrlRef(const std::string& keyset) override;
+  bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;

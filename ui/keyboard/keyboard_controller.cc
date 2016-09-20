@@ -488,6 +488,8 @@ void KeyboardController::ShowAnimationFinished() {
 
 void KeyboardController::HideAnimationFinished() {
   ui_->HideKeyboardContainer(container_.get());
+  FOR_EACH_OBSERVER(KeyboardControllerObserver, observer_list_,
+                    OnKeyboardHidden());
 }
 
 }  // namespace keyboard

@@ -24,6 +24,10 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
 
   // Called when the keyboard was closed.
   virtual void OnKeyboardClosed() = 0;
+
+  // Called when the keyboard has been hidden and the hiding animation finished
+  // successfully
+  virtual void OnKeyboardHidden() {}
 };
 
 }  // namespace keyboard

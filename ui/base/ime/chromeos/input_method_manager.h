@@ -303,6 +303,15 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   // Notify the IME menu activation changed if the current profile's activation
   // is different from previous.
   virtual void MaybeNotifyImeMenuActivationChanged() = 0;
+
+  // Overrides the keyboard url ref (stuff following '#' to the end of the
+  // string) with the given keyset (emoji, hwt or voice). If |keyset| is empty,
+  // it indicates that we should override the url back with the keyboard keyset.
+  virtual void OverrideKeyboardUrlRef(const std::string& keyset) = 0;
+
+  // Returns whether the extra inputs: emoji, handwriting and voice inputs on
+  // opt-in IME menu has been enabled.
+  virtual bool IsEmojiHandwritingVoiceOnImeMenuEnabled() = 0;
 };
 
 }  // namespace input_method

@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -23,14 +24,22 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+
+using chromeos::input_method::InputMethodManager;
 
 namespace ash {
 
 namespace {
+
+// The border width between buttons.
+const int kButtonRightBorder = 1;
 
 // Returns the max height of ImeListView.
 int GetImeListViewMaxHeight() {
@@ -83,10 +92,14 @@ class ImeButtonsView : public views::View,
                        public views::ButtonListener,
                        public ViewClickListener {
  public:
-  ImeButtonsView(bool show_emoji_button,
+  ImeButtonsView(ImeMenuTray* ime_menu_tray,
+                 bool show_emoji_button,
                  bool show_voice_button,
                  bool show_handwriting_button,
-                 bool show_settings_button) {
+                 bool show_settings_button)
+      : ime_menu_tray_(ime_menu_tray) {
+    DCHECK(ime_menu_tray_);
+
     SetBorder(
         views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
 
@@ -116,20 +129,32 @@ class ImeButtonsView : public views::View,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (emoji_button_ && sender == emoji_button_) {
-      // TODO(azurewei): Opens emoji palette.
-    } else if (voice_button_ && sender == voice_button_) {
-      // TODO(azurewei): Brings virtual keyboard for emoji input.
-    } else if (handwriting_button_ && sender == handwriting_button_) {
-      // TODO(azurewei): Brings virtual keyboard for handwriting input.
-    } else if (settings_button_ && sender == settings_button_) {
+    if (sender == settings_button_) {
+      ime_menu_tray_->HideImeMenuBubble();
       ShowIMESettings();
+      return;
     }
+
+    // The |keyset| will be used for drawing input view keyset in IME
+    // extensions. InputMethodManager::ShowKeyboardWithKeyset() will deal with
+    // the |keyset| string to generate the right input view url.
+    std::string keyset;
+    if (sender == emoji_button_)
+      keyset = "emoji";
+    else if (sender == voice_button_)
+      keyset = "voice";
+    else if (sender == handwriting_button_)
+      keyset = "hwt";
+    else
+      NOTREACHED();
+
+    ime_menu_tray_->ShowKeyboardWithKeyset(keyset);
   }
 
   // ViewClickListener:
   void OnViewClicked(views::View* sender) override {
     if (one_settings_button_view_ && sender == one_settings_button_view_) {
+      ime_menu_tray_->HideImeMenuBubble();
       ShowIMESettings();
     }
   }
@@ -164,14 +189,32 @@ class ImeButtonsView : public views::View,
 
     if (show_emoji_button) {
       // TODO(azurewei): Creates the proper button with icons.
+      emoji_button_ = CreateImeMenuButton(
+          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
+          kButtonRightBorder);
+      AddChildView(emoji_button_);
     }
 
     if (show_voice_button) {
       // TODO(azurewei): Creates the proper button with icons.
+      voice_button_ = CreateImeMenuButton(
+          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
+          kButtonRightBorder);
+      AddChildView(voice_button_);
     }
 
     if (show_handwriting_button) {
       // TODO(azurewei): Creates the proper button with icons.
+      handwriting_button_ = CreateImeMenuButton(
+          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
+          kButtonRightBorder);
+      AddChildView(handwriting_button_);
     }
 
     if (show_settings_button) {
@@ -183,6 +226,7 @@ class ImeButtonsView : public views::View,
     }
   }
 
+  ImeMenuTray* ime_menu_tray_;
   TrayPopupHeaderButton* emoji_button_;
   TrayPopupHeaderButton* voice_button_;
   TrayPopupHeaderButton* handwriting_button_;
@@ -195,7 +239,10 @@ class ImeButtonsView : public views::View,
 }  // namespace
 
 ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf), label_(new ImeMenuLabel()) {
+    : TrayBackgroundView(wm_shelf),
+      label_(new ImeMenuLabel()),
+      show_keyboard_(false),
+      force_show_keyboard_(false) {
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
   SetContentsBackground();
@@ -234,15 +281,64 @@ void ImeMenuTray::ShowImeMenuBubble() {
   LoginStatus login =
       WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
   if (login != LoginStatus::NOT_LOGGED_IN && login != LoginStatus::LOCKED &&
-      !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
-    bubble_view->AddChildView(new ImeButtonsView(false, false, false, true));
+      !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
+    if (InputMethodManager::Get() &&
+        InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
+        !current_ime_.third_party) {
+      bubble_view->AddChildView(
+          new ImeButtonsView(this, true, true, true, true));
+    } else {
+      bubble_view->AddChildView(
+          new ImeButtonsView(this, false, false, false, true));
+    }
+  }
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
   SetDrawBackgroundAsActive(true);
 }
 
+void ImeMenuTray::HideImeMenuBubble() {
+  bubble_.reset();
+  ime_list_view_ = nullptr;
+  SetDrawBackgroundAsActive(false);
+}
+
 bool ImeMenuTray::IsImeMenuBubbleShown() {
   return !!bubble_;
+}
+
+void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
+  HideImeMenuBubble();
+
+  // Overrides the keyboard url ref to make it shown with the given keyset.
+  if (InputMethodManager::Get())
+    InputMethodManager::Get()->OverrideKeyboardUrlRef(keyset);
+
+  // If onscreen keyboard has been enabled, shows the keyboard directly.
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  show_keyboard_ = true;
+  if (keyboard_controller) {
+    keyboard_controller->AddObserver(this);
+    keyboard_controller->ShowKeyboard(false);
+    return;
+  }
+
+  AccessibilityDelegate* accessibility_delegate =
+      WmShell::Get()->accessibility_delegate();
+  // Fails to show the keyboard.
+  if (accessibility_delegate->IsVirtualKeyboardEnabled())
+    return;
+
+  // Onscreen keyboard has not been enabled yet, forces to bring out the
+  // keyboard for one time.
+  force_show_keyboard_ = true;
+  accessibility_delegate->SetVirtualKeyboardEnabled(true);
+  keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    keyboard_controller->AddObserver(this);
+    keyboard_controller->ShowKeyboard(false);
+  }
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -340,6 +436,39 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
+void ImeMenuTray::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {}
+
+void ImeMenuTray::OnKeyboardClosed() {
+  if (InputMethodManager::Get())
+    InputMethodManager::Get()->OverrideKeyboardUrlRef(std::string());
+  show_keyboard_ = false;
+  force_show_keyboard_ = false;
+}
+
+void ImeMenuTray::OnKeyboardHidden() {
+  if (!show_keyboard_)
+    return;
+
+  // If the the IME menu has overriding the input view url, we should write it
+  // back to normal keyboard when hiding the input view.
+  if (InputMethodManager::Get())
+    InputMethodManager::Get()->OverrideKeyboardUrlRef(std::string());
+  show_keyboard_ = false;
+
+  // If the keyboard is forced to be shown by IME menu for once, we need to
+  // disable the keyboard when it's hidden.
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->RemoveObserver(this);
+
+  if (!force_show_keyboard_)
+    return;
+
+  WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(false);
+  force_show_keyboard_ = false;
+}
+
 void ImeMenuTray::UpdateTrayLabel() {
   WmShell::Get()->system_tray_delegate()->GetCurrentIME(&current_ime_);
 
@@ -348,12 +477,6 @@ void ImeMenuTray::UpdateTrayLabel() {
     label_->SetText(current_ime_.short_name + base::UTF8ToUTF16("*"));
   else
     label_->SetText(current_ime_.short_name);
-}
-
-void ImeMenuTray::HideImeMenuBubble() {
-  bubble_.reset();
-  ime_list_view_ = nullptr;
-  SetDrawBackgroundAsActive(false);
 }
 
 }  // namespace ash

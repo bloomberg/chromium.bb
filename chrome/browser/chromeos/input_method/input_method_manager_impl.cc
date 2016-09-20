@@ -12,7 +12,9 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -1211,6 +1214,47 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
                     ImeMenuActivationChanged(is_ime_menu_activated_));
   UMA_HISTOGRAM_BOOLEAN("InputMethod.ImeMenu.ActivationChanged",
                         is_ime_menu_activated_);
+}
+
+void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
+  GURL url = keyboard::GetOverrideContentUrl();
+
+  // If fails to find ref or tag "id" in the ref, it means the current IME is
+  // not system IME, and we don't support show emoji, handwriting or voice
+  // input for such IME extension.
+  if (!url.has_ref())
+    return;
+  std::string overridden_ref = url.ref();
+  auto i = overridden_ref.find("id");
+  if (i == std::string::npos)
+    return;
+
+  if (keyset.empty()) {
+    keyboard::SetOverrideContentUrl(
+        GetActiveIMEState()->GetCurrentInputMethod().input_view_url());
+    return;
+  }
+
+  // For system IME extension, the input view url is overridden as:
+  // chrome-extension://${extension_id}/inputview.html#id=us.compact.qwerty
+  // &language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us
+  // Fow emoji and handwriting input, we replace the id=${keyset} part with
+  // desired keyset like: id=emoji; For voice, we append ".voice" to the end of
+  // id like: id=${keyset}.voice.
+  auto j = overridden_ref.find("&", i + 1);
+  if (keyset == "voice") {
+    overridden_ref.replace(j, 0, "." + keyset);
+  } else {
+    overridden_ref.replace(i, j - i, "id=" + keyset);
+  }
+
+  GURL::Replacements replacements;
+  replacements.SetRefStr(overridden_ref);
+  keyboard::SetOverrideContentUrl(url.ReplaceComponents(replacements));
+}
+
+bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
+  return base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
 }
 
 }  // namespace input_method

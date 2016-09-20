@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/tray_background_view.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "base/macros.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace views {
@@ -26,7 +27,8 @@ class WmWindow;
 // item.
 class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public IMEObserver,
-                               public views::TrayBubbleView::Delegate {
+                               public views::TrayBubbleView::Delegate,
+                               public keyboard::KeyboardControllerObserver {
  public:
   explicit ImeMenuTray(WmShelf* wm_shelf);
   ~ImeMenuTray() override;
@@ -34,8 +36,15 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Shows the IME menu bubble and highlights the button.
   void ShowImeMenuBubble();
 
+  // Hides the IME menu bubble and lowlights the button.
+  void HideImeMenuBubble();
+
   // Returns true if the IME menu bubble has been shown.
   bool IsImeMenuBubbleShown();
+
+  // Shows the virtual keyboard with the given keyset: emoji, handwriting or
+  // voice.
+  void ShowKeyboardWithKeyset(const std::string& keyset);
 
   // TrayBackgroundView:
   void SetShelfAlignment(ShelfAlignment alignment) override;
@@ -62,6 +71,11 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
       views::Widget::InitParams* params) const override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardClosed() override;
+  void OnKeyboardHidden() override;
+
  private:
   // To allow the test class to access |label_|.
   friend class ImeMenuTrayTest;
@@ -69,15 +83,14 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
 
-  // Hides the IME menu bubble and lowlights the button.
-  void HideImeMenuBubble();
-
   // Bubble for default and detailed views.
   std::unique_ptr<TrayBubbleWrapper> bubble_;
   ImeListView* ime_list_view_;
 
   views::Label* label_;
   IMEInfo current_ime_;
+  bool show_keyboard_;
+  bool force_show_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };

@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -234,6 +235,51 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
   GetTray()->PerformAction(tap);
   EXPECT_FALSE(IsTrayBackgroundActive());
   EXPECT_FALSE(IsBubbleShown());
+}
+
+TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  ASSERT_TRUE(IsVisible());
+  ASSERT_FALSE(IsTrayBackgroundActive());
+
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
+
+  AccessibilityDelegate* accessibility_delegate =
+      WmShell::Get()->accessibility_delegate();
+
+  accessibility_delegate->SetVirtualKeyboardEnabled(true);
+  EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
+
+  GetTray()->ShowKeyboardWithKeyset("emoji");
+  // The menu should be hidden.
+  EXPECT_FALSE(IsBubbleShown());
+  // The virtual keyboard should be enabled.
+  EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
+
+  // Hides the keyboard.
+  GetTray()->OnKeyboardHidden();
+  // The keyboard should still be enabled.
+  EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
+}
+
+TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
+  AccessibilityDelegate* accessibility_delegate =
+      WmShell::Get()->accessibility_delegate();
+  accessibility_delegate->SetVirtualKeyboardEnabled(false);
+  ASSERT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
+
+  GetTray()->ShowKeyboardWithKeyset("emoji");
+  // The virtual keyboard should be enabled.
+  EXPECT_TRUE(accessibility_delegate->IsVirtualKeyboardEnabled());
+
+  // Hides the keyboard.
+  GetTray()->OnKeyboardHidden();
+  // The keyboard should still be disabled.
+  EXPECT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
 }
 
 }  // namespace ash
