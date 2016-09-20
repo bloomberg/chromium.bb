@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.instantapps;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 
 /**
@@ -12,12 +13,14 @@ import android.graphics.Bitmap;
 public class InstantAppsBannerData {
     private String mAppName;
     private Bitmap mAppIcon;
-    private String mUrl;
+    private String mHostname;
+    private Intent mIntent;
 
-    public InstantAppsBannerData(String appName, Bitmap icon, String url) {
+    public InstantAppsBannerData(String appName, Bitmap icon, String hostname, Intent intent) {
         mAppName = appName;
         mAppIcon = icon;
-        mUrl = url;
+        mHostname = hostname;
+        mIntent = intent;
     }
 
     /** @return The name of the Instant App. */
@@ -31,7 +34,12 @@ public class InstantAppsBannerData {
     }
 
     /** @return The host name for the URL. */
-    public String getUrl() {
-        return mUrl;
+    public String getHostname() {
+        return mHostname;
+    }
+
+    /** @return The intent to launch on "Open App" button click. */
+    public Intent getIntent() {
+        return mIntent;
     }
 }

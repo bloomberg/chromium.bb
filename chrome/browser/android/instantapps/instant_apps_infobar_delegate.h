@@ -29,6 +29,7 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   bool Accept() override;
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+  void InfoBarDismissed() override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> data_;

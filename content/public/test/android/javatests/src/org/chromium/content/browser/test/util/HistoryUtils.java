@@ -99,7 +99,7 @@ public class HistoryUtils {
     }
 
     /**
-     * Calls {@link NavigationController#getUrl()} on UI Thread to get the current URL.
+     * Calls {@link NavigationController#getHostname()} on UI Thread to get the current URL.
      *
      * @param instrumentation an Instrumentation instance.
      * @param contentViewCore a ContentViewCore instance.

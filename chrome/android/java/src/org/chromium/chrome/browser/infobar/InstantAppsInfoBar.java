@@ -42,7 +42,7 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
 
         layout.setIsUsingBigIcon();
         layout.setMessage(result);
-        layout.getMessageLayout().addDescription(mData.getUrl());
+        layout.getMessageLayout().addDescription(mData.getHostname());
         layout.getPrimaryButton().setText(R.string.instant_apps_open_in_app);
         layout.getPrimaryButton().setButtonColor(launchButtonColor);
     }

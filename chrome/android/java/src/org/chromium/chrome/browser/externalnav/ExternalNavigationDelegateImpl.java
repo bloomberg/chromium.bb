@@ -34,11 +34,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -546,5 +548,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
         intent.putExtra(IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES,
                 getSpecializedHandlersWithFilter(infos, null));
+    }
+
+    @Override
+    public boolean maybeLaunchInstantApp(String url, String referrerUrl) {
+        return InstantAppsHandler.getInstance((ChromeApplication) mApplicationContext)
+                .handleNavigation(getAvailableContext(), url,
+                        TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl));
     }
 }

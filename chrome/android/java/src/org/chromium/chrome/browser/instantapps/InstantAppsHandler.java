@@ -6,13 +6,16 @@ package org.chromium.chrome.browser.instantapps;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
@@ -22,6 +25,8 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** A launcher for Instant Apps. */
@@ -61,6 +66,8 @@ public class InstantAppsHandler {
     private static final TimesHistogramSample sInstantAppsApiCallTimes = new TimesHistogramSample(
             "Android.InstantApps.ApiCallDuration", TimeUnit.MILLISECONDS);
 
+    /** A set of hosts for which Instant Apps are launched by default without prompt. */
+    private Set<String> mOptInHosts = new HashSet<>();
 
     /** @return The singleton instance of {@link InstantAppsHandler}. */
     public static InstantAppsHandler getInstance(ChromeApplication application) {
@@ -206,6 +213,37 @@ public class InstantAppsHandler {
     }
 
     /**
+     * Evaluate a navigation for whether it should launch an Instant App or show the Instant
+     * App banner.
+     * @return Whether an Instant App intent was started.
+     */
+    public boolean handleNavigation(Context context, String url, Uri referrer) {
+        if (!isEnabled(context)) return false;
+
+        String host = Uri.parse(url).getHost();
+        if (TextUtils.isEmpty(host)) return false;
+        if (mOptInHosts.contains(host)) {
+            RecordUserAction.record("Android.InstantApps.LaunchedByDefault");
+            return launchInstantAppForNavigation(context, url, referrer);
+        }
+        return startCheckForInstantApps(context, url, referrer);
+    }
+
+    /**
+     * Checks if an Instant App banner should be shown for the page we are loading.
+     */
+    protected boolean startCheckForInstantApps(final Context context, String url, Uri referrer) {
+        return false;
+    }
+
+    /**
+     * Launches an Instant App immediately, if possible.
+     */
+    protected boolean launchInstantAppForNavigation(Context context, String url, Uri referrer) {
+        return false;
+    }
+
+    /**
      * @return Whether the intent was fired from Chrome. This happens when the user gets a
      *         disambiguation dialog and chooses to stay in Chrome.
      */
@@ -224,5 +262,13 @@ public class InstantAppsHandler {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    /**
+     * Records that a particular hostname should open the associated Instant App by default.
+     */
+    public void recordDefaultOpen(String hostname) {
+        mOptInHosts.add(hostname);
+        // TODO(mariakhomenko): Implement persistence for optInHosts.
     }
 }

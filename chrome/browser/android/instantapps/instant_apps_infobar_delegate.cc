@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/instant_apps_infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -21,6 +22,8 @@ void InstantAppsInfoBarDelegate::Create(InfoBarService* infobar_service,
   infobar_service->AddInfoBar(base::MakeUnique<InstantAppsInfoBar>(
       std::unique_ptr<InstantAppsInfoBarDelegate>(
           new InstantAppsInfoBarDelegate(jdata))));
+  base::RecordAction(base::UserMetricsAction(
+      "Android.InstantApps.BannerShown"));
 }
 
 InstantAppsInfoBarDelegate::InstantAppsInfoBarDelegate(jobject jdata) {
@@ -41,13 +44,23 @@ base::string16 InstantAppsInfoBarDelegate::GetMessageText() const {
 
 bool InstantAppsInfoBarDelegate::Accept() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_InstantAppsInfoBarDelegate_openInstantApp(env, java_delegate_.obj());
+  base::RecordAction(base::UserMetricsAction(
+      "Android.InstantApps.BannerOpen"));
+  Java_InstantAppsInfoBarDelegate_openInstantApp(env,
+                                                 java_delegate_.obj(),
+                                                 data_.obj());
   return true;
 }
 
 bool InstantAppsInfoBarDelegate::EqualsDelegate(
     infobars::InfoBarDelegate* delegate) const {
   return delegate && delegate->GetIdentifier() == GetIdentifier();
+}
+
+
+void InstantAppsInfoBarDelegate::InfoBarDismissed() {
+  base::RecordAction(base::UserMetricsAction(
+      "Android.InstantApps.BannerDismissed"));
 }
 
 void Launch(JNIEnv* env,

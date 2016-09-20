@@ -1111,6 +1111,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             return false;
         }
 
+        @Override
+        public boolean maybeLaunchInstantApp(String url, String referrerUrl) {
+            return false;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;

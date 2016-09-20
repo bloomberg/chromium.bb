@@ -386,6 +386,10 @@ public class ExternalNavigationHandler {
                     mDelegate.startActivity(intent);
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
+                if (linkNotFromIntent && !params.isIncognito() && mDelegate.maybeLaunchInstantApp(
+                        params.getUrl(), params.getReferrerUrl())) {
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                }
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             } else if (params.getReferrerUrl() != null && (isLink || isFormSubmit)) {
                 // Current URL has at least one specialized handler available. For navigations
