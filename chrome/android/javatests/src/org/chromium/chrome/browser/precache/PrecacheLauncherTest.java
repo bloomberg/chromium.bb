@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import com.google.android.gms.gcm.Task;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -190,6 +191,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Precache"})
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/648749")
     public void testUpdateEnabledNullProfileSyncService() {
         ProfileSyncService.overrideForTests(null);
 
