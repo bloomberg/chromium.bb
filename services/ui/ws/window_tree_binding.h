@@ -33,6 +33,13 @@ class WindowTreeBinding {
 
   virtual void SetIncomingMethodCallProcessingPaused(bool paused) = 0;
 
+  // Called when the WindowServer is destroyed. Sets |client_| to
+  // CreateClientForShutdown().
+  void ResetClientForShutdown();
+
+ protected:
+  virtual mojom::WindowTreeClient* CreateClientForShutdown() = 0;
+
  private:
   mojom::WindowTreeClient* client_;
 
@@ -57,6 +64,10 @@ class DefaultWindowTreeBinding : public WindowTreeBinding {
   // WindowTreeBinding:
   mojom::WindowManager* GetWindowManager() override;
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
+
+ protected:
+  // WindowTreeBinding:
+  mojom::WindowTreeClient* CreateClientForShutdown() override;
 
  private:
   mojo::Binding<mojom::WindowTree> binding_;

@@ -151,6 +151,10 @@ class WindowTree : public mojom::WindowTree,
   WindowServer* window_server() { return window_server_; }
   const WindowServer* window_server() const { return window_server_; }
 
+  // Called from ~WindowServer. Reset WindowTreeClient so that it no longer gets
+  // any messages.
+  void PrepareForWindowServerShutdown();
+
   // Adds a new root to this tree. This is only valid for window managers.
   void AddRootForWindowManager(const ServerWindow* root);
 

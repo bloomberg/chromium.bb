@@ -61,6 +61,9 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
 WindowServer::~WindowServer() {
   in_destructor_ = true;
 
+  for (auto& pair : tree_map_)
+    pair.second->PrepareForWindowServerShutdown();
+
   // Destroys the window trees results in querying for the display. Tear down
   // the displays first so that the trees are notified of the display going
   // away while the display is still valid.

@@ -182,6 +182,13 @@ const DisplayManager* WindowTree::display_manager() const {
   return window_server_->display_manager();
 }
 
+void WindowTree::PrepareForWindowServerShutdown() {
+  window_manager_internal_client_binding_.reset();
+  binding_->ResetClientForShutdown();
+  if (window_manager_internal_)
+    window_manager_internal_ = binding_->GetWindowManager();
+}
+
 void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
   DCHECK(window_manager_internal_);
   const ClientWindowId client_window_id(WindowIdToTransportId(root->id()));

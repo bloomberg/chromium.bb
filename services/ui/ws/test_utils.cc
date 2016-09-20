@@ -395,8 +395,13 @@ void TestWindowTreeClient::GetWindowManager(
 
 // TestWindowTreeBinding ------------------------------------------------------
 
-TestWindowTreeBinding::TestWindowTreeBinding(WindowTree* tree)
-    : WindowTreeBinding(&client_), tree_(tree) {}
+TestWindowTreeBinding::TestWindowTreeBinding(
+    WindowTree* tree,
+    std::unique_ptr<TestWindowTreeClient> client)
+    : WindowTreeBinding(client.get()),
+      tree_(tree),
+      client_(std::move(client)) {}
+
 TestWindowTreeBinding::~TestWindowTreeBinding() {}
 
 mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
@@ -406,6 +411,12 @@ mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
 }
 void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
   is_paused_ = paused;
+}
+
+mojom::WindowTreeClient* TestWindowTreeBinding::CreateClientForShutdown() {
+  DCHECK(!client_after_reset_);
+  client_after_reset_ = base::MakeUnique<TestWindowTreeClient>();
+  return client_after_reset_.get();
 }
 
 // TestWindowServerDelegate ----------------------------------------------
@@ -431,8 +442,8 @@ TestWindowServerDelegate::CreateWindowTreeBinding(
     ws::WindowTree* tree,
     mojom::WindowTreeRequest* tree_request,
     mojom::WindowTreeClientPtr* client) {
-  std::unique_ptr<TestWindowTreeBinding> binding(
-      new TestWindowTreeBinding(tree));
+  std::unique_ptr<TestWindowTreeBinding> binding =
+      base::MakeUnique<TestWindowTreeBinding>(tree);
   bindings_.push_back(binding.get());
   return std::move(binding);
 }

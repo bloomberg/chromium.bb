@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "services/ui/public/interfaces/display.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -473,11 +474,17 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
 // WindowTreeBinding implementation that vends TestWindowTreeBinding.
 class TestWindowTreeBinding : public WindowTreeBinding {
  public:
-  explicit TestWindowTreeBinding(WindowTree* tree);
+  TestWindowTreeBinding(WindowTree* tree,
+                        std::unique_ptr<TestWindowTreeClient> client =
+                            base::MakeUnique<TestWindowTreeClient>());
   ~TestWindowTreeBinding() override;
 
+  std::unique_ptr<TestWindowTreeClient> ReleaseClient() {
+    return std::move(client_);
+  }
+
   WindowTree* tree() { return tree_; }
-  TestWindowTreeClient* client() { return &client_; }
+  TestWindowTreeClient* client() { return client_.get(); }
   TestWindowManager* window_manager() { return window_manager_.get(); }
 
   bool is_paused() const { return is_paused_; }
@@ -486,9 +493,15 @@ class TestWindowTreeBinding : public WindowTreeBinding {
   mojom::WindowManager* GetWindowManager() override;
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
+ protected:
+  // WindowTreeBinding:
+  mojom::WindowTreeClient* CreateClientForShutdown() override;
+
  private:
   WindowTree* tree_;
-  TestWindowTreeClient client_;
+  std::unique_ptr<TestWindowTreeClient> client_;
+  // This is the client created once ResetClientForShutdown() is called.
+  std::unique_ptr<TestWindowTreeClient> client_after_reset_;
   bool is_paused_ = false;
   std::unique_ptr<TestWindowManager> window_manager_;
 

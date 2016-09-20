@@ -43,6 +43,8 @@ namespace ws {
 namespace test {
 namespace {
 
+const UserId kTestUserId1 = "2";
+
 std::string WindowIdToString(const WindowId& id) {
   return base::StringPrintf("%d,%d", id.client_id, id.window_id);
 }
@@ -1344,6 +1346,40 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   ASSERT_TRUE(!embed_client->tracker()->changes()->empty());
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=1,1",
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
+}
+
+using WindowTreeShutdownTest = testing::Test;
+
+// Makes sure WindowTreeClient doesn't get any messages during shutdown.
+TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
+  std::unique_ptr<TestWindowTreeClient> client;
+  {
+    // Create a tree with one window.
+    WindowServerTestHelper ws_test_helper;
+    WindowServer* window_server = ws_test_helper.window_server();
+    window_server->user_id_tracker()->AddUserId(kTestUserId1);
+    const int kNumHostsToCreate = 1;
+    ws_test_helper.window_server_delegate()->set_num_displays_to_create(
+        kNumHostsToCreate);
+
+    WindowManagerWindowTreeFactorySetTestApi(
+        window_server->window_manager_window_tree_factory_set())
+        .Add(kTestUserId1);
+    window_server->user_id_tracker()->SetActiveUserId(kTestUserId1);
+    TestWindowTreeBinding* test_binding =
+        ws_test_helper.window_server_delegate()->last_binding();
+    ASSERT_TRUE(test_binding);
+    WindowTree* tree = test_binding->tree();
+    const ClientWindowId window_id = BuildClientWindowId(tree, 2);
+    ASSERT_TRUE(tree->NewWindow(window_id, ServerWindow::Properties()));
+
+    // Release the client so that it survices shutdown.
+    client = test_binding->ReleaseClient();
+    client->tracker()->changes()->clear();
+  }
+
+  // Client should not have got any messages after shutdown.
+  EXPECT_TRUE(client->tracker()->changes()->empty());
 }
 
 }  // namespace test
