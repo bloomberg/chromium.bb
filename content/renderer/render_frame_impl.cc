@@ -2265,6 +2265,15 @@ bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
   if (suppress_further_dialogs_)
     return false;
 
+  int32_t message_length = static_cast<int32_t>(message.length());
+  if (WebUserGestureIndicator::processedUserGestureSinceLoad()) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.UserGestureSinceLoad",
+                         message_length);
+  } else {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.NoUserGestureSinceLoad",
+                         message_length);
+  }
+
   bool success = false;
   base::string16 result_temp;
   if (!result)

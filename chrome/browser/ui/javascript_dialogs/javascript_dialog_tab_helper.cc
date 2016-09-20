@@ -49,8 +49,20 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   double engagement_score = site_engagement_service->GetScore(origin_url);
-  UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs",
-                           engagement_score);
+  switch (message_type) {
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Alert",
+                               engagement_score);
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Confirm",
+                               engagement_score);
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Prompt",
+                               engagement_score);
+      break;
+  }
   int32_t message_length = static_cast<int32_t>(message_text.length());
   if (engagement_score == 0) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementNone",
@@ -80,26 +92,44 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   }
 }
 
+namespace {
+
+void SaveUnloadUmaStats(
+    double engagement_score,
+    content::JavaScriptDialogManager::DialogClosedCallback callback,
+    bool success,
+    const base::string16& user_input) {
+  if (success) {
+    UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfBeforeUnload.Leave",
+                             engagement_score);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfBeforeUnload.Stay",
+                             engagement_score);
+  }
+
+  callback.Run(success, user_input);
+}
+
+}  // namespace
+
 void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     bool is_reload,
     const DialogClosedCallback& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  SiteEngagementService* site_engagement_service =
-      SiteEngagementService::Get(profile);
-  UMA_HISTOGRAM_PERCENTAGE(
-      "JSDialogs.SiteEngagementOfBeforeUnload",
-      site_engagement_service->GetScore(web_contents->GetLastCommittedURL()));
-
   // onbeforeunload dialogs are always handled with an app-modal dialog, because
   // - they are critical to the user not losing data
   // - they can be requested for tabs that are not foremost
   // - they can be requested for many tabs at the same time
   // and therefore auto-dismissal is inappropriate for them.
 
-  return AppModalDialogManager()->RunBeforeUnloadDialog(web_contents, is_reload,
-                                                        callback);
+  SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  double engagement_score =
+      site_engagement_service->GetScore(web_contents->GetLastCommittedURL());
+
+  return AppModalDialogManager()->RunBeforeUnloadDialog(
+      web_contents, is_reload,
+      base::Bind(&SaveUnloadUmaStats, engagement_score, callback));
 }
 
 bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(

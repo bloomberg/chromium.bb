@@ -45,6 +45,11 @@ bool WebUserGestureIndicator::consumeUserGesture()
     return UserGestureIndicator::consumeUserGesture();
 }
 
+bool WebUserGestureIndicator::processedUserGestureSinceLoad()
+{
+    return UserGestureIndicator::processedUserGestureSinceLoad();
+}
+
 WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken()
 {
     return WebUserGestureToken(UserGestureIndicator::currentToken());

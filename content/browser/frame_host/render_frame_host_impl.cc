@@ -1602,6 +1602,13 @@ void RenderFrameHostImpl::OnRunJavaScriptMessage(
     const GURL& frame_url,
     JavaScriptMessageType type,
     IPC::Message* reply_msg) {
+  int32_t message_length = static_cast<int32_t>(message.length());
+  if (GetParent()) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.Subframe", message_length);
+  } else {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.MainFrame", message_length);
+  }
+
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
   GetProcess()->SetIgnoreInputEvents(true);

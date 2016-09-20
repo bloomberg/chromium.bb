@@ -102424,11 +102424,36 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="DNS.PrefetchResolution"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="JSDialogs.DialogType" separator=".">
+  <suffix name="Alert"/>
+  <suffix name="Confirm"/>
+  <suffix name="Prompt"/>
+  <affected-histogram name="JSDialogs.SiteEngagementOfDialogs"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="JSDialogs.EngagementList" separator=".">
   <suffix name="EngagementNone" label="site engagement = 0"/>
   <suffix name="EngagementLessThanOne" label="site engagement &lt; 1"/>
   <suffix name="EngagementOneToFive" label="site engagement &gt;= 1, &lt; 5"/>
   <suffix name="EngagementHigher" label="site engagement &gt;= 5"/>
+  <affected-histogram name="JSDialogs.CharacterCount"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="JSDialogs.FrameType" separator=".">
+  <suffix name="MainFrame" label="dialog spawned by the main frame"/>
+  <suffix name="Subframe" label="dialog spawned by a subframe"/>
+  <affected-histogram name="JSDialogs.CharacterCount"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="JSDialogs.LeaveStay" separator=".">
+  <suffix name="Leave" label="user opted to leave the page"/>
+  <suffix name="Stay" label="user opted to stay on the page"/>
+  <affected-histogram name="JSDialogs.SiteEngagementOfBeforeUnload"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="JSDialogs.UserGestureSinceLoad" separator=".">
+  <suffix name="UserGestureSinceLoad"/>
+  <suffix name="NoUserGestureSinceLoad"/>
   <affected-histogram name="JSDialogs.CharacterCount"/>
 </histogram_suffixes>
 
