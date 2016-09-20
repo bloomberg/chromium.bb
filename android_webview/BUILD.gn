@@ -179,6 +179,9 @@ android_assets("monochrome_webview_assets") {
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
   ]
+  if (android_64bit_target_cpu && build_apk_secondary_abi) {
+    deps += [ ":v8_snapshot_secondary_abi_assets" ]
+  }
 }
 
 android_assets("assets") {
@@ -420,6 +423,20 @@ shared_library("libwebviewchromium") {
 }
 
 if (android_64bit_target_cpu) {
+  android_assets("v8_snapshot_secondary_abi_assets") {
+    _secondary_abi_out_dir =
+        get_label_info("//v8($android_secondary_abi_toolchain)", "root_out_dir")
+    assert(android_64bit_target_cpu,
+           "32-bit targets shouldn't have secondary abi")
+    arch_suffix = "32"
+    renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
+    renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
+    disable_compression = true
+    deps = [
+      "//v8($android_secondary_abi_toolchain)",
+    ]
+  }
+
   shared_library("monochrome") {
     deps = [
       ":webview_entry_point",
