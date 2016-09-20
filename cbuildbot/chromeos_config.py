@@ -1891,16 +1891,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   _AddFullConfigs()
 
 
-  # These remaining chromium pfq configs have eccentricities that are easier to
-  # create manually.
-
-  site_config.Add(
-      'amd64-generic-chromium-pfq',
-      site_config.templates.chromium_pfq,
-      _base_configs['amd64-generic'],
-      disk_layout='2gb-rootfs',
-  )
-
   _chrome_pfq_important_boards = frozenset([
       'peppy',
       'veyron_pinky',
@@ -2455,26 +2445,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       unittests=False,
   )
 
-  # Paladins (CQ builders) which do not run VM or Unit tests on the builder
-  # itself.
-  # internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
-
-  site_config.Add(
-      'beaglebone-paladin',
-      site_config.templates.internal_paladin,
-      site_config.templates.beaglebone,
-      boards=['beaglebone'],
-      trybot_list=True,
-  )
-
-  site_config.Add(
-      'beaglebone_servo-paladin',
-      site_config.templates.internal_paladin,
-      site_config.templates.beaglebone,
-      boards=['beaglebone_servo'],
-      important=False,
-  )
-
   def ShardHWTestsBetweenBuilders(*args):
     """Divide up the hardware tests between the given list of config names.
 
@@ -2517,18 +2487,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
 
   # Add a pre-cq config for every board.
   _CreateConfigsForBoards(site_config.templates.pre_cq, _all_boards, 'pre-cq')
-  site_config.Add(
-      'lakitu-pre-cq',
-      site_config.templates.pre_cq,
-      _base_configs['lakitu'],
-      site_config.templates.lakitu_test_customizations,
-  )
-  site_config.Add(
-      'lakitu_next-pre-cq',
-      site_config.templates.pre_cq,
-      _base_configs['lakitu_next'],
-      site_config.templates.lakitu_test_customizations,
-  )
 
   _CreateConfigsForBoards(
       site_config.templates.no_vmtest_pre_cq,
@@ -3065,6 +3023,37 @@ def _GetConfig(site_config, ge_build_config, board_configs,
     return result
 
   overwritten_configs = {
+      'amd64-generic-chromium-pfq': {
+          'disk_layout': '2gb-rootfs',
+          'useflags': [],
+      },
+
+      'beaglebone-paladin': {
+          'chrome_sdk': False,
+          'image_test': False,
+          'rootfs_verification': False,
+          'sync_chrome': False,
+          'vm_tests': [],
+      },
+
+      'beaglebone_servo-paladin': {
+          'chrome_sdk': False,
+          'image_test': False,
+          'rootfs_verification': False,
+          'sync_chrome': False,
+          'vm_tests': [],
+      },
+
+      'lakitu-pre-cq': MergeOverwrittenConfigs(
+          site_config.templates.lakitu_test_customizations,
+          _template='pre_cq',
+       ),
+
+      'lakitu_next-pre-cq': MergeOverwrittenConfigs(
+          site_config.templates.lakitu_test_customizations,
+          _template='pre_cq',
+       ),
+
       ### Arm release configs
       'smaug-release' : {
           'paygen': False,

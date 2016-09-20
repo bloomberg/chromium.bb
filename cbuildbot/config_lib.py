@@ -1173,12 +1173,9 @@ class SiteConfig(dict):
     Returns:
       The BuildConfig just added to the SiteConfig.
     """
+    assert name not in self, ('%s already exists.' % name)
+
     inherits, overrides = args, kwargs
-
-    # TODO(kevcheng): Uncomment and fix unittests (or chromeos_config) since it
-    #                 seems configs are repeatedly added.
-    # assert name not in self, ('%s already exists.' % name)
-
     if template:
       inherits = (template,) + inherits
 
@@ -1271,6 +1268,8 @@ class SiteConfig(dict):
       args: See the docstring of BuildConfig.derive.
       kwargs: See the docstring of BuildConfig.derive.
     """
+    assert name not in self._templates, ('Template %s already exists.' % name)
+
     kwargs.setdefault('_template', name)
 
     if args:

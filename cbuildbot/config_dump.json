@@ -3601,7 +3601,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone-pre-cq": {
         "_template": "pre_cq",
@@ -3812,7 +3813,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone_servo-pre-cq": {
         "_template": "pre_cq",
