@@ -304,8 +304,14 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
   EXPECT_TRUE(ObserveTabIsInFullscreen(false));
 }
 
+// Flaky on Linux, see https://crbug.com/648406.
+#if defined(OS_LINUX)
+#define MAYBE_FullscreenFromSubframe DISABLED_FullscreenFromSubframe
+#else
+#define MAYBE_FullscreenFromSubframe FullscreenFromSubframe
+#endif
 IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
-                       FullscreenFromSubframe) {
+                       MAYBE_FullscreenFromSubframe) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   StartFakingTabCapture();
   ASSERT_TRUE(LaunchFlashFullscreenInSubframe());
