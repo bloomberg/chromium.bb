@@ -79,6 +79,10 @@
     "type": "raw",
     "args": [],
   },
+  "android_junit_tests": {
+    "label": "//webrtc:android_juint_tests",
+    "type": "console_test_launcher",
+  },
   "android_webview_test_apk": {
     "label": "//android_webview/test:android_webview_test_apk",
     "type": "console_test_launcher",
@@ -735,6 +739,10 @@
     "label": "//webrtc/pc:rtc_pc_unittests",
     "type": "console_test_launcher",
   },
+  "rtc_stats_unittests": {
+    "label": "//webrtc/stats:rtc_stats_unittests",
+    "type": "console_test_launcher",
+  },
   "rtc_unittests": {
     "label": "//webrtc:rtc_unittests",
     "type": "console_test_launcher",
@@ -922,6 +930,10 @@
   },
   "webkit_unit_tests": {
     "label": "//third_party/WebKit/Source/web:webkit_unit_tests",
+    "type": "console_test_launcher",
+  },
+  "webrtc_nonparallel_tests": {
+    "label": "//webrtc:webrtc_nonparallel_tests",
     "type": "console_test_launcher",
   },
   "wm_unittests": {
