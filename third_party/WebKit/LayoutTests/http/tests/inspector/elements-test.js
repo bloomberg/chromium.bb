@@ -374,7 +374,7 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
 {
     if (!section)
         return;
-    InspectorTest.addResult("[expanded] " + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
+    InspectorTest.addResult("[expanded] " + (section.propertiesTreeOutline.element.classList.contains("no-affect") ? "[no-affect] " : ""));
 
     var medias = section._titleElement.querySelectorAll(".media-list .media");
     for (var i = 0; i < medias.length; ++i) {

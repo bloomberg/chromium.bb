@@ -12,7 +12,7 @@ function test()
     {
         var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-size");
         treeElement.startEditing(treeElement.valueElement);
-        var selection = window.getSelection();
+        var selection = treeElement.valueElement.getComponentSelection();
         var range = selection.getRangeAt(0);
         var newRange = document.createRange();
         newRange.setStart(range.startContainer, 1);
