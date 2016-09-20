@@ -2433,10 +2433,17 @@ void Internals::setValueForUser(Element* element, const String& value)
 
 String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long maxLength)
 {
-    if (!node || !node->layoutObject())
+    if (!node)
+        return String();
+
+    // VisiblePosition and SurroundingText must be created with clean layout.
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(node->document().lifecycle());
+
+    if (!node->layoutObject())
         return String();
     blink::WebPoint point(x, y);
-    SurroundingText surroundingText(createVisiblePositionDeprecated(node->layoutObject()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
+    SurroundingText surroundingText(createVisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
     return surroundingText.content();
 }
 

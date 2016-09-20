@@ -63,6 +63,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     // The position will have no document if it is null (as in no position).
     if (!document || !document->documentElement())
         return;
+    DCHECK(!document->needsLayoutTreeUpdate());
 
     // The forward range starts at the selection end and ends at the document's
     // end. It will then be updated to only contain the text in the text in the

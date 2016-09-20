@@ -49,10 +49,17 @@ WebSurroundingText::~WebSurroundingText()
 void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& nodePoint, size_t maxLength)
 {
     const Node* node = webNode.constUnwrap<Node>();
-    if (!node || !node->layoutObject())
+    if (!node)
         return;
 
-    m_private.reset(new SurroundingText(createVisiblePositionDeprecated(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
+    // VisiblePosition and SurroundingText must be created with clean layout.
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(node->document().lifecycle());
+
+    if (!node->layoutObject())
+        return;
+
+    m_private.reset(new SurroundingText(createVisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
 }
 
 void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame, size_t maxLength)
