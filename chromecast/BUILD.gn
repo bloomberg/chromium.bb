@@ -26,6 +26,7 @@ config("playready_config") {
 # A list of all public test() binaries. This is an organizational target that
 # cannot be depended upon or built directly. Build cast_group_test_list instead.
 cast_test_group("cast_tests") {
+  filters = []
   tests = [
     "//base:base_unittests",
     "//chromecast/base:cast_base_unittests",
@@ -44,30 +45,118 @@ cast_test_group("cast_tests") {
     "//ui/base:ui_base_unittests",
   ]
 
+  if (!is_cast_audio_only) {
+    tests += [ "//gpu:gpu_unittests" ]
+  }
+
   if (is_linux) {
     tests += [ "//chromecast/crash:cast_crash_unittests" ]
   }
 
-  filters = []
+  if (!is_android && use_alsa) {
+    tests += [ "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests" ]
+  }
 
-  # Apply filters to embedded linux devices.
-  if (target_os == "linux" && !is_cast_desktop_build) {
-    filters += [
-      # Run net_unittests first to avoid random failures due to slow python startup
-      # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
-      # readonly certdb (b/8153161)
-      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
-      # timeout to 90s from 45s to allow it to pass (b/19821476)
-      # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
-      # Running a batch of net_unittests has high overhead. Run tests in batches of 25 to reduce number of batches (b/23156294).
-      "net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=90000 --test-launcher-batch-limit=25",
+  if (!is_android) {
+    tests += [
+      "//chromecast/app:cast_shell_unittests",
+      "//chromecast/browser:cast_shell_browser_test",
+      "//chromecast/media:cast_media_unittests",
+      "//ipc:ipc_tests",
+      "//jingle:jingle_unittests",
+      "//url:url_unittests",
+    ]
 
+    cast_media_unittests_filter = {
+      test_name = "cast_media_unittests"
+
+      # --test-launcher-jobs=1 => so internal code can bind to port
+      args = [ "--test-launcher-jobs=1" ]
+    }
+    filters += [ cast_media_unittests_filter ]
+
+    cast_shell_browser_test_filter = {
+      test_name = "cast_shell_browser_test"
+
+      # --enable-local-file-accesses => to load sample media files
+      # --test-launcher-jobs=1 => so internal code can bind to port
+      args = [
+        "--no-sandbox",
+        "--enable-local-file-accesses",
+        "--enable-cma-media-pipeline",
+        "--ozone-platform=cast",
+        "--test-launcher-jobs=1",
+      ]
+      if (!is_cast_desktop_build) {
+        args += [ "--use-gpu-in-tests" ]
+      }
+    }
+    filters += [ cast_shell_browser_test_filter ]
+
+    ipc_tests_filter = {
+      test_name = "ipc_tests"
+
+      # --test-launcher-jobs=1 => so internal code can bind to port
+      args = [ "--test-launcher-jobs=1" ]
+    }
+    filters += [ ipc_tests_filter ]
+
+    url_unittests_filter = {
+      test_name = "url_unittests"
+
+      if (target_os == "linux" && !is_cast_desktop_build) {
+        # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
+        gtest_excludes = [ "URLCanonTest.DoAppendUTF8Invalid" ]
+      }
+    }
+    filters += [ url_unittests_filter ]
+  }
+
+  base_unittests_filter = {
+    test_name = "base_unittests"
+    if (target_os == "linux" && !is_cast_desktop_build) {
+      # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
+      # Disable ProcessUtilTest.* (need to define OS_ANDROID)
+      # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
+      # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
+      gtest_excludes = [
+        "ProcessMetricsTest.GetNumberOfThreads",
+        "ProcessUtilTest.*",
+        "StackContainer.BufferAlignment",
+        "SystemMetrics2Test.GetSystemMemoryInfo",
+      ]
+
+      if (is_cast_audio_only) {
+        # Also disable TimeFormattingTest on audio-only builds, since we don't
+        # include the necessary info in icudtl.dat.
+        gtest_excludes += [ "TimeFormattingTest.*" ]
+      }
+    }
+  }
+  filters += [ base_unittests_filter ]
+
+  content_unittests_filter = {
+    test_name = "content_unittests"
+    if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
       # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
       # RenderWidgetHostTest.Background because we disable the blacklist to enable WebGL (b/16142554)
-      "content_unittests --gtest_filter=-DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase:DesktopCaptureDeviceTest.Capture:GamepadProviderTest.PollingAccess:GpuDataManagerImplPrivateTest.SetGLStrings:PepperGamepadHostTest.WaitForReply:RenderWidgetHostTest.Background",
+      gtest_excludes = [
+        "DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
+        "DesktopCaptureDeviceTest.Capture",
+        "GamepadProviderTest.PollingAccess",
+        "GpuDataManagerImplPrivateTest.SetGLStrings",
+        "PepperGamepadHostTest.WaitForReply",
+        "RenderWidgetHostTest.Background",
+      ]
+    }
+  }
+  filters += [ content_unittests_filter ]
 
+  media_unittests_filter = {
+    test_name = "media_unittests"
+    if (target_os == "linux" && !is_cast_desktop_build) {
       # Disable VP9 related tests (b/18593324)
       #   PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM
       #   PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM
@@ -83,25 +172,47 @@ cast_test_group("cast_tests") {
       #   AudioStreamHandlerTest.Play
       #   SoundsManagerTest.Play
       # Disable AudioStreamHandlerTest.ConsecutivePlayRequests (b/16539293)
-      "media_unittests --gtest_filter=-AudioOutputControllerTest.PlayDivertSwitchDeviceRevertClose:AudioOutputControllerTest.PlaySwitchDeviceClose:AudioStreamHandlerTest.Play:AudioStreamHandlerTest.ConsecutivePlayRequests:PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP9*:PipelineIntegrationTest.P444_VP9_WebM:PipelineIntegrationTest.BasicPlayback_VP8A*:OpusAudioDecoderTest/AudioDecoderTest.ProduceAudioSamples/0:SoundsManagerTest.Play",
-
-      # DoAppendUTF8Invalid fails because of dcheck_always_on flag in Eng builds
-      "url_unittests --gtest_filter=-URLCanonTest.DoAppendUTF8Invalid",
-    ]
-
-    # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
-    # Disable ProcessUtilTest.* (need to define OS_ANDROID)
-    # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
-    # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
-    if (is_cast_audio_only) {
-      # Also disable TimeFormattingTest on audio-only builds, since we don't
-      # include the necessary info in icudtl.dat.
-      filters += [ "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo:TimeFormattingTest.*" ]
-    } else {
-      filters += [ "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo" ]
+      gtest_excludes = [
+        "AudioOutputControllerTest.PlayDivertSwitchDeviceRevertClose",
+        "AudioOutputControllerTest.PlaySwitchDeviceClose",
+        "AudioStreamHandlerTest.Play",
+        "AudioStreamHandlerTest.ConsecutivePlayRequests",
+        "PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM",
+        "PipelineIntegrationTest.BasicPlayback_VideoOnly_VP9_WebM",
+        "PipelineIntegrationTest.BasicPlayback_VP9*",
+        "PipelineIntegrationTest.P444_VP9_WebM",
+        "PipelineIntegrationTest.BasicPlayback_VP8A*",
+        "OpusAudioDecoderTest/AudioDecoderTest.ProduceAudioSamples/0",
+        "SoundsManagerTest.Play",
+      ]
+    } else if (target_os == "android" || is_cast_desktop_build) {
+      # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
+      gtest_excludes =
+          [ "PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM" ]
     }
-  } else if (is_cast_desktop_build || target_os == "android") {
-    filters += [
+  }
+  filters += [ media_unittests_filter ]
+
+  net_unittests_filter = {
+    test_name = "net_unittests"
+    if (target_os == "linux" && !is_cast_desktop_build) {
+      # Run net_unittests first to avoid random failures due to slow python startup
+      # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
+      # readonly certdb (b/8153161)
+      # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
+      # timeout to 90s from 45s to allow it to pass (b/19821476)
+      # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
+      # Running a batch of net_unittests has high overhead. Run tests in batches of 25 to reduce number of batches (b/23156294).
+      gtest_excludes = [
+        "KeygenHandlerTest.SmokeTest",
+        "KeygenHandlerTest.ConcurrencyTest",
+        "ProxyScriptFetcherImplTest.HttpMimeType",
+      ]
+      args = [
+        "--test-launcher-timeout=90000",
+        "--test-launcher-batch-limit=25",
+      ]
+    } else if (is_cast_desktop_build || target_os == "android") {
       # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
       # timeout to 90s from 45s to allow it to pass (b/19821476) (b/29415636).
       # CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator
@@ -109,44 +220,14 @@ cast_test_group("cast_tests") {
       # CQ flakiness (crbug/598406) (b/29415636).
       # Running a batch of net_unittests has high overhead, so
       # run tests in batches of 25 to reduce number of batches (b/23156294).
-      "net_unittests --gtest_filter=-CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator --test-launcher-timeout=90000 --test-launcher-batch-limit=25",
-
-      # Disable PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM (not supported)
-      "media_unittests --gtest_filter=-PipelineIntegrationTest.BasicPlayback_MediaSource_VP9_WebM",
-    ]
-  }
-
-  if (!is_android) {
-    tests += [
-      "//chromecast/app:cast_shell_unittests",
-      "//chromecast/browser:cast_shell_browser_test",
-      "//chromecast/media:cast_media_unittests",
-      "//ipc:ipc_tests",
-      "//jingle:jingle_unittests",
-      "//url:url_unittests",
-    ]
-
-    use_gpu_switch = ""
-    if (!is_cast_desktop_build) {
-      use_gpu_switch = " --use-gpu-in-tests"
-    }
-
-    # --enable-local-file-accesses => to load sample media files
-    # --test-launcher-jobs=1 => so internal code can bind to port
-    filters += [
-      "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1" + use_gpu_switch,
-      "cast_media_unittests --test-launcher-jobs=1",
-      "ipc_tests --test-launcher-jobs=1",
-    ]
-
-    if (use_alsa) {
-      tests += [ "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests" ]
+      gtest_excludes = [ "CTLogVerifierTest.VerifiesValidConsistencyProofsFromReferenceGenerator" ]
+      args = [
+        "--test-launcher-timeout=90000",
+        "--test-launcher-batch-limit=25",
+      ]
     }
   }
-
-  if (!is_cast_audio_only) {
-    tests += [ "//gpu:gpu_unittests" ]
-  }
+  filters += [ net_unittests_filter ]
 }
 
 # Creates the build and run lists for all test targets.
@@ -301,13 +382,13 @@ action("chromecast_locales_pak") {
   assert(chromecast_branding == "public" || chromecast_branding == "internal" ||
          chromecast_branding == "google")
   args = [
-           "-b",
-           "$chromecast_branding",
-           "-g",
-           rebase_path("$root_gen_dir/chromecast_strings"),
-           "-x",
-           rebase_path("$root_out_dir/chromecast_locales"),
-         ]
+    "-b",
+    "$chromecast_branding",
+    "-g",
+    rebase_path("$root_gen_dir/chromecast_strings"),
+    "-x",
+    rebase_path("$root_out_dir/chromecast_locales"),
+  ]
   if (enable_chromecast_webui) {
     args += [ "-u" ]
   }

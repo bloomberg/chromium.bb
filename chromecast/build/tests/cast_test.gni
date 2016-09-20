@@ -38,14 +38,21 @@
 #   # Here is another cast_test_group target which builds a bunch of other
 #   # test binaries, and wants to apply some filters.
 #   cast_test_group("external_tests") {
+#     filters = []
 #     tests = [
 #       "//path/to/widget:widget_unittests",
 #       "//even/more/foo:foo_unittests",
 #     ]
 #
-#     filters = [
-#       "widget_unittests --gtest_filter=-WidgetTest.TestToBeFiltered",
-#     ]
+#     widget_unittests_filter = {
+#       test_name = "widgets_unittests"
+#       gtest_includes = [ "WidgetTest.*" ]
+#       gtest_excludes = [ "WidgetTest.TestToBeFilteredOut",
+#                          "WidgetTest.MoreTestsToFilterOut" ]
+#       args = [ "--extra_arg",
+#                "--another_arg", ]
+#     }
+#     filters += [ widget_unittests_filter ]
 #   }
 #
 #   # Build this to create build and run lists for bar and foo tests.
@@ -82,10 +89,23 @@ _junit_gen_dir = "$root_gen_dir/chromecast/junit"
 #       executable it builds.
 #
 #   filters (optional)
-#       A list of strings of format: "<test_name> --gtest_filter=<filter_logic>"
-#       The <test_name> used must correspond to a test in |tests|. Please see
-#       //chromecast/tools/build/generate_test_lists.py for more information.
-#       If this is not defined, no filters are applied.
+#        A list of scopes, where each scope has the has the follow variables:
+#          test_name (required): The name of the test executable. This must
+#              correspond to a test in |tests|.
+#          gtest_includes (optional): A list of gtest filter pattern strings.
+#              Only tests that match one of the positive patterns (if provided)\
+#              will be run.
+#              Example: gtest_includes = [ "Foo.*", "Bar.Test1", "Bar.Test2" ]
+#              will get translated to "--gtest_filter=Foo.*:Bar.Test1:Bar.Test2"
+#          gtest_excludes (optional): A list of gtest filter pattern strings.
+#              Only tests that do not match any of the negative patterns
+#              (if provided) will be run.
+#              Example: gtest_excludes = [ "Baz.*", "Biz.Test" ]
+#              will get translated to "--gtest_filter=-Baz.*:Biz.Test1"
+#          args (optional): A list of additional args to pass to the test.
+#        Please see //chromecast/tools/build/generate_test_lists.py for more
+#        information.
+#        If |filters| is not defined, no filters are applied.
 #
 #   priority (optional)
 #       A string which takes any single-digit integer bewtween "1" and "9",
@@ -116,7 +136,48 @@ template("cast_test_group") {
   # If a set of filters has not been defined, use the empty list.
   _filters = []
   if (defined(invoker.filters)) {
-    _filters = invoker.filters
+    foreach(filter, invoker.filters) {
+      assert(defined(filter.test_name), "A filter must have a test_name.")
+      _test_name = filter.test_name
+
+      _gtest_include_filter = ""
+      if (defined(filter.gtest_includes)) {
+        foreach(include, filter.gtest_includes) {
+          _gtest_include_filter = "${_gtest_include_filter}:${include}"
+        }
+      }
+
+      _gtest_exclude_filter = ""
+      if (defined(filter.gtest_excludes)) {
+        foreach(exclude, filter.gtest_excludes) {
+          _gtest_exclude_filter = "${_gtest_exclude_filter}:${exclude}"
+        }
+      }
+
+      _gtest_filter = ""
+      if (_gtest_include_filter != "" || _gtest_exclude_filter != "") {
+        _gtest_filter += "--gtest_filter="
+        if (_gtest_include_filter != "") {
+          _gtest_filter += _gtest_include_filter
+        }
+        if (_gtest_exclude_filter != "") {
+          _gtest_filter += "-" + _gtest_exclude_filter
+        }
+      }
+
+      _args = ""
+      if (defined(filter.args)) {
+        foreach(arg, filter.args) {
+          _args = "${_args} ${arg}"
+        }
+      }
+
+      # Only add filters that actually do something, otherwise the
+      # generate script will get confused.
+      if (_args != "" || _gtest_filter != "") {
+        _filters += [ "${_test_name} ${_args} ${_gtest_filter}" ]
+      }
+    }
   }
 
   # If priority has not been set, set the priority to "1", the lowest priority.
