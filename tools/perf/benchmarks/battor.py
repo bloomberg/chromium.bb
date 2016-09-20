@@ -14,15 +14,17 @@ from telemetry import benchmark
 class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
-    options = timeline_based_measurement.Options(
-        chrome_trace_category_filter.ChromeTraceCategoryFilter())
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        filter_string='toplevel')
+    options = timeline_based_measurement.Options(category_filter)
     options.config.chrome_trace_config.category_filter.AddFilterString('rail')
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.enable_atrace_trace = True
     options.config.atrace_config.categories = ['sched']
     options.config.enable_cpu_trace = True
-    options.SetTimelineBasedMetrics(['powerMetric', 'clockSyncLatencyMetric'])
+    options.SetTimelineBasedMetrics(
+        ['powerMetric', 'clockSyncLatencyMetric', 'cpuTimeMetric'])
     return options
 
   @classmethod

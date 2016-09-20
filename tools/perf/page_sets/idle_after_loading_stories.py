@@ -11,7 +11,9 @@ SITES = [
   '-a-puppy/#How_Long_DoesIt_Take_To_Crate_Train_A_Puppy',
 
   # https://bugs.chromium.org/p/chromium/issues/detail?id=505990
-  'http://abcnews.go.com/',
+  # TODO(charliea): Temporarily disable this site, since it causes tracing to
+  # explode from too much data. https://crbug.com/647398
+  # 'http://abcnews.go.com/',
 
   # https://bugs.chromium.org/p/chromium/issues/detail?id=505601
   'http://www.slideshare.net/patrickmeenan',
