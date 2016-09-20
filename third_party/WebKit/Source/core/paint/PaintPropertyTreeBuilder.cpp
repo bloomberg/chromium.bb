@@ -33,6 +33,9 @@ void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPro
     } else {
         DCHECK(rootFrame.rootClip() && !rootFrame.rootClip()->parent());
         DCHECK(rootFrame.rootEffect() && !rootFrame.rootEffect()->parent());
+        DCHECK(rootFrame.rootScroll() && !rootFrame.rootScroll()->parent());
+        // Ensure main thread scroll reasons are reset.
+        rootFrame.rootScroll()->update(nullptr, rootFrame.rootTransform(), IntSize(), IntSize(), false, false);
     }
 
     context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootFrame.rootTransform();
@@ -78,7 +81,7 @@ void createOrUpdateFrameViewScrollTranslation(FrameView& frameView,
 }
 
 void createOrUpdateFrameViewScroll(FrameView& frameView,
-    PassRefPtr<const ScrollPaintPropertyNode> parent,
+    PassRefPtr<ScrollPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
     const IntSize& clip, const IntSize& bounds,
     bool userScrollableHorizontal,
@@ -141,7 +144,7 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
     // Initialize the context for current, absolute and fixed position cases.
     // They are the same, except that scroll translation does not apply to
     // fixed position descendants.
-    const ScrollPaintPropertyNode* initialScroll = context.current.scroll;
+    ScrollPaintPropertyNode* initialScroll = context.current.scroll;
     context.current.transform = frameView.scrollTranslation();
     context.current.paintOffset = LayoutPoint();
     context.current.clip = frameView.contentClip();
@@ -330,6 +333,17 @@ void PaintPropertyTreeBuilder::updateScrollbarPaintOffset(const LayoutObject& ob
         properties->clearScrollbarPaintOffset();
 }
 
+void PaintPropertyTreeBuilder::updateMainThreadScrollingReasons(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    if (object.isBackgroundAttachmentFixedObject()) {
+        auto* scrollNode = context.current.scroll;
+        while (scrollNode && !scrollNode->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)) {
+            scrollNode->addMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+            scrollNode = scrollNode->parent();
+        }
+    }
+}
+
 void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (!object.isBox())
@@ -431,7 +445,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(const LayoutObje
             IntSize scrollBounds = layer->getScrollableArea()->contentsSize();
             bool userScrollableHorizontal = layer->getScrollableArea()->userInputScrollable(HorizontalScrollbar);
             bool userScrollableVertical = layer->getScrollableArea()->userInputScrollable(VerticalScrollbar);
-            const ScrollPaintPropertyNode* parentScrollNode = forceScrollingForLayoutView ? nullptr : context.current.scroll;
+            ScrollPaintPropertyNode* parentScrollNode = forceScrollingForLayoutView ? nullptr : context.current.scroll;
             context.current.scroll = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScroll(
                 parentScrollNode, context.current.transform, scrollClip, scrollBounds, userScrollableHorizontal, userScrollableVertical);
 
@@ -547,6 +561,7 @@ void PaintPropertyTreeBuilder::buildTreeNodesForSelf(const LayoutObject& object,
     updateCssClip(object, context);
     updateLocalBorderBoxContext(object, context);
     updateScrollbarPaintOffset(object, context);
+    updateMainThreadScrollingReasons(object, context);
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodesForChildren(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)

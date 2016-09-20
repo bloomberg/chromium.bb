@@ -372,12 +372,12 @@ int PropertyTreeManager::compositorIdForScrollNode(const ScrollPaintPropertyNode
 
     compositorNode.scrollable = true;
 
-    // TODO(pdr): Set main thread scrolling reasons.
     compositorNode.scroll_clip_layer_bounds.SetSize(scrollNode->clip().width(), scrollNode->clip().height());
     compositorNode.bounds.SetSize(scrollNode->bounds().width(), scrollNode->bounds().height());
     compositorNode.user_scrollable_horizontal = scrollNode->userScrollableHorizontal();
     compositorNode.user_scrollable_vertical = scrollNode->userScrollableVertical();
     compositorNode.transform_id = compositorIdForTransformNode(scrollNode->scrollOffsetTranslation());
+    compositorNode.main_thread_scrolling_reasons = scrollNode->mainThreadScrollingReasons();
 
     auto result = m_scrollNodeMap.set(scrollNode, id);
     DCHECK(result.isNewEntry);

@@ -47,7 +47,7 @@ struct PaintPropertyTreeBuilderContext {
         // The scroll node contains information for scrolling such as the parent scroll space, the
         // extent that can be scrolled, etc. Because scroll nodes reference a scroll offset
         // transform, scroll nodes should be updated if the transform tree changes.
-        const ScrollPaintPropertyNode* scroll = nullptr;
+        ScrollPaintPropertyNode* scroll = nullptr;
     };
 
     ContainingBlockContext current;
@@ -88,6 +88,7 @@ private:
     static void updateCssClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateLocalBorderBoxContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateScrollbarPaintOffset(const LayoutObject&, const PaintPropertyTreeBuilderContext&);
+    static void updateMainThreadScrollingReasons(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateOverflowClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updatePerspective(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateSvgLocalToBorderBoxTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);

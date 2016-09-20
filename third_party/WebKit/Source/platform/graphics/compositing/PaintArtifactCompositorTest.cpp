@@ -569,6 +569,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode)
     EXPECT_TRUE(transformNode.local.IsIdentity());
 
     EXPECT_EQ(gfx::ScrollOffset(-7, -9), scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
+
+    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain, scrollNode.main_thread_scrolling_reasons);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes)
@@ -579,11 +581,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes)
         nullptr, TransformationMatrix().translate(11, 13), FloatPoint3D());
     RefPtr<ScrollPaintPropertyNode> scrollA = ScrollPaintPropertyNode::create(
         nullptr, scrollTranslationA, IntSize(2, 3), IntSize(5, 7), false, true);
+    scrollA->addMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
     RefPtr<TransformPaintPropertyNode> scrollTranslationB = TransformPaintPropertyNode::create(
         scrollTranslationA, TransformationMatrix().translate(37, 41), FloatPoint3D());
     RefPtr<ScrollPaintPropertyNode> scrollB = ScrollPaintPropertyNode::create(
         scrollA, scrollTranslationB, IntSize(19, 23), IntSize(29, 31), true, false);
-
     TestPaintArtifact artifact;
     artifact.chunk(scrollTranslationA, nullptr, effect, scrollA)
         .rectDrawing(FloatRect(7, 11, 13, 17), Color::white);
@@ -615,6 +617,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes)
 
     EXPECT_EQ(gfx::ScrollOffset(-11, -13), scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
     EXPECT_EQ(gfx::ScrollOffset(-37, -41), scrollTree.current_scroll_offset(contentLayerAt(1)->id()));
+
+    EXPECT_TRUE(scrollNodeA.main_thread_scrolling_reasons & MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+    EXPECT_FALSE(scrollNodeB.main_thread_scrolling_reasons & MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 }
 
 } // namespace

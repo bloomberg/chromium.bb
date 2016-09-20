@@ -2009,4 +2009,103 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip)
     EXPECT_FALSE(getLayoutObjectByElementId("svg")->objectPaintProperties()->overflowClip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithNestedScrollers)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  #overflowA {"
+        "    position: absolute;"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  #overflowB {"
+        "    position: absolute;"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .backgroundAttachmentFixed {"
+        "    background-image: url('foo');"
+        "    background-attachment: fixed;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div id='overflowB' class='backgroundAttachmentFixed'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+    Element* overflowA = document().getElementById("overflowA");
+    Element* overflowB = document().getElementById("overflowB");
+
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+
+    // Removing a main thread scrolling reason should update the entire tree.
+    overflowB->removeAttribute("class");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+
+    // Adding a main thread scrolling reason should update the entire tree.
+    overflowB->setAttribute(HTMLNames::classAttr, "backgroundAttachmentFixed");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithFixedScroller)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  #overflowA {"
+        "    position: absolute;"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  #overflowB {"
+        "    position: fixed;"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .backgroundAttachmentFixed {"
+        "    background-image: url('foo');"
+        "    background-attachment: fixed;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div id='overflowB' class='backgroundAttachmentFixed'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+    Element* overflowA = document().getElementById("overflowA");
+    Element* overflowB = document().getElementById("overflowB");
+
+    EXPECT_TRUE(rootScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+
+    // Removing a main thread scrolling reason should update the entire tree.
+    overflowB->removeAttribute("class");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(rootScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+}
+
 } // namespace blink

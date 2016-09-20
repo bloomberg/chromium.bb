@@ -1404,6 +1404,8 @@ public:
     bool previousBackgroundObscured() const { return m_bitfields.previousBackgroundObscured(); }
     void setPreviousBackgroundObscured(bool b) { m_bitfields.setPreviousBackgroundObscured(b); }
 
+    bool isBackgroundAttachmentFixedObject() const { return m_bitfields.isBackgroundAttachmentFixedObject(); }
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,

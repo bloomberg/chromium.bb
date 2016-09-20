@@ -220,6 +220,8 @@ public:
         stringBuilder.append(node->userScrollableHorizontal() ? "yes" : "no");
         stringBuilder.append(" userScrollableVertical=");
         stringBuilder.append(node->userScrollableVertical() ? "yes" : "no");
+        stringBuilder.append(" hasBackgroundAttachmentFixedMainThreadScrollingReason=");
+        stringBuilder.append(node->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects) ? "yes" : "no");
     }
 };
 

@@ -1349,6 +1349,9 @@ void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object)
     m_backgroundAttachmentFixedObjects.add(object);
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
+
+    // TODO(pdr): When slimming paint v2 is enabled, invalidate the scroll paint
+    // property subtree for this so main thread scroll reasons are recomputed.
 }
 
 void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object)
@@ -1358,6 +1361,9 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object)
     m_backgroundAttachmentFixedObjects.remove(object);
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
+
+    // TODO(pdr): When slimming paint v2 is enabled, invalidate the scroll paint
+    // property subtree for this so main thread scroll reasons are recomputed.
 }
 
 void FrameView::addViewportConstrainedObject(LayoutObject* object)
