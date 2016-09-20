@@ -85,6 +85,10 @@ return LINUX_PLATFORM;
 #endif
 }
 
+const UpdateListIdentifier GetChromeUrlApiId() {
+  return UpdateListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
+}
+
 const UpdateListIdentifier GetUrlMalwareId() {
   return UpdateListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
@@ -92,10 +96,6 @@ const UpdateListIdentifier GetUrlMalwareId() {
 const UpdateListIdentifier GetUrlSocEngId() {
   return UpdateListIdentifier(GetCurrentPlatformType(), URL,
                               SOCIAL_ENGINEERING_PUBLIC);
-}
-
-const UpdateListIdentifier GetChromeUrlApiId() {
-  return UpdateListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
 // The Safe Browsing V4 server URL prefix.

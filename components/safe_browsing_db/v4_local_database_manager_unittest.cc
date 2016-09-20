@@ -136,4 +136,30 @@ TEST_F(V4LocalDatabaseManagerTest,
       GURL("http://example.com/a/"), nullptr));
 }
 
+TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
+  FullHashInfo fhi_malware(FullHash("Malware"), GetUrlMalwareId(),
+                           base::Time::Now());
+  fhi_malware.metadata.population_id = "malware_popid";
+
+  FullHashInfo fhi_api(FullHash("api"), GetChromeUrlApiId(), base::Time::Now());
+  fhi_api.metadata.population_id = "api_popid";
+
+  std::vector<FullHashInfo> fhis({fhi_malware, fhi_api});
+
+  SBThreatType result_threat_type;
+  ThreatMetadata metadata;
+
+  V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(&result_threat_type,
+                                                           &metadata, fhis);
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
+  EXPECT_EQ("malware_popid", metadata.population_id);
+
+  // Reversing the list has no effect.
+  std::reverse(std::begin(fhis), std::end(fhis));
+  V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(&result_threat_type,
+                                                           &metadata, fhis);
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
+  EXPECT_EQ("malware_popid", metadata.population_id);
+}
+
 }  // namespace safe_browsing

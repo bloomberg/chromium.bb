@@ -22,10 +22,51 @@ using content::ResourceType;
 
 namespace safe_browsing {
 
+typedef unsigned ThreatSeverity;
+
 // Manages the local, on-disk database of updates downloaded from the
 // SafeBrowsing service and interfaces with the protocol manager.
 class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
+  enum class ClientCallbackType {
+    // This represents the case when we're trying to determine if a URL is
+    // unsafe from the following perspectives: Malware, Phishing, UwS.
+    CHECK_BROWSE_URL = 0,
+
+    // This should always be the last value.
+    CHECK_MAX
+  };
+
+  // The information we need to return the response to the SafeBrowsing client
+  // that asked for the safety reputation of a URL if we can't determine that
+  // synchronously.
+  // TODO(vakh): In its current form, it only includes information for
+  // |CheckBrowseUrl| method. Extend it to serve other methods on |client|.
+  struct PendingCheck {
+    PendingCheck(Client* client,
+                 ClientCallbackType client_callback_type,
+                 const GURL& url);
+
+    ~PendingCheck();
+
+    // The SafeBrowsing client that's waiting for the safe/unsafe verdict.
+    Client* client;
+
+    // Determines which funtion from the |client| needs to be called once we
+    // know whether the URL in |url| is safe or unsafe.
+    ClientCallbackType client_callback_type;
+
+    // The URL that is being checked for being unsafe.
+    GURL url;
+
+    // The metadata associated with the full hash of the severest match found
+    // for that URL.
+    ThreatMetadata url_metadata;
+
+    // The threat verdict for the URL being checked.
+    SBThreatType result_threat_type;
+  };
+
   // Construct V4LocalDatabaseManager.
   // Must be initialized by calling StartOnIOThread() before using.
   V4LocalDatabaseManager(const base::FilePath& base_path);
@@ -68,6 +109,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
     task_runner_ = task_runner;
   }
+  FRIEND_TEST_ALL_PREFIXES(V4LocalDatabaseManagerTest,
+                           TestGetSeverestThreatTypeAndMetadata);
+
+  // The set of clients awaiting a full hash response. It is used for tracking
+  // which clients have cancelled their outstanding request.
+  typedef std::unordered_set<Client*> PendingClients;
 
   ~V4LocalDatabaseManager() override;
 
@@ -82,12 +129,29 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   void SetupDatabase();
 
-  void OnFullHashResponse(const std::vector<FullHashInfo>& full_hash_infos);
+  // Called when the |v4_get_hash_protocol_manager_| has the full hash response
+  // avaialble for the URL that we requested. It determines the severest
+  // threat type and responds to the |client| with that information.
+  void OnFullHashResponse(std::unique_ptr<PendingCheck> pending_check,
+                          const std::vector<FullHashInfo>& full_hash_infos);
 
+  // Called when all the stores managed by the database have been read from
+  // disk after startup and the database is ready for use.
   void DatabaseReady(std::unique_ptr<V4Database> v4_database);
 
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();
+
+  // Calls the appopriate method on the |client| object, based on the contents
+  // of |pending_check|.
+  void RespondToClient(std::unique_ptr<PendingCheck> pending_check);
+
+  // Finds the most severe |SBThreatType| and the corresponding |metadata| from
+  // |full_hash_infos|.
+  static void GetSeverestThreatTypeAndMetadata(
+      SBThreatType* result_threat_type,
+      ThreatMetadata* metadata,
+      const std::vector<FullHashInfo>& full_hash_infos);
 
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;
@@ -95,11 +159,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Whether the service is running.
   bool enabled_;
 
-  // Stores the current status of the lists to download from the SafeBrowsing
-  // servers.
-  // TODO(vakh): current_list_states_ doesn't really belong here.
-  // It should come through the database, from the various V4Stores.
-  base::hash_map<UpdateListIdentifier, std::string> current_list_states_;
+  // The set of clients that are waiting for a full hash response from the
+  // SafeBrowsing service.
+  PendingClients pending_clients_;
 
   // The list of stores to manage (for hash prefixes and full hashes), along
   // with the corresponding filename on disk for each of them.

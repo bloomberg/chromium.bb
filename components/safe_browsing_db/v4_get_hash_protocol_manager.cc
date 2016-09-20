@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -19,6 +20,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 
 namespace {
 
@@ -255,6 +257,7 @@ void V4GetHashProtocolManager::GetFullHashes(
     const FullHashToStoreAndHashPrefixesMap&
         full_hash_to_store_and_hash_prefixes,
     FullHashCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(CalledOnValidThread());
   DCHECK(!full_hash_to_store_and_hash_prefixes.empty());
 
@@ -306,6 +309,7 @@ void V4GetHashProtocolManager::GetFullHashes(
 void V4GetHashProtocolManager::GetFullHashesWithApis(
     const GURL& url,
     ThreatMetadataForApiCallback api_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme));
 
   std::unordered_set<FullHash> full_hashes;
@@ -629,6 +633,8 @@ void V4GetHashProtocolManager::UpdateCache(
     const std::vector<HashPrefix>& prefixes_requested,
     const std::vector<FullHashInfo>& full_hash_infos,
     const Time& negative_cache_expire) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // If negative_cache_expire is null, don't cache the results since it's not
   // clear till what time they should be considered valid.
   if (negative_cache_expire.is_null()) {
@@ -684,6 +690,7 @@ void V4GetHashProtocolManager::MergeResults(
 void V4GetHashProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   PendingHashRequests::iterator it = pending_hash_requests_.find(source);
   DCHECK(it != pending_hash_requests_.end()) << "Request not found";

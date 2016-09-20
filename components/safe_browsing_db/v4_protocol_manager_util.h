@@ -89,9 +89,9 @@ struct UpdateListIdentifier {
 std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
+const UpdateListIdentifier GetChromeUrlApiId();
 const UpdateListIdentifier GetUrlMalwareId();
 const UpdateListIdentifier GetUrlSocEngId();
-const UpdateListIdentifier GetChromeUrlApiId();
 
 // Represents the state of each store.
 typedef base::hash_map<UpdateListIdentifier, std::string> StoreStateMap;

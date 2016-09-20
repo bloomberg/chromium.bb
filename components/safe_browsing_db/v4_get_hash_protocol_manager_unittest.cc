@@ -16,6 +16,7 @@
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/testing_util.h"
 #include "components/safe_browsing_db/util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -161,6 +162,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   }
 
   bool callback_called_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {

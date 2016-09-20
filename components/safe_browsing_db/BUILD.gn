@@ -195,6 +195,7 @@ static_library("v4_get_hash_protocol_manager") {
     ":util",
     ":v4_protocol_manager_util",
     "//base",
+    "//content/public/browser",
     "//net",
     "//url",
   ]
@@ -304,6 +305,7 @@ source_set("v4_get_hash_protocol_manager_unittest") {
     ":v4_local_database_manager",
     "//base",
     "//base/test:test_support",
+    "//content/test:test_support",
     "//net",
     "//net:test_support",
     "//testing/gtest",

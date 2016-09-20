@@ -171,6 +171,7 @@ void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
     const std::unordered_set<UpdateListIdentifier>& stores_to_look,
     StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   matched_store_and_hash_prefixes->clear();
   for (const UpdateListIdentifier& identifier : stores_to_look) {
     const auto& store_pair = store_map_->find(identifier);
