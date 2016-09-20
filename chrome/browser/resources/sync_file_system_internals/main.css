@@ -58,16 +58,20 @@ tbody tr:nth-child(odd) {
   height: auto;
 }
 
-.file-icon {
-  background-image: url(chrome://syncfs-internals/file.png);
-  background-position: 0 2px;
-  background-repeat: no-repeat;
-  padding-left: 18px;
+.file-icon-cell {
+  -webkit-padding-start: 0;
+  display: inline-block; /* Makes the cell content start-align in RTL. */
 }
 
-.folder-icon {
-  background-image: url(chrome://syncfs-internals/folder_closed.png);
-  background-position: 0 2px;
-  background-repeat: no-repeat;
-  padding-left: 18px;
+.file-icon-cell > div {
+  display: inline-block; /* Avoids wrapping between image and text. */
+  padding-top: 1px;
+  vertical-align: top;
+  width: 18px;
 }
+
+<if expr="not is_macosx and not is_ios">
+html[dir=rtl] .file-icon-cell .folder-image {
+  transform: scaleX(-1);
+}
+</if>

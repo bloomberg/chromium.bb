@@ -44,7 +44,7 @@ FileMetadata.onGetExtensions = function(extensionStatuses) {
 
   // After drop down has been loaded with options, file metadata can be loaded
   getFileMetadata();
-}
+};
 
 /**
  * @return {string} extension ID that's currently selected in drop down box.
@@ -100,15 +100,29 @@ FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
     tr.appendChild(createElementFromDictionary('td', metadatEntry.details));
     itemContainer.appendChild(tr);
   }
-}
+};
 
 /**
  * @param {string} file type string.
  * @return {HTMLElement} TD with file or folder icon depending on type.
  */
 function createFileIconCell(type) {
-  var td = createElementFromText('td', type);
-  td.setAttribute('class', type.toLowerCase() + '-icon');
+  var img = document.createElement('div');
+  var lowerType = type.toLowerCase();
+  if (lowerType == 'file') {
+    img.style.content = cr.icon.getImage('chrome://theme/IDR_DEFAULT_FAVICON');
+  } else if (lowerType == 'folder') {
+    img.style.content = cr.icon.getImage('chrome://theme/IDR_FOLDER_CLOSED');
+    img.className = 'folder-image';
+  }
+
+  var imgWrapper = document.createElement('div');
+  imgWrapper.appendChild(img);
+
+  var td = document.createElement('td');
+  td.className = 'file-icon-cell';
+  td.appendChild(imgWrapper);
+  td.appendChild(document.createTextNode(type));
   return td;
 }
 

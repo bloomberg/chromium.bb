@@ -13,7 +13,6 @@
 #include "chrome/grit/sync_file_system_internals_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 
@@ -36,8 +35,6 @@ content::WebUIDataSource* CreateSyncFileSystemInternalsHTMLSource() {
       "task_log.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_TASK_LOG_JS);
   source->AddResourcePath(
       "dump_database.js", IDR_SYNC_FILE_SYSTEM_INTERNALS_DUMP_DATABASE_JS);
-  source->AddResourcePath("file.png", IDR_DEFAULT_FAVICON);
-  source->AddResourcePath("folder_closed.png", IDR_FOLDER_CLOSED);
   source->SetDefaultResource(IDR_SYNC_FILE_SYSTEM_INTERNALS_MAIN_HTML);
   return source;
 }
