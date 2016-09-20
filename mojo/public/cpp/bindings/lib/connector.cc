@@ -22,7 +22,6 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      scoped_refptr<base::SingleThreadTaskRunner> runner)
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
-      handle_watcher_(task_runner_),
       lock_(config == MULTI_THREADED_SEND ? new base::Lock : nullptr),
       weak_factory_(this) {
   weak_self_ = weak_factory_.GetWeakPtr();
@@ -44,14 +43,8 @@ Connector::~Connector() {
 }
 
 void Connector::CloseMessagePipe() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  CancelWait();
-  internal::MayAutoLock locker(lock_.get());
-  message_pipe_.reset();
-
-  base::AutoLock lock(connected_lock_);
-  connected_ = false;
+  // Throw away the returned message pipe.
+  PassMessagePipe();
 }
 
 ScopedMessagePipeHandle Connector::PassMessagePipe() {
@@ -60,6 +53,8 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   CancelWait();
   internal::MayAutoLock locker(lock_.get());
   ScopedMessagePipeHandle message_pipe = std::move(message_pipe_);
+  weak_factory_.InvalidateWeakPtrs();
+  sync_handle_watcher_callback_count_ = 0;
 
   base::AutoLock lock(connected_lock_);
   connected_ = false;
@@ -194,8 +189,10 @@ void Connector::OnSyncHandleWatcherHandleReady(MojoResult result) {
   sync_handle_watcher_callback_count_++;
   OnHandleReadyInternal(result);
   // At this point, this object might have been deleted.
-  if (weak_self)
+  if (weak_self) {
+    DCHECK_LT(0u, sync_handle_watcher_callback_count_);
     sync_handle_watcher_callback_count_--;
+  }
 }
 
 void Connector::OnHandleReadyInternal(MojoResult result) {
@@ -211,12 +208,12 @@ void Connector::OnHandleReadyInternal(MojoResult result) {
 
 void Connector::WaitToReadMore() {
   CHECK(!paused_);
-  DCHECK(!handle_watcher_.IsWatching());
+  DCHECK(!handle_watcher_);
 
-  MojoResult rv = handle_watcher_.Start(
+  handle_watcher_.reset(new Watcher(task_runner_));
+  MojoResult rv = handle_watcher_->Start(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(&Connector::OnWatcherHandleReady,
-                 base::Unretained(this)));
+      base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
 
   if (rv != MOJO_RESULT_OK) {
     // If the watch failed because the handle is invalid or its conditions can
@@ -237,8 +234,8 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
 
   bool receiver_result = false;
 
-  // Detect if |this| was destroyed during message dispatch. Allow for the
-  // possibility of re-entering ReadMore() through message dispatch.
+  // Detect if |this| was destroyed or the message pipe was closed/transferred
+  // during message dispatch.
   base::WeakPtr<Connector> weak_self = weak_self_;
 
   Message message;
@@ -272,9 +269,11 @@ void Connector::ReadAllAvailableMessages() {
   while (!error_) {
     MojoResult rv;
 
-    // Return immediately if |this| was destroyed. Do not touch any members!
-    if (!ReadSingleMessage(&rv))
+    if (!ReadSingleMessage(&rv)) {
+      // Return immediately without touching any members. |this| may have been
+      // destroyed.
       return;
+    }
 
     if (paused_)
       return;
@@ -285,7 +284,7 @@ void Connector::ReadAllAvailableMessages() {
 }
 
 void Connector::CancelWait() {
-  handle_watcher_.Cancel();
+  handle_watcher_.reset();
   sync_watcher_.reset();
 }
 

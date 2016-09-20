@@ -138,6 +138,7 @@ class Connector : public MessageReceiver {
 
   // Whether currently the control flow is inside the sync handle watcher
   // callback.
+  // It always returns false after CloseMessagePipe()/PassMessagePipe().
   bool during_sync_handle_watcher_callback() const {
     return sync_handle_watcher_callback_count_ > 0;
   }
@@ -155,7 +156,8 @@ class Connector : public MessageReceiver {
 
   void WaitToReadMore();
 
-  // Returns false if |this| was destroyed during message dispatch.
+  // Returns false if it is impossible to receive more messages in the future.
+  // |this| may have been destroyed in that case.
   WARN_UNUSED_RESULT bool ReadSingleMessage(MojoResult* read_result);
 
   // |this| can be destroyed during message dispatch.
@@ -178,7 +180,7 @@ class Connector : public MessageReceiver {
   MessageReceiver* incoming_receiver_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Watcher handle_watcher_;
+  std::unique_ptr<Watcher> handle_watcher_;
 
   bool error_ = false;
   bool drop_writes_ = false;
@@ -203,6 +205,8 @@ class Connector : public MessageReceiver {
 
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.
+  // NOTE: This weak pointer is invalidated when the message pipe is closed or
+  // transferred (i.e., when |connected_| is set to false).
   base::WeakPtr<Connector> weak_self_;
   base::WeakPtrFactory<Connector> weak_factory_;
 

@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
@@ -570,6 +571,27 @@ TEST_F(ConnectorTest, ProcessWhenNested) {
   run_loop.Run();
 
   ASSERT_EQ(2u, accumulator.size());
+}
+
+TEST_F(ConnectorTest, DestroyOnDifferentThreadAfterClose) {
+  std::unique_ptr<Connector> connector(
+      new Connector(std::move(handle0_), Connector::SINGLE_THREADED_SEND,
+                    base::ThreadTaskRunnerHandle::Get()));
+
+  connector->CloseMessagePipe();
+
+  base::Thread another_thread("ThreadForDestroyingConnector");
+  another_thread.Start();
+
+  base::RunLoop run_loop;
+  another_thread.task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(
+          [](std::unique_ptr<Connector> connector) { connector.reset(); },
+          base::Passed(std::move(connector))),
+      run_loop.QuitClosure());
+
+  run_loop.Run();
 }
 
 }  // namespace
