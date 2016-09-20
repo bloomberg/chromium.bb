@@ -14,5 +14,6 @@ encoding/decoding.
 Local changes:
 * copy .gitignore from https://git.xiph.org/?p=opus.git;a=tree
 * set 'x' flags: "chmod 750 win32/genversion.bat"
-* Apply patch from
+* Apply patches from
   https://git.xiph.org/?p=opus.git;a=commit;h=79e8f527b0344b0897a65be35e77f7885bd99409
+  https://git.xiph.org/?p=opus.git;a=commitdiff;h=e5ad26169502c1f0b067916e782c2b3fdea6fba9
