@@ -23,9 +23,25 @@ namespace remoting {
 class WebrtcVideoEncoder {
  public:
   struct FrameParams {
-    int bitrate_kbps;
+    // Target bitrate in kilobits per second.
+    int bitrate_kbps = -1;
+
+    // Frame duration.
     base::TimeDelta duration;
-    bool key_frame;
+
+    // If set to true then the active map passed to the encoder will only
+    // contain updated_region() from the current frame. Otherwise the active map
+    // is not cleared before adding updated_region(), which means it will
+    // contain union of updated_region() from all frames since this flag was
+    // last set. This flag is used to top-off video quality with VP8.
+    bool clear_active_map = false;
+
+    // Indicates that the encoder should encode this frame as a key frame.
+    bool key_frame = false;
+
+    // Quantization parameters for the encoder.
+    int vpx_min_quantizer = -1;
+    int vpx_max_quantizer = -1;
   };
 
   struct EncodedFrame {

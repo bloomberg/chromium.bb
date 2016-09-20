@@ -94,11 +94,11 @@ int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
 }
 
 webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
-    std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame,
+    const WebrtcVideoEncoder::EncodedFrame& frame,
     base::TimeTicks capture_time) {
   uint8_t* buffer =
-      reinterpret_cast<uint8_t*>(const_cast<char*>(frame->data.data()));
-  size_t buffer_size = frame->data.size();
+      reinterpret_cast<uint8_t*>(const_cast<char*>(frame.data.data()));
+  size_t buffer_size = frame.data.size();
   base::AutoLock lock(lock_);
   if (state_ == kUninitialized) {
     LOG(ERROR) << "encoder interface uninitialized";
@@ -107,11 +107,11 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   }
 
   webrtc::EncodedImage encoded_image(buffer, buffer_size, buffer_size);
-  encoded_image._encodedWidth = frame->size.width();
-  encoded_image._encodedHeight = frame->size.height();
+  encoded_image._encodedWidth = frame.size.width();
+  encoded_image._encodedHeight = frame.size.height();
   encoded_image._completeFrame = true;
   encoded_image._frameType =
-      frame->key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
+      frame.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
   int64_t capture_time_ms = (capture_time - base::TimeTicks()).InMilliseconds();
   encoded_image.capture_time_ms_ = capture_time_ms;
   encoded_image._timeStamp = static_cast<uint32_t>(capture_time_ms * 90);
@@ -206,14 +206,14 @@ void WebrtcDummyVideoEncoderFactory::DestroyVideoEncoder(
 
 webrtc::EncodedImageCallback::Result
 WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
-    std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame,
+    const WebrtcVideoEncoder::EncodedFrame& frame,
     base::TimeTicks capture_time) {
   if (encoders_.size() != 1) {
     LOG(ERROR) << "Unexpected number of encoders " << encoders_.size();
     return webrtc::EncodedImageCallback::Result(
         webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
   }
-  return encoders_.front()->SendEncodedFrame(std::move(frame), capture_time);
+  return encoders_.front()->SendEncodedFrame(frame, capture_time);
 }
 
 void WebrtcDummyVideoEncoderFactory::SetKeyFrameRequestCallback(

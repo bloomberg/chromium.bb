@@ -51,13 +51,16 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   // with the configured lossless color & encoding modes.
   void Configure(const webrtc::DesktopSize& size);
 
-  // Updates target bitrate.
-  void UpdateTargetBitrate(int new_bitrate_kbps);
+  // Updates codec configuration.
+  void UpdateConfig(const FrameParams& params);
 
   // Prepares |image_| for encoding. Writes updated rectangles into
   // |updated_region|.
   void PrepareImage(const webrtc::DesktopFrame& frame,
                     webrtc::DesktopRegion* updated_region);
+
+  // Clears active map.
+  void ClearActiveMap();
 
   // Updates the active map according to |updated_region|. Active map is then
   // given to the encoder to speed up encoding.
@@ -79,7 +82,6 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   ScopedVpxCodec codec_;
 
   vpx_codec_enc_cfg_t config_;
-  uint32_t target_bitrate_kbps_;
 
   // Used to generate zero-based frame timestamps.
   base::TimeTicks timestamp_base_;
@@ -91,9 +93,6 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   // Active map used to optimize out processing of un-changed macroblocks.
   std::unique_ptr<uint8_t[]> active_map_;
   webrtc::DesktopSize active_map_size_;
-
-  // True if the codec wants unchanged frames to finish topping-off with.
-  bool encode_unchanged_frame_;
 
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;

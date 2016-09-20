@@ -44,9 +44,6 @@ const int kVp9AqModeCyclicRefresh = 3;
 
 const int kDefaultTargetBitrateKbps = 1000;
 
-// Target quantizer at which stop the encoding top-off.
-const int kTargetQuantizerForVp8TopOff = 30;
-
 void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
                               const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
@@ -282,13 +279,6 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
-  // Based on information fetching active map, we return here if there is
-  // nothing to top-off.
-  if (frame.updated_region().is_empty() && !encode_unchanged_frame_ &&
-      !params.key_frame) {
-    return nullptr;
-  }
-
   // Create or reconfigure the codec to match the size of |frame|.
   if (!codec_ ||
       (image_ &&
@@ -296,7 +286,7 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
     Configure(frame.size());
   }
 
-  UpdateTargetBitrate(params.bitrate_kbps);
+  UpdateConfig(params);
 
   vpx_active_map_t act_map;
   act_map.rows = active_map_size_.height();
@@ -304,18 +294,17 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
   act_map.active_map = active_map_.get();
 
   webrtc::DesktopRegion updated_region;
-  if (!frame.updated_region().is_empty()) {
-    // Convert the updated capture data ready for encode.
-    PrepareImage(frame, &updated_region);
+  // Convert the updated capture data ready for encode.
+  PrepareImage(frame, &updated_region);
 
-    // Update active map based on updated region.
-    SetActiveMapFromRegion(updated_region);
+  // Update active map based on updated region.
+  if (params.clear_active_map)
+    ClearActiveMap();
+  SetActiveMapFromRegion(updated_region);
 
-    // Apply active map to the encoder.
-
-    if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
-      LOG(ERROR) << "Unable to apply active map";
-    }
+  // Apply active map to the encoder.
+  if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
+    LOG(ERROR) << "Unable to apply active map";
   }
 
   vpx_codec_err_t ret = vpx_codec_encode(
@@ -334,13 +323,6 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
       DCHECK_EQ(ret, VPX_CODEC_OK)
           << "Failed to fetch active map: " << vpx_codec_err_to_string(ret)
           << "\n";
-
-      // If the encoder output no changes then there's nothing left to top-off.
-      encode_unchanged_frame_ = !updated_region.is_empty();
-    } else {
-      // Always set |encode_unchanged_frame_| when using VP8. It will be reset
-      // below once the target quantizer value is reached.
-      encode_unchanged_frame_ = true;
     }
 
     UpdateRegionFromActiveMap(&updated_region);
@@ -368,13 +350,9 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
             vpx_packet->data.frame.sz);
         encoded_frame->key_frame =
             vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY;
-        int quantizer = -1;
         CHECK_EQ(vpx_codec_control(codec_.get(), VP8E_GET_LAST_QUANTIZER_64,
-                                   &quantizer),
+                                   &(encoded_frame->quantizer)),
                  VPX_CODEC_OK);
-        // VP8: Stop top-off as soon as the target quantizer value is reached.
-        if (!use_vp9_ && quantizer <= kTargetQuantizerForVp8TopOff)
-          encode_unchanged_frame_ = false;
         break;
       }
       default:
@@ -387,8 +365,6 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)
     : use_vp9_(use_vp9),
-      target_bitrate_kbps_(kDefaultTargetBitrateKbps),
-      encode_unchanged_frame_(false),
       clock_(&default_tick_clock_) {
   // Indicates config is still uninitialized.
   config_.g_timebase.den = 0;
@@ -409,6 +385,7 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
       (size.height() + kMacroBlockSize - 1) / kMacroBlockSize);
   active_map_.reset(
       new uint8_t[active_map_size_.width() * active_map_size_.height()]);
+  ClearActiveMap();
 
   // TODO(wez): Remove this hack once VPX can handle frame size reconfiguration.
   // See https://code.google.com/p/webm/issues/detail?id=912.
@@ -432,7 +409,8 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   } else {
     SetVp8CodecParameters(&config_, size);
   }
-  config_.rc_target_bitrate = target_bitrate_kbps_;
+
+  config_.rc_target_bitrate = kDefaultTargetBitrateKbps;
 
   // Initialize or re-configure the codec with the custom configuration.
   if (!codec_) {
@@ -452,22 +430,41 @@ void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   }
 }
 
-void WebrtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
-  target_bitrate_kbps_ = new_bitrate_kbps;
-
+void WebrtcVideoEncoderVpx::UpdateConfig(const FrameParams& params) {
   // Configuration not initialized.
   if (config_.g_timebase.den == 0)
     return;
 
-  if (config_.rc_target_bitrate == static_cast<unsigned int>(new_bitrate_kbps))
+  bool changed = false;
+
+  if (params.bitrate_kbps >= 0 &&
+      config_.rc_target_bitrate !=
+          static_cast<unsigned int>(params.bitrate_kbps)) {
+    config_.rc_target_bitrate = params.bitrate_kbps;
+    changed = true;
+  }
+
+  if (params.vpx_min_quantizer >= 0 &&
+      config_.rc_min_quantizer !=
+          static_cast<unsigned int>(params.vpx_min_quantizer)) {
+    config_.rc_min_quantizer = params.vpx_min_quantizer;
+    changed = true;
+  }
+
+  if (params.vpx_max_quantizer >= 0 &&
+      config_.rc_max_quantizer !=
+          static_cast<unsigned int>(params.vpx_max_quantizer)) {
+    config_.rc_max_quantizer = params.vpx_max_quantizer;
+    changed = true;
+  }
+
+  if (!changed)
     return;
-  config_.rc_target_bitrate = new_bitrate_kbps;
 
   // Update encoder context.
   if (vpx_codec_enc_config_set(codec_.get(), &config_))
     NOTREACHED() << "Unable to set encoder config";
 
-  VLOG(1) << "New rc_target_bitrate: " << new_bitrate_kbps << " kbps";
 }
 
 void WebrtcVideoEncoderVpx::PrepareImage(
@@ -480,8 +477,8 @@ void WebrtcVideoEncoderVpx::PrepareImage(
 
   updated_region->Clear();
   if (image_) {
-    // Pad each rectangle to avoid the block-artefact filters in libvpx from
-    // introducing artefacts; VP9 includes up to 8px either side, and VP8 up to
+    // Pad each rectangle to avoid the block-artifact filters in libvpx from
+    // introducing artifacts; VP9 includes up to 8px either side, and VP8 up to
     // 3px, so unchanged pixels up to that far out may still be affected by the
     // changes in the updated region, and so must be listed in the active map.
     // After padding we align each rectangle to 16x16 active-map macroblocks.
@@ -552,12 +549,15 @@ void WebrtcVideoEncoderVpx::PrepareImage(
   }
 }
 
-void WebrtcVideoEncoderVpx::SetActiveMapFromRegion(
-    const webrtc::DesktopRegion& updated_region) {
+void WebrtcVideoEncoderVpx::ClearActiveMap() {
+  DCHECK(active_map_);
   // Clear active map first.
   memset(active_map_.get(), 0,
          active_map_size_.width() * active_map_size_.height());
+}
 
+void WebrtcVideoEncoderVpx::SetActiveMapFromRegion(
+    const webrtc::DesktopRegion& updated_region) {
   // Mark updated areas active.
   for (webrtc::DesktopRegion::Iterator r(updated_region); !r.IsAtEnd();
        r.Advance()) {

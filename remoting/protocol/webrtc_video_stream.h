@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/timer/timer.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
@@ -31,8 +30,9 @@ namespace remoting {
 namespace protocol {
 
 class HostVideoStatsDispatcher;
-class WebrtcVideoCapturerAdapter;
+class WebrtcFrameScheduler;
 class WebrtcTransport;
+class WebrtcVideoCapturerAdapter;
 
 class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,
@@ -64,10 +64,7 @@ class WebrtcVideoStream : public VideoStream,
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
   void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
-  // Starts |capture_timer_|.
-  void StartCaptureTimer();
-
-  // Called by |capture_timer_|.
+  // Called by the |scheduler_|.
   void CaptureNextFrame();
 
   // Task running on the encoder thread to encode the |frame|.
@@ -79,7 +76,6 @@ class WebrtcVideoStream : public VideoStream,
   void OnFrameEncoded(EncodedFrameWithTimestamps frame);
 
   void SetKeyFrameRequest();
-  bool ClearAndGetKeyFrameRequest();
   void SetTargetBitrate(int bitrate);
 
   // Capturer used to capture the screen.
@@ -102,22 +98,13 @@ class WebrtcVideoStream : public VideoStream,
   // Timestamps for the frame that's being captured.
   std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
 
-  bool key_frame_request_ = false;
-  uint32_t target_bitrate_kbps_ = 1000; // Initial bitrate.
+  std::unique_ptr<WebrtcFrameScheduler> scheduler_;
 
   bool received_first_frame_request_ = false;
-
-  bool capture_pending_ = false;
-  bool encode_pending_ = false;
-
-  // Last time capture was started.
-  base::TimeTicks last_capture_started_ticks_;
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
   Observer* observer_ = nullptr;
-
-  base::RepeatingTimer capture_timer_;
 
   base::ThreadChecker thread_checker_;
 

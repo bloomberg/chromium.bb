@@ -13,6 +13,7 @@
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/webrtc_dummy_video_capturer.h"
+#include "remoting/protocol/webrtc_frame_scheduler_simple.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
@@ -134,18 +135,15 @@ bool WebrtcVideoStream::Start(
   video_stats_dispatcher_.Init(webrtc_transport_->CreateOutgoingChannel(
                                    video_stats_dispatcher_.channel_name()),
                                this);
+
+  scheduler_.reset(new WebrtcFrameSchedulerSimple());
+
   return true;
 }
 
 void WebrtcVideoStream::Pause(bool pause) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (pause) {
-    capture_timer_.Stop();
-  } else {
-    if (received_first_frame_request_) {
-      StartCaptureTimer();
-    }
-  }
+  scheduler_->Pause(pause);
 }
 
 void WebrtcVideoStream::OnInputEventReceived(int64_t event_timestamp) {
@@ -173,50 +171,27 @@ void WebrtcVideoStream::SetObserver(Observer* observer) {
 void WebrtcVideoStream::SetKeyFrameRequest() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  key_frame_request_ = true;
+  scheduler_->SetKeyFrameRequest();
+
+  // Create capture scheduler when the first key frame request is received.
   if (!received_first_frame_request_) {
     received_first_frame_request_ = true;
-    StartCaptureTimer();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&WebrtcVideoStream::StartCaptureTimer,
-                              weak_factory_.GetWeakPtr()));
+    scheduler_->Start(base::Bind(&WebrtcVideoStream::CaptureNextFrame,
+                                 base::Unretained(this)));
   }
-}
-
-void WebrtcVideoStream::StartCaptureTimer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  capture_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1) / 30, this,
-                       &WebrtcVideoStream::CaptureNextFrame);
 }
 
 void WebrtcVideoStream::SetTargetBitrate(int target_bitrate_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   VLOG(1) << "Set Target bitrate " << target_bitrate_kbps;
-  target_bitrate_kbps_ = target_bitrate_kbps;
-}
-
-bool WebrtcVideoStream::ClearAndGetKeyFrameRequest() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  bool key_frame_request = key_frame_request_;
-  key_frame_request_ = false;
-  return key_frame_request;
+  scheduler_->SetTargetBitrate(target_bitrate_kbps);
 }
 
 void WebrtcVideoStream::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(capture_pending_);
-  capture_pending_ = false;
-
-
-  if (encode_pending_) {
-    // TODO(isheriff): consider queuing here
-    VLOG(1) << "Dropping captured frame since encoder is still busy";
-    return;
-  }
 
   // TODO(sergeyu): Handle ERROR_PERMANENT result here.
 
@@ -235,14 +210,9 @@ void WebrtcVideoStream::OnCaptureResult(
   captured_frame_timestamps_->capture_delay =
       base::TimeDelta::FromMilliseconds(frame->capture_time_ms());
 
-  encode_pending_ = true;
-
-  // TODO(sergeyu): Currently frame_duration is always set to 1/15 of a second.
-  // Experiment with different values, and try changing it dynamically.
   WebrtcVideoEncoder::FrameParams frame_params;
-  frame_params.bitrate_kbps = target_bitrate_kbps_;
-  frame_params.duration = base::TimeDelta::FromSeconds(1) / 15;
-  frame_params.key_frame = ClearAndGetKeyFrameRequest();
+  if (!scheduler_->GetEncoderFrameParams(*frame, &frame_params))
+    return;
 
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
@@ -266,20 +236,6 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (capture_pending_ || encode_pending_) {
-    VLOG(1) << "Capture/encode still pending..";
-    return;
-  }
-
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  capture_pending_ = true;
-  VLOG(1) << "Capture next frame after "
-          << (base::TimeTicks::Now() - last_capture_started_ticks_)
-                 .InMilliseconds();
-  last_capture_started_ticks_ = now;
-
-
   // |next_frame_timestamps_| is not set if no input events were received since
   // the previous frame. In that case create FrameTimestamps instance without
   // setting |input_event_client_timestamp| and |input_event_received_time|.
@@ -287,7 +243,7 @@ void WebrtcVideoStream::CaptureNextFrame() {
     next_frame_timestamps_.reset(new FrameTimestamps());
 
   captured_frame_timestamps_ = std::move(next_frame_timestamps_);
-  captured_frame_timestamps_->capture_started_time = now;
+  captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
 
   capturer_->Capture(webrtc::DesktopRegion());
 }
@@ -309,64 +265,49 @@ WebrtcVideoStream::EncodedFrameWithTimestamps WebrtcVideoStream::EncodeFrame(
 void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  encode_pending_ = false;
-
-  size_t frame_size = frame.frame ? frame.frame->data.size() : 0;
-
-  // Generate HostFrameStats.
-  HostFrameStats stats;
-  stats.frame_size = frame_size;
-
-  if (!frame.timestamps->input_event_received_time.is_null()) {
-    stats.capture_pending_delay = frame.timestamps->capture_started_time -
-                                  frame.timestamps->input_event_received_time;
-    stats.latest_event_timestamp = base::TimeTicks::FromInternalValue(
-        frame.timestamps->input_event_client_timestamp);
+  // Send the frame itself.
+  webrtc::EncodedImageCallback::Result result =
+      webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
+          *frame.frame, frame.timestamps->capture_started_time);
+  if (result.error != webrtc::EncodedImageCallback::Result::OK) {
+    // TODO(sergeyu): Stop the stream.
+    LOG(ERROR) << "Failed to send video frame.";
+    return;
   }
 
-  stats.capture_delay = frame.timestamps->capture_delay;
-
-  // Total overhead time for IPC and threading when capturing frames.
-  stats.capture_overhead_delay = (frame.timestamps->capture_ended_time -
-                                  frame.timestamps->capture_started_time) -
-                                 stats.capture_delay;
-
-  stats.encode_pending_delay = frame.timestamps->encode_started_time -
-                               frame.timestamps->capture_ended_time;
-
-  stats.encode_delay = frame.timestamps->encode_ended_time -
-                       frame.timestamps->encode_started_time;
-
-  // TODO(sergeyu): Figure out how to measure send_pending time with WebRTC and
-  // set it here.
-  stats.send_pending_delay = base::TimeDelta();
-
-  uint32_t frame_id = 0;
-  if (frame.frame) {
-    // Send the frame itself.
-    webrtc::EncodedImageCallback::Result result =
-        webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
-            std::move(frame.frame), frame.timestamps->capture_started_time);
-    if (result.error != webrtc::EncodedImageCallback::Result::OK) {
-      // TODO(sergeyu): Stop the stream.
-      LOG(ERROR) << "Failed to send video frame.";
-      return;
-    }
-    frame_id = result.frame_id;
-  }
+  scheduler_->OnFrameEncoded(*frame.frame, result);
 
   // Send FrameStats message.
-  if (video_stats_dispatcher_.is_connected())
-    video_stats_dispatcher_.OnVideoFrameStats(frame_id, stats);
+  if (video_stats_dispatcher_.is_connected()) {
+    HostFrameStats stats;
+    stats.frame_size = frame.frame->data.size();
 
-  // Simplistic adaptation of frame polling in the range 5 FPS to 30 FPS.
-  // TODO(sergeyu): Move this logic to a separate class.
-  float encoded_bits = frame_size * 8.0;
-  uint32_t next_sched_ms = std::max(
-      33, std::min(static_cast<int>(encoded_bits / target_bitrate_kbps_), 200));
-  capture_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(next_sched_ms), this,
-                       &WebrtcVideoStream::CaptureNextFrame);
+    if (!frame.timestamps->input_event_received_time.is_null()) {
+      stats.capture_pending_delay = frame.timestamps->capture_started_time -
+                                    frame.timestamps->input_event_received_time;
+      stats.latest_event_timestamp = base::TimeTicks::FromInternalValue(
+          frame.timestamps->input_event_client_timestamp);
+    }
+
+    stats.capture_delay = frame.timestamps->capture_delay;
+
+    // Total overhead time for IPC and threading when capturing frames.
+    stats.capture_overhead_delay = (frame.timestamps->capture_ended_time -
+                                    frame.timestamps->capture_started_time) -
+                                   stats.capture_delay;
+
+    stats.encode_pending_delay = frame.timestamps->encode_started_time -
+                                 frame.timestamps->capture_ended_time;
+
+    stats.encode_delay = frame.timestamps->encode_ended_time -
+                         frame.timestamps->encode_started_time;
+
+    // TODO(sergeyu): Figure out how to measure send_pending time with WebRTC
+    // and set it here.
+    stats.send_pending_delay = base::TimeDelta();
+
+    video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
+  }
 }
 
 }  // namespace protocol

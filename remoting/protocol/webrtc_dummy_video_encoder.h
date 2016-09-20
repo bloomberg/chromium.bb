@@ -45,7 +45,7 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   int32_t SetRates(uint32_t bitrate, uint32_t framerate) override;
 
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
-      std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame,
+      const WebrtcVideoEncoder::EncodedFrame& frame,
       base::TimeTicks capture_time);
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
   void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
@@ -81,7 +81,7 @@ class WebrtcDummyVideoEncoderFactory
   void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
-      std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> packet,
+      const WebrtcVideoEncoder::EncodedFrame& packet,
       base::TimeTicks capture_time);
 
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
