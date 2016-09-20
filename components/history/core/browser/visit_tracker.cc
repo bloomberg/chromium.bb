@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 
 namespace history {
 
@@ -18,13 +18,9 @@ static const size_t kResizeBigTransitionListTo = 64;
 static_assert(kResizeBigTransitionListTo < kMaxItemsInTransitionList,
               "maxium number of items must be larger than we are resizing to");
 
-VisitTracker::VisitTracker() {
-}
+VisitTracker::VisitTracker() {}
 
-VisitTracker::~VisitTracker() {
-  base::STLDeleteContainerPairSecondPointers(contexts_.begin(),
-                                             contexts_.end());
-}
+VisitTracker::~VisitTracker() {}
 
 // This function is potentially slow because it may do up to two brute-force
 // searches of the transitions list. This transitions list is kept to a
@@ -37,10 +33,10 @@ VisitID VisitTracker::GetLastVisit(ContextID context_id,
   if (referrer.is_empty() || !context_id)
     return 0;
 
-  ContextList::iterator i = contexts_.find(context_id);
+  auto i = contexts_.find(context_id);
   if (i == contexts_.end())
     return 0;  // We don't have any entries for this context.
-  TransitionList& transitions = *i->second;
+  TransitionList& transitions = i->second;
 
   // Recall that a navigation entry ID is associated with a single session
   // history entry. In the case of automatically loaded iframes, many
@@ -75,28 +71,19 @@ void VisitTracker::AddVisit(ContextID context_id,
                             int nav_entry_id,
                             const GURL& url,
                             VisitID visit_id) {
-  TransitionList* transitions = contexts_[context_id];
-  if (!transitions) {
-    transitions = new TransitionList;
-    contexts_[context_id] = transitions;
-  }
+  TransitionList& transitions = contexts_[context_id];
 
   Transition t;
   t.url = url;
   t.nav_entry_id = nav_entry_id;
   t.visit_id = visit_id;
-  transitions->push_back(t);
+  transitions.push_back(t);
 
-  CleanupTransitionList(transitions);
+  CleanupTransitionList(&transitions);
 }
 
 void VisitTracker::ClearCachedDataForContextID(ContextID context_id) {
-  ContextList::iterator i = contexts_.find(context_id);
-  if (i == contexts_.end())
-    return;  // We don't have any entries for this context.
-
-  delete i->second;
-  contexts_.erase(i);
+  contexts_.erase(context_id);
 }
 
 
