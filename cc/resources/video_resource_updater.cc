@@ -382,7 +382,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     if (output_plane_resource_size.IsEmpty() ||
         output_plane_resource_size.width() > max_resource_size ||
         output_plane_resource_size.height() > max_resource_size) {
-      break;
+      // This output plane has invalid geometry. Clean up and return an empty
+      // external resources.
+      for (ResourceList::iterator resource_it : plane_resources)
+        resource_it->remove_ref();
+      return VideoFrameExternalResources();
     }
 
     const bool is_immutable = true;
