@@ -23,6 +23,7 @@ ContentSuggestionsService::ContentSuggestionsService(
     PrefService* pref_service)
     : state_(state),
       history_service_observer_(this),
+      ntp_snippets_service_(nullptr),
       user_classifier_(pref_service) {
   // Can be null in tests.
   if (history_service)
