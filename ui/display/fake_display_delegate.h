@@ -6,6 +6,7 @@
 #define UI_DISPLAY_FAKE_DISPLAY_DELEGATE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -26,14 +27,17 @@ namespace display {
 //
 // The size and number of displays can controlled via --screen-config=X
 // command line flag with the format:
-//   HxW[,]
-//     H: display height in pixels
-//     W: display width in pixels
+//   HxW[^dpi][,]
+//     H: display height in pixels [int]
+//     W: display width in pixels [int]
+//     dpi: display physical size set based on DPI [int]
 //
 // Two 800x800 displays:
 //  --screen-config=800x800,800x800
 // One 1820x1080 display and one 400x400 display:
 //  --screen-config=1920x1080,400x400
+// No displays:
+//  --screen-config=none
 //
 // FakeDisplayDelegate also implements FakeDisplayController which provides a
 // way to change the display state at runtime.
@@ -45,6 +49,7 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
 
   // FakeDisplayController:
   int64_t AddDisplay(const gfx::Size& display_size) override;
+  bool AddDisplay(std::unique_ptr<ui::DisplaySnapshot> display) override;
   bool RemoveDisplay(int64_t display_id) override;
 
   // NativeDisplayDelegate overrides:
@@ -84,8 +89,14 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   FakeDisplayController* GetFakeDisplayController() override;
 
  protected:
-  // Initializes display snapshots from command line flags if provided.
-  void InitFromCommandLine();
+  // Creates a display snapshot from the provided |spec| string. Return null if
+  // |spec| is invalid.
+  std::unique_ptr<ui::DisplaySnapshot> CreateSnapshotFromSpec(
+      const std::string& spec);
+
+  // Sets initial display snapshots from command line flag. Returns true if
+  // command line flag was provided.
+  bool InitFromCommandLine();
 
   // Updates observers when display configuration has changed. Will not update
   // until after |Initialize()| has been called.
@@ -93,7 +104,7 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
 
  private:
   base::ObserverList<ui::NativeDisplayObserver> observers_;
-  std::vector<std::unique_ptr<FakeDisplaySnapshot>> displays_;
+  std::vector<std::unique_ptr<ui::DisplaySnapshot>> displays_;
 
   // If |Initialize()| has been called.
   bool initialized_ = false;

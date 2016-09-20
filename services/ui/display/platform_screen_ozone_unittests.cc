@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/display/platform_screen.h"
@@ -12,7 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/display/chromeos/display_snapshot_virtual.h"
+#include "ui/display/display_switches.h"
+#include "ui/display/fake_display_snapshot.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -30,7 +32,7 @@ using testing::SizeIs;
 namespace {
 
 // The ID of default "display" that gets added when running off device.
-const int64_t kDefaultDisplayId = 36029742295586049;
+const int64_t kDefaultDisplayId = 1;
 
 // Holds info about the display state we want to test.
 struct DisplayState {
@@ -57,9 +59,11 @@ MATCHER_P(DisplayOrigin, origin_string, "") {
 // Make a DisplaySnapshot with specified id and size.
 std::unique_ptr<DisplaySnapshot> MakeSnapshot(int64_t id,
                                               const gfx::Size& size) {
-  auto snapshot = base::MakeUnique<DisplaySnapshotVirtual>(id, size);
-  snapshot->set_current_mode(snapshot->modes()[0].get());
-  return snapshot;
+  return FakeDisplaySnapshot::Builder()
+      .SetId(id)
+      .SetNativeMode(size)
+      .SetCurrentMode(size)
+      .Build();
 }
 
 // Test delegate to track what functions calls the delegate receives.
@@ -166,10 +170,17 @@ class PlatformScreenOzoneTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
+        switches::kScreenConfig, "none");
+
     testing::Test::SetUp();
     ui::OzonePlatform::InitializeForUI();
     platform_screen_ = base::MakeUnique<PlatformScreenOzone>();
     platform_screen_->Init(&delegate_);
+
+    // Have all tests start with a 1024x768 display by default.
+    AddDisplay(kDefaultDisplayId, gfx::Size(1024, 768));
+    TriggerOnDisplayModeChanged();
 
     // Double check the expected display exists and clear counters.
     ASSERT_THAT(delegate()->added(), SizeIs(1));
@@ -177,9 +188,6 @@ class PlatformScreenOzoneTest : public testing::Test {
     ASSERT_THAT(delegate_.added()[0], DisplayOrigin("0,0"));
     ASSERT_THAT(delegate_.added()[0], DisplaySize("1024x768"));
     delegate_.Reset();
-
-    // Make the initial list of snapshots match what exists.
-    AddDisplay(kDefaultDisplayId);
   }
 
   void TearDown() override {

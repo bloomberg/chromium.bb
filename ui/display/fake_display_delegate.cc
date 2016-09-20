@@ -5,6 +5,7 @@
 #include "ui/display/fake_display_delegate.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/hash.h"
@@ -34,30 +35,52 @@ FakeDisplayDelegate::FakeDisplayDelegate() {}
 FakeDisplayDelegate::~FakeDisplayDelegate() {}
 
 int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
+  DCHECK(!display_size.IsEmpty());
+
   if (next_display_id_ == 0xFF) {
     LOG(ERROR) << "Exceeded display id limit";
-    return display::Display::kInvalidDisplayID;
+    return Display::kInvalidDisplayID;
   }
 
   int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
                                  ++next_display_id_);
-  // Add the first display as internal.
-  ui::DisplayConnectionType type = displays_.empty()
-                                       ? ui::DISPLAY_CONNECTION_TYPE_INTERNAL
-                                       : ui::DISPLAY_CONNECTION_TYPE_UNKNOWN;
-  std::string name = base::StringPrintf("Fake Display %d", next_display_id_);
 
-  displays_.push_back(
-      base::MakeUnique<FakeDisplaySnapshot>(id, display_size, type, name));
+  FakeDisplaySnapshot::Builder builder;
+  builder.SetId(id).SetNativeMode(display_size);
+  builder.SetName(base::StringPrintf("Fake Display %d", next_display_id_));
+
+  // Add the first display as internal.
+  if (displays_.empty())
+    builder.SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
+
+  return AddDisplay(builder.Build()) ? id : Display::kInvalidDisplayID;
+}
+
+bool FakeDisplayDelegate::AddDisplay(
+    std::unique_ptr<ui::DisplaySnapshot> display) {
+  DCHECK(display);
+
+  int64_t display_id = display->display_id();
+  // Check there is no existing display with the same id.
+  for (auto& existing_display : displays_) {
+    if (existing_display->display_id() == display_id) {
+      LOG(ERROR) << "Display with id " << display_id << " already exists";
+      return false;
+    }
+  }
+
+  DVLOG(1) << "Added display " << display->ToString();
+  displays_.push_back(std::move(display));
   OnConfigurationChanged();
 
-  return id;
+  return true;
 }
 
 bool FakeDisplayDelegate::RemoveDisplay(int64_t display_id) {
   // Find display snapshot with matching id and remove it.
   for (auto iter = displays_.begin(); iter != displays_.end(); ++iter) {
     if ((*iter)->display_id() == display_id) {
+      DVLOG(1) << "Removed display " << (*iter)->ToString();
       displays_.erase(iter);
       OnConfigurationChanged();
       return true;
@@ -69,10 +92,9 @@ bool FakeDisplayDelegate::RemoveDisplay(int64_t display_id) {
 
 void FakeDisplayDelegate::Initialize() {
   DCHECK(!initialized_);
-  InitFromCommandLine();
 
   // If no command line flags are provided then initialize a default display.
-  if (displays_.empty())
+  if (!InitFromCommandLine())
     AddDisplay(gfx::Size(1024, 768));
 
   initialized_ = true;
@@ -162,26 +184,59 @@ FakeDisplayController* FakeDisplayDelegate::GetFakeDisplayController() {
   return static_cast<FakeDisplayController*>(this);
 }
 
-void FakeDisplayDelegate::InitFromCommandLine() {
+bool FakeDisplayDelegate::InitFromCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kScreenConfig))
-    return;
+    return false;
 
   const std::string command_string =
       command_line->GetSwitchValueASCII(switches::kScreenConfig);
 
+  // Start without any displays.
+  if (command_string == "none")
+    return true;
+
   // Split on commas and parse each display string.
   for (std::string part : base::SplitString(
            command_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    int width = 0;
-    int height = 0;
-    if (sscanf(part.c_str(), "%dx%d", &width, &height) >= 2) {
-      gfx::Size display_size(width, height);
-      AddDisplay(display_size);
+    std::unique_ptr<ui::DisplaySnapshot> snapshot =
+        CreateSnapshotFromSpec(part);
+    if (snapshot) {
+      AddDisplay(std::move(snapshot));
     } else {
       LOG(ERROR) << "Failed to parse display \"" << part << "\"";
     }
   }
+
+  return true;
+}
+
+std::unique_ptr<ui::DisplaySnapshot>
+FakeDisplayDelegate::CreateSnapshotFromSpec(const std::string& spec) {
+  int width = 0;
+  int height = 0;
+  int dpi = 0;
+
+  // Width and height are required but DPI is optional.
+  int found = sscanf(spec.c_str(), "%dx%d^%d", &width, &height, &dpi);
+  if (found < 2)
+    return nullptr;
+
+  int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
+                                 ++next_display_id_);
+
+  FakeDisplaySnapshot::Builder builder;
+  builder.SetId(id).SetNativeMode(gfx::Size(width, height));
+  builder.SetName(base::StringPrintf("Fake Display %d", next_display_id_));
+
+  if (found >= 3)
+    builder.SetDPI(dpi);
+
+  // TODO(kylechar): Add type to the spec string.
+  if (displays_.empty())
+    builder.SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
+
+  return builder.Build();
 }
 
 void FakeDisplayDelegate::OnConfigurationChanged() {

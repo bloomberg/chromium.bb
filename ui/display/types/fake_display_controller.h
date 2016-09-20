@@ -7,10 +7,16 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "ui/display/types/display_types_export.h"
 
 namespace gfx {
 class Size;
+}
+
+namespace ui {
+class DisplaySnapshot;
 }
 
 namespace display {
@@ -23,6 +29,10 @@ class DISPLAY_TYPES_EXPORT FakeDisplayController {
   // Adds a fake display with the specified size, returns the display id or
   // |kInvalidDisplayId| if it fails.
   virtual int64_t AddDisplay(const gfx::Size& display_size) = 0;
+
+  // Adds |display| to the list of displays and returns true if successful. Will
+  // fail if an existing display has the same id as |display|.
+  virtual bool AddDisplay(std::unique_ptr<ui::DisplaySnapshot> display) = 0;
 
   // Removes a fake display with specified id, returns true if successful.
   virtual bool RemoveDisplay(int64_t display_id) = 0;
