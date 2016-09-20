@@ -91,7 +91,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
       return '';
     }
     // No need to add a line break before |body| as it is the first element.
-    if (node.nodeName !== 'BODY' && style.display !== 'inline') {
+    if (node.nodeName.toUpperCase() !== 'BODY' && style.display !== 'inline') {
       txt = '\n';
     }
   }

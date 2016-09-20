@@ -868,7 +868,7 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
   var pageHeight = __gCrWeb['findInPage'].getBodyHeight();
   var pageWidth = __gCrWeb['findInPage'].getBodyWidth();
 
-  while (elem && elem.nodeName != 'BODY') {
+  while (elem && elem.nodeName.toUpperCase() != 'BODY') {
     if (elem.style.display === 'none' ||
         elem.style.visibility === 'hidden' ||
         elem.style.opacity === 0 ||
