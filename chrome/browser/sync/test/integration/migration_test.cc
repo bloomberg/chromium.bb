@@ -240,37 +240,40 @@ class MigrationSingleClientTest : public MigrationTest {
 
 // The simplest possible migration tests -- a single data type.
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyPref) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_PrefsOnlyModifyPref) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES), MODIFY_PREF);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyBookmark) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_PrefsOnlyModifyBookmark) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES),
                                MODIFY_BOOKMARK);
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       PrefsOnlyTriggerNotification) {
+                       DISABLED_PrefsOnlyTriggerNotification) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES),
                                TRIGGER_NOTIFICATION);
 }
 
 // Nigori is handled specially, so we test that separately.
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, NigoriOnly) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_NigoriOnly) {
   RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES),
                                TRIGGER_NOTIFICATION);
 }
 
 // A little more complicated -- two data types.
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsIndividually) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_BookmarksPrefsIndividually) {
   RunSingleClientMigrationTest(
       MakeList(syncer::BOOKMARKS, syncer::PREFERENCES),
       MODIFY_PREF);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsBoth) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_BookmarksPrefsBoth) {
   RunSingleClientMigrationTest(
       MakeList(MakeSet(syncer::BOOKMARKS, syncer::PREFERENCES)),
       MODIFY_BOOKMARK);
@@ -286,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
       TRIGGER_NOTIFICATION);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_PrefsNigoriBoth) {
   RunSingleClientMigrationTest(
       MakeList(MakeSet(syncer::PREFERENCES, syncer::NIGORI)),
       MODIFY_PREF);
@@ -308,14 +311,14 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
                                TRIGGER_NOTIFICATION);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesAtOnce) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_AllTypesAtOnce) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
                                MODIFY_PREF);
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       AllTypesAtOnceTriggerNotification) {
+                       DISABLED_AllTypesAtOnceTriggerNotification) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
                                TRIGGER_NOTIFICATION);
@@ -332,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
   RunSingleClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_AllTypesWithNigoriAtOnce) {
   ASSERT_TRUE(SetupClients());
   syncer::ModelTypeSet all_types = GetPreferredDataTypes();
   all_types.Put(syncer::NIGORI);
