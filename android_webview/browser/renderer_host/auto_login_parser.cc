@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/auto_login_parser/auto_login_parser.h"
+#include "android_webview/browser/renderer_host/auto_login_parser.h"
 
 #include <utility>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
-namespace auto_login_parser {
+namespace android_webview {
 
 namespace {
 
@@ -83,4 +83,4 @@ bool ParserHeaderInResponse(net::URLRequest* request,
   return ParseHeader(header_string, realm_restriction, header_data);
 }
 
-}  // namespace auto_login_parser
+}  // namespace android_webview

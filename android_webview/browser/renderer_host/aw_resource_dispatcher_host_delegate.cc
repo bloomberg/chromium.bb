@@ -11,9 +11,9 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
+#include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_vector.h"
-#include "components/auto_login_parser/auto_login_parser.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
@@ -344,15 +344,14 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
 
   if (request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
     // Check for x-auto-login header.
-    auto_login_parser::HeaderData header_data;
-    if (auto_login_parser::ParserHeaderInResponse(
-            request, auto_login_parser::ALLOW_ANY_REALM, &header_data)) {
+    HeaderData header_data;
+    if (ParserHeaderInResponse(request, ALLOW_ANY_REALM, &header_data)) {
       std::unique_ptr<AwContentsIoThreadClient> io_client =
           AwContentsIoThreadClient::FromID(request_info->GetChildID(),
                                            request_info->GetRenderFrameID());
       if (io_client) {
-        io_client->NewLoginRequest(
-            header_data.realm, header_data.account, header_data.args);
+        io_client->NewLoginRequest(header_data.realm, header_data.account,
+                                   header_data.args);
       }
     }
   }

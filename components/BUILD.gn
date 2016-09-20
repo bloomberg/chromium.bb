@@ -57,7 +57,6 @@ test("components_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/auto_login_parser:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
     "//components/base32:unit_tests",

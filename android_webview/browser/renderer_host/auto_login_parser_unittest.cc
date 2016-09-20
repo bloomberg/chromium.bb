@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/auto_login_parser/auto_login_parser.h"
+#include "android_webview/browser/renderer_host/auto_login_parser.h"
 
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace auto_login_parser {
+namespace android_webview {
 
 class AutoLoginParserTest : public testing::Test {
  protected:
@@ -89,4 +89,4 @@ TEST_F(AutoLoginParserTest, ParseHeaderAllowsAnyRealmWithOption) {
   ASSERT_EQ("kfdshfwoeriudslkfsdjfhdskjfhsdkr", header_data.args);
 }
 
-}  // namespace auto_login_parser
+}  // namespace android_webview

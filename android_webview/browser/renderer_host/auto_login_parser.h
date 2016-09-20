@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTO_LOGIN_PARSER_AUTO_LOGIN_PARSER_H_
-#define COMPONENTS_AUTO_LOGIN_PARSER_AUTO_LOGIN_PARSER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_RENDERER_HOST_AUTO_LOGIN_PARSER_H_
+#define ANDROID_WEBVIEW_BROWSER_RENDERER_HOST_AUTO_LOGIN_PARSER_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@ namespace net {
 class URLRequest;
 }
 
-namespace auto_login_parser {
+namespace android_webview {
 
 enum RealmRestriction {
   ONLY_GOOGLE_COM,
@@ -45,6 +45,6 @@ bool ParserHeaderInResponse(net::URLRequest* request,
                             RealmRestriction realm_restriction,
                             HeaderData* header_data);
 
-}  // namespace auto_login_parser
+}  // namespace android_webview
 
-#endif  // COMPONENTS_AUTO_LOGIN_PARSER_AUTO_LOGIN_PARSER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_RENDERER_HOST_AUTO_LOGIN_PARSER_H_
