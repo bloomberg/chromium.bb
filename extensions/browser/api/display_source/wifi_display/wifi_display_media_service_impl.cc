@@ -42,7 +42,8 @@ WiFiDisplayMediaServiceImpl::PacketIOBuffer::~PacketIOBuffer() {
 void WiFiDisplayMediaServiceImpl::Create(
     WiFiDisplayMediaServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  mojo::MakeStrongBinding(base::MakeUnique<WiFiDisplayMediaServiceImpl>(),
+  mojo::MakeStrongBinding(std::unique_ptr<WiFiDisplayMediaServiceImpl>(
+                              new WiFiDisplayMediaServiceImpl),
                           std::move(request));
 }
 
@@ -54,8 +55,7 @@ void WiFiDisplayMediaServiceImpl::BindToRequest(
                                      base::Passed(std::move(request))));
 }
 
-WiFiDisplayMediaServiceImpl::WiFiDisplayMediaServiceImpl(
-    WiFiDisplayMediaServiceRequest request)
+WiFiDisplayMediaServiceImpl::WiFiDisplayMediaServiceImpl()
     : last_send_code_(net::OK), weak_factory_(this) {}
 
 WiFiDisplayMediaServiceImpl::~WiFiDisplayMediaServiceImpl() {}

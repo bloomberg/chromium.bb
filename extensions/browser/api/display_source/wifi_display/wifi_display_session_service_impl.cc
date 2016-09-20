@@ -41,9 +41,9 @@ void WiFiDisplaySessionServiceImpl::BindToRequest(
       DisplaySourceConnectionDelegateFactory::GetForBrowserContext(
           browser_context);
   CHECK(delegate);
-  mojo::MakeStrongBinding(
-      base::MakeUnique<WiFiDisplaySessionServiceImpl>(delegate),
-      std::move(request));
+  mojo::MakeStrongBinding(std::unique_ptr<WiFiDisplaySessionServiceImpl>(
+                              new WiFiDisplaySessionServiceImpl(delegate)),
+                          std::move(request));
 }
 
 void WiFiDisplaySessionServiceImpl::SetClient(
