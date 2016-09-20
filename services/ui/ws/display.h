@@ -155,7 +155,7 @@ class Display : public PlatformDisplayDelegate,
   friend class test::DisplayTestApi;
 
   using WindowManagerDisplayRootMap =
-      std::map<UserId, std::unique_ptr<WindowManagerDisplayRoot>>;
+      std::map<UserId, WindowManagerDisplayRoot*>;
 
   // Inits the necessary state once the display is ready.
   void InitWindowManagerDisplayRootsIfNecessary();

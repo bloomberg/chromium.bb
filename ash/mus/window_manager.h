@@ -137,6 +137,7 @@ class WindowManager : public ui::WindowManagerDelegate,
                                   bool not_responding) override;
   void OnWmNewDisplay(ui::Window* window,
                       const display::Display& display) override;
+  void OnWmDisplayRemoved(ui::Window* window) override;
   void OnWmPerformMoveLoop(ui::Window* window,
                            ui::mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

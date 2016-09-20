@@ -153,6 +153,11 @@ void WindowServerTestBase::OnWmNewDisplay(Window* window,
     window_manager_delegate_->OnWmNewDisplay(window, display);
 }
 
+void WindowServerTestBase::OnWmDisplayRemoved(Window* window) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmDisplayRemoved(window);
+}
+
 void WindowServerTestBase::OnWmPerformMoveLoop(
     Window* window,
     mojom::MoveLoopSource source,

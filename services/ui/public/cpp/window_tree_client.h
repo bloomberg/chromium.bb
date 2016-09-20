@@ -349,6 +349,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void WmNewDisplayAdded(const display::Display& display,
                          mojom::WindowDataPtr root_data,
                          bool parent_drawn) override;
+  void WmDisplayRemoved(int64_t display_id) override;
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
                    const gfx::Rect& transit_bounds) override;

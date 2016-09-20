@@ -130,6 +130,10 @@ void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
                base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
 }
 
+void MusDemo::OnWmDisplayRemoved(ui::Window* window) {
+  window->Destroy();
+}
+
 void MusDemo::OnWmPerformMoveLoop(Window* window,
                                   mojom::MoveLoopSource source,
                                   const gfx::Point& cursor_location,

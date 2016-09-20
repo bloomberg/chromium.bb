@@ -167,6 +167,7 @@ class WindowTree : public mojom::WindowTree,
                  const ClientWindowId& child_id);
   bool AddTransientWindow(const ClientWindowId& window_id,
                           const ClientWindowId& transient_window_id);
+  bool DeleteWindow(const ClientWindowId& window_id);
   bool SetModal(const ClientWindowId& window_id);
   std::vector<const ServerWindow*> GetWindowTree(
       const ClientWindowId& window_id) const;
@@ -192,6 +193,10 @@ class WindowTree : public mojom::WindowTree,
   void OnAccelerator(uint32_t accelerator_id,
                      const ui::Event& event,
                      bool needs_ack);
+
+  // Called when a display has been removed. This is only called on the
+  // WindowTree associated with a WindowManager.
+  void OnDisplayDestroying(int64_t display_id);
 
   // Called when |tree|'s jankiness changes (see janky_ for definition).
   // Notifies the window manager client so it can update UI for the affected

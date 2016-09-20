@@ -75,6 +75,11 @@ interface WindowManager {
                     WindowData root,
                     bool parent_drawn);
 
+  // Called when a display is removed. The root of the specified display is
+  // still valid. It is expected the client calls DeleteWindow() shortly after
+  // this with the root.
+  WmDisplayRemoved(int64 display_id);
+
   // When the WindowManager completes a request it must call back to
   // WindowManagerClient::WmResponse().
   WmSetBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds);

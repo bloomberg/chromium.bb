@@ -57,6 +57,7 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
       std::map<std::string, std::vector<uint8_t>>* properties) override {
     return nullptr;
   }
+  void OnWmDisplayRemoved(ui::Window* window) override {}
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override {}
   void OnWmNewDisplay(Window* window,

@@ -89,6 +89,7 @@ class TestWM : public shell::Service,
     window_manager_client_->SetFrameDecorationValues(
         std::move(frame_decoration_values));
   }
+  void OnWmDisplayRemoved(ui::Window* window) override { window->Destroy(); }
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

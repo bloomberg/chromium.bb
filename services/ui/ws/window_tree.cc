@@ -294,6 +294,28 @@ bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,
   return false;
 }
 
+bool WindowTree::DeleteWindow(const ClientWindowId& window_id) {
+  ServerWindow* window = GetWindowByClientId(window_id);
+  if (!window)
+    return false;
+
+  if (roots_.count(window) > 0) {
+    // Deleting a root behaves as an unembed.
+    window_server_->OnTreeMessagedClient(id_);
+    RemoveRoot(window, RemoveRootReason::UNEMBED);
+    return true;
+  }
+
+  if (!access_policy_->CanDeleteWindow(window) &&
+      !ShouldRouteToWindowManager(window)) {
+    return false;
+  }
+
+  // Have the owner of the tree service the actual delete.
+  WindowTree* tree = window_server_->GetTreeWithId(window->id().client_id);
+  return tree && tree->DeleteWindowImpl(this, window);
+}
+
 bool WindowTree::SetModal(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   if (window && access_policy_->CanSetModal(window)) {
@@ -470,6 +492,11 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
   // mojom::Event directly to ui::Event.
   window_manager_internal_->OnAccelerator(event_ack_id_, accelerator_id,
                                           ui::Event::Clone(event));
+}
+
+void WindowTree::OnDisplayDestroying(int64_t display_id) {
+  DCHECK(window_manager_internal_);
+  window_manager_internal_->WmDisplayRemoved(display_id);
 }
 
 void WindowTree::ClientJankinessChanged(WindowTree* tree) {
@@ -911,14 +938,18 @@ void WindowTree::RemoveRoot(ServerWindow* window, RemoveRootReason reason) {
     local_windows[i]->parent()->Remove(local_windows[i]);
 
   if (reason == RemoveRootReason::UNEMBED) {
-    window->OnEmbeddedAppDisconnected();
-
     // Notify the owner of the window it no longer has a client embedded in it.
+    // Owner is null in the case of the windowmanager unembedding itself from
+    // a root.
     WindowTree* owning_tree =
         window_server_->GetTreeWithId(window->id().client_id);
-    DCHECK(owning_tree && owning_tree != this);
-    owning_tree->client()->OnEmbeddedAppDisconnected(
-        owning_tree->ClientWindowIdForWindow(window).id);
+    if (owning_tree) {
+      DCHECK(owning_tree && owning_tree != this);
+      owning_tree->client()->OnEmbeddedAppDisconnected(
+          owning_tree->ClientWindowIdForWindow(window).id);
+    }
+
+    window->OnEmbeddedAppDisconnected();
   }
 }
 
@@ -1120,22 +1151,8 @@ void WindowTree::NewTopLevelWindow(
 }
 
 void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {
-  ServerWindow* window =
-      GetWindowByClientId(ClientWindowId(transport_window_id));
-  bool success = false;
-  if (window && roots_.count(window) > 0) {
-    success = true;
-    window_server_->OnTreeMessagedClient(id_);
-    RemoveRoot(window, RemoveRootReason::UNEMBED);
-  } else {
-    bool should_close = window && (access_policy_->CanDeleteWindow(window) ||
-                                   ShouldRouteToWindowManager(window));
-    if (should_close) {
-      WindowTree* tree = window_server_->GetTreeWithId(window->id().client_id);
-      success = tree && tree->DeleteWindowImpl(this, window);
-    }
-  }
-  client()->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(
+      change_id, DeleteWindow(ClientWindowId(transport_window_id)));
 }
 
 void WindowTree::AddWindow(uint32_t change_id, Id parent_id, Id child_id) {

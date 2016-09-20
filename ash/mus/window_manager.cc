@@ -297,6 +297,11 @@ void WindowManager::OnWmNewDisplay(ui::Window* window,
   CreateRootWindowController(window, display);
 }
 
+void WindowManager::OnWmDisplayRemoved(ui::Window* window) {
+  // TODO(sky): wire up this up correctly.
+  NOTIMPLEMENTED();
+}
+
 void WindowManager::OnWmPerformMoveLoop(
     ui::Window* window,
     ui::mojom::MoveLoopSource source,

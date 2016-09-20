@@ -56,9 +56,12 @@ Display::~Display() {
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
 
-  // If there is a |binding_| then the tree was created specifically for this
-  // display (which corresponds to a WindowTreeHost).
-  if (binding_ && !window_manager_display_root_map_.empty()) {
+  if (!binding_) {
+    for (auto& pair : window_manager_display_root_map_)
+      pair.second->window_manager_state()->OnDisplayDestroying(this);
+  } else if (!window_manager_display_root_map_.empty()) {
+    // If there is a |binding_| then the tree was created specifically for this
+    // display (which corresponds to a WindowTreeHost).
     window_server_->DestroyTree(window_manager_display_root_map_.begin()
                                     ->second->window_manager_state()
                                     ->window_tree());
@@ -148,7 +151,7 @@ WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootWithRoot(
     const ServerWindow* window) {
   for (auto& pair : window_manager_display_root_map_) {
     if (pair.second->root() == window)
-      return pair.second.get();
+      return pair.second;
   }
   return nullptr;
 }
@@ -157,7 +160,7 @@ const WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootForUser(
     const UserId& user_id) const {
   auto iter = window_manager_display_root_map_.find(user_id);
   return iter == window_manager_display_root_map_.end() ? nullptr
-                                                        : iter->second.get();
+                                                        : iter->second;
 }
 
 const WindowManagerDisplayRoot* Display::GetActiveWindowManagerDisplayRoot()
@@ -244,9 +247,11 @@ void Display::InitWindowManagerDisplayRootsIfNecessary() {
     // For this case we never create additional displays roots, so any
     // id works.
     window_manager_display_root_map_[shell::mojom::kRootUserID] =
-        std::move(display_root_ptr);
+        display_root_ptr.get();
     WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
     display_root->window_manager_state_ = window_tree->window_manager_state();
+    window_tree->window_manager_state()->AddWindowManagerDisplayRoot(
+        std::move(display_root_ptr));
   } else {
     CreateWindowManagerDisplayRootsFromFactories();
   }
@@ -267,15 +272,17 @@ void Display::CreateWindowManagerDisplayRootFromFactory(
   std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
       new WindowManagerDisplayRoot(this));
   WindowManagerDisplayRoot* display_root = display_root_ptr.get();
-  window_manager_display_root_map_[factory->user_id()] =
-      std::move(display_root_ptr);
-  display_root->window_manager_state_ =
+  window_manager_display_root_map_[factory->user_id()] = display_root_ptr.get();
+  WindowManagerState* window_manager_state =
       factory->window_tree()->window_manager_state();
+  display_root->window_manager_state_ = window_manager_state;
   const bool is_active =
       factory->user_id() == window_server_->user_id_tracker()->active_id();
   display_root->root()->SetVisible(is_active);
-  display_root->window_manager_state()->window_tree()->AddRootForWindowManager(
+  window_manager_state->window_tree()->AddRootForWindowManager(
       display_root->root());
+  window_manager_state->AddWindowManagerDisplayRoot(
+      std::move(display_root_ptr));
 }
 
 ServerWindow* Display::GetRootWindow() {

@@ -322,6 +322,8 @@ class TestWindowManager : public mojom::WindowManager {
   bool on_perform_move_loop_called() { return on_perform_move_loop_called_; }
   bool on_accelerator_called() { return on_accelerator_called_; }
   uint32_t on_accelerator_id() { return on_accelerator_id_; }
+  bool got_display_removed() const { return got_display_removed_; }
+  int64_t display_removed_id() const { return display_removed_id_; }
 
  private:
   // WindowManager:
@@ -329,6 +331,7 @@ class TestWindowManager : public mojom::WindowManager {
   void WmNewDisplayAdded(const display::Display& display,
                          ui::mojom::WindowDataPtr root,
                          bool drawn) override {}
+  void WmDisplayRemoved(int64_t display_id) override;
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {}
@@ -358,6 +361,9 @@ class TestWindowManager : public mojom::WindowManager {
 
   bool on_accelerator_called_;
   uint32_t on_accelerator_id_;
+
+  bool got_display_removed_ = false;
+  int64_t display_removed_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };
@@ -472,6 +478,7 @@ class TestWindowTreeBinding : public WindowTreeBinding {
 
   WindowTree* tree() { return tree_; }
   TestWindowTreeClient* client() { return &client_; }
+  TestWindowManager* window_manager() { return window_manager_.get(); }
 
   bool is_paused() const { return is_paused_; }
 
@@ -634,7 +641,7 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
                                        const ServerWindow* window);
 
 // Creates a new visible window as a child of the single root of |tree|.
-// |client_id| set to the ClientWindowId of the new window.
+// |client_id| is set to the ClientWindowId of the new window.
 ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id);
 ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
                                         ServerWindow* parent,

@@ -298,6 +298,99 @@ TEST_F(DisplayTest, MultipleDisplays) {
   EXPECT_EQ(display1_wms->window_tree(), display2_wms->window_tree());
 }
 
+namespace {
+
+// Returns the first non-primary display.
+Display* GetSecondaryDisplay(DisplayManager* display_manager) {
+  for (Display* display : display_manager->displays()) {
+    if (!display->platform_display()->IsPrimaryDisplay())
+      return display;
+  }
+  return nullptr;
+}
+
+// Returns the root ServerWindow for the specified Display.
+ServerWindow* GetRootOnDisplay(WindowTree* tree, Display* display) {
+  for (const ServerWindow* root : tree->roots()) {
+    if (tree->GetDisplay(root) == display)
+      return const_cast<ServerWindow*>(root);
+  }
+  return nullptr;
+}
+
+// Tracks destruction of a ServerWindow, setting a bool* to true when
+// OnWindowDestroyed() is called
+class ServerWindowDestructionObserver : public ServerWindowObserver {
+ public:
+  ServerWindowDestructionObserver(ServerWindow* window, bool* destroyed)
+      : window_(window), destroyed_(destroyed) {
+    window_->AddObserver(this);
+  }
+  ~ServerWindowDestructionObserver() override {
+    if (window_)
+      window_->RemoveObserver(this);
+  }
+
+  // ServerWindowObserver:
+  void OnWindowDestroyed(ServerWindow* window) override {
+    *destroyed_ = true;
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+ private:
+  ServerWindow* window_;
+  bool* destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowDestructionObserver);
+};
+
+}  // namespace
+
+// Assertions around destroying a secondary display.
+TEST_F(DisplayTest, DestroyingDisplayDoesntDelete) {
+  window_server_delegate()->set_num_displays_to_create(2);
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server()->window_manager_window_tree_factory_set())
+      .Add(kTestId1);
+  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
+  ASSERT_EQ(1u, window_server_delegate()->bindings()->size());
+  WindowTree* tree = (*window_server_delegate()->bindings())[0]->tree();
+  ASSERT_EQ(2u, tree->roots().size());
+  Display* secondary_display =
+      GetSecondaryDisplay(window_server()->display_manager());
+  ASSERT_TRUE(secondary_display);
+  bool secondary_root_destroyed = false;
+  ServerWindow* secondary_root = GetRootOnDisplay(tree, secondary_display);
+  ASSERT_TRUE(secondary_root);
+  ServerWindowDestructionObserver observer(secondary_root,
+                                           &secondary_root_destroyed);
+  ClientWindowId secondary_root_id =
+      ClientWindowIdForWindow(tree, secondary_root);
+  const int64_t secondary_display_id = secondary_display->GetId();
+  TestWindowTreeClient* tree_client =
+      static_cast<TestWindowTreeClient*>(tree->client());
+  tree_client->tracker()->changes()->clear();
+  TestWindowManager* test_window_manager =
+      window_server_delegate()->last_binding()->window_manager();
+  EXPECT_FALSE(test_window_manager->got_display_removed());
+  window_server()->display_manager()->DestroyDisplay(secondary_display);
+
+  // Destroying the display should result in the following:
+  // . The WindowManager should be told it was removed with the right id.
+  EXPECT_TRUE(test_window_manager->got_display_removed());
+  EXPECT_EQ(secondary_display_id, test_window_manager->display_removed_id());
+  EXPECT_FALSE(secondary_root_destroyed);
+  // The window should still be valid on the server side.
+  ASSERT_TRUE(tree->GetWindowByClientId(secondary_root_id));
+  // No changes.
+  ASSERT_EQ(0u, tree_client->tracker()->changes()->size());
+
+  // The window should be destroyed when the client says so.
+  ASSERT_TRUE(tree->DeleteWindow(secondary_root_id));
+  EXPECT_TRUE(secondary_root_destroyed);
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

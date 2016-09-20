@@ -199,6 +199,11 @@ WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
 
 // TestWindowManager ----------------------------------------------------------
 
+void TestWindowManager::WmDisplayRemoved(int64_t display_id) {
+  got_display_removed_ = true;
+  display_removed_id_ = display_id;
+}
+
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
     ClientSpecificId requesting_client_id,

@@ -60,6 +60,7 @@ class MusDemo : public shell::Service,
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;
   void OnWmNewDisplay(Window* window, const display::Display& display) override;
+  void OnWmDisplayRemoved(ui::Window* window) override;
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

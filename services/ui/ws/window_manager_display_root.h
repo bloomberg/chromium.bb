@@ -44,6 +44,7 @@ class WindowManagerDisplayRoot {
 
  private:
   friend class Display;
+  friend class WindowManagerState;
 
   WindowServer* window_server();
 

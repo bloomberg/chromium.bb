@@ -1223,6 +1223,17 @@ void WindowTreeClient::WmNewDisplayAdded(const display::Display& display,
   WmNewDisplayAddedImpl(display, std::move(root_data), parent_drawn);
 }
 
+void WindowTreeClient::WmDisplayRemoved(int64_t display_id) {
+  DCHECK(window_manager_delegate_);
+
+  for (Window* root : roots_) {
+    if (root->display_id() == display_id) {
+      window_manager_delegate_->OnWmDisplayRemoved(root);
+      return;
+    }
+  }
+}
+
 void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                        Id window_id,
                                        const gfx::Rect& transit_bounds) {

@@ -106,6 +106,9 @@ class WindowManagerDelegate {
   virtual void OnWmNewDisplay(Window* window,
                               const display::Display& display) = 0;
 
+  // Called when a display is removed. |window| is the root of the display.
+  virtual void OnWmDisplayRemoved(Window* window) = 0;
+
   virtual mojom::EventResult OnAccelerator(uint32_t id, const ui::Event& event);
 
   virtual void OnWmPerformMoveLoop(

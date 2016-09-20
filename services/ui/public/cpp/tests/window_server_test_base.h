@@ -89,6 +89,7 @@ class WindowServerTestBase
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool not_responding) override;
   void OnWmNewDisplay(Window* window, const display::Display& display) override;
+  void OnWmDisplayRemoved(Window* window) override;
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

@@ -206,6 +206,16 @@ ServerWindow* WindowServer::GetWindow(const WindowId& id) {
       if (window)
         return window;
     }
+    // WindowManagerDisplayRoots are destroyed by the client and not held by
+    // the Display.
+    for (auto& pair : tree_map_) {
+      if (pair.second->window_manager_state()) {
+        ServerWindow* window =
+            pair.second->window_manager_state()->GetOrphanedRootWithId(id);
+        if (window)
+          return window;
+      }
+    }
   }
   WindowTree* tree = GetTreeWithId(id.client_id);
   return tree ? tree->GetWindow(id) : nullptr;
