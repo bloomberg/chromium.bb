@@ -289,6 +289,12 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableGpu);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    // Although this is redundant with the Field Trial testing configuration,
+    // the official builders don't use those, so we also enable it here.
+    feature_list.InitAndEnableFeature(features::kBlockSmallContent);
+  }
+
  protected:
   void LoadHTML(const std::string& html) {
     if (PixelTestsEnabled()) {
@@ -403,6 +409,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     return true;
 #endif
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
 };
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
