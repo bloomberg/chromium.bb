@@ -21,6 +21,7 @@ namespace metadata {
 
 namespace {
 
+#if !defined(MEDIA_DISABLE_FFMPEG)
 void SetStringScopedPtr(const std::string& value,
                         std::unique_ptr<std::string>* destination) {
   DCHECK(destination);
@@ -33,6 +34,7 @@ void SetIntScopedPtr(int value, std::unique_ptr<int>* destination) {
   if (value >= 0)
     destination->reset(new int(value));
 }
+#endif
 
 // This runs on |media_thread_|, as the underlying FFmpeg operation is
 // blocking, and the utility thread must not be blocked, so the media file

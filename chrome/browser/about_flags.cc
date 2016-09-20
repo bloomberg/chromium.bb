@@ -1929,12 +1929,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kPhysicalWebPageSuggestionsFeature)},
 #endif  // defined(OS_ANDROID)
-#if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
+#if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264) && \
+    !defined(MEDIA_DISABLE_FFMPEG)
     {"enable-webrtc-h264-with-openh264-ffmpeg",
      IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_NAME,
      IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
-#endif  // defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
+#endif  // defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264) &&
+        // !defined(MEDIA_DISABLE_FFMPEG)
 #if defined(OS_ANDROID)
     {"ime-thread", IDS_FLAGS_IME_THREAD_NAME, IDS_FLAGS_IME_THREAD_DESCRIPTION,
      kOsAndroid, FEATURE_VALUE_TYPE(features::kImeThread)},
