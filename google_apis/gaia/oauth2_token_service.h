@@ -310,8 +310,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
     ScopeSet scopes;
   };
 
-  typedef std::map<RequestParameters, Fetcher*> PendingFetcherMap;
-
   // Provide a request context used for fetching access tokens with the
   // |StartRequest| method.
   net::URLRequestContextGetter* GetRequestContext() const;
@@ -368,7 +366,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
-  PendingFetcherMap pending_fetchers_;
+  std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;
 
   // List of observers to notify when access token status changes.
   base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
