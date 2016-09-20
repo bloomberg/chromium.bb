@@ -145,17 +145,7 @@ bool IsUpdatePasswordUIEnabled() {
 
 bool IsQRCodeReaderEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableQRScanner)) {
-    return true;
-  } else if (command_line->HasSwitch(switches::kDisableQRScanner)) {
-    return false;
-  }
-
-  // Check if the finch experiment is turned on.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("QRScannerEnabled");
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return !command_line->HasSwitch(switches::kDisableQRScanner);
 }
 
 bool IsNewClearBrowsingDataUIEnabled() {

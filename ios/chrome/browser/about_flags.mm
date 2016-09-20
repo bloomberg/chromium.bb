@@ -191,11 +191,10 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   }
 
   // Populate command line flags from QRScanner.
-  NSString* enableQRScanner = [defaults stringForKey:@"EnableQRCodeReader"];
-  if ([enableQRScanner isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableQRScanner);
-  } else if ([enableQRScanner isEqualToString:@"Disabled"]) {
+  if ([defaults boolForKey:@"DisableQRCodeReader"]) {
     command_line->AppendSwitch(switches::kDisableQRScanner);
+  } else {
+    command_line->AppendSwitch(switches::kEnableQRScanner);
   }
 
   // Populate command line flag for the Payment Request API.
