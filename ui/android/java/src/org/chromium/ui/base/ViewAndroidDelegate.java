@@ -31,7 +31,7 @@ public abstract class ViewAndroidDelegate {
     @CalledByNative
     public View acquireView() {
         ViewGroup containerView = getContainerView();
-        if (containerView == null) return null;
+        if (containerView == null || containerView.getParent() == null) return null;
         View anchorView = new View(containerView.getContext());
         containerView.addView(anchorView);
         return anchorView;
