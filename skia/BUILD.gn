@@ -48,10 +48,7 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = [
-    "SK_IGNORE_DW_GRAY_FIX",
-    "SK_ADDING_src_ports_SkFontConfigInterface_cpp",
-  ]
+  defines = [ "SK_IGNORE_DW_GRAY_FIX" ]
   defines += skia_for_chromium_defines
 
   defines += []
@@ -245,6 +242,7 @@ component("skia") {
   sources += [
     "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
     "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
+    "//third_party/skia/src/ports/SkFontConfigInterface.cpp",
     "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
     "//third_party/skia/src/ports/SkFontConfigInterface_direct_factory.cpp",
     "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
@@ -363,6 +361,7 @@ component("skia") {
 
   if (!is_linux) {
     sources -= [
+      "//third_party/skia/src/ports/SkFontConfigInterface.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct_factory.cpp",
       "//third_party/skia/src/ports/SkFontMgr_FontConfigInterface.cpp",
