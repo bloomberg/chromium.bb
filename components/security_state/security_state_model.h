@@ -39,6 +39,14 @@ class SecurityStateModel {
     // HTTP/no URL/HTTPS but with insecure passive content on the page.
     NONE,
 
+    // HTTP, in a case where we want to show a visible warning about the page's
+    // lack of security.
+    //
+    // The criteria used to classify pages as NONE vs. HTTP_SHOW_WARNING will
+    // change over time. Eventually, NONE will be eliminated.
+    // See https://crbug.com/647754.
+    HTTP_SHOW_WARNING,
+
     // HTTPS with valid EV cert.
     EV_SECURE,
 

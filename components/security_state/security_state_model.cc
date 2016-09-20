@@ -100,7 +100,8 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
 
   GURL url = visible_security_state.url;
   switch (visible_security_state.initial_security_level) {
-    case SecurityStateModel::NONE: {
+    case SecurityStateModel::NONE:
+    case SecurityStateModel::HTTP_SHOW_WARNING: {
       if (!client->IsOriginSecure(url) && url.IsStandard())
         return GetSecurityLevelForNonSecureFieldTrial();
       return SecurityStateModel::NONE;

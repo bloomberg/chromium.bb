@@ -73,6 +73,7 @@ SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 int ToolbarModelImpl::GetIcon() const {
   switch (GetSecurityLevel(false)) {
     case SecurityStateModel::NONE:
+    case SecurityStateModel::HTTP_SHOW_WARNING:
       return IDR_LOCATION_BAR_HTTP;
     case SecurityStateModel::EV_SECURE:
     case SecurityStateModel::SECURE:
@@ -94,6 +95,7 @@ gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   switch (GetSecurityLevel(false)) {
     case SecurityStateModel::NONE:
+    case SecurityStateModel::HTTP_SHOW_WARNING:
       return gfx::VectorIconId::LOCATION_BAR_HTTP;
     case SecurityStateModel::EV_SECURE:
     case SecurityStateModel::SECURE:

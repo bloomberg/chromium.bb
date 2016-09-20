@@ -72,6 +72,7 @@ content::SecurityStyle SecurityLevelToSecurityStyle(
     SecurityStateModel::SecurityLevel security_level) {
   switch (security_level) {
     case SecurityStateModel::NONE:
+    case SecurityStateModel::HTTP_SHOW_WARNING:
       return content::SECURITY_STYLE_UNAUTHENTICATED;
     case SecurityStateModel::SECURITY_WARNING:
     case SecurityStateModel::SECURITY_POLICY_WARNING:
