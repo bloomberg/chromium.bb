@@ -4,8 +4,6 @@
 
 #include "components/os_crypt/key_storage_keyring.h"
 
-#include <gnome-keyring.h>
-
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/rand_util.h"
