@@ -2215,6 +2215,20 @@ def _CheckForWindowsLineEndings(input_api, output_api):
   return []
 
 
+def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None,
+                           lint_filters=None, verbose_level=None):
+  """Checks that all source files use SYSLOG properly."""
+  syslog_files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    if 'SYSLOG' in input_api.ReadFile(f, 'rb'):
+      syslog_files.append(f.LocalPath())
+  if syslog_files:
+    return [output_api.PresubmitPromptWarning(
+        'Please make sure there are no privacy sensitive bits of data in SYSLOG'
+        ' calls.\nFiles to check:\n', items=syslog_files)]
+  return []
+
+
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
@@ -2223,6 +2237,7 @@ def CheckChangeOnUpload(input_api, output_api):
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))
   results.extend(_AndroidSpecificOnUploadChecks(input_api, output_api))
+  results.extend(_CheckSyslogUseWarning(input_api, output_api))
   return results
 
 

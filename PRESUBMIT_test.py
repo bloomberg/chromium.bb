@@ -866,6 +866,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
                                                checker_for_tests=self.checker)
 
   def testAddedPydep(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile('new.pydeps', [], action='A'),
     ]
@@ -875,6 +879,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('PYDEPS_FILES' in str(results[0]))
 
   def testRemovedPydep(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile(PRESUBMIT._ALL_PYDEPS_FILES[0], [], action='D'),
     ]
@@ -884,6 +892,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('PYDEPS_FILES' in str(results[0]))
 
   def testRandomPyIgnored(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile('random.py', []),
     ]
@@ -892,6 +904,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertEqual(0, len(results), 'Unexpected results: %r' % results)
 
   def testRelevantPyNoChange(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile('A.py', []),
     ]
@@ -906,6 +922,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertEqual(0, len(results), 'Unexpected results: %r' % results)
 
   def testRelevantPyOneChange(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile('A.py', []),
     ]
@@ -921,6 +941,10 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('File is stale' in str(results[0]))
 
   def testRelevantPyTwoChanges(self):
+    # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
+    if self.mock_input_api.platform != 'linux2':
+      return []
+
     self.mock_input_api.files = [
       MockAffectedFile('C.py', []),
     ]

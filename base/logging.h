@@ -795,6 +795,9 @@ class BASE_EXPORT LogMessage {
 
   std::ostream& stream() { return stream_; }
 
+  LogSeverity severity() { return severity_; }
+  std::string str() { return stream_.str(); }
+
  private:
   void Init(const char* file, int line);
 

@@ -22,6 +22,7 @@ class MockInputApi(object):
     self.os_path = os.path
     self.platform = sys.platform
     self.python_executable = sys.executable
+    self.platform = sys.platform
     self.subprocess = subprocess
     self.files = []
     self.is_committing = False
@@ -121,6 +122,10 @@ class MockFile(object):
   def __getitem__(self, i):
     """os.path.basename is called on MockFile so we need a get method."""
     return self._local_path[i]
+
+  def __len__(self):
+    """os.path.basename is called on MockFile so we need a len method."""
+    return len(self._local_path)
 
 
 class MockAffectedFile(MockFile):
