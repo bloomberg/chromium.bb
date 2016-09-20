@@ -11,6 +11,7 @@
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/lock_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
@@ -440,6 +441,11 @@ void WmRootWindowController::CreateLayoutManagers() {
   lock_modal_container->SetLayoutManager(
       base::MakeUnique<SystemModalContainerLayoutManager>(
           lock_modal_container));
+
+  WmWindow* lock_container = GetContainer(kShellWindowId_LockScreenContainer);
+  DCHECK(lock_container);
+  lock_container->SetLayoutManager(
+      base::MakeUnique<LockLayoutManager>(lock_container));
 }
 
 void WmRootWindowController::DeleteWorkspaceController() {
