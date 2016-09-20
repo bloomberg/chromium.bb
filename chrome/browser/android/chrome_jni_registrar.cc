@@ -201,7 +201,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      RegisterAutoSigninFirstRunDialogAndroid},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
     {"AccountTrackerService", signin::android::RegisterAccountTrackerService},
-    {"AddToHomescreenDialogHelper", AddToHomescreenManager::Register},
+    {"AddToHomescreenManager", AddToHomescreenManager::Register},
     {"AfterStartupTaskUtils", RegisterAfterStartupTaskUtilsJNI},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
     {"AppBannerInfoBarDelegateAndroid",
