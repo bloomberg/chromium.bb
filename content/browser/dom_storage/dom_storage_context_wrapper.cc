@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -23,9 +24,11 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/leveldb_wrapper_impl.h"
+#include "content/browser/memory/memory_coordinator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/common/content_features.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/file/public/cpp/constants.h"
 #include "services/file/public/interfaces/file_system.mojom.h"
@@ -284,8 +287,12 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
           worker_pool->GetNamedSequenceToken("dom_storage_commit"),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&DOMStorageContextWrapper::OnMemoryPressure, this)));
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  } else {
+    memory_pressure_listener_.reset(new base::MemoryPressureListener(
+        base::Bind(&DOMStorageContextWrapper::OnMemoryPressure, this)));
+  }
 }
 
 DOMStorageContextWrapper::~DOMStorageContextWrapper() {}
@@ -365,6 +372,10 @@ void DOMStorageContextWrapper::Shutdown() {
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::Shutdown, context_));
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+  }
+
 }
 
 void DOMStorageContextWrapper::Flush() {
@@ -390,6 +401,33 @@ void DOMStorageContextWrapper::OnMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     purge_option = DOMStorageContextImpl::PURGE_AGGRESSIVE;
   }
+  PurgeMemory(purge_option);
+}
+
+void DOMStorageContextWrapper::OnMemoryStateChange(base::MemoryState state) {
+  // TODO(hajimehoshi): As OnMemoryStateChange changes the state, we should
+  // adjust the limitation to the amount of cache, DomStroageContextImpl doesn't
+  // have such limitation so far though.
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      // Don't have to purge memory here.
+      break;
+    case base::MemoryState::THROTTLED:
+      // TOOD(hajimehoshi): We don't have throttling 'level' so far. When we
+      // have such value, let's change the argument accroding to the value.
+      PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
+      break;
+    case base::MemoryState::SUSPENDED:
+      // Note that SUSPENDED never occurs in the main browser process so far.
+      // Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+}
+
+void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption
+    purge_option) {
   context_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::PurgeMemory, context_, purge_option));

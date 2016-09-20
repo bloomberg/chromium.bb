@@ -9,8 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -37,7 +39,8 @@ class LevelDBWrapperImpl;
 // state.
 class CONTENT_EXPORT DOMStorageContextWrapper :
     NON_EXPORTED_BASE(public DOMStorageContext),
-    public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
+    public base::RefCountedThreadSafe<DOMStorageContextWrapper>,
+    public base::MemoryCoordinatorClient {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
@@ -74,10 +77,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
                         mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
-  // Called on UI thread when the system is under memory pressure.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
@@ -85,6 +84,15 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
+
+  // Called on UI thread when the system is under memory pressure.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // base::MemoryCoordinatorClient implementation:
+  void OnMemoryStateChange(base::MemoryState state) override;
+
+  void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
 
   // An inner class to keep all mojo-ish details together and not bleed them
   // through the public interface.
