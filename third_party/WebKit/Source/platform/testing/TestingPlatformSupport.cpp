@@ -38,7 +38,6 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "platform/EventTracer.h"
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
 #include "platform/scheduler/base/test_time_source.h"
@@ -254,7 +253,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc, char*
     ProcessHeap::init();
     ThreadState::attachMainThread();
     ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr, nullptr, nullptr);
-    EventTracer::initialize();
     HTTPNames::init();
 }
 

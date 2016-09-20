@@ -24,7 +24,6 @@
 
 #include "platform/graphics/ContentLayerDelegate.h"
 
-#include "platform/EventTracer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"

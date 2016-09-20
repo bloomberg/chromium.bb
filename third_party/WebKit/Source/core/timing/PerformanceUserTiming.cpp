@@ -170,8 +170,8 @@ PerformanceEntry* UserTiming::measure(const String& measureName, const String& s
     double startTimeMonotonic = m_performance->timeOrigin() + startTime / 1000.0;
     double endTimeMonotonic = m_performance->timeOrigin() + endTime / 1000.0;
 
-    TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), startTimeMonotonic);
-    TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), endTimeMonotonic);
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), TraceEvent::toTraceTimestamp(startTimeMonotonic));
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("blink.user_timing", measureName.utf8().data(), WTF::StringHash::hash(measureName), TraceEvent::toTraceTimestamp(endTimeMonotonic));
 
     PerformanceEntry* entry = PerformanceMeasure::create(measureName, startTime, endTime);
     insertPerformanceEntry(m_measuresMap, *entry);

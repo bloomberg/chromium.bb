@@ -64,6 +64,14 @@
 #define TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(bucket_number) \
     trace_event_internal::TraceEventSamplingStateScope<bucket_number>::Current()
 
+// Sets a current sampling state of the given bucket.
+// |category_and_name| doesn't need to be a constant string.
+// The format of the string is "category\0name".
+#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET( \
+    bucket_number, category_and_name)                       \
+        trace_event_internal::                              \
+        TraceEventSamplingStateScope<bucket_number>::Set(category_and_name)
+
 // Creates a scope of a sampling state of the given bucket.
 //
 // {  // The sampling state is set within this scope.

@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "platform/EventTracer.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/heap/Handle.h"

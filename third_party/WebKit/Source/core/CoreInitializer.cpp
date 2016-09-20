@@ -53,7 +53,6 @@
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/EventTracer.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/HTTPNames.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -132,7 +131,6 @@ void CoreInitializer::initialize()
 
     StyleChangeExtraData::init();
 
-    EventTracer::initialize();
     KURL::initialize();
     SchemeRegistry::initialize();
     SecurityPolicy::init();

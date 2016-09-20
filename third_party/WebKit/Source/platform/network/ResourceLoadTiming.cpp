@@ -127,7 +127,7 @@ void ResourceLoadTiming::setWorkerReady(double workerReady)
 
 void ResourceLoadTiming::setSendStart(double sendStart)
 {
-    TRACE_EVENT_MARK_WITH_TIMESTAMP0("blink.user_timing", "requestStart", sendStart);
+    TRACE_EVENT_MARK_WITH_TIMESTAMP0("blink.user_timing", "requestStart", TraceEvent::toTraceTimestamp(sendStart));
     m_sendStart = sendStart;
 }
 

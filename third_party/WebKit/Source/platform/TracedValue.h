@@ -5,21 +5,14 @@
 #ifndef TracedValue_h
 #define TracedValue_h
 
-#include "base/memory/ref_counted.h"
-#include "platform/EventTracer.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
-
-namespace base {
-namespace trace_event {
-class TracedValue;
-}
-}
 
 namespace blink {
 
 // TracedValue copies all passed names and values and doesn't retain references.
-class PLATFORM_EXPORT TracedValue final {
+class PLATFORM_EXPORT TracedValue final : public base::trace_event::ConvertableToTraceFormat {
     WTF_MAKE_NONCOPYABLE(TracedValue);
 
 public:
@@ -49,11 +42,12 @@ public:
 private:
     TracedValue();
 
-    // This will be moved (and become null) when TracedValue is passed to
-    // EventTracer::addTraceEvent().
-    std::unique_ptr<base::trace_event::TracedValue> m_tracedValue;
+    // ConvertableToTraceFormat
+    using base::trace_event::ConvertableToTraceFormat::ToString; // Hide this method from blink code.
+    void AppendAsTraceFormat(std::string*) const final;
+    void EstimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead*) final;
 
-    friend class EventTracer;
+    base::trace_event::TracedValue m_tracedValue;
 };
 
 } // namespace blink

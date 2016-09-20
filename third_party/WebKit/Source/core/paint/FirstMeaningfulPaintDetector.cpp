@@ -88,7 +88,7 @@ void FirstMeaningfulPaintDetector::notifyPaint()
     m_provisionalFirstMeaningfulPaint = monotonicallyIncreasingTime();
     m_state = NextPaintIsNotMeaningful;
 
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("loading", "firstMeaningfulPaintCandidate", m_provisionalFirstMeaningfulPaint, "frame", document()->frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("loading", "firstMeaningfulPaintCandidate", TraceEvent::toTraceTimestamp(m_provisionalFirstMeaningfulPaint), "frame", document()->frame());
 }
 
 void FirstMeaningfulPaintDetector::checkNetworkStable()

@@ -308,8 +308,8 @@
   TRACE_EVENT_GET_SAMPLING_STATE_FOR_BUCKET(0)
 #define TRACE_EVENT_SET_SAMPLING_STATE(category, name) \
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(0, category, name)
-#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(categoryAndName) \
-  TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, categoryAndName)
+#define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(category_and_name) \
+  TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, category_and_name)
 
 // Records a single BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this
@@ -394,6 +394,11 @@
   INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, category_group, name,  \
                            TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val,   \
                            arg2_name, arg2_val)
+
+#define TRACE_EVENT_MARK_WITH_TIMESTAMP0(category_group, name, timestamp) \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                     \
+      TRACE_EVENT_PHASE_MARK, category_group, name, 0, 0, timestamp,      \
+      TRACE_EVENT_FLAG_NONE)
 
 #define TRACE_EVENT_MARK_WITH_TIMESTAMP1(category_group, name, timestamp, \
                                          arg1_name, arg1_val)             \
