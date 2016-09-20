@@ -11,9 +11,12 @@
 #include "base/callback.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class PermissionRequestManager;
 class PermissionRequest;
+
+namespace content {
+class WebContents;
+}
 
 // This class is the platform-independent interface through which the permission
 // request managers (which are one per tab) communicate to the UI surface.
@@ -34,10 +37,13 @@ class PermissionPrompt {
     virtual void Closing() = 0;
   };
 
-  typedef base::Callback<std::unique_ptr<PermissionPrompt>(Browser*)> Factory;
+  typedef base::Callback<std::unique_ptr<PermissionPrompt>(
+      content::WebContents*)>
+      Factory;
 
   // Create a platform specific instance.
-  static std::unique_ptr<PermissionPrompt> Create(Browser* browser);
+  static std::unique_ptr<PermissionPrompt> Create(
+      content::WebContents* web_contents);
   virtual ~PermissionPrompt() {}
 
   // Sets the delegate which will receive UI events forwarded from the prompt.

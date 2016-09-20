@@ -17,10 +17,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "url/origin.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser_finder.h"
-#endif
-
 namespace {
 
 class CancelledRequest : public PermissionRequest {
@@ -245,7 +241,7 @@ void PermissionRequestManager::DisplayPendingRequests() {
   NOTREACHED();
   return;
 #else
-  view_ = view_factory_.Run(chrome::FindBrowserWithWebContents(web_contents()));
+  view_ = view_factory_.Run(web_contents());
   view_->SetDelegate(this);
 #endif
 

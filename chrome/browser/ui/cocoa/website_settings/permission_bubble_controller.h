@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/website_settings/permission_prompt.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class Browser;
 @class MenuController;
 class PermissionBubbleCocoa;
 class PermissionRequest;

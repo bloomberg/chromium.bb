@@ -5,6 +5,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -32,8 +33,11 @@ views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
 }
 
 // static
-std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(Browser* browser) {
+std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
+    content::WebContents* web_contents) {
   if (chrome::ToolkitViewsWebUIDialogsEnabled())
-    return base::WrapUnique(new PermissionPromptImpl(browser));
-  return base::MakeUnique<PermissionBubbleCocoa>(browser);
+    return base::WrapUnique(new PermissionPromptImpl(
+        chrome::FindBrowserWithWebContents(web_contents)));
+  return base::MakeUnique<PermissionBubbleCocoa>(
+      chrome::FindBrowserWithWebContents(web_contents));
 }

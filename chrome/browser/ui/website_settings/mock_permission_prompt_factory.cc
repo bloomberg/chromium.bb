@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt.h"
+#include "content/public/browser/web_contents.h"
 
 MockPermissionPromptFactory::MockPermissionPromptFactory(
     PermissionRequestManager* manager)
@@ -32,7 +33,7 @@ MockPermissionPromptFactory::~MockPermissionPromptFactory() {
 }
 
 std::unique_ptr<PermissionPrompt> MockPermissionPromptFactory::Create(
-    Browser* browser) {
+    content::WebContents* web_contents) {
   MockPermissionPrompt* prompt = new MockPermissionPrompt(this, manager_);
   prompt->can_update_ui_ = can_update_ui_;
   return base::WrapUnique(prompt);
@@ -74,7 +75,7 @@ void MockPermissionPromptFactory::WaitForPermissionBubble() {
 
 // static
 std::unique_ptr<PermissionPrompt> MockPermissionPromptFactory::DoNotCreate(
-    Browser* browser) {
+    content::WebContents* web_contents) {
   NOTREACHED();
   return base::WrapUnique(new MockPermissionPrompt(nullptr, nullptr));
 }
