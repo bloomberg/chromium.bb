@@ -560,8 +560,7 @@ public class CronetUrlRequestContext extends CronetEngine {
         mWaitGetCertVerifierDataComplete.open();
     }
 
-    void reportFinished(final CronetUrlRequest request) {
-        final RequestFinishedInfo requestInfo = request.getRequestFinishedInfo();
+    void reportFinished(final RequestFinishedInfo requestInfo) {
         ArrayList<RequestFinishedInfo.Listener> currentListeners;
         synchronized (mFinishedListenerLock) {
             currentListeners = new ArrayList<RequestFinishedInfo.Listener>(mFinishedListenerList);

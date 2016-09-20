@@ -429,7 +429,7 @@ public final class CronetUrlRequest implements UrlRequest {
                 mRequestMetricsAccumulator.onRequestFinished();
             }
             nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
-            mRequestContext.reportFinished(this);
+            mRequestContext.reportFinished(getRequestFinishedInfo());
             mRequestContext.onRequestDestroyed();
             mUrlRequestAdapter = 0;
             if (mOnDestroyedCallbackForTesting != null) {
@@ -699,7 +699,7 @@ public final class CronetUrlRequest implements UrlRequest {
         postTaskToExecutor(task);
     }
 
-    RequestFinishedInfo getRequestFinishedInfo() {
+    private RequestFinishedInfo getRequestFinishedInfo() {
         // TODO(mgersh): fill in real values for finishedReason and exception
         return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations,
                 (mRequestMetricsAccumulator != null ? mRequestMetricsAccumulator.getRequestMetrics()
