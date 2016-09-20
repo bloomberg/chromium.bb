@@ -118,7 +118,7 @@ Polymer({
    * @private
    */
   siteWithinCategoryChanged_: function(category, site) {
-    if (category == this.category)
+    if (category == this.category || this.category == settings.ALL_SITES)
       this.configureWidget_();
   },
 
