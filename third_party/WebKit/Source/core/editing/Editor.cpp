@@ -282,24 +282,17 @@ bool Editor::canDelete() const
     return selection.isRange() && selection.rootEditableElement();
 }
 
+// TODO(xiaochengh): Merge it with |shouldDeleteRange|.
 bool Editor::canDeleteRange(const EphemeralRange& range) const
 {
+    DCHECK(!range.isCollapsed()) << range.startPosition();
+
     Node* startContainer = range.startPosition().computeContainerNode();
     Node* endContainer = range.endPosition().computeContainerNode();
     if (!startContainer || !endContainer)
         return false;
 
-    if (!hasEditableStyle(*startContainer) || !hasEditableStyle(*endContainer))
-        return false;
-
-    if (range.isCollapsed()) {
-        VisiblePosition start = createVisiblePositionDeprecated(range.startPosition());
-        VisiblePosition previous = previousPositionOf(start);
-        // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
-        if (previous.isNull() || rootEditableElement(*previous.deepEquivalent().anchorNode()) != rootEditableElement(*startContainer))
-            return false;
-    }
-    return true;
+    return hasEditableStyle(*startContainer) && hasEditableStyle(*endContainer);
 }
 
 bool Editor::smartInsertDeleteEnabled() const
