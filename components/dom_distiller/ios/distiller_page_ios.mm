@@ -78,8 +78,12 @@ std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
     result = std::move(dictionary);
   } else if (result_type == CFArrayGetTypeID()) {
     std::unique_ptr<base::ListValue> list = base::MakeUnique<base::ListValue>();
-    for (id value in wk_result) {
-      list->Append(ValueResultFromScriptResult(value, max_depth - 1));
+    for (id list_item in wk_result) {
+      std::unique_ptr<base::Value> value =
+      ValueResultFromScriptResult(list_item, max_depth - 1);
+      if (value) {
+        list->Append(std::move(value));
+      }
     }
     result = std::move(list);
   } else {
