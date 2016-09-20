@@ -2460,7 +2460,8 @@ void RenderFrameHostImpl::CommitNavigation(
     const RequestNavigationParams& request_params,
     bool is_view_source) {
   DCHECK((response && body.get()) ||
-          !ShouldMakeNetworkRequestForURL(common_params.url));
+         common_params.url.SchemeIs(url::kDataScheme) ||
+         !ShouldMakeNetworkRequestForURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without

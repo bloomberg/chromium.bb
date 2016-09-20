@@ -8,15 +8,6 @@
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/navigation/post-goback-same-url.html [ Failure ]
 
-# Failing due to empty data url
-  editing/execCommand/apply-style-command-crash.html [ Crash ]
-  editing/style/apply-style-crash.html [ Crash ]
-  fast/frames/iframe-plugin-load-remove-document-crash.html [ Crash ]
-  fast/loader/reload-zero-byte-plugin.html [ Crash ]
-  http/tests/security/contentSecurityPolicy/object-src-does-not-affect-child.html [ Crash ]
-  plugins/iframe-plugin-bgcolor.html [ Crash ]
-  plugins/plugin-document-back-forward.html [ Crash ]
-
 # https://crbug.com/608375: PlzNavigate: Appcache support
   http/tests/appcache/fallback.html [ Timeout ]
   http/tests/appcache/main-resource-hash.html [ Crash Timeout ]

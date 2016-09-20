@@ -37,8 +37,8 @@ enum LoFiState {
 
 // PlzNavigate
 // Helper function to determine if the navigation to |url| should make a request
-// to the network stack. A request should not be sent for data URLs, JavaScript
-// URLs or about:blank. In these cases, no request needs to be sent.
+// to the network stack. A request should not be sent for JavaScript URLs or
+// about:blank. In these cases, no request needs to be sent.
 bool CONTENT_EXPORT ShouldMakeNetworkRequestForURL(const GURL& url);
 
 // The following structures hold parameters used during a navigation. In

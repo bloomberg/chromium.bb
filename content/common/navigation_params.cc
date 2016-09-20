@@ -18,11 +18,11 @@ namespace content {
 bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   CHECK(IsBrowserSideNavigationEnabled());
 
-  // Data URLs, Javascript URLs, about:blank, srcdoc should not send a request
+  // Javascript URLs, about:blank, srcdoc should not send a request
   // to the network stack.
   // TODO(clamy): same document navigations should not send requests to the
   // network stack. Neither should pushState/popState.
-  return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL) &&
+  return url != GURL(url::kAboutBlankURL) &&
          !url.SchemeIs(url::kJavaScriptScheme) && !url.is_empty() &&
          !url.SchemeIs(url::kContentIDScheme) &&
          url != GURL(content::kAboutSrcDocURL);

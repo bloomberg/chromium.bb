@@ -984,25 +984,29 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   contents()->NavigateAndCommit(kUrl1);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
 
-  // Navigate to a data url. The request should not have been sent to the IO
-  // thread but committed immediately.
+  // Navigate to a data url. The request should have been sent to the IO
+  // thread and not committed immediately.
   int entry_id = RequestNavigation(node, kUrl2);
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
+  EXPECT_FALSE(speculative_rfh->is_loading());
+  EXPECT_TRUE(node->navigation_request());
+  speculative_rfh->PrepareForCommit();
   EXPECT_TRUE(speculative_rfh->is_loading());
   EXPECT_FALSE(node->navigation_request());
+  EXPECT_NE(main_test_rfh(), speculative_rfh);
   speculative_rfh->SendNavigate(0, entry_id, true, kUrl2);
   EXPECT_EQ(main_test_rfh(), speculative_rfh);
 
   // Go back to the initial site.
   contents()->NavigateAndCommit(kUrl1);
 
-  // Do a renderer-initiated navigation to a data url. The request should not be
-  // sent to the IO thread, nor committed.
+  // Do a renderer-initiated navigation to a data url. The request should be
+  // sent to the IO thread.
   TestRenderFrameHost* main_rfh = main_test_rfh();
   main_rfh->SendRendererInitiatedNavigationRequest(kUrl2, true);
   EXPECT_TRUE(main_rfh->is_loading());
-  EXPECT_FALSE(node->navigation_request());
+  EXPECT_TRUE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
