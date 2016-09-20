@@ -57,9 +57,9 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observerInit, E
 
 void PerformanceObserver::disconnect()
 {
-    if (m_performance)
+    if (m_performance) {
         m_performance->unregisterPerformanceObserver(*this);
-
+    }
     m_performanceEntries.clear();
     m_isRegistered = false;
 }

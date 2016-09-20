@@ -33,6 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectedFrames.h"
+#include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/timing/PerformanceTiming.h"
 
@@ -92,10 +94,23 @@ PerformanceTiming* Performance::timing() const
     return m_timing.get();
 }
 
+void Performance::updateLongTaskInstrumentation()
+{
+    if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
+        m_longTaskInspectorAgent = new InspectorWebPerfAgent(
+            InspectedFrames::create(frame()));
+        m_longTaskInspectorAgent->enable();
+    } else if (!hasObserverFor(PerformanceEntry::LongTask) && m_longTaskInspectorAgent) {
+        m_longTaskInspectorAgent->disable();
+        m_longTaskInspectorAgent = nullptr;
+    }
+}
+
 DEFINE_TRACE(Performance)
 {
     visitor->trace(m_navigation);
     visitor->trace(m_timing);
+    visitor->trace(m_longTaskInspectorAgent);
     DOMWindowProperty::trace(visitor);
     PerformanceBase::trace(visitor);
 }

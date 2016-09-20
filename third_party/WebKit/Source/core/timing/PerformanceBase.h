@@ -63,6 +63,8 @@ public:
 
     virtual PerformanceTiming* timing() const;
 
+    virtual void updateLongTaskInstrumentation() {}
+
     // Reduce the resolution to 5µs to prevent timing attacks. See:
     // http://www.w3.org/TR/hr-time-2/#privacy-security
     static double clampTimeResolution(double timeSeconds);
@@ -132,7 +134,7 @@ protected:
     void addLongTaskTimingBuffer(PerformanceEntry&);
 
     void notifyObserversOfEntry(PerformanceEntry&);
-    bool hasObserverFor(PerformanceEntry::EntryType);
+    bool hasObserverFor(PerformanceEntry::EntryType) const;
 
     void deliverObservationsTimerFired(TimerBase*);
 

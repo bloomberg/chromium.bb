@@ -29,6 +29,9 @@ public:
     ~InspectorWebPerfAgent();
     DECLARE_VIRTUAL_TRACE();
 
+    void enable();
+    void disable();
+
     void willExecuteScript(ExecutionContext*);
     void didExecuteScript();
 
@@ -40,6 +43,7 @@ public:
     void ReportTaskTime(double startTime, double endTime) override;
 
 private:
+    bool m_enabled;
     Member<InspectedFrames> m_inspectedFrames;
     HeapHashSet<Member<Location>> m_frameContextLocations;
 };

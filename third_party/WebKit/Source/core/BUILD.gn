@@ -1206,6 +1206,7 @@ source_set("unit_tests") {
     "timing/MemoryInfoTest.cpp",
     "timing/PerformanceBaseTest.cpp",
     "timing/PerformanceObserverTest.cpp",
+    "timing/PerformanceTest.cpp",
     "workers/DedicatedWorkerTest.cpp",
     "workers/WorkerThreadTest.cpp",
     "workers/WorkerThreadTestHelper.h",

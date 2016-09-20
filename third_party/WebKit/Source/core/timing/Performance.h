@@ -41,9 +41,12 @@
 
 namespace blink {
 
+class InspectorWebPerfAgent;
+
 class CORE_EXPORT Performance final : public PerformanceBase, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Performance);
+    friend class PerformanceTest;
 public:
     static Performance* create(LocalFrame* frame)
     {
@@ -57,6 +60,8 @@ public:
     PerformanceNavigation* navigation() const;
     PerformanceTiming* timing() const override;
 
+    void updateLongTaskInstrumentation() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -64,6 +69,7 @@ private:
 
     mutable Member<PerformanceNavigation> m_navigation;
     mutable Member<PerformanceTiming> m_timing;
+    mutable Member<InspectorWebPerfAgent> m_longTaskInspectorAgent;
 };
 
 } // namespace blink

@@ -400,6 +400,7 @@ void PerformanceBase::registerPerformanceObserver(PerformanceObserver& observer)
 {
     m_observerFilterOptions |= observer.filterOptions();
     m_observers.add(&observer);
+    updateLongTaskInstrumentation();
 }
 
 void PerformanceBase::unregisterPerformanceObserver(PerformanceObserver& oldObserver)
@@ -412,6 +413,7 @@ void PerformanceBase::unregisterPerformanceObserver(PerformanceObserver& oldObse
     }
     m_observers.remove(&oldObserver);
     updatePerformanceObserverFilterOptions();
+    updateLongTaskInstrumentation();
 }
 
 void PerformanceBase::updatePerformanceObserverFilterOptions()
@@ -420,6 +422,7 @@ void PerformanceBase::updatePerformanceObserverFilterOptions()
     for (const auto& observer : m_observers) {
         m_observerFilterOptions |= observer->filterOptions();
     }
+    updateLongTaskInstrumentation();
 }
 
 void PerformanceBase::notifyObserversOfEntry(PerformanceEntry& entry)
@@ -430,7 +433,7 @@ void PerformanceBase::notifyObserversOfEntry(PerformanceEntry& entry)
     }
 }
 
-bool PerformanceBase::hasObserverFor(PerformanceEntry::EntryType filterType)
+bool PerformanceBase::hasObserverFor(PerformanceEntry::EntryType filterType) const
 {
     return m_observerFilterOptions & filterType;
 }

@@ -4,6 +4,7 @@
 
 #include "core/inspector/InspectorWebPerfAgent.h"
 
+#include "core/InstrumentingAgents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
@@ -16,14 +17,27 @@ namespace blink {
 InspectorWebPerfAgent::InspectorWebPerfAgent(InspectedFrames* inspectedFrames)
     : m_inspectedFrames(inspectedFrames)
 {
-    Platform::current()->currentThread()->addTaskTimeObserver(this);
-    Platform::current()->currentThread()->addTaskObserver(this);
 }
 
 InspectorWebPerfAgent::~InspectorWebPerfAgent()
 {
+    DCHECK(!m_enabled);
+}
+
+void InspectorWebPerfAgent::enable()
+{
+    Platform::current()->currentThread()->addTaskTimeObserver(this);
+    Platform::current()->currentThread()->addTaskObserver(this);
+    m_inspectedFrames->root()->instrumentingAgents()->addInspectorWebPerfAgent(this);
+    m_enabled = true;
+}
+
+void InspectorWebPerfAgent::disable()
+{
     Platform::current()->currentThread()->removeTaskTimeObserver(this);
     Platform::current()->currentThread()->removeTaskObserver(this);
+    m_inspectedFrames->root()->instrumentingAgents()->removeInspectorWebPerfAgent(this);
+    m_enabled = false;
 }
 
 void InspectorWebPerfAgent::willExecuteScript(ExecutionContext* context)
