@@ -66,6 +66,24 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   bool EncodeHeaderSetWithoutCompression(const SpdyHeaderBlock& header_set,
                                          std::string* output);
 
+  class NET_EXPORT_PRIVATE ProgressiveEncoder {
+   public:
+    virtual ~ProgressiveEncoder() {}
+
+    // Returns true iff more remains to encode.
+    virtual bool HasNext() const = 0;
+
+    // Encodes up to max_encoded_bytes of the current header block into the
+    // given output string.
+    virtual void Next(size_t max_encoded_bytes, std::string* output) = 0;
+  };
+
+  // Returns a ProgressiveEncoder which must be outlived by both the given
+  // SpdyHeaderBlock and this object.
+  std::unique_ptr<ProgressiveEncoder> EncodeHeaderSet(
+      const SpdyHeaderBlock& header_set,
+      bool use_compression);
+
   // Called upon a change to SETTINGS_HEADER_TABLE_SIZE. Specifically, this
   // is to be called after receiving (and sending an acknowledgement for) a
   // SETTINGS_HEADER_TABLE_SIZE update from the remote decoding endpoint.
@@ -92,6 +110,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   friend class test::HpackEncoderPeer;
 
   class RepresentationIterator;
+  class Encoderator;
 
   // Encodes a sequence of header name-value pairs as a single header block.
   void EncodeRepresentations(RepresentationIterator* iter, std::string* output);
@@ -118,6 +137,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   // Crumbles other header field values at \0 delimiters.
   static void DecomposeRepresentation(const Representation& header_field,
                                       Representations* out);
+
+  // Gathers headers without crumbling. Used when compression is not enabled.
+  static void GatherRepresentation(const Representation& header_field,
+                                   Representations* out);
 
   HpackHeaderTable header_table_;
   HpackOutputStream output_stream_;
