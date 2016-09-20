@@ -36,7 +36,9 @@ enum ActiveWindowStateType {
   ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN,
   ACTIVE_WINDOW_STATE_TYPE_SNAPPED,
   ACTIVE_WINDOW_STATE_TYPE_DOCKED,
-  ACTIVE_WINDOW_STATE_TYPE_COUNT
+  ACTIVE_WINDOW_STATE_TYPE_PINNED,
+  ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED,
+  ACTIVE_WINDOW_STATE_TYPE_COUNT,
 };
 
 ActiveWindowStateType GetActiveWindowState() {
@@ -59,14 +61,18 @@ ActiveWindowStateType GetActiveWindowState() {
       case wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_DOCKED;
         break;
+      case wm::WINDOW_STATE_TYPE_PINNED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PINNED;
+        break;
+      case wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED;
+        break;
       case wm::WINDOW_STATE_TYPE_DEFAULT:
       case wm::WINDOW_STATE_TYPE_NORMAL:
       case wm::WINDOW_STATE_TYPE_MINIMIZED:
       case wm::WINDOW_STATE_TYPE_INACTIVE:
       case wm::WINDOW_STATE_TYPE_END:
       case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
-      case wm::WINDOW_STATE_TYPE_PINNED:
-      case wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
         // TODO: We probably want to recorde PINNED state.
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;

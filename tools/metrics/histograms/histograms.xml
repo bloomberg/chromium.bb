@@ -69831,6 +69831,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Fullscreen"/>
   <int value="4" label="Snapped"/>
   <int value="5" label="Docked"/>
+  <int value="6" label="Pinned"/>
+  <int value="7" label="TrustedPinned"/>
 </enum>
 
 <enum name="ActivityTrackerCollectStatus" type="int">
