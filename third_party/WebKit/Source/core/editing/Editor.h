@@ -274,7 +274,6 @@ private:
     }
 
     bool canDeleteRange(const EphemeralRange&) const;
-    bool shouldDeleteRange(const EphemeralRange&) const;
 
     bool tryDHTMLCopy();
     bool tryDHTMLCut();

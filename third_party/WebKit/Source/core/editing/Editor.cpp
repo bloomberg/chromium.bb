@@ -282,19 +282,6 @@ bool Editor::canDelete() const
     return selection.isRange() && selection.rootEditableElement();
 }
 
-// TODO(xiaochengh): Merge it with |shouldDeleteRange|.
-bool Editor::canDeleteRange(const EphemeralRange& range) const
-{
-    DCHECK(!range.isCollapsed()) << range.startPosition();
-
-    Node* startContainer = range.startPosition().computeContainerNode();
-    Node* endContainer = range.endPosition().computeContainerNode();
-    if (!startContainer || !endContainer)
-        return false;
-
-    return hasEditableStyle(*startContainer) && hasEditableStyle(*endContainer);
-}
-
 bool Editor::smartInsertDeleteEnabled() const
 {
     if (Settings* settings = frame().settings())
@@ -577,12 +564,17 @@ EphemeralRange Editor::selectedRange()
     return frame().selection().selection().toNormalizedEphemeralRange();
 }
 
-bool Editor::shouldDeleteRange(const EphemeralRange& range) const
+bool Editor::canDeleteRange(const EphemeralRange& range) const
 {
     if (range.isCollapsed())
         return false;
 
-    return canDeleteRange(range);
+    Node* startContainer = range.startPosition().computeContainerNode();
+    Node* endContainer = range.endPosition().computeContainerNode();
+    if (!startContainer || !endContainer)
+        return false;
+
+    return hasEditableStyle(*startContainer) && hasEditableStyle(*endContainer);
 }
 
 void Editor::notifyComponentsOnChangedSelection()
@@ -886,7 +878,7 @@ void Editor::cut(EditorCommandSource source)
     if (!canCut())
         return;
     // TODO(yosin) We should use early return style here.
-    if (shouldDeleteRange(selectedRange())) {
+    if (canDeleteRange(selectedRange())) {
         spellChecker().updateMarkersForWordsAffectedByEditing(true);
         if (enclosingTextFormControl(frame().selection().start())) {
             String plainText = frame().selectedTextForClipboard();
