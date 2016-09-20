@@ -362,9 +362,6 @@ const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
 
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL,
-    switches::kTopChromeMD,
-    switches::kTopChromeMDNonMaterial },
   { IDS_FLAGS_TOP_CHROME_MD_MATERIAL,
     switches::kTopChromeMD,
     switches::kTopChromeMDMaterial },

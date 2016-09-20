@@ -31,9 +31,7 @@ enum LayoutConstant {
   // images inside.
   LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET,
 
-  // The height to be occupied by the LocationBar. For
-  // MaterialDesignController::NON_MATERIAL the height is determined from image
-  // assets.
+  // The height to be occupied by the LocationBar.
   LOCATION_BAR_HEIGHT,
 
   // Space between items in the location bar, as well as between items and the

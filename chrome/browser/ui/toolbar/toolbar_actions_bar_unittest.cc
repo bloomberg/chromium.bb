@@ -184,8 +184,7 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
 INSTANTIATE_TEST_CASE_P(
     ,
     ToolbarActionsBarUnitTest,
-    testing::Values(ui::MaterialDesignController::NON_MATERIAL,
-                    ui::MaterialDesignController::MATERIAL_NORMAL,
+    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
                     ui::MaterialDesignController::MATERIAL_HYBRID));
 
 TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {

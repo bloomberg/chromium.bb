@@ -20,8 +20,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // The different material design modes. The order cannot be changed without
   // updating references as these are used as array indices.
   enum Mode {
-    // Classic, non-material design.
-    NON_MATERIAL = 0,
     // Basic material design.
     MATERIAL_NORMAL = 1,
     // Material design targeted at mouse/touch hybrid devices.
@@ -34,7 +32,7 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
-  // Returns true if the current mode is a material design variant.
+  // Returns true. TODO(estade): remove.
   static bool IsModeMaterial();
 
   // Returns true if the current mode is a material design variant and this mode

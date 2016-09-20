@@ -195,8 +195,7 @@ class ExtensionActionIconFactoryTest
 INSTANTIATE_TEST_CASE_P(
     ExtensionActionIconFactoryTest_MaterialDesign,
     ExtensionActionIconFactoryTest,
-    testing::Values(ui::MaterialDesignController::NON_MATERIAL,
-                    ui::MaterialDesignController::MATERIAL_NORMAL,
+    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
                     ui::MaterialDesignController::MATERIAL_HYBRID));
 
 // If there is no default icon, and the icon has not been set using |SetIcon|,

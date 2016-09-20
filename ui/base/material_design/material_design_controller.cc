@@ -30,7 +30,7 @@ namespace ui {
 bool MaterialDesignController::is_mode_initialized_ = false;
 
 MaterialDesignController::Mode MaterialDesignController::mode_ =
-    MaterialDesignController::NON_MATERIAL;
+    MaterialDesignController::MATERIAL_NORMAL;
 
 bool MaterialDesignController::include_secondary_ui_ = false;
 
@@ -46,8 +46,6 @@ void MaterialDesignController::Initialize() {
     SetMode(MATERIAL_NORMAL);
   } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
     SetMode(MATERIAL_HYBRID);
-  } else if (switch_value == switches::kTopChromeMDNonMaterial) {
-    SetMode(NON_MATERIAL);
   } else {
     if (!switch_value.empty()) {
       LOG(ERROR) << "Invalid value='" << switch_value
@@ -69,7 +67,7 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsModeMaterial() {
-  return GetMode() == MATERIAL_NORMAL || GetMode() == MATERIAL_HYBRID;
+  return true;
 }
 
 // static
