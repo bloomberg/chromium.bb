@@ -13,8 +13,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -308,6 +311,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
 
+    base::TimeTicks dns_end = base::TimeTicks::Now();
+    base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
     session_.reset(new QuicChromiumClientSession(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
@@ -318,8 +323,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
-        &push_promise_index_, base::ThreadTaskRunnerHandle::Get().get(),
+        "CONNECTION_UNKNOWN", dns_start, dns_end, &push_promise_index_,
+        base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
     session_->Initialize();
     TestCompletionCallback callback;
@@ -529,29 +534,17 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream->OnPromiseHeadersComplete(id, serialized_push_promise_.size());
   }
 
-  void assertLoadTimingValid(const LoadTimingInfo& load_timing_info,
+  void ExpectLoadTimingValid(const LoadTimingInfo& load_timing_info,
                              bool session_reused) {
     EXPECT_EQ(session_reused, load_timing_info.socket_reused);
-
-    // If |session_reused| is true, these fields should all be null, non-null
-    // otherwise.
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.connect_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.connect_end.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.ssl_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.ssl_end.is_null());
-    EXPECT_EQ(load_timing_info.connect_timing.connect_start,
-              load_timing_info.connect_timing.ssl_start);
-    EXPECT_EQ(load_timing_info.connect_timing.connect_end,
-              load_timing_info.connect_timing.ssl_end);
-
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_start.is_null());
-    EXPECT_EQ(session_reused,
-              load_timing_info.connect_timing.dns_end.is_null());
+    if (session_reused) {
+      ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+    } else {
+      ExpectConnectTimingHasTimes(
+          load_timing_info.connect_timing,
+          CONNECT_TIMING_HAS_SSL_TIMES | CONNECT_TIMING_HAS_DNS_TIMES);
+    }
+    ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
   }
 
   BoundTestNetLog net_log_;
@@ -673,7 +666,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
   EXPECT_TRUE(AtEof());
 
   EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
-  assertLoadTimingValid(load_timing_info, /*session_reused=*/false);
+  ExpectLoadTimingValid(load_timing_info, /*session_reused=*/false);
 
   // QuicHttpStream::GetTotalSent/ReceivedBytes currently only includes the
   // headers and payload.
@@ -741,7 +734,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(stream_->GetLoadTimingInfo(&load_timing_info));
-  assertLoadTimingValid(load_timing_info, /*session_reused=*/false);
+  ExpectLoadTimingValid(load_timing_info, /*session_reused=*/false);
 
   // SetResponse() again for second request as |response_headers_| was moved.
   SetResponse("200 OK", string());
@@ -761,7 +754,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(stream2.GetLoadTimingInfo(&load_timing_info2));
-  assertLoadTimingValid(load_timing_info2, /*session_reused=*/true);
+  ExpectLoadTimingValid(load_timing_info2, /*session_reused=*/true);
 }
 
 // QuicHttpStream does not currently support trailers. It should ignore
