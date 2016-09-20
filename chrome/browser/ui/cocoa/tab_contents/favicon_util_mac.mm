@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "components/favicon/content/content_favicon_driver.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -25,16 +25,13 @@ const CGFloat kVectorIconSize = 16;
 namespace mac {
 
 NSImage* FaviconForWebContents(content::WebContents* contents, SkColor color) {
-  favicon::FaviconDriver* favicon_driver =
-      contents ? favicon::ContentFaviconDriver::FromWebContents(contents)
-               : nullptr;
-  if (favicon_driver && favicon_driver->FaviconIsValid()) {
-    NSImage* image = favicon_driver->GetFavicon().AsNSImage();
+  if (contents) {
+    NSImage* image = favicon::TabFaviconFromWebContents(contents).AsNSImage();
+
     // The |image| could be nil if the bitmap is null. In that case, fallback
     // to the default image.
-    if (image) {
+    if (image)
       return image;
-    }
   }
 
   if (ui::MaterialDesignController::IsModeMaterial()) {

@@ -7,6 +7,14 @@
 
 #include "components/favicon/content/content_favicon_driver.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
+namespace gfx {
+class Image;
+}  // namespace gfx
+
 namespace favicon {
 
 // Creates a ContentFaviconDriver and associates it with |web_contents| if none
@@ -20,6 +28,10 @@ void CreateContentFaviconDriverForWebContents(
 // Returns whether the favicon should be displayed. If this returns false, no
 // space is provided for the favicon, and the favicon is never displayed.
 bool ShouldDisplayFavicon(content::WebContents* web_contents);
+
+// Retrieves the favicon from given WebContents. If contents contain a
+// network error, desaturate the favicon.
+gfx::Image TabFaviconFromWebContents(content::WebContents* contents);
 
 }  // namespace favicon
 

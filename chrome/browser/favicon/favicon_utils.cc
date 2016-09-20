@@ -10,9 +10,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/favicon_url.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 namespace favicon {
+
+namespace {
+
+// Desaturate favicon HSL shift values.
+const double kDesaturateHue = -1.0;
+const double kDesaturateSaturation = 0.0;
+const double kDesaturateLightness = 0.6;
+}
 
 void CreateContentFaviconDriverForWebContents(
     content::WebContents* web_contents) {
@@ -49,6 +63,29 @@ bool ShouldDisplayFavicon(content::WebContents* web_contents) {
     return false;
 
   return true;
+}
+
+gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
+  DCHECK(contents);
+
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(contents);
+  gfx::Image favicon = favicon_driver->GetFavicon();
+
+  // Desaturate the favicon if the navigation entry contains a network error.
+  if (!contents->IsLoadingToDifferentDocument()) {
+    const content::NavigationController& controller = contents->GetController();
+
+    content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+    if (entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR)) {
+      color_utils::HSL shift = {kDesaturateHue, kDesaturateSaturation,
+                                kDesaturateLightness};
+      return gfx::Image(gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+          *favicon.ToImageSkia(), shift));
+    }
+  }
+
+  return favicon;
 }
 
 }  // namespace favicon
