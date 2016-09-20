@@ -58482,6 +58482,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
   <owner>chrisha@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     The number of hard faults incurred in the browser process from startup to
     start of the main thread's message loop, not including first runs of the
@@ -58505,6 +58506,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount.Success"
     enum="BooleanSuccess">
   <owner>chrisha@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <obsolete>
     Deprecated 12/2015. No longer tracked because values collected on stable
     show that the function pretty much never fails (succeeds 99.9996% of the
@@ -58519,7 +58521,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.BrowserMessageLoopStartTime">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     Time from browser startup to the start of the main thread's message loop.
   </summary>
@@ -58570,7 +58572,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.BrowserOpenTabs">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     Time taken to open the initial tab or to restore tabs from previous session.
   </summary>
@@ -58586,7 +58588,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.BrowserWindowDisplay" units="ms">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     Time from browser startup to the time the browser window initially becomes
     visible.
@@ -58605,7 +58607,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.CreateFirstProfile" units="ms">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     How long it takes to load the original profile synchronously on the UI
     thread.
@@ -58717,7 +58719,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.MainFrameLoad2" units="ms">
-  <owner>erikchen@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     [Desktop] Measure the elapsed time from process launch to the first main
@@ -58760,7 +58762,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.NonEmptyPaint2" units="ms">
-  <owner>erikchen@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     [Desktop] Measure the elapsed time from process launch to the first non-
@@ -59027,6 +59029,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SameVersionStartupCount">
+  <owner>fdoray@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     The number of startups the current version has been through. Reported once
@@ -59193,6 +59196,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.Temperature" enum="StartupTemperature">
   <owner>chrisha@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     Indicates whether or not the given startup was warm, cold or unable to be
     determined. This is based off observing the number of hard faults that occur
@@ -59209,7 +59213,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.WarmStartTimeFromRemoteProcessStart" units="ms">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <summary>
     Time for a running browser process to start processing the command line
     passed in by a second Chrome process, which just sent its command line
