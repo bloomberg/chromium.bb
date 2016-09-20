@@ -61,9 +61,6 @@ crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure 
 crbug.com/598051 paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ Skip ]
 crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
 
-crbug.com/644059 fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
-crbug.com/644059 virtual/gpu-rasterization/fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
-
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
