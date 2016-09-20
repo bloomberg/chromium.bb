@@ -78,6 +78,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"BackgroundSync"})
+    @RetryOnFailure
     public void testSetLaunchWhenNextOnline() {
         assertFalse(shouldLaunchBrowserIfStoppedSync());
         mLauncher.launchBrowserIfStopped(mContext, true, 0);
@@ -88,6 +89,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"BackgroundSync"})
+    @RetryOnFailure
     public void testNewLauncherDisablesNextOnline() {
         mLauncher.launchBrowserIfStopped(mContext, true, 0);
         assertTrue(shouldLaunchBrowserIfStoppedSync());

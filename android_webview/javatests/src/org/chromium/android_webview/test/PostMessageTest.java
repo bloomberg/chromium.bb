@@ -18,6 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -274,6 +275,7 @@ public class PostMessageTest extends AwTestBase {
     // see documentation in testStartedPortCannotBeTransferredUsingPostMessageToFrame1
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
+    @RetryOnFailure
     public void testStartedPortCannotBeTransferredUsingMessageChannel1() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -917,6 +919,7 @@ public class PostMessageTest extends AwTestBase {
     // to JS side, to establish a communication channel between a worker and a frame.
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
+    @RetryOnFailure
     public void testTransferPortsToWorker() throws Throwable {
         mWebServer.setResponse("/worker.js", WORKER_SCRIPT,
                 CommonResources.getTextJavascriptHeaders(true));

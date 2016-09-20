@@ -316,6 +316,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
+    @RetryOnFailure
     public void testOnScrollChanged() throws Throwable {
         final int scrollToX = getContentViewCore().getNativeScrollXForTest() + 2500;
         final int scrollToY = getContentViewCore().getNativeScrollYForTest() + 2500;

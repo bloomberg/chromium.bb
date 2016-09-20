@@ -470,6 +470,7 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
     // TODO(jbudorick): Replace with DisableIf when it supports filtering by device type.
     // Flaky on tablets, crbug.com/620014.
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @RetryOnFailure
     public void testTwoTabs() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);

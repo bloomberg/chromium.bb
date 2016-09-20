@@ -261,6 +261,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testPrecachingEnabledPreferences() {
         // Initial enable will schedule a periodic task.
         PrecacheController.setIsPrecachingEnabled(mContext, true);

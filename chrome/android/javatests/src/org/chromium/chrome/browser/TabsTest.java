@@ -1456,6 +1456,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher"})
+    @RetryOnFailure
     public void testOSKIsNotShownDuringSwipe() throws InterruptedException {
         final View urlBar = getActivity().findViewById(R.id.url_bar);
         final LayoutManagerChrome layoutManager = updateTabsViewSize();

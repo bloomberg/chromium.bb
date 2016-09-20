@@ -190,6 +190,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
     @SmallTest
+    @RetryOnFailure
     public void testPageSharingSwitch() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

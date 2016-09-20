@@ -58,6 +58,7 @@ public class CastStartStopTest extends CastTestBase {
     @Feature({"VideoFling"})
     @LargeTest
     @DisableIf.Build(hardware_is = "flo", message = "https://crbug.com/623526")
+    @RetryOnFailure
     public void testStopFromNotification() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 

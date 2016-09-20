@@ -105,6 +105,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testNearestEntryInGroupSelectedNoChange() throws InterruptedException {
         // Ensure the Physical Web is enabled.
         PrivacyPreferencesManager prefsManager = PrivacyPreferencesManager.getInstance();

@@ -12,6 +12,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -131,6 +132,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614347")
+    @RetryOnFailure
     public void testDenyAccessByDefault() throws Throwable {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =

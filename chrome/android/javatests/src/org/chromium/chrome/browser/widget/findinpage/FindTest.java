@@ -214,6 +214,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFindNextPrevious() throws InterruptedException {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");

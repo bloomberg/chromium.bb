@@ -15,6 +15,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinForTesting;
@@ -268,6 +269,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
     /** Tests the fallback pathway, triggered when the user has failed to migrate too many times. */
     @MediumTest
+    @RetryOnFailure
     public void testForceMigrationAfterFailures() throws Exception {
         final CallbackHelper writeDoneCallback = new CallbackHelper();
         final CallbackHelper changeStartedCallback = new CallbackHelper();

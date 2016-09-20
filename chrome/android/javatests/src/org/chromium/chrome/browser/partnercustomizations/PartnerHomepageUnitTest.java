@@ -262,6 +262,7 @@ public class PartnerHomepageUnitTest extends BasePartnerBrowserCustomizationUnit
      */
     @SmallTest
     @Feature({"Homepage"})
+    @RetryOnFailure
     public void testReadHomepageProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);

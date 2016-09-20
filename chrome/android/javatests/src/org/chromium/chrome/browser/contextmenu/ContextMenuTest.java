@@ -252,6 +252,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
+    @RetryOnFailure
     public void testSaveImage()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, FILENAME_PNG);

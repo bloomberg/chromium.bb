@@ -119,6 +119,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testUpdateEnabled_SyncNotReady_ThenDisabled() {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
@@ -155,6 +156,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testUpdateEnabled_Disabled_ThenEnabled() {
         setSyncInitialized(true);
         mLauncher.updateEnabled(getTargetContext());
@@ -187,6 +189,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testUpdateEnabledNullProfileSyncService() {
         ProfileSyncService.overrideForTests(null);
 

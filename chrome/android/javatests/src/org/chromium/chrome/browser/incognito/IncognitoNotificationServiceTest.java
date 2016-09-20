@@ -13,6 +13,7 @@ import android.util.Pair;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -104,6 +105,7 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
 
     @Feature("Incognito")
     @MediumTest
+    @RetryOnFailure
     public void testNoAliveProcess() throws Exception {
         Context context = getInstrumentation().getTargetContext();
         final TestTabModelDirectory tabbedModeDirectory = new TestTabModelDirectory(

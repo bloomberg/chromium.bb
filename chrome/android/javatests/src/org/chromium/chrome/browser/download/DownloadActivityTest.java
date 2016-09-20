@@ -18,6 +18,7 @@ import android.widget.TextView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
@@ -208,6 +209,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     }
 
     @MediumTest
+    @RetryOnFailure
     public void testDeleteFiles() throws Exception {
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {

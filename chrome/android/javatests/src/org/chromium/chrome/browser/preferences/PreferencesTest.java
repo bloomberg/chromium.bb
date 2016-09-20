@@ -16,6 +16,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -78,6 +79,7 @@ public class PreferencesTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Preferences"})
     @DisableIf.Build(hardware_is = "sprout", message = "crashes on android-one: crbug.com/540720")
+    @RetryOnFailure
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 

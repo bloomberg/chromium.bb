@@ -417,6 +417,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarInputSelectAll() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -430,6 +431,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarPasswordSelectAll() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
@@ -582,6 +584,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarSearchAndShareLaunchesNewTask() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);

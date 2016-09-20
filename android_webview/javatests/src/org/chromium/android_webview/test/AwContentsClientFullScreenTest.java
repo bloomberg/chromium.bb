@@ -296,6 +296,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testPowerSaveBlockerIsTransferredToFullscreen()
             throws Throwable {
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
@@ -324,6 +325,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testPowerSaveBlockerIsTransferredToEmbedded()
             throws Throwable {
         // Enter fullscreen.

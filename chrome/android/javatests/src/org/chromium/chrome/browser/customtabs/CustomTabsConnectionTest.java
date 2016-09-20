@@ -23,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content_public.browser.WebContents;
@@ -304,6 +305,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
 
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
     public void testCanCancelPrerender() {
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

@@ -343,6 +343,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testEnterTextAndRefocus() throws Exception {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
@@ -494,6 +495,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testSelectActionBarShownOnLongPressingInput() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForSelectActionBarStatus(false);
@@ -824,6 +826,7 @@ public class ImeTest extends ContentShellTestBase {
     // http://crbug.com/445499
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @RetryOnFailure
     public void testDeleteText() throws Throwable {
         focusElement("textarea");
 
@@ -870,6 +873,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @RetryOnFailure
     public void testSwipingText() throws Throwable {
         focusElement("textarea");
 
@@ -1249,6 +1253,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testRestartInputWhileComposingText() throws Throwable {
         setComposingText("abc", 1);
         waitAndVerifyUpdateSelection(0, 3, 3, 0, 3);
@@ -1321,6 +1326,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testInputTextEvents_CommitText() throws Throwable {
         commitText("a", 1);
         waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
@@ -1330,6 +1336,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testContentEditableEvents_DeleteSurroundingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");

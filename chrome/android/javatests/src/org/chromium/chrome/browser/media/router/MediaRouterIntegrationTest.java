@@ -323,6 +323,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
+    @RetryOnFailure
     public void testFailReconnectSession() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();

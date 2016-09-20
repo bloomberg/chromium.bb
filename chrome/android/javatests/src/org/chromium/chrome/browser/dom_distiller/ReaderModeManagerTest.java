@@ -220,6 +220,7 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
      */
     @SmallTest
     @Feature({"ReaderModeManager"})
+    @RetryOnFailure
     public void testPanelOpenRecorded() {
         Tab tab = new Tab(0, false, null);
         mReaderManager.onShown(tab);
