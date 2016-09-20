@@ -13,12 +13,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import factory
 
 
-# Set to 'True' if this is a release branch. This updates the '-release' builder
-# configuration to the shape used by the release waterfall.
-IS_RELEASE_BRANCH = False
-
-
-def GetDefaultWaterfall(build_config):
+def GetDefaultWaterfall(build_config, is_release_branch):
   if not (build_config['important'] or build_config['master']):
     return None
   if build_config['branch']:
@@ -33,7 +28,7 @@ def GetDefaultWaterfall(build_config):
     # - If we're building for a release branch, it belongs on a release
     #   waterfall.
     # - Otherwise, it belongs on the internal waterfall.
-    if IS_RELEASE_BRANCH:
+    if is_release_branch:
       return constants.WATERFALL_RELEASE
     else:
       return constants.WATERFALL_INTERNAL
@@ -52,6 +47,9 @@ def GetDefaultWaterfall(build_config):
 
 class HWTestList(object):
   """Container for methods to generate HWTest lists."""
+
+  def __init__(self, is_release_branch):
+    self.is_release_branch = is_release_branch
 
   def DefaultList(self, **kwargs):
     """Returns a default list of HWTestConfig's for a build
@@ -87,7 +85,7 @@ class HWTestList(object):
     async_kwargs['suite_min_duts'] = 1
     async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
 
-    if IS_RELEASE_BRANCH:
+    if self.is_release_branch:
       bvt_inline_kwargs = async_kwargs
     else:
       bvt_inline_kwargs = kwargs.copy()
@@ -856,12 +854,13 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def CreateBuilderTemplates(site_config, hw_test_list):
+def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   """CreateBuilderTemplates defines all BuildConfig templates.
 
   Args:
     site_config: A SiteConfig object to add the templates too.
     hw_test_list: Object to help create lists of standard HW Tests.
+    is_release_branch: True if config for a release branch, False for TOT.
   """
   default_hw_tests_override = config_lib.BuildConfig(
       hw_tests_override=hw_test_list.DefaultList(
@@ -1312,7 +1311,7 @@ def CreateBuilderTemplates(site_config, hw_test_list):
       site_config.templates.internal,
       default_hw_tests_override,
       build_type=constants.CANARY_TYPE,
-      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -1730,7 +1729,8 @@ def ToolchainBuilders(site_config, hw_test_list):
   )
 
 
-def _GetConfig(site_config, ge_build_config, board_configs, hw_test_list):
+def _GetConfig(site_config, ge_build_config, board_configs,
+               hw_test_list, is_release_branch):
   """Method with un-refactored build configs/templates.
 
   Args:
@@ -1739,6 +1739,7 @@ def _GetConfig(site_config, ge_build_config, board_configs, hw_test_list):
     ge_build_config: Dictionary containing the decoded GE configuration file.
     board_configs: Dictionary mapping board names to per-board configurations.
     hw_test_list: Object to help create lists of standard HW Tests.
+    is_release_branch: True if config for a release branch, False for TOT.
   """
 
   _base_configs = board_configs
@@ -2988,7 +2989,7 @@ def _GetConfig(site_config, ge_build_config, board_configs, hw_test_list):
 
     def _GetConfigWaterfall(builder):
       if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
-        if IS_RELEASE_BRANCH:
+        if is_release_branch:
           return constants.WATERFALL_RELEASE
         else:
           return constants.WATERFALL_INTERNAL
@@ -3224,19 +3225,20 @@ def InsertHwTestsOverrideDefaults(build, hw_test_list):
       if hw_config.suite != constants.HWTEST_AU_SUITE]
 
 
-def InsertWaterfallDefaults(site_config):
+def InsertWaterfallDefaults(site_config, is_release_branch):
   """Method with un-refactored build configs/templates.
 
   Args:
     site_config: config_lib.SiteConfig containing builds to have their
                  waterfall values updated.
+    is_release_branch: True if config for a release branch, False for TOT.
   """
   for name, c in site_config.iteritems():
     if not c.get('active_waterfall'):
-      c['active_waterfall'] = GetDefaultWaterfall(c)
+      c['active_waterfall'] = GetDefaultWaterfall(c, is_release_branch)
 
   # Apply manual configs, not used for release branches.
-  if not IS_RELEASE_BRANCH:
+  if not is_release_branch:
     for waterfall, names in _waterfall_config_map.iteritems():
       for name in names:
         site_config[name]['active_waterfall'] = waterfall
@@ -3254,26 +3256,30 @@ def GetConfig():
 
   ge_build_config = config_lib.LoadGEBuildConfigFromFile()
 
-  hw_test_list = HWTestList()
+  # TODO: Use this to stop generating unnecessary configs for release branches.
+  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
+
+  hw_test_list = HWTestList(is_release_branch)
 
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
 
-  CreateBuilderTemplates(site_config, hw_test_list)
+  CreateBuilderTemplates(site_config, hw_test_list, is_release_branch)
 
   board_configs = CreateBoardConfigs(site_config, ge_build_config)
 
   ToolchainBuilders(site_config, hw_test_list)
 
   # Fill in templates and build configurations.
-  _GetConfig(site_config, ge_build_config, board_configs, hw_test_list)
+  _GetConfig(site_config, ge_build_config, board_configs,
+             hw_test_list, is_release_branch)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
     InsertHwTestsOverrideDefaults(build, hw_test_list)
 
   # Assign waterfalls to builders that don't have them yet.
-  InsertWaterfallDefaults(site_config)
+  InsertWaterfallDefaults(site_config, is_release_branch)
 
   return site_config

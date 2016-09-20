@@ -35,6 +35,9 @@ class GenerateChromeosConfigTestBase(cros_test_lib.TestCase):
   def setUp(self):
     self.all_configs = chromeos_config.GetConfig()
 
+  def isReleaseBranch(self):
+    ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+    return ge_build_config['release_branch']
 
 class ConfigDumpTest(GenerateChromeosConfigTestBase):
   """Tests related to config_dump.json & chromeos_config.py"""
@@ -762,10 +765,10 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
       if config.build_type == constants.PFQ_TYPE:
         expected = 20 * 60
       elif config.build_type == constants.CANARY_TYPE:
-        if not chromeos_config.IS_RELEASE_BRANCH:
-          expected = (7 * 60 + 50) * 60
-        else:
+        if self.isReleaseBranch():
           expected = 12 * 60 * 60
+        else:
+          expected = (7 * 60 + 50) * 60
       elif config.build_type == constants.TOOLCHAIN_TYPE:
         expected = (15 * 60 + 50) * 60
       else:
@@ -800,9 +803,11 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
 
   def testWaterfallManualConfigIsValid(self):
     """Verify the correctness of the manual waterfall configuration."""
-    # Release branches do not allow for manual configs.
-    if chromeos_config.IS_RELEASE_BRANCH:
+
+    # TODO: Start setting this value for the test, instead of just reading.
+    if self.isReleaseBranch():
       return
+
     all_build_names = set(self.all_configs.iterkeys())
     redundant = set()
     seen = set()
@@ -826,7 +831,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
                          "configuration for: %s" % (build_name,))
 
 
-        default_waterfall = chromeos_config.GetDefaultWaterfall(config)
+        default_waterfall = chromeos_config.GetDefaultWaterfall(config, False)
         if config['active_waterfall'] == default_waterfall:
           redundant.add(build_name)
 

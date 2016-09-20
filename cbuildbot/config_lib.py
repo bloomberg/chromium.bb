@@ -83,6 +83,7 @@ CONFIG_TEMPLATE_BOARD_GROUP = 'board_group'
 CONFIG_TEMPLATE_BUILDER = 'builder'
 CONFIG_TEMPLATE_RELEASE = 'RELEASE'
 CONFIG_TEMPLATE_CONFIGS = 'configs'
+CONFIG_TEMPLATE_RELEASE_BRANCH = 'release_branch'
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
