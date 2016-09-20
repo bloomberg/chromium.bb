@@ -56,14 +56,13 @@ Polymer({
     },
 
     /**
-     * The main pages that were displayed before search was initiated. When
-     * |null| it indicates that currently the page is displaying its normal
-     * contents, instead of displaying search results.
-     * @private {?MainPageVisibility}
+     * Whether a search operation is in progress or previous search results are
+     * being displayed.
+     * @private {boolean}
      */
-    previousShowPages_: {
-      type: Object,
-      value: null,
+    inSearchMode_: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private */
@@ -142,8 +141,8 @@ Polymer({
    * @private
    */
   showAdvancedToggle_: function() {
-    var inSearchMode = !!this.previousShowPages_;
-    return !inSearchMode && this.showPages_.basic && !this.hasExpandedSection_;
+    return !this.inSearchMode_ && this.showPages_.basic &&
+        !this.hasExpandedSection_;
   },
 
   currentRouteChanged: function(newRoute) {
@@ -261,12 +260,7 @@ Polymer({
    * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
-    if (!this.previousShowPages_) {
-      // Store which pages are shown before search, so that they can be restored
-      // after the user clears the search results.
-      this.previousShowPages_ = this.showPages_;
-    }
-
+    this.inSearchMode_ = true;
     this.ensureInDefaultSearchPage_();
     this.toolbarSpinnerActive = true;
 
@@ -292,14 +286,16 @@ Polymer({
           }
 
           this.toolbarSpinnerActive = false;
-          var showingSearchResults = !request.isSame('');
+          this.inSearchMode_ = !request.isSame('');
           this.showNoResultsFound_ =
-              showingSearchResults && !request.didFindMatches();
+              this.inSearchMode_ && !request.didFindMatches();
 
-          if (!showingSearchResults) {
-            // Restore the pages that were shown before search was initiated.
-            this.showPages_ = assert(this.previousShowPages_);
-            this.previousShowPages_ = null;
+          if (!this.inSearchMode_) {
+            // Restore the "advanced" page visibility as it was before search
+            // was initiated.
+            this.showPages_ = {
+              about: false, basic: true, advanced: this.advancedToggleExpanded_,
+            };
           }
         }.bind(this));
       }.bind(this), 0);

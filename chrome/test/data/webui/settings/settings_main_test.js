@@ -105,23 +105,44 @@ cr.define('settings_main_page', function() {
         });
       });
 
-      test('advanced page restored after search results cleared', function() {
-        // Simulating searching while the advanced page is collapsed.
-        settingsMain.currentRouteChanged(settings.Route.BASIC);
-        Polymer.dom.flush();
-
-        assertFalse(!!settingsMain.$$('settings-advanced-page'));
-
+      /**
+       * Asserts the visibility of the basic and advanced pages after exiting
+       * search mode.
+       * @param {string} Expected 'display' value for the basic page.
+       * @param {string} Expected 'display' value for the advanced page.
+       * @return {!Promise}
+       */
+      function assertPageVisibilityAfterSearch(
+          expectedBasic, expectedAdvanced) {
         searchManager.setMatchesFound(true);
         return settingsMain.searchContents('Query1').then(function() {
           searchManager.setMatchesFound(false);
           return settingsMain.searchContents('');
         }).then(function() {
           Polymer.dom.flush();
-          // Checking that it remains hidden after results are cleared.
           assertEquals(
-              'none', settingsMain.$$('settings-advanced-page').style.display);
+              expectedBasic,
+              settingsMain.$$('settings-basic-page').style.display);
+          assertEquals(
+              expectedAdvanced,
+              settingsMain.$$('settings-advanced-page').style.display);
         });
+      }
+
+      test('exiting search mode, advanced collapsed', function() {
+        // Simulating searching while the advanced page is collapsed.
+        settingsMain.currentRouteChanged(settings.Route.BASIC);
+        Polymer.dom.flush();
+        return assertPageVisibilityAfterSearch('', 'none');
+      });
+
+      // Ensure that clearing the search results restores both "basic" and
+      // "advanced" page, when the search has been initiated from a subpage
+      // whose parent is the "advanced" page.
+      test('exiting search mode, advanced expanded', function() {
+        settings.navigateTo(settings.Route.SITE_SETTINGS);
+        Polymer.dom.flush();
+        return assertPageVisibilityAfterSearch('', '');
       });
 
       test('can collapse advanced on advanced section route', function() {

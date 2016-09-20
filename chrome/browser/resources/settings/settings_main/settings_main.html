@@ -70,7 +70,7 @@
     <template is="dom-if"
         if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
       <template is="dom-if" if="[[showAdvancedToggle_(
-          showPages_.basic, hasExpandedSection_, previousShowPages_)]]">
+          showPages_.basic, hasExpandedSection_, inSearchMode_)]]">
         <div id="toggleSpacer"></div>
         <div id="toggleContainer">
           <paper-button id="advancedToggle" on-tap="toggleAdvancedPage_">
