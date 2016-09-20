@@ -90,10 +90,17 @@ DateDefaultView::DateDefaultView(LoginStatus login)
 
 #if !defined(OS_WIN)
   if (login != LoginStatus::LOCKED) {
-    shutdown_button_ = new TrayPopupHeaderButton(
-        this, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
-        IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-        IDS_ASH_STATUS_TRAY_SHUTDOWN);
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      gfx::ImageSkia power_icon =
+          gfx::CreateVectorIcon(kSystemMenuPowerIcon, kMenuIconColor);
+      shutdown_button_ = new TrayPopupHeaderButton(
+          this, power_icon, IDS_ASH_STATUS_TRAY_SHUTDOWN);
+    } else {
+      shutdown_button_ = new TrayPopupHeaderButton(
+          this, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
+          IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
+          IDS_ASH_STATUS_TRAY_SHUTDOWN);
+    }
     shutdown_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
     view->AddButton(shutdown_button_);

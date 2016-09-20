@@ -52,6 +52,8 @@ action("aggregate_vector_icons") {
     "system_menu_help.icon",
     "system_menu_keyboard.1x.icon",
     "system_menu_keyboard.icon",
+    "system_menu_power.1x.icon",
+    "system_menu_power.icon",
     "system_menu_rotation_lock_auto.1x.icon",
     "system_menu_rotation_lock_auto.icon",
     "system_menu_rotation_lock_locked.1x.icon",
