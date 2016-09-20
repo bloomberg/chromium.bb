@@ -1,0 +1,37 @@
+<html>
+<head>
+<meta charset="utf8">
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/network-test.js"></script>
+<script>
+
+function test()
+{
+    var cases = [
+        "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0",
+        "GoogleChrome/%s Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36",
+    ];
+
+    for (var i = 0; i < cases.length; i++) {
+        var result = WebInspector.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[i]);
+        InspectorTest.addResult(result);
+    }
+
+    InspectorTest.addResult("\nManually setting custom user agent");
+    WebInspector.multitargetNetworkManager.setCustomUserAgentOverride("foobar with %s inside");
+
+    InspectorTest.evaluateInPage("navigator.userAgent", step2);
+
+    function step2(result)
+    {
+        InspectorTest.addResult(result.value)
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>
