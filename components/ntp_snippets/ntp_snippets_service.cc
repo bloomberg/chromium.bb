@@ -889,24 +889,7 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
-  std::vector<Category> categories_to_erase;
-
-  // Empty the ARTICLES category and remove all others, since they may or may
-  // not be personalized.
-  for (const auto& item : categories_) {
-    Category category = item.first;
-    ClearCachedSuggestions(category);
-    ClearDismissedSuggestionsForDebugging(category);
-    if (category != articles_category_) {
-      UpdateCategoryStatus(category, CategoryStatus::NOT_PROVIDED);
-      categories_to_erase.push_back(category);
-    }
-  }
-
-  for (Category category : categories_to_erase) {
-    categories_.erase(category);
-  }
-
+  NukeAllSnippets();
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();
   RescheduleFetching();

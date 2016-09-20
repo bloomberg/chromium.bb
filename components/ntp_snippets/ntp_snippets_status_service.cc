@@ -88,6 +88,11 @@ void NTPSnippetsStatusService::GoogleSigninSucceeded(
 
 void NTPSnippetsStatusService::GoogleSignedOut(const std::string& account_id,
                                                const std::string& username) {
+  if (!require_signin_ && disabled_reason_ == DisabledReason::NONE) {
+    // Temporary enter |SIGNED_OUT| state to clear all personalised suggestions.
+    disabled_reason_change_callback_.Run(DisabledReason::SIGNED_OUT);
+    disabled_reason_change_callback_.Run(disabled_reason_);
+  }
   OnStateChanged();
 }
 
