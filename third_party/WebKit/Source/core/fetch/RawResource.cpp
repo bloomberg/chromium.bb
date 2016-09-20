@@ -100,6 +100,8 @@ void RawResource::appendData(const char* data, size_t length)
 
 void RawResource::didAddClient(ResourceClient* c)
 {
+    // CHECK()s for isCacheValidator() are for https://crbug.com/640960#c24.
+    CHECK(!isCacheValidator());
     if (!hasClient(c))
         return;
     DCHECK(RawResourceClient::isExpectedType(c));
@@ -107,16 +109,19 @@ void RawResource::didAddClient(ResourceClient* c)
     for (const auto& redirect : redirectChain()) {
         ResourceRequest request(redirect.m_request);
         client->redirectReceived(this, request, redirect.m_redirectResponse);
+        CHECK(!isCacheValidator());
         if (!hasClient(c))
             return;
     }
 
     if (!response().isNull())
         client->responseReceived(this, response(), nullptr);
+    CHECK(!isCacheValidator());
     if (!hasClient(c))
         return;
     if (data())
         client->dataReceived(this, data()->data(), data()->size());
+    CHECK(!isCacheValidator());
     if (!hasClient(c))
         return;
     Resource::didAddClient(client);
