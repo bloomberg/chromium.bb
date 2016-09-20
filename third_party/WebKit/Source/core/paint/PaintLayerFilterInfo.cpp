@@ -29,8 +29,8 @@
 
 #include "core/paint/PaintLayerFilterInfo.h"
 
-#include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 
 namespace blink {
@@ -42,9 +42,9 @@ PaintLayerFilterInfo::~PaintLayerFilterInfo()
     DCHECK(!m_layer);
 }
 
-void PaintLayerFilterInfo::setBuilder(FilterEffectBuilder* builder)
+void PaintLayerFilterInfo::setLastEffect(FilterEffect* lastEffect)
 {
-    m_builder = builder;
+    m_lastEffect = lastEffect;
 }
 
 void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
@@ -61,7 +61,7 @@ void PaintLayerFilterInfo::filterNeedsInvalidation()
 
 DEFINE_TRACE(PaintLayerFilterInfo)
 {
-    visitor->trace(m_builder);
+    visitor->trace(m_lastEffect);
     SVGResourceClient::trace(visitor);
 }
 

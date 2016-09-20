@@ -68,7 +68,6 @@ namespace blink {
 class CompositedLayerMapping;
 class CompositorFilterOperations;
 class ComputedStyle;
-class FilterEffectBuilder;
 class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
@@ -628,7 +627,7 @@ public:
 
     void updateDescendantDependentFlags();
 
-    void updateOrRemoveFilterEffectBuilder();
+    void updateOrRemoveFilterEffect();
 
     void updateSelfPaintingLayer();
     // This is O(depth) so avoid calling this in loops. Instead use optimizations like
@@ -791,7 +790,7 @@ private:
 
     FilterOperations addReflectionToFilterOperations(const ComputedStyle&) const;
     void updateReflectionInfo(const ComputedStyle*);
-    FilterEffectBuilder* updateFilterEffectBuilder() const;
+    FilterEffect* updateFilterEffect() const;
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
     // but for now, we are always allocating it for LayoutBox as it's safer. crbug.com/467721.

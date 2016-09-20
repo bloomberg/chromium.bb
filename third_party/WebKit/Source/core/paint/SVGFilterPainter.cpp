@@ -87,9 +87,9 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
         return nullptr;
     }
 
-    const FloatRect referenceBox = object.objectBoundingBox();
     SVGFilterGraphNodeMap* nodeMap = SVGFilterGraphNodeMap::create();
-    Filter* filter = FilterEffectBuilder::buildReferenceFilter(toSVGFilterElement(*m_filter.element()), referenceBox, nullptr, nullptr, nullptr, 1, nodeMap);
+    FilterEffectBuilder builder(nullptr, object.objectBoundingBox(), 1);
+    Filter* filter = builder.buildReferenceFilter(toSVGFilterElement(*m_filter.element()), nullptr, nodeMap);
     if (!filter || !filter->lastEffect())
         return nullptr;
 

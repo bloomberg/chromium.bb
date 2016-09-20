@@ -38,6 +38,7 @@
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "wtf/MathExtras.h"
@@ -120,20 +121,21 @@ Vector<float> sepiaMatrix(double amount)
 
 } // namespace
 
-FilterEffectBuilder::FilterEffectBuilder()
+FilterEffectBuilder::FilterEffectBuilder(
+    Element* target,
+    const FloatRect& zoomedReferenceBox, float zoom,
+    const SkPaint* fillPaint, const SkPaint* strokePaint)
+    : m_targetContext(target)
+    , m_referenceBox(zoomedReferenceBox)
+    , m_zoom(zoom)
+    , m_fillPaint(fillPaint)
+    , m_strokePaint(strokePaint)
 {
+    if (m_zoom != 1)
+        m_referenceBox.scale(1 / m_zoom);
 }
 
-FilterEffectBuilder::~FilterEffectBuilder()
-{
-}
-
-DEFINE_TRACE(FilterEffectBuilder)
-{
-    visitor->trace(m_lastEffect);
-}
-
-bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint)
+FilterEffect* FilterEffectBuilder::buildFilterEffect(const FilterOperations& operations) const
 {
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
     Filter* parentFilter = Filter::create(1.0f);
@@ -143,7 +145,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            Filter* referenceFilter = buildReferenceFilter(toReferenceFilterOperation(*filterOperation), zoomedReferenceBox, fillPaint, strokePaint, *element, previousEffect, zoom);
+            Filter* referenceFilter = buildReferenceFilter(toReferenceFilterOperation(*filterOperation), previousEffect);
             if (referenceFilter)
                 effect = referenceFilter->lastEffect();
             break;
@@ -250,45 +252,26 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             previousEffect = effect;
         }
     }
-
-    // We need to keep the old effects alive until this point, so that SVG reference filters
-    // can share cached resources across frames.
-    m_lastEffect = previousEffect;
-
-    // If we didn't make any effects, tell our caller we are not valid
-    if (!m_lastEffect.get())
-        return false;
-
-    return true;
+    return previousEffect;
 }
 
 Filter* FilterEffectBuilder::buildReferenceFilter(
     const ReferenceFilterOperation& referenceOperation,
-    const FloatRect& zoomedReferenceBox,
-    const SkPaint* fillPaint,
-    const SkPaint* strokePaint,
-    Element& element,
-    FilterEffect* previousEffect,
-    float zoom)
+    FilterEffect* previousEffect) const
 {
-    SVGFilterElement* filterElement = ReferenceFilterBuilder::resolveFilterReference(referenceOperation, element);
+    DCHECK(m_targetContext);
+    SVGFilterElement* filterElement = ReferenceFilterBuilder::resolveFilterReference(referenceOperation, *m_targetContext);
     if (!filterElement)
         return nullptr;
-    FloatRect referenceBox = zoomedReferenceBox;
-    referenceBox.scale(1.0f / zoom);
-    return buildReferenceFilter(*filterElement, referenceBox, fillPaint, strokePaint, previousEffect, zoom);
+    return buildReferenceFilter(*filterElement, previousEffect);
 }
 
 Filter* FilterEffectBuilder::buildReferenceFilter(
     SVGFilterElement& filterElement,
-    const FloatRect& referenceBox,
-    const SkPaint* fillPaint,
-    const SkPaint* strokePaint,
     FilterEffect* previousEffect,
-    float zoom,
-    SVGFilterGraphNodeMap* nodeMap)
+    SVGFilterGraphNodeMap* nodeMap) const
 {
-    FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
+    FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), m_referenceBox);
     // TODO(fs): We rely on the presence of a node map here to opt-in to the
     // check for an empty filter region. The reason for this is that we lack a
     // viewport to resolve against for HTML content. This is crbug.com/512453.
@@ -297,11 +280,11 @@ Filter* FilterEffectBuilder::buildReferenceFilter(
 
     bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
     Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
-    Filter* result = Filter::create(referenceBox, filterRegion, zoom, unitScaling);
+    Filter* result = Filter::create(m_referenceBox, filterRegion, m_zoom, unitScaling);
     if (!previousEffect)
         previousEffect = result->getSourceGraphic();
-    SVGFilterBuilder builder(previousEffect, nodeMap, fillPaint, strokePaint);
-    builder.buildGraph(result, filterElement, referenceBox);
+    SVGFilterBuilder builder(previousEffect, nodeMap, m_fillPaint, m_strokePaint);
+    builder.buildGraph(result, filterElement, m_referenceBox);
     result->setLastEffect(builder.lastEffect());
     return result;
 }

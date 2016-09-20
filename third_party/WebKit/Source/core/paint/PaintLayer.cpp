@@ -2380,7 +2380,7 @@ void PaintLayer::ensureCompositedLayerMapping()
     ensureRareData().compositedLayerMapping = wrapUnique(new CompositedLayerMapping(*this));
     m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
-    updateOrRemoveFilterEffectBuilder();
+    updateOrRemoveFilterEffect();
 }
 
 void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
@@ -2398,7 +2398,7 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
         m_rareData->compositedLayerMapping.reset();
 
     if (!layerBeingDestroyed)
-        updateOrRemoveFilterEffectBuilder();
+        updateOrRemoveFilterEffect();
 }
 
 void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, SetGroupMappingOptions options)
@@ -2582,7 +2582,7 @@ void PaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyl
         return;
 
     updateOrRemoveFilterClients();
-    updateOrRemoveFilterEffectBuilder();
+    updateOrRemoveFilterEffect();
 }
 
 bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
@@ -2691,8 +2691,7 @@ bool PaintLayer::scrollsOverflow() const
 
 namespace {
 
-FilterOperations resolveReferenceFilters(
-    const FilterOperations& filters, float effectiveZoom, Element& element, const FloatRect& zoomedReferenceBox)
+FilterOperations resolveReferenceFilters(const FilterEffectBuilder& builder, const FilterOperations& filters)
 {
     DCHECK(filters.hasReferenceFilter());
 
@@ -2701,8 +2700,7 @@ FilterOperations resolveReferenceFilters(
             continue;
         ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
         // TODO(fs): Cache the Filter if it didn't change.
-        Filter* referenceFilter = FilterEffectBuilder::buildReferenceFilter(referenceOperation, zoomedReferenceBox, nullptr, nullptr, element, nullptr, effectiveZoom);
-        referenceOperation.setFilter(referenceFilter);
+        referenceOperation.setFilter(builder.buildReferenceFilter(referenceOperation));
     }
     return filters;
 }
@@ -2722,16 +2720,20 @@ FilterOperations PaintLayer::addReflectionToFilterOperations(const ComputedStyle
 CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForFilter(const ComputedStyle& style)
 {
     FilterOperations filterOperations = addReflectionToFilterOperations(style);
-    if (filterOperations.hasReferenceFilter())
-        filterOperations = resolveReferenceFilters(filterOperations, style.effectiveZoom(), toElement(*enclosingNode()), boxForFilter());
+    if (filterOperations.hasReferenceFilter()) {
+        FilterEffectBuilder builder(toElement(enclosingNode()), boxForFilter(), style.effectiveZoom());
+        filterOperations = resolveReferenceFilters(builder, filterOperations);
+    }
     return SkiaImageFilterBuilder::buildFilterOperations(filterOperations);
 }
 
 CompositorFilterOperations PaintLayer::createCompositorFilterOperationsForBackdropFilter(const ComputedStyle& style)
 {
     FilterOperations operations = style.backdropFilter();
-    if (operations.hasReferenceFilter())
-        operations = resolveReferenceFilters(operations, style.effectiveZoom(), toElement(*enclosingNode()), boxForFilter());
+    if (operations.hasReferenceFilter()) {
+        FilterEffectBuilder builder(toElement(enclosingNode()), boxForFilter(), style.effectiveZoom());
+        operations = resolveReferenceFilters(builder, operations);
+    }
     return SkiaImageFilterBuilder::buildFilterOperations(operations);
 }
 
@@ -2773,7 +2775,7 @@ void PaintLayer::updateOrRemoveFilterClients()
     }
 }
 
-FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
+FilterEffect* PaintLayer::updateFilterEffect() const
 {
     // TODO(chrishtr): ensure (and assert) that compositing is clean here.
 
@@ -2782,34 +2784,30 @@ FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
 
     PaintLayerFilterInfo* filterInfo = this->filterInfo();
 
-    // Should have been added by updateOrRemoveFilterEffectBuilder().
+    // Should have been added by updateOrRemoveFilterEffect().
     ASSERT(filterInfo);
 
-    if (filterInfo->builder())
-        return filterInfo->builder();
-
-    filterInfo->setBuilder(FilterEffectBuilder::create());
+    if (filterInfo->lastEffect())
+        return filterInfo->lastEffect();
 
     const ComputedStyle& style = layoutObject()->styleRef();
-    Element* element = toElement(enclosingNode());
-    FilterOperations operations = addReflectionToFilterOperations(style);
+    const bool hasReferenceFilter = style.filter().hasReferenceFilter();
     FloatRect zoomedReferenceBox;
-    if (style.filter().hasReferenceFilter()) {
+    if (hasReferenceFilter)
         zoomedReferenceBox = boxForFilter();
-        operations = resolveReferenceFilters(operations, style.effectiveZoom(), *element, zoomedReferenceBox);
-    }
-    if (!filterInfo->builder()->build(element, operations, style.effectiveZoom(), zoomedReferenceBox))
-        filterInfo->setBuilder(nullptr);
 
-    return filterInfo->builder();
+    FilterOperations operations = addReflectionToFilterOperations(style);
+    FilterEffectBuilder builder(toElement(enclosingNode()), zoomedReferenceBox, style.effectiveZoom());
+    if (hasReferenceFilter)
+        operations = resolveReferenceFilters(builder, operations);
+
+    filterInfo->setLastEffect(builder.buildFilterEffect(operations));
+    return filterInfo->lastEffect();
 }
 
 FilterEffect* PaintLayer::lastFilterEffect() const
 {
-    FilterEffectBuilder* builder = updateFilterEffectBuilder();
-    if (!builder)
-        return nullptr;
-    return builder->lastEffect();
+    return updateFilterEffect();
 }
 
 FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const
@@ -2818,7 +2816,7 @@ FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const
         return rect;
 
     // Ensure the filter-chain is refreshed wrt reference filters.
-    updateFilterEffectBuilder();
+    updateFilterEffect();
 
     FilterOperations filterOperations = addReflectionToFilterOperations(layoutObject()->styleRef());
     return filterOperations.mapRect(rect);
@@ -2843,21 +2841,18 @@ bool PaintLayer::hasFilterThatMovesPixels() const
     return false;
 }
 
-void PaintLayer::updateOrRemoveFilterEffectBuilder()
+void PaintLayer::updateOrRemoveFilterEffect()
 {
     // FilterEffectBuilder is only used to render the filters in software mode,
-    // so we always need to run updateOrRemoveFilterEffectBuilder after the composited
+    // so we always need to run updateOrRemoveFilterEffect after the composited
     // mode might have changed for this layer.
     if (!paintsWithFilters()) {
-        // Don't delete the whole filter info here, because we might use it
-        // for loading CSS shader files.
         if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-            filterInfo->setBuilder(nullptr);
-
+            filterInfo->setLastEffect(nullptr);
         return;
     }
 
-    ensureFilterInfo().setBuilder(nullptr);
+    ensureFilterInfo().setLastEffect(nullptr);
 }
 
 void PaintLayer::filterNeedsPaintInvalidation()

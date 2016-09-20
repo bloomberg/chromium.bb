@@ -27,43 +27,44 @@
 #define FilterEffectBuilder_h
 
 #include "core/CoreExport.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 class SkPaint;
 
 namespace blink {
 
 class Element;
+class Filter;
+class FilterEffect;
 class FilterOperations;
+class FloatRect;
 class ReferenceFilterOperation;
 class SVGFilterElement;
 class SVGFilterGraphNodeMap;
 
-class CORE_EXPORT FilterEffectBuilder final : public GarbageCollectedFinalized<FilterEffectBuilder> {
+class CORE_EXPORT FilterEffectBuilder final {
+    STACK_ALLOCATED();
 public:
-    static FilterEffectBuilder* create()
-    {
-        return new FilterEffectBuilder();
-    }
+    FilterEffectBuilder(
+        Element*,
+        const FloatRect& zoomedReferenceBox,
+        float zoom,
+        const SkPaint* fillPaint = nullptr,
+        const SkPaint* strokePaint = nullptr);
 
-    virtual ~FilterEffectBuilder();
-    DECLARE_TRACE();
+    Filter* buildReferenceFilter(SVGFilterElement&, FilterEffect* previousEffect, SVGFilterGraphNodeMap* = nullptr) const;
+    Filter* buildReferenceFilter(const ReferenceFilterOperation&, FilterEffect* previousEffect = nullptr) const;
 
-    static Filter* buildReferenceFilter(const ReferenceFilterOperation&, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint, Element&, FilterEffect* previousEffect, float zoom);
-    static Filter* buildReferenceFilter(SVGFilterElement&, const FloatRect& referenceBox, const SkPaint* fillPaint, const SkPaint* strokePaint, FilterEffect* previousEffect, float zoom, SVGFilterGraphNodeMap* = nullptr);
-
-    bool build(Element*, const FilterOperations&, float zoom, const FloatRect& zoomedReferenceBox, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
-
-    FilterEffect* lastEffect() const
-    {
-        return m_lastEffect;
-    }
+    FilterEffect* buildFilterEffect(const FilterOperations&) const;
 
 private:
-    FilterEffectBuilder();
-
-    Member<FilterEffect> m_lastEffect;
+    Member<Element> m_targetContext;
+    FloatRect m_referenceBox;
+    float m_zoom;
+    const SkPaint* m_fillPaint;
+    const SkPaint* m_strokePaint;
 };
 
 } // namespace blink

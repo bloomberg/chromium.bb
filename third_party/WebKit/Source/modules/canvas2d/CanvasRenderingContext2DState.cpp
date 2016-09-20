@@ -17,6 +17,7 @@
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/canvas2d/CanvasStyle.h"
 #include "platform/graphics/DrawLooperBuilder.h"
+#include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -308,21 +309,23 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
 
         StyleBuilder::applyProperty(CSSPropertyFilter, resolverState, *m_filterValue);
         resolverState.loadPendingResources();
-        FilterEffectBuilder* filterEffectBuilder = FilterEffectBuilder::create();
 
         // We can't reuse m_fillPaint and m_strokePaint for the filter, since these incorporate
         // the global alpha, which isn't applicable here.
         SkPaint fillPaintForFilter;
-        SkPaint strokePaintForFilter;
         m_fillStyle->applyToPaint(fillPaintForFilter);
-        m_strokeStyle->applyToPaint(strokePaintForFilter);
         fillPaintForFilter.setColor(m_fillStyle->paintColor());
+        SkPaint strokePaintForFilter;
+        m_strokeStyle->applyToPaint(strokePaintForFilter);
         strokePaintForFilter.setColor(m_strokeStyle->paintColor());
-        FloatRect referenceBox((FloatPoint()), FloatSize(canvasSize));
-        const double effectiveZoom = 1.0; // Deliberately ignore zoom on the canvas element
-        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, referenceBox, &fillPaintForFilter, &strokePaintForFilter);
 
-        if (FilterEffect* lastEffect = filterEffectBuilder->lastEffect()) {
+        FilterEffectBuilder filterEffectBuilder(
+            styleResolutionHost,
+            FloatRect((FloatPoint()), FloatSize(canvasSize)),
+            1.0f, // Deliberately ignore zoom on the canvas element.
+            &fillPaintForFilter, &strokePaintForFilter);
+
+        if (FilterEffect* lastEffect = filterEffectBuilder.buildFilterEffect(filterStyle->filter())) {
             m_resolvedFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
             if (m_resolvedFilter) {
                 updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());
