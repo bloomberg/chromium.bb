@@ -169,6 +169,7 @@
 -TabManagerTest.TabManagerBasics
 -TaskManagerBrowserTest.*
 -TemplateURLScraperTest.ScrapeWithOnSubmit
+-ThreatDOMDetailsTest.Everything
 -TracingBrowserTest.TestBackgroundMemoryInfra
 -TracingBrowserTest.TestMemoryInfra
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
@@ -191,6 +192,15 @@
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/0
 -WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/1
 -WebViewTests/WebViewTest*
+
+# Errors related to forms submission.
+-AutofillServerTest.QueryAndUploadBothIncludeFieldsWithAutocompleteOff
+-FormAutocompleteTest.AutoCompleteOffFormSubmit
+-FormAutocompleteTest.AutoCompleteOffInputSubmit
+-FormAutocompleteTest.DynamicAutoCompleteOffFormSubmit
+-FormAutocompleteTest.NormalFormSubmit
+-PhishingDOMFeatureExtractorTest.SubFrames
+-PhishingDOMFeatureExtractorTest.SubframeRemoval
 
 # https://crbug.com/647712: Nested URL blocking needs to work with PlzNavigate
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
