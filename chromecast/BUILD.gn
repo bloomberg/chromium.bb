@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//chromecast/build/tests/cast_test.gni")
 import("//chromecast/chromecast.gni")
@@ -228,6 +229,15 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ net_unittests_filter ]
+
+  # TODO(mbjorge): net_unittests do not complete when run with sanitizers,
+  # (in particular, TSAN and UBSAN), resulting in build machines getting stuck
+  # for many hours. Disable them for now, since these are getting run on
+  # Chromium bots anyway. (internal b/31279943)
+  if (using_sanitizer) {
+    tests -= [ "//net:net_unittests" ]
+    filters -= [ net_unittests_filter ]
+  }
 }
 
 # Creates the build and run lists for all test targets.
