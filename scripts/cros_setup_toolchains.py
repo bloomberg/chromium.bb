@@ -132,10 +132,10 @@ class Crossdev(object):
       conf['crosspkgs'] = conf['crosspkgs'].split()
 
       for pkg, cat in cls.MANUAL_PKGS.iteritems():
-          conf[pkg + '_pn'] = pkg
-          conf[pkg + '_category'] = cat
-          if pkg not in conf['crosspkgs']:
-            conf['crosspkgs'].append(pkg)
+        conf[pkg + '_pn'] = pkg
+        conf[pkg + '_category'] = cat
+        if pkg not in conf['crosspkgs']:
+          conf['crosspkgs'].append(pkg)
 
       val[target] = conf
 
@@ -414,10 +414,12 @@ def RebuildLibtool(root='/'):
       if line.startswith('sys_lib_search_path_spec='):
         line = line.rstrip()
         for path in line.split('=', 1)[1].strip('"').split():
-          if not os.path.exists(os.path.join(root, path.lstrip(os.path.sep))):
-            print('Rebuilding libtool after gcc upgrade')
-            print(' %s' % line)
-            print(' missing path: %s' % path)
+          root_path = os.path.join(root, path.lstrip(os.path.sep))
+          logging.debug('Libtool: checking %s', root_path)
+          if not os.path.exists(root_path):
+            logging.info('Rebuilding libtool after gcc upgrade')
+            logging.info(' %s', line)
+            logging.info(' missing path: %s', path)
             needs_update = True
             break
 
@@ -430,6 +432,8 @@ def RebuildLibtool(root='/'):
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.append('sys-devel/libtool')
     cros_build_lib.RunCommand(cmd)
+  else:
+    logging.debug('Libtool is up-to-date; no need to rebuild')
 
 
 def UpdateTargets(targets, usepkg, root='/'):
@@ -446,15 +450,18 @@ def UpdateTargets(targets, usepkg, root='/'):
   # For each target, we do two things. Figure out the list of updates,
   # and figure out the appropriate keywords/masks. Crossdev will initialize
   # these, but they need to be regenerated on every update.
-  print('Determining required toolchain updates...')
+  logging.info('Determining required toolchain updates...')
   mergemap = {}
   for target in targets:
+    logging.debug('Updating target %s', target)
     # Record the highest needed version for each target, for masking purposes.
     RemovePackageMask(target)
     for package in GetTargetPackages(target):
       # Portage name for the package
       if IsPackageDisabled(target, package):
+        logging.debug('   Skipping disabled package %s', package)
         continue
+      logging.debug('   Updating package %s', package)
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(pkg, root=root)
       desired = GetDesiredPackageVersions(target, package)
@@ -468,11 +475,11 @@ def UpdateTargets(targets, usepkg, root='/'):
         packages.append(pkg)
 
   if not packages:
-    print('Nothing to update!')
+    logging.info('Nothing to update!')
     return False
 
-  print('Updating packages:')
-  print(packages)
+  logging.info('Updating packages:')
+  logging.info('%s', packages)
 
   cmd = [EMERGE_CMD, '--oneshot', '--update']
   if usepkg:
@@ -494,9 +501,12 @@ def CleanTargets(targets, root='/'):
   """
   unmergemap = {}
   for target in targets:
+    logging.debug('Cleaning target %s', target)
     for package in GetTargetPackages(target):
       if IsPackageDisabled(target, package):
+        logging.debug('   Skipping disabled package %s', package)
         continue
+      logging.debug('   Cleaning package %s', package)
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(pkg, root=root)
       desired = GetDesiredPackageVersions(target, package)
@@ -509,7 +519,8 @@ def CleanTargets(targets, root='/'):
       # binhost sync and is probably more complex than useful.
       desired_num = VersionListToNumeric(target, package, desired, True)
       if not set(desired_num).issubset(current):
-        print('Error detecting stable version for %s, skipping clean!' % pkg)
+        logging.warning('Error detecting stable version for %s, '
+                        'skipping clean!', pkg)
         return
       unmergemap[pkg] = set(current).difference(desired_num)
 
@@ -519,15 +530,15 @@ def CleanTargets(targets, root='/'):
     packages.extend('=%s-%s' % (pkg, ver) for ver in vers if ver != '9999')
 
   if packages:
-    print('Cleaning packages:')
-    print(packages)
+    logging.info('Cleaning packages:')
+    logging.info('%s', packages)
     cmd = [EMERGE_CMD, '--unmerge']
     if root != '/':
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.extend(packages)
     cros_build_lib.RunCommand(cmd)
   else:
-    print('Nothing to clean!')
+    logging.info('Nothing to clean!')
 
 
 def SelectActiveToolchains(targets, suffixes, root='/'):
@@ -637,8 +648,8 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
       else:
         crossdev_targets[target] = targets[target]
     if crossdev_targets:
-      print('The following targets need to be re-initialized:')
-      print(crossdev_targets)
+      logging.info('The following targets need to be re-initialized:')
+      logging.info('%s', crossdev_targets)
       Crossdev.UpdateTargets(crossdev_targets, usepkg)
     # Those that were not initialized may need a config update.
     Crossdev.UpdateTargets(reconfig_targets, usepkg, config_only=True)
@@ -666,6 +677,7 @@ def ShowConfig(name):
   """
   toolchains = toolchain.GetToolchainsForBoard(name)
   # Make sure we display the default toolchain first.
+  # Note: Do not use logging here as this is meant to be used by other tools.
   print(','.join(
       toolchain.FilterToolchains(toolchains, 'default', True).keys() +
       toolchain.FilterToolchains(toolchains, 'default', False).keys()))
