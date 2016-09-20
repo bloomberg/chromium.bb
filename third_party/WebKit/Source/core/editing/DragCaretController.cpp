@@ -69,7 +69,7 @@ void DragCaretController::setCaretPosition(const PositionWithAffinity& position)
 
     if (Node* node = m_position.deepEquivalent().anchorNode())
         m_caretBase->invalidateCaretRect(node);
-    m_position = createVisiblePositionDeprecated(position);
+    m_position = createVisiblePosition(position);
     Document* document = nullptr;
     if (Node* node = m_position.deepEquivalent().anchorNode()) {
         m_caretBase->invalidateCaretRect(node);
