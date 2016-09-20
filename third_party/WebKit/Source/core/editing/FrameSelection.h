@@ -107,6 +107,7 @@ public:
     bool isContentEditable() const { return selection().isContentEditable(); }
     bool isContentRichlyEditable() const { return selection().isContentRichlyEditable(); }
 
+    // TODO(xiaochengh): Remove the |moveTo(VisiblePosition)| overload.
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
     void moveTo(const Position&, TextAffinity);
 
