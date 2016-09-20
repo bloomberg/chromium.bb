@@ -383,6 +383,8 @@ const char kEnableWebBluetooth[] = "enable-web-bluetooth";
 const char kEnableWebFontsInterventionV2[] = "enable-webfonts-intervention-v2";
 const char kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[] =
     "enabled-2g";
+const char kEnableWebFontsInterventionV2SwitchValueEnabledWith3G[] =
+    "enabled-3g";
 const char kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[] =
     "enabled-slow2g";
 const char kEnableWebFontsInterventionV2SwitchValueDisabled[] = "disabled";

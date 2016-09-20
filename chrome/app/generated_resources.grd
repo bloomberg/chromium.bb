@@ -15171,6 +15171,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_V2_CHOICE_ENABLED_WITH_2G" desc="Text to indicate a experiment group name for enable-webfonts-intervention-v2">
       Enabled: 2G
     </message>
+    <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_V2_CHOICE_ENABLED_WITH_3G" desc="Text to indicate a experiment group name for enable-webfonts-intervention-v2">
+      Enabled: 3G
+    </message>
     <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_V2_CHOICE_ENABLED_WITH_SLOW2G" desc="Text to indicate a experiment group name for enable-webfonts-intervention-v2">
       Enabled: Slow 2G
     </message>

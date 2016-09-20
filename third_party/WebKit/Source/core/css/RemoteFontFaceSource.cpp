@@ -28,9 +28,15 @@ bool isEffectiveConnectionTypeSlowFor(Document* document)
 {
     WebEffectiveConnectionType type = document->frame()->loader().client()->getEffectiveConnectionType();
 
-    WebEffectiveConnectionType thresholdType = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled()
-        ? WebEffectiveConnectionType::Type2G
-        : WebEffectiveConnectionType::TypeSlow2G;
+    WebEffectiveConnectionType thresholdType = WebEffectiveConnectionType::TypeUnknown;
+    if (RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled()) {
+        thresholdType = WebEffectiveConnectionType::Type2G;
+    } else if (RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled()) {
+        thresholdType = WebEffectiveConnectionType::Type3G;
+    } else if (RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled()) {
+        thresholdType = WebEffectiveConnectionType::TypeSlow2G;
+    }
+    DCHECK_NE(WebEffectiveConnectionType::TypeUnknown, thresholdType);
 
     return WebEffectiveConnectionType::TypeOffline <= type && type <= thresholdType;
 }
@@ -170,7 +176,7 @@ bool RemoteFontFaceSource::shouldTriggerWebFontsIntervention()
     if (m_histograms.dataSource() == FontLoadHistograms::FromMemoryCache || m_histograms.dataSource() == FontLoadHistograms::FromDataURL)
         return false;
 
-    bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
+    bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
 
     bool networkIsSlow = isV2Enabled ? isEffectiveConnectionTypeSlowFor(m_fontSelector->document()) : isConnectionTypeSlow();
 

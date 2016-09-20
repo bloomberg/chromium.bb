@@ -118,6 +118,7 @@ public:
     BLINK_EXPORT static void enableWebAssemblySerialization(bool);
     BLINK_EXPORT static void enableWebBluetooth(bool);
     BLINK_EXPORT static void enableWebFontsInterventionV2With2G(bool);
+    BLINK_EXPORT static void enableWebFontsInterventionV2With3G(bool);
     BLINK_EXPORT static void enableWebFontsInterventionV2WithSlow2G(bool);
     BLINK_EXPORT static void enableWebFontsInterventionTrigger(bool);
     BLINK_EXPORT static void enableWebGLDraftExtensions(bool);

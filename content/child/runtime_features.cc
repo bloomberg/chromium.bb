@@ -206,6 +206,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
         webfonts_intervention_v2_about_flag.compare(
             switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G) ==
         0);
+    WebRuntimeFeatures::enableWebFontsInterventionV2With3G(
+        webfonts_intervention_v2_about_flag.compare(
+            switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith3G) ==
+        0);
     WebRuntimeFeatures::enableWebFontsInterventionV2WithSlow2G(
         webfonts_intervention_v2_about_flag.compare(
             switches::
@@ -215,6 +219,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableWebFontsInterventionV2With2G(base::StartsWith(
         webfonts_intervention_v2_group_name,
         switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G,
+        base::CompareCase::INSENSITIVE_ASCII));
+    WebRuntimeFeatures::enableWebFontsInterventionV2With3G(base::StartsWith(
+        webfonts_intervention_v2_group_name,
+        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith3G,
         base::CompareCase::INSENSITIVE_ASCII));
     WebRuntimeFeatures::enableWebFontsInterventionV2WithSlow2G(base::StartsWith(
         webfonts_intervention_v2_group_name,

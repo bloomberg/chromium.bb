@@ -360,6 +360,11 @@ void WebRuntimeFeatures::enableWebFontsInterventionV2With2G(bool enable)
     RuntimeEnabledFeatures::setWebFontsInterventionV2With2GEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebFontsInterventionV2With3G(bool enable)
+{
+    RuntimeEnabledFeatures::setWebFontsInterventionV2With3GEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableWebFontsInterventionV2WithSlow2G(bool enable)
 {
     RuntimeEnabledFeatures::setWebFontsInterventionV2WithSlow2GEnabled(enable);

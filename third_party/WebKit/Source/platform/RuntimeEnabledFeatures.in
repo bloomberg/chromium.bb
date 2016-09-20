@@ -251,6 +251,7 @@ AutoplayMutedVideos settable_from_internals=True
 VisualViewportAPI status=experimental
 WakeLock status=experimental
 WebFontsInterventionV2With2G
+WebFontsInterventionV2With3G
 WebFontsInterventionV2WithSlow2G
 WebFontsInterventionTrigger
 WebShare status=experimental, origin_trial_feature_name=WebShare

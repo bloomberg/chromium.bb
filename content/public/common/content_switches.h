@@ -122,6 +122,8 @@ CONTENT_EXPORT extern const char kEnableWebFontsInterventionV2[];
 CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[];
 CONTENT_EXPORT extern const char
+    kEnableWebFontsInterventionV2SwitchValueEnabledWith3G[];
+CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[];
 CONTENT_EXPORT extern const char
     kEnableWebFontsInterventionV2SwitchValueDisabled[];
