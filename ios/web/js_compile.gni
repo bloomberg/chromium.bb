@@ -118,7 +118,6 @@ template("js_compile_checked") {
       #   --jscomp_error=checkTypes
       #   --jscomp_error=checkVars
       #   --jscomp_error=missingProperties
-      #   --jscomp_error=missingReturn
       #   --jscomp_error=undefinedVars
 
       args = [
@@ -131,6 +130,7 @@ template("js_compile_checked") {
         "--jscomp_error=externsValidation",
         "--jscomp_error=globalThis",
         "--jscomp_error=invalidCasts",
+        "--jscomp_error=missingReturn",
         "--jscomp_error=nonStandardJsDocs",
         "--jscomp_error=suspiciousCode",
         "--jscomp_error=undefinedNames",
