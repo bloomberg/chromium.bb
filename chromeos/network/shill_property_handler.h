@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     : public ShillPropertyChangedObserver,
       public base::SupportsWeakPtr<ShillPropertyHandler> {
  public:
-  typedef std::map<std::string, ShillPropertyObserver*>
+  typedef std::map<std::string, std::unique_ptr<ShillPropertyObserver>>
       ShillPropertyObserverMap;
 
   class CHROMEOS_EXPORT Listener {

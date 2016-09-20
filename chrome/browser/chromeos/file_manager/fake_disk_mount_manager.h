@@ -74,7 +74,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) override;
 
-  bool AddDiskForTest(Disk* disk) override;
+  bool AddDiskForTest(std::unique_ptr<Disk> disk) override;
   bool AddMountPointForTest(const MountPointInfo& mount_point) override;
   void InvokeDiskEventForTest(DiskEvent event, const Disk* disk);
 

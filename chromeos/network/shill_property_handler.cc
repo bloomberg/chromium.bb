@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -112,10 +112,6 @@ ShillPropertyHandler::ShillPropertyHandler(Listener* listener)
 
 ShillPropertyHandler::~ShillPropertyHandler() {
   // Delete network service observers.
-  base::STLDeleteContainerPairSecondPointers(observed_networks_.begin(),
-                                             observed_networks_.end());
-  base::STLDeleteContainerPairSecondPointers(observed_devices_.begin(),
-                                             observed_devices_.end());
   CHECK(shill_manager_ == DBusThreadManager::Get()->GetShillManagerClient());
   shill_manager_->RemovePropertyChangedObserver(this);
 }
@@ -385,28 +381,24 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
     if (path.empty())
       continue;
     auto iter = observer_map.find(path);
-    ShillPropertyObserver* observer;
+    std::unique_ptr<ShillPropertyObserver> observer;
     if (iter != observer_map.end()) {
-      observer = iter->second;
+      observer = std::move(iter->second);
     } else {
       // Create an observer for future updates.
-      observer = new ShillPropertyObserver(
+      observer = base::MakeUnique<ShillPropertyObserver>(
           type, path, base::Bind(&ShillPropertyHandler::PropertyChangedCallback,
                                  AsWeakPtr()));
     }
-    auto result = new_observed.insert(std::make_pair(path, observer));
+    auto result =
+        new_observed.insert(std::make_pair(path, std::move(observer)));
     if (!result.second) {
       LOG(ERROR) << path << " is duplicated in the list.";
-      delete observer;
     }
     observer_map.erase(path);
     // Limit the number of observed services.
     if (new_observed.size() >= kMaxObserved)
       break;
-  }
-  // Delete network service observers still in observer_map.
-  for (auto& observer : observer_map) {
-    delete observer.second;
   }
   observer_map.swap(new_observed);
 }

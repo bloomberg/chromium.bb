@@ -55,7 +55,7 @@ class ASH_EXPORT DisplayAnimatorChromeOS
   // and *not* call the registered callback.
   void ClearHidingLayers();
 
-  std::map<aura::Window*, ui::Layer*> hiding_layers_;
+  std::map<aura::Window*, std::unique_ptr<ui::Layer>> hiding_layers_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::WeakPtrFactory<DisplayAnimatorChromeOS> weak_ptr_factory_;
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 
 #include "base/callback.h"
-#include "base/stl_util.h"
 
 namespace file_manager {
 
@@ -35,7 +34,6 @@ FakeDiskMountManager::FakeDiskMountManager() {
 }
 
 FakeDiskMountManager::~FakeDiskMountManager() {
-  base::STLDeleteValues(&disks_);
 }
 
 void FakeDiskMountManager::AddObserver(Observer* observer) {
@@ -58,8 +56,8 @@ FakeDiskMountManager::FindDiskBySourcePath(
     const std::string& source_path) const {
   DiskMap::const_iterator iter = disks_.find(source_path);
   if (iter == disks_.end())
-    return NULL;
-  return iter->second;
+    return nullptr;
+  return iter->second.get();
 }
 
 const chromeos::disks::DiskMountManager::MountPointMap&
@@ -118,9 +116,9 @@ void FakeDiskMountManager::UnmountDeviceRecursively(
     const UnmountDeviceRecursivelyCallbackType& callback) {
 }
 
-bool FakeDiskMountManager::AddDiskForTest(Disk* disk) {
+bool FakeDiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
   DCHECK(disk);
-  return disks_.insert(make_pair(disk->device_path(), disk)).second;
+  return disks_.insert(make_pair(disk->device_path(), std::move(disk))).second;
 }
 
 bool FakeDiskMountManager::AddMountPointForTest(

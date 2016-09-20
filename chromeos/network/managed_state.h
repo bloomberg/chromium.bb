@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -37,7 +38,8 @@ class CHROMEOS_EXPORT ManagedState {
 
   // This will construct and return a new instance of the appropriate class
   // based on |type|.
-  static ManagedState* Create(ManagedType type, const std::string& path);
+  static std::unique_ptr<ManagedState> Create(ManagedType type,
+                                              const std::string& path);
 
   // Returns the specific class pointer if this is the correct type, or
   // NULL if it is not.

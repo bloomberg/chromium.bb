@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
@@ -163,8 +163,7 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
 
 class FileManagerPrivateApiTest : public ExtensionApiTest {
  public:
-  FileManagerPrivateApiTest()
-      : disk_mount_manager_mock_(NULL) {
+  FileManagerPrivateApiTest() : disk_mount_manager_mock_(nullptr) {
     InitMountPoints();
   }
 
@@ -172,7 +171,6 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
     DCHECK(!disk_mount_manager_mock_);
     DCHECK(!testing_profile_);
     DCHECK(!event_router_);
-    base::STLDeleteValues(&volumes_);
   }
 
   void SetUpOnMainThread() override {
@@ -211,7 +209,7 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
   // ExtensionApiTest override
   void TearDownInProcessBrowserTestFixture() override {
     chromeos::disks::DiskMountManager::Shutdown();
-    disk_mount_manager_mock_ = NULL;
+    disk_mount_manager_mock_ = nullptr;
 
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
@@ -271,9 +269,8 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
 
         volumes_.insert(DiskMountManager::DiskMap::value_type(
             kTestMountPoints[i].source_path,
-            new DiskMountManager::Disk(
-                kTestMountPoints[i].source_path,
-                kTestMountPoints[i].mount_path,
+            base::MakeUnique<DiskMountManager::Disk>(
+                kTestMountPoints[i].source_path, kTestMountPoints[i].mount_path,
                 kTestDisks[disk_info_index].system_path,
                 kTestDisks[disk_info_index].file_path,
                 kTestDisks[disk_info_index].device_label,
@@ -291,18 +288,15 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
                 kTestDisks[disk_info_index].has_media,
                 kTestDisks[disk_info_index].on_boot_device,
                 kTestDisks[disk_info_index].on_removable_device,
-                kTestDisks[disk_info_index].is_hidden
-            )
-        ));
+                kTestDisks[disk_info_index].is_hidden)));
       }
     }
   }
 
   const DiskMountManager::Disk* FindVolumeBySourcePath(
       const std::string& source_path) {
-    DiskMountManager::DiskMap::const_iterator volume_it =
-        volumes_.find(source_path);
-    return (volume_it == volumes_.end()) ? NULL : volume_it->second;
+    auto volume_it = volumes_.find(source_path);
+    return (volume_it == volumes_.end()) ? nullptr : volume_it->second.get();
   }
 
  protected:

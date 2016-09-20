@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
@@ -174,7 +175,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     bool on_removable_device_;
     bool is_hidden_;
   };
-  typedef std::map<std::string, Disk*> DiskMap;
+  typedef std::map<std::string, std::unique_ptr<Disk>> DiskMap;
 
   // A struct to store information about mount point.
   struct MountPointInfo {
@@ -291,7 +292,7 @@ class CHROMEOS_EXPORT DiskMountManager {
 
   // Used in tests to initialize the manager's disk and mount point sets.
   // Default implementation does noting. It just fails.
-  virtual bool AddDiskForTest(Disk* disk);
+  virtual bool AddDiskForTest(std::unique_ptr<Disk> disk);
   virtual bool AddMountPointForTest(const MountPointInfo& mount_point);
 
   // Returns corresponding string to |type| like "unknown_filesystem".

@@ -150,7 +150,8 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   // Dictionary of <device_name, Dictionary>.
   base::DictionaryValue stub_devices_;
   // Observer list for each device.
-  std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
+  std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>
+      observer_list_;
 
   // Number of times to return InProgress for TDLS. Set to -1 to emulate
   // TDLS failure.

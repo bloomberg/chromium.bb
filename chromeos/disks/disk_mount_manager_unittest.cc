@@ -165,7 +165,7 @@ enum ObserverEventType {
 struct ObserverEvent {
  public:
   virtual ObserverEventType type() const = 0;
-  virtual ~ObserverEvent() {};
+  virtual ~ObserverEvent() {}
 };
 
 // Represents an invocation of |DiskMountManager::Observer::OnDeviceEvent()|.
@@ -282,7 +282,7 @@ struct MountEvent : public ObserverEvent {
 // from DiskMountManager and all the arguments passed to them.
 class MockDiskMountManagerObserver : public DiskMountManager::Observer {
  public:
-  MockDiskMountManagerObserver(const DiskMountManager* manager)
+  explicit MockDiskMountManagerObserver(const DiskMountManager* manager)
       : manager_(manager) {}
   ~MockDiskMountManagerObserver() override {}
 
@@ -438,26 +438,13 @@ class DiskMountManagerTest : public testing::Test {
   // Adds a new disk to the disk mount manager.
   void AddTestDisk(const TestDiskInfo& disk) {
     EXPECT_TRUE(DiskMountManager::GetInstance()->AddDiskForTest(
-        new DiskMountManager::Disk(disk.source_path,
-                                   disk.mount_path,
-                                   disk.system_path,
-                                   disk.file_path,
-                                   disk.device_label,
-                                   disk.drive_label,
-                                   disk.vendor_id,
-                                   disk.vendor_name,
-                                   disk.product_id,
-                                   disk.product_name,
-                                   disk.fs_uuid,
-                                   disk.system_path_prefix,
-                                   disk.device_type,
-                                   disk.size_in_bytes,
-                                   disk.is_parent,
-                                   disk.is_read_only,
-                                   disk.has_media,
-                                   disk.on_boot_device,
-                                   disk.on_removable_device,
-                                   disk.is_hidden)));
+        base::MakeUnique<DiskMountManager::Disk>(
+            disk.source_path, disk.mount_path, disk.system_path, disk.file_path,
+            disk.device_label, disk.drive_label, disk.vendor_id,
+            disk.vendor_name, disk.product_id, disk.product_name, disk.fs_uuid,
+            disk.system_path_prefix, disk.device_type, disk.size_in_bytes,
+            disk.is_parent, disk.is_read_only, disk.has_media,
+            disk.on_boot_device, disk.on_removable_device, disk.is_hidden)));
   }
 
   // Adds a new mount point to the disk mount manager.

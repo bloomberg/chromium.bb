@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -349,7 +350,7 @@ void NetworkConfigurationHandler::RemoveConfiguration(
   NET_LOG(USER) << "Remove Configuration: " << service_path;
   ProfileEntryDeleter* deleter = new ProfileEntryDeleter(
       this, service_path, guid, source, callback, error_callback);
-  profile_entry_deleters_[service_path] = deleter;
+  profile_entry_deleters_[service_path] = base::WrapUnique(deleter);
   deleter->Run();
 }
 
@@ -378,8 +379,6 @@ NetworkConfigurationHandler::NetworkConfigurationHandler()
 }
 
 NetworkConfigurationHandler::~NetworkConfigurationHandler() {
-  base::STLDeleteContainerPairSecondPointers(profile_entry_deleters_.begin(),
-                                             profile_entry_deleters_.end());
 }
 
 void NetworkConfigurationHandler::Init(
@@ -421,10 +420,8 @@ void NetworkConfigurationHandler::ProfileEntryDeleterCompleted(
     FOR_EACH_OBSERVER(NetworkConfigurationObserver, observers_,
                       OnConfigurationRemoved(service_path, guid, source));
   }
-  std::map<std::string, ProfileEntryDeleter*>::iterator iter =
-      profile_entry_deleters_.find(service_path);
+  auto iter = profile_entry_deleters_.find(service_path);
   DCHECK(iter != profile_entry_deleters_.end());
-  delete iter->second;
   profile_entry_deleters_.erase(iter);
 }
 

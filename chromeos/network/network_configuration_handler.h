@@ -202,8 +202,9 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   NetworkStateHandler* network_state_handler_;
   NetworkDeviceHandler* network_device_handler_;
 
-  // Map of in-progress deleter instances. Owned by this class.
-  std::map<std::string, ProfileEntryDeleter*> profile_entry_deleters_;
+  // Map of in-progress deleter instances.
+  std::map<std::string, std::unique_ptr<ProfileEntryDeleter>>
+      profile_entry_deleters_;
 
   base::ObserverList<NetworkConfigurationObserver, true> observers_;
 

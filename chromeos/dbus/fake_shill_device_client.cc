@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -66,8 +66,6 @@ FakeShillDeviceClient::FakeShillDeviceClient()
       weak_ptr_factory_(this) {}
 
 FakeShillDeviceClient::~FakeShillDeviceClient() {
-  base::STLDeleteContainerPairSecondPointers(observer_list_.begin(),
-                                             observer_list_.end());
 }
 
 // ShillDeviceClient overrides.
@@ -624,12 +622,11 @@ base::DictionaryValue* FakeShillDeviceClient::GetDeviceProperties(
 
 FakeShillDeviceClient::PropertyObserverList&
 FakeShillDeviceClient::GetObserverList(const dbus::ObjectPath& device_path) {
-  std::map<dbus::ObjectPath, PropertyObserverList*>::iterator iter =
-      observer_list_.find(device_path);
+  auto iter = observer_list_.find(device_path);
   if (iter != observer_list_.end())
     return *(iter->second);
   PropertyObserverList* observer_list = new PropertyObserverList();
-  observer_list_[device_path] = observer_list;
+  observer_list_[device_path] = base::WrapUnique(observer_list);
   return *observer_list;
 }
 

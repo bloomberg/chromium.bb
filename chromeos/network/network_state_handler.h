@@ -65,7 +65,7 @@ class NetworkStateHandlerTest;
 class CHROMEOS_EXPORT NetworkStateHandler
     : public internal::ShillPropertyHandler::Listener {
  public:
-  typedef std::vector<ManagedState*> ManagedStateList;
+  typedef std::vector<std::unique_ptr<ManagedState>> ManagedStateList;
   typedef std::vector<const NetworkState*> NetworkStateList;
   typedef std::vector<const DeviceState*> DeviceStateList;
 

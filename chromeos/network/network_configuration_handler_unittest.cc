@@ -100,8 +100,6 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
  public:
   TestNetworkConfigurationObserver() {}
   ~TestNetworkConfigurationObserver() override {
-    base::STLDeleteContainerPairSecondPointers(configurations_.begin(),
-                                               configurations_.end());
   }
 
   // NetworkConfigurationObserver
@@ -111,7 +109,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
       const base::DictionaryValue& properties,
       NetworkConfigurationObserver::Source source) override {
     ASSERT_EQ(0u, configurations_.count(service_path));
-    configurations_[service_path] = properties.DeepCopy();
+    configurations_[service_path] = properties.CreateDeepCopy();
     profiles_[profile_path].insert(service_path);
   }
 
@@ -120,7 +118,6 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
       const std::string& guid,
       NetworkConfigurationObserver::Source source) override {
     ASSERT_EQ(1u, configurations_.count(service_path));
-    delete configurations_[service_path];
     configurations_.erase(service_path);
     for (auto& p : profiles_) {
       p.second.erase(service_path);
@@ -166,7 +163,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   }
 
  private:
-  std::map<std::string, base::DictionaryValue*> configurations_;
+  std::map<std::string, std::unique_ptr<base::DictionaryValue>> configurations_;
   std::map<std::string, std::set<std::string>> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConfigurationObserver);
@@ -524,7 +521,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
   void GetPropertiesCallback(const std::string& service_path,
                              const base::DictionaryValue& dictionary) {
     get_properties_path_ = service_path;
-    get_properties_.reset(dictionary.DeepCopy());
+    get_properties_ = dictionary.CreateDeepCopy();
   }
 
   void CreateConfigurationCallback(const std::string& service_path,

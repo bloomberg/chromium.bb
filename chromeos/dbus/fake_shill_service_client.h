@@ -125,7 +125,8 @@ class CHROMEOS_EXPORT FakeShillServiceClient
   std::map<std::string, base::Closure> connect_behavior_;
 
   // Observer list for each service.
-  std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
+  std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>
+      observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

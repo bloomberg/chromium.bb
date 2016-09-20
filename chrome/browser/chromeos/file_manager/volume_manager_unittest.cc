@@ -550,7 +550,7 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
           "device1", "", "", "", "", "", "", "", "", "", "uuid1", "",
           chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false,
           false));
-  disk_mount_manager_->AddDiskForTest(disk.release());
+  disk_mount_manager_->AddDiskForTest(std::move(disk));
   disk_mount_manager_->MountPath("device1", "", "", chromeos::MOUNT_TYPE_DEVICE,
                                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 

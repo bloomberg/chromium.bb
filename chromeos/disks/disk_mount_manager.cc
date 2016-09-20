@@ -11,9 +11,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/suspend_unmount_manager.h"
@@ -51,7 +51,6 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   ~DiskMountManagerImpl() override {
-    base::STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
   }
 
   // DiskMountManager override.
@@ -233,20 +232,20 @@ class DiskMountManagerImpl : public DiskMountManager {
   const Disk* FindDiskBySourcePath(
       const std::string& source_path) const override {
     DiskMap::const_iterator disk_it = disks_.find(source_path);
-    return disk_it == disks_.end() ? NULL : disk_it->second;
+    return disk_it == disks_.end() ? NULL : disk_it->second.get();
   }
 
   // DiskMountManager override.
   const MountPointMap& mount_points() const override { return mount_points_; }
 
   // DiskMountManager override.
-  bool AddDiskForTest(Disk* disk) override {
+  bool AddDiskForTest(std::unique_ptr<Disk> disk) override {
     if (disks_.find(disk->device_path()) != disks_.end()) {
       LOG(ERROR) << "Attempt to add a duplicate disk";
       return false;
     }
 
-    disks_.insert(std::make_pair(disk->device_path(), disk));
+    disks_.insert(std::make_pair(disk->device_path(), std::move(disk)));
     return true;
   }
 
@@ -356,7 +355,7 @@ class DiskMountManagerImpl : public DiskMountManager {
         !mount_info.mount_path.empty()) {
       DiskMap::iterator iter = disks_.find(mount_info.source_path);
       if (iter != disks_.end()) {  // disk might have been removed by now?
-        Disk* disk = iter->second;
+        Disk* disk = iter->second.get();
         DCHECK(disk);
         // The is_read_only field in *disk may be incorrect when this is called
         // from CrosDisksClientImpl::OnMountCompleted.
@@ -467,7 +466,6 @@ class DiskMountManagerImpl : public DiskMountManager {
     bool is_new = true;
     DiskMap::iterator iter = disks_.find(disk_info.device_path());
     if (iter != disks_.end()) {
-      delete iter->second;
       disks_.erase(iter);
       is_new = false;
     }
@@ -500,7 +498,8 @@ class DiskMountManagerImpl : public DiskMountManager {
       disk->set_read_only(access_mode->second ==
                           chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
     }
-    disks_.insert(std::make_pair(disk_info.device_path(), disk));
+    disks_.insert(
+        std::make_pair(disk_info.device_path(), base::WrapUnique(disk)));
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, disk);
   }
 
@@ -510,7 +509,6 @@ class DiskMountManagerImpl : public DiskMountManager {
     std::set<std::string> current_device_set(devices.begin(), devices.end());
     for (DiskMap::iterator iter = disks_.begin(); iter != disks_.end(); ) {
       if (current_device_set.find(iter->first) == current_device_set.end()) {
-        delete iter->second;
         disks_.erase(iter++);
       } else {
         ++iter;
@@ -581,9 +579,8 @@ class DiskMountManagerImpl : public DiskMountManager {
         // Search and remove disks that are no longer present.
         DiskMountManager::DiskMap::iterator iter = disks_.find(device_path);
         if (iter != disks_.end()) {
-          Disk* disk = iter->second;
+          Disk* disk = iter->second.get();
           NotifyDiskStatusUpdate(DISK_REMOVED, disk);
-          delete iter->second;
           disks_.erase(iter);
         }
         break;
@@ -724,7 +721,7 @@ DiskMountManager::Disk::Disk(const Disk& other) = default;
 
 DiskMountManager::Disk::~Disk() {}
 
-bool DiskMountManager::AddDiskForTest(Disk* disk) {
+bool DiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
   return false;
 }
 
