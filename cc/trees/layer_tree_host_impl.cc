@@ -2252,6 +2252,19 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   tile_task_manager_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_controller_ = nullptr;
+
+  // We've potentially just freed a large number of resources on our various
+  // contexts. Flushing now helps ensure these are cleaned up quickly
+  // preventing driver cache growth. See crbug.com/643251
+  if (compositor_frame_sink_) {
+    if (auto* compositor_context = compositor_frame_sink_->context_provider())
+      compositor_context->ContextGL()->ShallowFlushCHROMIUM();
+    if (auto* worker_context =
+            compositor_frame_sink_->worker_context_provider()) {
+      ContextProvider::ScopedContextLock hold(worker_context);
+      worker_context->ContextGL()->ShallowFlushCHROMIUM();
+    }
+  }
 }
 
 void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
