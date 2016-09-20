@@ -28,6 +28,7 @@
     {
       'target_name': 'cups_printer_details_page',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         'cups_printers_browser_proxy',
       ],
