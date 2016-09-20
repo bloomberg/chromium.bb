@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/video_capture/video_capture_device_factory_impl.h"
+
 #include <sstream>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
-#include "services/video_capture/video_capture_device_factory_impl.h"
+#include "services/video_capture/device_mock_to_media_adapter.h"
 
 namespace video_capture {
 
@@ -64,10 +66,25 @@ VideoCaptureDeviceFactoryImpl::VideoCaptureDeviceFactoryImpl() = default;
 
 VideoCaptureDeviceFactoryImpl::~VideoCaptureDeviceFactoryImpl() = default;
 
-void VideoCaptureDeviceFactoryImpl::AddDevice(
-    mojom::VideoCaptureDeviceDescriptorPtr descriptor,
-    std::unique_ptr<VideoCaptureDeviceProxyImpl> device) {
+void VideoCaptureDeviceFactoryImpl::AddMojoDevice(
+    std::unique_ptr<VideoCaptureDeviceProxyImpl> device,
+    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
   devices_.emplace_back(std::move(descriptor), std::move(device));
+}
+
+void VideoCaptureDeviceFactoryImpl::AddMediaDevice(
+    std::unique_ptr<media::VideoCaptureDevice> device,
+    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
+  AddMojoDevice(
+      base::MakeUnique<VideoCaptureDeviceProxyImpl>(std::move(device)),
+      std::move(descriptor));
+}
+
+void VideoCaptureDeviceFactoryImpl::AddMockDevice(
+    mojom::MockVideoCaptureDevicePtr device,
+    mojom::VideoCaptureDeviceDescriptorPtr descriptor) {
+  AddMediaDevice(base::MakeUnique<DeviceMockToMediaAdapter>(std::move(device)),
+                 std::move(descriptor));
 }
 
 void VideoCaptureDeviceFactoryImpl::EnumerateDeviceDescriptors(

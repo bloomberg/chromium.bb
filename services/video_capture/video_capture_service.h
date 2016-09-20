@@ -38,16 +38,25 @@ class VideoCaptureService
       mojom::VideoCaptureDeviceFactoryRequest request) override;
   void ConnectToFakeDeviceFactory(
       mojom::VideoCaptureDeviceFactoryRequest request) override;
+  void ConnectToMockDeviceFactory(
+      mojom::VideoCaptureDeviceFactoryRequest request) override;
+  void AddDeviceToMockFactory(
+      mojom::MockVideoCaptureDevicePtr device,
+      mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+      const AddDeviceToMockFactoryCallback& callback) override;
 
  private:
   void LazyInitializeDeviceFactory();
   void LazyInitializeFakeDeviceFactory();
+  void LazyInitializeMockDeviceFactory();
 
-  mojo::BindingSet<mojom::VideoCaptureService> bindings_;
+  mojo::BindingSet<mojom::VideoCaptureService> service_bindings_;
   mojo::BindingSet<mojom::VideoCaptureDeviceFactory> factory_bindings_;
   mojo::BindingSet<mojom::VideoCaptureDeviceFactory> fake_factory_bindings_;
+  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> mock_factory_bindings_;
   std::unique_ptr<VideoCaptureDeviceFactoryImpl> device_factory_;
   std::unique_ptr<VideoCaptureDeviceFactoryImpl> fake_device_factory_;
+  std::unique_ptr<VideoCaptureDeviceFactoryImpl> mock_device_factory_;
 };
 
 }  // namespace video_capture

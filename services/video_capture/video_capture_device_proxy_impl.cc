@@ -27,8 +27,11 @@ void VideoCaptureDeviceProxyImpl::Start(
   params.resolution_change_policy =
       ConvertFromMojoToMedia(resolution_change_policy);
   params.power_line_frequency = ConvertFromMojoToMedia(power_line_frequency);
+  client.set_connection_error_handler(
+      base::Bind(&VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose,
+                 base::Unretained(this)));
   auto media_client =
-      base::WrapUnique(new DeviceClientMojoToMediaAdapter(std::move(client)));
+      base::MakeUnique<DeviceClientMojoToMediaAdapter>(std::move(client));
   device_->AllocateAndStart(params, std::move(media_client));
   device_running_ = true;
 }
@@ -36,6 +39,10 @@ void VideoCaptureDeviceProxyImpl::Start(
 void VideoCaptureDeviceProxyImpl::Stop() {
   device_->StopAndDeAllocate();
   device_running_ = false;
+}
+
+void VideoCaptureDeviceProxyImpl::OnClientConnectionErrorOrClose() {
+  device_->StopAndDeAllocate();
 }
 
 // static

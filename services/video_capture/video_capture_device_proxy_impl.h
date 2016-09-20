@@ -26,6 +26,8 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
 
   void Stop();
 
+  void OnClientConnectionErrorOrClose();
+
   // TODO(chfremer): Consider using Mojo type mapping instead of conversion
   // methods.
   // https://crbug.com/642387

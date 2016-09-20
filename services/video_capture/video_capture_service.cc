@@ -28,7 +28,7 @@ bool VideoCaptureService::OnConnect(const shell::Identity& remote_identity,
 
 void VideoCaptureService::Create(const shell::Identity& remote_identity,
                                  mojom::VideoCaptureServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  service_bindings_.AddBinding(this, std::move(request));
 }
 
 void VideoCaptureService::ConnectToDeviceFactory(
@@ -42,6 +42,21 @@ void VideoCaptureService::ConnectToFakeDeviceFactory(
   LazyInitializeFakeDeviceFactory();
   fake_factory_bindings_.AddBinding(fake_device_factory_.get(),
                                     std::move(request));
+}
+
+void VideoCaptureService::ConnectToMockDeviceFactory(
+    mojom::VideoCaptureDeviceFactoryRequest request) {
+  LazyInitializeMockDeviceFactory();
+  mock_factory_bindings_.AddBinding(mock_device_factory_.get(),
+                                    std::move(request));
+}
+
+void VideoCaptureService::AddDeviceToMockFactory(
+    mojom::MockVideoCaptureDevicePtr device,
+    mojom::VideoCaptureDeviceDescriptorPtr descriptor,
+    const AddDeviceToMockFactoryCallback& callback) {
+  mock_device_factory_->AddMockDevice(std::move(device), std::move(descriptor));
+  callback.Run();
 }
 
 void VideoCaptureService::LazyInitializeDeviceFactory() {
@@ -61,12 +76,17 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
   fake_device_descriptor->capture_api = mojom::VideoCaptureApi::UNKNOWN;
   fake_device_descriptor->transport_type =
       mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
-  fake_device_factory_->AddDevice(
-      std::move(fake_device_descriptor),
-      base::MakeUnique<VideoCaptureDeviceProxyImpl>(
-          base::MakeUnique<media::FakeVideoCaptureDevice>(
-              media::FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
-              kFakeCaptureDefaultFrameRate)));
+  fake_device_factory_->AddMediaDevice(
+      base::MakeUnique<media::FakeVideoCaptureDevice>(
+          media::FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
+          kFakeCaptureDefaultFrameRate),
+      std::move(fake_device_descriptor));
+}
+
+void VideoCaptureService::LazyInitializeMockDeviceFactory() {
+  if (mock_device_factory_)
+    return;
+  mock_device_factory_ = base::MakeUnique<VideoCaptureDeviceFactoryImpl>();
 }
 
 }  // namespace video_capture

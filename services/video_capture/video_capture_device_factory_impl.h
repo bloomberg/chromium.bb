@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/video_capture/public/interfaces/mock_video_capture_device.mojom.h"
 #include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
 #include "services/video_capture/video_capture_device_proxy_impl.h"
 
@@ -18,8 +19,14 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
   VideoCaptureDeviceFactoryImpl();
   ~VideoCaptureDeviceFactoryImpl() override;
 
-  void AddDevice(mojom::VideoCaptureDeviceDescriptorPtr descriptor,
-                 std::unique_ptr<VideoCaptureDeviceProxyImpl> device);
+  void AddMojoDevice(std::unique_ptr<VideoCaptureDeviceProxyImpl> device,
+                     mojom::VideoCaptureDeviceDescriptorPtr descriptor);
+
+  void AddMediaDevice(std::unique_ptr<media::VideoCaptureDevice> device,
+                      mojom::VideoCaptureDeviceDescriptorPtr descriptor);
+
+  void AddMockDevice(mojom::MockVideoCaptureDevicePtr device,
+                     mojom::VideoCaptureDeviceDescriptorPtr descriptor);
 
   // mojom::VideoCaptureDeviceFactory:
   void EnumerateDeviceDescriptors(
