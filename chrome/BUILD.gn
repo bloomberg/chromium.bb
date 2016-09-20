@@ -811,7 +811,11 @@ if (is_win) {
       public_deps = []
 
       if (enable_nacl) {
-        sources += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+        if (current_cpu == "x86") {
+          sources += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
+        } else if (current_cpu == "x64") {
+          sources += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+        }
         public_deps += [ "//ppapi/native_client:irt" ]
       }
     }

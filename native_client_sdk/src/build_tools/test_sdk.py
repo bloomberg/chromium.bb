@@ -101,12 +101,11 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
                                        args=args + ['run'])
 
   if getos.GetPlatform() == 'win':
-    # On win32 we only support running on the system
-    # arch
+    # On win32 we only support running on the system arch
     archs = (getos.GetSystemArch('win'),)
   elif getos.GetPlatform() == 'mac':
-    # We only ship 64-bit version of sel_ldr on mac.
-    archs = ('x86_64',)
+    # On mac we can run both 32 and 64-bit
+    archs = ('x86_64', 'x86_32')
   else:
     # On linux we can run both 32 and 64-bit, and arm (via qemu)
     archs = ('x86_64', 'x86_32', 'arm')
