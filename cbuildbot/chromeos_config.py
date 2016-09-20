@@ -2376,21 +2376,21 @@ def _GetConfig(site_config, ge_build_config):
       'arm-gcc-toolchain',
       site_config.templates.toolchain,
       _gcc_builder,
-      boards=['daisy'],
+      boards=['veyron_jaq'],
   )
 
   site_config.Add(
       'arm-llvm-toolchain',
       site_config.templates.toolchain,
       _llvm_builder,
-      boards=['daisy'],
+      boards=['veyron_jaq'],
   )
 
   site_config.Add(
       'arm-llvm-next-toolchain',
       site_config.templates.toolchain,
       _llvm_next_builder,
-      boards=['daisy'],
+      boards=['veyron_jaq'],
   )
 
   site_config.Add(
