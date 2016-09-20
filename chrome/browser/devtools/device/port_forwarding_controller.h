@@ -23,12 +23,13 @@ class PortForwardingController {
   typedef DevToolsAndroidBridge::BrowserStatus BrowserStatus;
   typedef DevToolsAndroidBridge::ForwardingStatus ForwardingStatus;
 
-  PortForwardingController(Profile* profile, DevToolsAndroidBridge* bridge);
+  explicit PortForwardingController(Profile* profile);
 
   virtual ~PortForwardingController();
 
   ForwardingStatus DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices);
+      const DevToolsAndroidBridge::CompleteDevices& complete_devices);
+  void CloseAllConnections();
 
  private:
   class Connection;
@@ -38,7 +39,6 @@ class PortForwardingController {
 
   void UpdateConnections();
 
-  DevToolsAndroidBridge* bridge_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   Registry registry_;

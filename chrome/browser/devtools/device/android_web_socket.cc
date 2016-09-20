@@ -152,14 +152,13 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
     const std::string& socket_name,
     const std::string& path,
     Delegate* delegate)
-    : device_(device.get()),
+    : device_(device),
       socket_impl_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(delegate_);
   DCHECK(device_);
-  device_->sockets_.insert(this);
   device_->HttpUpgrade(
       socket_name, path, net::WebSocketEncoder::kClientExtensions,
       base::Bind(&AndroidWebSocket::Connected, weak_factory_.GetWeakPtr()));
@@ -167,7 +166,8 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
 
 AndroidDeviceManager::AndroidWebSocket::~AndroidWebSocket() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Terminate();
+  if (socket_impl_)
+    device_->task_runner_->DeleteSoon(FROM_HERE, socket_impl_);
 }
 
 void AndroidDeviceManager::AndroidWebSocket::SendFrame(
@@ -207,21 +207,7 @@ void AndroidDeviceManager::AndroidWebSocket::OnFrameRead(
 
 void AndroidDeviceManager::AndroidWebSocket::OnSocketClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Terminate();
   delegate_->OnSocketClosed();
-}
-
-void AndroidDeviceManager::AndroidWebSocket::Terminate() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (socket_impl_) {
-    DCHECK(device_);
-    device_->task_runner_->DeleteSoon(FROM_HERE, socket_impl_);
-    socket_impl_ = nullptr;
-  }
-  if (device_) {
-    device_->sockets_.erase(this);
-    device_ = nullptr;
-  }
 }
 
 AndroidDeviceManager::AndroidWebSocket*

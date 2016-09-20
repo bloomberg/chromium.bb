@@ -221,12 +221,15 @@ class DevToolsAndroidBridge : public KeyedService {
       base::Callback<void(scoped_refptr<TCPDeviceProvider>)>;
   void set_tcp_provider_callback_for_test(TCPProviderCallback callback);
 
+  using CompleteDevice = std::pair<scoped_refptr<AndroidDeviceManager::Device>,
+                    scoped_refptr<RemoteDevice>>;
+  using CompleteDevices = std::vector<CompleteDevice>;
+  using DeviceListCallback = base::Callback<void(const CompleteDevices&)>;
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DevToolsAndroidBridge>;
-
-  friend class PortForwardingController;
 
   class AgentHostDelegate;
   class DiscoveryRequest;
@@ -237,11 +240,6 @@ class DevToolsAndroidBridge : public KeyedService {
   void StartDeviceListPolling();
   void StopDeviceListPolling();
   bool NeedsDeviceListPolling();
-
-  using CompleteDevice = std::pair<scoped_refptr<AndroidDeviceManager::Device>,
-                    scoped_refptr<RemoteDevice>>;
-  using CompleteDevices = std::vector<CompleteDevice>;
-  using DeviceListCallback = base::Callback<void(const CompleteDevices&)>;
 
   void RequestDeviceList(const DeviceListCallback& callback);
   void ReceivedDeviceList(const CompleteDevices& complete_devices);
@@ -265,8 +263,10 @@ class DevToolsAndroidBridge : public KeyedService {
                            std::unique_ptr<base::DictionaryValue> params,
                            const base::Closure callback);
 
-  scoped_refptr<AndroidDeviceManager::Device> FindDevice(
-      const std::string& serial);
+  AndroidDeviceManager::AndroidWebSocket* CreateWebSocket(
+      const BrowserId& browser_id,
+      const std::string& url,
+      AndroidDeviceManager::AndroidWebSocket::Delegate* delegate);
 
   base::WeakPtr<DevToolsAndroidBridge> AsWeakPtr() {
       return weak_factory_.GetWeakPtr();

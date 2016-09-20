@@ -342,7 +342,6 @@ class DevToolsAndroidBridge::AgentHostDelegate
   GURL favicon_url_;
   bool socket_opened_;
   std::vector<std::string> pending_messages_;
-  scoped_refptr<AndroidDeviceManager::Device> device_;
   std::unique_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
   content::DevToolsAgentHost* agent_host_;
   content::DevToolsExternalAgentProxy* proxy_;
@@ -429,8 +428,8 @@ DevToolsAndroidBridge::AgentHostDelegate::AgentHostDelegate(
       url_(GURL(value ? GetStringProperty(value, "url") : "")),
       favicon_url_(GURL(value ? GetStringProperty(value, "faviconUrl") : "")),
       socket_opened_(false),
-      agent_host_(NULL),
-      proxy_(NULL) {
+      agent_host_(nullptr),
+      proxy_(nullptr) {
   bridge_->host_delegates_[local_id_] = this;
 }
 
@@ -447,20 +446,12 @@ void DevToolsAndroidBridge::AgentHostDelegate::Attach(
                        base::CompareCase::SENSITIVE)
           ? base::UserMetricsAction("DevTools_InspectAndroidWebView")
           : base::UserMetricsAction("DevTools_InspectAndroidPage"));
-
-  // Retain the device so it's not released until AgentHost is detached.
-  if (bridge_)
-    device_ = bridge_->FindDevice(browser_id_.first);
-  if (!device_.get())
-    return;
-
   web_socket_.reset(
-      device_->CreateWebSocket(browser_id_.second, target_path_, this));
+      bridge_->CreateWebSocket(browser_id_, target_path_, this));
 }
 
 void DevToolsAndroidBridge::AgentHostDelegate::Detach() {
   web_socket_.reset();
-  device_ = nullptr;
   proxy_ = nullptr;
 }
 
@@ -614,13 +605,12 @@ void DevToolsAndroidBridge::SendJsonRequest(
     const BrowserId& browser_id,
     const std::string& request,
     const JsonRequestCallback& callback) {
-  scoped_refptr<AndroidDeviceManager::Device> device(
-      FindDevice(browser_id.first));
-  if (!device.get()) {
+  DeviceMap::iterator it = device_map_.find(browser_id.first);
+  if (it == device_map_.end()) {
     callback.Run(net::ERR_FAILED, std::string());
     return;
   }
-  device->SendJsonRequest(browser_id.second, request, callback);
+  it->second->SendJsonRequest(browser_id.second, request, callback);
 }
 
 void DevToolsAndroidBridge::SendProtocolCommand(
@@ -632,14 +622,13 @@ void DevToolsAndroidBridge::SendProtocolCommand(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (target_path.empty())
     return;
-  scoped_refptr<AndroidDeviceManager::Device> device(
-      FindDevice(browser_id.first));
-  if (!device.get()) {
+  DeviceMap::iterator it = device_map_.find(browser_id.first);
+  if (it == device_map_.end()) {
     callback.Run();
     return;
   }
   new ProtocolCommand(
-      device, browser_id.second, target_path,
+      it->second, browser_id.second, target_path,
       DevToolsProtocol::SerializeCommand(1, method, std::move(params)),
       callback);
 }
@@ -666,10 +655,15 @@ void DevToolsAndroidBridge::SendJsonRequest(
   SendJsonRequest(browser_id, url, callback);
 }
 
-scoped_refptr<AndroidDeviceManager::Device> DevToolsAndroidBridge::FindDevice(
-    const std::string& serial) {
-  DeviceMap::iterator it = device_map_.find(serial);
-  return it == device_map_.end() ? nullptr : it->second;
+AndroidDeviceManager::AndroidWebSocket*
+DevToolsAndroidBridge::CreateWebSocket(
+    const BrowserId& browser_id,
+    const std::string& url,
+    AndroidDeviceManager::AndroidWebSocket::Delegate* delegate) {
+  DeviceMap::iterator it = device_map_.find(browser_id.first);
+  if (it == device_map_.end())
+    return nullptr;
+  return it->second->CreateWebSocket(browser_id.second, url, delegate);
 }
 
 void DevToolsAndroidBridge::OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
@@ -720,7 +714,7 @@ DevToolsAndroidBridge::DevToolsAndroidBridge(
     : profile_(profile),
       device_manager_(AndroidDeviceManager::Create()),
       task_scheduler_(base::Bind(&DevToolsAndroidBridge::ScheduleTaskDefault)),
-      port_forwarding_controller_(new PortForwardingController(profile, this)),
+      port_forwarding_controller_(new PortForwardingController(profile)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -820,6 +814,7 @@ void DevToolsAndroidBridge::StartDeviceListPolling() {
 void DevToolsAndroidBridge::StopDeviceListPolling() {
   device_list_callback_.Cancel();
   device_map_.clear();
+  port_forwarding_controller_->CloseAllConnections();
 }
 
 bool DevToolsAndroidBridge::NeedsDeviceListPolling() {
@@ -853,7 +848,7 @@ void DevToolsAndroidBridge::ReceivedDeviceList(
     (*it)->DeviceListChanged(remote_devices);
 
   ForwardingStatus status =
-      port_forwarding_controller_->DeviceListChanged(remote_devices);
+      port_forwarding_controller_->DeviceListChanged(complete_devices);
   PortForwardingListeners forwarding_listeners(port_forwarding_listeners_);
   for (PortForwardingListeners::iterator it = forwarding_listeners.begin();
        it != forwarding_listeners.end(); ++it) {

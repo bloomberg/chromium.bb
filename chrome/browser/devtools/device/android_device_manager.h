@@ -97,9 +97,8 @@ class AndroidDeviceManager : public base::NonThreadSafe {
                    std::unique_ptr<net::StreamSocket> socket);
     void OnFrameRead(const std::string& message);
     void OnSocketClosed();
-    void Terminate();
 
-    Device* device_;
+    scoped_refptr<Device> device_;
     WebSocketImpl* socket_impl_;
     Delegate* delegate_;
     base::WeakPtrFactory<AndroidWebSocket> weak_factory_;
@@ -145,7 +144,6 @@ class AndroidDeviceManager : public base::NonThreadSafe {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     scoped_refptr<DeviceProvider> provider_;
     std::string serial_;
-    std::set<AndroidWebSocket*> sockets_;
     base::WeakPtrFactory<Device> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Device);

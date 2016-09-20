@@ -112,7 +112,7 @@ function populateLocalTargets(data) {
   removeChildren('workers-list');
   removeChildren('service-workers-list');
 
-    for (var i = 0; i < data.length; i++) {
+  for (var i = 0; i < data.length; i++) {
     if (data[i].type === 'page')
       addToPagesList(data[i]);
     else if (data[i].type === 'background_page')
@@ -774,6 +774,8 @@ function updateDiscoverUsbDevicesEnabled(enabled) {
 
 function updatePortForwardingEnabled(enabled) {
   updateCheckbox('port-forwarding-enable', enabled);
+  $('infobar').classList.toggle('show', enabled);
+  $('infobar').scrollIntoView();
 }
 
 function updatePortForwardingConfig(config) {
@@ -995,5 +997,4 @@ function populatePortStatus(devicesStatusMap) {
 }
 
 document.addEventListener('DOMContentLoaded', onload);
-
 window.addEventListener('hashchange', onHashChange);

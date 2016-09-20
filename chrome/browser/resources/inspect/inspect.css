@@ -31,6 +31,18 @@ img {
   display: -webkit-flex;
 }
 
+#infobar {
+  background: rgb(255, 212, 0);
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  visibility: hidden;
+}
+
+#infobar.show {
+  visibility: visible;
+}
+
 #navigation {
   padding-top: 20px;
   width: 150px;
