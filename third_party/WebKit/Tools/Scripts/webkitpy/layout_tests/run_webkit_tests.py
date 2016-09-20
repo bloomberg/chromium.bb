@@ -543,6 +543,11 @@ def _set_up_derived_options(port, options, args):
     if not options.skipped:
         options.skipped = 'default'
 
+    if 'GTEST_SHARD_INDEX' in os.environ and 'GTEST_TOTAL_SHARDS' in os.environ:
+        shard_index = int(os.environ['GTEST_SHARD_INDEX']) + 1
+        total_shards = int(os.environ['GTEST_TOTAL_SHARDS']) + 1
+        options.run_part = '{0}:{1}'.format(shard_index, total_shards)
+
 
 def _run_tests(port, options, args, printer):
     _set_up_derived_options(port, options, args)

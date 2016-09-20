@@ -514,6 +514,23 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
 
+    def test_gtest_shard_index(self):
+        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
+        host = MockHost()
+
+        os.environ['GTEST_SHARD_INDEX'] = '0'
+        os.environ['GTEST_TOTAL_SHARDS'] = '1'
+        shard_0_tests_run = get_tests_run(tests_to_run, host=host)
+        self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
+
+        os.environ['GTEST_SHARD_INDEX'] = '1'
+        os.environ['GTEST_TOTAL_SHARDS'] = '1'
+        shard_1_tests_run = get_tests_run(tests_to_run, host=host)
+        self.assertEqual(shard_1_tests_run, ['passes/platform_image.html', 'passes/text.html'])
+
+        del os.environ['GTEST_SHARD_INDEX']
+        del os.environ['GTEST_TOTAL_SHARDS']
+
     def test_smoke_test(self):
         host = MockHost()
         smoke_test_filename = test.LAYOUT_TEST_DIR + '/SmokeTests'
