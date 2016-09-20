@@ -30,6 +30,10 @@ class ResetProfileSettingsHandler
     : public OptionsPageUIHandler,
       public base::SupportsWeakPtr<ResetProfileSettingsHandler> {
  public:
+  // Hash used by the Chrome Cleanup Tool when launching chrome with the reset
+  // profile settings URL.
+  static const char kCctResetSettingsHash[];
+
   ResetProfileSettingsHandler();
   ~ResetProfileSettingsHandler() override;
 
@@ -46,7 +50,8 @@ class ResetProfileSettingsHandler
   void HandleResetProfileSettings(const base::ListValue* value);
 
   // Closes the dialog once all requested settings has been reset.
-  void OnResetProfileSettingsDone(bool send_feedback);
+  void OnResetProfileSettingsDone(bool send_feedback,
+                                  const std::string& reset_request_origin);
 
   // Called when the confirmation box appears.
   void OnShowResetProfileDialog(const base::ListValue* value);
@@ -59,7 +64,8 @@ class ResetProfileSettingsHandler
 
   // Resets profile settings to default values. |send_settings| is true if user
   // gave his consent to upload broken settings to Google for analysis.
-  void ResetProfile(bool send_settings);
+  void ResetProfile(bool send_settings,
+                    const std::string& reset_request_origin);
 
   // Sets new values for the feedback area.
   void UpdateFeedbackUI();

@@ -132,8 +132,16 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
       setting_snapshot_->Subtract(current_snapshot);
       std::unique_ptr<reset_report::ChromeResetReport> report_proto =
           SerializeSettingsReportToProto(*setting_snapshot_, difference);
-      if (report_proto)
+      if (report_proto) {
+        // The material design version of the settings page currently does not
+        // expose the alternative ways, made available by the old settings page,
+        // to get to the reset settings dialog. Until those are available, we
+        // can assume that all reset requests came directly from user
+        // navigation.
+        report_proto->set_reset_request_origin(
+            reset_report::ChromeResetReport::RESET_REQUEST_ORIGIN_USER_CLICK);
         SendSettingsFeedbackProto(*report_proto, profile_);
+      }
     }
   }
   setting_snapshot_.reset();

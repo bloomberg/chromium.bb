@@ -802,7 +802,11 @@ cr.define('options', function() {
 
       // Reset profile settings section.
       $('reset-profile-settings').onclick = function(event) {
-        PageManager.showPageByName('resetProfileSettings');
+        // We use the hash to indicate the source of the reset request. The hash
+        // is removed by the reset profile settings overlay once it has been
+        // consumed.
+        PageManager.showPageByName('resetProfileSettings', true,
+                                   {hash: '#userclick'});
       };
 
       // Extension controlled UI.

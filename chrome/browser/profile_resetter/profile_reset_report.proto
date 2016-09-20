@@ -62,5 +62,22 @@ message ChromeResetReport {
   // Full command line (executable and parameters) of shotcuts to start Chrome.
   repeated string shortcuts = 18;
 
-  // next available tag number: 19.
+  // Specifies where the request for the settings reset came from.
+  enum ResetRequestOrigin {
+    RESET_REQUEST_ORIGIN_UNSPECIFIED = 0;
+    // None of the other cases. Possibly by navigating to
+    // chrome://settings/resetProfileSettings directly or launching
+    // chrome with that URL as an argument.
+    RESET_REQUEST_ORIGIN_UNKNOWN = 1;
+    // User clicked on the reset button on the settings page.
+    RESET_REQUEST_ORIGIN_USER_CLICK = 2;
+    // A settings reset was requested by the Chrome Cleanup Tool.
+    RESET_REQUEST_ORIGIN_CCT = 3;
+    // The triggered settings reset API was used.
+    RESET_REQUEST_ORIGIN_TRIGGERED_RESET = 4;
+  }
+
+  optional ResetRequestOrigin reset_request_origin = 19;
+
+  // next available tag number: 20.
 }

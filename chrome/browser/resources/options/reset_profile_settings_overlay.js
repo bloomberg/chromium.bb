@@ -44,22 +44,23 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      // Set the onclick handlers only once when initializing the regular reset
-      // profile settings overlay.
-      if (!this.isTriggered_) {
+      if (!ResetProfileSettingsOverlay.listenersAdded_) {
         $('reset-profile-settings-dismiss').onclick = function(e) {
           ResetProfileSettingsOverlay.dismiss();
         };
         $('reset-profile-settings-commit').onclick = function(e) {
           ResetProfileSettingsOverlay.setResettingState(true);
           chrome.send('performResetProfileSettings',
-                      [$('send-settings').checked]);
+                      [$('send-settings').checked,
+                       ResetProfileSettingsOverlay.resetRequestOrigin_]);
         };
         $('expand-feedback').onclick = function(e) {
           var feedbackTemplate = $('feedback-template');
           feedbackTemplate.hidden = !feedbackTemplate.hidden;
           e.preventDefault();
         };
+
+        ResetProfileSettingsOverlay.listenersAdded_ = true;
       }
     },
 
@@ -79,6 +80,23 @@ cr.define('options', function() {
               'triggeredResetProfileSettingsExplanation' :
               'resetProfileSettingsExplanation');
 
+      // Set ResetProfileSettingsOverlay.resetRequestOrigin_ to indicate where
+      // the reset request came from.
+      if (this.isTriggered_) {
+        ResetProfileSettingsOverlay.resetRequestOrigin_ = 'triggeredreset';
+      } else {
+        // For the non-triggered reset overlay, a '#userclick' hash indicates
+        // that the reset request came from the user clicking on the reset
+        // settings button and is set by the browser_options page. A '#cct' hash
+        // indicates that the reset request came from the CCT by launching
+        // Chrome with the startup URL
+        // chrome://settings/resetProfileSettings#cct.
+        var hash = this.hash.slice(1).toLowerCase();
+        ResetProfileSettingsOverlay.resetRequestOrigin_ =
+            (hash === 'cct' || hash === 'userclick') ? hash : '';
+        this.setHash('');
+      }
+
       chrome.send('onShowResetProfileDialog');
     },
 
@@ -87,6 +105,12 @@ cr.define('options', function() {
       chrome.send('onHideResetProfileDialog');
     },
   };
+
+  /** @private {boolean} */
+  ResetProfileSettingsOverlay.listenersAdded_ = false;
+
+  /** @private {string} */
+  ResetProfileSettingsOverlay.resetRequestOrigin_ = '';
 
   /**
    * Enables/disables UI elements after/while Chrome is performing a reset.
