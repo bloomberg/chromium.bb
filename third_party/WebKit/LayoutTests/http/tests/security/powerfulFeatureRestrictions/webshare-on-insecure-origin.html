@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/get-host-info.js"></script>
+<script src="/js-test-resources/mojo-helpers.js"></script>
+<script src="/webshare/js-test-resources/mock-share-service.js"></script>
+<script>
+if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+  window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
+} else {
+  share_test((t, mock) => {
+    return callWithKeyDown(() => promise_rejects(
+        t, 'SecurityError', navigator.share({})));
+  }, "Requires secure context");
+}
+</script>

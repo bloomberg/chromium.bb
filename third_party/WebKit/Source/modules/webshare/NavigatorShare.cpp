@@ -82,6 +82,11 @@ const char* NavigatorShare::supplementName()
 
 ScriptPromise NavigatorShare::share(ScriptState* scriptState, const ShareData& shareData)
 {
+    String errorMessage;
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
+        DOMException* error = DOMException::create(SecurityError, errorMessage);
+        return ScriptPromise::rejectWithDOMException(scriptState, error);
+    }
     if (!UserGestureIndicator::utilizeUserGesture()) {
         DOMException* error = DOMException::create(SecurityError, "Must be handling a user gesture to perform a share request.");
         return ScriptPromise::rejectWithDOMException(scriptState, error);
