@@ -4,10 +4,15 @@
 
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 
+#include <memory>
+
+#include "base/logging.h"
+
 namespace remoting {
 
 std::unique_ptr<It2MeConfirmationDialog>
 It2MeConfirmationDialogFactory::Create() {
+  NOTREACHED();
   return nullptr;
 }
 
