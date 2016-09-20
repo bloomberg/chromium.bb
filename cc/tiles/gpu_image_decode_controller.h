@@ -218,16 +218,13 @@ class CC_EXPORT GpuImageDecodeController
   struct ImageData : public base::RefCounted<ImageData> {
     ImageData(DecodedDataMode mode,
               size_t size,
-              int upload_scale_mip_level,
-              SkFilterQuality upload_scale_filter_quality);
+              const SkImage::DeferredTextureImageUsageParams& upload_params);
 
     const DecodedDataMode mode;
     const size_t size;
     bool is_at_raster = false;
+    SkImage::DeferredTextureImageUsageParams upload_params;
 
-    // Variables used to identify/track multiple scale levels of a single image.
-    int upload_scale_mip_level = 0;
-    SkFilterQuality upload_scale_filter_quality = kNone_SkFilterQuality;
     // If true, this image is no longer in our |persistent_cache_| and will be
     // deleted as soon as its ref count reaches zero.
     bool is_orphaned = false;
@@ -273,7 +270,7 @@ class CC_EXPORT GpuImageDecodeController
 
   // Called any time the ownership of an object changed. This includes changes
   // to ref-count or to orphaned status.
-  void OwnershipChanged(ImageData* image_data);
+  void OwnershipChanged(const DrawImage& draw_image, ImageData* image_data);
 
   // Ensures that the cache can hold an element of |required_size|, freeing
   // unreferenced cache entries if necessary to make room.

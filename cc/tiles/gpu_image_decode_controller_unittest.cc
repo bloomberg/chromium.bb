@@ -1266,5 +1266,46 @@ TEST(GpuImageDecodeControllerTest, QualityCappedAtMedium) {
   controller.UnrefImage(large_draw_image);
 }
 
+// Ensure that switching to a mipped version of an image after the initial
+// cache entry creation doesn't cause a buffer overflow/crash.
+TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawMipUsageChange) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  TestGpuImageDecodeController controller(context_provider.get());
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Create an image decode task and cache entry that does not need mips.
+  sk_sp<SkImage> image = CreateImage(4000, 4000);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  // Cancel the task without ever using it.
+  TestTileTaskRunner::CancelTask(task->dependencies()[0].get());
+  TestTileTaskRunner::CompleteTask(task->dependencies()[0].get());
+  TestTileTaskRunner::CancelTask(task.get());
+  TestTileTaskRunner::CompleteTask(task.get());
+
+  controller.UnrefImage(draw_image);
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+
+  // Do an at-raster decode of the above image that *does* require mips.
+  DrawImage draw_image_mips(
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(0.6f, 0.6f), is_decomposable));
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image_mips);
+  controller.DrawWithImageFinished(draw_image_mips, decoded_draw_image);
+}
+
 }  // namespace
 }  // namespace cc

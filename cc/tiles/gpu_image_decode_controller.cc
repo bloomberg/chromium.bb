@@ -307,12 +307,8 @@ void GpuImageDecodeController::UploadedImageData::ReportUsageStats() const {
 GpuImageDecodeController::ImageData::ImageData(
     DecodedDataMode mode,
     size_t size,
-    int upload_scale_mip_level,
-    SkFilterQuality upload_scale_filter_quality)
-    : mode(mode),
-      size(size),
-      upload_scale_mip_level(upload_scale_mip_level),
-      upload_scale_filter_quality(upload_scale_filter_quality) {}
+    const SkImage::DeferredTextureImageUsageParams& upload_params)
+    : mode(mode), size(size), upload_params(upload_params) {}
 
 GpuImageDecodeController::ImageData::~ImageData() {
   // We should never delete ImageData while it is in use or before it has been
@@ -481,7 +477,7 @@ DecodedDrawImage GpuImageDecodeController::GetDecodedImageForDraw(
   DCHECK(image || image_data->decode.decode_failure);
 
   SkSize scale_factor = CalculateScaleFactorForMipLevel(
-      draw_image, image_data->upload_scale_mip_level);
+      draw_image, image_data->upload_params.fPreScaleMipLevel);
   DecodedDrawImage decoded_draw_image(std::move(image), SkSize(), scale_factor,
                                       draw_image.filter_quality());
   decoded_draw_image.set_at_raster_decode(image_data->is_at_raster);
@@ -698,7 +694,7 @@ void GpuImageDecodeController::RefImageDecode(const DrawImage& draw_image) {
   DCHECK(found != in_use_cache_.end());
   ++found->second.ref_count;
   ++found->second.image_data->decode.ref_count;
-  OwnershipChanged(found->second.image_data.get());
+  OwnershipChanged(draw_image, found->second.image_data.get());
 }
 
 void GpuImageDecodeController::UnrefImageDecode(const DrawImage& draw_image) {
@@ -711,7 +707,7 @@ void GpuImageDecodeController::UnrefImageDecode(const DrawImage& draw_image) {
   DCHECK_GT(found->second.ref_count, 0u);
   --found->second.ref_count;
   --found->second.image_data->decode.ref_count;
-  OwnershipChanged(found->second.image_data.get());
+  OwnershipChanged(draw_image, found->second.image_data.get());
   if (found->second.ref_count == 0u) {
     in_use_cache_.erase(found);
   }
@@ -730,7 +726,7 @@ void GpuImageDecodeController::RefImage(const DrawImage& draw_image) {
   if (found == in_use_cache_.end()) {
     auto found_image = persistent_cache_.Peek(draw_image.image()->uniqueID());
     DCHECK(found_image != persistent_cache_.end());
-    DCHECK(found_image->second->upload_scale_mip_level <=
+    DCHECK(found_image->second->upload_params.fPreScaleMipLevel <=
            CalculateUploadScaleMipLevel(draw_image));
     found = in_use_cache_
                 .insert(InUseCache::value_type(
@@ -741,7 +737,7 @@ void GpuImageDecodeController::RefImage(const DrawImage& draw_image) {
   DCHECK(found != in_use_cache_.end());
   ++found->second.ref_count;
   ++found->second.image_data->upload.ref_count;
-  OwnershipChanged(found->second.image_data.get());
+  OwnershipChanged(draw_image, found->second.image_data.get());
 }
 
 void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
@@ -752,7 +748,7 @@ void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
   DCHECK_GT(found->second.ref_count, 0u);
   --found->second.ref_count;
   --found->second.image_data->upload.ref_count;
-  OwnershipChanged(found->second.image_data.get());
+  OwnershipChanged(draw_image, found->second.image_data.get());
   if (found->second.ref_count == 0u) {
     in_use_cache_.erase(found);
   }
@@ -760,11 +756,22 @@ void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
 
 // Called any time an image or decode ref count changes. Takes care of any
 // necessary memory budget book-keeping and cleanup.
-void GpuImageDecodeController::OwnershipChanged(ImageData* image_data) {
+void GpuImageDecodeController::OwnershipChanged(const DrawImage& draw_image,
+                                                ImageData* image_data) {
   lock_.AssertAcquired();
 
   bool has_any_refs =
       image_data->upload.ref_count > 0 || image_data->decode.ref_count > 0;
+
+  // Don't keep around completely empty images. This can happen if an image's
+  // decode/upload tasks were both cancelled before completing.
+  if (!has_any_refs && !image_data->upload.image() &&
+      !image_data->decode.data()) {
+    auto found_persistent =
+        persistent_cache_.Peek(draw_image.image()->uniqueID());
+    if (found_persistent != persistent_cache_.end())
+      persistent_cache_.Erase(found_persistent);
+  }
 
   // Don't keep around orphaned images.
   if (image_data->is_orphaned && !has_any_refs) {
@@ -949,7 +956,7 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
         SkImageInfo image_info = CreateImageInfoForDrawImage(
-            draw_image, image_data->upload_scale_mip_level);
+            draw_image, image_data->upload_params.fPreScaleMipLevel);
         // In order to match GPU scaling quality (which uses mip-maps at high
         // quality), we want to use at most medium filter quality for the
         // scale.
@@ -966,11 +973,15 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         break;
       }
       case DecodedDataMode::GPU: {
-        auto params = SkImage::DeferredTextureImageUsageParams(
-            draw_image.matrix(), draw_image.filter_quality(),
-            image_data->upload_scale_mip_level);
+        // Params should not have changed since initial sizing.
+        DCHECK(image_data->upload_params.fMatrix == draw_image.matrix());
+        DCHECK_EQ(image_data->upload_params.fPreScaleMipLevel,
+                  CalculateUploadScaleMipLevel(draw_image));
+        DCHECK_EQ(image_data->upload_params.fQuality,
+                  CalculateUploadScaleFilterQuality(draw_image));
+
         if (!draw_image.image()->getDeferredTextureImageData(
-                *context_threadsafe_proxy_.get(), &params, 1,
+                *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
                 backing_memory->data())) {
           backing_memory->Unlock();
           backing_memory.reset();
@@ -1026,7 +1037,7 @@ void GpuImageDecodeController::UploadImageIfNecessary(
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
         SkImageInfo image_info = CreateImageInfoForDrawImage(
-            draw_image, image_data->upload_scale_mip_level);
+            draw_image, image_data->upload_params.fPreScaleMipLevel);
         SkPixmap pixmap(image_info, image_data->decode.data()->data(),
                         image_info.minRowBytes());
         uploaded_image =
@@ -1074,9 +1085,7 @@ GpuImageDecodeController::CreateImageData(const DrawImage& draw_image) {
     mode = DecodedDataMode::GPU;
   }
 
-  return make_scoped_refptr(
-      new ImageData(mode, data_size, upload_scale_mip_level,
-                    CalculateUploadScaleFilterQuality(draw_image)));
+  return make_scoped_refptr(new ImageData(mode, data_size, params));
 }
 
 void GpuImageDecodeController::DeletePendingImages() {
@@ -1118,7 +1127,7 @@ GpuImageDecodeController::GetImageDataForDrawImage(
       // Call OwnershipChanged before erasing the orphaned task from the
       // persistent cache. This ensures that if the orphaned task has 0
       // references, it is cleaned up safely before it is deleted.
-      OwnershipChanged(image_data);
+      OwnershipChanged(draw_image, image_data);
       persistent_cache_.Erase(found_persistent);
     }
   }
@@ -1132,11 +1141,11 @@ GpuImageDecodeController::GetImageDataForDrawImage(
 // the provided |draw_image|.
 bool GpuImageDecodeController::IsCompatible(const ImageData* image_data,
                                             const DrawImage& draw_image) const {
-  bool is_scaled = image_data->upload_scale_mip_level != 0;
+  bool is_scaled = image_data->upload_params.fPreScaleMipLevel != 0;
   bool scale_is_compatible = CalculateUploadScaleMipLevel(draw_image) >=
-                             image_data->upload_scale_mip_level;
+                             image_data->upload_params.fPreScaleMipLevel;
   bool quality_is_compatible = CalculateUploadScaleFilterQuality(draw_image) <=
-                               image_data->upload_scale_filter_quality;
+                               image_data->upload_params.fQuality;
   return !is_scaled || (scale_is_compatible && quality_is_compatible);
 }
 
