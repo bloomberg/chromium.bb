@@ -288,7 +288,8 @@ void FastUnloadController::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // FastUnloadController, TabStripModelObserver implementation:
 
-void FastUnloadController::TabInsertedAt(content::WebContents* contents,
+void FastUnloadController::TabInsertedAt(TabStripModel* tab_strip_model,
+                                         content::WebContents* contents,
                                          int index,
                                          bool foreground) {
   TabAttachedImpl(contents);

@@ -320,7 +320,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   selection_model_.IncrementFrom(index);
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabInsertedAt(contents, index, active));
+                    TabInsertedAt(this, contents, index, active));
   if (active) {
     ui::ListSelectionModel new_model;
     new_model.Copy(selection_model_);
@@ -658,8 +658,8 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
   }
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabPinnedStateChanged(contents_data_[index]->web_contents(),
-                                          index));
+                    TabPinnedStateChanged(
+                        this, contents_data_[index]->web_contents(), index));
 }
 
 bool TabStripModel::IsTabPinned(int index) const {

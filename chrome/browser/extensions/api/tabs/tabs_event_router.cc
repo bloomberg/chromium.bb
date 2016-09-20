@@ -217,7 +217,8 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
   RegisterForTabNotifications(contents);
 }
 
-void TabsEventRouter::TabInsertedAt(WebContents* contents,
+void TabsEventRouter::TabInsertedAt(TabStripModel* tab_strip_model,
+                                    WebContents* contents,
                                     int index,
                                     bool active) {
   if (!GetTabEntry(contents)) {
@@ -506,7 +507,9 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
     RegisterForTabNotifications(new_contents);
 }
 
-void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
+void TabsEventRouter::TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                                            WebContents* contents,
+                                            int index) {
   std::set<std::string> changed_property_names;
   changed_property_names.insert(tabs_constants::kPinnedKey);
   DispatchTabUpdatedEvent(contents, std::move(changed_property_names));

@@ -256,7 +256,8 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
   AddWebContentsObserver(new_contents);
 }
 
-void BrowserStatusMonitor::TabInsertedAt(content::WebContents* contents,
+void BrowserStatusMonitor::TabInsertedAt(TabStripModel* tab_strip_model,
+                                         content::WebContents* contents,
                                          int index,
                                          bool foreground) {
   // An inserted tab is not active - ActiveTabChanged() will be called to

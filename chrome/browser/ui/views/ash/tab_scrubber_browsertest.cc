@@ -198,14 +198,6 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   // TabStripModelObserver overrides.
-  void TabInsertedAt(content::WebContents* contents,
-                     int index,
-                     bool foreground) override {}
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override {}
-  void TabDetachedAt(content::WebContents* contents, int index) override {}
-  void TabDeactivated(content::WebContents* contents) override {}
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
                         int index,
@@ -214,24 +206,6 @@ class TabScrubberTest : public InProcessBrowserTest,
     if (index == target_index_)
       quit_closure_.Run();
   }
-
-  void TabSelectionChanged(TabStripModel* tab_strip_model,
-                           const ui::ListSelectionModel& old_model) override {}
-  void TabMoved(content::WebContents* contents,
-                int from_index,
-                int to_index) override {}
-  void TabChangedAt(content::WebContents* contents,
-                    int index,
-                    TabChangeType change_type) override {}
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override {}
-  void TabPinnedStateChanged(content::WebContents* contents,
-                             int index) override {}
-  void TabBlockedStateChanged(content::WebContents* contents,
-                              int index) override {}
-  void TabStripEmpty() override {}
 
   // History of tab activation. Scrub() resets it.
   std::vector<int> activation_order_;

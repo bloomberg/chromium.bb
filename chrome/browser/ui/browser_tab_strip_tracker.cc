@@ -71,7 +71,8 @@ void BrowserTabStripTracker::MaybeTrackBrowser(Browser* browser) {
   const int active_index = tab_strip_model->active_index();
   for (int i = 0; i < tab_strip_model->count(); ++i) {
     tab_strip_model_observer_->TabInsertedAt(
-        tab_strip_model->GetWebContentsAt(i), i, i == active_index);
+        tab_strip_model, tab_strip_model->GetWebContentsAt(i), i,
+        i == active_index);
   }
 }
 

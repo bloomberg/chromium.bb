@@ -225,7 +225,8 @@ void UnloadController::Observe(int type,
 ////////////////////////////////////////////////////////////////////////////////
 // UnloadController, TabStripModelObserver implementation:
 
-void UnloadController::TabInsertedAt(content::WebContents* contents,
+void UnloadController::TabInsertedAt(TabStripModel* tab_strip_model,
+                                     content::WebContents* contents,
                                      int index,
                                      bool foreground) {
   TabAttachedImpl(contents);

@@ -912,7 +912,8 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModelObserver implementation:
 
-void Browser::TabInsertedAt(WebContents* contents,
+void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
+                            WebContents* contents,
                             int index,
                             bool foreground) {
   SetAsDelegate(contents, true);
@@ -1085,8 +1086,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(old_contents);
-  TabInsertedAt(new_contents,
-                index,
+  TabInsertedAt(tab_strip_model, new_contents, index,
                 (index == tab_strip_model_->active_index()));
 
   if (!new_contents->GetController().IsInitialBlankNavigation()) {
@@ -1104,7 +1104,9 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   }
 }
 
-void Browser::TabPinnedStateChanged(WebContents* contents, int index) {
+void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                                    WebContents* contents,
+                                    int index) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {

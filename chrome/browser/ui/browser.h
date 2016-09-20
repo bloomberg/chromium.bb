@@ -428,7 +428,8 @@ class Browser : public TabStripModelObserver,
   content::WebContents* OpenURL(const content::OpenURLParams& params) override;
 
   // Overridden from TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
   void TabClosingAt(TabStripModel* tab_strip_model,
@@ -447,7 +448,8 @@ class Browser : public TabStripModelObserver,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
-  void TabPinnedStateChanged(content::WebContents* contents,
+  void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
                              int index) override;
   void TabStripEmpty() override;
 

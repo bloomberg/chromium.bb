@@ -1540,7 +1540,8 @@ ToolbarView* BrowserView::GetToolbarView() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabInsertedAt(WebContents* contents,
+void BrowserView::TabInsertedAt(TabStripModel* tab_strip_model,
+                                WebContents* contents,
                                 int index,
                                 bool foreground) {
 #if defined(USE_AURA)

@@ -22,7 +22,8 @@ TabStripModelObserverBridge::~TabStripModelObserverBridge() {
   model_->RemoveObserver(this);
 }
 
-void TabStripModelObserverBridge::TabInsertedAt(WebContents* contents,
+void TabStripModelObserverBridge::TabInsertedAt(TabStripModel* tab_strip_model,
+                                                WebContents* contents,
                                                 int index,
                                                 bool foreground) {
   if ([controller_ respondsToSelector:
@@ -112,8 +113,10 @@ void TabStripModelObserverBridge::TabReplacedAt(TabStripModel* tab_strip_model,
   }
 }
 
-void TabStripModelObserverBridge::TabPinnedStateChanged(WebContents* contents,
-                                                        int index) {
+void TabStripModelObserverBridge::TabPinnedStateChanged(
+    TabStripModel* tab_strip_model,
+    WebContents* contents,
+    int index) {
   if ([controller_ respondsToSelector:
           @selector(tabPinnedStateChangedWithContents:atIndex:)]) {
     [controller_ tabPinnedStateChangedWithContents:contents

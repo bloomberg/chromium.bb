@@ -78,7 +78,8 @@ class BrowserTabStripController : public TabStripController,
   SkColor GetToolbarTopSeparatorColor() const override;
 
   // TabStripModelObserver implementation:
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int model_index,
                      bool is_active) override;
   void TabDetachedAt(content::WebContents* contents, int model_index) override;
@@ -94,7 +95,8 @@ class BrowserTabStripController : public TabStripController,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int model_index) override;
-  void TabPinnedStateChanged(content::WebContents* contents,
+  void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
                              int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;

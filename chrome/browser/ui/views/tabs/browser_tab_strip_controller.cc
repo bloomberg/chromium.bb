@@ -422,7 +422,8 @@ SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
-void BrowserTabStripController::TabInsertedAt(WebContents* contents,
+void BrowserTabStripController::TabInsertedAt(TabStripModel* tab_strip_model,
+                                              WebContents* contents,
                                               int model_index,
                                               bool is_active) {
   DCHECK(contents);
@@ -475,8 +476,10 @@ void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
   SetTabDataAt(new_contents, model_index);
 }
 
-void BrowserTabStripController::TabPinnedStateChanged(WebContents* contents,
-                                                      int model_index) {
+void BrowserTabStripController::TabPinnedStateChanged(
+    TabStripModel* tab_strip_model,
+    WebContents* contents,
+    int model_index) {
   SetTabDataAt(contents, model_index);
 }
 

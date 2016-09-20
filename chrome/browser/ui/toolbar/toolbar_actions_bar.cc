@@ -793,7 +793,8 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
 }
 
-void ToolbarActionsBar::TabInsertedAt(content::WebContents* contents,
+void ToolbarActionsBar::TabInsertedAt(TabStripModel* tab_strip_model,
+                                      content::WebContents* contents,
                                       int index,
                                       bool foreground) {
   if (foreground)

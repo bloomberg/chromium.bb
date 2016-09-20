@@ -57,7 +57,8 @@ class TabStripModelObserver {
   // A new WebContents was inserted into the TabStripModel at the
   // specified index. |foreground| is whether or not it was opened in the
   // foreground (selected).
-  virtual void TabInsertedAt(content::WebContents* contents,
+  virtual void TabInsertedAt(TabStripModel* tab_strip_model,
+                             content::WebContents* contents,
                              int index,
                              bool foreground);
 
@@ -126,7 +127,9 @@ class TabStripModelObserver {
                              int index);
 
   // Invoked when the pinned state of a tab changes.
-  virtual void TabPinnedStateChanged(content::WebContents* contents, int index);
+  virtual void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                                     content::WebContents* contents,
+                                     int index);
 
   // Invoked when the blocked state of a tab changes.
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal

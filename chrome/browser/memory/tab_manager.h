@@ -264,7 +264,8 @@ class TabManager : public TabStripModelObserver {
                         content::WebContents* new_contents,
                         int index,
                         int reason) override;
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
 

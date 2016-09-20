@@ -15,7 +15,8 @@ class DevToolsAutoOpener : public TabStripModelObserver {
 
  private:
   // TabStripModelObserver overrides.
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
 

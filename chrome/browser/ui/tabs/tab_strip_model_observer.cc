@@ -6,7 +6,8 @@
 
 using content::WebContents;
 
-void TabStripModelObserver::TabInsertedAt(WebContents* contents,
+void TabStripModelObserver::TabInsertedAt(TabStripModel* tab_strip_model,
+                                          WebContents* contents,
                                           int index,
                                           bool foreground) {
 }
@@ -50,8 +51,10 @@ void TabStripModelObserver::TabReplacedAt(TabStripModel* tab_strip_model,
                                           int index) {
 }
 
-void TabStripModelObserver::TabPinnedStateChanged(WebContents* contents,
-                                                  int index) {
+void TabStripModelObserver::TabPinnedStateChanged(
+    TabStripModel* tab_strip_model,
+    WebContents* contents,
+    int index) {
 }
 
 void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,

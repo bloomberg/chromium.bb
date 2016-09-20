@@ -92,7 +92,8 @@ class UnloadController : public content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // Overridden from TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
   void TabDetachedAt(content::WebContents* contents, int index) override;

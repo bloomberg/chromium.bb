@@ -16,10 +16,10 @@ DevToolsAutoOpener::DevToolsAutoOpener()
 DevToolsAutoOpener::~DevToolsAutoOpener() {
 }
 
-void DevToolsAutoOpener::TabInsertedAt(
-    content::WebContents* contents,
-    int index,
-    bool foreground) {
+void DevToolsAutoOpener::TabInsertedAt(TabStripModel* tab_strip_model,
+                                       content::WebContents* contents,
+                                       int index,
+                                       bool foreground) {
   if (!DevToolsWindow::IsDevToolsWindow(contents))
     DevToolsWindow::OpenDevToolsWindow(contents);
 }

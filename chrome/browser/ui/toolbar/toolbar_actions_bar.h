@@ -274,7 +274,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   void OnToolbarModelInitialized() override;
 
   // TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
 

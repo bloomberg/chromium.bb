@@ -663,7 +663,8 @@ void BrowserCommandController::OnSigninAllowedPrefChange() {
 
 // BrowserCommandController, TabStripModelObserver implementation:
 
-void BrowserCommandController::TabInsertedAt(WebContents* contents,
+void BrowserCommandController::TabInsertedAt(TabStripModel* tab_strip_model,
+                                             WebContents* contents,
                                              int index,
                                              bool foreground) {
   AddInterstitialObservers(contents);

@@ -71,7 +71,8 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
   void TabClosingAt(TabStripModel* tab_strip_mode,

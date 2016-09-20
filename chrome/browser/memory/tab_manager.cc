@@ -798,7 +798,8 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     GetWebContentsData(old_contents)->SetLastInactiveTime(NowTicks());
 }
 
-void TabManager::TabInsertedAt(content::WebContents* contents,
+void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
+                               content::WebContents* contents,
                                int index,
                                bool foreground) {
   // Only interested in background tabs, as foreground tabs get taken care of by

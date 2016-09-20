@@ -377,7 +377,8 @@ class BrowserView : public BrowserWindow,
   ToolbarView* GetToolbarView() const;
 
   // Overridden from TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
                      int index,
                      bool foreground) override;
   void TabDetachedAt(content::WebContents* contents, int index) override;

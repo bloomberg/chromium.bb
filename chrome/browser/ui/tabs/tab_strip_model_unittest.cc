@@ -149,7 +149,8 @@ class TabBlockedStateTestBrowser
 
  private:
   // TabStripModelObserver
-  void TabInsertedAt(WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     WebContents* contents,
                      int index,
                      bool foreground) override {
     web_modal::WebContentsModalDialogManager* manager =
@@ -347,7 +348,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
 
   // TabStripModelObserver implementation:
-  void TabInsertedAt(WebContents* contents,
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     WebContents* contents,
                      int index,
                      bool foreground) override {
     empty_ = false;
@@ -401,7 +403,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s.src_contents = old_contents;
     states_.push_back(s);
   }
-  void TabPinnedStateChanged(WebContents* contents, int index) override {
+  void TabPinnedStateChanged(TabStripModel* tab_strip_model,
+                             WebContents* contents,
+                             int index) override {
     states_.push_back(State(contents, index, PINNED));
   }
   void TabStripEmpty() override { empty_ = true; }
