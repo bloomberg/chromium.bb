@@ -68,6 +68,9 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   void Reset(const ResetCallback& callback) override;
   StoreState state() const override;
 
+  // Helper function used to force incorrect state for testing purposes.
+  void SetStateForTesting(StoreState state, bool reset_db);
+
  private:
   // Used to initialize DB connection.
   void OpenConnection();

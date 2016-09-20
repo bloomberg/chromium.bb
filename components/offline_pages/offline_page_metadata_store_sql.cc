@@ -400,6 +400,11 @@ OfflinePageMetadataStoreSQL::~OfflinePageMetadataStoreSQL() {
 
 void OfflinePageMetadataStoreSQL::GetOfflinePages(
     const LoadCallback& callback) {
+  if (!CheckDb(base::Bind(
+          callback, STORE_INIT_FAILED, std::vector<OfflinePageItem>()))) {
+    return;
+  }
+
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GetOfflinePagesSync, db_.get(),
                             base::ThreadTaskRunnerHandle::Get(), callback));
@@ -463,6 +468,13 @@ StoreState OfflinePageMetadataStoreSQL::state() const {
   return state_;
 }
 
+void OfflinePageMetadataStoreSQL::SetStateForTesting(StoreState state,
+                                                     bool reset_db) {
+  state_ = state;
+  if (reset_db)
+    db_.reset(nullptr);
+}
+
 void OfflinePageMetadataStoreSQL::OpenConnection() {
   DCHECK(!db_);
   db_.reset(new sql::Connection());
@@ -494,8 +506,7 @@ void OfflinePageMetadataStoreSQL::OnResetDone(const ResetCallback& callback,
 }
 
 bool OfflinePageMetadataStoreSQL::CheckDb(const base::Closure& callback) {
-  DCHECK(db_.get());
-  if (!db_.get()) {
+  if (!db_.get() || state_ != LOADED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback));
     return false;

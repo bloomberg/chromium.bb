@@ -351,6 +351,7 @@ std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStore() {
   std::unique_ptr<OfflinePageMetadataStore> store(
       factory_.BuildStore(temp_directory_.GetPath()));
+  PumpLoop();
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -362,6 +363,7 @@ std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM52() {
   std::unique_ptr<OfflinePageMetadataStore> store(
       factory_.BuildStoreM52(temp_directory_.GetPath()));
+  PumpLoop();
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -373,6 +375,7 @@ std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM53() {
   std::unique_ptr<OfflinePageMetadataStore> store(
       factory_.BuildStoreM53(temp_directory_.GetPath()));
+  PumpLoop();
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -384,6 +387,7 @@ std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM54() {
   std::unique_ptr<OfflinePageMetadataStore> store(
       factory_.BuildStoreM53(temp_directory_.GetPath()));
+  PumpLoop();
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -398,6 +402,82 @@ TEST_F(OfflinePageMetadataStoreTest, LoadEmptyStore) {
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
+}
+
+TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
+  std::unique_ptr<OfflinePageMetadataStore> store(BuildStore());
+  OfflinePageMetadataStoreSQL* sql_store =
+      static_cast<OfflinePageMetadataStoreSQL*>(store.get());
+
+  sql_store->SetStateForTesting(OfflinePageMetadataStore::NOT_LOADED, false);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::FAILED_INITIALIZATION, false);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::FAILED_RESET, false);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::LOADED, true);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::NOT_LOADED, true);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::FAILED_INITIALIZATION, false);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
+  sql_store->SetStateForTesting(
+      OfflinePageMetadataStore::FAILED_RESET, false);
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0UL, offline_pages_.size());
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+
 }
 
 // Loads a store which has an outdated schema.
