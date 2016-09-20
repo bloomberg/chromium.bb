@@ -1,7 +1,7 @@
 Name: bspatch
 URL: http://lxr.mozilla.org/mozilla/source/toolkit/mozapps/update/src/updater/
 Version: unknown
-License: BSD Protection license
+License: BSD 2-Clause License
 Security Critical: yes
 
 Description:
