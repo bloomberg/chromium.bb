@@ -989,6 +989,10 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   }
   if (time_updated)
     should_notify_time_changed_ = true;
+
+  // Reset underflow count upon seek; this prevents looping videos and user
+  // actions from artificially inflating the underflow count.
+  underflow_count_ = 0;
 }
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
