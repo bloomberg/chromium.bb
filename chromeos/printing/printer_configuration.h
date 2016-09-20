@@ -38,6 +38,10 @@ class CHROMEOS_EXPORT Printer {
   // Constructs a printer object with an id.
   explicit Printer(const std::string& id);
 
+  // Copy constructor and assignment.
+  explicit Printer(const Printer& printer);
+  Printer& operator=(const Printer& printer);
+
   ~Printer();
 
   const std::string& id() const { return id_; }
@@ -95,8 +99,6 @@ class CHROMEOS_EXPORT Printer {
 
   // The UUID from an autoconf protocol for deduplication. Could be empty.
   std::string uuid_;
-
-  DISALLOW_COPY_AND_ASSIGN(Printer);
 };
 
 }  // namespace chromeos

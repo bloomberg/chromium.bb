@@ -12,6 +12,10 @@ Printer::Printer() {}
 
 Printer::Printer(const std::string& id) : id_(id) {}
 
+Printer::Printer(const Printer& other) = default;
+
+Printer& Printer::operator=(const Printer& other) = default;
+
 Printer::~Printer() {}
 
 void Printer::SetPPD(std::unique_ptr<Printer::PPDFile> ppd) {
