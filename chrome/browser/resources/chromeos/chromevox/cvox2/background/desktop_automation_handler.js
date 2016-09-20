@@ -152,8 +152,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var prev = ChromeVoxState.instance.currentRange;
-    if (AutomationUtil.isDescendantOf(prev.start.node, evt.target) ||
-        AutomationUtil.isDescendantOf(evt.target, prev.start.node) ||
+    if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
       // Intentionally skip setting range.
       new Output()

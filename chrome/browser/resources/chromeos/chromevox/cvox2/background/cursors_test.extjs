@@ -426,3 +426,35 @@ TEST_F('CursorsTest', 'InlineElementOffset', function() {
     oRange.select();
   });
 });
+
+TEST_F('CursorsTest', 'ContentEquality', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div role="region">this is a test</button>
+  */}, function(root) {
+    var region = root.firstChild;
+    assertEquals(RoleType.region, region.role);
+    var staticText = region.firstChild;
+    assertEquals(RoleType.staticText, staticText.role);
+    var inlineTextBox = staticText.firstChild;
+    assertEquals(RoleType.inlineTextBox, inlineTextBox.role);
+
+    var rootRange = cursors.Range.fromNode(root);
+    var regionRange = cursors.Range.fromNode(region);
+    var staticTextRange = cursors.Range.fromNode(staticText);
+    var inlineTextBoxRange = cursors.Range.fromNode(inlineTextBox);
+
+    // Positive cases.
+    assertTrue(regionRange.contentEquals(staticTextRange));
+    assertTrue(staticTextRange.contentEquals(regionRange));
+    assertTrue(inlineTextBoxRange.contentEquals(staticTextRange));
+    assertTrue(staticTextRange.contentEquals(inlineTextBoxRange));
+
+    // Negative cases.
+    assertFalse(rootRange.contentEquals(regionRange));
+    assertFalse(rootRange.contentEquals(staticTextRange));
+    assertFalse(rootRange.contentEquals(inlineTextBoxRange));
+    assertFalse(regionRange.contentEquals(rootRange));
+    assertFalse(staticTextRange.contentEquals(rootRange));
+    assertFalse(inlineTextBoxRange.contentEquals(rootRange));
+  });
+});
