@@ -32,7 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|top"
                 android:paddingEnd="8dp"
-                android:src="@drawable/offline_bolt"
+                android:src="@drawable/offline_pin"
                 android:visibility="gone"
                 android:contentDescription="@string/page_info_offline_icon" />
                 

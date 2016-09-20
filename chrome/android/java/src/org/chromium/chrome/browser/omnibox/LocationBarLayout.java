@@ -1356,7 +1356,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 break;
             case OFFLINE:
                 Drawable bolt = ApiCompatibilityUtils.getDrawable(
-                        getResources(), R.drawable.offline_bolt);
+                        getResources(), R.drawable.offline_pin);
                 bolt.mutate().setColorFilter(
                         ApiCompatibilityUtils.getColor(getResources(), mUseDarkColors
                                 ? R.color.locationbar_status_color

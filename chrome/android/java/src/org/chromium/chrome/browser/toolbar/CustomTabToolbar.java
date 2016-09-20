@@ -525,7 +525,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (mShowsOfflinePage) {
             // If we are showing an offline page, immediately update icon to offline bolt.
             TintedDrawable bolt = TintedDrawable.constructTintedDrawable(
-                    getResources(), R.drawable.offline_bolt);
+                    getResources(), R.drawable.offline_pin);
             bolt.setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
             mSecurityButton.setImageDrawable(bolt);
             mAnimDelegate.showSecurityButton();
