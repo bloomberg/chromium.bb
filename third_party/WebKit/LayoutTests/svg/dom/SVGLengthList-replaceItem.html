@@ -2,6 +2,7 @@
 <title>SVGLengthList, replaceItem()</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/SVGLengthList-helper.js"></script>
 <svg width="200" height="200">
     <text id="text1" x="500 1000 1500" y="50">  ABC   </text>
     <text id="text2" x="500 100 150 50" y="75"> ABC   </text>
@@ -9,14 +10,6 @@
     <text id="text4" x="100 50 150 150" y="125">   ABC</text>
 </svg>
 <script>
-function assert_list(list, expectedValues) {
-  assert_equals(list.numberOfItems, expectedValues.length);
-  for (var index = 0; index < expectedValues.length; ++index)
-    assert_equals(list.getItem(index).value, expectedValues[index]);
-
-  assert_throws("IndexSizeError", function() { list.getItem(expectedValues.length); });
-}
-
 test(function() {
   // This is a test of the SVGLengthList.replaceItem() API.
 

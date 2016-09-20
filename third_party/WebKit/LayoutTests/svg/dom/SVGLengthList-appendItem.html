@@ -2,6 +2,7 @@
 <title>SVGLengthList, appendItem()</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/SVGLengthList-helper.js"></script>
 <svg width="200" height="200">
     <text id="text1" x="500 50 100 900 1000" y="50">ABC</text>
     <text id="text2" x="50 100 1000" y="100">ABC</text>
@@ -19,77 +20,28 @@ test(function() {
   assert_equals(newLength1.value, 150);
 
   // Check initial list state of text1.
-  assert_equals(list1.numberOfItems, 5);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 50);
-  assert_equals(list1.getItem(2).value, 100);
-  assert_equals(list1.getItem(3).value, 900);
-  assert_equals(list1.getItem(4).value, 1000);
-  assert_throws("IndexSizeError", function() { list1.getItem(5); });
+  assert_list(list1, [500, 50, 100, 900, 1000]);
 
   // Check initial list state of text2.
-  assert_equals(list2.numberOfItems, 3);
-  assert_equals(list2.getItem(0).value, 50);
-  assert_equals(list2.getItem(1).value, 100);
-  assert_equals(list2.getItem(2).value, 1000);
-  assert_throws("IndexSizeError", function() { list2.getItem(3); });
+  assert_list(list2, [50, 100, 1000]);
 
   // Append fourth item x=900 to the text1 x list.
   assert_equals(list1.appendItem(list1.getItem(3)).value, list1.getItem(5).value);
-  assert_equals(list1.numberOfItems, 6);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 50);
-  assert_equals(list1.getItem(2).value, 100);
-  assert_equals(list1.getItem(3).value, 900);
-  assert_equals(list1.getItem(4).value, 1000);
-  assert_equals(list1.getItem(5).value, 900);
-  assert_throws("IndexSizeError", function() { list1.getItem(6); });
+  assert_list(list1, [500, 50, 100, 900, 1000, 900]);
 
   // Append first item x=500 to the text1 x list.
   assert_equals(list1.appendItem(list1.getItem(0)).value, list1.getItem(6).value);
-  assert_equals(list1.numberOfItems, 7);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 50);
-  assert_equals(list1.getItem(2).value, 100);
-  assert_equals(list1.getItem(3).value, 900);
-  assert_equals(list1.getItem(4).value, 1000);
-  assert_equals(list1.getItem(5).value, 900);
-  assert_equals(list1.getItem(6).value, 500);
-  assert_throws("IndexSizeError", function() { list1.getItem(7); });
+  assert_list(list1, [500, 50, 100, 900, 1000, 900, 500]);
 
   // Append 'newLength1' to the text1 x list.
   assert_equals(list1.appendItem(newLength1).value, list1.getItem(7).value);
-  assert_equals(list1.numberOfItems, 8);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 50);
-  assert_equals(list1.getItem(2).value, 100);
-  assert_equals(list1.getItem(3).value, 900);
-  assert_equals(list1.getItem(4).value, 1000);
-  assert_equals(list1.getItem(5).value, 900);
-  assert_equals(list1.getItem(6).value, 500);
-  assert_equals(list1.getItem(7).value, 150);
-  assert_throws("IndexSizeError", function() { list1.getItem(8); });
+  assert_list(list1, [500, 50, 100, 900, 1000, 900, 500, 150]);
 
   // Append third and fourth item of the text1 x list to the text2 x list.
   assert_equals(list2.appendItem(list1.getItem(2)).value, 100);
   assert_equals(list2.appendItem(list1.getItem(3)).value, 900);
-  assert_equals(list1.numberOfItems, 8);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 50);
-  assert_equals(list1.getItem(2).value, 100);
-  assert_equals(list1.getItem(3).value, 900);
-  assert_equals(list1.getItem(4).value, 1000);
-  assert_equals(list1.getItem(5).value, 900);
-  assert_equals(list1.getItem(6).value, 500);
-  assert_equals(list1.getItem(7).value, 150);
-  assert_throws("IndexSizeError", function() { list1.getItem(8); });
-  assert_equals(list2.numberOfItems, 5);
-  assert_equals(list2.getItem(0).value, 50);
-  assert_equals(list2.getItem(1).value, 100);
-  assert_equals(list2.getItem(2).value, 1000);
-  assert_equals(list2.getItem(3).value, 100);
-  assert_equals(list2.getItem(4).value, 900);
-  assert_throws("IndexSizeError", function() { list2.getItem(5); });
+  assert_list(list1, [500, 50, 100, 900, 1000, 900, 500, 150]);
+  assert_list(list2, [50, 100, 1000, 100, 900]);
 
   var newLength2 = svg.createSVGLength();
   newLength2.value = 150;
@@ -104,15 +56,7 @@ test(function() {
   assert_equals(list2.appendItem(list1.getItem(0)).value, 50);
   assert_equals(list2.appendItem(list1.getItem(1)).value, 100);
   assert_equals(list2.appendItem(list1.getItem(2)).value, 150);
-  assert_equals(list1.numberOfItems, 3);
-  assert_equals(list1.getItem(0).value, 50);
-  assert_equals(list1.getItem(1).value, 100);
-  assert_equals(list1.getItem(2).value, 150);
-  assert_throws("IndexSizeError", function() { list1.getItem(4); });
-  assert_equals(list2.numberOfItems, 3);
-  assert_equals(list2.getItem(0).value, 50);
-  assert_equals(list2.getItem(1).value, 100);
-  assert_equals(list2.getItem(2).value, 150);
-  assert_throws("IndexSizeError", function() { list2.getItem(6); });
+  assert_list(list1, [50, 100, 150]);
+  assert_list(list2, [50, 100, 150]);
 });
 </script>

@@ -2,6 +2,7 @@
 <title>SVGLengthList, initialize()</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/SVGLengthList-helper.js"></script>
 <svg width="200" height="200">
     <text id="text1" x="500 1000 1500" y="25">   ABC  </text>
     <text id="text2" x="50 500" y="50">   ABC  </text>
@@ -19,29 +20,16 @@ test(function() {
   var list4 = document.getElementById("text4").x.baseVal;
 
   // Check initial list state of text1.
-  assert_equals(list1.numberOfItems, 3);
-  assert_equals(list1.getItem(0).value, 500);
-  assert_equals(list1.getItem(1).value, 1000);
-  assert_equals(list1.getItem(2).value, 1500);
-  assert_throws("IndexSizeError", function() { list1.getItem(3); });
+  assert_list(list1, [500, 1000, 1500]);
 
   // Check initial list state of text2.
-  assert_equals(list2.numberOfItems, 2);
-  assert_equals(list2.getItem(0).value, 50);
-  assert_equals(list2.getItem(1).value, 500);
-  assert_throws("IndexSizeError", function() { list2.getItem(2); });
+  assert_list(list2, [50, 500]);
 
   // Check initial list state of text3.
-  assert_equals(list3.numberOfItems, 3);
-  assert_equals(list3.getItem(0).value, 50);
-  assert_equals(list3.getItem(1).value, 500);
-  assert_equals(list3.getItem(2).value, 50);
-  assert_throws("IndexSizeError", function() { list3.getItem(3); });
+  assert_list(list3, [50, 500, 50]);
 
   // Check initial list state of text4.
-  assert_equals(list4.numberOfItems, 1);
-  assert_equals(list4.getItem(0).value, 500);
-  assert_throws("IndexSizeError", function() { list4.getItem(1); });
+  assert_list(list4, [500]);
 
   // Create a new SVGLength object, that will be the only x coordinate in the first text element.
   var newLength = svg.createSVGLength();
@@ -87,17 +75,9 @@ test(function() {
   assert_equals(list2.getItem(0).value, 50);
 
   // Final check whether the lists all look like expected.
-  assert_equals(list1.getItem(0).value, 50);
-  assert_equals(list2.getItem(0).value, 50);
-  assert_equals(list3.getItem(0).value, 50);
-  assert_equals(list4.getItem(0).value, 50);
-  assert_equals(list1.numberOfItems, 1);
-  assert_equals(list2.numberOfItems, 1);
-  assert_equals(list3.numberOfItems, 1);
-  assert_equals(list4.numberOfItems, 1);
-  assert_throws("IndexSizeError", function() { list1.getItem(1); });
-  assert_throws("IndexSizeError", function() { list2.getItem(1); });
-  assert_throws("IndexSizeError", function() { list3.getItem(1); });
-  assert_throws("IndexSizeError", function() { list4.getItem(1); });
+  assert_list(list1, [50]);
+  assert_list(list2, [50]);
+  assert_list(list3, [50]);
+  assert_list(list4, [50]);
 });
 </script>
