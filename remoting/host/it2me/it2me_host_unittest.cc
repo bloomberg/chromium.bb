@@ -127,7 +127,7 @@ class It2MeHostTest : public testing::Test {
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
   // Used to set ConfirmationDialog behavior.
-  FakeIt2MeConfirmationDialog* dialog_ = nullptr;
+  FakeIt2MeConfirmationDialogFactory* fake_dialog_factory_ = nullptr;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -145,18 +145,13 @@ void It2MeHostTest::SetUp() {
   message_loop_.reset(new base::MessageLoop());
   run_loop_.reset(new base::RunLoop());
 
-  std::unique_ptr<FakeIt2MeConfirmationDialogFactory> fake_dialog_factory(
-      new FakeIt2MeConfirmationDialogFactory());
-  dialog_ = new FakeIt2MeConfirmationDialog();
-  fake_dialog_factory->set_confirmation_dialog(base::WrapUnique(dialog_));
-
+  fake_dialog_factory_ = new FakeIt2MeConfirmationDialogFactory();
   scoped_refptr<AutoThreadTaskRunner> auto_thread_task_runner =
       new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
                                run_loop_->QuitClosure());
-
   it2me_host_ = new It2MeHost(
       ChromotingHostContext::Create(auto_thread_task_runner),
-      /*policy_watcher=*/nullptr, std::move(fake_dialog_factory),
+      /*policy_watcher=*/nullptr, base::WrapUnique(fake_dialog_factory_),
       /*observer=*/nullptr, xmpp_server_config_, directory_bot_jid_);
 }
 
@@ -247,17 +242,28 @@ TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_MatchEnd) {
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
 }
 
-TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Accept) {
+TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_NoDialog) {
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_STREQ(kTestClientUserName, dialog_->get_remote_user_email().c_str());
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Accept) {
+  FakeIt2MeConfirmationDialog* dialog = new FakeIt2MeConfirmationDialog();
+  fake_dialog_factory_->set_confirmation_dialog(base::WrapUnique(dialog));
+
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
+  ASSERT_STREQ(kTestClientUserName, dialog->get_remote_user_email().c_str());
 }
 
 TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Reject) {
-  dialog_->set_dialog_result(DialogResult::CANCEL);
+  FakeIt2MeConfirmationDialog* dialog = new FakeIt2MeConfirmationDialog();
+  dialog->set_dialog_result(DialogResult::CANCEL);
+  fake_dialog_factory_->set_confirmation_dialog(base::WrapUnique(dialog));
+
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::ERROR_REJECTED_BY_USER, validation_result_);
-  ASSERT_STREQ(kTestClientUserName, dialog_->get_remote_user_email().c_str());
+  ASSERT_STREQ(kTestClientUserName, dialog->get_remote_user_email().c_str());
 }
 
 }  // namespace remoting
