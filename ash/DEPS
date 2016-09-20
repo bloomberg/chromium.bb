@@ -1,7 +1,6 @@
 include_rules = [
   "+device/bluetooth",
   "+cc/debug",
-  "+chromeos",
   "+components/quirks",
   "+components/signin/core/account_id",
   "+components/user_manager",
@@ -19,14 +18,26 @@ include_rules = [
   "-ash/host",
   "-content",
 
-  # Only allow D-Bus clients accessible to the ash process on mustash.
-  "-chromeos/dbus",
-  "+chromeos/dbus/dbus_client_types.h",
+  # Only allow Chrome OS services and D-Bus clients accessible to the mustash
+  # ash process.
+  "-chromeos",
+  "+chromeos/accelerometer",
+  "+chromeos/audio",
+  "+chromeos/chromeos_switches.h",
+  "+chromeos/chromeos_paths.h",
   "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/fake_power_manager_client.h",
   "+chromeos/dbus/fake_session_manager_client.h",
+  "+chromeos/dbus/power_manager",
   "+chromeos/dbus/power_manager_client.h",
   "+chromeos/dbus/session_manager_client.h",
+  "+chromeos/dbus/system_clock_client.h",
+  "+chromeos/login",
+  # TODO(jamescook): Eliminate this. http://crbug.com/644355
+  "+chromeos/network",
+  # TODO(jamescook): Eliminate this. http://crbug.com/644361
+  "+chromeos/settings/timezone_settings.h",
+  "+chromeos/system",
 ]
 
 specific_include_rules = {

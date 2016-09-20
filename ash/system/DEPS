@@ -2,7 +2,6 @@ include_rules = [
   # NOTE: Use WmShelf in //ash/common/shelf for all external shelf access.
   # See http://crbug.com/615502
   "-ash/shelf",
-  "-chromeos",
   "+components/prefs",
   "+components/signin/core/account_id",
 ]
