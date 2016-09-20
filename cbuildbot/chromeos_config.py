@@ -1824,28 +1824,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 
-  def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
-    """Create configs based on |config_base| for all boards in |boards|.
-
-    Note: Existing configs will not be overwritten.
-
-    Args:
-      config_base: A BuildConfig instance to inherit from.
-      boards: A set of boards to create configs for.
-      name_suffix: A naming suffix. Configs will have names of the form
-                   board-name_suffix.
-      **kwargs: Additional keyword arguments to be used in AddConfig.
-    """
-    for board in boards:
-      config_name = '%s-%s' % (board, name_suffix)
-      if config_name not in site_config:
-        # We copy the base because there seem to be cases where Add() modifies
-        # it directly (which is a bug).
-        site_config.Add(config_name,
-                        config_base.deepcopy(),
-                        _base_configs[board],
-                        **kwargs)
-
   _chromium_pfq_important_boards = frozenset([
       'arm-generic_freon',
       'arm-generic',
@@ -1862,111 +1840,68 @@ def _GetConfig(site_config, ge_build_config, board_configs,
         manifest=defaults['manifest'],
         useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
     )
-    _CreateConfigsForBoards(
-        site_config.templates.full,
-        _all_full_boards,
+    site_config.AddForBoards(
         config_lib.CONFIG_TYPE_FULL,
+        _all_full_boards,
+        board_configs,
+        site_config.templates.full,
         internal=defaults['internal'],
         manifest_repo_url=site_config.params['MANIFEST_URL'],
         overlays=defaults['overlays'],
         prebuilts=constants.PUBLIC,
         **external_overrides)
-    _CreateConfigsForBoards(
-        site_config.templates.chromium_pfq_informational,
-        _all_full_boards,
+    site_config.AddForBoards(
         'tot-chromium-pfq-informational',
+        _all_full_boards,
+        board_configs,
+        site_config.templates.chromium_pfq_informational,
         important=False,
         internal=defaults['internal'],
         manifest_repo_url=site_config.params['MANIFEST_URL'],
         overlays=constants.PUBLIC_OVERLAYS,
         **external_overrides)
-    _CreateConfigsForBoards(
-        site_config.templates.chromium_pfq_informational_gn,
-        _all_full_boards,
+    site_config.AddForBoards(
         'tot-chromium-pfq-informational-gn',
+        _all_full_boards,
+        board_configs,
+        site_config.templates.chromium_pfq_informational_gn,
         important=False,
         internal=defaults['internal'],
         manifest_repo_url=site_config.params['MANIFEST_URL'],
         overlays=constants.PUBLIC_OVERLAYS,
         **external_overrides)
     # Create important configs, then non-important configs.
-    _CreateConfigsForBoards(
-        site_config.templates.chromium_pfq,
+    site_config.AddForBoards(
+        'chromium-pfq',
         _chromium_pfq_important_boards,
-        'chromium-pfq', **external_overrides)
-    _CreateConfigsForBoards(
+        board_configs,
         site_config.templates.chromium_pfq,
-        _all_full_boards,
-        'chromium-pfq', important=False,
+        **external_overrides)
+    site_config.AddForBoards(
+        'chromium-pfq',
+        _all_full_boards - _chromium_pfq_important_boards,
+        board_configs,
+        site_config.templates.chromium_pfq,
+        important=False,
         **external_overrides)
 
   _AddFullConfigs()
 
 
   _chrome_pfq_important_boards = frozenset([
+      'cyan',
+      'daisy_skate',
+      'falco',
+      'lumpy',
+      'nyan',
+      'peach_pit',
       'peppy',
+      'tricky',
+      'veyron_minnie',
       'veyron_pinky',
       'veyron_rialto',
-      'nyan',
+      'x86-alex',
   ])
-
-  site_config.Add(
-      'x86-alex-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['x86-alex'],
-  )
-
-  site_config.Add(
-      'lumpy-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['lumpy'],
-      afdo_generate=True,
-      # Disable hugepages before collecting AFDO profile.
-      useflags=append_useflags(['-transparent_hugepage']),
-      hw_tests=[hw_test_list.AFDORecordTest()] + hw_test_list.SharedPoolPFQ(),
-  )
-
-  site_config.Add(
-      'cyan-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['cyan'],
-      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-  )
-
-  site_config.Add(
-      'daisy_skate-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['daisy_skate'],
-      hw_tests=hw_test_list.SharedPoolPFQ(),
-  )
-
-  site_config.Add(
-      'falco-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['falco'],
-      hw_tests=hw_test_list.SharedPoolPFQ(),
-  )
-
-  site_config.Add(
-      'veyron_minnie-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['veyron_minnie'],
-      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-  )
-
-  site_config.Add(
-      'peach_pit-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['peach_pit'],
-      hw_tests=hw_test_list.SharedPoolPFQ(),
-  )
-
-  site_config.Add(
-      'tricky-chrome-pfq',
-      site_config.templates.chrome_pfq,
-      _base_configs['tricky'],
-      hw_tests=hw_test_list.SharedPoolPFQ(),
-  )
 
   _android_pfq_hwtest_boards = frozenset([
       'cyan',
@@ -1984,10 +1919,11 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       'x86-generic',
   ])
 
-  _CreateConfigsForBoards(
-      site_config.templates.telemetry,
-      _telemetry_boards,
+  site_config.AddForBoards(
       'telemetry',
+      _telemetry_boards,
+      board_configs,
+      site_config.templates.telemetry,
   )
 
   site_config.Add(
@@ -2087,11 +2023,13 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       'parrot',
   ])
 
-  _CreateConfigsForBoards(
-      site_config.templates.chrome_perf,
-      _chrome_perf_boards,
+  site_config.AddForBoards(
       'chrome-perf',
-      trybot_list=True)
+      _chrome_perf_boards,
+      board_configs,
+      site_config.templates.chrome_perf,
+      trybot_list=True,
+  )
 
   # pylint: disable=bad-continuation
   site_config.AddForBoards(
@@ -2106,11 +2044,11 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   #
   # Internal Builds
   #
-
-  _CreateConfigsForBoards(
-      site_config.templates.internal_nowithdebug_paladin,
-      ['x86-generic', 'amd64-generic'],
+  site_config.AddForBoards(
       'nowithdebug-paladin',
+      ['x86-generic', 'amd64-generic'],
+      board_configs,
+      site_config.templates.internal_nowithdebug_paladin,
       important=False,
   )
 
@@ -2137,10 +2075,11 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   # so it's important that falco stays as a full-compile builder.
   # TODO(yunlian): Add -clang-clean to more boards.
   # See https://chromium-review.googlesource.com/#/c/275862/
-  _CreateConfigsForBoards(
-      full_compile_paladin,
-      ['falco', 'nyan'],
+  site_config.AddForBoards(
       'full-compile-paladin',
+      ['falco', 'nyan'],
+      board_configs,
+      full_compile_paladin,
   )
 
   site_config.AddWithoutTemplate(
@@ -2188,9 +2127,12 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
-  _CreateConfigsForBoards(site_config.templates.unittest_stress,
-                          _all_boards,
-                          'unittest-stress')
+  site_config.AddForBoards(
+      'unittest-stress',
+      _all_boards,
+      board_configs,
+      site_config.templates.unittest_stress,
+  )
 
   ### Master paladin (CQ builder).
 
@@ -2498,17 +2440,24 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
   # Add a pre-cq config for every board.
-  _CreateConfigsForBoards(site_config.templates.pre_cq, _all_boards, 'pre-cq')
-
-  _CreateConfigsForBoards(
+  site_config.AddForBoards(
+      'pre-cq',
+      _all_boards,
+      board_configs,
+      site_config.templates.pre_cq,
+  )
+  site_config.AddForBoards(
+      'no-vmtest-pre-cq',
+      _all_boards,
+      board_configs,
       site_config.templates.no_vmtest_pre_cq,
+  )
+  site_config.AddForBoards(
+      'compile-only-pre-cq',
       _all_boards,
-      'no-vmtest-pre-cq')
-  _CreateConfigsForBoards(
+      board_configs,
       site_config.templates.compile_only_pre_cq,
-      _all_boards,
-      'compile-only-pre-cq')
-
+  )
   site_config.Add(
       constants.BINHOST_PRE_CQ,
       site_config.templates.pre_cq,
@@ -2694,54 +2643,77 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   # If you want an important PFQ, you'll have to declare it yourself.
 
   def _AddInformationalConfigs():
-    _CreateConfigsForBoards(
-        site_config.templates.chrome_pfq_informational,
-        _chrome_informational_hwtest_boards,
+    site_config.AddForBoards(
         'tot-chrome-pfq-informational',
+        _chrome_informational_hwtest_boards,
+        board_configs,
+        site_config.templates.chrome_pfq_informational,
         important=False,
         hw_tests=hw_test_list.DefaultListPFQ(
-            pool=constants.HWTEST_CONTINUOUS_POOL))
-    informational_boards = list(set(_all_release_boards) - set(_cheets_boards))
-    _CreateConfigsForBoards(
-        site_config.templates.chrome_pfq_informational,
-        informational_boards,
+            pool=constants.HWTEST_CONTINUOUS_POOL),
+    )
+    informational_boards = set(_all_release_boards) - set(_cheets_boards)
+    site_config.AddForBoards(
         'tot-chrome-pfq-informational',
+        informational_boards-_chrome_informational_hwtest_boards,
+        board_configs,
+        site_config.templates.chrome_pfq_informational,
         important=False)
-    _CreateConfigsForBoards(
-        site_config.templates.chrome_pfq_informational_gn,
-        informational_boards,
+    site_config.AddForBoards(
         'tot-chrome-pfq-informational-gn',
+        informational_boards,
+        board_configs,
+        site_config.templates.chrome_pfq_informational_gn,
         important=False)
-    _CreateConfigsForBoards(
-        site_config.templates.chrome_pfq_cheets_informational,
+    site_config.AddForBoards(
+        'tot-chrome-pfq-cheets-informational',
         _cheets_boards,
-        'tot-chrome-pfq-cheets-informational', important=False)
+        board_configs,
+        site_config.templates.chrome_pfq_cheets_informational,
+        important=False)
 
   def _AddReleaseConfigs():
-    _CreateConfigsForBoards(
+    site_config.AddForBoards(
+        'chrome-pfq',
+        _chrome_pfq_important_boards,
+        board_configs,
         site_config.templates.chrome_pfq,
-        _chrome_pfq_important_boards, 'chrome-pfq')
-    _CreateConfigsForBoards(
+        important=True
+    )
+    site_config.AddForBoards(
+        'chrome-pfq',
+        _all_release_boards - _chrome_pfq_important_boards,
+        board_configs,
         site_config.templates.chrome_pfq,
-        _all_release_boards, 'chrome-pfq', important=False)
-    _CreateConfigsForBoards(
-        site_config.templates.android_pfq,
-        _android_pfq_hwtest_boards,
+        important=False,
+    )
+    site_config.AddForBoards(
         'android-pfq',
-        hw_tests=hw_test_list.SharedPoolAndroidPFQ())
-    _CreateConfigsForBoards(
+        _android_pfq_hwtest_boards,
+        board_configs,
         site_config.templates.android_pfq,
+        hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+    )
+    site_config.AddForBoards(
+        'android-pfq',
         _android_pfq_no_hwtest_boards,
-        'android-pfq')
-    _CreateConfigsForBoards(
-        site_config.templates.release,
-        _critical_for_chrome_boards,
+        board_configs,
+        site_config.templates.android_pfq,
+    )
+    site_config.AddForBoards(
         config_lib.CONFIG_TYPE_RELEASE,
-        critical_for_chrome=True)
-    _CreateConfigsForBoards(
+        _critical_for_chrome_boards,
+        board_configs,
         site_config.templates.release,
-        _all_release_boards | _all_release_builder_boards,
-        config_lib.CONFIG_TYPE_RELEASE)
+        critical_for_chrome=True,
+    )
+    site_config.AddForBoards(
+        config_lib.CONFIG_TYPE_RELEASE,
+        ((_all_release_boards | _all_release_builder_boards) -
+          _critical_for_chrome_boards),
+        board_configs,
+        site_config.templates.release,
+    )
 
   _AddInformationalConfigs()
   _AddReleaseConfigs()
@@ -3128,7 +3100,39 @@ def _GetConfig(site_config, ge_build_config, board_configs,
            'signer_tests':False,
            'paygen':False,
            'vm_tests':[],
-      }
+      },
+
+      'lumpy-chrome-pfq': {
+          'afdo_generate': True,
+          # Disable hugepages before collecting AFDO profile.
+          'useflags': append_useflags(['-transparent_hugepage']),
+          'hw_tests': ([hw_test_list.AFDORecordTest()] +
+                       hw_test_list.SharedPoolPFQ()),
+      },
+
+      'cyan-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'daisy_skate-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'falco-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'veyron_minnie-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'peach_pit-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'tricky-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
   }
 
   def _OverwriteBoardConfigs():
