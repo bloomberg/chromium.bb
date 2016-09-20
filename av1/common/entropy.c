@@ -1431,7 +1431,7 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
 #if CONFIG_ADAPT_SCAN
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size)
     for (tx_type = 0; tx_type < TX_TYPES; ++tx_type)
-      update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
+      av1_update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
 #endif
 
   for (t = 0; t <= TX_32X32; t++)

@@ -1171,7 +1171,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   init_mode_probs(cm->fc);
   av1_init_mv_probs(cm);
 #if CONFIG_ADAPT_SCAN
-  init_scan_order(cm);
+  av1_init_scan_order(cm);
 #endif
 
   cm->fc->initialized = 1;
