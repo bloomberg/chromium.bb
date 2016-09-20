@@ -30,9 +30,9 @@ action("cached_lex_yacc_tables") {
 # Jinja (which improves speed significantly), as the bytecode cache is
 # not concurrency-safe on write; details in code_generator_v8.py.
 action("cached_jinja_templates") {
-  script = "code_generator_v8.py"
+  script = "code_generator.py"
 
-  inputs = jinja_module_files + [ "code_generator_v8.py" ] +
+  inputs = jinja_module_files + [ "code_generator.py" ] +
            code_generator_template_files
 
   # Dummy file to track dependency.

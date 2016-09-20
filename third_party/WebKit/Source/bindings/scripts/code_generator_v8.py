@@ -47,93 +47,21 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import os
 import posixpath
-import re
-import sys
 
-# Path handling for libraries and templates
-# Paths have to be normalized because Jinja uses the exact template path to
-# determine the hash used in the cache filename, and we need a pre-caching step
-# to be concurrency-safe. Use absolute path because __file__ is absolute if
-# module is imported, and relative if executed directly.
-# If paths differ between pre-caching and individual file compilation, the cache
-# is regenerated, which causes a race condition and breaks concurrent build,
-# since some compile processes will try to read the partially written cache.
-module_path, module_filename = os.path.split(os.path.realpath(__file__))
-third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir))
-templates_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, 'templates'))
-# Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
-module_pyname = os.path.splitext(module_filename)[0] + '.py'
-
-# jinja2 is in chromium's third_party directory.
-# Insert at 1 so at front to override system libraries, and
-# after path[0] == invoking script dir
-sys.path.insert(1, third_party_dir)
-import jinja2
-
+from code_generator import CodeGeneratorBase, normalize_and_sort_includes
 from idl_definitions import Visitor
-import idl_types
 from idl_types import IdlType
-from v8_attributes import attribute_filters
 import v8_callback_interface
 import v8_dictionary
 from v8_globals import includes, interfaces
 import v8_interface
-from v8_methods import method_filters
 import v8_types
 import v8_union
-from v8_utilities import capitalize, cpp_name, for_origin_trial_feature, unique_by
-from utilities import (
-    idl_filename_to_component, is_valid_component_dependency, is_testing_target,
-    shorten_union_name, format_remove_duplicates, format_blink_cpp_source_code)
+from v8_utilities import cpp_name
+from utilities import idl_filename_to_component, is_testing_target, shorten_union_name
 
-
-def normalize_and_sort_includes(include_paths):
-    normalized_include_paths = []
-    for include_path in include_paths:
-        match = re.search(r'/gen/blink/(.*)$', posixpath.abspath(include_path))
-        if match:
-            include_path = match.group(1)
-        normalized_include_paths.append(include_path)
-    return sorted(normalized_include_paths)
-
-
-def render_template(include_paths, header_template, cpp_template,
-                    template_context, component=None):
-    template_context['code_generator'] = module_pyname
-
-    # Add includes for any dependencies
-    template_context['header_includes'] = normalize_and_sort_includes(
-        template_context['header_includes'])
-
-    for include_path in include_paths:
-        if component:
-            dependency = idl_filename_to_component(include_path)
-            assert is_valid_component_dependency(component, dependency)
-        includes.add(include_path)
-
-    template_context['cpp_includes'] = normalize_and_sort_includes(includes)
-
-    header_text = header_template.render(template_context)
-    cpp_text = cpp_template.render(template_context)
-    return header_text, cpp_text
-
-
-def set_global_type_info(info_provider):
-    interfaces_info = info_provider.interfaces_info
-    idl_types.set_ancestors(interfaces_info['ancestors'])
-    IdlType.set_callback_interfaces(interfaces_info['callback_interfaces'])
-    IdlType.set_dictionaries(interfaces_info['dictionaries'])
-    IdlType.set_enums(info_provider.enumerations)
-    IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
-    IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
-    v8_types.set_component_dirs(interfaces_info['component_dirs'])
-
-
-def should_generate_code(definitions):
-    return definitions.interfaces or definitions.dictionaries
-
+# Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
+MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
 def depending_union_type(idl_type):
     """Returns the union type name if the given idl_type depends on a
@@ -195,20 +123,17 @@ class TypedefResolver(Visitor):
         self._resolve_typedefs(typed_object)
 
 
-class CodeGeneratorBase(object):
+class CodeGeneratorV8Base(CodeGeneratorBase):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
     def __init__(self, info_provider, cache_dir, output_dir):
-        self.info_provider = info_provider
-        self.jinja_env = initialize_jinja_env(cache_dir)
-        self.output_dir = output_dir
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.typedef_resolver = TypedefResolver(info_provider)
-        set_global_type_info(info_provider)
 
     def generate_code(self, definitions, definition_name):
         """Returns .h/.cpp code as ((path, content)...)."""
         # Set local type info
-        if not should_generate_code(definitions):
+        if not self.should_generate_code(definitions):
             return set()
 
         IdlType.set_callback_functions(definitions.callback_functions.keys())
@@ -221,9 +146,9 @@ class CodeGeneratorBase(object):
         raise NotImplementedError()
 
 
-class CodeGeneratorV8(CodeGeneratorBase):
+class CodeGeneratorV8(CodeGeneratorV8Base):
     def __init__(self, info_provider, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, info_provider, cache_dir, output_dir)
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir,
@@ -283,7 +208,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
             interface_info.get('additional_header_includes', []))
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
-        header_text, cpp_text = render_template(
+        header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context,
             component)
         header_path, cpp_path = self.output_paths(interface_name)
@@ -308,7 +233,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
         if not is_testing_target(interface_info.get('full_path')):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
             template_context['exported'] = self.info_provider.specifier_for_export
-        header_text, cpp_text = render_template(
+        header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(dictionary_name)
         return (
@@ -317,9 +242,9 @@ class CodeGeneratorV8(CodeGeneratorBase):
         )
 
 
-class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
+class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
     def __init__(self, info_provider, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, info_provider, cache_dir, output_dir)
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name, interface_info):
         output_dir = posixpath.join(self.output_dir,
@@ -344,7 +269,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
-        header_text, cpp_text = render_template(
+        header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(
             cpp_name(dictionary), interface_info)
@@ -354,18 +279,15 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         )
 
 
-class CodeGeneratorUnionType(object):
+class CodeGeneratorUnionType(CodeGeneratorBase):
     """Generates union type container classes.
     This generator is different from CodeGeneratorV8 and
     CodeGeneratorDictionaryImpl. It assumes that all union types are already
     collected. It doesn't process idl files directly.
     """
     def __init__(self, info_provider, cache_dir, output_dir, target_component):
-        self.info_provider = info_provider
-        self.jinja_env = initialize_jinja_env(cache_dir)
-        self.output_dir = output_dir
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.target_component = target_component
-        set_global_type_info(info_provider)
 
     def _generate_container_code(self, union_type):
         header_template = self.jinja_env.get_template('union_container.h')
@@ -376,7 +298,7 @@ class CodeGeneratorUnionType(object):
             self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'])
-        template_context['code_generator'] = module_pyname
+        template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
         name = shorten_union_name(union_type)
         template_context['this_include_header_name'] = name
@@ -414,87 +336,3 @@ class CodeGeneratorUnionType(object):
         for union_type in union_types:
             outputs.update(self._generate_container_code(union_type))
         return outputs
-
-
-def initialize_jinja_env(cache_dir):
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_dir),
-        # Bytecode cache is not concurrency-safe unless pre-cached:
-        # if pre-cached this is read-only, but writing creates a race condition.
-        bytecode_cache=jinja2.FileSystemBytecodeCache(cache_dir),
-        keep_trailing_newline=True,  # newline-terminate generated files
-        lstrip_blocks=True,  # so can indent control flow tags
-        trim_blocks=True)
-    jinja_env.filters.update({
-        'blink_capitalize': capitalize,
-        'exposed': exposed_if,
-        'for_origin_trial_feature': for_origin_trial_feature,
-        'format_blink_cpp_source_code': format_blink_cpp_source_code,
-        'format_remove_duplicates': format_remove_duplicates,
-        'runtime_enabled': runtime_enabled_if,
-        'secure_context': secure_context_if,
-        'unique_by': unique_by,
-        })
-    jinja_env.filters.update(attribute_filters())
-    jinja_env.filters.update(v8_interface.constant_filters())
-    jinja_env.filters.update(method_filters())
-    return jinja_env
-
-
-def generate_indented_conditional(code, conditional):
-    # Indent if statement to level of original code
-    indent = re.match(' *', code).group(0)
-    return ('%sif (%s) {\n' % (indent, conditional) +
-            '    %s\n' % '\n    '.join(code.splitlines()) +
-            '%s}\n' % indent)
-
-
-# [Exposed]
-def exposed_if(code, exposed_test):
-    if not exposed_test:
-        return code
-    return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
-
-
-# [SecureContext]
-def secure_context_if(code, secure_context_test):
-    if not secure_context_test:
-        return code
-    return generate_indented_conditional(code, 'executionContext && (%s)' % secure_context_test)
-
-
-# [RuntimeEnabled]
-def runtime_enabled_if(code, runtime_enabled_function_name):
-    if not runtime_enabled_function_name:
-        return code
-    return generate_indented_conditional(code, '%s()' % runtime_enabled_function_name)
-
-
-################################################################################
-
-def main(argv):
-    # If file itself executed, cache templates
-    try:
-        cache_dir = argv[1]
-        dummy_filename = argv[2]
-    except IndexError:
-        print 'Usage: %s CACHE_DIR DUMMY_FILENAME' % argv[0]
-        return 1
-
-    # Cache templates
-    jinja_env = initialize_jinja_env(cache_dir)
-    template_filenames = [filename for filename in os.listdir(templates_dir)
-                          # Skip .svn, directories, etc.
-                          if filename.endswith(('.cpp', '.h'))]
-    for template_filename in template_filenames:
-        jinja_env.get_template(template_filename)
-
-    # Create a dummy file as output for the build system,
-    # since filenames of individual cache files are unpredictable and opaque
-    # (they are hashes of the template path, which varies based on environment)
-    with open(dummy_filename, 'w') as dummy_file:
-        pass  # |open| creates or touches the file
-
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
