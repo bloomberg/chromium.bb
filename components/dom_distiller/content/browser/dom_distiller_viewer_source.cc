@@ -32,6 +32,7 @@
 #include "components/dom_distiller/core/viewer.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -56,13 +57,13 @@ class DomDistillerViewerSource::RequestViewerHandle
   RequestViewerHandle(content::WebContents* web_contents,
                       const std::string& expected_scheme,
                       const std::string& expected_request_path,
-                      DistilledPagePrefs* distilled_page_prefs);
+                      DistilledPagePrefs* distilled_page_prefs,
+                      DistillerUIHandle* ui_handle);
   ~RequestViewerHandle() override;
 
   // content::WebContentsObserver implementation:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -91,17 +92,24 @@ class DomDistillerViewerSource::RequestViewerHandle
   // Temporary store of pending JavaScript if the page isn't ready to receive
   // data from distillation.
   std::string buffer_;
+
+  // An object for accessing chrome-specific UI controls including external
+  // feedback and opening the distiller settings. Guaranteed to outlive this
+  // object.
+  DistillerUIHandle* distiller_ui_handle_;
 };
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
     content::WebContents* web_contents,
     const std::string& expected_scheme,
     const std::string& expected_request_path,
-    DistilledPagePrefs* distilled_page_prefs)
+    DistilledPagePrefs* distilled_page_prefs,
+    DistillerUIHandle* ui_handle)
     : DomDistillerRequestViewBase(distilled_page_prefs),
       expected_scheme_(expected_scheme),
       expected_request_path_(expected_request_path),
-      waiting_for_page_ready_(true) {
+      waiting_for_page_ready_(true),
+      distiller_ui_handle_(ui_handle) {
   content::WebContentsObserver::Observe(web_contents);
   distilled_page_prefs_->AddObserver(this);
 }
@@ -122,13 +130,35 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
   }
 }
 
-void DomDistillerViewerSource::RequestViewerHandle::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  const GURL& navigation = details.entry->GetURL();
-  if (details.is_in_page || (navigation.SchemeIs(expected_scheme_.c_str()) &&
-                             expected_request_path_ == navigation.query())) {
+void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  const GURL& navigation = navigation_handle->GetURL();
+  bool expected_main_view_request =
+      navigation.SchemeIs(expected_scheme_.c_str()) &&
+      expected_request_path_ == navigation.query();
+  if (navigation_handle->IsSamePage() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
+    if (expected_main_view_request) {
+      content::RenderFrameHost* render_frame_host =
+          navigation_handle->GetRenderFrameHost();
+      content::RenderViewHost* render_view_host =
+          render_frame_host->GetRenderViewHost();
+      CHECK_EQ(0, render_view_host->GetEnabledBindings());
+
+      // Add mojo service for JavaScript functionality. This is the receiving
+      // end of this particular service.
+      render_frame_host->GetInterfaceRegistry()->AddInterface(
+          base::Bind(&CreateDistillerJavaScriptService,
+              render_frame_host,
+              distiller_ui_handle_));
+
+      // Tell the renderer that this is currently a distilled page.
+      mojom::DistillerPageNotifierServicePtr page_notifier_service;
+      render_frame_host->GetRemoteInterfaces()->GetInterface(
+          &page_notifier_service);
+      DCHECK(page_notifier_service);
+      page_notifier_service->NotifyIsDistillerPage();
+    }
     return;
   }
 
@@ -202,11 +232,6 @@ void DomDistillerViewerSource::StartDataRequest(
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
   if (!render_frame_host)
     return;
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
-  DCHECK(render_view_host);
-  CHECK_EQ(0, render_view_host->GetEnabledBindings());
-
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
@@ -232,7 +257,8 @@ void DomDistillerViewerSource::StartDataRequest(
       path.size() > 0 ? path.substr(1) : "";
   RequestViewerHandle* request_viewer_handle =
       new RequestViewerHandle(web_contents, scheme_, path_after_query_separator,
-                              dom_distiller_service_->GetDistilledPagePrefs());
+                              dom_distiller_service_->GetDistilledPagePrefs(),
+                              distiller_ui_handle_.get());
   std::unique_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
       dom_distiller_service_, path, request_viewer_handle,
       web_contents->GetContainerBounds().size());
@@ -242,20 +268,6 @@ void DomDistillerViewerSource::StartDataRequest(
       url_utils::GetOriginalUrlFromDistillerUrl(current_url).spec(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
-
-  // Add mojo service for JavaScript functionality. This is the receiving end
-  // of this particular service.
-  render_frame_host->GetInterfaceRegistry()->AddInterface(
-      base::Bind(&CreateDistillerJavaScriptService,
-          render_frame_host,
-          distiller_ui_handle_.get()));
-
-  // Tell the renderer that this is currently a distilled page.
-  mojom::DistillerPageNotifierServicePtr page_notifier_service;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(
-      &page_notifier_service);
-  DCHECK(page_notifier_service);
-  page_notifier_service->NotifyIsDistillerPage();
 
   if (viewer_handle) {
     // The service returned a |ViewerHandle| and guarantees it will call
