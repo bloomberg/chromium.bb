@@ -207,6 +207,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
 
+    # Mac Intel failures
+    self.Flaky('conformance/textures/webgl_canvas/tex-' +
+               '2d-rgb-rgb-unsigned_byte.html',
+               ['mac', 'intel'], bug=648377)
+
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)

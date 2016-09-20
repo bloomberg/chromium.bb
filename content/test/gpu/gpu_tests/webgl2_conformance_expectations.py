@@ -92,6 +92,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=617449)
     self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html',
         ['win', 'intel'], bug=628395)
+    # Seems to cause the harness to fail immediately afterward
+    self.Skip('conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html',
+        ['win', 'intel'], bug=648337)
     self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
