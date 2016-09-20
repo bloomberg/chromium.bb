@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/load_timing_info.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_request_info.h"
@@ -56,6 +57,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
   NextProto GetProtocol() const override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 
   // SpdyStream::Delegate implementation:
   void OnRequestHeadersSent() override;

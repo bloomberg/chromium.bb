@@ -176,6 +176,12 @@ int64_t BidirectionalStreamSpdyImpl::GetTotalSentBytes() const {
   return stream_->raw_sent_bytes();
 }
 
+bool BidirectionalStreamSpdyImpl::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  // TODO(xunjieli): Implement this crbug.com/648346
+  return true;
+}
+
 void BidirectionalStreamSpdyImpl::OnRequestHeadersSent() {
   DCHECK(stream_);
 

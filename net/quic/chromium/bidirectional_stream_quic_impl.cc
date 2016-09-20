@@ -215,6 +215,12 @@ int64_t BidirectionalStreamQuicImpl::GetTotalSentBytes() const {
   return headers_bytes_sent_ + closed_stream_sent_bytes_;
 }
 
+bool BidirectionalStreamQuicImpl::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  // TODO(xunjieli): implement this crbug.com/648346.
+  return true;
+}
+
 void BidirectionalStreamQuicImpl::OnHeadersAvailable(
     const SpdyHeaderBlock& headers,
     size_t frame_len) {

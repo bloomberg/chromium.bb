@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 
@@ -149,6 +150,11 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
   // not including proxy overhead. Note that some SPDY frames such as pings are
   // not associated with any stream, and are not included in this value.
   virtual int64_t GetTotalSentBytes() const = 0;
+
+  // Populates the connection establishment part of |load_timing_info|, and
+  // socket reuse info. Return true if LoadTimingInfo is obtained successfully
+  // and false otherwise.
+  virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamImpl);

@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/load_timing_info.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/log/net_log.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
@@ -54,6 +55,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   NextProto GetProtocol() const override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 
  private:
   // QuicChromiumClientStream::Delegate implementation:
