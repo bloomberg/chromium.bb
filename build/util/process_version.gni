@@ -25,8 +25,9 @@
 #     "_version.rc" to the end. But in GN you need to specify the full name.
 #
 #   template_file (optional):
-#     Template file to use (not a list). Most Windows uses for generating
-#     resources will want to use process_version_rc_template() instead.
+#     Template file to use (not a list). Most Windows users that want to use
+#     this to process a .rc template should use process_version_rc_template(),
+#     defined in //chrome/process_version_rc_template.gni, instead.
 #
 #   extra_args (optional):
 #     Extra arguments to pass to version.py. Any "-f <filename>" args should
