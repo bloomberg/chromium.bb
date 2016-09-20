@@ -335,6 +335,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   uint32_t FindImageProcessorInputFormat();
   // Return a usable output format of image processor. Return 0 if not found.
   uint32_t FindImageProcessorOutputFormat();
+  // Reset image processor and drop all processing frames.
+  bool ResetImageProcessor();
 
   //
   // Methods run on child thread.

@@ -89,6 +89,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
                int output_buffer_index,
                const FrameReadyCB& cb);
 
+  // Reset all processing frames. After this method returns, no more callbacks
+  // will be invoked. V4L2ImageProcessor is ready to process more frames.
+  bool Reset();
+
   // Stop all processing and clean up. After this method returns no more
   // callbacks will be invoked.  Deletes |this| unconditionally, so make sure
   // to drop all pointers to it!
@@ -134,14 +138,13 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
 
   void NotifyError();
   void NotifyErrorOnChildThread(const base::Closure& error_cb);
-  void DestroyTask();
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
   void ServiceDeviceTask();
 
   // Attempt to start/stop device_poll_thread_.
-  bool StartDevicePoll();
-  bool StopDevicePoll();
+  void StartDevicePoll();
+  void StopDevicePoll();
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);

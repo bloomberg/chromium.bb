@@ -145,15 +145,14 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
     return false;
 
   if (!device_thread_.Start()) {
-    LOG(ERROR) << "Initialize(): encoder thread failed to start";
+    LOG(ERROR) << "Initialize(): device thread failed to start";
     return false;
   }
 
-  // StartDevicePoll will NotifyError on failure, so IgnoreResult is fine here.
+  // StartDevicePoll will NotifyError on failure.
   device_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&V4L2ImageProcessor::StartDevicePoll),
-                 base::Unretained(this)));
+      base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
 
   DVLOG(1) << "V4L2ImageProcessor initialized for "
            << " input_format:" << VideoPixelFormatToString(input_format)
@@ -243,6 +242,28 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   EnqueueInput();
 }
 
+bool V4L2ImageProcessor::Reset() {
+  DVLOG(3) << __func__;
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(device_thread_.IsRunning());
+
+  weak_this_factory_.InvalidateWeakPtrs();
+  device_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&V4L2ImageProcessor::StopDevicePoll, base::Unretained(this)));
+  device_thread_.Stop();
+
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+  if (!device_thread_.Start()) {
+    LOG(ERROR) << "Reset(): device thread failed to start";
+    return false;
+  }
+  device_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
+  return true;
+}
+
 void V4L2ImageProcessor::Destroy() {
   DVLOG(3) << __func__;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -252,8 +273,8 @@ void V4L2ImageProcessor::Destroy() {
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
     device_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&V4L2ImageProcessor::DestroyTask, base::Unretained(this)));
+        FROM_HERE, base::Bind(&V4L2ImageProcessor::StopDevicePoll,
+                              base::Unretained(this)));
     // Wait for tasks to finish/early-exit.
     device_thread_.Stop();
   } else {
@@ -262,13 +283,6 @@ void V4L2ImageProcessor::Destroy() {
   }
 
   delete this;
-}
-
-void V4L2ImageProcessor::DestroyTask() {
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-
-  // Stop streaming and the device_poll_thread_.
-  StopDevicePoll();
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
@@ -428,7 +442,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
   }
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
-  // touch encoder state from this thread.
+  // touch processor state from this thread.
   device_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::ServiceDeviceTask,
                             base::Unretained(this)));
@@ -447,8 +461,10 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
   Dequeue();
   EnqueueInput();
 
-  if (!device_->ClearDevicePollInterrupt())
+  if (!device_->ClearDevicePollInterrupt()) {
+    NotifyError();
     return;
+  }
 
   bool poll_device =
       (input_buffer_queued_count_ > 0 || output_buffer_queued_count_ > 0);
@@ -476,8 +492,10 @@ void V4L2ImageProcessor::EnqueueInput() {
   if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
     // We started up a previously empty queue.
     // Queue state changed; signal interrupt.
-    if (!device_->SetDevicePollInterrupt())
+    if (!device_->SetDevicePollInterrupt()) {
+      NotifyError();
       return;
+    }
     // VIDIOC_STREAMON if we haven't yet.
     if (!input_streamon_) {
       __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -497,8 +515,10 @@ void V4L2ImageProcessor::EnqueueOutput(int index) {
   if (old_outputs_queued == 0 && output_buffer_queued_count_ != 0) {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
-    if (!device_->SetDevicePollInterrupt())
+    if (!device_->SetDevicePollInterrupt()) {
+      NotifyError();
       return;
+    }
     // Start VIDIOC_STREAMON if we haven't yet.
     if (!output_streamon_) {
       __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -643,7 +663,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
   return true;
 }
 
-bool V4L2ImageProcessor::StartDevicePoll() {
+void V4L2ImageProcessor::StartDevicePoll() {
   DVLOG(3) << __func__ << ": starting device poll";
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
@@ -652,40 +672,42 @@ bool V4L2ImageProcessor::StartDevicePoll() {
   if (!device_poll_thread_.Start()) {
     LOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
     NotifyError();
-    return false;
+    return;
   }
   // Enqueue a poll task with no devices to poll on - will wait only for the
   // poll interrupt
   device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::DevicePollTask,
                             base::Unretained(this), false));
-
-  return true;
 }
 
-bool V4L2ImageProcessor::StopDevicePoll() {
+void V4L2ImageProcessor::StopDevicePoll() {
   DVLOG(3) << __func__ << ": stopping device poll";
-  if (device_thread_.IsRunning())
-    DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
-  if (!device_->SetDevicePollInterrupt())
-    return false;
+  bool result = device_->SetDevicePollInterrupt();
   device_poll_thread_.Stop();
+  if (!result) {
+    NotifyError();
+    return;
+  }
 
   // Clear the interrupt now, to be sure.
-  if (!device_->ClearDevicePollInterrupt())
-    return false;
+  if (!device_->ClearDevicePollInterrupt()) {
+    NotifyError();
+    return;
+  }
 
   if (input_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
   }
   input_streamon_ = false;
 
   if (output_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
+    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
   }
   output_streamon_ = false;
 
@@ -708,8 +730,6 @@ bool V4L2ImageProcessor::StopDevicePoll() {
   output_buffer_map_.clear();
   output_buffer_map_.resize(num_buffers_);
   output_buffer_queued_count_ = 0;
-
-  return true;
 }
 
 void V4L2ImageProcessor::FrameReady(const FrameReadyCB& cb,
