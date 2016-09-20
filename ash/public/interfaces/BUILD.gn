@@ -9,6 +9,7 @@ mojom("interfaces") {
     "ash_window_type.mojom",
     "container.mojom",
     "shelf.mojom",
+    "system_tray.mojom",
     "wallpaper.mojom",
   ]
 

@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
+class SystemTrayControllerMus;
 
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
@@ -27,6 +27,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  private:
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<ImmersiveContextMus> immersive_context_;
+  std::unique_ptr<SystemTrayControllerMus> system_tray_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

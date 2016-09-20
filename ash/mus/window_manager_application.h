@@ -11,6 +11,7 @@
 #include <set>
 
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/interfaces/system_tray.mojom.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -53,8 +54,9 @@ class WindowManager;
 // Hosts the window manager and the ash system user interface for mash.
 class WindowManagerApplication
     : public shell::Service,
-      public shell::InterfaceFactory<ash::mojom::ShelfController>,
-      public shell::InterfaceFactory<ash::mojom::WallpaperController>,
+      public shell::InterfaceFactory<mojom::ShelfController>,
+      public shell::InterfaceFactory<mojom::SystemTray>,
+      public shell::InterfaceFactory<mojom::WallpaperController>,
       public shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener {
  public:
@@ -80,13 +82,17 @@ class WindowManagerApplication
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry) override;
 
-  // InterfaceFactory<ash::mojom::ShelfController>:
+  // InterfaceFactory<mojom::ShelfController>:
   void Create(const shell::Identity& remote_identity,
-              ash::mojom::ShelfControllerRequest request) override;
+              mojom::ShelfControllerRequest request) override;
 
-  // InterfaceFactory<ash::mojom::WallpaperController>:
+  // InterfaceFactory<mojom::SystemTray>:
   void Create(const shell::Identity& remote_identity,
-              ash::mojom::WallpaperControllerRequest request) override;
+              mojom::SystemTrayRequest request) override;
+
+  // InterfaceFactory<mojom::WallpaperController>:
+  void Create(const shell::Identity& remote_identity,
+              mojom::WallpaperControllerRequest request) override;
 
   // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
   void Create(const shell::Identity& remote_identity,
@@ -107,9 +113,9 @@ class WindowManagerApplication
   // A blocking pool used by the WindowManager's shell; not used in tests.
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-  mojo::BindingSet<ash::mojom::ShelfController> shelf_controller_bindings_;
-  mojo::BindingSet<ash::mojom::WallpaperController>
-      wallpaper_controller_bindings_;
+  mojo::BindingSet<mojom::ShelfController> shelf_controller_bindings_;
+  mojo::BindingSet<mojom::SystemTray> system_tray_bindings_;
+  mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 

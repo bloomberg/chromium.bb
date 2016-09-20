@@ -8,6 +8,7 @@
       "mojo:ash": {
         "interfaces": [
           "ash::mojom::ShelfController",
+          "ash::mojom::SystemTray",
           "ash::mojom::WallpaperController"
         ]
       },

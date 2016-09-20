@@ -1201,6 +1201,8 @@ split_static_library("ui") {
       "app_list/search/launcher_search/launcher_search_provider.h",
       "app_list/search/launcher_search/launcher_search_result.cc",
       "app_list/search/launcher_search/launcher_search_result.h",
+      "ash/system_tray_controller_mus.cc",
+      "ash/system_tray_controller_mus.h",
       "extensions/extension_installed_notification.cc",
       "extensions/extension_installed_notification.h",
       "input_method/input_method_engine_base.cc",

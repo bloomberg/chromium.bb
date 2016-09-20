@@ -11,7 +11,7 @@
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
@@ -135,7 +135,8 @@ WmShellMus::WmShellMus(
 
   CreateMruWindowTracker();
 
-  SetSystemTrayDelegate(base::MakeUnique<DefaultSystemTrayDelegate>());
+  SetSystemTrayDelegate(
+      base::WrapUnique(delegate()->CreateSystemTrayDelegate()));
 
   SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
 

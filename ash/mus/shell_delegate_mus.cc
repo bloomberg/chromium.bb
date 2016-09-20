@@ -10,12 +10,12 @@
 #include "ash/common/media_delegate.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
 #include "ash/mus/new_window_delegate_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
+#include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -170,9 +170,7 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
-  // TODO: http://crbug.com/647412.
-  NOTIMPLEMENTED() << " Using the default SystemTrayDelegate implementation";
-  return new DefaultSystemTrayDelegate;
+  return new SystemTrayDelegateMus;
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
