@@ -380,7 +380,11 @@ class GerritHelper(object):
     if dryrun:
       logging.info('Would have submitted change %s', change)
       return
-    gob_util.SubmitChange(self.host, change.gerrit_number, revision=change.sha1)
+    if isinstance(change, cros_patch.GerritPatch):
+      rev = change.sha1
+    else:
+      rev = None
+    gob_util.SubmitChange(self.host, self._to_changenum(change), revision=rev)
 
   def AbandonChange(self, change, dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
