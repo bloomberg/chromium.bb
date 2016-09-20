@@ -176,12 +176,12 @@ VisiblePosition SelectionModifier::nextWordPositionForPlatform(const VisiblePosi
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
     if (Node* rootUserSelectAll = EditingStrategy::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
-        pos = createVisiblePositionDeprecated(isForward ? mostForwardCaretPosition(Position::afterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(Position::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
+        pos = createVisiblePosition(isForward ? mostForwardCaretPosition(Position::afterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(Position::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
 }
 
 VisiblePosition SelectionModifier::modifyExtendingRight(TextGranularity granularity)
 {
-    VisiblePosition pos = createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // The difference between modifyExtendingRight and modifyExtendingForward is:
     // modifyExtendingForward always extends forward logically.
@@ -223,7 +223,7 @@ VisiblePosition SelectionModifier::modifyExtendingRight(TextGranularity granular
 
 VisiblePosition SelectionModifier::modifyExtendingForward(TextGranularity granularity)
 {
-    VisiblePosition pos = createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
     switch (granularity) {
     case CharacterGranularity:
         pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
@@ -268,16 +268,16 @@ VisiblePosition SelectionModifier::modifyMovingRight(TextGranularity granularity
     case CharacterGranularity:
         if (m_selection.isRange()) {
             if (directionOfSelection() == LTR)
-                pos = createVisiblePositionDeprecated(m_selection.end(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
             else
-                pos = createVisiblePositionDeprecated(m_selection.start(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
         } else {
-            pos = rightPositionOf(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+            pos = rightPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = frame() && frame()->editor().behavior().shouldSkipSpaceWhenMovingRight();
-        pos = rightWordPosition(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
+        pos = rightWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
     case SentenceGranularity:
@@ -303,15 +303,15 @@ VisiblePosition SelectionModifier::modifyMovingForward(TextGranularity granulari
     switch (granularity) {
     case CharacterGranularity:
         if (m_selection.isRange())
-            pos = createVisiblePositionDeprecated(m_selection.end(), m_selection.affinity());
+            pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
         else
-            pos = nextPositionOf(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
+            pos = nextPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
-        pos = nextWordPositionForPlatform(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+        pos = nextWordPositionForPlatform(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case SentenceGranularity:
-        pos = nextSentencePosition(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+        pos = nextSentencePosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case LineGranularity: {
         // down-arrowing from a range selection that ends at the start of a line needs
@@ -346,7 +346,7 @@ VisiblePosition SelectionModifier::modifyMovingForward(TextGranularity granulari
 
 VisiblePosition SelectionModifier::modifyExtendingLeft(TextGranularity granularity)
 {
-    VisiblePosition pos = createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // The difference between modifyExtendingLeft and modifyExtendingBackward is:
     // modifyExtendingBackward always extends backward logically.
@@ -387,7 +387,7 @@ VisiblePosition SelectionModifier::modifyExtendingLeft(TextGranularity granulari
 
 VisiblePosition SelectionModifier::modifyExtendingBackward(TextGranularity granularity)
 {
-    VisiblePosition pos = createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity());
+    VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
     // Extending a selection backward by word or character from just after a table selects
     // the table.  This "makes sense" from the user perspective, esp. when deleting.
@@ -437,16 +437,16 @@ VisiblePosition SelectionModifier::modifyMovingLeft(TextGranularity granularity)
     case CharacterGranularity:
         if (m_selection.isRange()) {
             if (directionOfSelection() == LTR)
-                pos = createVisiblePositionDeprecated(m_selection.start(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
             else
-                pos = createVisiblePositionDeprecated(m_selection.end(), m_selection.affinity());
+                pos = createVisiblePosition(m_selection.end(), m_selection.affinity());
         } else {
-            pos = leftPositionOf(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+            pos = leftPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
         bool skipsSpaceWhenMovingRight = frame() && frame()->editor().behavior().shouldSkipSpaceWhenMovingRight();
-        pos = leftWordPosition(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
+        pos = leftWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()), skipsSpaceWhenMovingRight);
         break;
     }
     case SentenceGranularity:
@@ -471,15 +471,15 @@ VisiblePosition SelectionModifier::modifyMovingBackward(TextGranularity granular
     switch (granularity) {
     case CharacterGranularity:
         if (m_selection.isRange())
-            pos = createVisiblePositionDeprecated(m_selection.start(), m_selection.affinity());
+            pos = createVisiblePosition(m_selection.start(), m_selection.affinity());
         else
-            pos = previousPositionOf(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
+            pos = previousPositionOf(createVisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
-        pos = previousWordPosition(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+        pos = previousWordPosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case SentenceGranularity:
-        pos = previousSentencePosition(createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity()));
+        pos = previousSentencePosition(createVisiblePosition(m_selection.extent(), m_selection.affinity()));
         break;
     case LineGranularity:
         pos = previousLinePosition(startForPlatform(), lineDirectionPointForBlockDirectionNavigation(START));
@@ -651,12 +651,12 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter, unsigned ve
     LayoutUnit xPos;
     switch (alter) {
     case FrameSelection::AlterationMove:
-        pos = createVisiblePositionDeprecated(direction == FrameSelection::DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
+        pos = createVisiblePosition(direction == FrameSelection::DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(direction == FrameSelection::DirectionUp ? START : END);
         m_selection.setAffinity(direction == FrameSelection::DirectionUp ? TextAffinity::Upstream : TextAffinity::Downstream);
         break;
     case FrameSelection::AlterationExtend:
-        pos = createVisiblePositionDeprecated(m_selection.extent(), m_selection.affinity());
+        pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(EXTENT);
         m_selection.setAffinity(TextAffinity::Downstream);
         break;
@@ -759,7 +759,7 @@ LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(EPos
         return x;
 
     if (m_xPosForVerticalArrowNavigation == NoXPosForVerticalArrowNavigation()) {
-        VisiblePosition visiblePosition = createVisiblePositionDeprecated(pos, m_selection.affinity());
+        VisiblePosition visiblePosition = createVisiblePosition(pos, m_selection.affinity());
         // VisiblePosition creation can fail here if a node containing the selection becomes visibility:hidden
         // after the selection is created and before this function is called.
         x = lineDirectionPointForBlockDirectionNavigationOf(visiblePosition);

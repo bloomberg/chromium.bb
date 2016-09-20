@@ -113,7 +113,7 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
                 if (!it.atEnd()) {
                     textRunEndPosition = it.startPositionInCurrentContainer();
                 } else {
-                    Position runEnd = nextPositionOf(createVisiblePositionDeprecated(textRunStartPosition)).deepEquivalent();
+                    Position runEnd = nextPositionOf(createVisiblePosition(textRunStartPosition)).deepEquivalent();
                     if (runEnd.isNotNull())
                         textRunEndPosition = runEnd;
                 }

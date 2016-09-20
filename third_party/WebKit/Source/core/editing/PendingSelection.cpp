@@ -62,7 +62,7 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleS
     SelectionType selectionType = originalSelection.getSelectionType();
     const TextAffinity affinity = originalSelection.affinity();
 
-    bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePositionDeprecated(end, affinity));
+    bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));
     VisibleSelectionInFlatTree selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
@@ -72,13 +72,13 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleS
         return selection;
     }
 
-    const VisiblePositionInFlatTree& visibleStart = createVisiblePositionDeprecated(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
+    const VisiblePositionInFlatTree& visibleStart = createVisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
     if (paintBlockCursor) {
-        VisiblePositionInFlatTree visibleExtent = createVisiblePositionDeprecated(end, affinity);
+        VisiblePositionInFlatTree visibleExtent = createVisiblePosition(end, affinity);
         visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
         return VisibleSelectionInFlatTree(visibleStart, visibleExtent);
     }
-    const VisiblePositionInFlatTree visibleEnd = createVisiblePositionDeprecated(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
+    const VisiblePositionInFlatTree visibleEnd = createVisiblePosition(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
     return VisibleSelectionInFlatTree(visibleStart, visibleEnd);
 }
 
