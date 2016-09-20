@@ -4,8 +4,7 @@
 
 #include "components/sync/test/engine/mock_model_type_processor.h"
 
-#include <stddef.h>
-#include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -132,8 +131,7 @@ UpdateResponseDataList MockModelTypeProcessor::GetNthUpdateResponse(
   return received_update_responses_[n];
 }
 
-sync_pb::DataTypeState
-MockModelTypeProcessor::GetNthTypeStateReceivedInUpdateResponse(
+sync_pb::DataTypeState MockModelTypeProcessor::GetNthUpdateState(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return type_states_received_on_update_[n];
@@ -149,8 +147,7 @@ CommitResponseDataList MockModelTypeProcessor::GetNthCommitResponse(
   return received_commit_responses_[n];
 }
 
-sync_pb::DataTypeState
-MockModelTypeProcessor::GetNthTypeStateReceivedInCommitResponse(
+sync_pb::DataTypeState MockModelTypeProcessor::GetNthCommitState(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return type_states_received_on_commit_[n];

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -73,16 +74,14 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
   UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
-  sync_pb::DataTypeState GetNthTypeStateReceivedInUpdateResponse(
-      size_t n) const;
+  sync_pb::DataTypeState GetNthUpdateState(size_t n) const;
 
   // Getters to access the log of received commit responses.
   //
   // Does not includes responses that are in pending tasks.
   size_t GetNumCommitResponses() const;
   CommitResponseDataList GetNthCommitResponse(size_t n) const;
-  sync_pb::DataTypeState GetNthTypeStateReceivedInCommitResponse(
-      size_t n) const;
+  sync_pb::DataTypeState GetNthCommitState(size_t n) const;
 
   // Getters to access the lastest update response for a given tag_hash.
   bool HasUpdateResponse(const std::string& tag_hash) const;
