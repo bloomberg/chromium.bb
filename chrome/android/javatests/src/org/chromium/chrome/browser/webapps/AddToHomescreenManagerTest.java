@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Environment;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -24,12 +25,14 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests org.chromium.chrome.browser.webapps.AddToHomescreenManager and its C++ counterpart.
@@ -70,6 +73,12 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
 
     private static final String MANIFEST_PATH = "/chrome/test/data/webapps/manifest_test_page.html";
     private static final String MANIFEST_TITLE = "Web app banner test page";
+
+    private static final String MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML =
+            UrlUtils.encodeHtmlDataUri("<html><head>"
+                    + "<title>" + MANIFEST_TITLE + "</title>"
+                    + "<link rel=\"manifest\" href=\"../../../../slow?10000\" />"
+                    + "</head></html>");
 
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public Intent mBroadcastedIntent;
@@ -112,6 +121,48 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     /**
+     * Test AddToHomescreenManager subclass which tracks whether the native callbacks
+     * (a proxy for the AddToHomescreenDataFetcher::Observer callbacks) have been called.
+     */
+    private static class AddToHomescreenManagerCallbackTracker extends AddToHomescreenManager {
+        public CallbackHelper mCallbackHelper;
+        public boolean mDialogShown = false;
+        public boolean mGotUserTitle = false;
+        public boolean mReadyToAdd = false;
+
+        public AddToHomescreenManagerCallbackTracker(Activity activity, Tab tab) {
+            super(activity, tab);
+
+            mCallbackHelper = new CallbackHelper();
+
+            AddToHomescreenManager.Observer observer = new AddToHomescreenManager.Observer() {
+                @Override
+                public void onUserTitleAvailable(String title) {
+                    mGotUserTitle = true;
+                    mCallbackHelper.notifyCalled();
+                }
+
+                @Override
+                public void onReadyToAdd(Bitmap icon) {
+                    mReadyToAdd = true;
+                    mCallbackHelper.notifyCalled();
+                }
+            };
+            setObserver(observer);
+        }
+
+        public void waitForCallbacks(int numCallbacks, int numSecondsTimeout) throws Exception {
+            mCallbackHelper.waitForCallback(0, numCallbacks, numSecondsTimeout, TimeUnit.SECONDS);
+        }
+
+        @Override
+        public void showDialog() {
+            mDialogShown = true;
+            mCallbackHelper.notifyCalled();
+        }
+    }
+
+    /**
      * Test AddToHomescreenManager subclass which mocks showing the add-to-homescreen dialog and
      * adds the shortcut to the home screen once it is ready.
      */
@@ -143,6 +194,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         }
     }
 
+    private EmbeddedTestServer mTestServer;
     private ChromeActivity mActivity;
     private Tab mTab;
     private TestShortcutHelperDelegate mShortcutHelperDelegate;
@@ -159,6 +211,10 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        // Register handler for "slow?10000" URL.
+        mTestServer.addDefaultHandlers(mTestServer.getURL("/chrome/test/data"));
         mShortcutHelperDelegate = new TestShortcutHelperDelegate();
         ShortcutHelper.setDelegateForTests(mShortcutHelperDelegate);
         mActivity = getActivity();
@@ -250,14 +306,12 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @SmallTest
     @Feature("{Webapp}")
     public void testAddWebappShortcutSplashScreenIcon() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
-                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         try {
             // Sets the overriden factory to observer splash screen update.
             final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
             WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
-            loadUrl(testServer.getURL(MANIFEST_PATH), MANIFEST_TITLE);
+            loadUrl(mTestServer.getURL(MANIFEST_PATH), MANIFEST_TITLE);
             addShortcutToTab(mTab, "");
 
             // Make sure that the splash screen image was downloaded.
@@ -274,28 +328,66 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
             assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
             assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
         } finally {
-            testServer.stopAndDestroyServer();
+            mTestServer.stopAndDestroyServer();
         }
+    }
+
+    @MediumTest
+    @Feature("{Webapp}")
+    public void testAddShortcutManifestFetchTimesOutWhenWebApkEnabled() throws Exception {
+        ChromeWebApkHost.initForTesting(true);
+        loadUrl(mTestServer.getURL("/chrome/test/data/banners/manifest_times_out_test_page.html"),
+                MANIFEST_TITLE);
+        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
+    }
+
+    @MediumTest
+    @Feature("{Webapp}")
+    public void testAddShortcutManifestFetchTimesOutWhenWebApkDisabled() throws Exception {
+        ChromeWebApkHost.initForTesting(false);
+        loadUrl(mTestServer.getURL("/chrome/test/data/banners/manifest_times_out_test_page.html"),
+                MANIFEST_TITLE);
+        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
+    }
+
+    @MediumTest
+    @Feature("{Webapp}")
+    public void testAddShortcutManifestFetchTimesOutWhenNotPwa() throws Exception {
+        ChromeWebApkHost.initForTesting(false);
+        loadUrl(MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML, MANIFEST_TITLE);
+        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
+    }
+
+    /**
+     * Checks that the add-to-homescreen native callbacks are called when the Web Manifest fetch
+     * times out.
+     */
+    public void checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut() throws Exception {
+        AddToHomescreenManagerCallbackTracker manager =
+                new AddToHomescreenManagerCallbackTracker(mActivity, mTab);
+        startManagerOnUiThread(manager);
+
+        // The AddToHomescreenDataFetcher timeout fires after 4 seconds. Wait 10 seconds to ensure
+        // that we do not miss the AddToHomescreenDataFetcher timeout timer firing.
+        manager.waitForCallbacks(3, 10);
+
+        assertTrue(manager.mDialogShown);
+        // This callback enables the text field in the add-to-homescreen dialog.
+        assertTrue(manager.mGotUserTitle);
+        // This callback enables the "Add" button in the add-to-homescreen dialog.
+        assertTrue(manager.mReadyToAdd);
+
+        destroyManagerOnUiThread(manager);
     }
 
     private void loadUrl(String url, String expectedPageTitle) throws Exception {
         new TabLoadObserver(mTab, expectedPageTitle, null).fullyLoadUrl(url);
     }
 
-    private void addShortcutToTab(final Tab tab, final String title) throws Exception {
+    private void addShortcutToTab(Tab tab, String title) throws Exception {
         // Add the shortcut.
-        Callable<AddToHomescreenManager> callable =
-                new Callable<AddToHomescreenManager>() {
-            @Override
-            public AddToHomescreenManager call() {
-                AddToHomescreenManager manager =
-                        new TestAddToHomescreenManager(mActivity, tab, title);
-                manager.start();
-                return manager;
-            }
-        };
-        final AddToHomescreenManager manager =
-                ThreadUtils.runOnUiThreadBlockingNoException(callable);
+        TestAddToHomescreenManager manager = new TestAddToHomescreenManager(mActivity, tab, title);
+        startManagerOnUiThread(manager);
 
         // Make sure that the shortcut was added.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -305,6 +397,19 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
             }
         });
 
+        destroyManagerOnUiThread(manager);
+    }
+
+    private void startManagerOnUiThread(final AddToHomescreenManager manager) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                manager.start();
+            }
+        });
+    }
+
+    private void destroyManagerOnUiThread(final AddToHomescreenManager manager) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

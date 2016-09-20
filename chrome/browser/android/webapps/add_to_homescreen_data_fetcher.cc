@@ -73,7 +73,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     int minimum_icon_size_in_dp,
     int ideal_splash_image_size_in_dp,
     int minimum_splash_image_size_in_dp,
-    bool check_installable,
+    bool check_webapk_compatibility,
     Observer* observer)
     : WebContentsObserver(web_contents),
       weak_observer_(observer),
@@ -84,9 +84,9 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       minimum_icon_size_in_dp_(minimum_icon_size_in_dp),
       ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
       minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp),
-      check_installable_(check_installable),
-      is_waiting_for_installable_check_(check_installable),
+      check_webapk_compatibility_(check_webapk_compatibility),
       is_waiting_for_web_application_info_(true),
+      is_installable_check_complete_(false),
       is_icon_saved_(false),
       is_ready_(false) {
   DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
@@ -153,13 +153,12 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // timeout, fall back to using a dynamically-generated launcher icon.
   data_timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(4000),
-      base::Bind(&AddToHomescreenDataFetcher::OnFaviconFetched, this,
-                  favicon_base::FaviconRawBitmapResult()));
+      base::Bind(&AddToHomescreenDataFetcher::OnDataTimedout, this));
 
   manager->GetData(
       ParamsToPerformInstallableCheck(ideal_icon_size_in_dp_,
                                       minimum_icon_size_in_dp_,
-                                      check_installable_),
+                                      check_webapk_compatibility_),
       base::Bind(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
                  this));
 }
@@ -184,16 +183,30 @@ bool AddToHomescreenDataFetcher::OnMessageReceived(
   return handled;
 }
 
+void AddToHomescreenDataFetcher::OnDataTimedout() {
+  if (!web_contents() || !weak_observer_)
+    return;
+
+  if (!is_installable_check_complete_) {
+    is_installable_check_complete_ = true;
+    if (check_webapk_compatibility_)
+      weak_observer_->OnDidDetermineWebApkCompatibility(false);
+    weak_observer_->OnUserTitleAvailable(base::string16());
+  }
+
+  if (!is_icon_saved_)
+    CreateLauncherIcon(SkBitmap());
+}
 
 void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   if (!web_contents() || !weak_observer_)
     return;
 
-  if (check_installable_) {
-    is_waiting_for_installable_check_ = false;
+  is_installable_check_complete_ = true;
+
+  if (check_webapk_compatibility_)
     weak_observer_->OnDidDetermineWebApkCompatibility(data.is_installable);
-  }
 
   if (!data.manifest.IsEmpty()) {
     content::RecordAction(
@@ -212,15 +225,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   if (data.icon) {
     shortcut_info_.icon_url = data.icon_url;
 
-    // base::Bind copies the arguments internally, so it is safe to pass it
-    // data.icon (which is not owned by us).
-    content::BrowserThread::GetBlockingPool()
-        ->PostWorkerTaskWithShutdownBehavior(
-            FROM_HERE,
-            base::Bind(
-                &AddToHomescreenDataFetcher::CreateLauncherIconInBackground,
-                this, *(data.icon)),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+    CreateLauncherIcon(*(data.icon));
     return;
   }
 
@@ -230,11 +235,6 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 void AddToHomescreenDataFetcher::FetchFavicon() {
   if (!web_contents() || !weak_observer_)
     return;
-
-  if (check_installable_ && is_waiting_for_installable_check_) {
-    is_waiting_for_installable_check_ = false;
-    weak_observer_->OnDidDetermineWebApkCompatibility(false);
-  }
 
   // Grab the best, largest icon we can find to represent this bookmark.
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
@@ -284,6 +284,17 @@ void AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
 
   shortcut_info_.icon_url = bitmap_result.icon_url;
   CreateLauncherIconInBackground(raw_icon);
+}
+
+void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& raw_icon) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::BrowserThread::GetBlockingPool()
+        ->PostWorkerTaskWithShutdownBehavior(
+            FROM_HERE,
+            base::Bind(
+                &AddToHomescreenDataFetcher::CreateLauncherIconInBackground,
+                this, raw_icon),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
 void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
