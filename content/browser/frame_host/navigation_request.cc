@@ -36,29 +36,34 @@ namespace content {
 namespace {
 
 // Returns the net load flags to use based on the navigation type.
-// TODO(clamy): unify the code with what is happening on the renderer side.
-int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
-  int load_flags = net::LOAD_NORMAL;
+// TODO(clamy): Remove the blink code that sets the caching flags when
+// PlzNavigate launches.
+void UpdateLoadFlagsWithCacheFlags(
+    int* load_flags,
+    FrameMsg_Navigate_Type::Value navigation_type,
+    bool is_post) {
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
     case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
-      load_flags |= net::LOAD_VALIDATE_CACHE;
+      *load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
     case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
-      load_flags |= net::LOAD_BYPASS_CACHE;
+      *load_flags |= net::LOAD_BYPASS_CACHE;
       break;
     case FrameMsg_Navigate_Type::RESTORE:
-      load_flags |= net::LOAD_PREFERRING_CACHE;
+      *load_flags |= net::LOAD_PREFERRING_CACHE;
       break;
     case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      *load_flags |= net::LOAD_ONLY_FROM_CACHE;
       break;
     case FrameMsg_Navigate_Type::NORMAL:
+      if (is_post)
+        *load_flags |= net::LOAD_VALIDATE_CACHE;
+      break;
     default:
       break;
   }
-  return load_flags;
 }
 
 }  // namespace
@@ -92,8 +97,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            frame_entry, request_body, dest_url, dest_referrer,
                            navigation_type, lofi_state, navigation_start),
-      BeginNavigationParams(headers.ToString(),
-                            LoadFlagFromNavigationType(navigation_type),
+      BeginNavigationParams(headers.ToString(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION),
@@ -180,20 +184,11 @@ NavigationRequest::NavigationRequest(
         frame_tree_node->current_frame_host()->GetSiteInstance();
   }
 
-  // TODO(mkwst): This is incorrect. It ought to use the definition from
-  // 'Document::firstPartyForCookies()' in Blink, which walks the ancestor tree
-  // and verifies that all origins are PSL-matches (and special-cases extension
-  // URLs).
-  const GURL& first_party_for_cookies =
-      frame_tree_node->IsMainFrame()
-          ? common_params.url
-          : frame_tree_node->frame_tree()->root()->current_url();
-  bool parent_is_main_frame = !frame_tree_node->parent() ?
-      false : frame_tree_node->parent()->IsMainFrame();
-  info_.reset(new NavigationRequestInfo(
-      common_params, begin_params, first_party_for_cookies,
-      frame_tree_node->current_origin(), frame_tree_node->IsMainFrame(),
-      parent_is_main_frame, frame_tree_node->frame_tree_node_id()));
+  // Update the load flags with cache information.
+  UpdateLoadFlagsWithCacheFlags(&begin_params_.load_flags,
+                                common_params_.navigation_type,
+                                common_params_.method == "POST");
+
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -405,9 +400,25 @@ void NavigationRequest::OnStartChecksComplete(
   // Mark the fetch_start (Navigation Timing API).
   request_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
+  // TODO(mkwst): This is incorrect. It ought to use the definition from
+  // 'Document::firstPartyForCookies()' in Blink, which walks the ancestor tree
+  // and verifies that all origins are PSL-matches (and special-cases extension
+  // URLs).
+  const GURL& first_party_for_cookies =
+      frame_tree_node_->IsMainFrame()
+          ? common_params_.url
+          : frame_tree_node_->frame_tree()->root()->current_url();
+  bool parent_is_main_frame = !frame_tree_node_->parent()
+                                  ? false
+                                  : frame_tree_node_->parent()->IsMainFrame();
+
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      std::move(info_), service_worker_context, this);
+      base::MakeUnique<NavigationRequestInfo>(
+          common_params_, begin_params_, first_party_for_cookies,
+          frame_tree_node_->current_origin(), frame_tree_node_->IsMainFrame(),
+          parent_is_main_frame, frame_tree_node_->frame_tree_node_id()),
+      service_worker_context, this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

@@ -211,10 +211,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationState state_;
 
 
-  // The parameters to send to the IO thread. |loader_| takes ownership of
-  // |info_| after calling BeginNavigation.
-  std::unique_ptr<NavigationRequestInfo> info_;
-
   std::unique_ptr<NavigationURLLoader> loader_;
 
   // These next items are used in browser-initiated navigations to store
