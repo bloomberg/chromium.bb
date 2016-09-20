@@ -1896,6 +1896,8 @@ float Internals::pageScaleFactor(ExceptionState& exceptionState)
 
 void Internals::setPageScaleFactor(float scaleFactor, ExceptionState& exceptionState)
 {
+    if (scaleFactor <= 0)
+        return;
     Document* document = contextDocument();
     if (!document || !document->page()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's page cannot be retrieved." : "No context document can be obtained.");
