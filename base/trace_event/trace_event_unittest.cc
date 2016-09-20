@@ -523,6 +523,13 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_BIND_IDS("all", "TRACE_BIND_IDS scoped call",
                    TRACE_ID_WITH_SCOPE("scope 1", 0x1000),
                    TRACE_ID_WITH_SCOPE("scope 2", 0x2000));
+
+    TRACE_EVENT_ASYNC_BEGIN0("all", "async default process scope", 0x1000);
+    TRACE_EVENT_ASYNC_BEGIN0("all", "async local id", TRACE_ID_LOCAL(0x2000));
+    TRACE_EVENT_ASYNC_BEGIN0("all", "async global id", TRACE_ID_GLOBAL(0x3000));
+    TRACE_EVENT_ASYNC_BEGIN0("all", "async global id with scope string",
+                             TRACE_ID_WITH_SCOPE("scope string",
+                                                 TRACE_ID_GLOBAL(0x4000)));
   }  // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -1002,6 +1009,52 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ("0x2000", id);
   }
 
+  EXPECT_FIND_("async default process scope");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("S", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("0x1000", id);
+  }
+
+  EXPECT_FIND_("async local id");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("S", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id2.local", &id)));
+    EXPECT_EQ("0x2000", id);
+  }
+
+  EXPECT_FIND_("async global id");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("S", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id2.global", &id)));
+    EXPECT_EQ("0x3000", id);
+  }
+
+  EXPECT_FIND_("async global id with scope string");
+  {
+    std::string ph;
+    EXPECT_TRUE((item && item->GetString("ph", &ph)));
+    EXPECT_EQ("S", ph);
+
+    std::string id;
+    EXPECT_TRUE((item && item->GetString("id2.global", &id)));
+    EXPECT_EQ("0x4000", id);
+    std::string scope;
+    EXPECT_TRUE((item && item->GetString("scope", &scope)));
+    EXPECT_EQ("scope string", scope);
+  }
 }
 
 void TraceManyInstantEvents(int thread_id, int num_events,
