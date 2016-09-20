@@ -81,8 +81,8 @@
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
 
-    [Measure, RuntimeEnabled=RequestIdleCallback] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options);
-    [RuntimeEnabled=RequestIdleCallback] void cancelIdleCallback(long handle);
+    [Measure] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options);
+    void cancelIdleCallback(long handle);
 
     [DoNotCheckSecurity, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<Transferable> transfer);
 
