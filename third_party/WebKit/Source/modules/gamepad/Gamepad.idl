@@ -23,6 +23,12 @@
  * DAMAGE.
  */
 
+// https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+enum GamepadHand {
+  "left",
+  "right"
+};
+
 // https://w3c.github.io/gamepad/#gamepad-interface
 interface Gamepad {
     readonly attribute DOMString id;
@@ -33,4 +39,5 @@ interface Gamepad {
     readonly attribute double[] axes;
     readonly attribute GamepadButton[] buttons;
     [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadPose? pose;
+    [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadHand hand;
 };

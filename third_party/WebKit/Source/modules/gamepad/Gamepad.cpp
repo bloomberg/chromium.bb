@@ -72,6 +72,23 @@ void Gamepad::setPose(const WebGamepadPose& pose)
     m_pose->setPose(pose);
 }
 
+void Gamepad::setHand(const WebGamepadHand& hand)
+{
+    switch (hand) {
+    case GamepadHandNone:
+        m_hand = "";
+        break;
+    case GamepadHandLeft:
+        m_hand = "left";
+        break;
+    case GamepadHandRight:
+        m_hand = "right";
+        break;
+    default:
+        NOTREACHED();
+    }
+}
+
 DEFINE_TRACE(Gamepad)
 {
     visitor->trace(m_buttons);

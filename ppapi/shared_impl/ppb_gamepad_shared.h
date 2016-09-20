@@ -49,6 +49,12 @@ struct WebKitGamepadPose {
   WebKitGamepadVector linearAcceleration;
 };
 
+enum WebKitGamepadHand {
+  WEBKIT_GAMEPAD_HAND_NONE = 0,
+  WEBKIT_GAMEPAD_HAND_LEFT = 1,
+  WEBKIT_GAMEPAD_HAND_RIGHT = 2
+};
+
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
 // has some compile asserts to validate this.
 struct WebKitGamepad {
@@ -83,6 +89,8 @@ struct WebKitGamepad {
   base::char16 mapping[kMappingLengthCap];
 
   WebKitGamepadPose pose;
+
+  WebKitGamepadHand hand;
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit

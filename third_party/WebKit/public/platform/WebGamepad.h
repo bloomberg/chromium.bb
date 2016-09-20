@@ -91,6 +91,12 @@ public:
     WebGamepadVector linearAcceleration;
 };
 
+enum WebGamepadHand {
+    GamepadHandNone = 0,
+    GamepadHandLeft = 1,
+    GamepadHandRight = 2
+};
+
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
 // also WebGamepads.h.
@@ -137,9 +143,9 @@ public:
     WebUChar mapping[mappingLengthCap];
 
     WebGamepadPose pose;
-};
 
-static_assert(sizeof(WebGamepad) == 838, "WebGamepad has wrong size");
+    WebGamepadHand hand;
+};
 
 #pragma pack(pop)
 

@@ -47,8 +47,6 @@ public:
     WebGamepad items[itemsLengthCap];
 };
 
-static_assert(sizeof(WebGamepads) == 3356, "WebGamepads has wrong size");
-
 #pragma pack(pop)
 
 }

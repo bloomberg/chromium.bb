@@ -71,6 +71,9 @@ public:
     GamepadPose* pose() const { return m_pose; }
     void setPose(const WebGamepadPose&);
 
+    const String& hand() const { return m_hand; }
+    void setHand(const WebGamepadHand&);
+
     DECLARE_TRACE();
 
 private:
@@ -84,6 +87,7 @@ private:
     DoubleVector m_axes;
     GamepadButtonVector m_buttons;
     Member<GamepadPose> m_pose;
+    String m_hand;
 };
 
 } // namespace blink
