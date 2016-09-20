@@ -38,30 +38,28 @@ namespace blink {
 
 void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align, ExceptionState& exceptionState)
 {
+    if (isImmutable()) {
+        throwReadOnly(exceptionState);
+        return;
+    }
     if (align == kSvgPreserveaspectratioUnknown || align > kSvgPreserveaspectratioXmaxymax) {
         exceptionState.throwDOMException(NotSupportedError, "The alignment provided is invalid.");
         return;
     }
-    if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
-        return;
-    }
-
     target()->setAlign(static_cast<SVGPreserveAspectRatio::SVGPreserveAspectRatioType>(align));
     commitChange();
 }
 
 void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
 {
+    if (isImmutable()) {
+        throwReadOnly(exceptionState);
+        return;
+    }
     if (meetOrSlice == kSvgMeetorsliceUnknown || meetOrSlice > kSvgMeetorsliceSlice) {
         exceptionState.throwDOMException(NotSupportedError, "The meetOrSlice provided is invalid.");
         return;
     }
-    if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
-        return;
-    }
-
     target()->setMeetOrSlice(static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meetOrSlice));
     commitChange();
 }

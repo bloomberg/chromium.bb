@@ -77,7 +77,7 @@ void SVGMatrixTearOff::commitChange()
     void SVGMatrixTearOff::set##ATTRIBUTE(double f, ExceptionState& exceptionState) \
     { \
         if (m_contextTransform && m_contextTransform->isImmutable()) { \
-            exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only."); \
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState); \
             return; \
         } \
         mutableValue()->set##ATTRIBUTE(f); \
@@ -158,18 +158,19 @@ SVGMatrixTearOff* SVGMatrixTearOff::multiply(SVGMatrixTearOff* other)
 
 SVGMatrixTearOff* SVGMatrixTearOff::inverse(ExceptionState& exceptionState)
 {
-    AffineTransform transform = value().inverse();
-    if (!value().isInvertible())
+    if (!value().isInvertible()) {
         exceptionState.throwDOMException(InvalidStateError, "The matrix is not invertible.");
-
-    return create(transform);
+        return nullptr;
+    }
+    return create(value().inverse());
 }
 
 SVGMatrixTearOff* SVGMatrixTearOff::rotateFromVector(double x, double y, ExceptionState& exceptionState)
 {
-    if (!x || !y)
+    if (!x || !y) {
         exceptionState.throwDOMException(InvalidAccessError, "Arguments cannot be zero.");
-
+        return nullptr;
+    }
     AffineTransform copy = value();
     copy.rotateFromVector(x, y);
     return create(copy);

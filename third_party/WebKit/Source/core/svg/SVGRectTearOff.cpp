@@ -30,8 +30,6 @@
 
 #include "core/svg/SVGRectTearOff.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
@@ -44,10 +42,9 @@ SVGRectTearOff::SVGRectTearOff(SVGRect* target, SVGElement* contextElement, Prop
 void SVGRectTearOff::setX(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setX(f);
     commitChange();
 }
@@ -55,10 +52,9 @@ void SVGRectTearOff::setX(float f, ExceptionState& exceptionState)
 void SVGRectTearOff::setY(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setY(f);
     commitChange();
 }
@@ -66,10 +62,9 @@ void SVGRectTearOff::setY(float f, ExceptionState& exceptionState)
 void SVGRectTearOff::setWidth(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setWidth(f);
     commitChange();
 }
@@ -77,10 +72,9 @@ void SVGRectTearOff::setWidth(float f, ExceptionState& exceptionState)
 void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setHeight(f);
     commitChange();
 }

@@ -137,7 +137,7 @@ PASS text1.rotate.baseVal.appendItem(text1) threw exception TypeError: Failed to
 PASS text1.rotate.baseVal.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 
 Testing animVal clear throws
-PASS text1.rotate.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGNumberList': The object is read-only..
+PASS text1.rotate.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGNumberList': This object is read-only..
 PASS text1.rotate.baseVal.clear() is undefined.
 PASS successfullyParsed is true
 

@@ -129,7 +129,6 @@ float SVGLengthTearOff::value(ExceptionState& exceptionState)
         exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
         return 0;
     }
-
     SVGLengthContext lengthContext(contextElement());
     return target()->value(lengthContext);
 }
@@ -137,21 +136,18 @@ float SVGLengthTearOff::value(ExceptionState& exceptionState)
 void SVGLengthTearOff::setValue(float value, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
         exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
         return;
     }
-
     SVGLengthContext lengthContext(contextElement());
     if (target()->isCalculated())
         target()->setValueAsNumber(value);
     else
         target()->setValue(value, lengthContext);
-
     commitChange();
 }
 
@@ -159,22 +155,19 @@ float SVGLengthTearOff::valueInSpecifiedUnits()
 {
     if (target()->isCalculated())
         return 0;
-
     return target()->valueInSpecifiedUnits();
 }
 
 void SVGLengthTearOff::setValueInSpecifiedUnits(float value, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     if (target()->isCalculated())
         target()->setValueAsNumber(value);
     else
         target()->setValueInSpecifiedUnits(value);
-
     commitChange();
 }
 
@@ -187,14 +180,11 @@ String SVGLengthTearOff::valueAsString()
 void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     String oldValue = target()->valueAsString();
-
     SVGParsingError status = target()->setValueAsString(str);
-
     if (status == SVGParseStatus::NoError && !hasExposedLengthUnit()) {
         target()->setValueAsString(oldValue); // rollback to old value
         status = SVGParseStatus::ParsingFailed;
@@ -203,22 +193,19 @@ void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& excep
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + str + "') is invalid.");
         return;
     }
-
     commitChange();
 }
 
 void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     if (!isValidLengthUnit(unitType)) {
         exceptionState.throwDOMException(NotSupportedError, "Cannot set value with unknown or invalid units (" + String::number(unitType) + ").");
         return;
     }
-
     target()->newValueSpecifiedUnits(toCSSUnitType(unitType), valueInSpecifiedUnits);
     commitChange();
 }
@@ -226,21 +213,18 @@ void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unitType, float val
 void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     if (!isValidLengthUnit(unitType)) {
         exceptionState.throwDOMException(NotSupportedError, "Cannot convert to unknown or invalid units (" + String::number(unitType) + ").");
         return;
     }
-
     if ((target()->isRelative() || CSSPrimitiveValue::isRelativeUnit(toCSSUnitType(unitType)))
         && !canResolveRelativeUnits(contextElement())) {
         exceptionState.throwDOMException(NotSupportedError, "Could not resolve relative length.");
         return;
     }
-
     SVGLengthContext lengthContext(contextElement());
     target()->convertToSpecifiedUnits(toCSSUnitType(unitType), lengthContext);
     commitChange();

@@ -31,9 +31,7 @@
 #ifndef SVGListPropertyTearOffHelper_h
 #define SVGListPropertyTearOffHelper_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
-#include "wtf/HashMap.h"
 #include "wtf/TypeTraits.h"
 
 namespace blink {
@@ -90,25 +88,21 @@ public:
     void clear(ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return;
         }
-
         toDerived()->target()->clear();
     }
 
     ItemTearOffType* initialize(ItemTearOffType* item, ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return nullptr;
         }
-
-        ASSERT(item);
-
+        DCHECK(item);
         ItemPropertyType* value = toDerived()->target()->initialize(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();
-
         return createItemTearOff(value);
     }
 
@@ -121,30 +115,24 @@ public:
     ItemTearOffType* insertItemBefore(ItemTearOffType* item, unsigned long index, ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return nullptr;
         }
-
-        ASSERT(item);
-
+        DCHECK(item);
         ItemPropertyType* value = toDerived()->target()->insertItemBefore(getValueForInsertionFromTearOff(item), index);
         toDerived()->commitChange();
-
         return createItemTearOff(value);
     }
 
     ItemTearOffType* replaceItem(ItemTearOffType* item, unsigned long index, ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return nullptr;
         }
-
-        ASSERT(item);
-
+        DCHECK(item);
         ItemPropertyType* value = toDerived()->target()->replaceItem(getValueForInsertionFromTearOff(item), index, exceptionState);
         toDerived()->commitChange();
-
         return createItemTearOff(value);
     }
 
@@ -157,28 +145,23 @@ public:
     ItemTearOffType* removeItem(unsigned long index, ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return nullptr;
         }
-
         ItemPropertyType* value = toDerived()->target()->removeItem(index, exceptionState);
         toDerived()->commitChange();
-
         return createItemTearOff(value);
     }
 
     ItemTearOffType* appendItem(ItemTearOffType* item, ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            SVGPropertyTearOffBase::throwReadOnly(exceptionState);
             return nullptr;
         }
-
-        ASSERT(item);
-
+        DCHECK(item);
         ItemPropertyType* value = toDerived()->target()->appendItem(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();
-
         return createItemTearOff(value);
     }
 

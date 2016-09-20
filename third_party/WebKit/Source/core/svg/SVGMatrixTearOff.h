@@ -31,7 +31,6 @@
 #ifndef SVGMatrixTearOff_h
 #define SVGMatrixTearOff_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -39,6 +38,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class SVGTransformTearOff;
 
 // SVGMatrixTearOff wraps a AffineTransform for Javascript.

@@ -38,6 +38,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 enum PropertyIsAnimValType {
     PropertyIsNotAnimVal,
     PropertyIsAnimVal
@@ -98,6 +100,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
     }
+
+    static void throwReadOnly(ExceptionState&);
 
 protected:
     SVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())

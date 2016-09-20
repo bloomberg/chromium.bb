@@ -30,8 +30,6 @@
 
 #include "core/svg/SVGNumberTearOff.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
@@ -44,10 +42,9 @@ SVGNumberTearOff::SVGNumberTearOff(SVGNumber* target, SVGElement* contextElement
 void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setValue(f);
     commitChange();
 }

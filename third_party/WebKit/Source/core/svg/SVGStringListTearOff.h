@@ -31,7 +31,7 @@
 #ifndef SVGStringListTearOff_h
 #define SVGStringListTearOff_h
 
-#include "core/dom/ExceptionCode.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
@@ -56,10 +56,9 @@ public:
     void clear(ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return;
         }
-
         target()->clear();
         commitChange();
     }
@@ -67,13 +66,11 @@ public:
     String initialize(const String& item, ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return String();
         }
-
         target()->initialize(item);
         commitChange();
-
         return item;
     }
 
@@ -85,26 +82,22 @@ public:
     String insertItemBefore(const String& item, unsigned long index, ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return String();
         }
-
         target()->insertItemBefore(item, index);
         commitChange();
-
         return item;
     }
 
     String replaceItem(const String& item, unsigned long index, ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return String();
         }
-
         target()->replaceItem(item, index, exceptionState);
         commitChange();
-
         return item;
     }
 
@@ -117,26 +110,22 @@ public:
     String removeItem(unsigned long index, ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return String();
         }
-
         String removedItem = target()->removeItem(index, exceptionState);
         commitChange();
-
         return removedItem;
     }
 
     String appendItem(const String& item, ExceptionState& exceptionState)
     {
         if (isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            throwReadOnly(exceptionState);
             return String();
         }
-
         target()->appendItem(item);
         commitChange();
-
         return item;
     }
 

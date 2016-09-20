@@ -30,8 +30,6 @@
 
 #include "core/svg/SVGPointTearOff.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMatrixTearOff.h"
 
@@ -45,10 +43,9 @@ SVGPointTearOff::SVGPointTearOff(SVGPoint* target, SVGElement* contextElement, P
 void SVGPointTearOff::setX(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setX(f);
     commitChange();
 }
@@ -56,10 +53,9 @@ void SVGPointTearOff::setX(float f, ExceptionState& exceptionState)
 void SVGPointTearOff::setY(float f, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        throwReadOnly(exceptionState);
         return;
     }
-
     target()->setY(f);
     commitChange();
 }
