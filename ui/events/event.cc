@@ -1417,12 +1417,7 @@ GestureEvent::GestureEvent(float x,
                    flags | EF_FROM_TOUCH),
       details_(details),
       unique_touch_event_id_(unique_touch_event_id) {
-  if ((flags | EF_FROM_TOUCH) ||
-      (details.device_type() == ui::GestureDeviceType::DEVICE_TOUCHSCREEN)) {
-    latency()->set_source_event_type(ui::SourceEventType::TOUCH);
-  } else if (details.device_type() == ui::GestureDeviceType::DEVICE_TOUCHPAD) {
-    latency()->set_source_event_type(ui::SourceEventType::WHEEL);
-  }
+  latency()->set_source_event_type(ui::SourceEventType::TOUCH);
 }
 
 GestureEvent::~GestureEvent() {
