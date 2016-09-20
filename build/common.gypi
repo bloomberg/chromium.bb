@@ -657,9 +657,6 @@
        # Enable the Syzygy optimization step.
       'syzygy_optimize%': 0,
 
-      # Enable hole punching for the protected video.
-      'video_hole%': 0,
-
       # Automatically select platforms under ozone. Turn this off to
       # build only explicitly selected platforms.
       'ozone_auto_platforms%': 1,
@@ -827,7 +824,6 @@
           'enable_basic_printing%': 1,
           'enable_print_preview%': 0,
           'enable_task_manager%':0,
-          'video_hole%': 1,
         }],
 
         # Android and OSX have built-in spellcheckers that can be utilized.
@@ -1264,7 +1260,6 @@
     'use_lto%': '<(use_lto)',
     'use_lto_o2%': '<(use_lto_o2)',
     'gold_icf_level%': '<(gold_icf_level)',
-    'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
     'cfi_cast%': '<(cfi_cast)',
@@ -2962,9 +2957,6 @@
       }],
       ['enable_ipc_fuzzer==1', {
         'defines': ['ENABLE_IPC_FUZZER=1'],
-      }],
-      ['video_hole==1', {
-        'defines': ['VIDEO_HOLE=1'],
       }],
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],

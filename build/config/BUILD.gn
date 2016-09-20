@@ -236,9 +236,6 @@ config("feature_flags") {
   if (enable_hangout_services_extension) {
     defines += [ "ENABLE_HANGOUT_SERVICES_EXTENSION=1" ]
   }
-  if (enable_video_hole) {
-    defines += [ "VIDEO_HOLE=1" ]
-  }
   if (safe_browsing_mode == 1) {
     defines += [ "FULL_SAFE_BROWSING" ]
     defines += [ "SAFE_BROWSING_CSD" ]
