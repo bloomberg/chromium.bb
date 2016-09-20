@@ -5,7 +5,13 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "ChromeOS Demo App",
-  "permissions": ["power", "idle", "videoCapture", "fullscreen"],
+  "permissions": [
+    "chromeosInfoPrivate",
+    "fullscreen",
+    "idle",
+    "power",
+    "videoCapture"
+  ],
   "default_locale": "en",
   "app": {
     "background": {
