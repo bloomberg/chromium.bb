@@ -133,8 +133,8 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 
  protected:
   // We want to fail quickly when a test fails because an error is encountered.
-  void AddWaitForTitles(content::TitleWatcher* title_watcher) override {
-    MediaBrowserTest::AddWaitForTitles(title_watcher);
+  void AddTitlesToAwait(content::TitleWatcher* title_watcher) override {
+    MediaBrowserTest::AddTitlesToAwait(title_watcher);
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
   }

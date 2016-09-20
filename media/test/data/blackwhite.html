@@ -117,8 +117,8 @@
         var offscreen = document.createElement('canvas');
         offscreen.width = videoElem.videoWidth;
         offscreen.height = videoElem.videoHeight;
-        offscreen.getContext('2d')
-            .drawImage(videoElem, 0, 0, offscreen.width, offscreen.height);
+        offscreen.getContext('2d').drawImage(videoElem, 0, 0, offscreen.width,
+                                             offscreen.height);
 
         videoData = getCanvasPixels(offscreen);
         if (!videoData)
@@ -128,8 +128,10 @@
         // expected value, |expected|, with up to |allowedError| difference.
         function checkColor(imgData, x, y, stride, expected, allowedError) {
           for (var i = 0; i < 3; ++i) {
-            if (Math.abs(imgData[(x + y * stride) * 4 + i] - expected) >
-                allowedError) {
+            var actual = imgData[(x + y * stride) * 4 + i];
+            if (Math.abs(actual - expected) > allowedError) {
+              log('Color didn\'t match at (' + x + ', ' + y + '). Expected: ' +
+                  expected + ', actual: ' + actual);
               return false;
             }
           }

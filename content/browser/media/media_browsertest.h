@@ -7,16 +7,14 @@
 
 #include <string>
 
+#include "base/strings/string_split.h"
 #include "content/public/test/content_browser_test.h"
-#include "media/base/test_data_util.h"
 
 namespace content {
 
 class TitleWatcher;
 
-// Class used to automate running media related browser tests. The functions
-// assume that media files are located under media/ folder known to the test
-// http server.
+// A base class for media related browser tests.
 class MediaBrowserTest : public ContentBrowserTest {
  public:
   // Common test results.
@@ -33,14 +31,15 @@ class MediaBrowserTest : public ContentBrowserTest {
   // It uses RunTest() to check for expected test output.
   void RunMediaTestPage(const std::string& html_page,
                         const base::StringPairs& query_params,
-                        const std::string& expected,
+                        const std::string& expected_title,
                         bool http);
 
-  // Opens a URL and waits for the document title to match either one of the
-  // default strings or the expected string. Returns the matching title value.
-  std::string RunTest(const GURL& gurl, const std::string& expected);
+  // Opens a URL and waits for the document title to match any of the waited for
+  // titles. Returns the matching title.
+  std::string RunTest(const GURL& gurl, const std::string& expected_title);
 
-  virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
+  // Adds titles that RunTest() should wait for.
+  virtual void AddTitlesToAwait(content::TitleWatcher* title_watcher);
 };
 
 }  // namespace content

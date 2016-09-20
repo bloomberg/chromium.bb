@@ -587,6 +587,7 @@ test("content_browsertests") {
     "../browser/media/media_browsertest.cc",
     "../browser/media/media_browsertest.h",
     "../browser/media/media_canplaytype_browsertest.cc",
+    "../browser/media/media_color_browsertest.cc",
     "../browser/media/media_redirect_browsertest.cc",
     "../browser/media/media_source_browsertest.cc",
     "../browser/media/midi_browsertest.cc",
@@ -897,6 +898,14 @@ test("content_browsertests") {
       "../browser/accessibility/touch_accessibility_aura_browsertest.cc",
       "../browser/renderer_host/input/touch_selection_controller_client_aura_browsertest.cc",
       "../browser/web_contents/web_contents_view_aura_browsertest.cc",
+    ]
+  }
+
+  if (is_chromecast) {
+    sources -= [
+      # The cast shell media pipeline doesn't produce real video frames that we
+      # can inspect.
+      "../browser/media/media_color_browsertest.cc",
     ]
   }
 }

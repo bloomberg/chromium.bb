@@ -3,6 +3,7 @@
 Http/MediaTest.*
 File/MediaTest.*
 MediaTest.*
+MediaColorTest.*
 DatabaseTest.*
 
 # Crashes
