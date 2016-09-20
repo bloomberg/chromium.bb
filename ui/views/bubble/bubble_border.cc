@@ -188,6 +188,19 @@ void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
+  if (UseMd()) {
+    // In MD, there are no arrows, so positioning logic is significantly
+    // simpler.
+    // TODO(estade): handle more anchor positions.
+    if (arrow_ == TOP_RIGHT) {
+      gfx::Rect contents_bounds(contents_size);
+      contents_bounds +=
+          anchor_rect.bottom_right() - contents_bounds.top_right();
+      contents_bounds.Inset(-GetInsets());
+      return contents_bounds;
+    }
+  }
+
   int x = anchor_rect.x();
   int y = anchor_rect.y();
   int w = anchor_rect.width();
@@ -491,8 +504,13 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(border_->background_color());
   SkPath path;
-  gfx::Rect bounds(view->GetLocalBounds());
-  bounds.Inset(border_->GetInsets());
+  gfx::RectF bounds(view->GetLocalBounds());
+  bounds.Inset(gfx::InsetsF(border_->GetInsets()));
+  if (UseMd()) {
+    // The border is 1px at all scale factors. Leave room for it.
+    const SkScalar one_pixel = SkFloatToScalar(1 / canvas->image_scale());
+    bounds.Inset(gfx::InsetsF(one_pixel));
+  }
 
   canvas->DrawRoundRect(bounds, border_->GetBorderCornerRadius(), paint);
 }

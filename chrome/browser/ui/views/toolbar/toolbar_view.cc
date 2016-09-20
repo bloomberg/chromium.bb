@@ -299,6 +299,9 @@ bool ToolbarView::IsAppMenuFocused() {
 }
 
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return location_bar();
+
   views::View* star_view = location_bar()->star_view();
   return (star_view && star_view->visible()) ? star_view : app_menu_button_;
 }

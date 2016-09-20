@@ -61,9 +61,15 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
         content::Source<FullscreenController>(
             browser->exclusive_access_manager()->fullscreen_controller()));
   }
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // The anchor is the location bar. The bubble's 1px border should overlap
+    // the location bar's 1px border.
+    set_anchor_view_insets(gfx::Insets(0, 0, 1, 0));
+  } else {
+    // Compensate for built-in vertical padding in the anchor view's image.
+    set_anchor_view_insets(gfx::Insets(
+        GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
+  }
 }
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
