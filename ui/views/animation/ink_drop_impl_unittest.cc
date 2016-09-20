@@ -294,6 +294,7 @@ TEST_F(InkDropImplTest, FocusHighlightComesBackImmediatelyAfterAction) {
 
   ink_drop_.AnimateToState(InkDropState::ACTION_PENDING);
   EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 
   ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
   EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
@@ -304,6 +305,68 @@ TEST_F(InkDropImplTest, FocusHighlightComesBackImmediatelyAfterAction) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 
   // Highlight should be back.
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+}
+
+TEST_F(InkDropImplTest, HighlightCanCoexistWithRipple) {
+  ink_drop_host_.set_should_show_highlight(true);
+  ink_drop_host_.set_ripple_overrides_highlight(false);
+
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SetHovered(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTION_PENDING);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+
+  ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+
+  test_api_.CompleteAnimations();
+
+  // Nothing to fade in because the highlight has always been visible.
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+
+  // Now try with the ripple showing before the highlight comes in.
+  ink_drop_.AnimateToState(InkDropState::HIDDEN);
+  ink_drop_.SetHovered(false);
+  test_api_.CompleteAnimations();
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.AnimateToState(InkDropState::ACTION_PENDING);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  ink_drop_.SetHovered(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+}
+
+TEST_F(InkDropImplTest, HighlightCanCoexistWithSnapToActivatedRipple) {
+  ink_drop_host_.set_should_show_highlight(true);
+  ink_drop_host_.set_ripple_overrides_highlight(false);
+
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SetHovered(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SnapToActivated();
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
+
+  // Now try with the ripple showing before the highlight comes in.
+  ink_drop_.AnimateToState(InkDropState::HIDDEN);
+  ink_drop_.SetHovered(false);
+  test_api_.CompleteAnimations();
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
+
+  ink_drop_.SnapToActivated();
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
+  ink_drop_.SetHovered(true);
+  EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
   EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 }
 

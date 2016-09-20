@@ -84,6 +84,10 @@ void InkDropRipple::SnapToActivated() {
   animation_observer->SetActive();
 }
 
+bool InkDropRipple::IsVisible() {
+  return GetRootLayer()->visible();
+}
+
 void InkDropRipple::HideImmediately() {
   AbortAllAnimations();
   SetStateToHidden();

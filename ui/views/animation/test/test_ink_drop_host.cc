@@ -25,14 +25,16 @@ class TestInkDropRipple : public SquareInkDropRipple {
                     int small_corner_radius,
                     const gfx::Point& center_point,
                     SkColor color,
-                    float visible_opacity)
+                    float visible_opacity,
+                    bool overrides_highlight)
       : SquareInkDropRipple(large_size,
                             large_corner_radius,
                             small_size,
                             small_corner_radius,
                             center_point,
                             color,
-                            visible_opacity) {}
+                            visible_opacity),
+        overrides_highlight_(overrides_highlight) {}
 
   ~TestInkDropRipple() override {}
 
@@ -42,8 +44,13 @@ class TestInkDropRipple : public SquareInkDropRipple {
     return test_api_.get();
   }
 
+  bool OverridesHighlight() const override {
+    return overrides_highlight_;
+  }
+
  private:
   std::unique_ptr<test::InkDropRippleTestApi> test_api_;
+  bool overrides_highlight_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropRipple);
 };
@@ -77,6 +84,7 @@ class TestInkDropHighlight : public InkDropHighlight {
 TestInkDropHost::TestInkDropHost()
     : num_ink_drop_layers_(0),
       should_show_highlight_(false),
+      ripple_overrides_highlight_(true),
       disable_timers_for_test_(false) {}
 
 TestInkDropHost::~TestInkDropHost() {}
@@ -91,8 +99,9 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
   gfx::Size size(10, 10);
-  std::unique_ptr<InkDropRipple> ripple(new TestInkDropRipple(
-      size, 5, size, 5, gfx::Point(), SK_ColorBLACK, 0.175f));
+  std::unique_ptr<InkDropRipple> ripple(
+      new TestInkDropRipple(size, 5, size, 5, gfx::Point(), SK_ColorBLACK,
+                            0.175f, ripple_overrides_highlight_));
   if (disable_timers_for_test_)
     ripple->GetTestApi()->SetDisableAnimationTimers(true);
   return ripple;

@@ -214,8 +214,8 @@ ui::Layer* SquareInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool SquareInkDropRipple::IsVisible() const {
-  return root_layer_.visible();
+bool SquareInkDropRipple::OverridesHighlight() const {
+  return true;
 }
 
 float SquareInkDropRipple::GetCurrentOpacity() const {

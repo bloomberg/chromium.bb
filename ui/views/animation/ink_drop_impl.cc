@@ -78,19 +78,21 @@ void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
 
-  // When deactivating and the host is focused, snap back to the highlight
-  // state. (In the case of highlighting due to hover, we'll animate the
-  // highlight back in after a delay.)
-  if (ink_drop_state == views::InkDropState::DEACTIVATED && is_focused_) {
-    ink_drop_ripple_->HideImmediately();
-    SetHighlight(true, base::TimeDelta(), false);
-    return;
-  }
+  if (ink_drop_ripple_->OverridesHighlight()) {
+    // When deactivating and the host is focused, snap back to the highlight
+    // state. (In the case of highlighting due to hover, we'll animate the
+    // highlight back in after a delay.)
+    if (ink_drop_state == views::InkDropState::DEACTIVATED && is_focused_) {
+      ink_drop_ripple_->HideImmediately();
+      SetHighlight(true, base::TimeDelta(), false);
+      return;
+    }
 
-  if (ink_drop_state != views::InkDropState::HIDDEN) {
-    SetHighlight(false, base::TimeDelta::FromMilliseconds(
-                            kHighlightFadeOutBeforeRippleDurationMs),
-                 true);
+    if (ink_drop_state != views::InkDropState::HIDDEN) {
+      SetHighlight(false, base::TimeDelta::FromMilliseconds(
+                              kHighlightFadeOutBeforeRippleDurationMs),
+                   true);
+    }
   }
 
   ink_drop_ripple_->AnimateToState(ink_drop_state);
@@ -101,7 +103,8 @@ void InkDropImpl::SnapToActivated() {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
 
-  SetHighlight(false, base::TimeDelta(), false);
+  if (ink_drop_ripple_->OverridesHighlight())
+    SetHighlight(false, base::TimeDelta(), false);
 
   ink_drop_ripple_->SnapToActivated();
 }
@@ -168,6 +171,7 @@ void InkDropImpl::DestroyInkDropHighlight() {
 
 void InkDropImpl::AddRootLayerToHostIfNeeded() {
   DCHECK(highlight_ || ink_drop_ripple_);
+  DCHECK(!root_layer_->children().empty());
   if (!root_layer_added_to_host_) {
     root_layer_added_to_host_ = true;
     ink_drop_host_->AddInkDropLayer(root_layer_.get());
@@ -199,10 +203,12 @@ void InkDropImpl::AnimationEnded(InkDropState ink_drop_state,
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
     // Re-highlight, as necessary. For hover, there's a delay; for focus, jump
     // straight into the animation.
-    if (is_focused_)
-      HighlightAfterRippleTimerFired();
-    else if (is_hovered_)
-      StartHighlightAfterRippleTimer();
+    if (!IsHighlightFadingInOrVisible()) {
+      if (is_focused_)
+        HighlightAfterRippleTimerFired();
+      else if (is_hovered_)
+        StartHighlightAfterRippleTimer();
+    }
 
     // TODO(bruthig): Investigate whether creating and destroying
     // InkDropRipples is expensive and consider creating an
@@ -235,8 +241,11 @@ void InkDropImpl::SetHighlight(bool should_highlight,
 
   if (should_highlight) {
     CreateInkDropHighlight();
-    if (highlight_ && !(ink_drop_ripple_ && ink_drop_ripple_->IsVisible()))
+    if (highlight_ &&
+        !(ink_drop_ripple_ && ink_drop_ripple_->IsVisible() &&
+          ink_drop_ripple_->OverridesHighlight())) {
       highlight_->FadeIn(animation_duration);
+    }
   } else {
     highlight_->FadeOut(animation_duration, explode);
   }

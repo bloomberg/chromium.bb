@@ -27,6 +27,10 @@ class TestInkDropHost : public InkDropHost {
     disable_timers_for_test_ = disable_timers_for_test;
   }
 
+  void set_ripple_overrides_highlight(bool overrides_highlight) {
+    ripple_overrides_highlight_ = overrides_highlight;
+  }
+
   // TestInkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -37,6 +41,8 @@ class TestInkDropHost : public InkDropHost {
   int num_ink_drop_layers_;
 
   bool should_show_highlight_;
+
+  bool ripple_overrides_highlight_;
 
   // When true, the InkDropRipple/InkDropHighlight instances will have their
   // timers disabled after creation.

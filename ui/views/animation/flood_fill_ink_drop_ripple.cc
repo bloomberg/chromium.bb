@@ -153,8 +153,8 @@ ui::Layer* FloodFillInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool FloodFillInkDropRipple::IsVisible() const {
-  return root_layer_.visible();
+bool FloodFillInkDropRipple::OverridesHighlight() const {
+  return false;
 }
 
 void FloodFillInkDropRipple::AnimateStateChange(

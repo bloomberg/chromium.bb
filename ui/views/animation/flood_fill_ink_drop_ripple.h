@@ -57,7 +57,7 @@ class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
   // InkDropRipple:
   void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
-  bool IsVisible() const override;
+  bool OverridesHighlight() const override;
 
  private:
   friend class test::FloodFillInkDropRippleTestApi;
