@@ -58,7 +58,7 @@ TEST_F(AcceleratorCommandsTest, Unpin) {
   wm::WindowState* window_state1 = wm::GetWindowState(window1.get());
   window_state1->Activate();
 
-  wm::PinWindow(window1.get());
+  wm::PinWindow(window1.get(), /* trusted */ false);
   EXPECT_TRUE(window_state1->IsPinned());
 
   Unpin();

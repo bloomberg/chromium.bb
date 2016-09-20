@@ -205,16 +205,19 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
       next_state_type = WINDOW_STATE_TYPE_INACTIVE;
       break;
     case WM_EVENT_PIN:
+    case WM_EVENT_TRUSTED_PIN:
       // If there already is a pinned window, it is not allowed to set it
       // to this window.
       // TODO(hidehiko): If a system modal window is openening, the pinning
       // probably should fail.
       if (WmShell::Get()->IsPinned()) {
-        LOG(ERROR) << "An PIN event is triggered, while another window is "
+        LOG(ERROR) << "An PIN event will be failed since another window is "
                    << "already in pinned mode.";
         next_state_type = current_state_type;
       } else {
-        next_state_type = WINDOW_STATE_TYPE_PINNED;
+        next_state_type = event->type() == WM_EVENT_PIN
+                              ? WINDOW_STATE_TYPE_PINNED
+                              : WINDOW_STATE_TYPE_TRUSTED_PINNED;
       }
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
@@ -382,6 +385,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case WM_EVENT_MINIMIZE:
     case WM_EVENT_FULLSCREEN:
     case WM_EVENT_PIN:
+    case WM_EVENT_TRUSTED_PIN:
     case WM_EVENT_SNAP_LEFT:
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
@@ -493,6 +497,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_MINIMIZE:
     case WM_EVENT_FULLSCREEN:
     case WM_EVENT_PIN:
+    case WM_EVENT_TRUSTED_PIN:
     case WM_EVENT_SNAP_LEFT:
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
@@ -586,7 +591,9 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   window_state->NotifyPostStateTypeChange(previous_state_type);
 
   if (next_state_type == WINDOW_STATE_TYPE_PINNED ||
-      previous_state_type == WINDOW_STATE_TYPE_PINNED) {
+      previous_state_type == WINDOW_STATE_TYPE_PINNED ||
+      next_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED ||
+      previous_state_type == WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     WmShell::Get()->SetPinnedWindow(window_state->window());
   }
 }
@@ -600,10 +607,12 @@ void DefaultState::ReenterToCurrentState(
   // pinned since these are "special mode" the user wanted to be in and
   // should be respected as such.
   if (previous_state_type == wm::WINDOW_STATE_TYPE_FULLSCREEN ||
-      previous_state_type == wm::WINDOW_STATE_TYPE_PINNED) {
+      previous_state_type == wm::WINDOW_STATE_TYPE_PINNED ||
+      previous_state_type == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     state_type_ = previous_state_type;
   } else if (state_type_ == wm::WINDOW_STATE_TYPE_FULLSCREEN ||
-             state_type_ == wm::WINDOW_STATE_TYPE_PINNED) {
+             state_type_ == wm::WINDOW_STATE_TYPE_PINNED ||
+             state_type_ == wm::WINDOW_STATE_TYPE_TRUSTED_PINNED) {
     state_type_ = previous_state_type;
   }
 
@@ -683,6 +692,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 
     case WINDOW_STATE_TYPE_FULLSCREEN:
     case WINDOW_STATE_TYPE_PINNED:
+    case WINDOW_STATE_TYPE_TRUSTED_PINNED:
       bounds_in_parent = GetDisplayBoundsInParent(window);
       break;
 

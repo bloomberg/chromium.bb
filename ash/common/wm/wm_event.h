@@ -91,6 +91,10 @@ enum WMEventType {
 
   // A user requested to pin a window.
   WM_EVENT_PIN,
+
+  // A user requested to pin a window for a trusted application. This is similar
+  // WM_EVENT_PIN but does not allow user to exit the mode by shortcut key.
+  WM_EVENT_TRUSTED_PIN,
 };
 
 class ASH_EXPORT WMEvent {

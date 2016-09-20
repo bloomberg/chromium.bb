@@ -404,8 +404,9 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   UpdateShelfStateForFullscreenChange(widget_);
 }
 
-void ShellSurface::SetPinned(bool pinned) {
-  TRACE_EVENT1("exo", "ShellSurface::SetPinned", "pinned", pinned);
+void ShellSurface::SetPinned(bool pinned, bool trusted) {
+  TRACE_EVENT2("exo", "ShellSurface::SetPinned", "pinned", pinned, "trusted",
+               trusted);
 
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
@@ -414,7 +415,7 @@ void ShellSurface::SetPinned(bool pinned) {
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
   if (pinned) {
-    ash::wm::PinWindow(widget_->GetNativeWindow());
+    ash::wm::PinWindow(widget_->GetNativeWindow(), trusted);
   } else {
     // At the moment, we cannot just unpin the window state, due to ash
     // implementation. Instead, we call Restore() to unpin, if it is Pinned

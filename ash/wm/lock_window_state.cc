@@ -44,6 +44,7 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
       UpdateWindow(window_state, wm::WINDOW_STATE_TYPE_FULLSCREEN);
       break;
     case wm::WM_EVENT_PIN:
+    case wm::WM_EVENT_TRUSTED_PIN:
       NOTREACHED();
       break;
     case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:

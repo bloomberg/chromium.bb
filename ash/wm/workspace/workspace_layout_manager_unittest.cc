@@ -699,7 +699,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
   always_on_top_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
 
   // Making a window pinned temporarily suspends always on top state.
-  wm::PinWindow(pinned_window.get());
+  wm::PinWindow(pinned_window.get(), /* trusted */ false);
   EXPECT_FALSE(
       always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_FALSE(

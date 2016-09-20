@@ -223,8 +223,11 @@ void HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
 }
 
 bool CanHandleUnpin() {
+  // Returns true only for WINDOW_STATE_TYPE_PINNED.
+  // WINDOW_STATE_TYPE_TRUSTED_PINNED does not accept user's unpin operation.
   wm::WindowState* window_state = wm::GetActiveWindowState();
-  return window_state && window_state->IsPinned();
+  return window_state &&
+         window_state->GetStateType() == wm::WINDOW_STATE_TYPE_PINNED;
 }
 
 #if defined(OS_CHROMEOS)

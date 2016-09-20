@@ -1519,11 +1519,11 @@ void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
 void remote_surface_pin(wl_client* client,
                         wl_resource* resource,
                         int32_t trusted) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(true);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(true, trusted);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(false);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(false, /* trusted */ false);
 }
 
 void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {
@@ -1603,11 +1603,11 @@ void remote_surface_restore_DEPRECATED(wl_client* client,
 }
 
 void remote_surface_pin_DEPRECATED(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(true);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(true, /* trusted */ false);
 }
 
 void remote_surface_unpin_DEPRECATED(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(false);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(false, /* trusted */ false);
 }
 
 void remote_surface_unfullscreen_DEPRECATED(wl_client* client,
@@ -1662,6 +1662,12 @@ void remote_surface_activate_DEPRECATED(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->Activate();
 }
 
+void remote_surface_pin_with_trusted_flag_DEPRECATED(wl_client* client,
+                                                     wl_resource* resource,
+                                                     int32_t trusted) {
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(true, trusted);
+}
+
 const struct zwp_remote_surface_v1_interface
     remote_surface_implementation_DEPRECATED = {
         remote_surface_destroy_DEPRECATED,
@@ -1681,7 +1687,8 @@ const struct zwp_remote_surface_v1_interface
         remote_surface_set_system_modal_DEPRECATED,
         remote_surface_unset_system_modal_DEPRECATED,
         remote_surface_set_rectangular_shadow_background_opacity_DEPRECATED,
-        remote_surface_activate_DEPRECATED};
+        remote_surface_activate_DEPRECATED,
+        remote_surface_pin_with_trusted_flag_DEPRECATED};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -1903,6 +1910,9 @@ void HandleRemoteSurfaceStateChangedCallback(
       break;
     case ash::wm::WINDOW_STATE_TYPE_PINNED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
       break;
     default:
       break;
@@ -2221,6 +2231,7 @@ void HandleRemoteSurfaceStateChangedCallback_DEPRECATED(
       zwp_remote_surface_v1_send_unset_fullscreen(resource);
       break;
     case ash::wm::WINDOW_STATE_TYPE_PINNED:
+    case ash::wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
       if (wl_resource_get_version(resource) >= 3)
         zwp_remote_surface_v1_send_unset_pinned(resource);
       break;
@@ -2246,6 +2257,11 @@ void HandleRemoteSurfaceStateChangedCallback_DEPRECATED(
       break;
     case ash::wm::WINDOW_STATE_TYPE_PINNED:
       state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
+      if (wl_resource_get_version(resource) >= 3)
+        zwp_remote_surface_v1_send_set_pinned(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
+      state_type = ZWP_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
       if (wl_resource_get_version(resource) >= 3)
         zwp_remote_surface_v1_send_set_pinned(resource);
       break;
@@ -2326,7 +2342,7 @@ const struct zwp_remote_shell_v1_interface
         remote_shell_get_remote_surface_DEPRECATED,
         remote_shell_get_notification_surface_DEPRECATED};
 
-const uint32_t remote_shell_version_DEPRECATED = 10;
+const uint32_t remote_shell_version_DEPRECATED = 11;
 
 void bind_remote_shell_DEPRECATED(wl_client* client,
                                   void* data,

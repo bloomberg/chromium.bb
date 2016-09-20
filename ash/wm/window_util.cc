@@ -62,8 +62,8 @@ bool IsWindowUserPositionable(aura::Window* window) {
   return GetWindowState(window)->IsUserPositionable();
 }
 
-void PinWindow(aura::Window* window) {
-  wm::WMEvent event(wm::WM_EVENT_PIN);
+void PinWindow(aura::Window* window, bool trusted) {
+  wm::WMEvent event(trusted ? wm::WM_EVENT_TRUSTED_PIN : wm::WM_EVENT_PIN);
   wm::GetWindowState(window)->OnWMEvent(&event);
 }
 

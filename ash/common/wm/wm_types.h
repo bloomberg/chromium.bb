@@ -46,6 +46,7 @@ enum WindowStateType {
   // Corresponding shelf should be hidden, also most of windows other than the
   // pinned one should be hidden.
   WINDOW_STATE_TYPE_PINNED,
+  WINDOW_STATE_TYPE_TRUSTED_PINNED,
 };
 
 // Utility functions to convert WindowStateType <-> ui::WindowShowState.

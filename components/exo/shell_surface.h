@@ -112,8 +112,8 @@ class ShellSurface : public SurfaceDelegate,
   // Set fullscreen state for shell surface.
   void SetFullscreen(bool fullscreen);
 
-  // Pins the shell surface.
-  void SetPinned(bool pinned);
+  // Pins the shell surface. |trusted| flag is ignored when |pinned| is false.
+  void SetPinned(bool pinned, bool trusted);
 
   // Set title for surface.
   void SetTitle(const base::string16& title);

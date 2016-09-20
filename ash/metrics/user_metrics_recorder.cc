@@ -66,6 +66,7 @@ ActiveWindowStateType GetActiveWindowState() {
       case wm::WINDOW_STATE_TYPE_END:
       case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
       case wm::WINDOW_STATE_TYPE_PINNED:
+      case wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
         // TODO: We probably want to recorde PINNED state.
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;

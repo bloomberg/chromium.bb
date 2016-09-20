@@ -1469,7 +1469,7 @@ TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
 
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  wm::PinWindow(window1);
+  wm::PinWindow(window1, /* trusted */ false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   WmWindowAura::Get(window1)->GetWindowState()->Restore();

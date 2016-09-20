@@ -167,12 +167,22 @@ TEST_F(ShellSurfaceTest, SetPinned) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->SetPinned(true);
+  shell_surface->SetPinned(true, /* trusted */ true);
   EXPECT_TRUE(
       ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
           ->IsPinned());
 
-  shell_surface->SetPinned(false);
+  shell_surface->SetPinned(false, /* trusted */ true);
+  EXPECT_FALSE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->IsPinned());
+
+  shell_surface->SetPinned(true, /* trusted */ false);
+  EXPECT_TRUE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->IsPinned());
+
+  shell_surface->SetPinned(false, /* trusted */ false);
   EXPECT_FALSE(
       ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
           ->IsPinned());
