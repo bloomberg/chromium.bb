@@ -141,7 +141,7 @@ void CastSysInfoDummy::SetFactoryLocaleForTesting(
 
 void CastSysInfoDummy::SetWifiInterfaceForTesting(
     const std::string& wifi_interface) {
-  wifi_interface_ = wifi_interface_;
+  wifi_interface_ = wifi_interface;
 }
 
 void CastSysInfoDummy::SetApInterfaceForTesting(
