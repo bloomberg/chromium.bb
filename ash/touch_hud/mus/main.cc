@@ -8,6 +8,5 @@
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
   shell::ServiceRunner runner(new ash::touch_hud::TouchHudApplication);
-  runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(service_request_handle);
 }
