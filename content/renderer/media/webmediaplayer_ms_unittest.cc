@@ -12,6 +12,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
+#include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
@@ -454,6 +455,7 @@ class WebMediaPlayerMSTest
   std::unique_ptr<WebMediaPlayerMS> player_;
   WebMediaPlayerMSCompositor* compositor_;
   ReusableMessageLoopEvent message_loop_controller_;
+  blink::WebLayer* web_layer_;
 
  private:
   // Main function trying to ask WebMediaPlayerMS to submit a frame for
@@ -507,6 +509,7 @@ void WebMediaPlayerMSTest::readyStateChanged() {
 }
 
 void WebMediaPlayerMSTest::setWebLayer(blink::WebLayer* layer) {
+  web_layer_ = layer;
   if (layer)
     compositor_->SetVideoFrameProviderClient(this);
   DoSetWebLayer(!!layer);
@@ -745,6 +748,46 @@ TEST_F(WebMediaPlayerMSTest, RotatedVideoFrame) {
   EXPECT_EQ(kStandardWidth, natural_size.height);
   testing::Mock::VerifyAndClearExpectations(this);
 
+  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoStopRendering());
+}
+
+// During this test, we check that web layer changes opacity according to the
+// given frames.
+TEST_F(WebMediaPlayerMSTest, OpacityChange) {
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
+
+  // Push one opaque frame.
+  const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
+  static int tokens[] = {0, kTestBrake};
+  std::vector<int> timestamps(tokens, tokens + arraysize(tokens));
+  provider->QueueFrames(timestamps, true);
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStartRendering());
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveMetadata));
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_TRUE(web_layer_ != nullptr);
+  EXPECT_TRUE(web_layer_->opaque());
+
+  // Push one transparent frame.
+  provider->QueueFrames(timestamps, false);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  EXPECT_FALSE(web_layer_->opaque());
+
+  // Push another opaque frame.
+  provider->QueueFrames(timestamps, true);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  EXPECT_TRUE(web_layer_->opaque());
+
+  testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetWebLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
