@@ -41,7 +41,8 @@ def TrivialContextManager():
 def SetupTsMonGlobalState(service_name,
                           short_lived=False,
                           indirect=False,
-                          auto_flush=True):
+                          auto_flush=True,
+                          debug_file=None):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
 
   Args:
@@ -53,13 +54,15 @@ def SetupTsMonGlobalState(service_name,
               because forking would normally create a duplicate ts_mon thread.
     auto_flush: Whether to create a thread to automatically flush metrics every
                 minute.
+    debug_file: If non-none, send metrics to this path instead of to PubSub.
   """
   if not config:
     return TrivialContextManager()
 
   if indirect:
     return _CreateTsMonFlushingProcess([service_name],
-                                       {'short_lived': short_lived})
+                                       {'short_lived': short_lived,
+                                        'debug_file': debug_file})
 
   # google-api-client has too much noisey logging.
   googleapiclient.discovery.logger.setLevel(logging.WARNING)
@@ -70,6 +73,9 @@ def SetupTsMonGlobalState(service_name,
       '--ts-mon-task-service-name', service_name,
       '--ts-mon-task-job-name', service_name,
   ]
+
+  if debug_file:
+    args.extend(['--ts-mon-endpoint', 'file://' + debug_file])
 
   # Short lived processes will have autogen: prepended to their hostname and
   # use task-number=PID to trigger shorter retention policies under
@@ -212,10 +218,10 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
 
   # If our parent dies, finish flushing before exiting.
   reset_after = []
-  parallel.ExitWithParent(signal.SIGHUP)
-  signal.signal(signal.SIGHUP,
-                lambda _sig, _stack: _WaitToFlush(last_flush,
-                                                  reset_after=reset_after))
+  if parallel.ExitWithParent(signal.SIGHUP):
+    signal.signal(signal.SIGHUP,
+                  lambda _sig, _stack: _WaitToFlush(last_flush,
+                                                    reset_after=reset_after))
 
   # Configure ts-mon, but don't start up a sending thread.
   setup_kwargs['auto_flush'] = False

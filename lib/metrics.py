@@ -112,45 +112,47 @@ def _Metric(fn):
   """A pipeline of decorators to apply to our metric constructors."""
   return _ImportSafe(_Indirect(fn))
 
+# This is needed for the reset_after flag used by @Indirect.
+# pylint: disable=unused-argument
 
 @_Metric
-def Counter(name):
+def Counter(name, reset_after=False):
   """Returns a metric handle for a counter named |name|."""
   return ts_mon.CounterMetric(name)
 
 
 @_Metric
-def Gauge(name):
+def Gauge(name, reset_after=False):
   """Returns a metric handle for a gauge named |name|."""
   return ts_mon.GaugeMetric(name)
 
 
 @_Metric
-def String(name):
+def String(name, reset_after=False):
   """Returns a metric handle for a string named |name|."""
   return ts_mon.StringMetric(name)
 
 
 @_Metric
-def Boolean(name):
+def Boolean(name, reset_after=False):
   """Returns a metric handle for a boolean named |name|."""
   return ts_mon.BooleanMetric(name)
 
 
 @_Metric
-def Float(name):
+def Float(name, reset_after=False):
   """Returns a metric handle for a float named |name|."""
   return ts_mon.FloatMetric(name)
 
 
 @_Metric
-def CumulativeDistribution(name):
+def CumulativeDistribution(name, reset_after=False):
   """Returns a metric handle for a cumulative distribution named |name|."""
   return ts_mon.CumulativeDistributionMetric(name)
 
 
 @_Metric
-def CumulativeSmallIntegerDistribution(name):
+def CumulativeSmallIntegerDistribution(name, reset_after=False):
   """Returns a metric handle for a cumulative distribution named |name|.
 
   This differs slightly from CumulativeDistribution, in that the underlying
@@ -164,7 +166,7 @@ def CumulativeSmallIntegerDistribution(name):
       bucketer=ts_mon.FixedWidthBucketer(1))
 
 @_Metric
-def SecondsDistribution(name):
+def SecondsDistribution(name, reset_after=False):
   """Returns a metric handle for a cumulative distribution named |name|.
 
   The distribution handle returned by this method is better suited than the
