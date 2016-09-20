@@ -48,7 +48,14 @@ class DefaultObserver : public SettingsObserver {
     // TODO(gdk): This is a temporary hack while the refactoring for
     // string-based event payloads is removed. http://crbug.com/136045
     std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(base::JSONReader::Read(change_json));
+    std::unique_ptr<base::Value> changes = base::JSONReader::Read(change_json);
+    DCHECK(changes);
+    // TODO(devlin): crbug.com/645500 implies this can sometimes fail. If this
+    // safeguard fixes it, that means there's an underlying problem (why are we
+    // passing invalid json here?).
+    if (!changes)
+      changes = base::MakeUnique<base::DictionaryValue>();
+    args->Append(std::move(changes));
     args->AppendString(settings_namespace::ToString(settings_namespace));
     std::unique_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,
                                            api::storage::OnChanged::kEventName,

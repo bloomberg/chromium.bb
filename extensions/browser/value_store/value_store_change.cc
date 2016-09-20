@@ -26,7 +26,8 @@ std::string ValueStoreChange::ToJson(
     changes_value.SetWithoutPathExpansion(it->key(), change_value);
   }
   std::string json;
-  base::JSONWriter::Write(changes_value, &json);
+  bool success = base::JSONWriter::Write(changes_value, &json);
+  DCHECK(success);
   return json;
 }
 
