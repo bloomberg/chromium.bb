@@ -75,6 +75,7 @@ public:
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
     bool usesWindowInactiveSelector() const { return m_metadata.usesWindowInactiveSelector; }
+    bool needsFullRecalcForRuleSetInvalidation() const { return m_metadata.needsFullRecalcForRuleSetInvalidation; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_metadata.maxDirectAdjacentSelectors; }
 
@@ -134,6 +135,7 @@ private:
         bool usesWindowInactiveSelector = false;
         bool foundSiblingSelector = false;
         bool foundInsertionPointCrossing = false;
+        bool needsFullRecalcForRuleSetInvalidation = false;
         unsigned maxDirectAdjacentSelectors = 0;
     };
 
@@ -154,6 +156,7 @@ private:
 
         void add(const InvalidationSetFeatures& other);
         bool hasFeatures() const;
+        bool hasTagIdClassOrAttribute() const;
 
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
@@ -168,6 +171,7 @@ private:
         bool contentPseudoCrossing = false;
         bool invalidatesSlotted = false;
         bool hasNthPseudo = false;
+        bool hasFeaturesForRuleSetInvalidation = false;
     };
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);

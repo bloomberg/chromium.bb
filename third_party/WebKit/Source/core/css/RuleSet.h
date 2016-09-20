@@ -170,6 +170,20 @@ public:
         compactRules();
     }
 
+    bool hasSlottedRules() const { return !m_slottedPseudoElementRules.isEmpty(); }
+
+    bool hasV0BoundaryCrossingRules() const
+    {
+        return !m_deepCombinatorOrShadowPseudoRules.isEmpty()
+            || !m_contentPseudoElementRules.isEmpty();
+    }
+
+    bool needsFullRecalcForRuleSetInvalidation() const
+    {
+        return m_features.needsFullRecalcForRuleSetInvalidation()
+            || hasV0BoundaryCrossingRules();
+    }
+
 #ifndef NDEBUG
     void show() const;
 #endif

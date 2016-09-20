@@ -85,6 +85,11 @@ public:
         return m_ruleFeatureSet->collectFeaturesFromRuleData(ruleData);
     }
 
+    void clearFeatures()
+    {
+        m_ruleFeatureSet->clear();
+    }
+
     void collectInvalidationSetsForClass(InvalidationLists& invalidationLists, const AtomicString& className) const
     {
         Element* element = Traversal<HTMLElement>::firstChild(*Traversal<HTMLElement>::firstChild(*m_document->body()));
@@ -253,6 +258,11 @@ public:
     void expectUncommonAttributeRuleCount(unsigned count)
     {
         EXPECT_EQ(count, m_ruleFeatureSet->uncommonAttributeRules.size());
+    }
+
+    void expectFullRecalcForRuleSetInvalidation(bool expected)
+    {
+        EXPECT_EQ(expected, m_ruleFeatureSet->needsFullRecalcForRuleSetInvalidation());
     }
 
 private:
@@ -903,6 +913,148 @@ TEST_F(RuleFeatureSetTest, nthInvalidationAnyDescendant)
 
     expectNoSelfInvalidation(invalidationLists.descendants);
     expectClassInvalidation("a", invalidationLists.descendants);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationTypeSelector)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("div"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("* div"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("body *"));
+    expectFullRecalcForRuleSetInvalidation(true);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationClassIdAttr)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".c"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".c *"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("#i"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("#i *"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("[attr]"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("[attr] *"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationHoverActiveFocus)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":hover:active:focus"));
+    expectFullRecalcForRuleSetInvalidation(true);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationHostContext)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":host-context(.x)"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":host-context(.x) .y"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationHost)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":host(.x)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":host(*) .y"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":host(.x) .y"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationNot)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":not(.x)"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":not(.x) :hover"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":not(.x) .y"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":not(.x) + .y"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationCustomPseudo)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("::-webkit-slider-thumb"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".x::-webkit-slider-thumb"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".x + ::-webkit-slider-thumb"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationSlotted)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("::slotted(*)"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("::slotted(.y)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".x::slotted(.y)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures("[x] ::slotted(.y)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+}
+
+TEST_F(RuleFeatureSetTest, RuleSetInvalidationAnyPseudo)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":-webkit-any(*, #x)"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".x:-webkit-any(*, #y)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":-webkit-any(:-webkit-any(.a, .b), #x)"));
+    expectFullRecalcForRuleSetInvalidation(false);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":-webkit-any(:-webkit-any(.a, *), #x)"));
+    expectFullRecalcForRuleSetInvalidation(true);
+    clearFeatures();
+
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(":-webkit-any(*, .a) *"));
+    expectFullRecalcForRuleSetInvalidation(true);
 }
 
 } // namespace blink

@@ -443,7 +443,9 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData)
 
     const CSSSelector* lastInCompound = extractInvalidationSetFeaturesFromCompound(ruleData.selector(), features, Subject);
 
-    if (!features.hasFeatures())
+    if (features.forceSubtree)
+        features.hasFeaturesForRuleSetInvalidation = false;
+    else if (!features.hasFeatures())
         features.forceSubtree = true;
     if (features.hasNthPseudo)
         addFeaturesToInvalidationSet(ensureNthInvalidationSet(), features);
@@ -451,12 +453,18 @@ void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData)
         updateInvalidationSetsForContentAttribute(ruleData);
 
     const CSSSelector* nextCompound = lastInCompound ? lastInCompound->tagHistory() : &ruleData.selector();
-    if (!nextCompound)
+    if (!nextCompound) {
+        if (!features.hasFeaturesForRuleSetInvalidation)
+            m_metadata.needsFullRecalcForRuleSetInvalidation = true;
         return;
+    }
     if (lastInCompound)
         updateFeaturesFromCombinator(*lastInCompound, nullptr, features, siblingFeatures, features);
 
     addFeaturesToInvalidationSets(*nextCompound, siblingFeatures, features);
+
+    if (!features.hasFeaturesForRuleSetInvalidation)
+        m_metadata.needsFullRecalcForRuleSetInvalidation = true;
 }
 
 void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& ruleData)
@@ -570,8 +578,10 @@ RuleFeatureSet::extractInvalidationSetFeaturesFromCompound(const CSSSelector& co
             return nullptr;
         }
 
-        if (!simpleSelector->tagHistory() || simpleSelector->relation() != CSSSelector::SubSelector)
+        if (!simpleSelector->tagHistory() || simpleSelector->relation() != CSSSelector::SubSelector) {
+            features.hasFeaturesForRuleSetInvalidation = features.hasTagIdClassOrAttribute();
             return simpleSelector;
+        }
     }
 }
 
@@ -617,8 +627,20 @@ void RuleFeatureSet::addFeaturesToInvalidationSetsForSelectorList(const CSSSelec
 
     DCHECK(supportsInvalidationWithSelectorList(simpleSelector.getPseudoType()));
 
-    for (const CSSSelector* subSelector = simpleSelector.selectorList()->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
+    bool hadFeaturesForRuleSetInvalidation = descendantFeatures.hasFeaturesForRuleSetInvalidation;
+    bool selectorListContainsUniversal = simpleSelector.getPseudoType() == CSSSelector::PseudoNot
+        || simpleSelector.getPseudoType() == CSSSelector::PseudoHostContext;
+
+    for (const CSSSelector* subSelector = simpleSelector.selectorList()->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
+        descendantFeatures.hasFeaturesForRuleSetInvalidation = false;
+
         addFeaturesToInvalidationSetsForCompoundSelector(*subSelector, siblingFeatures, descendantFeatures);
+
+        if (!descendantFeatures.hasFeaturesForRuleSetInvalidation)
+            selectorListContainsUniversal = true;
+    }
+
+    descendantFeatures.hasFeaturesForRuleSetInvalidation = hadFeaturesForRuleSetInvalidation || !selectorListContainsUniversal;
 }
 
 void RuleFeatureSet::addFeaturesToInvalidationSetsForSimpleSelector(const CSSSelector& simpleSelector, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures)
@@ -653,15 +675,17 @@ const CSSSelector* RuleFeatureSet::addFeaturesToInvalidationSetsForCompoundSelec
     const CSSSelector* simpleSelector = &compound;
     for (; simpleSelector; simpleSelector = simpleSelector->tagHistory()) {
         addFeaturesToInvalidationSetsForSimpleSelector(*simpleSelector, siblingFeatures, descendantFeatures);
-        if (siblingFeatures)
-            compoundHasIdClassOrAttribute |= simpleSelector->isIdClassOrAttributeSelector();
+        if (simpleSelector->isIdClassOrAttributeSelector())
+            compoundHasIdClassOrAttribute = true;
         if (simpleSelector->relation() != CSSSelector::SubSelector)
             break;
         if (!simpleSelector->tagHistory())
             break;
     }
 
-    if (siblingFeatures && !compoundHasIdClassOrAttribute)
+    if (compoundHasIdClassOrAttribute)
+        descendantFeatures.hasFeaturesForRuleSetInvalidation = true;
+    else if (siblingFeatures)
         addFeaturesToUniversalSiblingInvalidationSet(*siblingFeatures, descendantFeatures);
 
     return simpleSelector;
@@ -774,8 +798,8 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromSelector(con
 
 void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
 {
-    usesFirstLineRules = usesFirstLineRules || other.usesFirstLineRules;
-    usesWindowInactiveSelector = usesWindowInactiveSelector || other.usesWindowInactiveSelector;
+    usesFirstLineRules |= other.usesFirstLineRules;
+    usesWindowInactiveSelector |= other.usesWindowInactiveSelector;
     maxDirectAdjacentSelectors = std::max(maxDirectAdjacentSelectors, other.maxDirectAdjacentSelectors);
 }
 
@@ -785,6 +809,7 @@ void RuleFeatureSet::FeatureMetadata::clear()
     usesWindowInactiveSelector = false;
     foundSiblingSelector = false;
     foundInsertionPointCrossing = false;
+    needsFullRecalcForRuleSetInvalidation = false;
     maxDirectAdjacentSelectors = 0;
 }
 
@@ -1032,6 +1057,14 @@ bool RuleFeatureSet::InvalidationSetFeatures::hasFeatures() const
         || !ids.isEmpty()
         || !tagNames.isEmpty()
         || customPseudoElement;
+}
+
+bool RuleFeatureSet::InvalidationSetFeatures::hasTagIdClassOrAttribute() const
+{
+    return !classes.isEmpty()
+        || !attributes.isEmpty()
+        || !ids.isEmpty()
+        || !tagNames.isEmpty();
 }
 
 } // namespace blink
