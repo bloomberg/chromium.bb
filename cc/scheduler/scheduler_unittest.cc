@@ -2310,9 +2310,6 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
     BeginFrameSourceType bfs_type) {
   SetUpScheduler(bfs_type);
 
-  scheduler_->SetEstimatedParentDrawTime(
-      BeginFrameArgs::DefaultEstimatedParentDrawTime());
-
   // Set the draw duration estimate to zero so that deadlines are accurate.
   fake_compositor_timing_history_->SetDrawDurationEstimate(base::TimeDelta());
 

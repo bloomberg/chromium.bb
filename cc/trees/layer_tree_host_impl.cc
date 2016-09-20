@@ -2341,12 +2341,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   CreateTileManagerResources();
   RecreateTreeResources();
 
-  // TODO(brianderson): Don't use a hard-coded parent draw time.
-  base::TimeDelta parent_draw_time =
-      compositor_frame_sink_->capabilities().adjust_deadline_for_parent
-          ? BeginFrameArgs::DefaultEstimatedParentDrawTime()
-          : base::TimeDelta();
-  client_->SetEstimatedParentDrawTime(parent_draw_time);
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullViewportDamage();
   // There will not be anything to draw here, so set high res

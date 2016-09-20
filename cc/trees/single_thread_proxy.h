@@ -78,7 +78,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // LayerTreeHostImplClient implementation
   void DidLoseCompositorFrameSinkOnImplThread() override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
-  void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
   void DidSwapBuffersCompleteOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;

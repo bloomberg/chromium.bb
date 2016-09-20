@@ -133,7 +133,6 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void DidLoseCompositorFrameSinkOnImplThread() override {}
   void SetBeginFrameSource(BeginFrameSource* source) override {}
-  void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
   void DidSwapBuffersCompleteOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {
     on_can_draw_state_changed_called_ = true;

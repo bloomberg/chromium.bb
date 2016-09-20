@@ -432,11 +432,6 @@ void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
     scheduler_on_impl_thread_->SetBeginFrameSource(source);
 }
 
-void SingleThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetEstimatedParentDrawTime(draw_time);
-}
-
 void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   TRACE_EVENT0("cc,benchmark",
                "SingleThreadProxy::DidSwapBuffersCompleteOnImplThread");

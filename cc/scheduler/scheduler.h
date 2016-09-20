@@ -72,8 +72,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   const SchedulerSettings& settings() const { return settings_; }
 
-  void SetEstimatedParentDrawTime(base::TimeDelta draw_time);
-
   void SetVisible(bool visible);
   bool visible() { return state_machine_.visible(); }
   void SetCanDraw(bool can_draw);
@@ -161,7 +159,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool observing_begin_frame_source_;
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
-  base::TimeDelta estimated_parent_draw_time_;
 
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
   SchedulerStateMachine::BeginImplFrameDeadlineMode
@@ -204,10 +201,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void FinishImplFrame();
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
-
-  base::TimeDelta EstimatedParentDrawTime() {
-    return estimated_parent_draw_time_;
-  }
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;

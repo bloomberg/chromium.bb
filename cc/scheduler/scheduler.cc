@@ -84,11 +84,6 @@ base::TimeTicks Scheduler::Now() const {
   return now;
 }
 
-void Scheduler::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
-  DCHECK_GE(draw_time.ToInternalValue(), 0);
-  estimated_parent_draw_time_ = draw_time;
-}
-
 void Scheduler::SetVisible(bool visible) {
   state_machine_.SetVisible(visible);
   UpdateCompositorTimingHistoryRecordingEnabled();
@@ -284,12 +279,8 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), "BeginFrameArgs",
       args.frame_time.ToInternalValue());
 
-  // TODO(brianderson): Adjust deadline in the DisplayScheduler.
-  BeginFrameArgs adjusted_args(args);
-  adjusted_args.deadline -= EstimatedParentDrawTime();
-
   if (settings_.using_synchronous_renderer_compositor) {
-    BeginImplFrameSynchronous(adjusted_args);
+    BeginImplFrameSynchronous(args);
     return true;
   }
 
@@ -297,8 +288,8 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   // sent us the last BeginFrame we have missed. As we might not be able to
   // actually make rendering for this call, handle it like a "retro frame".
   // TODO(brainderson): Add a test for this functionality ASAP!
-  if (adjusted_args.type == BeginFrameArgs::MISSED) {
-    begin_retro_frame_args_.push_back(adjusted_args);
+  if (args.type == BeginFrameArgs::MISSED) {
+    begin_retro_frame_args_.push_back(args);
     PostBeginRetroFrameIfNeeded();
     return true;
   }
@@ -311,12 +302,12 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
        SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
 
   if (should_defer_begin_frame) {
-    begin_retro_frame_args_.push_back(adjusted_args);
+    begin_retro_frame_args_.push_back(args);
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrame deferred",
                          TRACE_EVENT_SCOPE_THREAD);
     // Queuing the frame counts as "using it", so we need to return true.
   } else {
-    BeginImplFrameWithDeadline(adjusted_args);
+    BeginImplFrameWithDeadline(args);
   }
   return true;
 }
@@ -716,8 +707,6 @@ Scheduler::AsValue() const {
   state->EndDictionary();
 
   state->BeginDictionary("scheduler_state");
-  state->SetDouble("estimated_parent_draw_time_ms",
-                   estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("observing_begin_frame_source",
                     observing_begin_frame_source_);
   state->SetInteger("begin_retro_frame_args",

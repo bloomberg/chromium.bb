@@ -276,11 +276,6 @@ void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
   }
 }
 
-void ProxyImpl::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
-  DCHECK(IsImplThread());
-  scheduler_->SetEstimatedParentDrawTime(draw_time);
-}
-
 void ProxyImpl::DidSwapBuffersCompleteOnImplThread() {
   TRACE_EVENT0("cc,benchmark", "ProxyImpl::DidSwapBuffersCompleteOnImplThread");
   DCHECK(IsImplThread());
