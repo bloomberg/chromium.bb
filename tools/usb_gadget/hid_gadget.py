@@ -36,7 +36,7 @@ class HidCompositeFeature(composite_gadget.CompositeFeature):
       packet_size: Maximum interrupt packet size.
       interval_ms: Interrupt transfer interval in milliseconds.
       interface_number: Interface number for this feature (default 0).
-      in_endpoint: Endpoint number for the IN endpoint (defualt 0x81).
+      in_endpoint: Endpoint number for the IN endpoint (default 0x81).
       out_endpoint: Endpoint number for the OUT endpoint or None to disable
           the endpoint (default 0x01).
 

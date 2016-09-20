@@ -544,7 +544,7 @@ DefaultWebClientState GetDefaultBrowser() {
 // - HKCR\http\shell\open\command (XP)
 // - HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\
 //   http\UserChoice (Vista)
-// This method checks if Firefox is defualt browser by checking these
+// This method checks if Firefox is default browser by checking these
 // locations and returns true if Firefox traces are found there. In case of
 // error (or if Firefox is not found)it returns the default value which
 // is false.

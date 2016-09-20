@@ -67,7 +67,7 @@ public:
 
     // This class needs to be informed of changes in layout so that it can
     // determine if the current root scroller is still valid or if it must be
-    // replaced by the defualt root scroller.
+    // replaced by the default root scroller.
     void didUpdateLayout();
 
     // Returns the PaintLayer associated with the currently effective root

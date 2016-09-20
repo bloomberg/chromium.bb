@@ -123,16 +123,16 @@ void IpcNetworkManager::OnNetworkListChanged(
 
   // Update the default local addresses.
   rtc::IPAddress ipv4_default;
-  rtc::IPAddress ipv6_defualt;
+  rtc::IPAddress ipv6_default;
   if (use_default_ipv4_address) {
     ipv4_default =
         jingle_glue::NetIPAddressToRtcIPAddress(default_ipv4_local_address);
   }
   if (use_default_ipv6_address) {
-    ipv6_defualt =
+    ipv6_default =
         jingle_glue::NetIPAddressToRtcIPAddress(default_ipv6_local_address);
   }
-  set_default_local_addresses(ipv4_default, ipv6_defualt);
+  set_default_local_addresses(ipv4_default, ipv6_default);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowLoopbackInPeerConnection)) {

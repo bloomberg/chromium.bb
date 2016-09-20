@@ -305,7 +305,7 @@ GURL GServicesSettings::GetMCSMainEndpoint() const {
   else
     mcs_hostname = kDefaultMCSHostname;
 
-  // Get alternative secure port or use defualt.
+  // Get alternative secure port or use default.
   int mcs_secure_port = 0;
   iter = settings_.find(kMCSSecurePortKey);
   if (iter == settings_.end() || iter->second.empty() ||

@@ -222,7 +222,7 @@ void InProcessBrowserTest::SetUp() {
   chromeos::input_method::DisableExtensionLoading();
   if (!command_line->HasSwitch(switches::kHostWindowBounds)) {
     // Adjusting window location & size so that the ash desktop window fits
-    // inside the Xvfb'x defualt resolution.
+    // inside the Xvfb'x default resolution.
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
