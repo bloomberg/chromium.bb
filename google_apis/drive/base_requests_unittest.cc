@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -179,7 +180,7 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   base::RunLoop run_loop;
-  sender_->StartRequestWithAuthRetry(new FakeUrlFetchRequest(
+  sender_->StartRequestWithAuthRetry(base::MakeUnique<FakeUrlFetchRequest>(
       sender_.get(),
       test_util::CreateQuitCallback(
           &run_loop, test_util::CreateCopyResultCallback(&error)),
@@ -200,8 +201,8 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
       google_apis::test_util::GetTestFilePath("drive/text.txt");
   std::string upload_content_type;
   std::string upload_content_data;
-  FakeMultipartUploadRequest* const multipart_request =
-      new FakeMultipartUploadRequest(
+  std::unique_ptr<FakeMultipartUploadRequest> multipart_request =
+      base::MakeUnique<FakeMultipartUploadRequest>(
           sender_->blocking_task_runner(), "{json:\"test\"}", "text/plain", 10,
           source_path,
           test_util::CreateQuitCallback(
@@ -209,10 +210,9 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
           ProgressCallback(), test_server_.base_url(), &upload_content_type,
           &upload_content_data);
   multipart_request->SetBoundaryForTesting("TESTBOUNDARY");
-  std::unique_ptr<drive::SingleBatchableDelegateRequest> request(
-      new drive::SingleBatchableDelegateRequest(sender_.get(),
-                                                multipart_request));
-  sender_->StartRequestWithAuthRetry(request.release());
+  sender_->StartRequestWithAuthRetry(
+      base::MakeUnique<drive::SingleBatchableDelegateRequest>(
+          sender_.get(), std::move(multipart_request)));
   run_loop.Run();
   EXPECT_EQ("multipart/related; boundary=TESTBOUNDARY", upload_content_type);
   EXPECT_EQ(

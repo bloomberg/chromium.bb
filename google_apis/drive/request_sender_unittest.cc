@@ -4,6 +4,7 @@
 
 #include "google_apis/drive/request_sender.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/drive/base_requests.h"
@@ -134,19 +135,20 @@ class TestRequest : public AuthenticatedRequestInterface {
 TEST_F(RequestSenderTest, StartAndFinishRequest) {
   bool start_called  = false;
   FinishReason finish_reason = NONE;
-  TestRequest* request = new TestRequest(&request_sender_,
-                                         &start_called,
-                                         &finish_reason);
-  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
+  std::unique_ptr<TestRequest> request = base::MakeUnique<TestRequest>(
+      &request_sender_, &start_called, &finish_reason);
+  TestRequest* request_ptr = request.get();
+  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr =
+      request_ptr->GetWeakPtr();
 
   base::Closure cancel_closure =
-      request_sender_.StartRequestWithAuthRetry(request);
+      request_sender_.StartRequestWithAuthRetry(std::move(request));
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // Start is called with the specified access token. Let it succeed.
   EXPECT_TRUE(start_called);
-  EXPECT_EQ(kTestAccessToken, request->passed_access_token());
-  request->FinishRequestWithSuccess();
+  EXPECT_EQ(kTestAccessToken, request_ptr->passed_access_token());
+  request_ptr->FinishRequestWithSuccess();
   EXPECT_FALSE(weak_ptr);  // The request object is deleted.
 
   // It is safe to run the cancel closure even after the request is finished.
@@ -158,13 +160,12 @@ TEST_F(RequestSenderTest, StartAndFinishRequest) {
 TEST_F(RequestSenderTest, StartAndCancelRequest) {
   bool start_called  = false;
   FinishReason finish_reason = NONE;
-  TestRequest* request = new TestRequest(&request_sender_,
-                                         &start_called,
-                                         &finish_reason);
+  std::unique_ptr<TestRequest> request = base::MakeUnique<TestRequest>(
+      &request_sender_, &start_called, &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
   base::Closure cancel_closure =
-      request_sender_.StartRequestWithAuthRetry(request);
+      request_sender_.StartRequestWithAuthRetry(std::move(request));
   EXPECT_TRUE(!cancel_closure.is_null());
   EXPECT_TRUE(start_called);
 
@@ -179,13 +180,12 @@ TEST_F(RequestSenderTest, NoRefreshToken) {
 
   bool start_called  = false;
   FinishReason finish_reason = NONE;
-  TestRequest* request = new TestRequest(&request_sender_,
-                                         &start_called,
-                                         &finish_reason);
+  std::unique_ptr<TestRequest> request = base::MakeUnique<TestRequest>(
+      &request_sender_, &start_called, &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
   base::Closure cancel_closure =
-      request_sender_.StartRequestWithAuthRetry(request);
+      request_sender_.StartRequestWithAuthRetry(std::move(request));
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // The request is not started at all because no access token is obtained.
@@ -199,20 +199,21 @@ TEST_F(RequestSenderTest, ValidRefreshTokenAndNoAccessToken) {
 
   bool start_called  = false;
   FinishReason finish_reason = NONE;
-  TestRequest* request = new TestRequest(&request_sender_,
-                                         &start_called,
-                                         &finish_reason);
-  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
+  std::unique_ptr<TestRequest> request = base::MakeUnique<TestRequest>(
+      &request_sender_, &start_called, &finish_reason);
+  TestRequest* request_ptr = request.get();
+  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr =
+      request_ptr->GetWeakPtr();
 
   base::Closure cancel_closure =
-      request_sender_.StartRequestWithAuthRetry(request);
+      request_sender_.StartRequestWithAuthRetry(std::move(request));
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // Access token should indicate that this is the first retry.
   EXPECT_TRUE(start_called);
   EXPECT_EQ(kTestAccessToken + std::string("1"),
-            request->passed_access_token());
-  request->FinishRequestWithSuccess();
+            request_ptr->passed_access_token());
+  request_ptr->FinishRequestWithSuccess();
   EXPECT_EQ(SUCCESS, finish_reason);
   EXPECT_FALSE(weak_ptr);  // The request object is deleted.
 }
@@ -220,34 +221,35 @@ TEST_F(RequestSenderTest, ValidRefreshTokenAndNoAccessToken) {
 TEST_F(RequestSenderTest, AccessTokenRejectedSeveralTimes) {
   bool start_called  = false;
   FinishReason finish_reason = NONE;
-  TestRequest* request = new TestRequest(&request_sender_,
-                                         &start_called,
-                                         &finish_reason);
-  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
+  std::unique_ptr<TestRequest> request = base::MakeUnique<TestRequest>(
+      &request_sender_, &start_called, &finish_reason);
+  TestRequest* request_ptr = request.get();
+  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr =
+      request_ptr->GetWeakPtr();
 
   base::Closure cancel_closure =
-      request_sender_.StartRequestWithAuthRetry(request);
+      request_sender_.StartRequestWithAuthRetry(std::move(request));
   EXPECT_TRUE(!cancel_closure.is_null());
 
   EXPECT_TRUE(start_called);
-  EXPECT_EQ(kTestAccessToken, request->passed_access_token());
+  EXPECT_EQ(kTestAccessToken, request_ptr->passed_access_token());
   // Emulate the case that the access token was rejected by the remote service.
-  request->passed_reauth_callback().Run(request);
+  request_ptr->passed_reauth_callback().Run(request_ptr);
   // New access token is fetched. Let it fail once again.
   EXPECT_EQ(kTestAccessToken + std::string("1"),
-            request->passed_access_token());
-  request->passed_reauth_callback().Run(request);
+            request_ptr->passed_access_token());
+  request_ptr->passed_reauth_callback().Run(request_ptr);
   // Once more.
   EXPECT_EQ(kTestAccessToken + std::string("2"),
-            request->passed_access_token());
-  request->passed_reauth_callback().Run(request);
+            request_ptr->passed_access_token());
+  request_ptr->passed_reauth_callback().Run(request_ptr);
 
   // Currently, limit for the retry is controlled in each request object, not
   // by the RequestSender. So with this TestRequest, RequestSender retries
   // infinitely. Let it succeed/
   EXPECT_EQ(kTestAccessToken + std::string("3"),
-            request->passed_access_token());
-  request->FinishRequestWithSuccess();
+            request_ptr->passed_access_token());
+  request_ptr->FinishRequestWithSuccess();
   EXPECT_EQ(SUCCESS, finish_reason);
   EXPECT_FALSE(weak_ptr);
 }

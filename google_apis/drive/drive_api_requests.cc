@@ -1141,11 +1141,10 @@ bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
 
 SingleBatchableDelegateRequest::SingleBatchableDelegateRequest(
     RequestSender* sender,
-    BatchableDelegate* delegate)
+    std::unique_ptr<BatchableDelegate> delegate)
     : UrlFetchRequestBase(sender),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {
-}
+      delegate_(std::move(delegate)),
+      weak_ptr_factory_(this) {}
 
 SingleBatchableDelegateRequest::~SingleBatchableDelegateRequest() {
 }

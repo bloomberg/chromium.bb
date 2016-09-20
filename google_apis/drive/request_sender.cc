@@ -4,9 +4,10 @@
 
 #include "google_apis/drive/request_sender.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/base_requests.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -27,32 +28,33 @@ RequestSender::RequestSender(
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::STLDeleteContainerPointers(in_flight_requests_.begin(),
-                                   in_flight_requests_.end());
 }
 
 base::Closure RequestSender::StartRequestWithAuthRetry(
-    AuthenticatedRequestInterface* request) {
+    std::unique_ptr<AuthenticatedRequestInterface> request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  in_flight_requests_.insert(request);
+  AuthenticatedRequestInterface* request_ptr = request.get();
+  in_flight_requests_.insert(std::move(request));
 
+  return StartRequestWithAuthRetryInternal(request_ptr);
+}
+
+base::Closure RequestSender::StartRequestWithAuthRetryInternal(
+    AuthenticatedRequestInterface* request) {
   // TODO(kinaba): Stop relying on weak pointers. Move lifetime management
   // of the requests to request sender.
   base::Closure cancel_closure =
-      base::Bind(&RequestSender::CancelRequest,
-                 weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&RequestSender::CancelRequest, weak_ptr_factory_.GetWeakPtr(),
                  request->GetWeakPtr());
 
   if (!auth_service_->HasAccessToken()) {
     // Fetch OAuth2 access token from the refresh token first.
     auth_service_->StartAuthentication(
         base::Bind(&RequestSender::OnAccessTokenFetched,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   request->GetWeakPtr()));
+                   weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr()));
   } else {
-    request->Start(auth_service_->access_token(),
-                   custom_user_agent_,
+    request->Start(auth_service_->access_token(), custom_user_agent_,
                    base::Bind(&RequestSender::RetryRequest,
                               weak_ptr_factory_.GetWeakPtr()));
   }
@@ -72,7 +74,7 @@ void RequestSender::OnAccessTokenFetched(
 
   if (code == HTTP_SUCCESS) {
     DCHECK(auth_service_->HasAccessToken());
-    StartRequestWithAuthRetry(request.get());
+    StartRequestWithAuthRetryInternal(request.get());
   } else {
     request->OnAuthFailed(code);
   }
@@ -84,7 +86,7 @@ void RequestSender::RetryRequest(AuthenticatedRequestInterface* request) {
   auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
-  StartRequestWithAuthRetry(request);
+  StartRequestWithAuthRetryInternal(request);
 }
 
 void RequestSender::CancelRequest(
@@ -98,8 +100,19 @@ void RequestSender::CancelRequest(
 }
 
 void RequestSender::RequestFinished(AuthenticatedRequestInterface* request) {
-  in_flight_requests_.erase(request);
-  delete request;
+  auto it = std::find_if(
+      in_flight_requests_.begin(), in_flight_requests_.end(),
+      [request](const std::unique_ptr<AuthenticatedRequestInterface>& ptr) {
+        return ptr.get() == request;
+      });
+  if (it == in_flight_requests_.end()) {
+    // Various BatchUpload tests in DriveApiRequestsTest will commit requests
+    // using this RequestSender without actually starting them on it. In that
+    // case, there's nothing to be done, so just return.
+    return;
+  }
+
+  in_flight_requests_.erase(it);
 }
 
 }  // namespace google_apis

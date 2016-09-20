@@ -1140,9 +1140,8 @@ class PermissionsInsertRequest : public EntryActionRequest {
 // Request that is operated by single BatchableDelegate.
 class SingleBatchableDelegateRequest : public UrlFetchRequestBase {
  public:
-  // The instance takes ownership of |delegate|.
   SingleBatchableDelegateRequest(RequestSender* sender,
-                                 BatchableDelegate* delegate);
+                                 std::unique_ptr<BatchableDelegate> delegate);
   ~SingleBatchableDelegateRequest() override;
 
  private:

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/drive/service/drive_api_service.h"
@@ -44,11 +45,13 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
   google_apis::RequestSender sender(new TestAuthService,
                                     request_context_getter.get(),
                                     task_runner.get(), kTestUserAgent);
-  google_apis::drive::BatchUploadRequest* const request =
-      new google_apis::drive::BatchUploadRequest(&sender, url_generator);
-  sender.StartRequestWithAuthRetry(request);
+  std::unique_ptr<google_apis::drive::BatchUploadRequest> request =
+      base::MakeUnique<google_apis::drive::BatchUploadRequest>(&sender,
+                                                               url_generator);
+  google_apis::drive::BatchUploadRequest* request_ptr = request.get();
+  sender.StartRequestWithAuthRetry(std::move(request));
   BatchRequestConfigurator configurator(
-      request->GetWeakPtrAsBatchUploadRequest(), task_runner.get(),
+      request_ptr->GetWeakPtrAsBatchUploadRequest(), task_runner.get(),
       url_generator, google_apis::CancelCallback());
   static_cast<TestAuthService*>(sender.auth_service())->SendHttpError();
 
