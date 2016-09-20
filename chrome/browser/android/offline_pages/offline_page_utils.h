@@ -17,6 +17,7 @@ class WebContents;
 }
 
 namespace offline_pages {
+struct OfflinePageHeader;
 struct OfflinePageItem;
 
 class OfflinePageUtils {
@@ -59,6 +60,11 @@ class OfflinePageUtils {
   // returned pointer is owned by the web_contents and may be deleted by user
   // navigation, so it is unsafe to store a copy of the returned pointer.
   static const OfflinePageItem* GetOfflinePageFromWebContents(
+      content::WebContents* web_contents);
+
+  // Gets the offline header provided when loading the offline page for the
+  // given web contents.
+  static const OfflinePageHeader* GetOfflineHeaderFromWebContents(
       content::WebContents* web_contents);
 
   // Gets an Android Tab ID from a tab containing |web_contents|. Returns false,

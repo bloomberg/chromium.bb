@@ -1333,6 +1333,7 @@ split_static_library("browser") {
     "//components/offline_pages",
     "//components/offline_pages/background:background_offliner",
     "//components/offline_pages/downloads:offline_pages_ui_adapter",
+    "//components/offline_pages/request_header:request_header",
     "//components/omnibox/browser",
     "//components/os_crypt",
     "//components/packed_ct_ev_whitelist",

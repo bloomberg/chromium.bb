@@ -18,6 +18,7 @@
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -152,11 +153,35 @@ void OfflinePageUtils::MarkPageAccessed(
   offline_page_model->MarkPageAccessed(offline_page->offline_id);
 }
 
+// static
 const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
     content::WebContents* web_contents) {
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
-  return tab_helper ? tab_helper->offline_page() : nullptr;
+  if (!tab_helper)
+    return nullptr;
+  const OfflinePageItem* offline_page = tab_helper->offline_page();
+  if (!offline_page)
+    return nullptr;
+
+  // Returns the cached offline page only if the offline URL matches with
+  // current tab URL (skipping fragment identifier part). This is to prevent
+  // from returning the wrong offline page if DidStartNavigation is never called
+  // to clear it up.
+  GURL::Replacements remove_params;
+  remove_params.ClearRef();
+  GURL offline_url = offline_page->url.ReplaceComponents(remove_params);
+  GURL web_contents_url =
+      web_contents->GetVisibleURL().ReplaceComponents(remove_params);
+  return offline_url == web_contents_url ? offline_page : nullptr;
+}
+
+// static
+const OfflinePageHeader* OfflinePageUtils::GetOfflineHeaderFromWebContents(
+    content::WebContents* web_contents) {
+  OfflinePageTabHelper* tab_helper =
+      OfflinePageTabHelper::FromWebContents(web_contents);
+  return tab_helper ? &(tab_helper->offline_header()) : nullptr;
 }
 
 // static

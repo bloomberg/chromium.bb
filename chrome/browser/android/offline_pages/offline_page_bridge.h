@@ -104,6 +104,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  base::android::ScopedJavaLocalRef<jstring> GetOfflinePageHeaderForReload(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
   void GetRequestsInQueue(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

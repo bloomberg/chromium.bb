@@ -16,24 +16,6 @@ class FilePath;
 
 namespace offline_pages {
 
-// Header that indicates that the offline page should be loaded if it exists
-// regardless current network conditions. Its value is a comma/space separated
-// name-value pair that may provide reason or define custom behavior.
-extern const char kOfflinePageHeader[];
-// The name used in name-value pair of kOfflinePageHeader to tell if the offline
-// info in this header should be persisted across session restore.
-extern const char kOfflinePageHeaderPersistKey[];
-// The name used in name-value pair of kOfflinePageHeader to denote the reason
-// for loading offline page.
-extern const char kOfflinePageHeaderReasonKey[];
-// Possible values in name-value pair that denote the reason for loading offline
-// page.
-extern const char kOfflinePageHeaderReasonValueDueToNetError[];
-extern const char kOfflinePageHeaderReasonValueFromDownload[];
-// The name used in name-value pair of kOfflinePageHeader to denote the offline
-// ID of the offline page to load.
-extern const char kOfflinePageHeaderIDKey[];
-
 // A request job that serves content from offline file.
 class OfflinePageRequestJob : public net::URLRequestFileJob {
  public:

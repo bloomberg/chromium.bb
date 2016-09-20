@@ -31,11 +31,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.offlinepages.SavePageResult;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -217,10 +215,9 @@ public class OfflinePageUtils {
                 RecordUserAction.record("OfflinePages.ReloadButtonClicked");
                 Tab foundTab = tabModelSelector.getTabById(tabId);
                 if (foundTab == null) return;
-
-                LoadUrlParams params =
-                        new LoadUrlParams(foundTab.getOriginalUrl(), PageTransition.RELOAD);
-                foundTab.loadUrl(params);
+                // Delegates to Tab to reload the page. Tab will send the correct header in order to
+                // load the right page.
+                foundTab.reload();
             }
 
             @Override
@@ -539,6 +536,17 @@ public class OfflinePageUtils {
                 return null;
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * Retrieves the extra request header to reload the offline page.
+     * @param tab The current tab.
+     * @return The extra request header string.
+     */
+    public static String getOfflinePageHeaderForReload(Tab tab) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
+        if (offlinePageBridge == null) return "";
+        return offlinePageBridge.getOfflinePageHeaderForReload(tab.getWebContents());
     }
 
     private static boolean isPowerConnected(Intent batteryStatus) {

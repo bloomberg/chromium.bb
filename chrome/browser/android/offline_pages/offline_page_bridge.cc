@@ -28,6 +28,7 @@
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageBridge_jni.h"
@@ -454,6 +455,34 @@ void OfflinePageBridge::CheckMetadataConsistency(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   offline_page_model_->CheckMetadataConsistency();
+}
+
+ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents)
+    return ScopedJavaLocalRef<jstring>();
+
+  const offline_pages::OfflinePageHeader* offline_header =
+      offline_pages::OfflinePageUtils::GetOfflineHeaderFromWebContents(
+          web_contents);
+  if (!offline_header)
+    return ScopedJavaLocalRef<jstring>();
+
+  // Only replaces the reason field with "reload" value that is used to trigger
+  // the network conditon check again in deciding whether to load the offline
+  // page. All other fields in the offline header should still carry to the
+  // reload request in order to keep the consistent behavior if we do decide to
+  // load the offline page. For example, "id" field should be kept in order to
+  // load the same offline version again if desired.
+  offline_pages::OfflinePageHeader offline_header_for_reload = *offline_header;
+  offline_header_for_reload.reason =
+      offline_pages::OfflinePageHeader::Reason::RELOAD;
+  return ScopedJavaLocalRef<jstring>(ConvertUTF8ToJavaString(
+      env, offline_header_for_reload.GetCompleteHeaderString()));
 }
 
 void OfflinePageBridge::GetRequestsInQueue(

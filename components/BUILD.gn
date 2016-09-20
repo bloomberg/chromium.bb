@@ -102,6 +102,7 @@ test("components_unittests") {
     "//components/offline_pages:unit_tests",
     "//components/offline_pages/background:unit_tests",
     "//components/offline_pages/downloads:unit_tests",
+    "//components/offline_pages/request_header:unit_tests",
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
     "//components/os_crypt:unit_tests",

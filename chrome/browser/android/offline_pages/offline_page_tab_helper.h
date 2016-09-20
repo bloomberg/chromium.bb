@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/offline_pages/request_header/offline_page_header.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -28,12 +29,20 @@ class OfflinePageTabHelper :
  public:
   ~OfflinePageTabHelper() override;
 
-  const OfflinePageItem* offline_page() { return offline_page_.get(); }
   void SetOfflinePage(const OfflinePageItem& offline_page,
+                      const OfflinePageHeader& offline_header,
                       bool is_offline_preview);
 
+  const OfflinePageItem* offline_page() {
+    return offline_info_.offline_page.get();
+  }
+
+  const OfflinePageHeader& offline_header() const {
+    return offline_info_.offline_header;
+  }
+
   // Whether the page is an offline preview.
-  bool is_offline_preview() const { return is_offline_preview_; }
+  bool is_offline_preview() const { return offline_info_.is_offline_preview; }
 
   // Returns provisional offline page since actual navigation does not happen
   // during unit tests.
@@ -41,6 +50,24 @@ class OfflinePageTabHelper :
 
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
+
+  // Contains the info about the offline page being loaded.
+  struct LoadedOfflinePageInfo {
+    LoadedOfflinePageInfo();
+    ~LoadedOfflinePageInfo();
+
+    // The cached copy of OfflinePageItem.
+    std::unique_ptr<OfflinePageItem> offline_page;
+
+    // The offline header that is provided when offline page is loaded.
+    OfflinePageHeader offline_header;
+
+    // Whether the page is an offline preview. Offline page previews are shown
+    // when a user's effective connection type is prohibitively slow.
+    bool is_offline_preview;
+
+    void Clear();
+  };
 
   explicit OfflinePageTabHelper(content::WebContents* web_contents);
 
@@ -52,21 +79,18 @@ class OfflinePageTabHelper :
 
   void SelectPageForOnlineURLDone(const OfflinePageItem* offline_page);
 
-  // The cached copy of OfflinePageItem if offline page is loaded for current
-  // tab. This can be used to by the Tab to synchronously ask about the offline
+  // The provisional info about the offline page being loaded. This is set when
+  // the offline interceptor decides to serve the offline page and it will be
+  // moved to |offline_info_| once the navigation is committed without error.
+  LoadedOfflinePageInfo provisional_offline_info_;
+
+  // The info about offline page being loaded. This is set from
+  // |provisional_offline_info_| when the navigation is committed without error.
+  // This can be used to by the Tab to synchronously ask about the offline
   // info.
-  std::unique_ptr<OfflinePageItem> offline_page_;
-  // Potential new offline page copy. This is reset to nullptr at the start
-  // of every navigation and set by network request interceptor. If the
-  // interceptor decided to not use offline page for the navigation or was not
-  // even invoked (as in case with fragment navigation), this stays nullptr.
-  std::unique_ptr<OfflinePageItem> provisional_offline_page_;
+  LoadedOfflinePageInfo offline_info_;
 
   bool reloading_url_on_net_error_ = false;
-
-  // Whether the page is an offline preview. Offline page previews are shown
-  // when a user's effective connection type is prohibitively slow.
-  bool is_offline_preview_;
 
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 

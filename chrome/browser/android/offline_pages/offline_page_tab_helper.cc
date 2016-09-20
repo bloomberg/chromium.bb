@@ -22,9 +22,18 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinePageTabHelper);
 
 namespace offline_pages {
 
+OfflinePageTabHelper::LoadedOfflinePageInfo::LoadedOfflinePageInfo() {}
+
+OfflinePageTabHelper::LoadedOfflinePageInfo::~LoadedOfflinePageInfo() {}
+
+void OfflinePageTabHelper::LoadedOfflinePageInfo::Clear() {
+  offline_page.reset();
+  offline_header.Clear();
+  is_offline_preview = false;
+}
+
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      is_offline_preview_(false),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
@@ -40,10 +49,23 @@ void OfflinePageTabHelper::DidStartNavigation(
   // This is a new navigation so we can invalidate any previously scheduled
   // operations.
   weak_ptr_factory_.InvalidateWeakPtrs();
-
-  provisional_offline_page_ = nullptr;
-  is_offline_preview_ = false;
   reloading_url_on_net_error_ = false;
+
+  // The provisional offline info can be cleared no matter how.
+  provisional_offline_info_.Clear();
+
+  // If not a fragment navigation, clear the cached offline info.
+  if (offline_info_.offline_page.get()) {
+    GURL::Replacements remove_params;
+    remove_params.ClearRef();
+    GURL offline_url =
+        offline_info_.offline_page->url.ReplaceComponents(remove_params);
+    GURL navigated_url =
+        navigation_handle->GetURL().ReplaceComponents(remove_params);
+
+    if (offline_url != navigated_url)
+      offline_info_.Clear();
+  }
 }
 
 void OfflinePageTabHelper::DidFinishNavigation(
@@ -55,12 +77,24 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
-  if (navigation_handle->IsSamePage()) {
+  if (navigation_handle->IsSamePage())
     return;
-  }
 
-  offline_page_ = std::move(provisional_offline_page_);
-  provisional_offline_page_ = nullptr;
+  GURL navigated_url = navigation_handle->GetURL();
+  if (navigation_handle->IsErrorPage()) {
+    offline_info_.Clear();
+  } else {
+    // The provisional offline info can now be committed if the navigation is
+    // done without error.
+    DCHECK(!provisional_offline_info_.offline_page ||
+      navigated_url == provisional_offline_info_.offline_page->url);
+    offline_info_.offline_page =
+        std::move(provisional_offline_info_.offline_page);
+    offline_info_.offline_header = provisional_offline_info_.offline_header;
+    offline_info_.is_offline_preview =
+        provisional_offline_info_.is_offline_preview;
+  }
+  provisional_offline_info_.Clear();
 
   // We might be reloading the URL in order to fetch the offline page.
   // * If successful, nothing to do.
@@ -100,7 +134,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
 
   OfflinePageUtils::SelectPageForOnlineURL(
       web_contents()->GetBrowserContext(),
-      navigation_handle->GetURL(),
+      navigated_url,
       tab_id,
       base::Bind(&OfflinePageTabHelper::SelectPageForOnlineURLDone,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -121,24 +155,26 @@ void OfflinePageTabHelper::SelectPageForOnlineURLDone(
   // Reloads the page with extra header set to force loading the offline page.
   content::NavigationController::LoadURLParams load_params(offline_page->url);
   load_params.transition_type = ui::PAGE_TRANSITION_RELOAD;
-  load_params.extra_headers = kOfflinePageHeader;
-  load_params.extra_headers += ":";
-  load_params.extra_headers += kOfflinePageHeaderReasonKey;
-  load_params.extra_headers += "=";
-  load_params.extra_headers += kOfflinePageHeaderReasonValueDueToNetError;
+  OfflinePageHeader offline_header;
+  offline_header.reason = OfflinePageHeader::Reason::NET_ERROR;
+  load_params.extra_headers = offline_header.GetCompleteHeaderString();
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
 // This is a callback from network request interceptor. It happens between
 // DidStartNavigation and DidFinishNavigation calls on this tab helper.
-void OfflinePageTabHelper::SetOfflinePage(const OfflinePageItem& offline_page,
-                                          bool is_offline_preview) {
-  provisional_offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
-  is_offline_preview_ = is_offline_preview;
+void OfflinePageTabHelper::SetOfflinePage(
+    const OfflinePageItem& offline_page,
+    const OfflinePageHeader& offline_header,
+    bool is_offline_preview) {
+  provisional_offline_info_.offline_page =
+      base::MakeUnique<OfflinePageItem>(offline_page);
+  provisional_offline_info_.offline_header = offline_header;
+  provisional_offline_info_.is_offline_preview = is_offline_preview;
 }
 
 const OfflinePageItem* OfflinePageTabHelper::GetOfflinePageForTest() const {
-  return provisional_offline_page_.get();
+  return provisional_offline_info_.offline_page.get();
 }
 
 }  // namespace offline_pages

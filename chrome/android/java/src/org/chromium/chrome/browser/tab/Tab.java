@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -1012,6 +1013,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (getBlimpContents() != null) {
                 getBlimpContents().getNavigationController().reload();
             }
+        } else if (isOfflinePage()) {
+            // If current page is an offline page, reload it with custom behavior defined in extra
+            // header respected.
+            LoadUrlParams params =
+                    new LoadUrlParams(getOriginalUrl(), PageTransition.RELOAD);
+            params.setVerbatimHeaders(OfflinePageUtils.getOfflinePageHeaderForReload(this));
+            loadUrl(params);
         } else {
             if (getWebContents() != null) getWebContents().getNavigationController().reload(true);
         }
