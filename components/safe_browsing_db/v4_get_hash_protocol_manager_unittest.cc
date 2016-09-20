@@ -282,29 +282,31 @@ TEST_F(V4GetHashProtocolManagerTest,
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
-  HashPrefix one = "hashone";
-  HashPrefix two = "hashtwo";
-  std::vector<HashPrefix> prefixes_to_request = {one, two};
-
   FindFullHashesRequest req;
   ThreatInfo* info = req.mutable_threat_info();
-  info->add_threat_types(MALWARE_THREAT);
-  info->add_threat_types(API_ABUSE);
-
   info->add_platform_types(GetCurrentPlatformType());
   info->add_platform_types(CHROME_PLATFORM);
 
   info->add_threat_entry_types(URL);
 
+  info->add_threat_types(MALWARE_THREAT);
+  info->add_threat_types(API_ABUSE);
+
+  HashPrefix one = "hashone";
+  HashPrefix two = "hashtwo";
   info->add_threat_entries()->set_hash(one);
   info->add_threat_entries()->set_hash(two);
+
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  req.mutable_client()->set_client_id(pm->config_.client_name);
+  req.mutable_client()->set_client_version(pm->config_.version);
 
   // Serialize and Base64 encode.
   std::string req_data, req_base64;
   req.SerializeToString(&req_data);
   base::Base64Encode(req_data, &req_base64);
 
-  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::vector<HashPrefix> prefixes_to_request = {one, two};
   EXPECT_EQ(req_base64, pm->GetHashRequest(prefixes_to_request));
 }
 

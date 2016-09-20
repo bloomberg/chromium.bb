@@ -219,6 +219,9 @@ class V4ProtocolManagerUtil {
   static bool FullHashMatchesHashPrefix(const FullHash& full_hash,
                                         const HashPrefix& hash_prefix);
 
+  static void SetClientInfoFromConfig(ClientInfo* client_info,
+                                      const V4ProtocolConfig& config);
+
  private:
   V4ProtocolManagerUtil(){};
   FRIEND_TEST_ALL_PREFIXES(V4ProtocolManagerUtilTest, TestBackOffLogic);

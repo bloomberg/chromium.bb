@@ -89,6 +89,10 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
                            TestBase64EncodingUsesUrlEncoding);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
+  // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
+  // Returns the serialized and base64 URL encoded request as a string.
+  std::string GetBase64SerializedUpdateRequestProto();
+
   // The method to populate |gurl| with the URL to be sent to the server.
   // |request_base64| is the base64 encoded form of an instance of the protobuf
   // FetchThreatListUpdatesRequest. Also sets the appropriate header values for
@@ -96,11 +100,6 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   void GetUpdateUrlAndHeaders(const std::string& request_base64,
                               GURL* gurl,
                               net::HttpRequestHeaders* headers) const;
-
-  // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
-  // Returns the serialized and base64 URL encoded request as a string.
-  static std::string GetBase64SerializedUpdateRequestProto(
-      const StoreStateMap& store_state_map);
 
   // Parses the base64 encoded response received from the server as a
   // FetchThreatListUpdatesResponse protobuf and returns each of the

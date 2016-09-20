@@ -496,4 +496,13 @@ void V4ProtocolManagerUtil::GeneratePathVariantsToCheck(
     paths->push_back(path + "?" + query);
 }
 
+// static
+void V4ProtocolManagerUtil::SetClientInfoFromConfig(
+    ClientInfo* client_info,
+    const V4ProtocolConfig& config) {
+  DCHECK(client_info);
+  client_info->set_client_id(config.client_name);
+  client_info->set_client_version(config.version);
+}
+
 }  // namespace safe_browsing

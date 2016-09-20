@@ -439,6 +439,8 @@ std::string V4GetHashProtocolManager::GetHashRequest(
     info->add_threat_entries()->set_hash(prefix);
   }
 
+  V4ProtocolManagerUtil::SetClientInfoFromConfig(req.mutable_client(), config_);
+
   // Serialize and Base64 encode.
   std::string req_data, req_base64;
   req.SerializeToString(&req_data);

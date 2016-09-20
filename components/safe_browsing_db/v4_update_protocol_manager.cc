@@ -192,14 +192,12 @@ void V4UpdateProtocolManager::ScheduleNextUpdateAfterInterval(
                       &V4UpdateProtocolManager::IssueUpdateRequest);
 }
 
-// static
-std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
-    const StoreStateMap& store_state_map) {
-  DCHECK(!store_state_map.empty());
+std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
+  DCHECK(!store_state_map_->empty());
   // Build the request. Client info and client states are not added to the
   // request protocol buffer. Client info is passed as params in the url.
   FetchThreatListUpdatesRequest request;
-  for (const auto& entry : store_state_map) {
+  for (const auto& entry : *store_state_map_) {
     const auto& list_to_update = entry.first;
     const auto& state = entry.second;
     ListUpdateRequest* list_update_request = request.add_list_update_requests();
@@ -216,6 +214,9 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
     list_update_request->mutable_constraints()->add_supported_compressions(
         RICE);
   }
+
+  V4ProtocolManagerUtil::SetClientInfoFromConfig(request.mutable_client(),
+                                                 config_);
 
   // Serialize and Base64 encode.
   std::string req_data, req_base64;
@@ -277,8 +278,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
     return;
   }
 
-  std::string req_base64 =
-      GetBase64SerializedUpdateRequestProto(*store_state_map_.get());
+  std::string req_base64 = GetBase64SerializedUpdateRequestProto();
   GURL update_url;
   net::HttpRequestHeaders headers;
   GetUpdateUrlAndHeaders(req_base64, &update_url, &headers);
