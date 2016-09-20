@@ -21,12 +21,15 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/label.h"
@@ -37,9 +40,10 @@ using chromeos::input_method::InputMethodManager;
 namespace ash {
 
 namespace {
-
-// The border width between buttons.
-const int kButtonRightBorder = 1;
+// The additional space between the child view area and the host button view
+// border in dp.
+// TODO(tdanderson): Move this to tray_constants.
+const int kButtonInsideBorderSpacing = 4;
 
 // Returns the max height of ImeListView.
 int GetImeListViewMaxHeight() {
@@ -61,29 +65,28 @@ class ImeMenuLabel : public views::Label {
 
   // views:Label:
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(kTrayImeIconSize, kTrayImeIconSize);
+    const int tray_constant = GetTrayConstant(TRAY_IME_MENU_ICON);
+    return gfx::Size(tray_constant, tray_constant);
   }
-  int GetHeightForWidth(int width) const override { return kTrayImeIconSize; }
+  int GetHeightForWidth(int width) const override {
+    return GetTrayConstant(TRAY_IME_MENU_ICON);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuLabel);
 };
 
 TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
-                                           int enabled_resource_id,
-                                           int disabled_resource_id,
-                                           int enabled_resource_id_hover,
-                                           int disabled_resource_id_hover,
+                                           const gfx::ImageSkia& image,
                                            int accessible_name_id,
-                                           int message_id,
                                            int right_border) {
   TrayPopupHeaderButton* button =
-      new TrayPopupHeaderButton(listener, enabled_resource_id,
-                                disabled_resource_id, enabled_resource_id_hover,
-                                disabled_resource_id_hover, accessible_name_id);
-  button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
-  button->SetBorder(views::Border::CreateSolidSidedBorder(0, 0, 0, right_border,
-                                                          kBorderDarkColor));
+      new TrayPopupHeaderButton(listener, image, accessible_name_id);
+  button->SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+  if (!MaterialDesignController::IsShelfMaterial()) {
+    button->SetBorder(views::Border::CreateSolidSidedBorder(
+        0, 0, 0, right_border, kBorderDarkColor));
+  }
   return button;
 }
 
@@ -105,26 +108,20 @@ class ImeButtonsView : public views::View,
 
     // If there's only one settings button, the bottom should be a label with
     // normal background. Otherwise, show button icons with header background.
-    if (show_settings_button && !show_emoji_button && !show_voice_button &&
-        !show_handwriting_button) {
+    if (show_settings_button && !show_emoji_button &&
+        !show_handwriting_button && !show_voice_button) {
       ShowOneSettingButton();
     } else {
-      ShowButtons(show_emoji_button, show_voice_button, show_handwriting_button,
+      ShowButtons(show_emoji_button, show_handwriting_button, show_voice_button,
                   show_settings_button);
     }
-    // TODO(azurewei): Add logic of switching between the two states when the
-    // menu is shown.
   }
 
   ~ImeButtonsView() override {}
 
   // views::View:
-  gfx::Size GetPreferredSize() const override {
-    int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
-    return gfx::Size(size, size);
-  }
   int GetHeightForWidth(int width) const override {
-    return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+    return kMenuButtonSize + 2 * kButtonInsideBorderSpacing;
   }
 
   // views::ButtonListener:
@@ -176,60 +173,55 @@ class ImeButtonsView : public views::View,
 
   // Shows the UI of more than one buttons.
   void ShowButtons(bool show_emoji_button,
-                   bool show_voice_button,
                    bool show_handwriting_button,
+                   bool show_voice_button,
                    bool show_settings_button) {
-    set_background(
-        views::Background::CreateSolidBackground(kHeaderBackgroundColor));
-    auto* box_layout = new views::BoxLayout(
-        views::BoxLayout::kHorizontal, kTrayImeBottomRowPadding,
-        kTrayImeBottomRowPadding, kTrayImeBottomRowPaddingBetweenItems);
-    box_layout->SetDefaultFlex(1);
+    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                            kButtonInsideBorderSpacing,
+                                            kButtonInsideBorderSpacing, 0);
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      set_background(
+          views::Background::CreateSolidBackground(kHeaderBackgroundColor));
+      box_layout->SetDefaultFlex(1);
+    }
     SetLayoutManager(box_layout);
 
+    const int right_border = 1;
     if (show_emoji_button) {
-      // TODO(azurewei): Creates the proper button with icons.
       emoji_button_ = CreateImeMenuButton(
-          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
-          kButtonRightBorder);
+          this, CreateVectorIcon(kImeMenuEmoticonIcon, kMenuIconColor),
+          IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
       AddChildView(emoji_button_);
     }
 
-    if (show_voice_button) {
-      // TODO(azurewei): Creates the proper button with icons.
-      voice_button_ = CreateImeMenuButton(
-          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
-          kButtonRightBorder);
-      AddChildView(voice_button_);
-    }
-
     if (show_handwriting_button) {
-      // TODO(azurewei): Creates the proper button with icons.
       handwriting_button_ = CreateImeMenuButton(
-          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS,
-          kButtonRightBorder);
+          this, CreateVectorIcon(kImeMenuWriteIcon, kMenuIconColor),
+          IDS_ASH_STATUS_TRAY_IME_HANDWRITING, right_border);
       AddChildView(handwriting_button_);
     }
 
+    if (show_voice_button) {
+      voice_button_ = CreateImeMenuButton(
+          this, CreateVectorIcon(kImeMenuMicrophoneIcon, kMenuIconColor),
+          IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
+      AddChildView(voice_button_);
+    }
+
     if (show_settings_button) {
+      // TODO(tdanderson): update this settings icon.
       settings_button_ = CreateImeMenuButton(
-          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS, 0);
+          this, CreateVectorIcon(gfx::VectorIconId::SETTINGS, kMenuIconSize,
+                                 kMenuIconColor),
+          IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
       AddChildView(settings_button_);
     }
   }
 
   ImeMenuTray* ime_menu_tray_;
   TrayPopupHeaderButton* emoji_button_;
-  TrayPopupHeaderButton* voice_button_;
   TrayPopupHeaderButton* handwriting_button_;
+  TrayPopupHeaderButton* voice_button_;
   TrayPopupHeaderButton* settings_button_;
   HoverHighlightView* one_settings_button_view_;
 

@@ -8,6 +8,12 @@ action("aggregate_vector_icons") {
   script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
 
   icons = [
+    "ime_menu_emoticon.1x.icon",
+    "ime_menu_emoticon.icon",
+    "ime_menu_microphone.1x.icon",
+    "ime_menu_microphone.icon",
+    "ime_menu_write.1x.icon",
+    "ime_menu_write.icon",
     "palette_action_capture_region.1x.icon",
     "palette_action_capture_region.icon",
     "palette_action_capture_screen.1x.icon",

@@ -303,6 +303,15 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_IME_SETTINGS" desc="The label used for IME settings entry.">
         Customize languages and input...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_EMOJI" desc="The label used for IME emoji entry.">
+        Emoji palette
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_HANDWRITING" desc="The label used for IME handwriting entry.">
+        Handwriting input
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_VOICE" desc="The label used for IME voice entry.">
+        Voice input
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE" desc="The message used for locale change notifications in the system tray.">
         The language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.

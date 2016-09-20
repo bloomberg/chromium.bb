@@ -28,10 +28,6 @@ extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
 extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 extern const int kTrayImageItemVerticalPaddingVerticalAlignment;
 
-extern const int kTrayImeIconSize;
-extern const int kTrayImeBottomRowPadding;
-extern const int kTrayImeBottomRowPaddingBetweenItems;
-
 ASH_EXPORT extern const int kTrayItemSize;
 
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
@@ -96,6 +92,7 @@ extern const SkColor kTrayIconColor;
 // system menu.
 extern const int kMenuIconSize;
 extern const SkColor kMenuIconColor;
+extern const int kMenuButtonSize;
 
 enum TrayConstant {
   // A legacy height value used in non-MD calculations for applying additional
@@ -116,6 +113,9 @@ enum TrayConstant {
   // the shelf orientation, so this constant does not specify the true
   // user-visible button bounds.
   VIRTUAL_KEYBOARD_BUTTON_SIZE,
+
+  // The icon size of opt-in IME menu tray.
+  TRAY_IME_MENU_ICON,
 };
 
 int GetTrayConstant(TrayConstant constant);

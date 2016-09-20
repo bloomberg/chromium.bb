@@ -30,11 +30,6 @@ const int kTrayImageItemHorizontalPaddingBottomAlignment = 1;
 const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
 
-// Size of IME menu tray.
-const int kTrayImeIconSize = 40;
-const int kTrayImeBottomRowPadding = 5;
-const int kTrayImeBottomRowPaddingBetweenItems = 2;
-
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
 
@@ -89,6 +84,7 @@ const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;
+const int kMenuButtonSize = 48;
 
 const int kHitRegionPadding = 4;
 const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);
@@ -100,6 +96,7 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 4};
   const int kTrayPopupItemHeight[] = {46, 46, 48};
   const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
+  const int kTrayImeMenuIcon[] = {40, 40, kTrayItemSize};
 
   const int mode = MaterialDesignController::GetMode();
   DCHECK(mode >= MaterialDesignController::NON_MATERIAL &&
@@ -116,6 +113,8 @@ int GetTrayConstant(TrayConstant constant) {
       return kTrayPopupItemHeight[mode];
     case VIRTUAL_KEYBOARD_BUTTON_SIZE:
       return kVirtualKeyboardButtonSize[mode];
+    case TRAY_IME_MENU_ICON:
+      return kTrayImeMenuIcon[mode];
   }
   NOTREACHED();
   return 0;
