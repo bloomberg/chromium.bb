@@ -302,4 +302,14 @@ gvr::Mat4f QuatToMatrix(const gvr::Quatf& quat) {
   return *((gvr::Mat4f*)&ret);
 }
 
+gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
+                       const gvr::Vec3f& rayVector,
+                       float scale) {
+  gvr::Vec3f v;
+  v.x = rayOrigin.x + scale * rayVector.x;
+  v.y = rayOrigin.y + scale * rayVector.y;
+  v.z = rayOrigin.z + scale * rayVector.z;
+  return v;
+}
+
 }  // namespace vr_shell

@@ -25,8 +25,6 @@ GLuint CompileShader(GLenum shader_type,
 // Compile and link a program.
 GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
                             GLuint fragment_shader_handle,
-                            int num_attributes,
-                            const GLchar** attributes,
                             std::string& error);
 
 }  // namespace vr_shell

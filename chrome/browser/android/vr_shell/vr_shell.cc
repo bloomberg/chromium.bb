@@ -28,8 +28,26 @@ static constexpr float kDesktopHeightDefault = 1.6f;
 // Screen angle in degrees. 0 = vertical, positive = top closer.
 static constexpr float kDesktopScreenTiltDefault = 0;
 
-static constexpr float kScreenHeightMeters = 2.0f;
-static constexpr float kScreenWidthMeters = 2.0f;
+static constexpr float kScreenHeightRatio = 1.0f;
+static constexpr float kScreenWidthRatio = 16.0f / 9.0f;
+
+static constexpr float kReticleWidth = 0.05f;
+static constexpr float kReticleHeight = 0.05f;
+
+static constexpr float kLaserWidth = 0.01f;
+
+// The neutral direction is fixed in world space, this is the
+// reference angle pointing forward towards the horizon when the
+// controller orientation is reset. This should match the yaw angle
+// where the main screen is placed.
+static constexpr gvr::Vec3f kNeutralPose = {0.0f, 0.0f, -1.0f};
+
+// In lieu of an elbow model, we assume a position for the user's hand.
+// TODO(mthiesse): Handedness options.
+static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
+
+static constexpr float kReticleZOffset = 0.01f;
+
 }  // namespace
 
 namespace vr_shell {
@@ -97,6 +115,48 @@ void VrShell::InitializeGl(JNIEnv* env,
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
 }
 
+void VrShell::UpdateController() {
+  if (!controller_active_) {
+    // No controller detected, set up a gaze cursor that tracks the
+    // forward direction.
+    //
+    // Make a rotation quaternion that rotates forward_vector_ to (0, 0, -1).
+    gvr::Quatf gaze_quat;
+    gaze_quat.qw = 1 - forward_vector_.z;
+    if (gaze_quat.qw < 1e-6) {
+      // Degenerate case: vectors are exactly opposite. Replace by an
+      // arbitrary 180 degree rotation to avoid invalid normalization.
+      gaze_quat.qx = 1.0f;
+      gaze_quat.qy = 0.0f;
+      gaze_quat.qz = 0.0f;
+      gaze_quat.qw = 0.0f;
+    } else {
+      gaze_quat.qx = forward_vector_.y;
+      gaze_quat.qy = -forward_vector_.x;
+      gaze_quat.qz = 0.0f;
+      NormalizeQuat(gaze_quat);
+    }
+    controller_quat_ = gaze_quat;
+  }
+
+  gvr::Mat4f mat = QuatToMatrix(controller_quat_);
+  gvr::Vec3f forward = MatrixVectorMul(mat, kNeutralPose);
+  gvr::Vec3f translation = getTranslation(mat);
+
+  // Use the eye midpoint as the origin for Cardboard mode, but apply an offset
+  // for the controller.
+  if (controller_active_) {
+    translation.x += kHandPosition.x;
+    translation.y += kHandPosition.y;
+    translation.z += kHandPosition.z;
+  }
+
+  // We can only be intersecting the desktop plane at the moment.
+  float distance_to_plane = desktop_plane_->GetRayDistance(translation,
+                                                           forward);
+  look_at_vector_ = GetRayPoint(translation, forward, distance_to_plane);
+}
+
 void ApplyNeckModel(gvr::Mat4f& mat_forward) {
   // This assumes that the input matrix is a pure rotation matrix. The
   // input object_from_reference matrix has the inverse rotation of
@@ -144,10 +204,12 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::DrawVrShell() {
-  float screen_width = kScreenWidthMeters * desktop_height_;
-  float screen_height = kScreenHeightMeters * desktop_height_;
+  float screen_width = kScreenWidthRatio * desktop_height_;
+  float screen_height = kScreenHeightRatio * desktop_height_;
 
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
+
+  forward_vector_ = getForwardVector(head_pose_);
 
   gvr::Vec3f headPos = getTranslation(head_pose_);
   if (headPos.x == 0.0f && headPos.y == 0.0f && headPos.z == 0.0f) {
@@ -166,6 +228,8 @@ void VrShell::DrawVrShell() {
 
   // Update position of all UI elements (including desktop)
   UpdateTransforms(screen_width, screen_height, screen_tilt);
+
+  UpdateController();
 
   // Everything should be positioned now, ready for drawing.
   gvr::Mat4f left_eye_view_matrix =
@@ -207,7 +271,10 @@ void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
       PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // TODO(mthiesse): Draw order for transparency.
   DrawUI();
+  DrawCursor();
 }
 
 void VrShell::DrawUI() {
@@ -219,6 +286,52 @@ void VrShell::DrawUI() {
         ui_rects_[i].get()->content_texture_handle, combined_matrix,
         ui_rects_[i].get()->copy_rect);
   }
+}
+
+void VrShell::DrawCursor() {
+  gvr::Mat4f mat;
+  SetIdentityM(mat);
+  // Scale the pointer.
+  ScaleM(mat, mat, kReticleWidth, kReticleHeight, 1.0f);
+  // Place the pointer at the screen plane intersection point.
+  TranslateM(mat, mat, look_at_vector_.x, look_at_vector_.y,
+             look_at_vector_.z + kReticleZOffset);
+  gvr::Mat4f mv = MatrixMul(view_matrix_, mat);
+  gvr::Mat4f mvp = MatrixMul(projection_matrix_, mv);
+  vr_shell_renderer_->GetReticleRenderer()->Draw(mvp);
+
+  // Draw the laser only for controllers.
+  if (!controller_active_) {
+    return;
+  }
+  // Find the length of the beam (from hand to target).
+  float xdiff = (kHandPosition.x - look_at_vector_.x);
+  float ydiff = (kHandPosition.y - look_at_vector_.y);
+  float zdiff = (kHandPosition.z - look_at_vector_.z);
+  float scale = xdiff * xdiff + ydiff * ydiff + zdiff * zdiff;
+  float laser_length = std::sqrt(scale);
+
+  // Build a beam, originating from the origin.
+  SetIdentityM(mat);
+
+  // Move the beam half its height so that its end sits on the origin.
+  TranslateM(mat, mat, 0, 0.5, 0);
+  ScaleM(mat, mat, kLaserWidth, laser_length, 1);
+
+  // Tip back 90 degrees to flat, pointing at the scene.
+  auto q = QuatFromAxisAngle(1, 0, 0, -M_PI / 2);
+  auto m = QuatToMatrix(q);
+  mat = MatrixMul(m, mat);
+
+  // Orient according to controller position.
+  mat = MatrixMul(QuatToMatrix(controller_quat_), mat);
+
+  // Move the beam origin to the hand.
+  TranslateM(mat, mat, kHandPosition.x, kHandPosition.y, kHandPosition.z);
+
+  mv = MatrixMul(view_matrix_, mat);
+  mvp = MatrixMul(projection_matrix_, mv);
+  vr_shell_renderer_->GetLaserRenderer()->Draw(mvp);
 }
 
 void VrShell::DrawWebVr() {

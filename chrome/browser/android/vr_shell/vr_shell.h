@@ -53,10 +53,12 @@ class VrShell : public device::GvrDelegate {
   void DrawContentRect();
   void DrawWebVr();
   void DrawUI();
+  void DrawCursor();
 
   void UpdateTransforms(float screen_width_meters,
                         float screen_height_meters,
                         float scree_tilt);
+  void UpdateController();
 
   // samplerExternalOES texture data for content area image.
   jint content_texture_id_ = 0;
@@ -78,11 +80,16 @@ class VrShell : public device::GvrDelegate {
   gvr::Mat4f projection_matrix_;
 
   gvr::Mat4f head_pose_;
+  gvr::Vec3f forward_vector_;
 
   gvr::Sizei render_size_;
 
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
+
+  gvr::Quatf controller_quat_;
+  bool controller_active_ = false;
+  gvr::Vec3f look_at_vector_;
 
   bool webvr_mode_ = false;
 

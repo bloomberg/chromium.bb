@@ -74,6 +74,10 @@ void NormalizeQuat(gvr::Quatf& quat);
 
 gvr::Quatf QuatFromAxisAngle(float x, float y, float z, float angle);
 
+gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
+                       const gvr::Vec3f& rayVector,
+                       float scale);
+
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_MATH_H_

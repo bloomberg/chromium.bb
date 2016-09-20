@@ -74,8 +74,6 @@ GLuint CompileShader(GLenum shader_type,
 
 GLuint CreateAndLinkProgram(GLuint vertext_shader_handle,
                             GLuint fragment_shader_handle,
-                            int num_attributes,
-                            const GLchar** attributes,
                             std::string& error) {
   GLuint program_handle = glCreateProgram();
 
@@ -85,15 +83,6 @@ GLuint CreateAndLinkProgram(GLuint vertext_shader_handle,
 
     // Bind the fragment shader to the program.
     glAttachShader(program_handle, fragment_shader_handle);
-
-    // Bind attributes. This is optional, no need to supply them if
-    // using glGetAttribLocation to look them up. Useful for a single
-    // vertex array object (VAO) that is used with multiple shaders.
-    if (attributes != nullptr) {
-      for (int i = 0; i < num_attributes; i++) {
-        glBindAttribLocation(program_handle, i, attributes[i]);
-      }
-    }
 
     // Link the two shaders together into a program.
     glLinkProgram(program_handle);
