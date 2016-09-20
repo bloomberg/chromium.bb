@@ -4,6 +4,12 @@
 # found in the LICENSE file.
 
 cd "$(dirname "$(readlink -f -- "$0")")"
-virtualenv venv --extra-search-dir=pip_packages
-source venv/bin/activate
-pip install --no-index -f pip_packages -r requirements.txt
+if [ requirements.txt -nt venv/timestamp ]; then
+  echo Creating or updating virtualenv in venv/
+  virtualenv venv --extra-search-dir=pip_packages
+  source venv/bin/activate
+  pip install --no-index -f pip_packages -r requirements.txt
+  touch venv/timestamp
+else
+  echo Existing virtualenv is already up to date.
+fi
