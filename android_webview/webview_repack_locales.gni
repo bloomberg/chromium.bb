@@ -10,6 +10,9 @@ import("webview_repack_locales_list.gni")
 template("webview_repack_locales") {
   repack_locales(target_name) {
     forward_variables_from(invoker, "*")
+    if (!defined(deps)) {
+      deps = []
+    }
 
     # Adding webview specific pak file? You should add it to
     # webview_repack_locales_source_patterns, so it is also included in
@@ -20,7 +23,7 @@ template("webview_repack_locales") {
       "${root_gen_dir}/content/app/strings/content_strings_",
       "${root_gen_dir}/ui/strings/app_locale_settings_",
     ]
-    deps = [
+    deps += [
       "//android_webview:generate_components_strings",
       "//content/app/strings",
       "//ui/strings:app_locale_settings",
