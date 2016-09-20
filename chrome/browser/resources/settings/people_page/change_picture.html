@@ -1,5 +1,6 @@
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
@@ -125,7 +126,7 @@
         <div id="discardControlBar"
             hidden="[[isDiscardHidden_(selectedItem_)]]">
           <paper-icon-button id="discardOldImage" tabindex="0"
-              icon="settings:delete" title="$i18n{discardPhoto}"
+              icon="cr:delete" title="$i18n{discardPhoto}"
               on-tap="onTapDiscardOldImage_">
           </paper-icon-button>
         </div>
