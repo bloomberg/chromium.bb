@@ -26,9 +26,8 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/WTFString.h"
 
 class SkPaint;
 

@@ -7,6 +7,7 @@
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "wtf/PtrUtil.h"
@@ -29,13 +30,14 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 {
     DCHECK_EQ(filterData->m_state, FilterData::RecordingContent);
 
-    SourceGraphic* sourceGraphic = filterData->filter->getSourceGraphic();
+    Filter* filter = filterData->lastEffect->getFilter();
+    SourceGraphic* sourceGraphic = filter->getSourceGraphic();
     DCHECK(sourceGraphic);
 
     // Use the context that contains the filtered content.
     DCHECK(m_paintController);
     DCHECK(m_context);
-    m_context->beginRecording(filterData->filter->filterRegion());
+    m_context->beginRecording(filter->filterRegion());
     m_paintController->commitNewDisplayItems();
     m_paintController->paintArtifact().replay(*m_context);
 
@@ -51,18 +53,18 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 static void paintFilteredContent(GraphicsContext& context, FilterData* filterData)
 {
     DCHECK_EQ(filterData->m_state, FilterData::ReadyToPaint);
-    DCHECK(filterData->filter->getSourceGraphic());
+    DCHECK(filterData->lastEffect->getFilter()->getSourceGraphic());
 
     filterData->m_state = FilterData::PaintingFilter;
 
-    FilterEffect* lastEffect = filterData->filter->lastEffect();
+    FilterEffect* lastEffect = filterData->lastEffect;
     sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
     context.save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
     context.clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->absoluteBounds()));
 
-    FloatRect boundaries = filterData->filter->filterRegion();
+    FloatRect boundaries = lastEffect->getFilter()->filterRegion();
     context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, std::move(imageFilter));
     context.endLayer();
     context.restore();
@@ -97,7 +99,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
     filter->getSourceGraphic()->setSourceRect(sourceRegion);
 
     FilterData* filterData = FilterData::create();
-    filterData->filter = filter;
+    filterData->lastEffect = filter->lastEffect();
     filterData->nodeMap = nodeMap;
 
     // TODO(pdr): Can this be moved out of painter?
@@ -128,7 +130,7 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::kSVGFilter))
         return;
 
-    FloatRect filterRegion = filterData ? filterData->filter->filterRegion() : FloatRect();
+    FloatRect filterRegion = filterData ? filterData->lastEffect->getFilter()->filterRegion() : FloatRect();
     LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, filterRegion);
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
         paintFilteredContent(context, filterData);

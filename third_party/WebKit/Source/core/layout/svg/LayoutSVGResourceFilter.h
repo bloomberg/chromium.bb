@@ -25,11 +25,13 @@
 #define LayoutSVGResourceFilter_h
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/svg/SVGFilterElement.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/Filter.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace blink {
+
+class FilterEffect;
+class SVGFilterElement;
+class SVGFilterGraphNodeMap;
 
 class FilterData final : public GarbageCollected<FilterData> {
 public:
@@ -58,7 +60,7 @@ public:
 
     DECLARE_TRACE();
 
-    Member<Filter> filter;
+    Member<FilterEffect> lastEffect;
     Member<SVGFilterGraphNodeMap> nodeMap;
     FilterDataState m_state;
 
@@ -81,8 +83,8 @@ public:
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
-    SVGUnitTypes::SVGUnitType filterUnits() const { return toSVGFilterElement(element())->filterUnits()->currentValue()->enumValue(); }
-    SVGUnitTypes::SVGUnitType primitiveUnits() const { return toSVGFilterElement(element())->primitiveUnits()->currentValue()->enumValue(); }
+    SVGUnitTypes::SVGUnitType filterUnits() const;
+    SVGUnitTypes::SVGUnitType primitiveUnits() const;
 
     void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
 

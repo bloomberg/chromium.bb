@@ -23,20 +23,22 @@
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 
+#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace blink {
 
 DEFINE_TRACE(FilterData)
 {
-    visitor->trace(filter);
+    visitor->trace(lastEffect);
     visitor->trace(nodeMap);
 }
 
 void FilterData::dispose()
 {
     nodeMap = nullptr;
-    filter = nullptr;
+    lastEffect = nullptr;
 }
 
 LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
@@ -96,6 +98,16 @@ FloatRect LayoutSVGResourceFilter::resourceBoundingBox(const LayoutObject* objec
         return SVGLengthContext::resolveRectangle<SVGFilterElement>(element, element->filterUnits()->currentValue()->enumValue(), object->objectBoundingBox());
 
     return FloatRect();
+}
+
+SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::filterUnits() const
+{
+    return toSVGFilterElement(element())->filterUnits()->currentValue()->enumValue();
+}
+
+SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::primitiveUnits() const
+{
+    return toSVGFilterElement(element())->primitiveUnits()->currentValue()->enumValue();
 }
 
 void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, const QualifiedName& attribute)
