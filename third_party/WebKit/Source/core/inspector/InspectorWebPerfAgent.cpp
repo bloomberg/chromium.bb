@@ -7,12 +7,29 @@
 #include "core/InstrumentingAgents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
+
+namespace {
+static const double kLongTaskThresholdMillis = 50.0;
+static const char* unknownAttribution = "unknown";
+static const char* ambiguousAttribution = "multiple-contexts";
+
+bool canAccessOrigin(Frame* frame1, Frame* frame2)
+{
+    SecurityOrigin* securityOrigin1 = frame1->securityContext()->getSecurityOrigin();
+    SecurityOrigin* securityOrigin2 = frame2->securityContext()->getSecurityOrigin();
+    // TODO(panicker): Confirm this pending security review.
+    return securityOrigin1->canAccess(securityOrigin2);
+}
+} // namespace
 
 InspectorWebPerfAgent::InspectorWebPerfAgent(InspectedFrames* inspectedFrames)
     : m_inspectedFrames(inspectedFrames)
@@ -70,6 +87,36 @@ void InspectorWebPerfAgent::didProcessTask()
 
 void InspectorWebPerfAgent::ReportTaskTime(double startTime, double endTime)
 {
+    if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
+        return;
+    DOMWindow* domWindow = m_inspectedFrames->root()->domWindow();
+    if (!domWindow)
+        return;
+    Performance* performance = DOMWindowPerformance::performance(*domWindow);
+    DCHECK(performance);
+    performance->addLongTaskTiming(startTime, endTime, sanitizedLongTaskName(
+        m_frameContextLocations, m_inspectedFrames->root()));
+}
+
+String InspectorWebPerfAgent::sanitizedLongTaskName(
+    const HeapHashSet<Member<Location>>& frameContextLocations, Frame* rootFrame)
+{
+    if (frameContextLocations.size() == 0) {
+        // Unable to attribute as no script was involved.
+        return unknownAttribution;
+    }
+    if (frameContextLocations.size() > 1) {
+        // Unable to attribute, multiple script execution contents were involved.
+        return ambiguousAttribution;
+    }
+    // Exactly one culprit location, attribute based on origin boundary.
+    DCHECK_EQ(1u, frameContextLocations.size());
+    Location* culpritLocation = *frameContextLocations.begin();
+    if (canAccessOrigin(rootFrame, culpritLocation->frame())) {
+        // For same origin, it's safe to to return culprit location URL.
+        return culpritLocation->href();
+    }
+    return "cross-origin";
 }
 
 DEFINE_TRACE(InspectorWebPerfAgent)

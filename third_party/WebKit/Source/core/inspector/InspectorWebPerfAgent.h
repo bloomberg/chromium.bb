@@ -13,6 +13,7 @@
 namespace blink {
 
 class ExecutionContext;
+class Frame;
 class LocalFrame;
 class Location;
 class InspectedFrames;
@@ -44,6 +45,8 @@ public:
 
 private:
     bool m_enabled;
+    String sanitizedLongTaskName(const HeapHashSet<Member<Location>>& frameContextLocations, Frame* rootFrame);
+
     Member<InspectedFrames> m_inspectedFrames;
     HeapHashSet<Member<Location>> m_frameContextLocations;
 };

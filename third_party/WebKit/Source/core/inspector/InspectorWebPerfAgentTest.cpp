@@ -19,10 +19,16 @@ protected:
     void SetUp() override;
     LocalFrame* frame() const { return m_pageHolder->document().frame(); }
     ExecutionContext* executionContext() const { return &m_pageHolder->document(); }
+    LocalFrame* anotherFrame() const { return m_anotherPageHolder->document().frame(); }
     ExecutionContext* anotherExecutionContext() const { return &m_anotherPageHolder->document(); }
 
     String frameContextURL();
     int numUniqueFrameContextsSeen();
+
+    String sanitizedLongTaskName(
+        HeapHashSet<Member<Location>> frameContextLocations, Frame* rootFrame) {
+        return m_agent->sanitizedLongTaskName(frameContextLocations, rootFrame);
+    }
 
     Persistent<InspectorWebPerfAgent> m_agent;
     std::unique_ptr<DummyPageHolder> m_pageHolder;
@@ -46,8 +52,7 @@ String InspectorWebPerfAgentTest::frameContextURL()
     if (m_agent->m_frameContextLocations.size() != 1)
         return "";
     Location* location = (*m_agent->m_frameContextLocations.begin()).get();
-    return String(location->protocol()) + "//"
-        + location->hostname() + location->pathname();
+    return location->href();
 }
 
 int InspectorWebPerfAgentTest::numUniqueFrameContextsSeen()
@@ -116,6 +121,24 @@ TEST_F(InspectorWebPerfAgentTest, NoScriptInLongTask)
     m_agent->ReportTaskTime(3719349.445172, 3719349.5561923); // Long task
     // Without presence of Script, FrameContext URL is not available
     EXPECT_EQ(0, numUniqueFrameContextsSeen());
+}
+
+TEST_F(InspectorWebPerfAgentTest, SanitizedLongTaskName)
+{
+    HeapHashSet<Member<Location>> frameContextLocations;
+    // Unable to attribute, when no execution contents are available.
+    EXPECT_EQ("unknown",
+        sanitizedLongTaskName(frameContextLocations, frame()));
+
+    // Attribute for same context (and same origin).
+    frameContextLocations.add(Location::create(frame()));
+    EXPECT_EQ("https://example.com/foo",
+        sanitizedLongTaskName(frameContextLocations, frame()));
+
+    // Unable to attribute, when multiple script execution contents are involved.
+    frameContextLocations.add(Location::create(frame()));
+    EXPECT_EQ("multiple-contexts",
+        sanitizedLongTaskName(frameContextLocations, frame()));
 }
 
 } // namespace blink
