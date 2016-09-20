@@ -20,8 +20,7 @@ class SharedResourcesDataSource : public URLDataSource {
   std::string GetSource() const override;
   void StartDataRequest(
       const std::string& path,
-      int render_process_id,
-      int render_frame_id,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
   base::MessageLoop* MessageLoopForRequestPath(

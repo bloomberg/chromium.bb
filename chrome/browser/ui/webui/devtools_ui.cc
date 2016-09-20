@@ -88,10 +88,10 @@ class DevToolsDataSource : public content::URLDataSource,
   // content::URLDataSource implementation.
   std::string GetSource() const override;
 
-  void StartDataRequest(const std::string& path,
-                        int render_process_id,
-                        int render_frame_id,
-                        const GotDataCallback& callback) override;
+  void StartDataRequest(
+      const std::string& path,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const GotDataCallback& callback) override;
 
  private:
   // content::URLDataSource overrides.
@@ -105,14 +105,10 @@ class DevToolsDataSource : public content::URLDataSource,
 
   // Serves bundled DevTools frontend from ResourceBundle.
   void StartBundledDataRequest(const std::string& path,
-                               int render_process_id,
-                               int render_frame_id,
                                const GotDataCallback& callback);
 
   // Serves remote DevTools frontend from hard-coded App Engine domain.
   void StartRemoteDataRequest(const std::string& path,
-                              int render_process_id,
-                              int render_frame_id,
                               const GotDataCallback& callback);
 
   ~DevToolsDataSource() override;
@@ -144,8 +140,7 @@ std::string DevToolsDataSource::GetSource() const {
 
 void DevToolsDataSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   // Serve request from local bundle.
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
@@ -153,7 +148,7 @@ void DevToolsDataSource::StartDataRequest(
   if (base::StartsWith(path, bundled_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
-                            render_process_id, render_frame_id, callback);
+                            callback);
     return;
   }
 
@@ -163,7 +158,7 @@ void DevToolsDataSource::StartDataRequest(
   if (base::StartsWith(path, remote_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
-                           render_process_id, render_frame_id, callback);
+                           callback);
     return;
   }
 
@@ -188,8 +183,6 @@ bool DevToolsDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
 
 void DevToolsDataSource::StartBundledDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string filename = PathWithoutParams(path);
   base::StringPiece resource =
@@ -206,8 +199,6 @@ void DevToolsDataSource::StartBundledDataRequest(
 
 void DevToolsDataSource::StartRemoteDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url = GURL(kRemoteFrontendBase + path);
   CHECK_EQ(url.host(), kRemoteFrontendDomain);

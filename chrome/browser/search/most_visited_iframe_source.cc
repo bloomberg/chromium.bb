@@ -46,8 +46,7 @@ std::string MostVisitedIframeSource::GetSource() const {
 
 void MostVisitedIframeSource::StartDataRequest(
     const std::string& path_and_query,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
@@ -58,7 +57,7 @@ void MostVisitedIframeSource::StartDataRequest(
     std::string rel_path = "most_visited_" + path.substr(1);
     if (path == kSingleJSPath) {
       std::string origin;
-      if (!GetOrigin(render_process_id, render_frame_id, &origin)) {
+      if (!GetOrigin(wc_getter, &origin)) {
         callback.Run(nullptr);
         return;
       }
@@ -81,18 +80,15 @@ void MostVisitedIframeSource::StartDataRequest(
   } else if (path == kThumbnailCSSPath) {
     SendResource(IDR_MOST_VISITED_THUMBNAIL_CSS, callback);
   } else if (path == kThumbnailJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, render_process_id,
-                     render_frame_id, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, wc_getter, callback);
   } else if (path == kSingleHTMLPath) {
     SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
   } else if (path == kSingleCSSPath) {
     SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
   } else if (path == kSingleJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, render_process_id,
-                     render_frame_id, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, wc_getter, callback);
   } else if (path == kUtilJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, render_process_id,
-                     render_frame_id, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
   } else {

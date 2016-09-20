@@ -130,8 +130,7 @@ std::string FileIconSource::GetSource() const {
 
 void FileIconSource::StartDataRequest(
     const std::string& url_path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string query;
   base::FilePath file_path;

@@ -47,8 +47,7 @@ std::string ThumbnailSource::GetSource() const {
 
 void ThumbnailSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL page_url;
   GURL fallback_thumbnail_url;

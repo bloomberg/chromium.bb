@@ -64,8 +64,7 @@ std::string ImageSource::GetSource() const {
 
 void ImageSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& got_data_callback) {
   if (!IsWhitelisted(path)) {
     got_data_callback.Run(NULL);

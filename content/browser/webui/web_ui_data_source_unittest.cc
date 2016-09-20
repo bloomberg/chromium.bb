@@ -57,7 +57,8 @@ class WebUIDataSourceTest : public testing::Test {
 
   void StartDataRequest(const std::string& path,
                         const URLDataSource::GotDataCallback& callback) {
-    source_->StartDataRequest(path, 0, 0, callback);
+    source_->StartDataRequest(path, ResourceRequestInfo::WebContentsGetter(),
+                              callback);
   }
 
   std::string GetMimeType(const std::string& path) const {

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/resource_request_info.h"
 
 namespace base {
 class MessageLoop;
@@ -53,10 +54,13 @@ class CONTENT_EXPORT URLDataSource {
   // the path of the request. The child class should run |callback| when the
   // data is available or if the request could not be satisfied. This can be
   // called either in this callback or asynchronously with the response.
-  virtual void StartDataRequest(const std::string& path,
-                                int render_process_id,
-                                int render_frame_id,
-                                const GotDataCallback& callback) = 0;
+  // |wc_getter| can be called to return the WebContents for this request, but
+  // only on the UI thread. If this method is called on the UI thread, then it's
+  // guaranteed that wc_getter will return a non-null WebContents.
+  virtual void StartDataRequest(
+      const std::string& path,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const GotDataCallback& callback) = 0;
 
   // Return the mimetype that should be sent with this response, or empty
   // string to specify no mime type.

@@ -38,6 +38,8 @@ class TestIframeSource : public IframeSource {
   using IframeSource::SendResource;
   using IframeSource::SendJSWithOrigin;
 
+  void set_origin(std::string origin) { origin_ = origin; }
+
  protected:
   std::string GetSource() const override { return "test"; }
 
@@ -47,25 +49,22 @@ class TestIframeSource : public IframeSource {
 
   void StartDataRequest(
       const std::string& path,
-      int render_process_id,
-      int render_frame_id,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {}
 
   // RenderFrameHost is hard to mock in concert with everything else, so stub
   // this method out for testing.
-  bool GetOrigin(int process_id,
-                 int render_frame_id,
-                 std::string* origin) const override {
-    if (process_id == kInstantRendererPID) {
-      *origin = kInstantOrigin;
-      return true;
-    }
-    if (process_id == kNonInstantRendererPID) {
-      *origin = kNonInstantOrigin;
-      return true;
-    }
-    return false;
+  bool GetOrigin(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      std::string* origin) const override {
+    if (origin_.empty())
+      return false;
+    *origin = origin_;
+    return true;
   }
+
+ private:
+  std::string origin_;
 };
 
 class IframeSourceTest : public testing::Test {
@@ -91,26 +90,22 @@ class IframeSourceTest : public testing::Test {
   }
 
   std::unique_ptr<net::URLRequest> MockRequest(const std::string& url,
-                                               bool allocate_info,
-                                               int render_process_id,
-                                               int render_frame_id) {
+                                               int render_process_id) {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
             GURL(url), net::DEFAULT_PRIORITY, NULL));
-    if (allocate_info) {
-      content::ResourceRequestInfo::AllocateForTesting(
-          request.get(),
-          content::RESOURCE_TYPE_SUB_FRAME,
-          &resource_context_,
-          render_process_id,
-          render_frame_id,
-          MSG_ROUTING_NONE,
-          false,   // is_main_frame
-          false,   // parent_is_main_frame
-          true,    // allow_download
-          false,   // is_async
-          false);  // is_using_lofi
-    }
+    content::ResourceRequestInfo::AllocateForTesting(
+        request.get(),
+        content::RESOURCE_TYPE_SUB_FRAME,
+        &resource_context_,
+        render_process_id,
+        MSG_ROUTING_NONE,
+        MSG_ROUTING_NONE,
+        false,   // is_main_frame
+        false,   // parent_is_main_frame
+        true,    // allow_download
+        false,   // is_async
+        false);  // is_using_lofi
     return request;
   }
 
@@ -118,12 +113,10 @@ class IframeSourceTest : public testing::Test {
     source()->SendResource(resource_id, callback_);
   }
 
-  void SendJSWithOrigin(
-      int resource_id,
-      int render_process_id,
-      int render_frame_id) {
-    source()->SendJSWithOrigin(resource_id, render_process_id, render_frame_id,
-                               callback_);
+  void SendJSWithOrigin(int resource_id) {
+    source()->SendJSWithOrigin(
+        resource_id, content::ResourceRequestInfo::WebContentsGetter(),
+        callback_);
   }
 
  private:
@@ -133,6 +126,7 @@ class IframeSourceTest : public testing::Test {
                            base::Unretained(this));
     instant_io_context_ = new InstantIOContext;
     InstantIOContext::SetUserDataOnIO(&resource_context_, instant_io_context_);
+    source_->set_origin(kInstantOrigin);
     InstantIOContext::AddInstantProcessOnIO(instant_io_context_,
                                             kInstantRendererPID);
     response_ = NULL;
@@ -156,23 +150,24 @@ class IframeSourceTest : public testing::Test {
 
 TEST_F(IframeSourceTest, ShouldServiceRequest) {
   std::unique_ptr<net::URLRequest> request;
-  request = MockRequest("http://test/loader.js", true,
-                        kNonInstantRendererPID, 0);
+  source()->set_origin(kNonInstantOrigin);
+  request = MockRequest("http://test/loader.js", kNonInstantRendererPID);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));
-  request = MockRequest("chrome-search://bogus/valid.js", true,
-                        kInstantRendererPID, 0);
+  source()->set_origin(kInstantOrigin);
+  request = MockRequest("chrome-search://bogus/valid.js", kInstantRendererPID);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));
-  request = MockRequest("chrome-search://test/bogus.js", true,
-                        kInstantRendererPID, 0);
+  source()->set_origin(kInstantOrigin);
+  request = MockRequest("chrome-search://test/bogus.js", kInstantRendererPID);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));
-  request = MockRequest("chrome-search://test/valid.js", true,
-                        kInstantRendererPID, 0);
+  source()->set_origin(kInstantOrigin);
+  request = MockRequest("chrome-search://test/valid.js", kInstantRendererPID);
   EXPECT_TRUE(source()->ShouldServiceRequest(request.get()));
-  request = MockRequest("chrome-search://test/valid.js", true,
-                        kNonInstantRendererPID, 0);
+  source()->set_origin(kNonInstantOrigin);
+  request = MockRequest("chrome-search://test/valid.js",
+                        kNonInstantRendererPID);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));
-  request = MockRequest("chrome-search://test/valid.js", true,
-                        kInvalidRendererPID, 0);
+  source()->set_origin(std::string());
+  request = MockRequest("chrome-search://test/valid.js", kInvalidRendererPID);
   EXPECT_FALSE(source()->ShouldServiceRequest(request.get()));
 }
 
@@ -191,10 +186,13 @@ TEST_F(IframeSourceTest, SendResource) {
 }
 
 TEST_F(IframeSourceTest, SendJSWithOrigin) {
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kInstantRendererPID, 0);
+  source()->set_origin(kInstantOrigin);
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
   EXPECT_FALSE(response_string().empty());
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kNonInstantRendererPID, 0);
+  source()->set_origin(kNonInstantOrigin);
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
   EXPECT_FALSE(response_string().empty());
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS, kInvalidRendererPID, 0);
+  source()->set_origin(std::string());
+  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
   EXPECT_TRUE(response_string().empty());
 }

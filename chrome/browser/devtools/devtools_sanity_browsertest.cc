@@ -1382,10 +1382,10 @@ class StaticURLDataSource : public content::URLDataSource {
       : source_(source), content_(content) {}
 
   std::string GetSource() const override { return source_; }
-  void StartDataRequest(const std::string& path,
-                        int render_process_id,
-                        int render_frame_id,
-                        const GotDataCallback& callback) override {
+  void StartDataRequest(
+      const std::string& path,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const GotDataCallback& callback) override {
     std::string data(content_);
     callback.Run(base::RefCountedString::TakeString(&data));
   }

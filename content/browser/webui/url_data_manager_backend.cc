@@ -696,11 +696,10 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   }
 
   // Look up additional request info to pass down.
-  int render_process_id = -1;
-  int render_frame_id = -1;
-  ResourceRequestInfo::GetRenderFrameForRequest(request,
-                                                &render_process_id,
-                                                &render_frame_id);
+  ResourceRequestInfo::WebContentsGetter wc_getter;
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (info)
+    wc_getter = info->GetWebContentsGetterForRequest();
 
   // Forward along the request to the data source.
   base::MessageLoop* target_message_loop =
@@ -714,7 +713,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->source()->StartDataRequest(
-        path, render_process_id, render_frame_id,
+        path, wc_getter,
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // URLRequestChromeJob should receive mime type before data. This
@@ -730,7 +729,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     target_message_loop->task_runner()->PostTask(
         FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
                               base::RetainedRef(source), path,
-                              render_process_id, render_frame_id, request_id));
+                              wc_getter, request_id));
   }
   return true;
 }
@@ -756,22 +755,19 @@ URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
 void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter,
     int request_id) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-      render_process_id != -1 &&
-      !RenderProcessHost::FromID(render_process_id)) {
-    // Make the request fail if its initiating renderer is no longer valid.
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI) && !wc_getter.is_null() &&
+      !wc_getter.Run()) {
+    // Make the request fail if its initiating WebContents is no longer valid.
     // This can happen when the IO thread posts this task just before the
-    // renderer shuts down.
+    // WebContents shuts down.
     source->SendResponse(request_id, nullptr);
     return;
   }
   source->source()->StartDataRequest(
       path,
-      render_process_id,
-      render_frame_id,
+      wc_getter,
       base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
 }
 

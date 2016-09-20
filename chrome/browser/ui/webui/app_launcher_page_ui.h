@@ -40,8 +40,7 @@ class AppLauncherPageUI : public content::WebUIController {
     std::string GetSource() const override;
     void StartDataRequest(
         const std::string& path,
-        int render_process_id,
-        int render_frame_id,
+        const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
         const content::URLDataSource::GotDataCallback& callback) override;
     std::string GetMimeType(const std::string&) const override;
     bool ShouldReplaceExistingSource() const override;

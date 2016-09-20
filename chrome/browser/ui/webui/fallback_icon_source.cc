@@ -30,8 +30,7 @@ std::string FallbackIconSource::GetSource() const {
 
 void FallbackIconSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   chrome::ParsedFallbackIconPath parsed;
   bool success = parsed.Parse(path);

@@ -40,8 +40,7 @@ std::string LargeIconSource::GetSource() const {
 
 void LargeIconSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   if (!large_icon_service_) {
     SendNotFoundResponse(callback);

@@ -20,8 +20,7 @@ class MostVisitedIframeSource : public IframeSource {
   // Overridden from IframeSource. Public for testing.
   void StartDataRequest(
       const std::string& path_and_query,
-      int render_process_id,
-      int render_frame_id,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 
  protected:

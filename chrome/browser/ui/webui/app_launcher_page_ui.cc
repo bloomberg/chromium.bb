@@ -21,6 +21,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,8 +105,7 @@ std::string AppLauncherPageUI::HTMLSource::GetSource() const {
 
 void AppLauncherPageUI::HTMLSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -113,7 +113,7 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   resource->set_should_show_other_devices_menu(false);
 
   content::RenderProcessHost* render_host =
-      content::RenderProcessHost::FromID(render_process_id);
+      wc_getter.Run()->GetRenderProcessHost();
   NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
       profile_, render_host);
   scoped_refptr<base::RefCountedMemory> html_bytes(

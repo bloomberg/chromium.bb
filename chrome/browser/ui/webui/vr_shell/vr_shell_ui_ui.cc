@@ -72,10 +72,10 @@ class RemoteDataSource : public content::URLDataSource,
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
-  void StartDataRequest(const std::string& path,
-                        int render_process_id,
-                        int render_frame_id,
-                        const GotDataCallback& callback) override;
+  void StartDataRequest(
+      const std::string& path,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const GotDataCallback& callback) override;
 
  private:
   // content::URLDataSource overrides.
@@ -116,8 +116,7 @@ std::string RemoteDataSource::GetSource() const {
 
 void RemoteDataSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url = GURL((use_localhost_ ? kRemoteBase : kRemoteBaseAlt) +
                   (path.empty() ? std::string(kRemoteDefaultPath) : path));
@@ -162,7 +161,10 @@ void RemoteDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
       // page from remote server. Empty string indicates default page.
       use_localhost_ = false;
       content::URLDataSource::GotDataCallback callback = it->second;
-      StartDataRequest("", 0, 0, callback);
+      StartDataRequest(
+          std::string(),
+          content::ResourceRequestInfo::WebContentsGetter(),
+          callback);
     }
   } else {
     it->second.Run(base::RefCountedString::TakeString(&response));

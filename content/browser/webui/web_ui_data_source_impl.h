@@ -67,8 +67,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   std::string GetMimeType(const std::string& path) const;
   void StartDataRequest(
       const std::string& path,
-      int render_process_id,
-      int render_frame_id,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
       const URLDataSource::GotDataCallback& callback);
 
   // Note: this must be called before StartDataRequest() to have an effect.

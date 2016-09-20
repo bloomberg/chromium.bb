@@ -225,13 +225,9 @@ std::string DomDistillerViewerSource::GetSource() const {
 
 void DomDistillerViewerSource::StartDataRequest(
     const std::string& path,
-    int render_process_id,
-    int render_frame_id,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host)
-    return;
+  content::WebContents* web_contents = wc_getter.Run();
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
@@ -248,9 +244,7 @@ void DomDistillerViewerSource::StartDataRequest(
       dom_distiller_service_->GetDistilledPagePrefs()->SetFontScaling(scale);
     }
   }
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  DCHECK(web_contents);
+
   // An empty |path| is invalid, but guard against it. If not empty, assume
   // |path| starts with '?', which is stripped away.
   const std::string path_after_query_separator =
