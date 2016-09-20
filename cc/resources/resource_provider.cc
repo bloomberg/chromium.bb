@@ -840,9 +840,9 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
 
 sk_sp<SkColorSpace> ResourceProvider::GetResourceSkColorSpace(
     const Resource* resource) const {
-  // TODO(crbug.com/634102): Implement conversion for skia-based compositing to
-  // be color-managed
-  return nullptr;
+  if (!enable_color_correct_rendering_)
+    return nullptr;
+  return resource->color_space.ToSkColorSpace();
 }
 
 void ResourceProvider::CopyToResource(ResourceId id,

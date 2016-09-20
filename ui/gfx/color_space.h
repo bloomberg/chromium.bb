@@ -17,6 +17,10 @@ template <class P>
 struct ParamTraits;
 }  // namespace IPC
 
+template <typename T>
+class sk_sp;
+class SkColorSpace;
+
 namespace gfx {
 
 class ICCProfile;
@@ -145,6 +149,9 @@ class GFX_EXPORT ColorSpace {
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
   bool operator<(const ColorSpace& other) const;
+
+  // Note that this may return nullptr.
+  sk_sp<SkColorSpace> ToSkColorSpace() const;
 
  private:
   PrimaryID primaries_ = PrimaryID::UNSPECIFIED;
