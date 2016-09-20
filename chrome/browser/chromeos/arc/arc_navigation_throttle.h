@@ -17,6 +17,8 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "ui/gfx/image/image.h"
 
+class GURL;
+
 namespace content {
 class NavigationHandle;
 class WebContents;
@@ -54,6 +56,9 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
                         const ShowIntentPickerCallback& show_intent_picker_cb);
   ~ArcNavigationThrottle() override;
 
+  static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
+                                                 const GURL& current_url);
+
  private:
   // content::Navigation implementation:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
@@ -67,10 +72,6 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   void OnIntentPickerClosed(mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
                             size_t selected_app_index,
                             CloseReason close_reason);
-  // Compares the host name of the referrer and target URL to decide whether
-  // the navigation needs to be overriden.
-  bool ShouldOverrideUrlLoading(content::NavigationHandle* navigation_handle);
-
   // A callback object that allow us to display an IntentPicker when Run() is
   // executed, it also allow us to report the user's selection back to
   // OnIntentPickerClosed().
