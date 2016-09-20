@@ -155,7 +155,7 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     v8_inspector::V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), toV8InspectorStringView(humanReadableName));
     contextInfo.origin = toV8InspectorStringView(originString);
     contextInfo.auxData = toV8InspectorStringView(auxData);
-    contextInfo.hasMemoryOnConsole = scriptState->getExecutionContext()->isDocument();
+    contextInfo.hasMemoryOnConsole = scriptState->getExecutionContext() && scriptState->getExecutionContext()->isDocument();
     v8Inspector()->contextCreated(contextInfo);
 }
 
