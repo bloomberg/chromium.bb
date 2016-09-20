@@ -131,7 +131,10 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
   // it is okay to immediately send IPC messages.
   if (command_buffer->channel()) {
     decoder_.reset(new media::GpuVideoDecodeAcceleratorHost(command_buffer));
-    return decoder_->Initialize(PPToMediaProfile(profile), this);
+    media::VideoDecodeAccelerator::Config config(PPToMediaProfile(profile));
+    config.supported_output_formats.assign(
+        {media::PIXEL_FORMAT_XRGB, media::PIXEL_FORMAT_ARGB});
+    return decoder_->Initialize(config, this);
   }
   return false;
 }
