@@ -168,9 +168,9 @@ class FakeTransportStreamPacketizer
   std::vector<std::vector<uint8_t>> headers_;
 };
 
-struct ProgramClockReference {
-  static const uint64_t kInvalidBase = ~static_cast<uint64_t>(0u);
+const uint64_t kInvalidProgramClockReferenceBase = ~static_cast<uint64_t>(0u);
 
+struct ProgramClockReference {
   uint64_t base;
   uint16_t extension;
 };
@@ -509,7 +509,7 @@ class WiFiDisplayElementaryStreamUnitPacketizationTest
         // where
         //   parsed_pcr_value = 300 * parsed_pcr_.base + parsed_pcr_.extension
         // but allow parsed_pcr_.base and parsed_dts to wrap around in 33 bits.
-        EXPECT_NE(ProgramClockReference::kInvalidBase, parsed_pcr_.base);
+        EXPECT_NE(kInvalidProgramClockReferenceBase, parsed_pcr_.base);
         EXPECT_LE(
             300u * ((parsed_dts - parsed_pcr_.base) & ts::kTimeStampMask) -
                 parsed_pcr_.extension,
@@ -549,7 +549,7 @@ class WiFiDisplayElementaryStreamUnitPacketizationTest
     size_t program_clock_reference;
     size_t elementary_streams[3];
   } continuity_ = {0u, 0u, 0u, {0u, 0u, 0u}};
-  ProgramClockReference parsed_pcr_ = {ProgramClockReference::kInvalidBase, 0u};
+  ProgramClockReference parsed_pcr_ = {kInvalidProgramClockReferenceBase, 0u};
 };
 
 TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
@@ -781,7 +781,7 @@ TEST(WiFiDisplayTransportStreamPacketizationTest, EncodeToMediaDatagramPacket) {
   auto packets = packetizer.FetchPackets();
 
   // Check datagram packets.
-  ProgramClockReference pcr = {ProgramClockReference::kInvalidBase, 0u};
+  ProgramClockReference pcr = {kInvalidProgramClockReferenceBase, 0u};
   uint16_t sequence_number = 0u;
   uint32_t synchronization_source_identifier;
   auto transport_stream_packet_it = transport_stream_packets.cbegin();
@@ -810,7 +810,7 @@ TEST(WiFiDisplayTransportStreamPacketizationTest, EncodeToMediaDatagramPacket) {
     // Packet time stamp.
     uint32_t parsed_time_stamp;
     EXPECT_TRUE(header_reader.ReadU32(&parsed_time_stamp));
-    if (pcr.base == ProgramClockReference::kInvalidBase) {
+    if (pcr.base == kInvalidProgramClockReferenceBase) {
       // This happens only for the first datagram packet.
       EXPECT_TRUE(&packet == &packets.front());
       // Ensure that the next datagram packet reaches the else branch.
