@@ -40,4 +40,7 @@ interface Gamepad {
     readonly attribute GamepadButton[] buttons;
     [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadPose? pose;
     [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadHand hand;
+
+    // https://w3c.github.io/webvr/#interface-gamepad
+    [RuntimeEnabled=GamepadExtensions] readonly attribute unsigned long displayId;
 };

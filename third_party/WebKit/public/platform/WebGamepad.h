@@ -145,6 +145,8 @@ public:
     WebGamepadPose pose;
 
     WebGamepadHand hand;
+
+    unsigned displayId;
 };
 
 #pragma pack(pop)

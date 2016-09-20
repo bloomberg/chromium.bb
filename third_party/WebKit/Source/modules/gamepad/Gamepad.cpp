@@ -30,6 +30,7 @@ namespace blink {
 Gamepad::Gamepad()
     : m_index(0)
     , m_timestamp(0)
+    , m_displayId(0)
 {
 }
 

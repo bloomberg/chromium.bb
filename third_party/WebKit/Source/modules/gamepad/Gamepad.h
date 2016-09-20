@@ -74,6 +74,9 @@ public:
     const String& hand() const { return m_hand; }
     void setHand(const WebGamepadHand&);
 
+    unsigned displayId() const { return m_displayId; }
+    void setDisplayId(unsigned val) { m_displayId = val; }
+
     DECLARE_TRACE();
 
 private:
@@ -88,6 +91,7 @@ private:
     GamepadButtonVector m_buttons;
     Member<GamepadPose> m_pose;
     String m_hand;
+    unsigned m_displayId;
 };
 
 } // namespace blink

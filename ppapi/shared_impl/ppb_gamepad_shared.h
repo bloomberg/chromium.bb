@@ -91,6 +91,9 @@ struct WebKitGamepad {
   WebKitGamepadPose pose;
 
   WebKitGamepadHand hand;
+
+  // ID of the VRDisplay this gamepad is associated with, if any.
+  unsigned display_id;
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit
