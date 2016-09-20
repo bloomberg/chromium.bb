@@ -5,6 +5,7 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -35,35 +35,21 @@ bool DoublesConsideredDifferent(double value1, double value2, double delta) {
   return abs_difference > delta;
 }
 
-std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
-    Profile* profile,
+std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
+    const HostContentSettingsMap* settings,
     const GURL& origin_url) {
-  HostContentSettingsMap* settings =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  HostContentSettingsMap* fallback_settings =
-      profile->IsOffTheRecord() ? HostContentSettingsMapFactory::GetForProfile(
-                                      profile->GetOriginalProfile())
-                                : nullptr;
-
   if (!settings)
-    return std::unique_ptr<base::DictionaryValue>();
-
-  std::unique_ptr<base::Value> value = settings->GetWebsiteSetting(
-      origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-      std::string(), NULL);
-  if (!value.get() && fallback_settings) {
-    value = fallback_settings->GetWebsiteSetting(
-        origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-        std::string(), NULL);
-  }
-
-  if (!value.get())
     return base::MakeUnique<base::DictionaryValue>();
 
-  if (!value->IsType(base::Value::TYPE_DICTIONARY))
-    return base::MakeUnique<base::DictionaryValue>();
+  std::unique_ptr<base::DictionaryValue> value =
+      base::DictionaryValue::From(settings->GetWebsiteSetting(
+          origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+          std::string(), NULL));
 
-  return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
+  if (value.get())
+    return value;
+
+  return base::MakeUnique<base::DictionaryValue>();
 }
 
 }  // namespace
@@ -192,12 +178,15 @@ void SiteEngagementScore::UpdateFromVariations(const char* param_name) {
     SiteEngagementScore::GetParamValues()[i].second = param_vals[i];
 }
 
-SiteEngagementScore::SiteEngagementScore(base::Clock* clock,
-                                         const GURL& origin,
-                                         Profile* profile)
-    : SiteEngagementScore(clock, GetScoreDictForOrigin(profile, origin)) {
-  origin_ = origin;
-  profile_ = profile;
+SiteEngagementScore::SiteEngagementScore(
+    base::Clock* clock,
+    const GURL& origin,
+    HostContentSettingsMap* settings)
+    : SiteEngagementScore(
+          clock,
+          origin,
+          GetScoreDictForSettings(settings, origin)) {
+  settings_map_ = settings;
 }
 
 SiteEngagementScore::SiteEngagementScore(SiteEngagementScore&& other) = default;
@@ -249,13 +238,13 @@ double SiteEngagementScore::GetScore() const {
 }
 
 void SiteEngagementScore::Commit() {
+  DCHECK(settings_map_);
   if (!UpdateScoreDict(score_dict_.get()))
     return;
 
-  HostContentSettingsMapFactory::GetForProfile(profile_)
-      ->SetWebsiteSettingDefaultScope(origin_, GURL(),
-                                      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                      std::string(), std::move(score_dict_));
+  settings_map_->SetWebsiteSettingDefaultScope(
+      origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+      std::move(score_dict_));
 }
 
 bool SiteEngagementScore::MaxPointsPerDayAdded() const {
@@ -314,13 +303,15 @@ bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
 
 SiteEngagementScore::SiteEngagementScore(
     base::Clock* clock,
+    const GURL& origin,
     std::unique_ptr<base::DictionaryValue> score_dict)
     : clock_(clock),
       raw_score_(0),
       points_added_today_(0),
       last_engagement_time_(),
       last_shortcut_launch_time_(),
-      score_dict_(score_dict.release()) {
+      score_dict_(score_dict.release()),
+      origin_(origin) {
   if (!score_dict_)
     return;
 

@@ -106,8 +106,17 @@ bool SiteEngagementService::IsEnabled() {
                            base::CompareCase::SENSITIVE);
 }
 
+// static
+double SiteEngagementService::GetScoreFromSettings(
+    HostContentSettingsMap* settings,
+    const GURL& origin) {
+  auto clock = base::MakeUnique<base::DefaultClock>();
+  return SiteEngagementScore(clock.get(), origin, settings)
+      .GetScore();
+}
+
 SiteEngagementService::SiteEngagementService(Profile* profile)
-    : SiteEngagementService(profile, base::WrapUnique(new base::DefaultClock)) {
+    : SiteEngagementService(profile, base::MakeUnique<base::DefaultClock>()) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
                      content::BrowserThread::UI),
@@ -489,7 +498,12 @@ void SiteEngagementService::OnURLsDeleted(
 
 SiteEngagementScore SiteEngagementService::CreateEngagementScore(
     const GURL& origin) const {
-  return SiteEngagementScore(clock_.get(), origin, profile_);
+  // If we are in incognito, |settings| will automatically have the data from
+  // the original profile migrated in, so all engagement scores in incognito
+  // will be initialised to the values from the original profile.
+  return SiteEngagementScore(
+      clock_.get(), origin,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {

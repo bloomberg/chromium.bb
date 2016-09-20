@@ -29,6 +29,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -187,7 +188,28 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     EXPECT_NEAR(expected, actual, kMaxRoundingDeviation);
   }
 
+  double CheckScoreFromSettingsOnThread(
+      content::BrowserThread::ID thread_id,
+      HostContentSettingsMap* settings_map,
+      const GURL& url) {
+    double score = 0;
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        thread_id, FROM_HERE,
+        base::Bind(&SiteEngagementServiceTest::CheckScoreFromSettings,
+                   base::Unretained(this), settings_map, url, &score),
+                   run_loop.QuitClosure());
+    run_loop.Run();
+    return score;
+  }
+
  private:
+  void CheckScoreFromSettings(HostContentSettingsMap* settings_map,
+                              const GURL& url,
+                              double *score) {
+    *score = SiteEngagementService::GetScoreFromSettings(settings_map, url);
+  }
+
   base::ScopedTempDir temp_dir_;
 };
 
@@ -1513,4 +1535,66 @@ TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   service->AddPoints(url4, 2);
   EXPECT_EQ(2, incognito_service->GetScore(url4));
   EXPECT_EQ(2, service->GetScore(url4));
+}
+
+TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  HostContentSettingsMap* incognito_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(
+          profile()->GetOffTheRecordProfile());
+
+  // All scores are 0 to start.
+  EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              settings_map, url1));
+  EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              settings_map, url2));
+  EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              incognito_settings_map, url1));
+  EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              incognito_settings_map, url2));
+
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+  service->AddPoints(url1, 1);
+  service->AddPoints(url2, 2);
+
+  EXPECT_EQ(1, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              settings_map, url1));
+  EXPECT_EQ(2, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              settings_map, url2));
+  EXPECT_EQ(1, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              incognito_settings_map, url1));
+  EXPECT_EQ(2, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              incognito_settings_map, url2));
+
+  SiteEngagementService* incognito_service =
+      SiteEngagementService::Get(profile()->GetOffTheRecordProfile());
+  ASSERT_TRUE(incognito_service);
+  incognito_service->AddPoints(url1, 3);
+  incognito_service->AddPoints(url2, 1);
+
+  EXPECT_EQ(1, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              settings_map, url1));
+  EXPECT_EQ(2, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              settings_map, url2));
+  EXPECT_EQ(4, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              incognito_settings_map, url1));
+  EXPECT_EQ(3, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              incognito_settings_map, url2));
+
+  service->AddPoints(url1, 2);
+  service->AddPoints(url2, 1);
+
+  EXPECT_EQ(3, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              settings_map, url1));
+  EXPECT_EQ(3, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              settings_map, url2));
+  EXPECT_EQ(4, CheckScoreFromSettingsOnThread(content::BrowserThread::FILE,
+                                              incognito_settings_map, url1));
+  EXPECT_EQ(3, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
+                                              incognito_settings_map, url2));
 }

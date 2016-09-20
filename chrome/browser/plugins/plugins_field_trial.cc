@@ -5,7 +5,21 @@
 #include "chrome/browser/plugins/plugins_field_trial.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_features.h"
+#include "components/variations/variations_associated_data.h"
+
+namespace {
+
+// The default site engagement threshold to allow Flash to be presented as an
+// available plugin.
+const double kSiteEngagementThresholdForFlash = 1.0;
+
+}  // namespace
+
+// static
+const char* PluginsFieldTrial::kSiteEngagementThresholdForFlashKey =
+    "engagement_threshold_for_flash";
 
 // static
 ContentSetting PluginsFieldTrial::EffectiveContentSetting(
@@ -21,4 +35,15 @@ ContentSetting PluginsFieldTrial::EffectiveContentSetting(
   return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)
              ? ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT
              : ContentSetting::CONTENT_SETTING_BLOCK;
+}
+
+// static
+double PluginsFieldTrial::GetSiteEngagementThresholdForFlash() {
+  double threshold = -1;
+  std::string param = variations::GetVariationParamValueByFeature(
+      features::kPreferHtmlOverPlugins,
+      PluginsFieldTrial::kSiteEngagementThresholdForFlashKey);
+  if (base::StringToDouble(param, &threshold) && threshold >= 0)
+    return threshold;
+  return kSiteEngagementThresholdForFlash;
 }

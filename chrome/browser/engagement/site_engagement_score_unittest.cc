@@ -44,7 +44,7 @@ base::Time GetReferenceTime() {
 
 class SiteEngagementScoreTest : public testing::Test {
  public:
-  SiteEngagementScoreTest() : score_(&test_clock_, nullptr) {}
+  SiteEngagementScoreTest() : score_(&test_clock_, GURL(), nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -77,7 +77,8 @@ class SiteEngagementScoreTest : public testing::Test {
       double expected_points_added_today,
       base::Time expected_last_engagement_time) {
     std::unique_ptr<base::DictionaryValue> copy(score_dict->DeepCopy());
-    SiteEngagementScore initial_score(&test_clock_, std::move(score_dict));
+    SiteEngagementScore initial_score(&test_clock_, GURL(),
+                                      std::move(score_dict));
     VerifyScore(initial_score, expected_raw_score, expected_points_added_today,
                 expected_last_engagement_time);
 
@@ -91,7 +92,7 @@ class SiteEngagementScoreTest : public testing::Test {
         GetReferenceTime() + base::TimeDelta::FromDays(1);
     UpdateScore(&initial_score, 5, 10, different_day);
     EXPECT_TRUE(initial_score.UpdateScoreDict(copy.get()));
-    SiteEngagementScore updated_score(&test_clock_, std::move(copy));
+    SiteEngagementScore updated_score(&test_clock_, GURL(), std::move(copy));
     VerifyScore(updated_score, 5, 10, different_day);
   }
 
@@ -328,9 +329,9 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
 TEST_F(SiteEngagementScoreTest, FirstDailyEngagementBonus) {
   SetParamValue(SiteEngagementScore::FIRST_DAILY_ENGAGEMENT, 0.5);
 
-  SiteEngagementScore score1(&test_clock_,
+  SiteEngagementScore score1(&test_clock_, GURL(),
                              std::unique_ptr<base::DictionaryValue>());
-  SiteEngagementScore score2(&test_clock_,
+  SiteEngagementScore score2(&test_clock_, GURL(),
                              std::unique_ptr<base::DictionaryValue>());
   base::Time current_day = GetReferenceTime();
 

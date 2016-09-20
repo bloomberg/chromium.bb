@@ -34,6 +34,7 @@ class HistoryService;
 }
 
 class GURL;
+class HostContentSettingsMap;
 class Profile;
 class SiteEngagementScore;
 
@@ -49,14 +50,19 @@ class SiteEngagementScoreProvider {
 
 // Stores and retrieves the engagement score of an origin.
 //
-// An engagement score is a positive integer that represents how much a user has
-// engaged with an origin - the higher it is, the more engagement the user has
-// had with this site recently.
+// An engagement score is a non-negative double that represents how much a user
+// has engaged with an origin - the higher it is, the more engagement the user
+// has had with this site recently.
 //
-// Positive user activity, such as visiting the origin often and adding it to
-// the homescreen, will increase the site engagement score. Negative activity,
-// such as rejecting permission prompts or not responding to notifications, will
-// decrease the site engagement score.
+// User activity such as visiting the origin often, interacting with the origin,
+// and adding it to the homescreen will increase the site engagement score. If
+// a site's score does not increase for some time, it will decay, eventually
+// reaching zero with further disuse.
+//
+// The SiteEngagementService object must be created and used on the UI thread
+// only. Engagement scores may be queried in a read-only fashion from other
+// threads using SiteEngagementService::GetScoreFromSettings, but use of this
+// method is discouraged unless it is not possible to use the UI thread.
 class SiteEngagementService : public KeyedService,
                               public history::HistoryServiceObserver,
                               public SiteEngagementScoreProvider {
@@ -76,8 +82,13 @@ class SiteEngagementService : public KeyedService,
   // The name of the site engagement variation field trial.
   static const char kEngagementParams[];
 
-  // Returns the site engagement service attached to this profile. May return
-  // null if the service does not exist (e.g. the user is in incognito).
+  // Returns the site engagement service attached to this profile. The service
+  // exists in incognito mode; scores will be initialised using the score from
+  // the profile that the incognito session was created from, and will increase
+  // and decrease as usual. Engagement earned or decayed in incognito will not
+  // be persisted or reflected in the original profile.
+  //
+  // This method must be called on the UI thread.
   static SiteEngagementService* Get(Profile* profile);
 
   // Returns the maximum possible amount of engagement that a site can accrue.
@@ -86,11 +97,18 @@ class SiteEngagementService : public KeyedService,
   // Returns whether or not the site engagement service is enabled.
   static bool IsEnabled();
 
+  // Returns the score for |origin| based on |settings|. Can be called on any
+  // thread and does not cause any cleanup, decay, etc.
+  //
+  // Should only be used if you cannot create a SiteEngagementService (i.e. you
+  // cannot run on the UI thread).
+  static double GetScoreFromSettings(HostContentSettingsMap* settings,
+                                     const GURL& origin);
+
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
 
-  // Returns the engagement level of |url|. This is the recommended API for
-  // clients
+  // Returns the engagement level of |url|.
   EngagementLevel GetEngagementLevel(const GURL& url) const;
 
   // Returns a map of all stored origins and their engagement scores.
@@ -135,6 +153,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastEngagementTime);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            IncognitoEngagementService);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetScoreFromSettings);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
   // Only used in tests.

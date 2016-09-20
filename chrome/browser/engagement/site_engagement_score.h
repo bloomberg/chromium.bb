@@ -18,7 +18,7 @@ namespace base {
 class Clock;
 }
 
-class Profile;
+class HostContentSettingsMap;
 
 class SiteEngagementScore {
  public:
@@ -114,7 +114,7 @@ class SiteEngagementScore {
   // SiteEngagementScore.
   SiteEngagementScore(base::Clock* clock,
                       const GURL& origin,
-                      Profile* profile);
+                      HostContentSettingsMap* settings);
   SiteEngagementScore(SiteEngagementScore&& other);
   ~SiteEngagementScore();
 
@@ -161,6 +161,7 @@ class SiteEngagementScore {
   friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;
+  friend class ChromePluginServiceFilterTest;
 
   using ParamValues = std::array<std::pair<std::string, double>, MAX_VARIATION>;
 
@@ -176,6 +177,7 @@ class SiteEngagementScore {
 
   // This version of the constructor is used in unit tests.
   SiteEngagementScore(base::Clock* clock,
+                      const GURL& origin,
                       std::unique_ptr<base::DictionaryValue> score_dict);
 
   // Determine the score, accounting for any decay.
@@ -218,8 +220,8 @@ class SiteEngagementScore {
   // The origin this score represents.
   GURL origin_;
 
-  // The profile to write this score to when Commit() is called.
-  Profile* profile_;
+  // The settings to write this score to when Commit() is called.
+  HostContentSettingsMap* settings_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
 };
