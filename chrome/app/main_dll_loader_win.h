@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 
 namespace base {
 class FilePath;
@@ -26,10 +27,11 @@ class MainDllLoader {
   virtual ~MainDllLoader();
 
   // Loads and calls the entry point of chrome.dll. |instance| is the exe
-  // instance retrieved from wWinMain.
+  // instance retrieved from wWinMain. |exe_entry_point_ticks| is the time
+  // when wWinMain was entered.
   // The return value is what the main entry point of chrome.dll returns
   // upon termination.
-  int Launch(HINSTANCE instance);
+  int Launch(HINSTANCE instance, base::TimeTicks exe_entry_point_ticks);
 
   // Launches a new instance of the browser if the current instance in
   // persistent mode an upgrade is detected.

@@ -7,6 +7,7 @@
 #include <windows.h>  // NOLINT
 #include <shlwapi.h>  // NOLINT
 #include <stddef.h>
+#include <stdint.h>
 #include <userenv.h>  // NOLINT
 
 #include <memory>
@@ -48,7 +49,7 @@
 
 namespace {
 // The entry point signature of chrome.dll.
-typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*);
+typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, int64_t);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 
@@ -115,7 +116,8 @@ HMODULE MainDllLoader::Load(base::FilePath* module) {
 
 // Launching is a matter of loading the right dll and calling the entry point.
 // Derived classes can add custom code in the OnBeforeLaunch callback.
-int MainDllLoader::Launch(HINSTANCE instance) {
+int MainDllLoader::Launch(HINSTANCE instance,
+                          base::TimeTicks exe_entry_point_ticks) {
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   process_type_ = cmd_line.GetSwitchValueASCII(switches::kProcessType);
 
@@ -165,7 +167,8 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   OnBeforeLaunch(process_type_, file);
   DLL_MAIN chrome_main =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
-  int rc = chrome_main(instance, &sandbox_info);
+  int rc = chrome_main(instance, &sandbox_info,
+                       exe_entry_point_ticks.ToInternalValue());
   rc = OnBeforeExit(rc, file);
   return rc;
 }

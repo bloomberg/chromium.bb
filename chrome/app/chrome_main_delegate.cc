@@ -434,7 +434,9 @@ void InitLogging(const std::string& process_type) {
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-void RecordMainStartupMetrics() {
+void RecordMainStartupMetrics(base::TimeTicks exe_entry_point_ticks) {
+  if (!exe_entry_point_ticks.is_null())
+    startup_metric_utils::RecordExeMainEntryPointTicks(exe_entry_point_ticks);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   // Record the startup process creation time on supported platforms.
   startup_metric_utils::RecordStartupProcessCreationTime(
@@ -454,13 +456,16 @@ void RecordMainStartupMetrics() {
 
 }  // namespace
 
-ChromeMainDelegate::ChromeMainDelegate() {
+ChromeMainDelegate::ChromeMainDelegate()
+    : ChromeMainDelegate(base::TimeTicks()) {}
+
+ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // Record startup metrics in the browser process. For component builds, there
   // is no way to know the type of process (process command line is not yet
   // initialized), so the function below will also be called in renderers.
   // This doesn't matter as it simply sets global variables.
-  RecordMainStartupMetrics();
+  RecordMainStartupMetrics(exe_entry_point_ticks);
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 }
 

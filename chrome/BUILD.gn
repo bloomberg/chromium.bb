@@ -257,7 +257,6 @@ if (!is_android && !is_mac) {
       ":packed_extra_resources",
       ":packed_resources",
     ]
-    deps += [ "//components/startup_metric_utils/browser:lib" ]
 
     # Only ChromeOS has precompiled Flash that needs to get copied to the output
     # directory. On other platforms, Flash is either component-updated only or

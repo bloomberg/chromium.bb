@@ -45,7 +45,7 @@ void RecordMainEntryPointTime(const base::Time& time);
 // Call this with the time when the executable is loaded and main() is entered.
 // Can be different from |RecordMainEntryPointTime| when the startup process is
 // contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
-void RecordExeMainEntryPointTime(const base::Time& time);
+void RecordExeMainEntryPointTicks(const base::TimeTicks& time);
 
 // Call this with the time recorded just before the message loop is started.
 // |is_first_run| - is the current launch part of a first run. |pref_service| is

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"
@@ -23,6 +24,10 @@ class CommandLine;
 class ChromeMainDelegate : public content::ContentMainDelegate {
  public:
   ChromeMainDelegate();
+
+  // |exe_entry_point_ticks| is the time at which the main function of the
+  // executable was entered, or null if not available.
+  explicit ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks);
   ~ChromeMainDelegate() override;
 
  protected:

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_main_delegate.h"
+#include <stdint.h>
 
 #include "build/build_config.h"
+#include "base/time/time.h"
+#include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
 
@@ -23,7 +25,8 @@
 // We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
 extern "C" {
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
-                                 sandbox::SandboxInterfaceInfo* sandbox_info);
+                                 sandbox::SandboxInterfaceInfo* sandbox_info,
+                                 int64_t exe_entry_point_ticks);
 }
 #elif defined(OS_POSIX)
 extern "C" {
@@ -34,9 +37,11 @@ int ChromeMain(int argc, const char** argv);
 
 #if defined(OS_WIN)
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
-                                 sandbox::SandboxInterfaceInfo* sandbox_info) {
+                                 sandbox::SandboxInterfaceInfo* sandbox_info,
+                                 int64_t exe_entry_point_ticks) {
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, const char** argv) {
+  int64_t exe_entry_point_ticks = 0;
 #endif
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
   // VS2013 only checks the existence of FMA3 instructions, not the enabled-ness
@@ -47,7 +52,8 @@ int ChromeMain(int argc, const char** argv) {
   _set_FMA3_enable(0);
 #endif  // WIN && ARCH_CPU_X86_64
 
-  ChromeMainDelegate chrome_main_delegate;
+  ChromeMainDelegate chrome_main_delegate(
+      base::TimeTicks::FromInternalValue(exe_entry_point_ticks));
   content::ContentMainParams params(&chrome_main_delegate);
 
 #if defined(OS_WIN)

@@ -7,11 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -48,6 +47,9 @@ base::LazyInstance<base::TimeTicks>::Leaky g_browser_main_entry_point_ticks =
 
 base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
     LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::TimeTicks>::Leaky
+    g_browser_exe_main_entry_point_ticks = LAZY_INSTANCE_INITIALIZER;
 
 // Only used by RecordMainEntryTimeHistogram(), should go away with it (do not
 // add new uses of this), see crbug.com/317481 for discussion on why it was kept
@@ -464,23 +466,6 @@ void RecordRendererMainEntryHistogram() {
   }
 }
 
-// Environment variable that stores the timestamp when the executable's main()
-// function was entered in TimeTicks. This is required because chrome.exe and
-// chrome.dll don't share the same static storage.
-const char kChromeMainTicksEnvVar[] = "CHROME_MAIN_TICKS";
-
-// Returns the time of main entry recorded from RecordExeMainEntryTime.
-base::TimeTicks ExeMainEntryPointTicks() {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string ticks_string;
-  int64_t time_int = 0;
-  if (env->GetVar(kChromeMainTicksEnvVar, &ticks_string) &&
-      base::StringToInt64(ticks_string, &time_int)) {
-    return base::TimeTicks::FromInternalValue(time_int);
-  }
-  return base::TimeTicks();
-}
-
 void AddStartupEventsForTelemetry()
 {
   DCHECK(!g_browser_main_entry_point_ticks.Get().is_null());
@@ -596,11 +581,10 @@ void RecordMainEntryPointTime(const base::Time& time) {
   DCHECK(!g_browser_main_entry_point_time.Get().is_null());
 }
 
-void RecordExeMainEntryPointTime(const base::Time& time) {
-  const std::string exe_load_ticks =
-      base::Int64ToString(StartupTimeToTimeTicks(time).ToInternalValue());
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(kChromeMainTicksEnvVar, exe_load_ticks);
+void RecordExeMainEntryPointTicks(const base::TimeTicks& ticks) {
+  DCHECK(g_browser_exe_main_entry_point_ticks.Get().is_null());
+  g_browser_exe_main_entry_point_ticks.Get() = ticks;
+  DCHECK(!g_browser_exe_main_entry_point_ticks.Get().is_null());
 }
 
 void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
@@ -660,36 +644,38 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
 
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
-  if (!process_creation_ticks.is_null()) {
-    const base::TimeTicks exe_main_ticks = ExeMainEntryPointTicks();
-    if (!exe_main_ticks.is_null()) {
-      // Process create to chrome.exe:main().
-      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain2",
-          process_creation_ticks, exe_main_ticks);
+  if (!process_creation_ticks.is_null() &&
+      !g_browser_exe_main_entry_point_ticks.Get().is_null()) {
+    const base::TimeTicks exe_main_ticks =
+        g_browser_exe_main_entry_point_ticks.Get();
+    const base::TimeTicks main_entry_ticks =
+        g_browser_main_entry_point_ticks.Get();
+    // Process create to chrome.exe:main().
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain2",
+        process_creation_ticks, exe_main_ticks);
 
-      // chrome.exe:main() to chrome.dll:main().
-      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
-          exe_main_ticks, g_browser_main_entry_point_ticks.Get());
+    // chrome.exe:main() to chrome.dll:main().
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
+        exe_main_ticks, main_entry_ticks);
 
-      // Process create to chrome.dll:main(). Reported as a histogram only as
-      // the other two events above are sufficient for tracing purposes.
+    // Process create to chrome.dll:main(). Reported as a histogram only as
+    // the other two events above are sufficient for tracing purposes.
+    UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
+        main_entry_ticks - process_creation_ticks);
+
+    if (is_seven_minutes_after_boot) {
       UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
-          g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
-
-      if (is_seven_minutes_after_boot) {
-        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
-            exe_main_ticks - process_creation_ticks);
-        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
-            g_browser_main_entry_point_ticks.Get() - exe_main_ticks);
-        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
-            g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
-      }
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
+          exe_main_ticks - process_creation_ticks);
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
+          main_entry_ticks - exe_main_ticks);
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
+          main_entry_ticks - process_creation_ticks);
     }
   }
 }

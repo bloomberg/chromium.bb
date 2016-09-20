@@ -33,7 +33,6 @@
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 
@@ -225,7 +224,7 @@ int main() {
         *base::CommandLine::ForCurrentProcess());
   }
 
-  startup_metric_utils::RecordExeMainEntryPointTime(base::Time::Now());
+  const base::TimeTicks exe_entry_point_ticks = base::TimeTicks::Now();
 
   // Signal Chrome Elf that Chrome has begun to start.
   SignalChromeElf();
@@ -243,7 +242,7 @@ int main() {
   // Load and launch the chrome dll. *Everything* happens inside.
   VLOG(1) << "About to load main DLL.";
   MainDllLoader* loader = MakeMainDllLoader();
-  int rc = loader->Launch(instance);
+  int rc = loader->Launch(instance, exe_entry_point_ticks);
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
   return rc;
