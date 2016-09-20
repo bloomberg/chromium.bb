@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+
+<!-- READ BEFORE UPDATING:
+If this test is updated make sure to increment the "revision" value of the
+associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
+that the baseline images are regenerated on the next run.
+-->
+
+<html>
+<head>
+<title>OffscreenCanvas commit flow on main thread: green square on white background.</title>
+<style type="text/css">
+.nomargin {
+  margin: 0px auto;
+}
+</style>
+<script>
+var g_swapsBeforeAck = 15;
+
+function main()
+{
+  draw();
+  waitForFinish();
+}
+
+function draw()
+{
+  var canvas = document.getElementById("c");
+  var offscreenCanvas = canvas.transferControlToOffscreen();
+  var gl = offscreenCanvas.getContext("webgl");
+  gl.clearColor(0.0, 1.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.commit();
+}
+
+function waitForFinish()
+{
+  if (g_swapsBeforeAck == 0) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("SUCCESS");
+  } else {
+    g_swapsBeforeAck--;
+    document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
+    window.webkitRequestAnimationFrame(waitForFinish);
+  }
+}
+</script>
+</head>
+<body onload="main()">
+<div style="position:relative; width:200px; height:200px; background-color:white">
+</div>
+<div id="container" style="position:absolute; top:0px; left:0px">
+<canvas id="c" width="200" height="200" class="nomargin"></canvas>
+</div>
+</body>
+</html>

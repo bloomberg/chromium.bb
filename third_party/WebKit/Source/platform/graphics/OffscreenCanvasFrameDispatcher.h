@@ -6,15 +6,17 @@
 #define OffscreenCanvasFrameDispatcher_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
+class StaticBitmapImage;
 class WebLayer;
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
 public:
     virtual ~OffscreenCanvasFrameDispatcher() {};
-    virtual void dispatchFrame() = 0;
+    virtual void dispatchFrame(RefPtr<StaticBitmapImage>) = 0;
 };
 
 } // namespace blink

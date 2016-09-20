@@ -5,26 +5,36 @@
 #ifndef OffscreenCanvasFrameDispatcherImpl_h
 #define OffscreenCanvasFrameDispatcherImpl_h
 
+#include "cc/ipc/mojo_compositor_frame_sink.mojom-blink.h"
 #include "cc/surfaces/surface_id.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "platform/graphics/StaticBitmapImage.h"
+#include "wtf/Compiler.h"
 #include <memory>
 
 namespace blink {
 
-class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final : public OffscreenCanvasFrameDispatcher {
+class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final : public OffscreenCanvasFrameDispatcher
+    , WTF_NON_EXPORTED_BASE(public cc::mojom::blink::MojoCompositorFrameSinkClient) {
 public:
     explicit OffscreenCanvasFrameDispatcherImpl(uint32_t clientId, uint32_t localId, uint64_t nonce, int width, int height);
 
     // OffscreenCanvasFrameDispatcher implementation.
     ~OffscreenCanvasFrameDispatcherImpl() override {}
-    void dispatchFrame() override;
+    void dispatchFrame(RefPtr<StaticBitmapImage>) override;
+
+    // OffscreenCanvasFrameReceiverClient implementation.
+    void ReturnResources(Vector<cc::mojom::blink::ReturnedResourcePtr> resources) override;
 
 private:
     const cc::SurfaceId m_surfaceId;
     const int m_width;
     const int m_height;
-    mojom::blink::OffscreenCanvasFrameReceiverPtr m_service;
+    cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
+
+    HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
+    mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
 };
 
 } // namespace blink

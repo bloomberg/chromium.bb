@@ -30,3 +30,7 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(erikchen) check / generate reference images.
     self.Fail('Pixel.CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
+
+    # TODO(xidachen) check / generate reference images
+    self.Fail('Pixel.OffscreenCanvasWebGLGreenBox', bug=563852)
+    self.Fail('Pixel.OffscreenCanvasWebGLGreenBoxES3', ['mac'], bug=563852)

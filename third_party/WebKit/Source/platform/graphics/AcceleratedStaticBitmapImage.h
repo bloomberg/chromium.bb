@@ -6,8 +6,6 @@
 #define AcceleratedStaticBitmapImage_h
 
 #include "base/threading/thread_checker.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -43,11 +41,14 @@ public:
     // To be called on sender thread before performing a transfer
     void transfer() final;
 
+    void ensureMailbox() final;
+    gpu::Mailbox getMailbox() final { return m_mailbox; }
+    gpu::SyncToken getSyncToken() final { return m_syncToken; }
+
 private:
     AcceleratedStaticBitmapImage(sk_sp<SkImage>);
     AcceleratedStaticBitmapImage(sk_sp<SkImage>, const gpu::Mailbox&, const gpu::SyncToken&);
 
-    void ensureMailbox();
     void createImageFromMailboxIfNeeded();
     void checkThread();
     void waitSyncTokenIfNeeded();

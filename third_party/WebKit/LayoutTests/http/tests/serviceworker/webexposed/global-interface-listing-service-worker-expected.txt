@@ -1052,6 +1052,7 @@ interface WebGLRenderingContext
     method clearDepth
     method clearStencil
     method colorMask
+    method commit
     method compileShader
     method compressedTexImage2D
     method compressedTexSubImage2D

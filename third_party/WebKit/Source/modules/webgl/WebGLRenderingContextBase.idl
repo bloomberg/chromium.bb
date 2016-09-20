@@ -705,4 +705,6 @@ typedef unrestricted float GLclampf;
                                                     GLsizei stride, GLintptr offset);
 
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void commit();
 };

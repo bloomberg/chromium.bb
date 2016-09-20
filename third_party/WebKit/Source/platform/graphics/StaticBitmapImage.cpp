@@ -29,6 +29,14 @@ StaticBitmapImage::StaticBitmapImage(sk_sp<SkImage> image) : m_image(std::move(i
     ASSERT(m_image);
 }
 
+StaticBitmapImage::StaticBitmapImage()
+{
+}
+
+StaticBitmapImage::~StaticBitmapImage()
+{
+}
+
 IntSize StaticBitmapImage::size() const
 {
     return IntSize(m_image->width(), m_image->height());

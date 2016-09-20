@@ -650,6 +650,23 @@ ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase()
     return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
+void WebGLRenderingContextBase::commit(ExceptionState& exceptionState)
+{
+    if (!getOffscreenCanvas()) {
+        exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a rendering context that was not created from an OffscreenCanvas.");
+        return;
+    }
+    // no HTMLCanvas associated, thrown InvalidStateError
+    if (getOffscreenCanvas()->getAssociatedCanvasId() == -1) {
+        exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a context whose OffscreenCanvas is not associated with a canvas element.");
+        return;
+    }
+    if (!drawingBuffer())
+        return;
+    // TODO(crbug.com/646864): Make commit() work correctly with { preserveDrawingBuffer : true }.
+    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(std::move(drawingBuffer()->transferToStaticBitmapImage()));
+}
+
 PassRefPtr<Image> WebGLRenderingContextBase::getImage(AccelerationHint hint, SnapshotReason reason) const
 {
     if (!drawingBuffer())

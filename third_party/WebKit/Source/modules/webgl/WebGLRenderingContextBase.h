@@ -419,6 +419,8 @@ public:
 
     void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
+    void commit(ExceptionState&);
+
 protected:
     friend class EXTDisjointTimerQuery;
     friend class WebGLDrawBuffers;

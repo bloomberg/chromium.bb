@@ -5,6 +5,8 @@
 #ifndef StaticBitmapImage_h
 #define StaticBitmapImage_h
 
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/Image.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -15,7 +17,7 @@ class WebGraphicsContext3DProvider;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
 public:
-    ~StaticBitmapImage() override { };
+    ~StaticBitmapImage() override;
 
     bool currentFrameIsComplete() override { return true; }
 
@@ -36,9 +38,13 @@ public:
     virtual bool hasMailbox() { return false; }
     virtual void transfer() { }
 
+    virtual gpu::Mailbox getMailbox() { return gpu::Mailbox(); }
+    virtual gpu::SyncToken getSyncToken() { return gpu::SyncToken(); }
+    virtual void ensureMailbox() {}
+
 protected:
     StaticBitmapImage(sk_sp<SkImage>);
-    StaticBitmapImage() { } // empty constructor for derived class.
+    StaticBitmapImage(); // empty constructor for derived class.
     sk_sp<SkImage> m_image;
 
 private:

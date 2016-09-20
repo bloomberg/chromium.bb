@@ -167,6 +167,15 @@ class PixelTestsStorySet(story_set_module.StorySet):
       shared_page_state_class = gpu_test_base.GpuSharedPageState
 
     self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_main.html',
+      name=base_name + '.OffscreenCanvasWebGLGreenBox' + es3_suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=shared_page_state_class,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox' + es3_suffix,
       test_rect=[0, 0, 300, 300],

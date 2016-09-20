@@ -19,7 +19,6 @@ function makeWorker(script) {
    return new Worker(URL.createObjectURL(blob));
 }
 
-
 test(function() {
     var offscreenCanvas = new OffscreenCanvas(50, 50);
     var offscreen2d = offscreenCanvas.getContext("2d");
@@ -27,6 +26,28 @@ test(function() {
         offscreen2d.commit();
     });
 }, "Calling OffscreenCanvas.commit() on main without transferControlToOffscreen throws exception.");
+
+test(function() {
+    var offscreenCanvas = new OffscreenCanvas(50, 50);
+    var gl = offscreenCanvas.getContext("webgl");
+    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    assert_throws("InvalidStateError", function() {
+        gl.commit();
+    });
+}, "Calling WebGL's commit() on main without transferControlToOffscreen throws exception.");
+
+test(function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 50;
+    canvas.height = 50;
+    var gl = canvas.getContext("webgl");
+    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    assert_throws("InvalidStateError", function() {
+        gl.commit();
+    });
+}, "Calling WebGL's commit() on main without a OffscreenCanvas throws exception.");
 
 async_test(function() {
     var worker = makeWorker(document.getElementById("myWorker").textContent);

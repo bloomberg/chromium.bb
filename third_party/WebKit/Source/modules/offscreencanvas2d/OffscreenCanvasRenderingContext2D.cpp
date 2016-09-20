@@ -53,7 +53,7 @@ void OffscreenCanvasRenderingContext2D::commit(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a context whose OffscreenCanvas is not associated with a canvas element.");
         return;
     }
-    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame();
+    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(nullptr);
 }
 
 // BaseRenderingContext2D implementation
