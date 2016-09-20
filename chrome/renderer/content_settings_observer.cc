@@ -49,8 +49,8 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   // document URL as the primary URL in those cases.
   // TODO(alexmos): This is broken for --site-per-process, since top() can be a
   // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
-  // URL is not replicated.
-  if (top_origin == "null")
+  // URL is not replicated.  See https://crbug.com/628759.
+  if (top_origin == "null" && frame->top()->isWebLocalFrame())
     return frame->top()->document().url();
   return blink::WebStringToGURL(top_origin);
 }
