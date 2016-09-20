@@ -28,8 +28,8 @@ function test()
 
 <script>
 test1.createShadowRoot();
-test2.createShadowRoot();
-test3.createShadowRoot();
+test2.attachShadow({ mode: "open" });
+test3.attachShadow({ mode: "closed" });
 </script>
 
 </body>

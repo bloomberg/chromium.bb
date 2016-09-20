@@ -40,6 +40,7 @@
 #include "core/dom/shadow/SlotAssignment.h"
 #include "core/events/Event.h"
 #include "core/html/AssignedNodesOptions.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace blink {
 
@@ -306,6 +307,7 @@ void HTMLSlotElement::lazyReattachDistributedNodesIfNeeded()
             node->lazyReattachIfAttached();
         for (auto& node : m_distributedNodes)
             node->lazyReattachIfAttached();
+        InspectorInstrumentation::didPerformSlotDistribution(this);
     }
     m_oldDistributedNodes.clear();
 }

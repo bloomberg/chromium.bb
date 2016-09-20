@@ -55,6 +55,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -1537,6 +1538,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node*
             value->setDistributedNodes(buildArrayForDistributedNodes(toInsertionPoint(element)));
             forcePushChildren = true;
         }
+        if (isHTMLSlotElement(*element)) {
+            value->setDistributedNodes(buildDistributedNodesForSlot(toHTMLSlotElement(element)));
+            forcePushChildren = true;
+        }
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));
@@ -1631,6 +1636,22 @@ std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> InspectorDOMAgent::
             .setNodeType(distributedNode->getNodeType())
             .setNodeName(distributedNode->nodeName())
             .setBackendNodeId(DOMNodeIds::idForNode(distributedNode)).build();
+        distributedNodes->addItem(std::move(backendNode));
+    }
+    return distributedNodes;
+}
+
+std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> InspectorDOMAgent::buildDistributedNodesForSlot(HTMLSlotElement* slotElement)
+{
+    std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> distributedNodes = protocol::Array<protocol::DOM::BackendNode>::create();
+    for (Node* node = slotElement->firstDistributedNode(); node; node = slotElement->distributedNodeNextTo(*node)) {
+        if (isWhitespace(node))
+            continue;
+
+        std::unique_ptr<protocol::DOM::BackendNode> backendNode = protocol::DOM::BackendNode::create()
+            .setNodeType(node->getNodeType())
+            .setNodeName(node->nodeName())
+            .setBackendNodeId(DOMNodeIds::idForNode(node)).build();
         distributedNodes->addItem(std::move(backendNode));
     }
     return distributedNodes;
@@ -1905,6 +1926,13 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
                 frontend()->distributedNodesUpdated(insertionPointId, buildArrayForDistributedNodes(insertionPoint));
         }
     }
+}
+
+void InspectorDOMAgent::didPerformSlotDistribution(HTMLSlotElement* slotElement)
+{
+    int insertionPointId = m_documentNodeToIdMap->get(slotElement);
+    if (insertionPointId)
+        frontend()->distributedNodesUpdated(insertionPointId, buildDistributedNodesForSlot(slotElement));
 }
 
 void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)

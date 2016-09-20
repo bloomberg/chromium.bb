@@ -205,7 +205,7 @@ void ElementShadowV0::distribute()
         if (ElementShadow* shadow = shadowWhereNodeCanBeDistributedForV0(*shadowInsertionPoint))
             shadow->setNeedsDistributionRecalc();
     }
-    InspectorInstrumentation::didPerformElementShadowDistribution(const_cast<Element*>(&m_elementShadow->host()));
+    InspectorInstrumentation::didPerformElementShadowDistribution(&m_elementShadow->host());
 }
 
 void ElementShadowV0::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)

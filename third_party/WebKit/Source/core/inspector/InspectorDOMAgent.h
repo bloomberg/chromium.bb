@@ -55,6 +55,7 @@ class Element;
 class EventTarget;
 class ExceptionState;
 class FloatQuad;
+class HTMLSlotElement;
 class InsertionPoint;
 class InspectedFrames;
 class InspectorHistory;
@@ -164,6 +165,7 @@ public:
     void didPushShadowRoot(Element* host, ShadowRoot*);
     void willPopShadowRoot(Element* host, ShadowRoot*);
     void didPerformElementShadowDistribution(Element*);
+    void didPerformSlotDistribution(HTMLSlotElement*);
     void frameDocumentUpdated(LocalFrame*);
     void pseudoElementCreated(PseudoElement*);
     void pseudoElementDestroyed(PseudoElement*);
@@ -220,6 +222,7 @@ private:
     std::unique_ptr<protocol::Array<protocol::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
     std::unique_ptr<protocol::Array<protocol::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
     std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
+    std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> buildDistributedNodesForSlot(HTMLSlotElement*);
 
     Node* nodeForPath(const String& path);
     Node* nodeForRemoteId(ErrorString*, const String& id);

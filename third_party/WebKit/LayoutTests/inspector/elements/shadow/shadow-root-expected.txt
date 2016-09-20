@@ -10,7 +10,7 @@ This test verifies that author shadow root's #document-fragment is displayed and
           "only test"
       </div>
     - <div id="test3">
-          #shadow-root (open)
+          #shadow-root (closed)
           "with "
           <span>elements</span>
       </div>

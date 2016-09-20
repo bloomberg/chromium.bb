@@ -11,48 +11,55 @@ function createShadowRoot(id)
     root.innerHTML = "<div id='" + id + "'></div>";
 }
 
+function createShadowRootV1(containerId, id, mode)
+{
+    var container = document.getElementById(containerId);
+    var root = container.attachShadow({ mode: mode });
+    root.innerHTML = "<div id='" + id + "'></div>";
+}
+
 function test()
 {
-    var containerNode;
-
     InspectorTest.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                containerNode = InspectorTest.expandedNodeWithId("container");
-                expandAndDumpContainerNode("========= Original ========", next)();
-            }
-            InspectorTest.expandElementsTree(callback);
-        },
-
         function testCreateShadowRoot(next)
         {
-            InspectorTest.evaluateInPage(
-                "createShadowRoot('shadow-1')",
-                expandAndDumpContainerNode("===== After createShadowRoot =====", next));
+            testShadowRoot("container", "createShadowRoot('shadow-1')", next);
         },
 
         function testCreateSecondShadowRoot(next)
         {
-            InspectorTest.evaluateInPage(
-                "createShadowRoot('shadow-2')",
-                expandAndDumpContainerNode("===== After second createShadowRoot =====", next));
-        }
+            testShadowRoot("container", "createShadowRoot('shadow-2')", next);
+        },
+
+        function testCreateOpenShadowRoot(next)
+        {
+            testShadowRoot("containerOpen", "createShadowRootV1('containerOpen', 'shadow-3', 'open')", next);
+        },
+
+        function testCreateCloseShadowRoot(next)
+        {
+            testShadowRoot("containerClosed", "createShadowRootV1('containerClosed', 'shadow-4', 'closed')", next);
+        },
     ]);
 
-    function expandAndDumpContainerNode(title, next)
+    function testShadowRoot(containerId, code, next)
     {
-        return function()
-        {
-            InspectorTest.addResult(title);
-            InspectorTest.expandElementsTree(callback);
+        var containerNode;
+        InspectorTest.expandElementsTree(dumpBefore);
 
-            function callback()
-            {
-                InspectorTest.dumpElementsTree(containerNode);
-                next();
-            }
+        function dumpBefore()
+        {
+            containerNode = InspectorTest.expandedNodeWithId(containerId);
+            InspectorTest.addResult("==== before ====");
+            InspectorTest.dumpElementsTree(containerNode);
+            InspectorTest.evaluateInPage(code, InspectorTest.expandElementsTree.bind(InspectorTest, dumpAfter));
+        }
+
+        function dumpAfter()
+        {
+            InspectorTest.addResult("==== after ====");
+            InspectorTest.dumpElementsTree(containerNode);
+            next();
         }
     }
 }
@@ -66,6 +73,8 @@ Tests that elements panel updates dom tree structure upon shadow root creation.
 </p>
 
 <div id="container"><div id="child"></div></div>
+<div id="containerOpen"><div id="childOpen"></div></div>
+<div id="containerClosed"><div id="childClosed"></div></div>
 
 </body>
 </html>
