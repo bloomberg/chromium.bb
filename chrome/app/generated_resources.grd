@@ -8514,7 +8514,7 @@ I don't think this site should be blocked!
         </message>
         <if expr="chromeos">
           <message name="IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE" desc="Fallback title for print preview page on Chrome OS.">
-            Google Cloud Print
+            Google Print
           </message>
         </if>
         <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
