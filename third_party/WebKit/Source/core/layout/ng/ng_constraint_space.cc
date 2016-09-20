@@ -11,9 +11,6 @@
 
 namespace blink {
 
-// TODO: This should set the size of the NGPhysicalConstraintSpace. Or we could
-// remove it requiring that a NGConstraintSpace is created from a
-// NGPhysicalConstraintSpace.
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      NGLogicalSize container_size)
@@ -40,17 +37,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       writing_mode_(writing_mode),
       direction_(direction) {}
 
-NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     NGDirection direction,
-                                     const NGConstraintSpace& other,
-                                     NGLogicalOffset offset,
-                                     NGLogicalSize size)
-    : physical_space_(other.PhysicalSpace()),
-      offset_(offset),
-      size_(size),
-      writing_mode_(writing_mode),
-      direction_(direction) {}
-
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
                                      NGLogicalSize size)
@@ -59,6 +45,18 @@ NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
       size_(size),
       writing_mode_(other.WritingMode()),
       direction_(other.Direction()) {}
+
+NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGDirection direction,
+                                     const NGConstraintSpace& other,
+                                     NGLogicalSize size)
+    : size_(size), writing_mode_(writing_mode), direction_(direction) {
+  physical_space_ =
+      new NGPhysicalConstraintSpace(size.ConvertToPhysical(writing_mode));
+  for (const NGExclusion& exclusion : other.PhysicalSpace()->Exclusions()) {
+    physical_space_->AddExclusion(exclusion);
+  }
+}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {

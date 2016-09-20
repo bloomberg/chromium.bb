@@ -134,6 +134,15 @@ TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
   style_->setBoxSizing(BoxSizingBorderBox);
   EXPECT_EQ(LayoutUnit(100), computeInlineSizeForFragment());
 
+  // Content size should never be below zero, even with box-sizing: border-box
+  // and a large padding...
+  style_->setPaddingLeft(Length(400, Fixed));
+  EXPECT_EQ(LayoutUnit(400), computeInlineSizeForFragment());
+
+  // ...and the same goes for fill-available with a large padding.
+  style_->setLogicalWidth(Length(FillAvailable));
+  EXPECT_EQ(LayoutUnit(400), computeInlineSizeForFragment());
+
   // TODO(layout-ng): test {min,max}-content on max-width.
 }
 
@@ -183,6 +192,15 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
 
   style_->setBoxSizing(BoxSizingBorderBox);
   EXPECT_EQ(LayoutUnit(100), computeBlockSizeForFragment());
+
+  // Content size should never be below zero, even with box-sizing: border-box
+  // and a large padding...
+  style_->setPaddingBottom(Length(400, Fixed));
+  EXPECT_EQ(LayoutUnit(400), computeBlockSizeForFragment());
+
+  // ...and the same goes for fill-available with a large padding.
+  style_->setLogicalHeight(Length(FillAvailable));
+  EXPECT_EQ(LayoutUnit(400), computeBlockSizeForFragment());
 
   // TODO(layout-ng): test {min,max}-content on max-height.
 }

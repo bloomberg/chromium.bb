@@ -402,5 +402,28 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   EXPECT_EQ(kBorderTop + kPaddingTop, child->TopOffset());
   EXPECT_EQ(kBorderLeft + kPaddingLeft, child->LeftOffset());
 }
+
+TEST_F(NGBlockLayoutAlgorithmTest, PercentageSize) {
+  const int kPaddingLeft = 10;
+  const int kWidth = 30;
+  style_->setWidth(Length(kWidth, Fixed));
+  style_->setPaddingLeft(Length(kPaddingLeft, Fixed));
+
+  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
+  first_style->setWidth(Length(40, Percent));
+  NGBox* first_child = new NGBox(first_style.get());
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+                            NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
+
+  EXPECT_EQ(frag->Width(), LayoutUnit(kWidth + kPaddingLeft));
+  EXPECT_EQ(frag->Type(), NGPhysicalFragmentBase::FragmentBox);
+  ASSERT_EQ(frag->Children().size(), 1UL);
+
+  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  EXPECT_EQ(child->Width(), LayoutUnit(12));
+}
 }  // namespace
 }  // namespace blink

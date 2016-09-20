@@ -69,6 +69,13 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   if (type == LengthResolveType::MarginBorderPaddingSize && length.isAuto())
     return LayoutUnit();
 
+  // We don't need this when we're resolving margin/border/padding; skip
+  // computing it as an optimization and to simplify the code below.
+  NGBoxStrut border_and_padding;
+  if (type != LengthResolveType::MarginBorderPaddingSize) {
+    border_and_padding =
+        computeBorders(style) + computePadding(constraintSpace, style);
+  }
   LayoutUnit container_size = constraintSpace.ContainerSize().inline_size;
   switch (length.type()) {
     case Auto:
@@ -77,18 +84,17 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
           computeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
-      return container_size - margins.InlineSum();
+      return std::max(border_and_padding.InlineSum(),
+                      container_size - margins.InlineSum());
     }
     case Percent:
     case Fixed:
     case Calculated: {
-      // TODO(layout-ng): adjust for border-box
       LayoutUnit value = valueForLength(length, container_size);
-      if (style.boxSizing() == BoxSizingContentBox &&
-          type != LengthResolveType::MarginBorderPaddingSize) {
-        NGBoxStrut border_and_padding =
-            computeBorders(style) + computePadding(constraintSpace, style);
+      if (style.boxSizing() == BoxSizingContentBox) {
         value += border_and_padding.InlineSum();
+      } else {
+        value = std::max(border_and_padding.InlineSum(), value);
       }
       return value;
     }
@@ -96,7 +102,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
     case MaxContent:
     case FitContent:
       // TODO(layout-ng): implement
-      return LayoutUnit();
+      return border_and_padding.InlineSum();
     case DeviceWidth:
     case DeviceHeight:
     case ExtendToZoom:
@@ -104,7 +110,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
     case MaxSizeNone:
     default:
       NOTREACHED();
-      return LayoutUnit();
+      return border_and_padding.InlineSum();
   }
 }
 
@@ -125,6 +131,13 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
       constraintSpace.ContainerSize().block_size == NGSizeIndefinite)
     return contentSize;
 
+  // We don't need this when we're resolving margin/border/padding; skip
+  // computing it as an optimization and to simplify the code below.
+  NGBoxStrut border_and_padding;
+  if (type != LengthResolveType::MarginBorderPaddingSize) {
+    border_and_padding =
+        computeBorders(style) + computePadding(constraintSpace, style);
+  }
   LayoutUnit container_size = constraintSpace.ContainerSize().block_size;
   switch (length.type()) {
     case FillAvailable: {
@@ -132,18 +145,17 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
           computeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
-      return container_size - margins.BlockSum();
+      return std::max(border_and_padding.BlockSum(),
+                      container_size - margins.BlockSum());
     }
     case Percent:
     case Fixed:
     case Calculated: {
-      // TODO(layout-ng): adjust for border-box
       LayoutUnit value = valueForLength(length, container_size);
-      if (style.boxSizing() == BoxSizingContentBox &&
-          type != LengthResolveType::MarginBorderPaddingSize) {
-        NGBoxStrut border_and_padding =
-            computeBorders(style) + computePadding(constraintSpace, style);
+      if (style.boxSizing() == BoxSizingContentBox) {
         value += border_and_padding.BlockSum();
+      } else {
+        value = std::max(border_and_padding.BlockSum(), value);
       }
       return value;
     }
@@ -151,6 +163,10 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
     case MinContent:
     case MaxContent:
     case FitContent:
+      // Due to how contentSize is calculated, it should always include border
+      // and padding.
+      if (contentSize != LayoutUnit(-1))
+        DCHECK_GE(contentSize, border_and_padding.BlockSum());
       return contentSize;
     case DeviceWidth:
     case DeviceHeight:
@@ -159,7 +175,7 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
     case MaxSizeNone:
     default:
       NOTREACHED();
-      return LayoutUnit();
+      return border_and_padding.BlockSum();
   }
 }
 

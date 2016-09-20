@@ -26,28 +26,35 @@ class CORE_EXPORT NGConstraintSpace final
     : public GarbageCollected<NGConstraintSpace> {
  public:
   // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
+  // The size will be used for both for the physical constraint space's
+  // container size and this constraint space's Size().
   NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
 
   // Constructs a constraint space based on an existing backing
-  // NGPhysicalConstraintSpace.
+  // NGPhysicalConstraintSpace. Sets this constraint space's size to the
+  // physical constraint space's container size, converted to logical
+  // coordinates.
+  // TODO(layout-ng): Do we need this constructor?
   NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
   // Constructs a constraint space with a different NGWritingMode and
-  // NGDirection.
+  // NGDirection that's otherwise identical.
   NGConstraintSpace(NGWritingMode, NGDirection, const NGConstraintSpace*);
 
   // Constructs a derived constraint space sharing the same backing
-  // NGPhysicalConstraintSpace, NGWritingMode and NGDirection.
+  // NGPhysicalConstraintSpace, NGWritingMode and NGDirection. Primarily for use
+  // by NGLayoutOpportunityIterator.
   NGConstraintSpace(const NGConstraintSpace& other,
                     NGLogicalOffset,
                     NGLogicalSize);
 
-  // Constructs a derived constraint space sharing the same backing
-  // NGPhysicalConstraintSpace, a different NGWritingMode and NGDirection.
+  // Constructs a derived constraint space that shares the exclusions of the
+  // input constraint space, but has a different container size, writing mode
+  // and direction. Sets the offset to zero. For use by layout algorithms
+  // to use as the basis to find layout opportunities for children.
   NGConstraintSpace(NGWritingMode,
                     NGDirection,
                     const NGConstraintSpace& other,
-                    NGLogicalOffset,
                     NGLogicalSize);
 
   // This should live on NGBox or another layout bridge and probably take a root

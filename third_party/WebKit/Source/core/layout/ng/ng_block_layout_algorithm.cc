@@ -42,14 +42,22 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
 
       LayoutUnit inline_size =
           computeInlineSizeForFragment(*constraint_space, *style_);
+      LayoutUnit adjusted_inline_size =
+          inline_size - border_and_padding_.InlineSum();
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
       // -1?
       LayoutUnit block_size = computeBlockSizeForFragment(
-          *constraint_space, *style_, LayoutUnit(-1));
+          *constraint_space, *style_, NGSizeIndefinite);
+      LayoutUnit adjusted_block_size(block_size);
+      // Our calculated block-axis size may be indefinite at this point.
+      // If so, just leave the size as NGSizeIndefinite instead of subtracting
+      // borders and padding.
+      if (adjusted_block_size != NGSizeIndefinite)
+        adjusted_block_size -= border_and_padding_.BlockSum();
       constraint_space_for_children_ = new NGConstraintSpace(
-          *constraint_space, NGLogicalOffset(),
-          NGLogicalSize(inline_size - border_and_padding_.InlineSum(),
-                        block_size - border_and_padding_.BlockSum()));
+          FromPlatformWritingMode(style_->getWritingMode()),
+          FromPlatformDirection(style_->direction()), *constraint_space,
+          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
       content_size_ = border_and_padding_.block_start;
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
