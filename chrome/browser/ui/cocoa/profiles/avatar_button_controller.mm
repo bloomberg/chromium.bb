@@ -75,6 +75,9 @@ CGFloat ButtonExtraPadding() {
 // Extra padding for the MD signed out avatar button.
 const CGFloat kMaterialSignedOutWidthPadding = 2;
 
+// Kern value for the MD avatar button title.
+const CGFloat kMaterialTitleKern = 0.25;
+
 }  // namespace
 
 // Button cell with a custom border given by a set of nine-patch image grids.
@@ -262,23 +265,17 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
-  // which are themed with a dark background.
-  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowOffset:NSMakeSize(0, -1)];
-  [shadow setShadowBlurRadius:0];
+  // which are themed with a dark background. If we're using MD, then there
+  // should be no drop shadows.
+  BOOL isMaterial = ui::MaterialDesignController::IsModeMaterial();
 
   NSColor* foregroundColor;
-  if (browser_->profile()->IsGuestSession() &&
-      !ui::MaterialDesignController::IsModeMaterial()) {
+  if (browser_->profile()->IsGuestSession() && isMaterial)
     foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
-    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
-  } else if (!isThemedWindow_) {
+  else if (!isThemedWindow_)
     foregroundColor = [NSColor blackColor];
-    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.7]];
-  } else {
+  else
     foregroundColor = [NSColor blackColor];
-    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
-  }
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -290,7 +287,6 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
       storage.GetNumberOfProfiles() == 1 &&
       !storage.GetAllProfilesAttributes().front()->IsAuthenticated();
 
-
   NSString* buttonTitle = base::SysUTF16ToNSString(useGenericButton ?
       base::string16() :
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
@@ -300,7 +296,7 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
       base::mac::ObjCCastStrict<AvatarButton>(button_);
 
   if (useGenericButton) {
-    if (ui::MaterialDesignController::IsModeMaterial()) {
+    if (isMaterial) {
       NSImage* avatarIcon = NSImageFromImageSkia(
           gfx::CreateVectorIcon(gfx::VectorIconId::USER_ACCOUNT_AVATAR, 18,
                                 kMaterialAvatarIconColor));
@@ -322,7 +318,6 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
     }
     [button setImagePosition:NSImageOnly];
   } else if (hasError_) {
-    BOOL isMaterial = ui::MaterialDesignController::IsModeMaterial();
     NSImage* errorIcon =
         isMaterial
             ? NSImageFromImageSkia(gfx::CreateVectorIcon(
@@ -344,13 +339,39 @@ const CGFloat kMaterialSignedOutWidthPadding = 2;
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:NSLeftTextAlignment];
 
-  base::scoped_nsobject<NSAttributedString> attributedTitle(
-      [[NSAttributedString alloc]
-          initWithString:buttonTitle
-              attributes:@{ NSShadowAttributeName : shadow.get(),
-                            NSForegroundColorAttributeName : foregroundColor,
-                            NSParagraphStyleAttributeName : paragraphStyle }]);
-  [button_ setAttributedTitle:attributedTitle];
+  if (isMaterial) {
+    base::scoped_nsobject<NSAttributedString> attributedTitle(
+        [[NSAttributedString alloc]
+            initWithString:buttonTitle
+                attributes:@{
+                  NSForegroundColorAttributeName : foregroundColor,
+                  NSParagraphStyleAttributeName : paragraphStyle,
+                  NSKernAttributeName :
+                      [NSNumber numberWithFloat:kMaterialTitleKern]
+                }]);
+    [button_ setAttributedTitle:attributedTitle];
+  } else {
+    // Create the white drop shadow.
+    base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+    [shadow setShadowOffset:NSMakeSize(0, -1)];
+    [shadow setShadowBlurRadius:0];
+    if (browser_->profile()->IsGuestSession())
+      [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
+    else if (!isThemedWindow_)
+      [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.7]];
+    else
+      [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
+
+    base::scoped_nsobject<NSAttributedString> attributedTitle(
+        [[NSAttributedString alloc]
+            initWithString:buttonTitle
+                attributes:@{
+                  NSShadowAttributeName : shadow.get(),
+                  NSForegroundColorAttributeName : foregroundColor,
+                  NSParagraphStyleAttributeName : paragraphStyle
+                }]);
+    [button_ setAttributedTitle:attributedTitle];
+  }
   [button_ sizeToFit];
 
   if (layoutParent) {
