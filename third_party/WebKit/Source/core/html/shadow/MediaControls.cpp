@@ -33,6 +33,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackContainer.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/EventDispatchForbiddenScope.h"
 

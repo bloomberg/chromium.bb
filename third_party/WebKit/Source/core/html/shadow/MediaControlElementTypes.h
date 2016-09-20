@@ -33,7 +33,6 @@
 #include "core/CoreExport.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/layout/LayoutBlock.h"
 #include "public/platform/WebLocalizedString.h"
 
 namespace blink {
@@ -74,7 +73,7 @@ enum MediaControlElementType {
 };
 
 CORE_EXPORT const HTMLMediaElement* toParentMediaElement(const Node*);
-inline const HTMLMediaElement* toParentMediaElement(const LayoutObject& layoutObject) { return toParentMediaElement(layoutObject.node()); }
+CORE_EXPORT const HTMLMediaElement* toParentMediaElement(const LayoutObject&);
 
 CORE_EXPORT MediaControlElementType mediaControlElementType(const Node*);
 

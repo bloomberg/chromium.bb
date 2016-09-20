@@ -29,6 +29,7 @@
 
 #include "modules/accessibility/AXMediaControls.h"
 
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/text/PlatformLocale.h"
 

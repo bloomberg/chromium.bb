@@ -38,6 +38,7 @@
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {
@@ -57,6 +58,11 @@ const HTMLMediaElement* toParentMediaElement(const Node* node)
         return nullptr;
 
     return toHTMLMediaElement(mediaNode);
+}
+
+const HTMLMediaElement* toParentMediaElement(const LayoutObject& layoutObject)
+{
+    return toParentMediaElement(layoutObject.node());
 }
 
 MediaControlElementType mediaControlElementType(const Node* node)

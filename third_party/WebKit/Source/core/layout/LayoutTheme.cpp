@@ -41,6 +41,7 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutThemeMobile.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
