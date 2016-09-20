@@ -7,6 +7,10 @@ per-file pref_names.h=*
 per-file url_constants.cc=*
 per-file url_constants.h=*
 
+# This is for the common case of adding or renaming files. If you're doing
+# structural changes, use usual OWNERS rules.
+per-file BUILD.gn=*
+
 # Mac Sandbox profiles.
 per-file nacl_loader.sb=set noparent
 per-file nacl_loader.sb=rsesek@chromium.org
