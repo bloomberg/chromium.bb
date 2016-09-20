@@ -550,13 +550,17 @@ static CSSValueList* valuesForBackgroundShorthand(const ComputedStyle& style, co
     return ret;
 }
 
-static CSSValueList* valueForContentPositionAndDistributionWithOverflowAlignment(const StyleContentAlignmentData& data)
+static CSSValueList* valueForContentPositionAndDistributionWithOverflowAlignment(const StyleContentAlignmentData& data, CSSValueID normalBehaviorValueID)
 {
     CSSValueList* result = CSSValueList::createSpaceSeparated();
     if (data.distribution() != ContentDistributionDefault)
         result->append(*CSSPrimitiveValue::create(data.distribution()));
-    if (data.distribution() == ContentDistributionDefault || data.position() != ContentPositionNormal)
-        result->append(*CSSPrimitiveValue::create(data.position()));
+    if (data.distribution() == ContentDistributionDefault || data.position() != ContentPositionNormal) {
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled() && data.position() == ContentPositionNormal)
+            result->append(*CSSPrimitiveValue::createIdentifier(normalBehaviorValueID));
+        else
+            result->append(*CSSPrimitiveValue::create(data.position()));
+    }
     if ((data.position() >= ContentPositionCenter || data.distribution() != ContentDistributionDefault) && data.overflow() != OverflowAlignmentDefault)
         result->append(*CSSPrimitiveValue::create(data.overflow()));
     ASSERT(result->length() > 0);
@@ -1891,7 +1895,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyEmptyCells:
         return CSSPrimitiveValue::create(style.emptyCells());
     case CSSPropertyAlignContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(style.alignContent());
+        return valueForContentPositionAndDistributionWithOverflowAlignment(style.alignContent(), CSSValueStretch);
     case CSSPropertyAlignItems:
         return valueForItemPositionWithOverflowAlignment(style.alignItems());
     case CSSPropertyAlignSelf:
@@ -1911,7 +1915,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyFlexWrap:
         return CSSPrimitiveValue::create(style.flexWrap());
     case CSSPropertyJustifyContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(style.justifyContent());
+        return valueForContentPositionAndDistributionWithOverflowAlignment(style.justifyContent(), CSSValueFlexStart);
     case CSSPropertyOrder:
         return CSSPrimitiveValue::create(style.order(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyFloat:

@@ -472,7 +472,7 @@ public:
     // Non-Inherited properties.
 
     // Content alignment properties.
-    static StyleContentAlignmentData initialContentAlignment() { return StyleContentAlignmentData(RuntimeEnabledFeatures::cssGridLayoutEnabled() ? ContentPositionNormal : ContentPositionFlexStart, ContentDistributionDefault, OverflowAlignmentDefault); }
+    static StyleContentAlignmentData initialContentAlignment() { return StyleContentAlignmentData(ContentPositionNormal, ContentDistributionDefault, OverflowAlignmentDefault); }
 
     // align-content (aka -webkit-align-content)
     const StyleContentAlignmentData& alignContent() const { return m_rareNonInheritedData->m_alignContent; }
