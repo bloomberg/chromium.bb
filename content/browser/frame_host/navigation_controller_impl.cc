@@ -1174,8 +1174,11 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     entry = GetEntryWithUniqueID(params.nav_entry_id);
 
     // Needed for the restore case, where the serialized NavigationEntry doesn't
-    // have the SSL state.
-    entry->GetSSL() = handle->ssl_status();
+    // have the SSL state. Note that for in-page navigation, there's no
+    // SSLStatus in the NavigationHandle so don't overwrite the existing entry's
+    // SSLStatus.
+    if (!is_in_page)
+      entry->GetSSL() = handle->ssl_status();
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
     // navigations that are EXISTING_PAGE are reloads and location.replace,

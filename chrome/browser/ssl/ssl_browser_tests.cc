@@ -3225,6 +3225,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InPageNavigationAfterLoadSSLState) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Checks that navigations after pushState maintain the SSL status.
+IN_PROC_BROWSER_TEST_F(SSLUITest, PushStateSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  content::TestNavigationObserver observer(tab);
+  EXPECT_TRUE(ExecuteScript(tab, "history.pushState({}, '', '');"));
+  observer.Wait();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(tab);
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
 // TODO(jcampan): more tests to do below.
 
 // Visit a page over https that contains a frame with a redirect.
