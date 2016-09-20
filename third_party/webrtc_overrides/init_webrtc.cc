@@ -69,15 +69,6 @@ void HistogramAdd(Histogram* histogram_pointer, int sample) {
       reinterpret_cast<base::HistogramBase*>(histogram_pointer);
   ptr->Add(sample);
 }
-
-void HistogramAdd(
-    Histogram* histogram_pointer, const std::string& name, int sample) {
-  base::HistogramBase* ptr =
-      reinterpret_cast<base::HistogramBase*>(histogram_pointer);
-  // The name should not vary.
-  DCHECK(ptr->histogram_name() == name);
-  ptr->Add(sample);
-}
 }  // namespace metrics
 }  // namespace webrtc
 
