@@ -13175,7 +13175,7 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
           (da > 0 && sa != da)) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION,
-            func_name, "imcompatible color component sizes");
+            func_name, "incompatible color component sizes");
         return false;
       }
     }
