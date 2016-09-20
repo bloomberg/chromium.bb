@@ -413,6 +413,9 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
   }
   result.id = [event deviceID];
   result.force = [event pressure];
+  NSPoint tilt = [event tilt];
+  result.tiltX = lround(tilt.x * 90);
+  result.tiltY = lround(tilt.y * 90);
   return result;
 }
 
