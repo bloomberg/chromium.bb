@@ -35,7 +35,8 @@ void TimeZoneMonitorAndroid::TimeZoneChangedFromJava(
 }
 
 // static
-std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorAndroid());
 }
 

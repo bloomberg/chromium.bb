@@ -6,18 +6,17 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace content {
 
 TimeZoneMonitor::TimeZoneMonitor() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 TimeZoneMonitor::~TimeZoneMonitor() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void TimeZoneMonitor::Bind(device::mojom::TimeZoneMonitorRequest request) {
@@ -25,7 +24,7 @@ void TimeZoneMonitor::Bind(device::mojom::TimeZoneMonitorRequest request) {
 }
 
 void TimeZoneMonitor::NotifyClients() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_CHROMEOS)
   // On CrOS, ICU's default tz is already set to a new zone. No
   // need to redetect it with detectHostTimeZone().

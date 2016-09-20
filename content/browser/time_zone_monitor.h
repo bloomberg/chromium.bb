@@ -8,9 +8,17 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+
+template <class T>
+class scoped_refptr;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace content {
 
@@ -34,8 +42,10 @@ namespace content {
 class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
  public:
   // Returns a new TimeZoneMonitor object (likely a subclass) specific to the
-  // platform.
-  static std::unique_ptr<TimeZoneMonitor> Create();
+  // platform. Inject |file_task_runner| to enable running blocking file
+  // operations on it when necessary.
+  static std::unique_ptr<TimeZoneMonitor> Create(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
 
   ~TimeZoneMonitor() override;
 
@@ -48,6 +58,8 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
   void NotifyClients();
 
  private:
+  base::ThreadChecker thread_checker_;
+
   // device::mojom::device::mojom::TimeZoneMonitor:
   void AddClient(device::mojom::TimeZoneMonitorClientPtr client) override;
 

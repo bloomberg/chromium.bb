@@ -1319,7 +1319,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::BrowserThreadsStarted::TimeZoneMonitor");
-    time_zone_monitor_ = TimeZoneMonitor::Create();
+    time_zone_monitor_ = TimeZoneMonitor::Create(file_thread_->task_runner());
   }
 
   {

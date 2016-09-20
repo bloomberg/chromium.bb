@@ -14,9 +14,11 @@
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_CHROMEOS)
 
@@ -28,7 +30,8 @@ class TimeZoneMonitorLinuxImpl;
 
 class TimeZoneMonitorLinux : public TimeZoneMonitor {
  public:
-  TimeZoneMonitorLinux();
+  TimeZoneMonitorLinux(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~TimeZoneMonitorLinux() override;
 
   void NotifyClientsFromImpl() { NotifyClients(); }
@@ -47,22 +50,24 @@ namespace {
 class TimeZoneMonitorLinuxImpl
     : public base::RefCountedThreadSafe<TimeZoneMonitorLinuxImpl> {
  public:
-  explicit TimeZoneMonitorLinuxImpl(TimeZoneMonitorLinux* owner)
+  explicit TimeZoneMonitorLinuxImpl(
+      TimeZoneMonitorLinux* owner,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner)
       : base::RefCountedThreadSafe<TimeZoneMonitorLinuxImpl>(),
         file_path_watchers_(),
+        main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        file_task_runner_(file_task_runner),
         owner_(owner) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
+    DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+    file_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TimeZoneMonitorLinuxImpl::StartWatchingOnFileThread, this));
   }
 
   void StopWatching() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
     owner_ = NULL;
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
+    file_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TimeZoneMonitorLinuxImpl::StopWatchingOnFileThread, this));
   }
@@ -76,7 +81,8 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void StartWatchingOnFileThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    base::ThreadRestrictions::AssertIOAllowed();
+    DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
 
     // There is no true standard for where time zone information is actually
     // stored. glibc uses /etc/localtime, uClibc uses /etc/TZ, and some older
@@ -101,27 +107,29 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void StopWatchingOnFileThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
     base::STLDeleteElements(&file_path_watchers_);
   }
 
   void OnTimeZoneFileChanged(const base::FilePath& path, bool error) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    BrowserThread::PostTask(
-        BrowserThread::UI,
+    DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TimeZoneMonitorLinuxImpl::OnTimeZoneFileChangedOnUIThread,
                    this));
   }
 
   void OnTimeZoneFileChangedOnUIThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
     if (owner_) {
       owner_->NotifyClientsFromImpl();
     }
   }
 
   std::vector<base::FilePathWatcher*> file_path_watchers_;
+
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   TimeZoneMonitorLinux* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitorLinuxImpl);
@@ -129,9 +137,9 @@ class TimeZoneMonitorLinuxImpl
 
 }  // namespace
 
-TimeZoneMonitorLinux::TimeZoneMonitorLinux()
-    : TimeZoneMonitor(),
-      impl_() {
+TimeZoneMonitorLinux::TimeZoneMonitorLinux(
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner)
+    : TimeZoneMonitor(), impl_() {
   // If the TZ environment variable is set, its value specifies the time zone
   // specification, and it's pointless to monitor any files in /etc for
   // changes because such changes would have no effect on the TZ environment
@@ -146,7 +154,7 @@ TimeZoneMonitorLinux::TimeZoneMonitorLinux()
   // it changes, so it's pointless to respond to a notification that it has
   // changed.
   if (!getenv("TZ")) {
-    impl_ = new TimeZoneMonitorLinuxImpl(this);
+    impl_ = new TimeZoneMonitorLinuxImpl(this, file_task_runner);
   }
 }
 
@@ -157,8 +165,10 @@ TimeZoneMonitorLinux::~TimeZoneMonitorLinux() {
 }
 
 // static
-std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create() {
-  return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorLinux());
+std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
+  return std::unique_ptr<TimeZoneMonitor>(
+      new TimeZoneMonitorLinux(file_task_runner));
 }
 
 }  // namespace content
