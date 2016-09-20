@@ -44,7 +44,10 @@ class DistillerPageIOS : public DistillerPage {
   void OnLoadURLDone(web::PageLoadCompletionStatus load_completion_status);
 
   // Called once the |script_| has been evaluated on the page.
-  void HandleJavaScriptResultString(NSString* result);
+  void HandleJavaScriptResult(id result);
+
+  // Converts result of WKWebView script evaluation to base::Value
+  std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result);
 
   web::BrowserState* browser_state_;
   GURL url_;

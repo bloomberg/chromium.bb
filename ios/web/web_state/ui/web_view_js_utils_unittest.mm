@@ -93,6 +93,32 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
   EXPECT_EQ(42, value3);
 }
 
+// Tests that ValueResultFromWKResult converts NSArray to properly
+// initialized base::ListValue.
+TEST(WebViewJsUtilsTest, ValueResultFromArrayWKResult) {
+  NSArray* test_array = @[ @"Value1", @[ @YES ], @42 ];
+
+  std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(test_array));
+  base::ListValue* list = nullptr;
+  value->GetAsList(&list);
+  EXPECT_NE(nullptr, list);
+
+  size_t list_size = 3;
+  EXPECT_EQ(list_size, list->GetSize());
+
+  std::string value1;
+  list->GetString(0, &value1);
+  EXPECT_EQ("Value1", value1);
+
+  base::ListValue const* inner_list = nullptr;
+  list->GetList(1, &inner_list);
+  EXPECT_NE(nullptr, inner_list);
+
+  double value3;
+  list->GetDouble(2, &value3);
+  EXPECT_EQ(42, value3);
+}
+
 // Tests that an NSDictionary with a cycle does not cause infinite recursion.
 TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
   // Create a dictionary with a cycle.
@@ -129,6 +155,38 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
     current_dictionary = inner_dictionary;
   }
   EXPECT_EQ(nullptr, current_dictionary);
+}
+
+// Tests that an NSArray with a cycle does not cause infinite recursion.
+TEST(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
+  // Create an array with a cycle.
+  NSMutableArray* test_array = [NSMutableArray arrayWithCapacity:1];
+  NSMutableArray* test_array_2 = [NSMutableArray arrayWithCapacity:1];
+  test_array[0] = test_array_2;
+  test_array_2[0] = test_array;
+
+  // Break the retain cycle so that the arrays are freed.
+  base::ScopedClosureRunner runner(base::BindBlock(^{
+    [test_array removeAllObjects];
+  }));
+
+  // Check that parsing the array stopped at a depth of
+  // |kMaximumParsingRecursionDepth|.
+  std::unique_ptr<base::Value> value = web::ValueResultFromWKResult(test_array);
+  base::ListValue* current_list = nullptr;
+  base::ListValue* inner_list = nullptr;
+
+  value->GetAsList(&current_list);
+  EXPECT_NE(nullptr, current_list);
+
+  for (int current_depth = 0; current_depth <= kMaximumParsingRecursionDepth;
+       current_depth++) {
+    EXPECT_NE(nullptr, current_list);
+    inner_list = nullptr;
+    current_list->GetList(0, &inner_list);
+    current_list = inner_list;
+  }
+  EXPECT_EQ(nullptr, current_list);
 }
 
 }  // namespace web

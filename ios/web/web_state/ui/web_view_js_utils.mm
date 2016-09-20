@@ -50,13 +50,23 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
     for (id key in wk_result) {
       NSString* obj_c_string = base::mac::ObjCCast<NSString>(key);
       const std::string path = base::SysNSStringToUTF8(obj_c_string);
-      std::unique_ptr<base::Value> value = ValueResultFromWKResult(
-          [wk_result objectForKey:obj_c_string], max_depth - 1);
+      std::unique_ptr<base::Value> value =
+          ValueResultFromWKResult(wk_result[obj_c_string], max_depth - 1);
       if (value) {
         dictionary->Set(path, std::move(value));
       }
     }
     result = std::move(dictionary);
+  } else if (result_type == CFArrayGetTypeID()) {
+    std::unique_ptr<base::ListValue> list = base::MakeUnique<base::ListValue>();
+    for (id list_item in wk_result) {
+      std::unique_ptr<base::Value> value =
+          ValueResultFromWKResult(list_item, max_depth - 1);
+      if (value) {
+        list->Append(std::move(value));
+      }
+    }
+    result = std::move(list);
   } else {
     NOTREACHED();  // Convert other types as needed.
   }

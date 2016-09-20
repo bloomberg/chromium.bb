@@ -10,10 +10,84 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "ios/public/provider/web/web_controller_provider.h"
 #include "ios/web/public/browser_state.h"
+
+namespace {
+
+// This is duplicated here from ios/web/web_state/ui/web_view_js_utils.mm in
+// order to handle numbers. The dom distiller proto expects integers and the
+// generated JSON deserializer does not accept doubles in the place of ints.
+// However WKWebView only returns "numbers." However, here the proto expects
+// integers and doubles, which is done by checking if the number has a fraction
+// or not; since this is a hacky method it's isolated to this file so as to
+// limit the risk of broken JS calls.
+
+int const kMaximumParsingRecursionDepth = 6;
+// Converts result of WKWebView script evaluation to base::Value, parsing
+// |wk_result| up to a depth of |max_depth|.
+std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
+                                                         int max_depth) {
+  if (!wk_result)
+    return nullptr;
+
+  std::unique_ptr<base::Value> result;
+
+  if (max_depth < 0) {
+    DLOG(WARNING) << "JS maximum recursion depth exceeded.";
+    return result;
+  }
+
+  CFTypeID result_type = CFGetTypeID(wk_result);
+  if (result_type == CFStringGetTypeID()) {
+    result.reset(new base::StringValue(base::SysNSStringToUTF16(wk_result)));
+    DCHECK(result->IsType(base::Value::TYPE_STRING));
+  } else if (result_type == CFNumberGetTypeID()) {
+    // Different implementation is here.
+    if ([wk_result intValue] != [wk_result doubleValue]) {
+      result.reset(new base::FundamentalValue([wk_result doubleValue]));
+      DCHECK(result->IsType(base::Value::TYPE_DOUBLE));
+    } else {
+      result.reset(new base::FundamentalValue([wk_result intValue]));
+      DCHECK(result->IsType(base::Value::TYPE_INTEGER));
+    }
+    // End of different implementation.
+  } else if (result_type == CFBooleanGetTypeID()) {
+    result.reset(
+        new base::FundamentalValue(static_cast<bool>([wk_result boolValue])));
+    DCHECK(result->IsType(base::Value::TYPE_BOOLEAN));
+  } else if (result_type == CFNullGetTypeID()) {
+    result = base::Value::CreateNullValue();
+    DCHECK(result->IsType(base::Value::TYPE_NULL));
+  } else if (result_type == CFDictionaryGetTypeID()) {
+    std::unique_ptr<base::DictionaryValue> dictionary =
+        base::MakeUnique<base::DictionaryValue>();
+    for (id key in wk_result) {
+      NSString* obj_c_string = base::mac::ObjCCast<NSString>(key);
+      const std::string path = base::SysNSStringToUTF8(obj_c_string);
+      std::unique_ptr<base::Value> value =
+          ValueResultFromScriptResult(wk_result[obj_c_string], max_depth - 1);
+      if (value) {
+        dictionary->Set(path, std::move(value));
+      }
+    }
+    result = std::move(dictionary);
+  } else if (result_type == CFArrayGetTypeID()) {
+    std::unique_ptr<base::ListValue> list = base::MakeUnique<base::ListValue>();
+    for (id value in wk_result) {
+      list->Append(ValueResultFromScriptResult(value, max_depth - 1));
+    }
+    result = std::move(list);
+  } else {
+    NOTREACHED();  // Convert other types as needed.
+  }
+  return result;
+}
+}
 
 namespace dom_distiller {
 
@@ -54,8 +128,7 @@ DistillerPageIOS::~DistillerPageIOS() {
 }
 
 bool DistillerPageIOS::StringifyOutput() {
- // UIWebView requires JavaScript to return a single string value.
- return true;
+  return false;
 }
 
 void DistillerPageIOS::DistillPageImpl(const GURL& url,
@@ -89,30 +162,30 @@ void DistillerPageIOS::OnLoadURLDone(
   // provider.
   if (load_completion_status == web::PageLoadCompletionStatus::FAILURE ||
       !provider_) {
-    HandleJavaScriptResultString(@"");
+    HandleJavaScriptResult(nil);
     return;
   }
 
   // Inject the script.
   base::WeakPtr<DistillerPageIOS> weak_this = weak_ptr_factory_.GetWeakPtr();
-  provider_->InjectScript(script_, ^(NSString* string, NSError* error) {
+  provider_->InjectScript(script_, ^(id result, NSError* error) {
     DistillerPageIOS* distiller_page = weak_this.get();
     if (distiller_page)
-      distiller_page->HandleJavaScriptResultString(string);
+      distiller_page->HandleJavaScriptResult(result);
   });
 }
 
-void DistillerPageIOS::HandleJavaScriptResultString(NSString* result) {
+void DistillerPageIOS::HandleJavaScriptResult(id result) {
   std::unique_ptr<base::Value> resultValue = base::Value::CreateNullValue();
-  if (result.length) {
-    std::unique_ptr<base::Value> dictionaryValue =
-        base::JSONReader::Read(base::SysNSStringToUTF8(result));
-    if (dictionaryValue &&
-        dictionaryValue->IsType(base::Value::TYPE_DICTIONARY)) {
-      resultValue = std::move(dictionaryValue);
-    }
+  if (result) {
+    resultValue = ValueResultFromScriptResult(result);
   }
   OnDistillationDone(url_, resultValue.get());
 }
 
+std::unique_ptr<base::Value> DistillerPageIOS::ValueResultFromScriptResult(
+    id wk_result) {
+  return ::ValueResultFromScriptResult(wk_result,
+                                       kMaximumParsingRecursionDepth);
+}
 }  // namespace dom_distiller
