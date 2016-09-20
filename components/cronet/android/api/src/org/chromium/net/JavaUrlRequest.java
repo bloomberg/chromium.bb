@@ -11,6 +11,7 @@ import android.util.Log;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -260,6 +261,7 @@ final class JavaUrlRequest implements UrlRequest {
         final Executor mExecutor;
         final HttpURLConnection mUrlConnection;
         WritableByteChannel mOutputChannel;
+        OutputStream mUrlConnectionOutputStream;
         final UploadDataProvider mUploadProvider;
         ByteBuffer mBuffer;
         /** This holds the total bytes to send (the content-length). -1 if unknown. */
@@ -303,6 +305,11 @@ final class JavaUrlRequest implements UrlRequest {
                     while (mBuffer.hasRemaining()) {
                         mWrittenBytes += mOutputChannel.write(mBuffer);
                     }
+                    // Forces a chunk to be sent, rather than buffering to the DEFAULT_CHUNK_LENGTH.
+                    // This allows clients to trickle-upload bytes as they become available without
+                    // introducing latency due to buffering.
+                    mUrlConnectionOutputStream.flush();
+
                     if (mWrittenBytes < mTotalBytes || (mTotalBytes == -1 && !finalChunk)) {
                         mBuffer.clear();
                         mSinkState.set(SinkState.AWAITING_READ_RESULT);
@@ -351,7 +358,8 @@ final class JavaUrlRequest implements UrlRequest {
                         mAdditionalStatusDetails = Status.CONNECTING;
                         mUrlConnection.connect();
                         mAdditionalStatusDetails = Status.SENDING_REQUEST;
-                        mOutputChannel = Channels.newChannel(mUrlConnection.getOutputStream());
+                        mUrlConnectionOutputStream = mUrlConnection.getOutputStream();
+                        mOutputChannel = Channels.newChannel(mUrlConnectionOutputStream);
                     }
                     mSinkState.set(SinkState.AWAITING_READ_RESULT);
                     executeOnUploadExecutor(new CheckedRunnable() {
