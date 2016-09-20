@@ -43,16 +43,11 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
     private static final String TAG = "OtherFormsOfHistoryDialogFragment";
 
     /**
-     * Create and show the dialog.
+     * Show the dialog.
+     * @param activity The activity in which to show the dialog.
      */
-    public static OtherFormsOfHistoryDialogFragment show(Activity activity) {
-        OtherFormsOfHistoryDialogFragment dialog = new OtherFormsOfHistoryDialogFragment();
-        dialog.show(activity.getFragmentManager(), TAG);
-        return dialog;
-    }
-
-    private OtherFormsOfHistoryDialogFragment() {
-        super();
+    public void show(Activity activity) {
+        show(activity.getFragmentManager(), TAG);
     }
 
     @Override

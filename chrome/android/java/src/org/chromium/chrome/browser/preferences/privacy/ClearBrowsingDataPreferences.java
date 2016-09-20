@@ -332,8 +332,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         if (getSelectedOptions().contains(DialogOption.CLEAR_HISTORY)
                 && mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled
                 && !OtherFormsOfHistoryDialogFragment.wasDialogShown(getActivity())) {
-            mDialogAboutOtherFormsOfBrowsingHistory =
-                    OtherFormsOfHistoryDialogFragment.show(getActivity());
+            mDialogAboutOtherFormsOfBrowsingHistory = new OtherFormsOfHistoryDialogFragment();
+            mDialogAboutOtherFormsOfBrowsingHistory.show(getActivity());
             dismissProgressDialog();
             RecordHistogram.recordBooleanHistogram(DIALOG_HISTOGRAM, true);
         } else {
