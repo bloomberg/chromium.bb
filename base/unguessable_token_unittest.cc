@@ -4,6 +4,7 @@
 
 #include "base/unguessable_token.h"
 
+#include <sstream>
 #include <type_traits>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,6 +71,10 @@ TEST(UnguessableTokenTest, VerifyToString) {
   std::string expected = "(0000012300000ABC)";
 
   EXPECT_EQ(expected, token.ToString());
+
+  std::stringstream stream;
+  stream << token;
+  EXPECT_EQ(expected, stream.str());
 }
 
 TEST(UnguessableTokenTest, VerifySmallerThanOperator) {

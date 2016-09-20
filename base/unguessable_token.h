@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <iosfwd>
 #include <tuple>
 
 #include "base/base_export.h"
@@ -85,6 +86,9 @@ class BASE_EXPORT UnguessableToken {
   uint64_t high_ = 0;
   uint64_t low_ = 0;
 };
+
+BASE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                     const UnguessableToken& token);
 
 // For use in std::unordered_map.
 struct UnguessableTokenHash {

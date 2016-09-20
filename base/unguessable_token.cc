@@ -34,4 +34,8 @@ UnguessableToken UnguessableToken::Deserialize(uint64_t high, uint64_t low) {
   return UnguessableToken(high, low);
 }
 
+std::ostream& operator<<(std::ostream& out, const UnguessableToken& token) {
+  return out << token.ToString();
+}
+
 }  // namespace base
