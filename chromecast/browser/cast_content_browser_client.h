@@ -170,11 +170,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 #endif  // defined(OS_ANDROID)
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
-#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
-  content::ExternalVideoSurfaceContainer*
-  OverrideCreateExternalVideoSurfaceContainer(
-      content::WebContents* web_contents) override;
-#endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
  protected:

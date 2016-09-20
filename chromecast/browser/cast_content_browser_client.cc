@@ -64,7 +64,6 @@
 
 #if defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #else
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #endif  // defined(OS_ANDROID)
@@ -491,15 +490,6 @@ void CastContentBrowserClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {
   additional_schemes->push_back(kChromeResourceScheme);
 }
-
-#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
-content::ExternalVideoSurfaceContainer*
-CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
-    content::WebContents* web_contents) {
-  return external_video_surface::ExternalVideoSurfaceContainerImpl::Create(
-      web_contents);
-}
-#endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 
 content::DevToolsManagerDelegate*
 CastContentBrowserClient::GetDevToolsManagerDelegate() {

@@ -11,7 +11,6 @@
 #include "chromecast/base/android/system_time_change_notifier_android.h"
 #include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/browser/android/cast_window_manager.h"
-#include "components/external_video_surface/component_jni_registrar.h"
 
 namespace chromecast {
 namespace android {
@@ -22,8 +21,6 @@ static base::android::RegistrationMethod kMethods[] = {
   { "CastMetricsHelperAndroid", CastMetricsHelperAndroid::RegisterJni },
   { "CastWindowManager", shell::RegisterCastWindowManager },
   { "ChromecastConfigAndroid", ChromecastConfigAndroid::RegisterJni },
-  { "ExternalVideoSurfaceContainer",
-      external_video_surface::RegisterExternalVideoSurfaceJni },
   { "SystemTimeChangeNotifierAndroid",
       SystemTimeChangeNotifierAndroid::RegisterJni },
 };

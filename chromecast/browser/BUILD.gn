@@ -131,10 +131,7 @@ source_set("browser") {
       "//ui/aura",
     ]
   } else if (is_android) {
-    deps += [
-      ":jni_headers",
-      "//components/external_video_surface",
-    ]
+    deps += [ ":jni_headers" ]
   }
 
   if (use_ozone) {
