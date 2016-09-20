@@ -44,29 +44,15 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   DCHECK(channel_layout == CHANNEL_LAYOUT_DISCRETE ||
          ChannelLayoutToChannelCount(channel_layout) == channel_count);
 
+  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
+  DCHECK_LE(bytes_per_channel, kChannelAlignment);
+
   // Empty buffer?
   if (!create_buffer)
     return;
 
-  AllocateAndCopy(data, frame_count, 0);
-}
-
-AudioBuffer::~AudioBuffer() {}
-
-void AudioBuffer::AllocateAndCopy(const uint8_t* const* data,
-                                  int frame_count,
-                                  int silence_frames) {
-  if (!channel_data_.empty())
-    channel_data_.clear();
-
-  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
-  DCHECK_LE(bytes_per_channel, kChannelAlignment);
-  DCHECK_GT(bytes_per_channel, 0);
-
-  int data_size_per_channel =
-      (frame_count + silence_frames) * bytes_per_channel;
-
-  if (IsPlanar(sample_format_)) {
+  int data_size_per_channel = frame_count * bytes_per_channel;
+  if (IsPlanar(sample_format)) {
     // Planar data, so need to allocate buffer for each channel.
     // Determine per channel data size, taking into account alignment.
     int block_size_per_channel =
@@ -80,23 +66,17 @@ void AudioBuffer::AllocateAndCopy(const uint8_t* const* data,
         base::AlignedAlloc(data_size_, kChannelAlignment)));
     channel_data_.reserve(channel_count_);
 
-    // Size of silence per channel.
-    int silence_bytes = silence_frames * bytes_per_channel;
-
     // Copy each channel's data into the appropriate spot.
     for (int i = 0; i < channel_count_; ++i) {
       channel_data_.push_back(data_.get() + i * block_size_per_channel);
-      memset(channel_data_[i], 0, silence_bytes);
-      if (data) {
-        memcpy(channel_data_[i] + silence_bytes, data[i],
-               data_size_per_channel - silence_bytes);
-      }
+      if (data)
+        memcpy(channel_data_[i], data[i], data_size_per_channel);
     }
     return;
   }
 
   // Remaining formats are interleaved data.
-  DCHECK(IsInterleaved(sample_format_)) << sample_format_;
+  DCHECK(IsInterleaved(sample_format)) << sample_format_;
   // Allocate our own buffer and copy the supplied data into it. Buffer must
   // contain the data for all channels.
   data_size_ = data_size_per_channel * channel_count_;
@@ -104,31 +84,11 @@ void AudioBuffer::AllocateAndCopy(const uint8_t* const* data,
       static_cast<uint8_t*>(base::AlignedAlloc(data_size_, kChannelAlignment)));
   channel_data_.reserve(1);
   channel_data_.push_back(data_.get());
-
-  int silence_bytes = silence_frames * channel_count_ * bytes_per_channel;
-  memset(data_.get(), 0, silence_bytes);
   if (data)
-    memcpy(data_.get() + silence_bytes, data[0], data_size_ - silence_bytes);
+    memcpy(data_.get(), data[0], data_size_);
 }
 
-void AudioBuffer::PadStart(int silence_frames) {
-  DCHECK_GE(silence_frames, 0);
-
-  if (silence_frames > 0) {
-    // Only adjust allocation if not currently an empty buffer. Empty buffer's
-    // are implicitly silent, so just increase the frame count for that case.
-    if (data_) {
-      std::unique_ptr<uint8_t, base::AlignedFreeDeleter> orig_data =
-          std::move(data_);
-      std::vector<uint8_t*> orig_channel_data(channel_data_);
-      AllocateAndCopy(&orig_channel_data[0], adjusted_frame_count_,
-                      silence_frames);
-    }
-
-    adjusted_frame_count_ += silence_frames;
-    duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
-  }
-}
+AudioBuffer::~AudioBuffer() {}
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
@@ -196,7 +156,6 @@ inline float ConvertSample(int16_t value) {
   return value * (value < 0 ? -1.0f / std::numeric_limits<int16_t>::min()
                             : 1.0f / std::numeric_limits<int16_t>::max());
 }
-
 
 void AudioBuffer::AdjustSampleRate(int sample_rate) {
   DCHECK(!end_of_stream_);

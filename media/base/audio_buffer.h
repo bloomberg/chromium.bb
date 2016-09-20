@@ -94,10 +94,6 @@ class MEDIA_EXPORT AudioBuffer
                   int dest_frame_offset,
                   AudioBus* dest);
 
-  // Add |silence_frames| frames of silence to the start of the buffer. Silence
-  // padding can be removed using any of the Trim*() methods.
-  void PadStart(int silence_frames);
-
   // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
   // Timestamp and duration are adjusted to reflect the fewer frames.
   // Note that repeated calls to TrimStart() may result in timestamp() and
@@ -164,10 +160,6 @@ class MEDIA_EXPORT AudioBuffer
               const base::TimeDelta timestamp);
 
   virtual ~AudioBuffer();
-
-  void AllocateAndCopy(const uint8_t* const* data,
-                       int frame_count,
-                       int silence_frames);
 
   const SampleFormat sample_format_;
   const ChannelLayout channel_layout_;
