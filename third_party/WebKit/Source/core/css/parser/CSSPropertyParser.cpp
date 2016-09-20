@@ -4476,6 +4476,26 @@ bool CSSPropertyParser::consumeGridTemplateShorthand(CSSPropertyID shorthandId, 
     return consumeGridTemplateRowsAndAreasAndColumns(shorthandId, important);
 }
 
+static CSSValueList* consumeImplicitAutoFlow(CSSParserTokenRange& range, const CSSValue& flowDirection)
+{
+    // [ auto-flow && dense? ]
+    CSSValue* denseAlgorithm = nullptr;
+    if ((consumeIdent<CSSValueAutoFlow>(range))) {
+        denseAlgorithm = consumeIdent<CSSValueDense>(range);
+    } else {
+        denseAlgorithm = consumeIdent<CSSValueDense>(range);
+        if (!denseAlgorithm)
+            return nullptr;
+        if (!consumeIdent<CSSValueAutoFlow>(range))
+            return nullptr;
+    }
+    CSSValueList* list = CSSValueList::createSpaceSeparated();
+    list->append(flowDirection);
+    if (denseAlgorithm)
+        list->append(*denseAlgorithm);
+    return list;
+}
+
 bool CSSPropertyParser::consumeGridShorthand(bool important)
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -4497,39 +4517,57 @@ bool CSSPropertyParser::consumeGridShorthand(bool important)
 
     m_range = rangeCopy;
 
-    // 2- <grid-auto-flow> [ <grid-auto-rows> [ / <grid-auto-columns> ]? ]
-    CSSValueList* gridAutoFlow = consumeGridAutoFlow(m_range);
-    if (!gridAutoFlow)
-        return false;
-
     CSSValue* autoColumnsValue = nullptr;
     CSSValue* autoRowsValue = nullptr;
-
-    if (!m_range.atEnd()) {
-        autoRowsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
-        if (!autoRowsValue)
+    CSSValue* templateRows = nullptr;
+    CSSValue* templateColumns = nullptr;
+    CSSValueList* gridAutoFlow = nullptr;
+    if (identMatches<CSSValueDense, CSSValueAutoFlow>(m_range.peek().id())) {
+        // 2- [ auto-flow && dense? ] <grid-auto-rows>? / <grid-template-columns>
+        gridAutoFlow = consumeImplicitAutoFlow(m_range, *CSSPrimitiveValue::createIdentifier(CSSValueRow));
+        if (!gridAutoFlow)
             return false;
         if (consumeSlashIncludingWhitespace(m_range)) {
+            autoRowsValue = CSSInitialValue::createLegacyImplicit();
+        } else {
+            autoRowsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
+            if (!autoRowsValue)
+                return false;
+            if (!consumeSlashIncludingWhitespace(m_range))
+                return false;
+        }
+        if (!(templateColumns = consumeGridTemplatesRowsOrColumns(m_range, m_context.mode())))
+            return false;
+        templateRows = CSSInitialValue::createLegacyImplicit();
+        autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+    } else {
+        // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
+        templateRows = consumeGridTemplatesRowsOrColumns(m_range, m_context.mode());
+        if (!templateRows)
+            return false;
+        if (!consumeSlashIncludingWhitespace(m_range))
+            return false;
+        gridAutoFlow = consumeImplicitAutoFlow(m_range, *CSSPrimitiveValue::createIdentifier(CSSValueColumn));
+        if (!gridAutoFlow)
+            return false;
+        if (m_range.atEnd()) {
+            autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+        } else {
             autoColumnsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
             if (!autoColumnsValue)
                 return false;
         }
-        if (!m_range.atEnd())
-            return false;
-    } else {
-        // Other omitted values are set to their initial values.
-        autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+        templateColumns = CSSInitialValue::createLegacyImplicit();
         autoRowsValue = CSSInitialValue::createLegacyImplicit();
     }
 
-    // if <grid-auto-columns> value is omitted, it is set to the value specified for grid-auto-rows.
-    if (!autoColumnsValue)
-        autoColumnsValue = autoRowsValue;
+    if (!m_range.atEnd())
+        return false;
 
     // It can only be specified the explicit or the implicit grid properties in a single grid declaration.
     // The sub-properties not specified are set to their initial value, as normal for shorthands.
-    addProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid, *CSSInitialValue::createLegacyImplicit(), important);
-    addProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, *CSSInitialValue::createLegacyImplicit(), important);
+    addProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid, *templateColumns, important);
+    addProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, *templateRows, important);
     addProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid, *CSSInitialValue::createLegacyImplicit(), important);
     addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, *gridAutoFlow, important);
     addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, *autoColumnsValue, important);

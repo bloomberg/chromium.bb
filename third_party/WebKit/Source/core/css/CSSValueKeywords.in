@@ -547,6 +547,7 @@ wrap
 wrap-reverse
 
 // grid-auto-flow
+auto-flow
 dense
 
 //
