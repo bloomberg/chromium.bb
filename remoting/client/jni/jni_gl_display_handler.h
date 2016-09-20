@@ -13,10 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/gl_renderer.h"
 #include "remoting/client/gl_renderer_delegate.h"
-#include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
+
+namespace protocol {
+class VideoRenderer;
+}  // namespace protocol
 
 class ChromotingJniRuntime;
 class DualBufferFrameConsumer;
@@ -25,23 +28,27 @@ class QueuedTaskPoster;
 
 // Handles OpenGL display operations. Draws desktop and cursor on the OpenGL
 // surface.
-// JNI functions should all be called on the UI thread. The display handler
-// itself should be deleted on the display thread.
+// JNI functions should all be called on the UI thread. user must call
+// Initialize() after the handler is constructed and Invalidate() before the
+// handler is destructed. The destructor must be called on the display thread.
 // Please see GlDisplay.java for documentations.
-class JniGlDisplayHandler : public DisplayUpdaterFactory,
-                            public protocol::CursorShapeStub,
+// TODO(yuweih): Separate display thread logic into a core class.
+class JniGlDisplayHandler : public protocol::CursorShapeStub,
                             public GlRendererDelegate {
  public:
   JniGlDisplayHandler(ChromotingJniRuntime* runtime);
+
+  // Destructor must be called on the display thread.
   ~JniGlDisplayHandler() override;
 
-  // Sets the DesktopViewFactory for the Java client.
-  void InitializeClient(
-      const base::android::JavaRef<jobject>& java_client);
+  // Must be called exactly once on the UI thread before using the handler.
+  void Initialize(const base::android::JavaRef<jobject>& java_client);
 
-  // DisplayUpdaterFactory interface.
-  std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
-  std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer() override;
+  // Must be called on the UI thread before calling the destructor.
+  void Invalidate();
+
+  std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub();
+  std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer();
 
   static bool RegisterJni(JNIEnv* env);
 
@@ -84,6 +91,11 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory,
       float diameter);
 
  private:
+  // Queues a task. All queued tasks will be posted to the display thread after
+  // the current task is finished.
+  // Do nothing if |ui_task_poster_| has already been released.
+  void PostSequentialTaskOnDisplayThread(const base::Closure& task);
+
   // GlRendererDelegate interface.
   bool CanRenderFrame() override;
   void OnFrameRendered() override;

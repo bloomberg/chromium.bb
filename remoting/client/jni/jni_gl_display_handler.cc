@@ -33,15 +33,21 @@ JniGlDisplayHandler::JniGlDisplayHandler(ChromotingJniRuntime* runtime)
 
 JniGlDisplayHandler::~JniGlDisplayHandler() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  Java_GlDisplay_invalidate(base::android::AttachCurrentThread(),
-                            java_display_);
-  runtime_->ui_task_runner()->DeleteSoon(FROM_HERE, ui_task_poster_.release());
+  DCHECK(!ui_task_poster_) << "Invalidate() must be called on the UI thread "
+                              "before deleting this object.";
 }
 
-void JniGlDisplayHandler::InitializeClient(
+void JniGlDisplayHandler::Initialize(
     const base::android::JavaRef<jobject>& java_client) {
-  return Java_GlDisplay_initializeClient(base::android::AttachCurrentThread(),
-                                         java_display_, java_client);
+  Java_GlDisplay_initializeClient(base::android::AttachCurrentThread(),
+                                  java_display_, java_client);
+}
+
+void JniGlDisplayHandler::Invalidate() {
+  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
+  Java_GlDisplay_invalidate(base::android::AttachCurrentThread(),
+                            java_display_);
+  ui_task_poster_.reset();
 }
 
 std::unique_ptr<protocol::CursorShapeStub>
@@ -108,8 +114,9 @@ void JniGlDisplayHandler::OnPixelTransformationChanged(
   DCHECK(env->GetArrayLength(jmatrix.obj()) == 9);
   std::array<float, 9> matrix;
   env->GetFloatArrayRegion(jmatrix.obj(), 0, 9, matrix.data());
-  ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnPixelTransformationChanged,
-                                      renderer_.GetWeakPtr(), matrix));
+  PostSequentialTaskOnDisplayThread(
+      base::Bind(&GlRenderer::OnPixelTransformationChanged,
+                 renderer_.GetWeakPtr(), matrix));
 }
 
 void JniGlDisplayHandler::OnCursorPixelPositionChanged(
@@ -118,8 +125,8 @@ void JniGlDisplayHandler::OnCursorPixelPositionChanged(
     float x,
     float y) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnCursorMoved,
-                                      renderer_.GetWeakPtr(), x, y));
+  PostSequentialTaskOnDisplayThread(
+      base::Bind(&GlRenderer::OnCursorMoved, renderer_.GetWeakPtr(), x, y));
 }
 
 void JniGlDisplayHandler::OnCursorVisibilityChanged(
@@ -127,8 +134,8 @@ void JniGlDisplayHandler::OnCursorVisibilityChanged(
     const base::android::JavaParamRef<jobject>& caller,
     bool visible) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnCursorVisibilityChanged,
-                                      renderer_.GetWeakPtr(), visible));
+  PostSequentialTaskOnDisplayThread(base::Bind(
+      &GlRenderer::OnCursorVisibilityChanged, renderer_.GetWeakPtr(), visible));
 }
 
 void JniGlDisplayHandler::OnCursorInputFeedback(
@@ -138,8 +145,17 @@ void JniGlDisplayHandler::OnCursorInputFeedback(
     float y,
     float diameter) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnCursorInputFeedback,
-                                      renderer_.GetWeakPtr(), x, y, diameter));
+  PostSequentialTaskOnDisplayThread(
+      base::Bind(&GlRenderer::OnCursorInputFeedback, renderer_.GetWeakPtr(), x,
+                 y, diameter));
+}
+
+void JniGlDisplayHandler::PostSequentialTaskOnDisplayThread(
+    const base::Closure& task) {
+  if (!ui_task_poster_) {
+    return;
+  }
+  ui_task_poster_->AddTask(task);
 }
 
 bool JniGlDisplayHandler::CanRenderFrame() {

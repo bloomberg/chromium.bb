@@ -22,8 +22,7 @@ import org.chromium.chromoting.SizeChangedEventParameter;
  * the remote desktop. The lifetime of this class is managed by the native JniGlDisplayHandler.
  *
  * This class works entirely on the UI thread:
- *  Functions should all be called on UI.
- *  Events will only be triggered on UI.
+ *  All functions, including callbacks from native code are called only on UI thread.
  */
 @JNINamespace("remoting")
 public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
@@ -33,7 +32,7 @@ public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
             new Event.Raisable<>();
     private final Event.Raisable<Void> mOnCanvasRendered = new Event.Raisable<>();
 
-    private volatile long mNativeJniGlDisplay;
+    private long mNativeJniGlDisplay;
     private InputFeedbackRadiusMapper mFeedbackRadiusMapper;
     private float mScaleFactor = 0;
 
@@ -42,8 +41,7 @@ public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
     }
 
     /**
-     * Invalidates this object and disconnects from the native display handler. Called on the
-     * display thread by the native code.
+     * Invalidates this object and disconnects from the native display handler.
      */
     @CalledByNative
     private void invalidate() {

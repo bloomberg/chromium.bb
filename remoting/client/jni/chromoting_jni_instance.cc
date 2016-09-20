@@ -19,7 +19,6 @@
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
-#include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/client/jni/jni_client.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"

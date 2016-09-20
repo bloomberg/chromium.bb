@@ -10,7 +10,6 @@
 #include "jni/Client_jni.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
-#include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/client/jni/jni_gl_display_handler.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
@@ -39,8 +38,7 @@ JniClient::~JniClient() {
   DisconnectFromHost();
 }
 
-void JniClient::ConnectToHost(DisplayUpdaterFactory* updater_factory,
-                              const std::string& username,
+void JniClient::ConnectToHost(const std::string& username,
                               const std::string& auth_token,
                               const std::string& host_jid,
                               const std::string& host_id,
@@ -56,8 +54,8 @@ void JniClient::ConnectToHost(DisplayUpdaterFactory* updater_factory,
                                                     host_id));
   session_.reset(new ChromotingJniInstance(
       runtime_, GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
-      updater_factory->CreateCursorShapeStub(),
-      updater_factory->CreateVideoRenderer(),
+      display_handler_->CreateCursorShapeStub(),
+      display_handler_->CreateVideoRenderer(),
       username, auth_token, host_jid, host_id,
       host_pubkey, pairing_id, pairing_secret, capabilities, flags));
   session_->Connect();
@@ -75,6 +73,7 @@ void JniClient::DisconnectFromHost() {
                                                 secret_fetcher_.release());
   }
   if (display_handler_) {
+    display_handler_->Invalidate();
     runtime_->display_task_runner()->DeleteSoon(FROM_HERE,
                                                 display_handler_.release());
   }
@@ -162,11 +161,9 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
     const base::android::JavaParamRef<jstring>& flags) {
-  JniGlDisplayHandler* raw_display_handler = new JniGlDisplayHandler(runtime_);
-  raw_display_handler->InitializeClient(java_client_);
-  display_handler_.reset(raw_display_handler);
-  ConnectToHost(raw_display_handler,
-                ConvertJavaStringToUTF8(env, username),
+  display_handler_.reset(new JniGlDisplayHandler(runtime_));
+  display_handler_->Initialize(java_client_);
+  ConnectToHost(ConvertJavaStringToUTF8(env, username),
                 ConvertJavaStringToUTF8(env, authToken),
                 ConvertJavaStringToUTF8(env, hostJid),
                 ConvertJavaStringToUTF8(env, hostId),
