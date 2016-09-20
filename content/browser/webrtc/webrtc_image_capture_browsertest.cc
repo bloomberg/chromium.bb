@@ -9,6 +9,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -78,6 +79,11 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
   GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
   NavigateToURL(shell(), url);
 
+  if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
+    DVLOG(0) << "No video device; skipping test...";
+    return;
+  }
+
   std::string result;
   ASSERT_TRUE(ExecuteScriptAndExtractString(
       shell(), "testCreateAndGetCapabilities()", &result));
@@ -97,6 +103,11 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
   NavigateToURL(shell(), url);
+
+  if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
+    DVLOG(0) << "No video device; skipping test...";
+    return;
+  }
 
   std::string result;
   ASSERT_TRUE(ExecuteScriptAndExtractString(shell(), "testCreateAndTakePhoto()",

@@ -7,35 +7,10 @@ B<!DOCTYPE html>
 <script type="text/javascript" src="webrtc_test_utilities.js"></script>
 <script>
 
-// Returns a Promise that is resolved if there is at least one video device or
-// rejected otherwise.
-function checkForVideoDevices() {
-  return new Promise((resolve, reject) => {
-    navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-          devices.forEach(function(device) {
-            if (device.kind === "videoinput")
-              return resolve();
-          });
-          return reject(new Error('no video devices'));
-        })
-        .catch(err => {
-          return reject(new Error('enumerating devices: ' + err.toString()));
-        });
-  });
-}
-
 // Runs an ImageCapture.getPhotoCapabilities().
 function testCreateAndGetCapabilities() {
-  checkForVideoDevices()
-      .catch(err => {
-        console.log('no video devices found, skipping test');
-        reportTestSuccess();
-      })
-      .then(() => {
-        const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
-        return navigator.mediaDevices.getUserMedia({"video" : constraints});
-      })
+  const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
+  navigator.mediaDevices.getUserMedia({"video" : constraints})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
         return new ImageCapture(stream.getVideoTracks()[0]);
@@ -63,15 +38,8 @@ function testCreateAndGetCapabilities() {
 
 // Runs an ImageCapture.takePhoto().
 function testCreateAndTakePhoto() {
-  checkForVideoDevices()
-      .catch(err => {
-        console.log('no video devices found, skipping test');
-        reportTestSuccess();
-      })
-      .then(() => {
-        const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
-        return navigator.mediaDevices.getUserMedia({"video" : constraints});
-      })
+  const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
+  navigator.mediaDevices.getUserMedia({"video" : constraints})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
         return new ImageCapture(stream.getVideoTracks()[0]);

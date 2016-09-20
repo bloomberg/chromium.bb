@@ -66,6 +66,7 @@ void WebRtcWebcamBrowserTest::SetUp() {
 // only want it to run on bots where we can ensure sequential execution. The
 // Android bots will run the test since they ignore MANUAL, but that's what we
 // want here since the bot runs tests sequentially on the device.
+// Tests that GetUserMedia acquires VGA by default.
 IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
                        MANUAL_CanAcquireVgaOnRealWebcam) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -73,13 +74,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
       "/media/getusermedia-real-webcam.html"));
   NavigateToURL(shell(), url);
 
-  std::string result;
   if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
     DVLOG(0) << "No video device; skipping test...";
     return;
   }
 
-  // GetUserMedia should acquire VGA by default.
+  std::string result;
   ASSERT_TRUE(ExecuteScriptAndExtractString(
       shell(), "getUserMediaAndReturnVideoDimensions({video: true})", &result));
 
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
     // since we don't know how it is oriented in the lab :)
     return;
   }
-  FAIL() << "Expected resolution to be 640x480 or 480x640, got" << result;
+  FAIL() << "Expected resolution to be 640x480 or 480x640, got: " << result;
 }
 
 }  // namespace content
