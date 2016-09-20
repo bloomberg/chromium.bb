@@ -601,7 +601,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   if (timing.first_paint && !timing.first_meaningful_paint) {
     RecordFirstMeaningfulPaintStatus(
-        internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE);
+        timing.first_contentful_paint ?
+        internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE :
+        internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT);
   }
 }
 

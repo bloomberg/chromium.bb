@@ -82476,6 +82476,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="The page was backgrounded"/>
   <int value="2" label="User left the page before network stable"/>
   <int value="3" label="Not recorded because of user interaction"/>
+  <int value="4" label="User left the page before first contentful paint"/>
 </enum>
 
 <enum name="FlashNavigateUsageType" type="int">
