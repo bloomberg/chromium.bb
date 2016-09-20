@@ -1101,6 +1101,7 @@ source_set("unit_tests") {
     "html/HTMLTextAreaElementTest.cpp",
     "html/HTMLTextFormControlElementTest.cpp",
     "html/HTMLVideoElementTest.cpp",
+    "html/ImageDocumentTest.cpp",
     "html/LinkRelAttributeTest.cpp",
     "html/TimeRangesTest.cpp",
     "html/canvas/CanvasAsyncBlobCreatorTest.cpp",

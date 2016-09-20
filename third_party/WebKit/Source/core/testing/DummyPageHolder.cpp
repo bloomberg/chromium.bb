@@ -78,7 +78,7 @@ DummyPageHolder::DummyPageHolder(
     if (!m_frameLoaderClient)
         m_frameLoaderClient = EmptyFrameLoaderClient::create();
 
-    m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(), 0);
+    m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(), nullptr);
     m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
     m_frame->view()->page()->frameHost().visualViewport().setSize(initialViewSize);
     m_frame->init();

@@ -40,15 +40,10 @@ public:
         return new ImageDocument(initializer);
     }
 
-    enum ScaleType {
-        ScaleZoomedDocument,
-        ScaleOnlyUnzoomedDocument
-    };
-
     ImageResource* cachedImage();
     HTMLImageElement* imageElement() const { return m_imageElement.get(); }
 
-    void windowSizeChanged(ScaleType);
+    void windowSizeChanged();
     void imageUpdated();
     void imageClicked(int x, int y);
 
@@ -62,10 +57,12 @@ private:
     void createDocumentStructure();
 
     // These methods are for m_shrinkToFitMode == Desktop.
-    void resizeImageToFit(ScaleType);
-    void restoreImageSize(ScaleType);
+    void resizeImageToFit();
+    void restoreImageSize();
     bool imageFitsInWindow() const;
     bool shouldShrinkToFit() const;
+    // Calculates the image size multiplier that's needed to fit the image to
+    // the window, taking into account page zoom and device scale.
     float scale() const;
 
     Member<HTMLImageElement> m_imageElement;
