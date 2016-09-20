@@ -182,7 +182,9 @@ void PaintInvalidator::updateContext(const LayoutObject& object, PaintInvalidato
         context.forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
 
     // TODO(crbug.com/637313): This is temporary before we support filters in paint property tree.
-    if (object.hasFilterInducingProperty())
+    // TODO(crbug.com/648274): This is a workaround for multi-column contents.
+    // TODO(crbug.com/648409): This is a workaround for inline contents in vertical-rl container.
+    if (object.hasFilterInducingProperty() || object.isLayoutFlowThread() || object.hasFlippedBlocksWritingMode())
         context.forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeSlowPathRect;
 
     context.oldBounds = object.previousPaintInvalidationRect();
@@ -206,8 +208,19 @@ void PaintInvalidator::invalidatePaintIfNeeded(FrameView& frameView, PaintInvali
     context.paintInvalidationContainer = context.paintInvalidationContainerForStackedContents = &layoutView->containerForPaintInvalidation();
     context.paintingLayer = layoutView->layer();
 
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+        // Undo content clip and scroll before invalidating FrameView scrollbars.
+        PaintPropertyTreeBuilderContext& treeBuilderContext = const_cast<PaintPropertyTreeBuilderContext&>(context.treeBuilderContext);
+        PaintPropertyTreeBuilderContext::ContainingBlockContext savedCurrent = treeBuilderContext.current;
+        if (frameView.contentClip() == savedCurrent.clip)
+            treeBuilderContext.current.clip =  savedCurrent.clip->parent();
+        if (frameView.scroll() == savedCurrent.scroll)
+            treeBuilderContext.current.scroll = savedCurrent.scroll->parent();
+        if (frameView.scrollTranslation() == savedCurrent.transform)
+            treeBuilderContext.current.transform = savedCurrent.transform->parent();
         frameView.invalidatePaintOfScrollControlsIfNeeded(context);
+        treeBuilderContext.current = savedCurrent;
+    }
 
     if (frameView.frame().selection().isCaretBoundsDirty())
         frameView.frame().selection().invalidateCaretRect();

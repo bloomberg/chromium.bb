@@ -10,3 +10,22 @@ paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ Nee
 paint/invalidation/invalidate-caret-in-non-composited-scrolling-container.html [ NeedsRebaseline ]
 paint/invalidation/selection-after-delete.html [ NeedsRebaseline ]
 paint/invalidation/textarea-caret.html [ NeedsRebaseline ]
+
+# Different order of frame scrollbar invalidations
+paint/invalidation/compositing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
+paint/invalidation/line-flow-with-floats-2.html [ NeedsRebaseline ]
+paint/invalidation/line-flow-with-floats-8.html [ NeedsRebaseline ]
+paint/invalidation/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+paint/invalidation/scrolled-iframe-scrollbar-change.html [ NeedsRebaseline ]
+paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+paint/invalidation/text-match-document-change.html [ NeedsRebaseline ]
+
+# Reflection implemented with filters
+paint/invalidation/reflection-invalidation-positioned-child.html [ NeedsRebaseline ]
+paint/invalidation/reflection-repaint-test.html [ NeedsRebaseline ]
+paint/invalidation/scroll-absolute-layer-with-reflection.html [ NeedsRebaseline ]
+paint/invalidation/scroll-fixed-layer-with-reflection.html [ NeedsRebaseline ]
+
