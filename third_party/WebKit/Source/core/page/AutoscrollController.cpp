@@ -234,6 +234,8 @@ void AutoscrollController::animate(double)
     }
 
     EventHandler& eventHandler = m_autoscrollLayoutObject->frame()->eventHandler();
+    IntSize offset = m_autoscrollLayoutObject->calculateAutoscrollDirection(eventHandler.lastKnownMousePosition());
+    IntPoint selectionPoint = eventHandler.lastKnownMousePosition() + offset;
     switch (m_autoscrollType) {
     case AutoscrollForDragAndDrop:
         if (WTF::monotonicallyIncreasingTime() - m_dragAndDropAutoscrollStartTime > autoscrollDelay)
@@ -245,7 +247,7 @@ void AutoscrollController::animate(double)
             return;
         }
         eventHandler.updateSelectionForMouseDrag();
-        m_autoscrollLayoutObject->autoscroll(eventHandler.lastKnownMousePosition());
+        m_autoscrollLayoutObject->autoscroll(selectionPoint);
         break;
     case NoAutoscroll:
         break;
