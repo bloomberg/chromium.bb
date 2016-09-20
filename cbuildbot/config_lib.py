@@ -1241,6 +1241,29 @@ class SiteConfig(dict):
     child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
     return self.Add(name, args[0], child_configs=child_configs, **kwargs)
 
+  def AddForBoards(self, suffix, boards, per_board,
+                   template=None, *args, **kwargs):
+    """Create configs for all boards in |boards|.
+
+    Args:
+      suffix: Config name is <board>-<suffix>.
+      boards: A list of board names as strings.
+      per_board: A dictionary of board names to BuilcConfigs, or None.
+      template: The template to use for all configs created.
+      *args: Mixin templates to apply.
+      **kwargs: Additional keyword arguments to be used in AddConfig.
+    """
+    for board in boards:
+      config_name = '%s-%s' % (board, suffix)
+
+      # Insert the per_board value as the last mixin, if it exists.
+      mixins = args
+      if per_board and board in per_board:
+        mixins = mixins + (per_board[board],)
+
+      # Create the new config for this board.
+      self.Add(config_name, template, *mixins, **kwargs)
+
   def SaveConfigToFile(self, config_file):
     """Save this Config to a Json file.
 
