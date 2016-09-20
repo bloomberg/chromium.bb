@@ -134,7 +134,8 @@ Polymer({
     this.$.dropdown.restoreFocusOnClose = true;
 
     var focusableChildren = Polymer.dom(this).querySelectorAll(
-        '[tabindex]:not([hidden]),button:not([hidden])');
+        '[tabindex]:not([disabled]):not([hidden]),' +
+        'button:not([disabled]):not([hidden])');
     if (focusableChildren.length > 0) {
       this.$.dropdown.focusTarget = focusableChildren[0];
       this.firstFocus_ = focusableChildren[0];
@@ -173,7 +174,7 @@ Polymer({
     var keyEvent = e.detail.keyboardEvent;
     if (keyEvent.shiftKey && keyEvent.target == this.firstFocus_)
       toFocus = this.lastFocus_;
-    else if (keyEvent.target == this.lastFocus_)
+    else if (!keyEvent.shiftKey && keyEvent.target == this.lastFocus_)
       toFocus = this.firstFocus_;
 
     if (!toFocus)
