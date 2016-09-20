@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
@@ -904,6 +905,51 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   // server should not be marked as bad.
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
   EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
+}
+
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       AlternativeProxyServerJobFailsAfterMainJobSucceeds) {
+  base::HistogramTester histogram_tester;
+  Initialize(true);
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+
+  url::SchemeHostPort server(request_info.url);
+
+  request_.reset(
+      job_controller_->Start(request_info, &request_delegate_, nullptr,
+                             BoundNetLog(), HttpStreamRequest::HTTP_STREAM,
+                             DEFAULT_PRIORITY, SSLConfig(), SSLConfig()));
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // Main job succeeds, starts serving Request and it should report status
+  // to Request. The alternative job will mark the main job complete and gets
+  // orphaned.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+  job_factory_.main_job()->SetStream(http_stream);
+
+  EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
+      .WillOnce(Invoke(DeleteHttpStreamPointer));
+  job_controller_->OnStreamReady(job_factory_.main_job(), SSLConfig(),
+                                 ProxyInfo());
+
+  // JobController shouldn't report the status of alternative server job as
+  // request is already successfully served.
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(), ERR_FAILED,
+                                  SSLConfig());
+
+  // Reset the request as it's been successfully served.
+  request_.reset();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+
+  histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
+                                      2 /* ALTERNATIVE_PROXY_USAGE_LOST_RACE */,
+                                      1);
 }
 
 }  // namespace net

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
@@ -613,12 +614,13 @@ class QuicNetworkTransactionTest
     // will be fetched via proxy with QUIC as the alternative service.
     request_.url = GURL("http://example.org/");
     // Data for the alternative proxy server job.
+    MockWrite quic_writes[] = {MockWrite(SYNCHRONOUS, error_code, 1)};
     MockRead quic_reads[] = {
-        MockRead(SYNCHRONOUS, error_code),
+        MockRead(SYNCHRONOUS, error_code, 0),
     };
 
-    StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
-                                       nullptr, 0);
+    SequencedSocketData quic_data(quic_reads, arraysize(quic_reads),
+                                  quic_writes, arraysize(quic_writes));
     socket_factory_.AddSocketDataProvider(&quic_data);
 
     // Main job succeeds and the alternative job fails.
@@ -1290,6 +1292,74 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+// Check that an existing QUIC connection to an alternative proxy server is
+// used.
+TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
+  base::HistogramTester histogram_tester;
+
+  QuicStreamOffset request_header_offset = 0;
+  QuicStreamOffset response_header_offset = 0;
+  // First QUIC request data.
+  // Open a session to foo.example.org:443 using the first entry of the
+  // alternative service list.
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, true,
+      GetRequestHeaders("GET", "http", "/"), &request_header_offset));
+
+  std::string alt_svc_list;
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false,
+      GetResponseHeaders("200 OK", alt_svc_list), &response_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(2, kClientDataStreamId1,
+                                                   false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 1));
+
+  // Second QUIC request data.
+  // Connection pooling, using existing session, no need to include version
+  // as version negotiation has been completed.
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      3, kClientDataStreamId2, false, true,
+      GetRequestHeaders("GET", "http", "/"), &request_header_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      3, kClientDataStreamId2, false, false, GetResponseHeaders("200 OK"),
+      &response_header_offset));
+  mock_quic_data.AddRead(ConstructServerDataPacket(4, kClientDataStreamId2,
+                                                   false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(
+      ConstructClientAckAndConnectionClosePacket(4, 4, 3, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  AddHangingNonAlternateProtocolSocketData();
+
+  TestProxyDelegate test_proxy_delegate;
+
+  proxy_service_ =
+      ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
+
+  test_proxy_delegate.set_alternative_proxy_server(
+      ProxyServer::FromPacString("QUIC mail.example.org:443"));
+  params_.proxy_delegate = &test_proxy_delegate;
+
+  request_.url = GURL("http://mail.example.org/");
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 443);
+  histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
+                                      1 /* ALTERNATIVE_PROXY_USAGE_WON_RACE */,
+                                      1);
+
+  SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 443);
+  histogram_tester.ExpectTotalCount("Net.QuicAlternativeProxy.Usage", 2);
+  histogram_tester.ExpectBucketCount("Net.QuicAlternativeProxy.Usage",
+                                     0 /* ALTERNATIVE_PROXY_USAGE_NO_RACE */,
+                                     1);
+}
+
 // Pool to existing session with matching QuicServerId
 // even if alternative service destination is different.
 TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
@@ -1630,6 +1700,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
 // Tests that the connection to an HTTPS proxy is raced with an available
 // alternative proxy server.
 TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
+  base::HistogramTester histogram_tester;
   proxy_service_ =
       ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
 
@@ -1671,6 +1742,10 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
 
   // Verify that the proxy server is not marked as broken.
   EXPECT_TRUE(session_->proxy_service()->proxy_retry_info().empty());
+
+  histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
+                                      1 /* ALTERNATIVE_PROXY_USAGE_WON_RACE */,
+                                      1);
 }
 
 TEST_P(QuicNetworkTransactionTest, HungAlternativeService) {
@@ -2389,11 +2464,11 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicUploadToAlternativeProxyServer) {
+  base::HistogramTester histogram_tester;
   proxy_service_ =
       ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
 
   TestProxyDelegate test_proxy_delegate;
-  const HostPortPair host_port_pair("mail.example.org", 443);
 
   test_proxy_delegate.set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC mail.example.org:443"));
@@ -2429,6 +2504,10 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadToAlternativeProxyServer) {
 
   // Verify that the proxy server is not marked as broken.
   EXPECT_TRUE(session_->proxy_service()->proxy_retry_info().empty());
+
+  histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
+                                      1 /* ALTERNATIVE_PROXY_USAGE_WON_RACE */,
+                                      1);
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicUpload) {

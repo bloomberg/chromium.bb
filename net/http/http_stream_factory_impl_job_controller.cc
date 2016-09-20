@@ -393,9 +393,10 @@ void HttpStreamFactoryImpl::JobController::OnResolveProxyComplete(
   main_job_is_blocked_ = true;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&HttpStreamFactoryImpl::Job::Start,
-                            base::Unretained(alternative_job_.get()),
-                            request_->stream_type()));
+      FROM_HERE,
+      base::Bind(
+          &HttpStreamFactoryImpl::JobController::StartAlternativeProxyServerJob,
+          ptr_factory_.GetWeakPtr()));
 }
 
 void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
@@ -740,8 +741,10 @@ void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
     ReportBrokenAlternativeService();
 
   if (!bound_job_) {
-    if (main_job_ && alternative_job_)
+    if (main_job_ && alternative_job_) {
       job->ReportJobSucceededForRequest();
+      MaybeRecordAlternativeProxyServerUsage(job);
+    }
     BindJob(job);
     return;
   }
@@ -999,7 +1002,7 @@ bool HttpStreamFactoryImpl::JobController::
     return false;
   }
 
-  if (job->job_type() == PRECONNECT) {
+  if (is_preconnect_ || job->job_type() == PRECONNECT) {
     // Preconnects should be fetched using only the main job to keep the
     // resource utilization down.
     return false;
@@ -1046,4 +1049,45 @@ bool HttpStreamFactoryImpl::JobController::
 
   return true;
 }
+
+void HttpStreamFactoryImpl::JobController::
+    MaybeRecordAlternativeProxyServerUsage(Job* job) const {
+  if (is_preconnect_ ||
+      !alternative_job_->alternative_proxy_server().is_quic()) {
+    return;
+  }
+  DCHECK(main_job_.get() == job || alternative_job_.get() == job);
+
+  enum AlternativeProxyUsage {
+    ALTERNATIVE_PROXY_USAGE_NO_RACE = 0,
+    ALTERNATIVE_PROXY_USAGE_WON_RACE,
+    ALTERNATIVE_PROXY_USAGE_LOST_RACE,
+    ALTERNATIVE_PROXY_USAGE_MAX,
+  };
+  AlternativeProxyUsage alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_MAX;
+
+  if (alternative_job_->using_existing_quic_session()) {
+    // If an existing session was used, then no TCP connection was
+    // started.
+    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_NO_RACE;
+  } else if (job->alternative_proxy_server().is_quic()) {
+    // |job| was the alternative Job, and hence won the race.
+    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_WON_RACE;
+  } else {
+    // |job| was the normal Job, and hence the alternative Job lost the race.
+    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_LOST_RACE;
+  }
+  DCHECK_NE(ALTERNATIVE_PROXY_USAGE_MAX, alternative_proxy_usage);
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
+                            alternative_proxy_usage,
+                            ALTERNATIVE_PROXY_USAGE_MAX);
 }
+
+void HttpStreamFactoryImpl::JobController::StartAlternativeProxyServerJob() {
+  if (!alternative_job_ || !request_)
+    return;
+  DCHECK(alternative_job_->alternative_proxy_server().is_valid());
+  alternative_job_->Start(request_->stream_type());
+}
+
+}  // namespace net

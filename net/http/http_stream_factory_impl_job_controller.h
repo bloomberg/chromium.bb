@@ -241,6 +241,13 @@ class HttpStreamFactoryImpl::JobController
       const GURL& url,
       ProxyServer* alternative_proxy_server) const;
 
+  // Records histogram metrics for the usage of alternative proxy server. Must
+  // be called when |job| has succeeded, and some other jobs will be orphaned.
+  void MaybeRecordAlternativeProxyServerUsage(Job* job) const;
+
+  // Starts the |alternative_job_|.
+  void StartAlternativeProxyServerJob();
+
   HttpStreamFactoryImpl* factory_;
   HttpNetworkSession* session_;
   JobFactory* job_factory_;

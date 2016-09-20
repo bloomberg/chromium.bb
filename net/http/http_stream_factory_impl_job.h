@@ -245,6 +245,10 @@ class HttpStreamFactoryImpl::Job {
     return alternative_proxy_server_;
   }
 
+  bool using_existing_quic_session() const {
+    return using_existing_quic_session_;
+  }
+
  private:
   friend class HttpStreamFactoryImplJobPeer;
 

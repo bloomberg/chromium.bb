@@ -30766,6 +30766,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicAlternativeProxy.Usage"
+    enum="QuicAlternativeProxyUsage">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Breakdown of how requests which could potentially make use of an alternative
+    QUIC proxy server use or don't use the QUIC server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicClientHelloRejectReasons" enum="QuicRejectReasons">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -93189,6 +93198,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Port mismatch: IPv6 IPv6"/>
   <int value="6" label="Address and port match: IPv4 IPv4"/>
   <int value="7" label="Address and port match: IPv6 IPv6"/>
+</enum>
+
+<enum name="QuicAlternativeProxyUsage" type="int">
+  <int value="0" label="ALTERNATIVE_PROXY_USAGE_NO_RACE"/>
+  <int value="1" label="ALTERNATIVE_PROXY_USAGE_WON_RACE"/>
+  <int value="2" label="ALTERNATIVE_PROXY_USAGE_LOST_RACE"/>
 </enum>
 
 <enum name="QuicBadPacketLossEvents" type="int">
