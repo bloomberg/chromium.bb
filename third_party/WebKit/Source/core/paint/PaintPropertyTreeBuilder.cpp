@@ -335,6 +335,9 @@ void PaintPropertyTreeBuilder::updateScrollbarPaintOffset(const LayoutObject& ob
 
 void PaintPropertyTreeBuilder::updateMainThreadScrollingReasons(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
+    if (context.current.scroll && !object.document().settings()->threadedScrollingEnabled())
+        context.current.scroll->addMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled);
+
     if (object.isBackgroundAttachmentFixedObject()) {
         auto* scrollNode = context.current.scroll;
         while (scrollNode && !scrollNode->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)) {

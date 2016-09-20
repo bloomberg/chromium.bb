@@ -2009,6 +2009,35 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootNoClip)
     EXPECT_FALSE(getLayoutObjectByElementId("svg")->objectPaintProperties()->overflowClip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ThreadedScrollingDisabledMainThreadScrollReason)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  #overflowA {"
+        "    position: absolute;"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+    Element* overflowA = document().getElementById("overflowA");
+    EXPECT_FALSE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled));
+
+    document().settings()->setThreadedScrollingEnabled(false);
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled));
+    EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled));
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithNestedScrollers)
 {
     setBodyInnerHTML(
