@@ -496,31 +496,30 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         for (int i = 0; i < selectedItems.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
-            if (!wrappedItem.remove()) {
-                filesToDelete.add(wrappedItem.getFile());
-            }
-            // Delete the files associated with the download items (if necessary) using a single
-            // AsyncTask that batch deletes all of the files. The thread pool has a finite number
-            // of tasks that can be queued at once. If too many tasks are queued an exception is
-            // thrown. See crbug.com/643811.
-            if (filesToDelete.size() != 0) {
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    public Void doInBackground(Void... params) {
-                        FileUtils.batchDeleteFiles(filesToDelete);
-                        return null;
-                    }
+            if (!wrappedItem.remove()) filesToDelete.add(wrappedItem.getFile());
+        }
 
-                    @Override
-                    public void onPostExecute(Void unused) {
-                        // More than one download item may be associated with the same file path.
-                        // Initiate a check for removed download files so that any download items
-                        // associated with the same path as a deleted item are updated.
-                        DownloadUtils.checkForExternallyRemovedDownloads(
-                                mBackendProvider, mIsOffTheRecord);
-                    }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
+        // Delete the files associated with the download items (if necessary) using a single
+        // AsyncTask that batch deletes all of the files. The thread pool has a finite number
+        // of tasks that can be queued at once. If too many tasks are queued an exception is
+        // thrown. See crbug.com/643811.
+        if (filesToDelete.size() != 0) {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                public Void doInBackground(Void... params) {
+                    FileUtils.batchDeleteFiles(filesToDelete);
+                    return null;
+                }
+
+                @Override
+                public void onPostExecute(Void unused) {
+                    // More than one download item may be associated with the same file path.
+                    // Initiate a check for removed download files so that any download items
+                    // associated with the same path as a deleted item are updated.
+                    DownloadUtils.checkForExternallyRemovedDownloads(
+                            mBackendProvider, mIsOffTheRecord);
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         mBackendProvider.getSelectionDelegate().clearSelection();
