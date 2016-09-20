@@ -17,9 +17,7 @@
 #include "content/public/renderer/render_view.h"
 #include "gin/converter.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -42,10 +40,8 @@ using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPoint;
 using blink::WebRect;
-using blink::WebSize;
 using blink::WebString;
 using blink::WebURLError;
-using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebVector;
 using blink::WebView;
@@ -58,16 +54,16 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
       delegate_(delegate),
       container_(nullptr),
       web_view_(WebView::create(this, blink::WebPageVisibilityStateVisible)),
-      finished_loading_(false),
       focused_(false),
       is_painting_(false),
       is_resizing_(false),
+      web_frame_client_(this),
       weak_factory_(this) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  WebLocalFrame* web_local_frame =
-      WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  WebLocalFrame* web_local_frame = WebLocalFrame::create(
+      blink::WebTreeScopeType::Document, &web_frame_client_);
   web_frame_ = web_local_frame;
   web_view_->setMainFrame(web_frame_);
   // TODO(dcheng): The main frame widget currently has a special case.
@@ -92,24 +88,6 @@ WebViewPlugin::~WebViewPlugin() {
   web_frame_widget_->close();
   web_view_->close();
   web_frame_->close();
-}
-
-void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
-  // We need to transfer the |focused_| to new plugin after it loaded.
-  if (focused_) {
-    plugin->updateFocus(true, blink::WebFocusTypeNone);
-  }
-  if (finished_loading_) {
-    plugin->didFinishLoading();
-  }
-  if (error_) {
-    plugin->didFailLoading(*error_);
-  }
-}
-
-void WebViewPlugin::RestoreTitleText() {
-  if (container_)
-    container_->element().setAttribute("title", old_title_);
 }
 
 WebPluginContainer* WebViewPlugin::container() const { return container_; }
@@ -240,18 +218,20 @@ blink::WebInputEventResult WebViewPlugin::handleInputEvent(
   return handled;
 }
 
+void WebViewPlugin::didReceiveResponse(const WebURLResponse& response) {
+  NOTREACHED();
+}
+
 void WebViewPlugin::didReceiveData(const char* data, int data_length) {
-  data_.push_back(std::string(data, data_length));
+  NOTREACHED();
 }
 
 void WebViewPlugin::didFinishLoading() {
-  DCHECK(!finished_loading_);
-  finished_loading_ = true;
+  NOTREACHED();
 }
 
 void WebViewPlugin::didFailLoading(const WebURLError& error) {
-  DCHECK(!error_.get());
-  error_.reset(new WebURLError(error));
+  NOTREACHED();
 }
 
 bool WebViewPlugin::acceptsLoadDrops() { return false; }
@@ -300,8 +280,9 @@ void WebViewPlugin::scheduleAnimation() {
   }
 }
 
-void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
-  if (!delegate_)
+void WebViewPlugin::PluginWebFrameClient::didClearWindowObject(
+    WebLocalFrame* frame) {
+  if (!plugin_->delegate_)
     return;
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -313,7 +294,7 @@ void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
   v8::Local<v8::Object> global = context->Global();
 
   global->Set(gin::StringToV8(isolate, "plugin"),
-              delegate_->GetV8Handle(isolate));
+              plugin_->delegate_->GetV8Handle(isolate));
 }
 
 void WebViewPlugin::OnDestruct() {}
