@@ -83,8 +83,8 @@ std::string GetUserAgent() {
   data_.reset([[NSMutableData alloc] init]);
 
   // Creates the HTTP post request.
-  NSURLComponents* components =
-      [[NSURLComponents alloc] initWithString:kMetadataServiceUrl];
+  base::scoped_nsobject<NSURLComponents> components(
+      [[NSURLComponents alloc] initWithString:kMetadataServiceUrl]);
   NSString* apiKey =
       [NSString stringWithUTF8String:google_apis::GetAPIKey().c_str()];
   [components
