@@ -379,6 +379,28 @@ def append_useflags(useflags):
   return handler
 
 
+def remove_images(unsupported_images):
+  """Remove unsupported images when applying changes to a BuildConfig.
+
+  Used similarly to append_useflags.
+
+  Args:
+    unsupported_images: A list of image names that should not be present
+                        in the final build config.
+
+  Returns:
+    A callable suitable for use with BuildConfig.apply.
+  """
+  unsupported = set(unsupported_images)
+
+  def handler(old_images):
+    if not old_images:
+      old_images = []
+    return [i for i in old_images if i not in unsupported]
+
+  return handler
+
+
 TRADITIONAL_VM_TESTS_SUPPORTED = [
     config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
@@ -1538,6 +1560,7 @@ def CreateBoardConfigs(site_config, ge_build_config):
       board_config.update(factory=False)
       board_config.update(factory_toolkit=False)
       board_config.update(factory_install_netboot=False)
+      board_config.update(images=remove_images(['factory_install']))
     if board in _toolchains_from_source:
       board_config.update(usepkg_toolchain=False)
     if board in _noimagetest_boards:
@@ -1824,15 +1847,10 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       if config_name not in site_config:
         # We copy the base because there seem to be cases where Add() modifies
         # it directly (which is a bug).
-        config = site_config.Add(config_name,
-                                 config_base.deepcopy(),
-                                 _base_configs[board],
-                                 **kwargs)
-        if board in _nofactory_boards:
-          try:
-            config.get('images', []).remove('factory_install')
-          except ValueError:
-            pass
+        site_config.Add(config_name,
+                        config_base.deepcopy(),
+                        _base_configs[board],
+                        **kwargs)
 
   _chromium_pfq_important_boards = frozenset([
       'arm-generic_freon',
@@ -3057,7 +3075,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       ### Arm release configs
       'smaug-release' : {
           'paygen': False,
-          'images':['base', 'recovery', 'test'],
           'sign_types':['nv_lp0_firmware'],
       },
 

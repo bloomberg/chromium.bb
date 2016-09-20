@@ -20051,6 +20051,11 @@
                 "factory_install_netboot": false,
                 "factory_toolkit": false,
                 "grouped": true,
+                "images": [
+                    "base",
+                    "recovery",
+                    "test"
+                ],
                 "name": "smaug-release-afdo-generate",
                 "vm_tests": [],
                 "vm_tests_override": null
@@ -20064,6 +20069,11 @@
                 "factory_install_netboot": false,
                 "factory_toolkit": false,
                 "grouped": true,
+                "images": [
+                    "base",
+                    "recovery",
+                    "test"
+                ],
                 "name": "smaug-release-afdo-use",
                 "vm_tests": [],
                 "vm_tests_override": null
@@ -20072,6 +20082,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -20083,6 +20098,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -20094,6 +20114,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
