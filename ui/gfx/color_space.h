@@ -43,10 +43,12 @@ class GFX_EXPORT ColorSpace {
     SMPTEST431_2 = 11,
     SMPTEST432_1 = 12,
 
+    LAST_STANDARD_VALUE = SMPTEST432_1,
+
     // Chrome-specific values start at 1000.
-    XYZ_D50 = 1000,
-    // TODO(hubbe): We need to store the primaries.
-    CUSTOM = 1001,
+    UNKNOWN = 1000,
+    XYZ_D50,
+    CUSTOM,
     LAST = CUSTOM
   };
 
@@ -72,8 +74,11 @@ class GFX_EXPORT ColorSpace {
     SMPTEST428_1 = 17,
     ARIB_STD_B67 = 18,  // AKA hybrid-log gamma, HLG.
 
+    LAST_STANDARD_VALUE = SMPTEST428_1,
+
     // Chrome-specific values start at 1000.
-    GAMMA24 = 1000,
+    UNKNOWN = 1000,
+    GAMMA24,
 
     // This is an ad-hoc transfer function that decodes SMPTE 2084 content
     // into a 0-1 range more or less suitable for viewing on a non-hdr
@@ -100,8 +105,11 @@ class GFX_EXPORT ColorSpace {
     BT2020_CL = 10,
     YDZDX = 11,
 
+    LAST_STANDARD_VALUE = YDZDX,
+
     // Chrome-specific values start at 1000
-    LAST = YDZDX,
+    UNKNOWN = 1000,
+    LAST = UNKNOWN,
   };
 
   // The h264 spec declares this as bool, so only the the first two values
@@ -120,6 +128,11 @@ class GFX_EXPORT ColorSpace {
              TransferID transfer,
              MatrixID matrix,
              RangeID full_range);
+  ColorSpace(int primaries, int transfer, int matrix, RangeID full_range);
+
+  static PrimaryID PrimaryIDFromInt(int primary_id);
+  static TransferID TransferIDFromInt(int transfer_id);
+  static MatrixID MatrixIDFromInt(int matrix_id);
 
   static ColorSpace CreateSRGB();
   static ColorSpace CreateXYZD50();
