@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/lock_window_state.h"
+#include "ash/common/wm/lock_window_state.h"
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/lock_layout_manager.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
@@ -14,23 +14,15 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
-#include "ash/shell.h"
-#include "ash/wm/lock_layout_manager.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
+#include "ash/common/wm_window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
-LockWindowState::LockWindowState(aura::Window* window)
-    : current_state_type_(wm::GetWindowState(window)->GetStateType()) {}
+LockWindowState::LockWindowState(WmWindow* window)
+    : current_state_type_(window->GetWindowState()->GetStateType()) {}
 
 LockWindowState::~LockWindowState() {}
 
@@ -112,12 +104,12 @@ void LockWindowState::AttachState(wm::WindowState* window_state,
 void LockWindowState::DetachState(wm::WindowState* window_state) {}
 
 // static
-wm::WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
-  std::unique_ptr<wm::WindowState::State> lock_state(
-      new LockWindowState(window));
+wm::WindowState* LockWindowState::SetLockWindowState(WmWindow* window) {
+  std::unique_ptr<wm::WindowState::State> lock_state =
+      base::MakeUnique<LockWindowState>(window);
   std::unique_ptr<wm::WindowState::State> old_state(
-      wm::GetWindowState(window)->SetStateObject(std::move(lock_state)));
-  return wm::GetWindowState(window);
+      window->GetWindowState()->SetStateObject(std::move(lock_state)));
+  return window->GetWindowState();
 }
 
 void LockWindowState::UpdateWindow(wm::WindowState* window_state,
@@ -167,12 +159,6 @@ wm::WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
     wm::WindowState* window_state) {
   return window_state->CanMaximize() ? wm::WINDOW_STATE_TYPE_MAXIMIZED
                                      : wm::WINDOW_STATE_TYPE_NORMAL;
-}
-
-gfx::Rect GetBoundsForLockWindow(aura::Window* window) {
-  if (WmShell::Get()->IsInUnifiedMode())
-    return WmShell::Get()->GetFirstDisplay().bounds();
-  return wm::GetDisplayBoundsInParent(WmWindowAura::Get(window));
 }
 
 void LockWindowState::UpdateBounds(wm::WindowState* window_state) {

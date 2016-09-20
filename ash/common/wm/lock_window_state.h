@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_LOCK_WINDOW_STATE_H_
-#define ASH_WM_LOCK_WINDOW_STATE_H_
+#ifndef ASH_COMMON_WM_LOCK_WINDOW_STATE_H_
+#define ASH_COMMON_WM_LOCK_WINDOW_STATE_H_
 
 #include "ash/common/wm/window_state.h"
 #include "base/macros.h"
@@ -18,7 +18,7 @@ class LockWindowState : public wm::WindowState::State {
  public:
   // The |window|'s state object will be modified to use this new window mode
   // state handler.
-  explicit LockWindowState(aura::Window* window);
+  explicit LockWindowState(WmWindow* window);
   ~LockWindowState() override;
 
   // WindowState::State overrides:
@@ -30,7 +30,7 @@ class LockWindowState : public wm::WindowState::State {
   void DetachState(wm::WindowState* window_state) override;
 
   // Creates new LockWindowState instance and attaches it to |window|.
-  static wm::WindowState* SetLockWindowState(aura::Window* window);
+  static wm::WindowState* SetLockWindowState(WmWindow* window);
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:
@@ -56,4 +56,4 @@ class LockWindowState : public wm::WindowState::State {
 
 }  // namespace ash
 
-#endif  // ASH_WM_LOCK_WINDOW_STATE_H_
+#endif  // ASH_COMMON_WM_LOCK_WINDOW_STATE_H_

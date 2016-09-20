@@ -2,28 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_LOCK_LAYOUT_MANAGER_H_
-#define ASH_WM_LOCK_LAYOUT_MANAGER_H_
+#ifndef ASH_COMMON_WM_LOCK_LAYOUT_MANAGER_H_
+#define ASH_COMMON_WM_LOCK_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/wm_types.h"
-#include "ash/snap_to_pixel_layout_manager.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "ui/aura/layout_manager.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
-
-namespace aura {
-class RootWindow;
-class Window;
-}
-
-namespace ui {
-class Layer;
-}
 
 namespace ash {
 namespace wm {
@@ -43,33 +33,26 @@ class WMEvent;
 // For all windows in LockScreenContainer default wm::WindowState is replaced
 // with LockWindowState.
 class ASH_EXPORT LockLayoutManager
-    : public SnapToPixelLayoutManager,
-      public aura::WindowObserver,
+    : public wm::WmSnapToPixelLayoutManager,
+      public WmWindowObserver,
       public ShellObserver,
       public keyboard::KeyboardControllerObserver {
  public:
-  explicit LockLayoutManager(aura::Window* window);
+  explicit LockLayoutManager(WmWindow* window);
   ~LockLayoutManager() override;
 
-  // Overridden from aura::LayoutManager:
+  // Overridden from WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(aura::Window* child) override;
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  void OnWindowRemovedFromLayout(aura::Window* child) override;
-  void OnChildWindowVisibilityChanged(aura::Window* child,
-                                      bool visibile) override;
-  void SetChildBounds(aura::Window* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overriden from aura::WindowObserver:
-  void OnWindowHierarchyChanged(
-      const WindowObserver::HierarchyChangeParams& params) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-  void OnWindowStackingChanged(aura::Window* window) override;
-  void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowBoundsChanged(aura::Window* window,
+  // Overriden from WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
@@ -85,8 +68,8 @@ class ASH_EXPORT LockLayoutManager
   // This happens when the display size, work area insets has changed.
   void AdjustWindowsForWorkAreaChange(const wm::WMEvent* event);
 
-  aura::Window* window_;
-  aura::Window* root_window_;
+  WmWindow* window_;
+  WmWindow* root_window_;
 
   // True is subscribed as keyboard controller observer.
   bool is_observing_keyboard_;
@@ -99,4 +82,4 @@ class ASH_EXPORT LockLayoutManager
 
 }  // namespace ash
 
-#endif  // ASH_WM_LOCK_LAYOUT_MANAGER_H_
+#endif  // ASH_COMMON_WM_LOCK_LAYOUT_MANAGER_H_

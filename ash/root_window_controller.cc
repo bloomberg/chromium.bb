@@ -31,6 +31,7 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
+#include "ash/common/wm/lock_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
@@ -49,7 +50,6 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
-#include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/stacking_controller.h"
@@ -617,10 +617,11 @@ void RootWindowController::InitLayoutManagers() {
 
   aura::Window* root_window = GetRootWindow();
 
-  aura::Window* lock_container =
-      root_window->GetChildById(kShellWindowId_LockScreenContainer);
+  WmWindow* lock_container = WmWindowAura::Get(
+      root_window->GetChildById(kShellWindowId_LockScreenContainer));
   DCHECK(lock_container);
-  lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
+  lock_container->SetLayoutManager(
+      base::MakeUnique<LockLayoutManager>(lock_container));
 
   WmWindow* always_on_top_container =
       WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));
