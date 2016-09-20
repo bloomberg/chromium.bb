@@ -122,9 +122,17 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         mSentBytesCount = sentBytesCount;
         mReceivedBytesCount = receivedBytesCount;
 
-        // Don't care about these anymore
-        mTtfbMs = null;
-        mTotalTimeMs = null;
+        // TODO(mgersh): delete these after embedders stop using them http://crbug.com/629194
+        if (requestStartMs != -1 && responseStartMs != -1) {
+            mTtfbMs = responseStartMs - requestStartMs;
+        } else {
+            mTtfbMs = null;
+        }
+        if (requestStartMs != -1 && responseEndMs != -1) {
+            mTotalTimeMs = responseEndMs - requestStartMs;
+        } else {
+            mTotalTimeMs = null;
+        }
     }
 
     @Nullable
