@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -104,6 +105,12 @@ public class ManifestUpgradeDetectorTest {
             Mockito.doAnswer(mockStart).when(fetcher).start(
                     Mockito.any(ManifestUpgradeDetectorFetcher.Callback.class));
             return fetcher;
+        }
+
+        // Stubbed out because real implementation uses native.
+        @Override
+        protected boolean urlsMatchIgnoringFragments(String url1, String url2) {
+            return TextUtils.equals(url1, url2);
         }
     }
 

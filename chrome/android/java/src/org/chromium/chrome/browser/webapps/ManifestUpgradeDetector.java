@@ -12,6 +12,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 /**
@@ -23,7 +24,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Called when the process of checking Web Manifest update is complete.
      */
     public interface Callback {
-        public void onUpgradeNeededCheckFinished(boolean isUpgraded, FetchedManifestData data);
+        public void onUpgradeNeededCheckFinished(boolean needsUpgrade, FetchedManifestData data);
     }
 
     private static final String TAG = "cr_UpgradeDetector";
@@ -178,21 +179,20 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
 
         // TODO(hanxi): crbug.com/627824. Validate whether the new fetched data is
         // WebAPK-compatible.
-        boolean upgradeRequired = requireUpgrade(fetchedData);
-        mCallback.onUpgradeNeededCheckFinished(upgradeRequired, fetchedData);
+        boolean upgrade = needsUpgrade(fetchedData);
+        mCallback.onUpgradeNeededCheckFinished(upgrade, fetchedData);
     }
 
     /**
      * Checks whether the WebAPK needs to be upgraded provided the fetched manifest data.
      */
-    private boolean requireUpgrade(FetchedManifestData fetchedData) {
-        if (!TextUtils.equals(mIconUrl, fetchedData.iconUrl)
+    private boolean needsUpgrade(FetchedManifestData fetchedData) {
+        if (!urlsMatchIgnoringFragments(mIconUrl, fetchedData.iconUrl)
                 || !mIconMurmur2Hash.equals(fetchedData.iconMurmur2Hash)) {
             return true;
         }
 
-        boolean scopeMatch = mWebappInfo.scopeUri().toString().equals(fetchedData.scopeUrl);
-        if (!scopeMatch) {
+        if (!urlsMatchIgnoringFragments(mWebappInfo.scopeUri().toString(), fetchedData.scopeUrl)) {
             // Sometimes the scope doesn't match due to a missing "/" at the end of the scope URL.
             // Print log to find such cases.
             Log.d(TAG, "Needs to request update since the scope from WebappInfo (%s) doesn't match"
@@ -201,7 +201,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
             return true;
         }
 
-        if (!TextUtils.equals(mStartUrl, fetchedData.startUrl)
+        if (!urlsMatchIgnoringFragments(mStartUrl, fetchedData.startUrl)
                 || !TextUtils.equals(mWebappInfo.shortName(), fetchedData.shortName)
                 || !TextUtils.equals(mWebappInfo.name(), fetchedData.name)
                 || mWebappInfo.backgroundColor() != fetchedData.backgroundColor
@@ -212,5 +212,13 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether the urls match ignoring fragments. Canonicalizes the URLs prior to doing the
+     * comparison.
+     */
+    protected boolean urlsMatchIgnoringFragments(String url1, String url2) {
+        return UrlUtilities.urlsMatchIgnoringFragments(url1, url2);
     }
 }
