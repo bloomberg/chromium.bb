@@ -28,7 +28,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -356,19 +355,6 @@ KURL HitTestResult::absoluteLinkURL() const
 bool HitTestResult::isLiveLink() const
 {
     return m_innerURLElement && m_innerURLElement->isLiveLink();
-}
-
-// TODO(xiaochengh): We should move |HitTestResult::isMisspelled()| to
-// "SelectionController.cpp" as static function.
-bool HitTestResult::isMisspelled() const
-{
-    if (!innerNode() || !innerNode()->layoutObject())
-        return false;
-    VisiblePosition pos = createVisiblePosition(innerNode()->layoutObject()->positionForPoint(localPoint()));
-    if (pos.isNull())
-        return false;
-    return m_innerNode->document().markers().markersInRange(
-        EphemeralRange(pos.deepEquivalent().parentAnchoredEquivalent()), DocumentMarker::MisspellingMarkers()).size() > 0;
 }
 
 bool HitTestResult::isOverLink() const

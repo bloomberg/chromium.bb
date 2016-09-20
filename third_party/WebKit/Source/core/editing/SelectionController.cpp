@@ -595,6 +595,18 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
     return selection().isRange();
 }
 
+static bool hitTestResultIsMisspelled(const HitTestResult& result)
+{
+    Node* innerNode = result.innerNode();
+    if (!innerNode || !innerNode->layoutObject())
+        return false;
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    if (pos.isNull())
+        return false;
+    return innerNode->document().markers().markersInRange(
+        EphemeralRange(pos.deepEquivalent().parentAnchoredEquivalent()), DocumentMarker::MisspellingMarkers()).size() > 0;
+}
+
 void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResults& mev, const LayoutPoint& position)
 {
     if (!selection().isAvailable())
@@ -610,7 +622,7 @@ void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResult
     // Context menu events are always allowed to perform a selection.
     AutoReset<bool> mouseDownMayStartSelectChange(&m_mouseDownMayStartSelect, true);
 
-    if (mev.hitTestResult().isMisspelled())
+    if (hitTestResultIsMisspelled(mev.hitTestResult()))
         return selectClosestMisspellingFromMouseEvent(mev);
 
     if (!m_frame->editor().behavior().shouldSelectOnContextualMenuClick())

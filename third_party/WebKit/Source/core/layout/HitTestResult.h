@@ -134,7 +134,6 @@ public:
     KURL absoluteLinkURL() const;
     String textContent() const;
     bool isLiveLink() const;
-    bool isMisspelled() const;
     bool isContentEditable() const;
 
     bool isOverLink() const;
