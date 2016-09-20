@@ -5,6 +5,9 @@
 // Multiply-included message file, hence no include guard here, but see below
 // for a much smaller-than-usual include guard section.
 
+#include <stdint.h>
+
+#include "base/unguessable_token.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -41,6 +44,15 @@ IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params2)
   IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(bool, force_keyframe)
 IPC_STRUCT_END()
+
+//------------------------------------------------------------------------------
+// Utility Messages
+
+// Sent from Renderer to GPU process to request a token identifying the channel.
+// These tokens can be used to prove ownership of the channel. The intended use
+// case is to share the command buffer with MojoMediaApplication.
+IPC_SYNC_MESSAGE_CONTROL0_1(GpuCommandBufferMsg_GetChannelToken,
+                            base::UnguessableToken /* channel_token */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

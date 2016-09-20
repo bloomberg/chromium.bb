@@ -4,7 +4,9 @@
 
 #include "media/gpu/ipc/service/media_channel.h"
 
+#include "base/unguessable_token.h"
 #include "gpu/ipc/service/gpu_channel.h"
+#include "ipc/message_filter.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
@@ -55,7 +57,41 @@ class MediaChannelDispatchHelper {
   DISALLOW_COPY_AND_ASSIGN(MediaChannelDispatchHelper);
 };
 
-MediaChannel::MediaChannel(gpu::GpuChannel* channel) : channel_(channel) {}
+// Filter to respond to GetChannelToken on the IO thread.
+class MediaChannelFilter : public IPC::MessageFilter {
+ public:
+  explicit MediaChannelFilter(const base::UnguessableToken& channel_token)
+      : channel_token_(channel_token) {}
+
+  void OnFilterAdded(IPC::Channel* channel) override { channel_ = channel; }
+  bool Send(IPC::Message* msg) { return channel_->Send(msg); }
+
+  bool OnMessageReceived(const IPC::Message& msg) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(MediaChannelFilter, msg)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetChannelToken,
+                                      OnGetChannelToken)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnGetChannelToken(IPC::Message* reply_message) {
+    GpuCommandBufferMsg_GetChannelToken::WriteReplyParams(reply_message,
+                                                          channel_token_);
+    Send(reply_message);
+  }
+
+ private:
+  ~MediaChannelFilter() override {}
+
+  IPC::Channel* channel_;
+  base::UnguessableToken channel_token_;
+};
+
+MediaChannel::MediaChannel(gpu::GpuChannel* channel) : channel_(channel) {
+  channel_->AddFilter(new MediaChannelFilter(base::UnguessableToken::Create()));
+}
 
 MediaChannel::~MediaChannel() {}
 
