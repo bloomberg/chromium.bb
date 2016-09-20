@@ -83,6 +83,27 @@
         taskDone();
       });
 
+      audit.defineTask("nullable buffer", function (taskDone) {
+        var node;
+        var success = true;
+
+        var options = { buffer: null };
+      
+        success = Should("node = new AudioBufferSourceNode(c, " + JSON.stringify(options), function () {
+          node = new AudioBufferSourceNode(context, options);
+        }).notThrow();
+
+        success = Should("node.buffer", node.buffer)
+          .beEqualTo(null);
+
+        Should("Null buffer in constructor handled", success)
+          .summarize(
+            "correctly",
+            "incorrectly");
+
+        taskDone();
+      });
+
       audit.defineTask("constructor options", function (taskDone) {
         var node;
         var success = true;

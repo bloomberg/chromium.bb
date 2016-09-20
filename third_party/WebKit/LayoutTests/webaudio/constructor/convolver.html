@@ -74,6 +74,27 @@
         taskDone();
       });
 
+      audit.defineTask("nullable buffer", function (taskDone) {
+        var node;
+        var success = true;
+
+        var options = { buffer: null };
+      
+        success = Should("node = new ConvolverNode(c, " + JSON.stringify(options), function () {
+          node = new ConvolverNode(context, options);
+        }).notThrow();
+
+        success = Should("node.buffer", node.buffer)
+          .beEqualTo(null);
+
+        Should("Null buffer in constructor handled", success)
+          .summarize(
+            "correctly",
+            "incorrectly");
+
+        taskDone();
+      });
+
       audit.defineTask("construct with options", function (taskDone) {
         var buf = context.createBuffer(1, 1, context.sampleRate);
         var options = {

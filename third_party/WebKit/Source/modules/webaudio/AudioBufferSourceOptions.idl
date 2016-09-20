@@ -4,7 +4,7 @@
 
 // See https://webaudio.github.io/web-audio-api/#audiobuffersourceoptions
 dictionary AudioBufferSourceOptions {
-    AudioBuffer buffer;
+    AudioBuffer? buffer;
     float detune;
     boolean loop;
     double loopEnd;
