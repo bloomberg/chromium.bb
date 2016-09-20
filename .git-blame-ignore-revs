@@ -388,3 +388,128 @@ d4fe03704abb4c3628cddff5c7aa8f82b86b2b21
 ec7c3997e21fc154ab89a26779d00220c48324f4
 86fa1dd92331ce969c55ade017aab9950e0c5156
 a63ce1fb29a4c1aa568d916aaba717986d515b86
+
+# This block of commits mechanically updates auto to auto* where a raw pointer
+# would be deduced.
+# mash: Change auto to not deduce raw pointers.
+e8f87e7cc93e47aeea704006fe1ebdf273ddaba9
+# media: Change auto to not deduce raw pointers.
+ea7a7551eb59fb06ae5a488ee20faf91b2695d7d
+# base: Change auto to not deduce raw pointers.
+5170bf98eb5ad7c6ebbdad175ecd478c3e48ead0
+# net: Change auto to not deduce raw pointers.
+6f21f24e143e691e3635c06e906b1f8917d33dbd
+# ash: Change auto to not deduce raw pointers.
+eb900a1e034e1abddcaf7fdd7bb05c0d75cf0b62
+# extensions: Change auto to not deduce raw pointers.
+63daf7ca9ccff9c04a584cb97237ee0eb6c13fa7
+# gin: Change auto to not deduce raw pointers.
+1ee03c4c04b838817fd89a9c384facf40a289dae
+# blimp: Change auto to not deduce raw pointers.
+2f37e9e61a72d10f5c9be9d5021445eacec42ad0
+# tools/gn: Change auto to not deduce raw pointers.
+238f0a029f813ddc3c5a3438d8896a01cf1c5aaf
+# gpu: Change auto to not deduce raw pointers.
+f4cde239e090fbb84afc4cd8315d22f92e6fb3e3
+# various: Change auto to not deduce raw pointers.
+981aa5a100145aee038661b81db780edbb257a09
+# components: Change auto to not deduce raw pointers.
+2de366b533c783f31c6233f4034a8fa070b29db9
+# android_webview: Change auto to not deduce raw pointers.
+038b95619952006436c8feeb058e4ff45f510697
+# base: Change auto to not deduce raw pointers.
+4058ac6be8672005d3113d49b945d9874e01f37c
+# content: Change auto to not deduce raw pointers.
+10e0d5f672745230042c700577feb7fc66f00f15
+# chrome/browser/memory: Change auto to not deduce raw pointers.
+0b93e11fe659a7d3e68bdc318f4d0ec1eef69ad4
+# chrome/browser/extensions: Change auto to not deduce raw pointers.
+ae72b08137e2ca7af8b3fef367af33be0866ef64
+# chrome/browser/chromeos: Change auto to not deduce raw pointers.
+668a5386d4e352fccf29893b848797d2993fa8b2
+# chrome/browser/android: Change auto to not deduce raw pointers.
+c5999f9e1035f7a7f32c416c080afaa8cb0837f7
+# chrome/browser/password_manager: Change auto to not deduce raw pointers.
+6bcf17c7e6c8a5968a63a9d761d2dda7ecfbbe39
+# media: Change auto to not deduce raw pointers.
+7c035fee8e8c3c0667923a161253a13594ed021c
+# chrome/browser/ui: Change auto to not deduce raw pointers.
+e825f6a8e8ab12b450409be005d41a7849f0d6ab
+# chromecast: Change auto to not deduce raw pointers.
+8dd57e1b56672be11e9539d9223ffa583cd8625f
+# services/{ui,shell}: Change auto to not deduce raw pointers.
+6b86f80e5578519fcf5b3a19767bd53e86112f15
+# chrome/browser/task_management: Change auto to not deduce raw pointers.
+922b0234f015fe1cb46d40a4cca119efadd5bee5
+# ui/ozone/platform/drm: Change auto to not deduce raw pointers.
+f1172137682cec61334b4822f862c782ccbd9167
+# ash: Change auto to not deduce raw pointers.
+4ee88f9978720b2d7f7d683f933c4d6bccb23413
+# ui/{chromeos,display}: Change auto to not deduce raw pointers.
+cb7343e6af785c9b194f7d9aaa713df94facdcab
+# chrome/common/safe_browsing: Change auto to not deduce raw pointers.
+bd00db280f3c20df00d5f178c518370a920c2648
+# chrome/app: Change auto to not deduce raw pointers.
+3af234130c64de89299201845b46dcbd11eae4b1
+# ui/arc/notification: Change auto to not deduce raw pointers.
+b62fb540edd2d4fceaf6693a51d691cb195e9047
+# ui/base/cocoa: Change auto to not deduce raw pointers.
+3986a102dcd2e16aacb98b19b743a94e86f3aa20
+# google_apis: Change auto to not deduce raw pointers.
+3d26e74634a9470e3ac06911ee899ce0ffc06339
+# device: Change auto to not deduce raw pointers.
+b0e145b14f1ae5821f187e2297e538ac56c763dc
+# chromeos/dbus: Change auto to not deduce raw pointers.
+daead0ee14bf28ce22e7603a685fe1c12ae31607
+# ios/chrome: Change auto to not deduce raw pointers.
+952ffe1735f2c5b41a8eab6851f6d6a2fb673152
+# chrome/browser/printing: Change auto to not deduce raw pointers.
+19df8256c07f1c044cb3638849ea8bc928493b2e
+# chrome/browser/notifications: Change auto to not deduce raw pointers.
+d11ed91e72f49c6ec0d9cd2a3d5ae7bfe451b618
+# chrome/browser/media: Change auto to not deduce raw pointers.
+fabf492cd95ecc8450cef4f46da08652d694c206
+# chrome/common: Change auto to not deduce raw pointers.
+4e388dd146895127c51b881fdbbdcf524e2a90f9
+# chrome/browser/safe_browsing: Change auto to not deduce raw pointers.
+ae7d4b87b676f061748707109b20ab4814953a41
+# chrome/browser/profiles: Change auto to not deduce raw pointers.
+e1fee825d91a55d177dcad13ea8e59f0a6b7bb4c
+# chrome/browser/renderer_host: Change auto to not deduce raw pointers.
+89f7240e789d4e077b87c14a6094adf7be61daae
+# chrome/browser/renderer_context_menu: Change auto to not deduce raw pointers.
+f1af449e6d087f4542485401ea5fab3a63b1d68b
+# chrome/utility/safe_browsing: Change auto to not deduce raw pointers.
+b20a6b27f2c4a845973b4d8cc828ef3c2f51f050
+# chrome/browser/metrics: Change auto to not deduce raw pointers.
+418dc6a24457bcb6c2c8ffdd95f5993c7e3e05de
+# io_thread_unittest: Change auto to not deduce raw pointers.
+0168cdbec15153330d9a7f6528316176b02282c3
+# chrome/test: Change auto to not deduce raw pointers.
+bb89de9c690710b8e43e60f421b9e2c3462638ea
+# mojo/edk/system: Change auto to not deduce raw pointers.
+e122d0f1cd07bb86382804d973b097185e75dc6e
+# chrome/browser/apps: Change auto to not deduce raw pointers.
+5d70c084a742a5e4ef37c8a40e4b31e11306f8c7
+# chrome/installer: Change auto to not deduce raw pointers.
+87fe42802477a954f8a60ebda917f6cfc8244f7f
+# chrome/browser/search: Change auto to not deduce raw pointers.
+04706fdd21f2dbcb9444d55048412878fffe0888
+# chrome/utility: Change auto to not deduce raw pointers.
+142de3b623ab5cafdc8fbedbea7474790878c2e6
+# chrome/browser/guest_view: Change auto to not deduce raw pointers.
+a5be776a37c46f6a8792756cec52973d4390a845
+# sandbox: Change auto to not deduce raw pointers.
+587cf8faa9a3914d98abb0330cffcc80f284c998
+# chrome/browser/sessions: Change auto to not deduce raw pointers.
+291fde65aa2a5ee3a1036fe90cc063243e1dc51f
+# chrome/browser/devtools: Change auto to not deduce raw pointers.
+6f27af2b5c060be8ccfeb7b11be15414144c2879
+# extensions/browser/api: Change auto to not deduce raw pointers.
+437438d084b2ce1227a2860f8ee5698797b8835c
+# chrome/browser/spellchecker: Change auto to not deduce raw pointers.
+fe45a535ea84cba23a9b1355d36525db0d408280
+# chrome/browser/background: Change auto to not deduce raw pointers.
+49740b50472837cc4b4a3ed8402ac56802338464
+# chrome/browser/download: Change auto to not deduce raw pointers.
+747f5543ff5e4c201bcba0182bfd24e5e6896d28
