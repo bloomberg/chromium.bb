@@ -386,9 +386,9 @@
     ],
     "ProgressBarAnimationAndroid": [
         {
-            "group_name": "SmoothAnimation",
+            "group_name": "SmoothIndeterminateAnimation",
             "params": {
-                "progress-bar-animation": "smooth"
+                "progress-bar-animation": "smooth-indeterminate"
             }
         }
     ],
