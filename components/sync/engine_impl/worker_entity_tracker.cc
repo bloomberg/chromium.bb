@@ -9,19 +9,12 @@
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer_v2 {
 
-WorkerEntityTracker::WorkerEntityTracker(const std::string& id,
-                                         const std::string& client_tag_hash)
-    : id_(id),
-      client_tag_hash_(client_tag_hash),
-      highest_commit_response_version_(0),
-      highest_gu_response_version_(0),
-      sequence_number_(0),
-      base_version_(kUncommittedVersion) {
+WorkerEntityTracker::WorkerEntityTracker(const std::string& client_tag_hash)
+    : client_tag_hash_(client_tag_hash) {
   DCHECK(!client_tag_hash_.empty());
 }
 
@@ -61,9 +54,14 @@ void WorkerEntityTracker::PopulateCommitProto(
 void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   DCHECK_GE(data.base_version, base_version_)
       << "Base version should never decrease";
-
   DCHECK_GE(data.sequence_number, sequence_number_)
       << "Sequence number should never decrease";
+
+  // Store the ID if one isn't tracked yet. If one is tracked, it may be more
+  // up-to-date than one coming from the processor.
+  if (id_.empty()) {
+    id_ = data.entity->id;
+  }
 
   // Update our book-keeping counters.
   base_version_ = data.base_version;
@@ -76,19 +74,19 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
     return;
   }
 
-  // We intentionally don't update the id_ here.  Good ID values come from the
-  // server and always pass through the sync thread first.  There's no way the
+  // We intentionally don't update the id_ here. Good ID values come from the
+  // server and always pass through the sync thread first. There's no way the
   // model thread could have a better ID value than we do.
 
-  // This entity is identified by its client tag.  That value can never change.
+  // This entity is identified by its client tag. That value can never change.
   DCHECK_EQ(client_tag_hash_, data.entity->client_tag_hash);
   // TODO(stanisc): consider simply copying CommitRequestData instead of
   // allocating one dynamically.
   pending_commit_.reset(new CommitRequestData(data));
 
-  // Do our counter values indicate a conflict?  If so, don't commit.
+  // Do our counter values indicate a conflict? If so, don't commit.
   //
-  // There's no need to inform the model thread of the conflict.  The
+  // There's no need to inform the model thread of the conflict. The
   // conflicting update has already been posted to its task runner; it will
   // figure it out as soon as it runs that task.
   //
@@ -119,7 +117,7 @@ void WorkerEntityTracker::ReceiveCommitResponse(CommitResponseData* ack) {
 
   // Because an in-progress commit blocks the sync thread, we can assume that
   // the item we just committed successfully is exactly the one we have now.
-  // Nothing changed it while the commit was happening.  Since we're now in
+  // Nothing changed it while the commit was happening. Since we're now in
   // sync with the server, we can clear the pending commit.
   ClearPendingCommit();
 }
@@ -131,7 +129,7 @@ void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
   highest_gu_response_version_ = update.response_version;
   id_ = update.entity->id;
 
-  // Got an applicable update newer than any pending updates.  It must be safe
+  // Got an applicable update newer than any pending updates. It must be safe
   // to discard the old encrypted update, if there was one.
   ClearEncryptedUpdate();
 
@@ -174,7 +172,7 @@ bool WorkerEntityTracker::IsInConflict() const {
 
   if (highest_gu_response_version_ <= highest_commit_response_version_) {
     // The most recent server state was created in a commit made by this
-    // client.  We're fully up to date, and therefore not in conflict.
+    // client. We're fully up to date, and therefore not in conflict.
     return false;
   } else {
     // The most recent server state was written by someone else.

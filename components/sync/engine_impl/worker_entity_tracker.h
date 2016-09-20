@@ -12,12 +12,10 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
-struct CommitRequestData;
-struct CommitResponseData;
-struct UpdateResponseData;
 
 // Manages the pending commit and update state for an entity on the sync
 // thread.
@@ -26,7 +24,7 @@ struct UpdateResponseData;
 // ModelTypeWorker.
 //
 // Maintains the state associated with a particular sync entity which is
-// necessary for decision-making on the sync thread.  It can track pending
+// necessary for decision-making on the sync thread. It can track pending
 // commit state, received update state, and can detect conflicts.
 //
 // This object may contain state associated with a pending commit, pending
@@ -35,8 +33,7 @@ class WorkerEntityTracker {
  public:
   // Initializes the entity tracker's main fields. Does not initialize state
   // related to a pending commit.
-  WorkerEntityTracker(const std::string& id,
-                      const std::string& client_tag_hash);
+  WorkerEntityTracker(const std::string& client_tag_hash);
 
   ~WorkerEntityTracker();
 
@@ -47,7 +44,7 @@ class WorkerEntityTracker {
   void PopulateCommitProto(sync_pb::SyncEntity* commit_entity) const;
 
   // Updates this entity with data from the latest version that the
-  // model asked us to commit.  May clobber state related to the
+  // model asked us to commit. May clobber state related to the
   // model's previous commit attempt(s).
   void RequestCommit(const CommitRequestData& data);
 
@@ -60,7 +57,7 @@ class WorkerEntityTracker {
 
   // Handles the receipt of an encrypted update from the server.
   //
-  // Returns true if the tracker decides this item is worth keeping.  Returns
+  // Returns true if the tracker decides this item is worth keeping. Returns
   // false if the item is discarded, which could happen if the version number
   // is out of date.
   bool ReceiveEncryptedUpdate(const UpdateResponseData& data);
@@ -88,25 +85,25 @@ class WorkerEntityTracker {
   // Clears flag and optionally clears state associated with a pending commit.
   void ClearPendingCommit();
 
-  // The ID for this entry.  May be empty if the entry has never been committed.
-  std::string id_;
-
   // The hashed client tag for this entry.
   const std::string client_tag_hash_;
 
-  // The highest version seen in a commit response for this entry.
-  int64_t highest_commit_response_version_;
+  // The ID for this entry. May be empty if the entry has never been committed.
+  std::string id_;
 
-  // The highest version seen in a GU response for this entry.
-  int64_t highest_gu_response_version_;
-
-  // Used to track in-flight commit requests on the model thread.  All we need
+  // Used to track in-flight commit requests on the model thread. All we need
   // to do here is return it back to the model thread when the pending commit
-  // is completed and confirmed.  Not valid if no commit is pending.
-  int64_t sequence_number_;
+  // is completed and confirmed. Not valid if no commit is pending.
+  int64_t sequence_number_ = 0;
 
   // The server version on which this item is based.
-  int64_t base_version_;
+  int64_t base_version_ = kUncommittedVersion;
+
+  // The highest version seen in a commit response for this entry.
+  int64_t highest_commit_response_version_ = kUncommittedVersion;
+
+  // The highest version seen in a GU response for this entry.
+  int64_t highest_gu_response_version_ = kUncommittedVersion;
 
   // A commit for this entity waiting for a sync cycle to be committed.
   std::unique_ptr<CommitRequestData> pending_commit_;
@@ -115,7 +112,7 @@ class WorkerEntityTracker {
   std::string pending_commit_specifics_hash_;
 
   // An update for this entity which can't be applied right now. The presence
-  // of an pending update prevents commits.  As of this writing, the only
+  // of an pending update prevents commits. As of this writing, the only
   // source of pending updates is updates that can't currently be decrypted.
   std::unique_ptr<UpdateResponseData> encrypted_update_;
 

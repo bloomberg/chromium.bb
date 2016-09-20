@@ -24,7 +24,7 @@ namespace syncer_v2 {
 // As such, it doesn't make much sense to test it exhaustively, since it
 // already gets a lot of test coverage from the ModelTypeWorker unit tests.
 //
-// These tests are intended as a basic sanity check.  Anything more complicated
+// These tests are intended as a basic sanity check. Anything more complicated
 // would be redundant.
 class WorkerEntityTrackerTest : public ::testing::Test {
  public:
@@ -37,7 +37,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
         kSpecificsHash("somehash"),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),
-        entity_(new WorkerEntityTracker("", kClientTagHash)) {
+        entity_(new WorkerEntityTracker(kClientTagHash)) {
     specifics.mutable_preference()->set_name(kClientTag);
     specifics.mutable_preference()->set_value("pref.value");
   }
@@ -47,7 +47,6 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   CommitRequestData MakeCommitRequestData(int64_t sequence_number,
                                           int64_t base_version) {
     EntityData data;
-    data.id = kServerId;
     data.client_tag_hash = kClientTagHash;
     data.creation_time = kCtime;
     data.modification_time = kMtime;
@@ -83,7 +82,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   std::unique_ptr<WorkerEntityTracker> entity_;
 };
 
-// Construct a new entity from a server update.  Then receive another update.
+// Construct a new entity from a server update. Then receive another update.
 TEST_F(WorkerEntityTrackerTest, FromUpdateResponse) {
   EXPECT_FALSE(entity_->HasPendingCommit());
   EXPECT_EQ("", entity_->id());
@@ -92,7 +91,7 @@ TEST_F(WorkerEntityTrackerTest, FromUpdateResponse) {
   EXPECT_EQ(kServerId, entity_->id());
 }
 
-// Construct a new entity from a commit request.  Then serialize it.
+// Construct a new entity from a commit request. Then serialize it.
 TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   const int64_t kSequenceNumber = 22;
   const int64_t kBaseVersion = 33;
@@ -131,13 +130,13 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   EXPECT_EQ(kServerId, pb_entity.id_string());
 }
 
-// Start with a server initiated entity.  Commit over top of it.
+// Start with a server initiated entity. Commit over top of it.
 TEST_F(WorkerEntityTrackerTest, RequestCommit) {
   entity_->RequestCommit(MakeCommitRequestData(1, 10));
   EXPECT_TRUE(entity_->HasPendingCommit());
 }
 
-// Start with a server initiated entity.  Fail to request a commit because of
+// Start with a server initiated entity. Fail to request a commit because of
 // an out of date base version.
 TEST_F(WorkerEntityTrackerTest, RequestCommitFailure) {
   entity_->ReceiveUpdate(MakeUpdateResponseData(10));
@@ -147,7 +146,7 @@ TEST_F(WorkerEntityTrackerTest, RequestCommitFailure) {
   EXPECT_FALSE(entity_->HasPendingCommit());
 }
 
-// Start with a pending commit.  Clobber it with an incoming update.
+// Start with a pending commit. Clobber it with an incoming update.
 TEST_F(WorkerEntityTrackerTest, UpdateClobbersCommit) {
   CommitRequestData data = MakeCommitRequestData(22, 33);
   entity_->RequestCommit(data);
@@ -158,7 +157,7 @@ TEST_F(WorkerEntityTrackerTest, UpdateClobbersCommit) {
   EXPECT_FALSE(entity_->HasPendingCommit());
 }
 
-// Start with a pending commit.  Send it a reflected update that
+// Start with a pending commit. Send it a reflected update that
 // will not override the in-progress commit.
 TEST_F(WorkerEntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
   CommitRequestData data = MakeCommitRequestData(22, 33);
