@@ -32,6 +32,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/html/HTMLElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
 

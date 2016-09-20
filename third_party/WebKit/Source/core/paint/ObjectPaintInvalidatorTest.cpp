@@ -4,6 +4,7 @@
 
 #include "core/paint/ObjectPaintInvalidator.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"

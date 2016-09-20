@@ -10,6 +10,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/TraceEvent.h"
 #include "wtf/AutoReset.h"
 
 namespace blink {

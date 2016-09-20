@@ -30,7 +30,6 @@
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
-#include "core/layout/LayoutObject.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"

@@ -13,18 +13,20 @@ namespace blink {
 
 class LayoutObject;
 
+// Put data inside a forward-declared struct, to avoid including LayoutObject.h here.
+struct DepthOrderedLayoutObjectListData;
+
 class DepthOrderedLayoutObjectList {
 public:
-    DepthOrderedLayoutObjectList()
-    {
-    }
+    DepthOrderedLayoutObjectList();
+    ~DepthOrderedLayoutObjectList();
 
     void add(LayoutObject&);
     void remove(LayoutObject&);
     void clear();
 
-    int size() const { return m_objects.size(); }
-    bool isEmpty() const { return m_objects.isEmpty(); }
+    int size() const;
+    bool isEmpty() const;
 
     struct LayoutObjectWithDepth {
         LayoutObjectWithDepth(LayoutObject* inObject)
@@ -54,18 +56,11 @@ public:
         static unsigned determineDepth(LayoutObject*);
     };
 
-    const HashSet<LayoutObject*>& unordered() const { return m_objects; }
+    const HashSet<LayoutObject*>& unordered() const;
     const Vector<LayoutObjectWithDepth>& ordered();
 
 private:
-    // LayoutObjects sorted by depth (deepest first). This structure is only
-    // populated at the beginning of enumerations. See ordered().
-    Vector<LayoutObjectWithDepth> m_orderedObjects;
-
-    // Outside of layout, LayoutObjects can be added and removed as needed such
-    // as when style was changed or destroyed. They're kept in this hashset to
-    // keep those operations fast.
-    HashSet<LayoutObject*> m_objects;
+    DepthOrderedLayoutObjectListData* m_data;
 };
 
 } // namespace blink

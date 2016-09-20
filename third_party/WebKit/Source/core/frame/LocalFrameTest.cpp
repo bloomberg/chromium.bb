@@ -6,6 +6,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/DragImage.h"
 #include "testing/gtest/include/gtest/gtest.h"

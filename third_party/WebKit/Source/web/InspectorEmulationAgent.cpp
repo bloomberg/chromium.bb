@@ -9,6 +9,7 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebViewScheduler.h"

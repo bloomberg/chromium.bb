@@ -37,6 +37,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/TraceEvent.h"

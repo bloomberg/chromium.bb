@@ -9,6 +9,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>

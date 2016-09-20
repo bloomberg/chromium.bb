@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLElement.h"
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/scroll/ScrollTypes.h"
