@@ -518,12 +518,6 @@ void It2MeHost::ValidateConnectionDetails(
   std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog =
       confirmation_dialog_factory_->Create();
 
-  // TODO(joedow): Remove this once confirmation dialog exists on all platforms.
-  if (!confirmation_dialog) {
-    result_callback.Run(ValidationResult::SUCCESS);
-    return;
-  }
-
   confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
       host_context_->ui_task_runner(), std::move(confirmation_dialog)));
 
