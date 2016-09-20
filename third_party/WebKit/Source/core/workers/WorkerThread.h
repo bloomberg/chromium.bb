@@ -166,8 +166,8 @@ protected:
 private:
     friend class WorkerThreadTest;
     FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, ShouldScheduleToTerminateExecution);
-    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebuggerTaskIsRunning);
-    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerTaskIsRunning);
+    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization);
+    FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning);
 
     class ForceTerminationTask;
     class WorkerMicrotaskRunner;
