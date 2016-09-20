@@ -127,6 +127,12 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
     return 'v8.todomvc'
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # This benchmark is flaky on Samsung Galaxy S5s.
+    # http://crbug.com/644826
+    return possible_browser.platform.GetDeviceTypeName() == 'SM-G900H'
+
+  @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
 
