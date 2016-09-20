@@ -355,6 +355,10 @@ void WebUILoginView::LoadURL(const GURL & url) {
       ->GetView()
       ->SetBackgroundColor(SK_ColorTRANSPARENT);
 
+  // There is no Shell instance while running in mash.
+  if (chrome::IsRunningInMash())
+    return;
+
   ash::StatusAreaWidgetDelegate* status_area_widget_delegate =
       GetStatusAreaWidgetDelegate();
   DCHECK(status_area_widget_delegate);
