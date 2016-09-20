@@ -402,6 +402,12 @@ class MidiManagerWinrt::MidiPortManager {
         WRL::Callback<ITypedEventHandler<DeviceWatcher*, DeviceInformation*>>(
             [weak_ptr, task_runner](IDeviceWatcher* watcher,
                                     IDeviceInformation* info) {
+              if (!info) {
+                VLOG(1) << "DeviceWatcher.Added callback provides null "
+                           "pointer, ignoring";
+                return S_OK;
+              }
+
               // Disable Microsoft GS Wavetable Synth due to security reasons.
               // http://crbug.com/499279
               if (IsMicrosoftSynthesizer(info))
@@ -446,6 +452,12 @@ class MidiManagerWinrt::MidiPortManager {
             ITypedEventHandler<DeviceWatcher*, DeviceInformationUpdate*>>(
             [weak_ptr, task_runner](IDeviceWatcher* watcher,
                                     IDeviceInformationUpdate* update) {
+              if (!update) {
+                VLOG(1) << "DeviceWatcher.Removed callback provides null "
+                           "pointer, ignoring";
+                return S_OK;
+              }
+
               std::string dev_id = GetIdString(update);
 
               task_runner->PostTask(
@@ -596,19 +608,12 @@ class MidiManagerWinrt::MidiPortManager {
         WRL::Callback<IAsyncOperationCompletedHandler<RuntimeType*>>(
             [weak_ptr, task_runner](IAsyncOperation<RuntimeType*>* async_op,
                                     AsyncStatus status) {
-              InterfaceType* handle;
-              HRESULT hr = async_op->GetResults(&handle);
-              if (FAILED(hr)) {
-                VLOG(1) << "GetResults failed: " << PrintHr(hr);
-                return hr;
-              }
-
               // A reference to |async_op| is kept in |async_ops_|, safe to pass
               // outside.
               task_runner->PostTask(
                   FROM_HERE,
                   base::Bind(&MidiPortManager::OnCompletedGetPortFromIdAsync,
-                             weak_ptr, handle, async_op));
+                             weak_ptr, async_op));
 
               return S_OK;
             })
@@ -650,10 +655,28 @@ class MidiManagerWinrt::MidiPortManager {
     port->handle = nullptr;
   }
 
-  void OnCompletedGetPortFromIdAsync(InterfaceType* handle,
-                                     IAsyncOperation<RuntimeType*>* async_op) {
+  void OnCompletedGetPortFromIdAsync(IAsyncOperation<RuntimeType*>* async_op) {
     DCHECK(thread_checker_.CalledOnValidThread());
     CHECK(is_initialized_);
+
+    InterfaceType* handle = nullptr;
+    HRESULT hr = async_op->GetResults(&handle);
+    if (FAILED(hr)) {
+      VLOG(1) << "GetResults failed: " << PrintHr(hr);
+      return;
+    }
+
+    // Manually release COM interface to completed |async_op|.
+    auto it = async_ops_.find(async_op);
+    CHECK(it != async_ops_.end());
+    (*it)->Release();
+    async_ops_.erase(it);
+
+    if (!handle) {
+      VLOG(1) << "Midi{In,Out}Port.FromIdAsync callback provides null pointer, "
+                 "ignoring";
+      return;
+    }
 
     EventRegistrationToken token = {kInvalidTokenValue};
     if (!RegisterOnMessageReceived(handle, &token))
@@ -681,12 +704,6 @@ class MidiManagerWinrt::MidiPortManager {
 
     port->handle = handle;
     port->token_MessageReceived = token;
-
-    // Manually release COM interface to completed |async_op|.
-    auto it = async_ops_.find(async_op);
-    CHECK(it != async_ops_.end());
-    (*it)->Release();
-    async_ops_.erase(it);
 
     if (enumeration_completed_not_ready_ && async_ops_.empty()) {
       midi_manager_->OnPortManagerReady();
