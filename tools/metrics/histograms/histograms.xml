@@ -45926,6 +45926,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Prerender.NoStatePrefetchAge" units="ms">
+  <owner>droger@chromium.org</owner>
+  <owner>mattcary@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>Time between the prefetch and the actual load of the page.</summary>
+</histogram>
+
 <histogram name="Prerender.NoStatePrefetchMainResourceRedirects"
     units="redirects">
   <owner>droger@chromium.org</owner>
@@ -45958,6 +45965,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Length of the redirect chain for sub-resources loaded by NoStatePrefetch.
     Recorded when the final response in the chain is received.
   </summary>
+</histogram>
+
+<histogram name="Prerender.NoStatePrefetchTTFCP" units="ms">
+  <owner>droger@chromium.org</owner>
+  <owner>mattcary@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>Time to first contentful paint.</summary>
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsCouldPrerender">
@@ -105187,6 +105201,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.OmniboxPrerenderCount"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PrerenderPrefetchAge" separator=".">
+  <suffix name="Cold" label="Prefetch too old to skip revalidation."/>
+  <suffix name="Reference"
+      label="No prefetch. Warning: do not compare with the load times of
+             prefetched pages (bias)."/>
+  <suffix name="Warm" label="Prefetch skips revalidation."/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PrerenderPrefetchMainResourceType" separator=".">
+  <suffix name="Cacheable" label="Main resource cacheable."/>
+  <suffix name="NoStore" label="Main resource no-store."/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Cold"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Reference"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Warm"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PrerenderSource" ordering="prefix">
   <suffix name="" label="All prerenders."/>
   <suffix name="gws" label="GWS triggered prerender."/>
@@ -105214,9 +105245,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Prerender.LocalPredictorTimeUntilUsed"/>
   <affected-histogram name="Prerender.NetworkBytesUsed"/>
   <affected-histogram name="Prerender.NetworkBytesWasted"/>
+  <affected-histogram name="Prerender.NoStatePrefetchAge"/>
   <affected-histogram name="Prerender.NoStatePrefetchMainResourceRedirects"/>
   <affected-histogram name="Prerender.NoStatePrefetchResponseTypes"/>
   <affected-histogram name="Prerender.NoStatePrefetchSubResourceRedirects"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Cold.Cacheable"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Cold.NoStore"/>
+  <affected-histogram
+      name="Prerender.NoStatePrefetchTTFCP.Reference.Cacheable"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Reference.NoStore"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Warm.Cacheable"/>
+  <affected-histogram name="Prerender.NoStatePrefetchTTFCP.Warm.NoStore"/>
   <affected-histogram name="Prerender.PageVisitedStatus"/>
   <affected-histogram name="Prerender.PerceivedPLT"/>
   <affected-histogram name="Prerender.PerceivedPLTFirstAfterMiss"/>

@@ -449,7 +449,8 @@ content::WebContents* PrerenderInProcessBrowserTest::GetActiveWebContents()
 }
 
 PrerenderManager* PrerenderInProcessBrowserTest::GetPrerenderManager() const {
-  return PrerenderManagerFactory::GetForProfile(current_browser()->profile());
+  return PrerenderManagerFactory::GetForBrowserContext(
+      current_browser()->profile());
 }
 
 TestPrerenderContents* PrerenderInProcessBrowserTest::GetPrerenderContentsFor(

@@ -342,7 +342,7 @@ void NetInternalsTest::SetUpOnMainThread() {
   // as debug builds use more memory and often go over the usual limit.
   Profile* profile = browser()->profile();
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
 }
 

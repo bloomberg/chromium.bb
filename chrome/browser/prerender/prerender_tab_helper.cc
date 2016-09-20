@@ -129,8 +129,8 @@ void PrerenderTabHelper::MainFrameUrlDidChange(const GURL& url) {
 }
 
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
-  return PrerenderManagerFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  return PrerenderManagerFactory::GetForBrowserContext(
+      web_contents()->GetBrowserContext());
 }
 
 bool PrerenderTabHelper::IsPrerendering() {

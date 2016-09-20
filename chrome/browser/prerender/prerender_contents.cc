@@ -233,8 +233,9 @@ PrerenderContents* PrerenderContents::FromWebContents(
     content::WebContents* web_contents) {
   if (!web_contents)
     return NULL;
-  PrerenderManager* prerender_manager = PrerenderManagerFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
   if (!prerender_manager)
     return NULL;
   return prerender_manager->GetPrerenderContents(web_contents);

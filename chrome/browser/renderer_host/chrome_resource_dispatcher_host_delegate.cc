@@ -154,11 +154,8 @@ prerender::PrerenderManager* GetPrerenderManager(
   if (!browser_context)
     return NULL;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile)
-    return NULL;
-
-  return prerender::PrerenderManagerFactory::GetForProfile(profile);
+  return prerender::PrerenderManagerFactory::GetForBrowserContext(
+      browser_context);
 }
 
 void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,

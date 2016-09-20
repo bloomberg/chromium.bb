@@ -605,7 +605,7 @@ void BrowsingDataRemover::RemoveImpl(
     // considered to have a small amount of historical information, so delete
     // it, too.
     prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForProfile(profile_);
+        prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
     if (prerender_manager) {
       // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       prerender_manager->ClearData(
@@ -996,7 +996,7 @@ void BrowsingDataRemover::RemoveImpl(
     // The PrerenderManager may have a page actively being prerendered, which
     // is essentially a preemptively cached page.
     prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForProfile(profile_);
+        prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
     if (prerender_manager) {
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);

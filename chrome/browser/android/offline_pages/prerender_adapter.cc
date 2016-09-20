@@ -6,7 +6,6 @@
 
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/size.h"
@@ -38,9 +37,8 @@ bool PrerenderAdapter::StartPrerender(
   DCHECK(!IsActive());
   DCHECK(CanPrerender());
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
   prerender::PrerenderManager* manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(browser_context);
   DCHECK(manager);
 
   // Start prerendering the url and capture the handle for the prerendering.

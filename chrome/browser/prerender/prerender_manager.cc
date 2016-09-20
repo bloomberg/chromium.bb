@@ -145,13 +145,12 @@ PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_ENABLED;
 
 struct PrerenderManager::NavigationRecord {
-  NavigationRecord(const GURL& url, base::TimeTicks time)
-      : url(url),
-        time(time) {
-  }
+  NavigationRecord(const GURL& url, base::TimeTicks time, Origin origin)
+      : url(url), time(time), origin(origin) {}
 
   GURL url;
   base::TimeTicks time;
+  Origin origin;
 };
 
 PrerenderManager::PrerenderManager(Profile* profile)
@@ -568,6 +567,33 @@ void PrerenderManager::RecordPrefetchRedirectCount(Origin origin,
                                            redirect_count);
 }
 
+void PrerenderManager::RecordFirstContentfulPaint(const GURL& url,
+                                                  bool is_no_store,
+                                                  base::TimeDelta time) {
+  CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
+
+  // Compute the prefetch age.
+  base::TimeDelta prefetch_age;
+  Origin origin = ORIGIN_NONE;
+  for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
+    if (it->url == url) {
+      prefetch_age = GetCurrentTimeTicks() - it->time;
+      origin = it->origin;
+      break;
+    }
+  }
+
+  histograms_->RecordFirstContentfulPaint(origin, is_no_store, time,
+                                          prefetch_age);
+
+  // Loading a prefetched URL resets the revalidation bypass. Remove the url
+  // from the prefetch list for more accurate metrics.
+  prefetches_.erase(
+      std::remove_if(prefetches_.begin(), prefetches_.end(),
+                     [url](const NavigationRecord& r) { return r.url == url; }),
+      prefetches_.end());
+}
+
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode() {
   return mode_;
@@ -694,7 +720,8 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
                                                   const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  CleanUpOldNavigations();
+  CleanUpOldNavigations(&navigations_, base::TimeDelta::FromMilliseconds(
+                                           kNavigationRecordWindowMs));
   for (auto it = navigations_.rbegin(); it != navigations_.rend(); ++it) {
     if (it->url == url) {
       base::TimeDelta delta = GetCurrentTimeTicks() - it->time;
@@ -778,8 +805,9 @@ void PrerenderManager::RecordFinalStatus(Origin origin,
 void PrerenderManager::RecordNavigation(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  navigations_.push_back(NavigationRecord(url, GetCurrentTimeTicks()));
-  CleanUpOldNavigations();
+  navigations_.emplace_back(url, GetCurrentTimeTicks(), ORIGIN_NONE);
+  CleanUpOldNavigations(&navigations_, base::TimeDelta::FromMilliseconds(
+                                           kNavigationRecordWindowMs));
 }
 
 struct PrerenderManager::PrerenderData::OrderByExpiryTime {
@@ -959,6 +987,9 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
   histograms_->RecordPrerenderStarted(origin);
   DCHECK(!prerender_contents_ptr->prerendering_has_started());
 
+  if (prerender_contents_ptr->prerender_mode() == PREFETCH_ONLY)
+    prefetches_.emplace_back(url, GetCurrentTimeTicks(), origin);
+
   std::unique_ptr<PrerenderHandle> prerender_handle =
       base::WrapUnique(new PrerenderHandle(active_prerenders_.back().get()));
   SortActivePrerenders();
@@ -1131,18 +1162,19 @@ void PrerenderManager::DeleteOldWebContents() {
   old_web_contents_list_.clear();
 }
 
-void PrerenderManager::CleanUpOldNavigations() {
+void PrerenderManager::CleanUpOldNavigations(
+    std::vector<NavigationRecord>* navigations,
+    base::TimeDelta max_age) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Cutoff. Navigations before this cutoff can be discarded.
-  base::TimeTicks cutoff = GetCurrentTimeTicks() -
-      base::TimeDelta::FromMilliseconds(kNavigationRecordWindowMs);
-  auto it = navigations_.begin();
-  for (; it != navigations_.end(); ++it) {
+  base::TimeTicks cutoff = GetCurrentTimeTicks() - max_age;
+  auto it = navigations->begin();
+  for (; it != navigations->end(); ++it) {
     if (it->time > cutoff)
       break;
   }
-  navigations_.erase(navigations_.begin(), it);
+  navigations->erase(navigations->begin(), it);
 }
 
 void PrerenderManager::ScheduleDeleteOldWebContents(

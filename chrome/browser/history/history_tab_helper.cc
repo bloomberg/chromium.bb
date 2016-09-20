@@ -119,8 +119,8 @@ void HistoryTabHelper::DidNavigateAnyFrame(
           details.did_replace_entry, last_committed->GetUniqueID(), params);
 
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
   if (prerender_manager) {
     prerender::PrerenderContents* prerender_contents =
         prerender_manager->GetPrerenderContents(web_contents());

@@ -385,7 +385,7 @@ bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
     return true;
 
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
   return prerender_manager &&
       prerender_manager->MaybeUsePrerenderedPage(url, params);
 }

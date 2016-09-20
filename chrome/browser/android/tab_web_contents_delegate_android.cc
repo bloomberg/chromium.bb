@@ -341,7 +341,7 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
     // namespace issues.
     nav_params.target_contents = source;
     prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForProfile(profile);
+        prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
     if (prerender_manager &&
         prerender_manager->MaybeUsePrerenderedPage(params.url, &nav_params)) {
       return nav_params.target_contents;

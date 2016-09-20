@@ -4,10 +4,14 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
+#include "chrome/browser/prerender/prerender_histograms.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -470,4 +474,40 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kHistogramFirstMeaningfulPaint, 0);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       NoStatePrefetchObserverCacheable) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(
+      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
+          prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
+      0);
+  histogram_tester_.ExpectTotalCount(
+      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
+          prerender::ORIGIN_NONE, false, false, base::TimeDelta()),
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       NoStatePrefetchObserverNoStore) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/nostore.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(
+      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
+          prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
+      1);
+  histogram_tester_.ExpectTotalCount(
+      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
+          prerender::ORIGIN_NONE, false, false, base::TimeDelta()),
+      0);
 }

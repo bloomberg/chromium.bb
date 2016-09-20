@@ -18,6 +18,7 @@
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_metrics_observer.h"
@@ -78,6 +79,11 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   tracker->AddObserver(base::MakeUnique<HttpsEngagementPageLoadMetricsObserver>(
       web_contents_->GetBrowserContext()));
   tracker->AddObserver(base::WrapUnique(new CssScanningMetricsObserver()));
+  std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
+      no_state_prefetch_observer =
+          NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
+  if (no_state_prefetch_observer)
+    tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
   tracker->AddObserver(
       base::MakeUnique<AndroidPageLoadMetricsObserver>(web_contents_));

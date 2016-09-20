@@ -554,8 +554,8 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
   // ChromeContentBrowserClient:
   bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
                           const GURL& url) override {
-    PrerenderManagerFactory::GetForProfile(
-        Profile::FromBrowserContext(site_instance->GetBrowserContext()))
+    PrerenderManagerFactory::GetForBrowserContext(
+        site_instance->GetBrowserContext())
         ->CancelAllPrerenders();
     return ChromeContentBrowserClient::ShouldAllowOpenURL(site_instance,
                                                                   url);

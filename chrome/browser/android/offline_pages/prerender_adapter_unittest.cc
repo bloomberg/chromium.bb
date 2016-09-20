@@ -181,7 +181,7 @@ void PrerenderAdapterTest::SetUp() {
     return;
   adapter_.reset(new PrerenderAdapter(this));
   prerender_contents_factory_ = new StubPrerenderContentsFactory();
-  prerender_manager_ = PrerenderManagerFactory::GetForProfile(profile());
+  prerender_manager_ = PrerenderManagerFactory::GetForBrowserContext(profile());
   if (prerender_manager_) {
     prerender_manager_->SetPrerenderContentsFactoryForTest(
         prerender_contents_factory_);

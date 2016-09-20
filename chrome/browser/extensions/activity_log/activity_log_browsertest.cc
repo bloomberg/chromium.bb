@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
 
   // Disable rate limiting in PrerenderManager
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile());
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
   ASSERT_TRUE(prerender_manager);
   prerender_manager->mutable_config().rate_limit_enabled = false;
   // Increase prerenderer limits, otherwise this test fails

@@ -156,7 +156,7 @@ void AutocompleteActionPredictor::StartPrerendering(
   std::unique_ptr<prerender::PrerenderHandle> old_prerender_handle =
       std::move(prerender_handle_);
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile_);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
   if (prerender_manager) {
     prerender_handle_ = prerender_manager->AddPrerenderFromOmnibox(
         url, session_storage_namespace, size);

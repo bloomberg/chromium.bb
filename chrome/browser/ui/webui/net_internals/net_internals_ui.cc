@@ -534,7 +534,7 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(
   std::unique_ptr<base::DictionaryValue> value;
 
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
   if (prerender_manager) {
     value = prerender_manager->GetAsValue();

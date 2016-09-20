@@ -774,7 +774,7 @@ void ActivityLog::OnScriptsExecuted(
           web_contents->GetBrowserContext()->IsOffTheRecord());
 
       const prerender::PrerenderManager* prerender_manager =
-          prerender::PrerenderManagerFactory::GetForProfile(profile_);
+          prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
       if (prerender_manager &&
           prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);

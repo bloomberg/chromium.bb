@@ -560,7 +560,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   // Note in incognito mode, we don't have a PrerenderManager.
 
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(GetProfile());
+      prerender::PrerenderManagerFactory::GetForBrowserContext(GetProfile());
   if (prerender_manager) {
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
@@ -715,7 +715,7 @@ prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
   Profile* profile = GetProfile();
   if (!profile)
     return NULL;
-  return prerender::PrerenderManagerFactory::GetForProfile(profile);
+  return prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
 }
 
 // static

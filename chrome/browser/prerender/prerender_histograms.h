@@ -121,6 +121,25 @@ class PrerenderHistograms {
                                    bool is_main_resource,
                                    int redirect_count) const;
 
+  // Records the time to first contentful paint.
+  // Must not be called for prefetch loads (which are never rendered anyway).
+  // |is_no_store| must be true if the main resource has a "no-store" cache
+  // control HTTP header.
+  // |prefetch_age| must be zero if the page was not prefetched.
+  void RecordFirstContentfulPaint(Origin origin,
+                                  bool is_no_store,
+                                  base::TimeDelta time,
+                                  base::TimeDelta prefetch_age);
+
+  // Returns the name of the histogram used to record the time to first
+  // contentful paint.
+  // Exposed for testing.
+  static std::string GetFirstContentfulPaintHistogramName(
+      Origin origin,
+      bool is_wash,
+      bool is_no_store,
+      base::TimeDelta prefetch_age);
+
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
 

@@ -169,8 +169,8 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
             bool call_did_finish_load) {
     AddTab(browser(), GURL(url::kAboutBlankURL));
 
-    PrerenderManagerFactory::GetForProfile(browser()->profile())->
-        SetPrerenderContentsFactoryForTest(
+    PrerenderManagerFactory::GetForBrowserContext(browser()->profile())
+        ->SetPrerenderContentsFactoryForTest(
             new DummyPrerenderContentsFactory(call_did_finish_load));
     if (prerender_search_results_base_page) {
       content::SessionStorageNamespace* session_storage_namespace =

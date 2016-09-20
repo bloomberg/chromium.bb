@@ -250,6 +250,9 @@ class PageLoadTracker {
   // (before redirects), and the committed url after commit.
   GURL url_;
 
+  // The start URL for this page load (before redirects).
+  GURL start_url_;
+
   std::unique_ptr<FailedProvisionalLoadInfo> failed_provisional_load_info_;
 
   // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will

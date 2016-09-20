@@ -35,7 +35,7 @@ PrerenderLinkManagerFactory::PrerenderLinkManagerFactory()
 KeyedService* PrerenderLinkManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   PrerenderManager* prerender_manager =
-      PrerenderManagerFactory::GetForProfile(static_cast<Profile*>(profile));
+      PrerenderManagerFactory::GetForBrowserContext(profile);
   if (!prerender_manager)
     return NULL;
   PrerenderLinkManager* prerender_link_manager =

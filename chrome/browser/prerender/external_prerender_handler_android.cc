@@ -40,7 +40,7 @@ bool CheckAndConvertParams(JNIEnv* env,
     return false;
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  *prerender_manager = PrerenderManagerFactory::GetForProfile(profile);
+  *prerender_manager = PrerenderManagerFactory::GetForBrowserContext(profile);
   if (!*prerender_manager)
     return false;
 
@@ -78,7 +78,7 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
   }
 
   PrerenderManager* prerender_manager =
-      PrerenderManagerFactory::GetForProfile(profile);
+      PrerenderManagerFactory::GetForBrowserContext(profile);
   if (!prerender_manager)
     return false;
 

@@ -290,6 +290,7 @@ PageLoadTracker::PageLoadTracker(
       app_entered_background_(false),
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
+      start_url_(url_),
       abort_type_(ABORT_NONE),
       abort_user_initiated_(false),
       started_in_foreground_(in_foreground),
@@ -496,6 +497,7 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       metadata_.behavior_flags;
   if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
       valid_behavior_descendent) {
+    DCHECK(!commit_time_.is_null());  // OnCommit() must be called first.
     // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
     // must be called before DispatchObserverTimingCallbacks, but its
     // implementation depends on the state of metadata_, so we need to update
@@ -594,9 +596,9 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
   DCHECK(abort_type_ != ABORT_NONE || !abort_user_initiated_);
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
-      user_gesture_, commit_time_.is_null() ? GURL() : url_, time_to_commit,
-      abort_type_, abort_user_initiated_, time_to_abort, num_cache_requests_,
-      num_network_requests_, metadata_);
+      user_gesture_, commit_time_.is_null() ? GURL() : url_, start_url_,
+      time_to_commit, abort_type_, abort_user_initiated_, time_to_abort,
+      num_cache_requests_, num_network_requests_, metadata_);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,

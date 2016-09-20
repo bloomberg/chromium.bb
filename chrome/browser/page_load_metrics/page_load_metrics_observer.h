@@ -67,6 +67,7 @@ struct PageLoadExtraInfo {
       bool started_in_foreground,
       bool user_gesture,
       const GURL& committed_url,
+      const GURL& start_url,
       const base::Optional<base::TimeDelta>& time_to_commit,
       UserAbortType abort_type,
       bool abort_user_initiated,
@@ -95,6 +96,9 @@ struct PageLoadExtraInfo {
   // Committed URL. If the page load did not commit, |committed_url| will be
   // empty.
   const GURL committed_url;
+
+  // The URL that started the navigation, before redirects.
+  const GURL start_url;
 
   // Time from navigation start until commit.
   const base::Optional<base::TimeDelta> time_to_commit;

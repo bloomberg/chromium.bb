@@ -215,6 +215,14 @@ class PrerenderManager : public content::NotificationObserver,
                                    bool is_main_resource,
                                    int redirect_count);
 
+  // Records the time to first contentful paint.
+  // Must not be called for prefetch loads (which are never rendered anyway).
+  // |is_no_store| must be true if the main resource has a "no-store" cache
+  // control HTTP header.
+  void RecordFirstContentfulPaint(const GURL& url,
+                                  bool is_no_store,
+                                  base::TimeDelta time);
+
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
@@ -500,7 +508,8 @@ class PrerenderManager : public content::NotificationObserver,
   void DeleteOldWebContents();
 
   // Cleans up old NavigationRecord's.
-  void CleanUpOldNavigations();
+  void CleanUpOldNavigations(std::vector<NavigationRecord>* navigations,
+                             base::TimeDelta max_age);
 
   // Arrange for the given WebContents to be deleted asap. Delete |deleter| as
   // well.
@@ -549,6 +558,9 @@ class PrerenderManager : public content::NotificationObserver,
   // List of recent navigations in this profile, sorted by ascending
   // |navigate_time_|.
   std::vector<NavigationRecord> navigations_;
+
+  // List of recent prefetches, sorted by ascending navigate time.
+  std::vector<NavigationRecord> prefetches_;
 
   std::unique_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 

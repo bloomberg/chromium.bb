@@ -1243,10 +1243,9 @@ bool ChromeContentBrowserClient::MayReuseHost(
   // If there is currently a prerender in progress for the host provided,
   // it may not be shared. We require prerenders to be by themselves in a
   // separate process so that we can monitor their resource usage.
-  Profile* profile = Profile::FromBrowserContext(
-      process_host->GetBrowserContext());
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          process_host->GetBrowserContext());
   if (prerender_manager &&
       !prerender_manager->MayReuseProcessHost(process_host)) {
     return false;
@@ -3143,10 +3142,9 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile);
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
   if (prerender_manager &&
       prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
     *visibility_state = blink::WebPageVisibilityStatePrerender;
