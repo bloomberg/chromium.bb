@@ -45,6 +45,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Int32Array.h"
 #include "bindings/core/v8/V8Iterator.h"
+#include "bindings/core/v8/V8LongExperimentalCallbackFunction.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeFilter.h"
@@ -59,6 +60,7 @@
 #include "bindings/core/v8/V8TestNode.h"
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
+#include "bindings/core/v8/V8VoidExperimentalCallbackFunction.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8XPathNSResolver.h"
 #include "core/HTMLNames.h"
@@ -5657,6 +5659,56 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
 static void voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::voidMethodAnyCallbackFunctionOptionalAnyArgMethod(info);
+}
+
+static void voidMethodVoidExperimentalCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
+        return;
+    }
+
+    V8VoidExperimentalCallbackFunction* voidExperimentalCallbackFunctionArg;
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
+    }
+    voidExperimentalCallbackFunctionArg = V8VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+
+    impl->voidMethodVoidExperimentalCallbackFunctionArg(voidExperimentalCallbackFunctionArg);
+}
+
+static void voidMethodVoidExperimentalCallbackFunctionArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectV8Internal::voidMethodVoidExperimentalCallbackFunctionArgMethod(info);
+}
+
+static void voidMethodLongExperimentalCallbackFunctionArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodLongExperimentalCallbackFunctionArg", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
+        return;
+    }
+
+    V8LongExperimentalCallbackFunction* longExperimentalCallbackFunctionArg;
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodLongExperimentalCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+
+        return;
+    }
+    longExperimentalCallbackFunctionArg = V8LongExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+
+    impl->voidMethodLongExperimentalCallbackFunctionArg(longExperimentalCallbackFunctionArg);
+}
+
+static void voidMethodLongExperimentalCallbackFunctionArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectV8Internal::voidMethodLongExperimentalCallbackFunctionArgMethod(info);
 }
 
 static void anyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11876,6 +11928,8 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodOptionalVoidCallbackFunctionArg", TestObjectV8Internal::voidMethodOptionalVoidCallbackFunctionArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodNullableVoidCallbackFunctionArg", TestObjectV8Internal::voidMethodNullableVoidCallbackFunctionArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodAnyCallbackFunctionOptionalAnyArg", TestObjectV8Internal::voidMethodAnyCallbackFunctionOptionalAnyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodVoidExperimentalCallbackFunctionArg", TestObjectV8Internal::voidMethodVoidExperimentalCallbackFunctionArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodLongExperimentalCallbackFunctionArg", TestObjectV8Internal::voidMethodLongExperimentalCallbackFunctionArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"anyMethod", TestObjectV8Internal::anyMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodEventTargetArg", TestObjectV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodAnyArg", TestObjectV8Internal::voidMethodAnyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},

@@ -38,7 +38,7 @@ import os
 import cPickle as pickle
 import sys
 
-from code_generator_v8 import CodeGeneratorDictionaryImpl, CodeGeneratorV8, CodeGeneratorUnionType
+from code_generator_v8 import CodeGeneratorDictionaryImpl, CodeGeneratorV8, CodeGeneratorUnionType, CodeGeneratorCallbackFunction  # pylint: disable=W0403
 from idl_reader import IdlReader
 from utilities import create_component_info_provider, read_idl_files_list_from_file, write_file, idl_filename_to_component
 
@@ -187,6 +187,19 @@ def generate_union_type_containers(options):
         write_file(output_code, output_path, options.write_file_only_if_changed)
 
 
+def generate_callback_function_impl(options):
+    info_provider = create_component_info_provider(
+        options.info_dir, options.target_component)
+    generator = CodeGeneratorCallbackFunction(
+        info_provider,
+        options.cache_directory,
+        options.output_directory,
+        options.target_component)
+    output_code_list = generator.generate_code()
+    for output_path, output_code in output_code_list:
+        write_file(output_code, output_path, options.write_file_only_if_changed)
+
+
 def main():
     options, input_filename = parse_options()
     if options.generate_impl:
@@ -194,6 +207,7 @@ def main():
         # dictionary paths.
         generate_dictionary_impl(options, input_filename)
         generate_union_type_containers(options)
+        generate_callback_function_impl(options)
     else:
         # |input_filename| should be a path of an IDL file.
         generate_bindings(options, input_filename)

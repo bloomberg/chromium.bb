@@ -40,7 +40,7 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
 bindings_script_path = os.path.join(source_path, 'bindings', 'scripts')
 sys.path.append(bindings_script_path)  # for Source/bindings imports
 
-from code_generator_v8 import CodeGeneratorUnionType
+from code_generator_v8 import CodeGeneratorUnionType, CodeGeneratorCallbackFunction
 from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
@@ -276,6 +276,14 @@ def bindings_tests(output_directory, verbose):
         for output_path, output_code in outputs:
             write_file(output_code, output_path, only_if_changed=True)
 
+    def generate_callback_function_impl(output_directory, component):
+        generator = CodeGeneratorCallbackFunction(
+            component_info_providers[component], cache_dir=None,
+            output_dir=output_directory, target_component=component)
+        outputs = generator.generate_code()
+        for output_path, output_code in outputs:
+            write_file(output_code, output_path, only_if_changed=True)
+
     try:
         generate_interface_dependencies()
         for component in COMPONENT_DIRECTORY:
@@ -284,6 +292,7 @@ def bindings_tests(output_directory, verbose):
                 os.makedirs(output_dir)
 
             generate_union_type_containers(output_dir, component)
+            generate_callback_function_impl(output_dir, component)
 
             idl_compiler = IdlCompilerV8(
                 output_dir,

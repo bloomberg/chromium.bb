@@ -219,7 +219,12 @@ class InterfaceInfoCollector(object):
         self.typedefs.update(definitions.typedefs)
         for callback_function_name, callback_function in definitions.callback_functions.iteritems():
             if 'ExperimentalCallbackFunction' in callback_function.extended_attributes:
-                self.callback_functions[callback_function_name] = callback_function
+                # Set 'component_dir' to specify a directory that callback function files belong to
+                self.callback_functions[callback_function_name] = {
+                    'callback_function': callback_function,
+                    'component_dir': idl_filename_to_component(idl_filename),
+                    'full_path': os.path.realpath(idl_filename),
+                }
         # Check enum duplication.
         for enum_name in definitions.enumerations.keys():
             for defined_enum in self.enumerations:

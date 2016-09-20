@@ -117,6 +117,7 @@
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGImageElement.h"
+#include "core/testing/CallbackFunctionTest.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
 #include "core/testing/InternalRuntimeFlags.h"
@@ -2016,6 +2017,11 @@ UnionTypesTest* Internals::unionTypesTest() const
 OriginTrialsTest* Internals::originTrialsTest() const
 {
     return OriginTrialsTest::create();
+}
+
+CallbackFunctionTest* Internals::callbackFunctionTest() const
+{
+    return CallbackFunctionTest::create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

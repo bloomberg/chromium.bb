@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    var callbackFunctionTest = internals.callbackFunctionTest();
+    var callback1 = function(msg1, msg2) {
+        return msg1 + ', ' + msg2;
+    };
+    assert_equals(callbackFunctionTest.testCallback(callback1, 'hello', 'world'), 'SUCCESS: hello, world');
+
+    var callback2 = function(msg1, msg2) {
+        return msg1 + msg1 + ' ' + msg2 + msg2;
+    };
+    assert_equals(callbackFunctionTest.testCallback(callback2, 'hello', 'world'), 'SUCCESS: hellohello worldworld');
+}, 'Callback function which takes two strings');
+</script>

@@ -91,6 +91,10 @@ class ComponentInfoProvider(object):
     def include_path_for_union_types(self, union_type):
         return None
 
+    @property
+    def callback_functions(self):
+        return {}
+
 
 class ComponentInfoProviderCore(ComponentInfoProvider):
     def __init__(self, interfaces_info, component_info):
@@ -121,6 +125,10 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     def include_path_for_union_types(self, union_type):
         name = shorten_union_name(union_type)
         return 'bindings/core/v8/%s.h' % name
+
+    @property
+    def callback_functions(self):
+        return self._component_info['callback_functions']
 
     @property
     def specifier_for_export(self):
@@ -172,6 +180,11 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
         if union_type.name in core_union_type_names:
             return 'bindings/core/v8/%s.h' % name
         return 'bindings/modules/v8/%s.h' % name
+
+    @property
+    def callback_functions(self):
+        # TODO(lkawai): Make callback functions defined in core/ be usable in modules/.
+        return self._component_info_modules['callback_functions']
 
     @property
     def specifier_for_export(self):

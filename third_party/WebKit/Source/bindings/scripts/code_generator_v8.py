@@ -51,6 +51,7 @@ import posixpath
 from code_generator import CodeGeneratorBase, normalize_and_sort_includes
 from idl_definitions import Visitor
 from idl_types import IdlType
+import v8_callback_function
 import v8_callback_interface
 import v8_dictionary
 from v8_globals import includes, interfaces
@@ -59,6 +60,7 @@ import v8_types
 import v8_union
 from v8_utilities import cpp_name
 from utilities import idl_filename_to_component, is_testing_target, shorten_union_name
+
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
@@ -335,4 +337,43 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         outputs = set()
         for union_type in union_types:
             outputs.update(self._generate_container_code(union_type))
+        return outputs
+
+
+class CodeGeneratorCallbackFunction(CodeGeneratorBase):
+    def __init__(self, info_provider, cache_dir, output_dir, target_component):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+        self.target_component = target_component
+
+    def generate_code_internal(self, callback_function, path):
+        header_template = self.jinja_env.get_template('callback_function.h')
+        cpp_template = self.jinja_env.get_template('callback_function.cpp')
+        template_context = v8_callback_function.callback_function_context(
+            callback_function)
+        if not is_testing_target(path):
+            template_context['exported'] = self.info_provider.specifier_for_export
+            template_context['header_includes'].append(
+                self.info_provider.include_path_for_export)
+        template_context['header_includes'] = normalize_and_sort_includes(
+            template_context['header_includes'])
+        template_context['code_generator'] = MODULE_PYNAME
+        header_text = header_template.render(template_context)
+        cpp_text = cpp_template.render(template_context)
+        header_path = posixpath.join(self.output_dir, 'V8%s.h' % callback_function.name)
+        cpp_path = posixpath.join(self.output_dir, 'V8%s.cpp' % callback_function.name)
+        return (
+            (header_path, header_text),
+            (cpp_path, cpp_text),
+        )
+
+    # pylint: disable=W0221
+    def generate_code(self):
+        callback_functions = self.info_provider.callback_functions
+        if not callback_functions:
+            return ()
+        outputs = set()
+        for callback_function_dict in callback_functions.itervalues():
+            callback_function = callback_function_dict['callback_function']
+            path = callback_function_dict['full_path']
+            outputs.update(self.generate_code_internal(callback_function, path))
         return outputs

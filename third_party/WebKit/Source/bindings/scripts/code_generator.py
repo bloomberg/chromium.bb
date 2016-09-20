@@ -124,6 +124,7 @@ class CodeGeneratorBase(object):
         IdlType.set_callback_interfaces(interfaces_info['callback_interfaces'])
         IdlType.set_dictionaries(interfaces_info['dictionaries'])
         IdlType.set_enums(self.info_provider.enumerations)
+        IdlType.set_experimental_callback_functions(self.info_provider.callback_functions)
         IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
         IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
         set_component_dirs(interfaces_info['component_dirs'])

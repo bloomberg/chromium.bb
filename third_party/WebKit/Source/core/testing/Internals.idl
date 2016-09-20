@@ -313,6 +313,7 @@
 
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
+    CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, Element[] elements);
     void forceBlinkGCWithoutV8GC();
 

@@ -1,0 +1,61 @@
+{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
+
+#include "{{v8_class}}.h"
+
+{% for filename in cpp_includes %}
+#include "{{filename}}"
+{% endfor %}
+
+namespace blink {
+
+{{v8_class}}::{{v8_class}}(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    : m_callback(isolate, callback)
+{
+    DCHECK(!m_callback.isEmpty());
+    m_callback.setPhantom();
+}
+
+DEFINE_TRACE({{v8_class}})
+{
+}
+
+bool {{v8_class}}::call({{argument_declarations | join(', ')}})
+{
+    if (!scriptState->contextIsValid())
+        return false;
+
+    if (m_callback.isEmpty())
+        return false;
+    ScriptState::Scope scope(scriptState);
+
+    {% for argument in arguments %}
+    v8::Local<v8::Value> {{argument.argument_name}} = {{argument.cpp_value_to_v8_value}};
+    {% endfor %}
+    {% if arguments %}
+    v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'argument_name')}} };
+    {% else %}
+    {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
+    v8::Local<v8::Value> *argv = nullptr;
+    {% endif %}
+
+    v8::Local<v8::Value> v8ReturnValue;
+    v8::TryCatch exceptionCatcher(scriptState->isolate());
+    exceptionCatcher.SetVerbose(true);
+
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), scriptState->context()->Global(), {{arguments | length}}, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    {
+        {% if return_value %}
+        {{v8_value_to_local_cpp_value(return_value) | indent(8)}}
+        returnValue = cppValue;
+        {% endif %}
+        return true;
+    }
+    return false;
+}
+
+} // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class CallbackFunctionTest;
 class CanvasRenderingContext;
 class ClientRect;
 class ClientRectList;
@@ -287,6 +288,7 @@ public:
     DictionaryTest* dictionaryTest() const;
     UnionTypesTest* unionTypesTest() const;
     OriginTrialsTest* originTrialsTest() const;
+    CallbackFunctionTest* callbackFunctionTest() const;
 
     Vector<String> getReferencedFilePaths() const;
 
