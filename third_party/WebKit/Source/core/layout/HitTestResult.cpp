@@ -358,13 +358,13 @@ bool HitTestResult::isLiveLink() const
     return m_innerURLElement && m_innerURLElement->isLiveLink();
 }
 
-// TODO(yosin) We should move |HitTestResult::isMisspelled()| to
+// TODO(xiaochengh): We should move |HitTestResult::isMisspelled()| to
 // "SelectionController.cpp" as static function.
 bool HitTestResult::isMisspelled() const
 {
     if (!innerNode() || !innerNode()->layoutObject())
         return false;
-    VisiblePosition pos = createVisiblePositionDeprecated(innerNode()->layoutObject()->positionForPoint(localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode()->layoutObject()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
     return m_innerNode->document().markers().markersInRange(
