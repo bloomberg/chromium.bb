@@ -66,8 +66,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch=True, update_presentation=True,
                       patch_root=None, no_shallow=False,
                       with_branch_heads=False, refs=None,
-                      patch_oauth2=False, oauth2_json=False,
-                      use_site_config_creds=True,
+                      patch_oauth2=False, use_site_config_creds=True,
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
@@ -91,9 +90,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     cfg = gclient_config or self.m.gclient.c
     assert cfg is not None, (
         'missing gclient_config or forgot api.gclient.set_config(...) before?')
-
-    # Only one of these should exist.
-    assert not (oauth2_json and patch_oauth2)
 
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
@@ -127,13 +123,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # Point to the oauth2 auth files if specified.
     # These paths are where the bots put their credential files.
-    oauth2_json_file = email_file = key_file = None
-    if oauth2_json:
-      if self.m.platform.is_win:
-        oauth2_json_file = 'C:\\creds\\refresh_tokens\\rietveld.json'
-      else:
-        oauth2_json_file = '/creds/refresh_tokens/rietveld.json'
-    elif patch_oauth2:
+    if patch_oauth2:
       # TODO(martiniss): remove this hack :(. crbug.com/624212
       if use_site_config_creds:
         email_file = self.m.path['build'].join(
@@ -144,6 +134,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         #TODO(martiniss): make this use path.join, so it works on windows
         email_file = '/creds/rietveld/client_email'
         key_file = '/creds/rietveld/secret_key'
+    else:
+      email_file = key_file = None
 
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
@@ -168,7 +160,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--gerrit_ref', gerrit_ref],
         ['--apply_issue_email_file', email_file],
         ['--apply_issue_key_file', key_file],
-        ['--apply_issue_oauth2_file', oauth2_json_file],
 
         # Hookups to JSON output back into recipes.
         ['--output_json', self.m.json.output()],]
