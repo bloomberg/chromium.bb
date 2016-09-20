@@ -100,16 +100,20 @@ int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
   return num_children_that_draw_content + (layer->DrawsContent() ? 1 : 0);
 }
 
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree() {
-  UpdateNumChildrenAndDrawProperties(active_tree());
+void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree(
+    bool force_skip_verify_visible_rect_calculations) {
+  UpdateNumChildrenAndDrawProperties(
+      active_tree(), force_skip_verify_visible_rect_calculations);
 }
 
 void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
-    LayerTreeImpl* layerTree) {
+    LayerTreeImpl* layerTree,
+    bool force_skip_verify_visible_rect_calculations) {
   RecursiveUpdateNumChildren(layerTree->root_layer_for_testing());
   bool update_lcd_text = false;
   layerTree->BuildLayerListAndPropertyTreesForTesting();
-  layerTree->UpdateDrawProperties(update_lcd_text);
+  layerTree->UpdateDrawProperties(update_lcd_text,
+                                  force_skip_verify_visible_rect_calculations);
 }
 
 }  // namespace cc

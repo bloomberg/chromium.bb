@@ -28,6 +28,7 @@ namespace {
 
 void ExecuteCalculateDrawProperties(LayerImpl* root,
                                     float device_scale_factor,
+                                    bool skip_verify_visible_rect_calculations,
                                     LayerImplList* render_surface_layer_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
@@ -37,6 +38,8 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), device_scale_factor, render_surface_layer_list);
+  if (skip_verify_visible_rect_calculations)
+    inputs.verify_visible_rect_calculations = false;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(root->render_surface());
 }
@@ -48,7 +51,10 @@ void ClearDamageForAllSurfaces(LayerImpl* root) {
   }
 }
 
-void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
+void EmulateDrawingOneFrame(
+    LayerImpl* root,
+    float device_scale_factor = 1.f,
+    bool skip_verify_visible_rect_calculations = false) {
   // This emulates only steps that are relevant to testing the damage tracker:
   //   1. computing the render passes and layerlists
   //   2. updating all damage trackers in the correct order
@@ -57,6 +63,7 @@ void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
 
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
 
   // Iterate back-to-front, so that damage correctly propagates from descendant
@@ -1670,7 +1677,13 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
     child->SetBounds(gfx::Size(kBigNumber + i, kBigNumber + i));
     child->test_properties()->transform = transform;
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-    EmulateDrawingOneFrame(root);
+    float device_scale_factor = 1.f;
+    // Visible rects computed from combining clips in target space and root
+    // space don't match because of the loss in floating point accuracy. So, we
+    // skip verify_clip_tree_calculations.
+    bool skip_verify_visible_rect_calculations = true;
+    EmulateDrawingOneFrame(root, device_scale_factor,
+                           skip_verify_visible_rect_calculations);
 
     // The expected damage should cover the visible part of the child layer,
     // which is (0, 0, i, i) in the viewport.

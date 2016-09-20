@@ -303,6 +303,26 @@ static ConditionalClip ComputeAccumulatedClip(
       is_clipped, accumulated_clip.IsEmpty() ? gfx::RectF() : accumulated_clip};
 }
 
+static gfx::RectF ComputeAccumulatedClipInRootSpaceForVisibleRect(
+    const PropertyTrees* property_trees,
+    int local_clip_id) {
+  const int root_effect_id = EffectTree::kContentsRootNodeId;
+  ConditionalClip accumulated_clip =
+      ComputeAccumulatedClip(property_trees, local_clip_id, root_effect_id);
+
+  gfx::RectF accumulated_clip_rect = accumulated_clip.clip_rect;
+  const ClipNode* root_effect_node =
+      property_trees->clip_tree.Node(root_effect_id);
+  if (accumulated_clip.is_clipped) {
+    accumulated_clip_rect.Intersect(root_effect_node->clip_in_target_space);
+  } else {
+    // In this case, we need only the viewport clip as the accumulated clip is
+    // unclipped.
+    accumulated_clip_rect = root_effect_node->clip_in_target_space;
+  }
+  return accumulated_clip_rect;
+}
+
 template <typename LayerType>
 void CalculateClipRects(
     const typename LayerType::LayerListType& visible_layer_list,
@@ -360,7 +380,8 @@ void CalculateClipRects(
 
 void CalculateVisibleRects(const LayerImplList& visible_layer_list,
                            const PropertyTrees* property_trees,
-                           bool non_root_surfaces_enabled) {
+                           bool non_root_surfaces_enabled,
+                           bool verify_visible_rect_calculations) {
   const EffectTree& effect_tree = property_trees->effect_tree;
   const TransformTree& transform_tree = property_trees->transform_tree;
   const ClipTree& clip_tree = property_trees->clip_tree;
@@ -539,6 +560,17 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         target_to_content, combined_clip_rect_in_target_space));
     visible_rect.Intersect(gfx::Rect(layer_bounds));
     layer->set_visible_layer_rect(visible_rect);
+
+    if (verify_visible_rect_calculations) {
+      gfx::Rect visible_rect_dynamic =
+          ComputeLayerVisibleRectDynamic(property_trees, layer);
+      DCHECK(layer->visible_layer_rect() == visible_rect_dynamic)
+          << " layer: " << layer->id()
+          << " clip id: " << layer->clip_tree_index()
+          << " visible rect cached: " << layer->visible_layer_rect().ToString()
+          << " v.s. "
+          << " visible rect dynamic: " << visible_rect_dynamic.ToString();
+    }
   }
 }
 
@@ -1085,6 +1117,7 @@ static void ComputeVisibleRectsInternal(
     LayerImpl* root_layer,
     PropertyTrees* property_trees,
     bool can_render_to_separate_surface,
+    bool verify_visible_rect_calculations,
     std::vector<LayerImpl*>* visible_layer_list) {
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
@@ -1109,7 +1142,8 @@ static void ComputeVisibleRectsInternal(
   CalculateClipRects<LayerImpl>(*visible_layer_list, property_trees,
                                 can_render_to_separate_surface);
   CalculateVisibleRects(*visible_layer_list, property_trees,
-                        can_render_to_separate_surface);
+                        can_render_to_separate_surface,
+                        verify_visible_rect_calculations);
 }
 
 void UpdatePropertyTrees(PropertyTrees* property_trees,
@@ -1142,6 +1176,7 @@ void BuildPropertyTreesAndComputeVisibleRects(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     bool can_render_to_separate_surface,
+    bool verify_visible_rect_calculations,
     PropertyTrees* property_trees,
     LayerImplList* visible_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
@@ -1150,7 +1185,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees);
   ComputeVisibleRects(root_layer, property_trees,
-                      can_render_to_separate_surface, visible_layer_list);
+                      can_render_to_separate_surface,
+                      verify_visible_rect_calculations, visible_layer_list);
 }
 
 void VerifyClipTreeCalculations(const LayerImplList& layer_list,
@@ -1171,6 +1207,7 @@ void VerifyTransformTreeCalculations(const LayerImplList& layer_list,
 void ComputeVisibleRects(LayerImpl* root_layer,
                          PropertyTrees* property_trees,
                          bool can_render_to_separate_surface,
+                         bool verify_visible_rect_calculations,
                          LayerImplList* visible_layer_list) {
   for (auto* layer : *root_layer->layer_tree_impl()) {
     UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
@@ -1184,9 +1221,31 @@ void ComputeVisibleRects(LayerImpl* root_layer,
       ValidateRenderSurfaceForLayer(layer);
 #endif
   }
-  ComputeVisibleRectsInternal(root_layer, property_trees,
-                              can_render_to_separate_surface,
-                              visible_layer_list);
+  ComputeVisibleRectsInternal(
+      root_layer, property_trees, can_render_to_separate_surface,
+      verify_visible_rect_calculations, visible_layer_list);
+}
+
+gfx::Rect ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,
+                                         const LayerImpl* layer) {
+  gfx::RectF accumulated_clip_in_root_space =
+      ComputeAccumulatedClipInRootSpaceForVisibleRect(property_trees,
+                                                      layer->clip_tree_index());
+
+  const EffectNode* root_effect_node =
+      property_trees->effect_tree.Node(EffectTree::kContentsRootNodeId);
+  ConditionalClip accumulated_clip_in_layer_space =
+      ComputeTargetRectInLocalSpace(
+          accumulated_clip_in_root_space, property_trees,
+          root_effect_node->transform_id, layer->transform_tree_index(),
+          root_effect_node->id);
+  gfx::RectF clip_in_layer_space = accumulated_clip_in_layer_space.clip_rect;
+  clip_in_layer_space.Offset(-layer->offset_to_transform_parent());
+
+  gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
+  gfx::Rect visible_rect = gfx::ToEnclosingRect(clip_in_layer_space);
+  visible_rect.Intersect(layer_content_rect);
+  return visible_rect;
 }
 
 bool LayerNeedsUpdate(Layer* layer,

@@ -83,6 +83,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
     bool verify_clip_tree_calculations,
+    bool verify_visible_rect_calculations,
     bool verify_transform_tree_calculations,
     LayerImplList* render_surface_layer_list,
     PropertyTrees* property_trees)
@@ -101,6 +102,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
       verify_clip_tree_calculations(verify_clip_tree_calculations),
+      verify_visible_rect_calculations(verify_visible_rect_calculations),
       verify_transform_tree_calculations(verify_transform_tree_calculations),
       render_surface_layer_list(render_surface_layer_list),
       property_trees(property_trees) {}
@@ -124,6 +126,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               std::numeric_limits<int>::max() / 2,
                               true,
                               false,
+                              true,
                               true,
                               true,
                               render_surface_layer_list,
@@ -555,7 +558,8 @@ void CalculateDrawPropertiesInternal(
           inputs->elastic_overscroll, inputs->page_scale_factor,
           inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
           inputs->device_transform, inputs->can_render_to_separate_surface,
-          inputs->property_trees, &visible_layer_list);
+          inputs->verify_visible_rect_calculations, inputs->property_trees,
+          &visible_layer_list);
 
       // Property trees are normally constructed on the main thread and
       // passed to compositor thread. Source to parent updates on them are not
@@ -597,7 +601,8 @@ void CalculateDrawPropertiesInternal(
           inputs->device_transform);
       draw_property_utils::ComputeVisibleRects(
           inputs->root_layer, inputs->property_trees,
-          inputs->can_render_to_separate_surface, &visible_layer_list);
+          inputs->can_render_to_separate_surface,
+          inputs->verify_visible_rect_calculations, &visible_layer_list);
       break;
     }
   }

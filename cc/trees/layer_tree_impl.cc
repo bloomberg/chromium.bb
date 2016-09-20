@@ -929,7 +929,9 @@ void LayerTreeImpl::SetElementIdsForTesting() {
   }
 }
 
-bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
+bool LayerTreeImpl::UpdateDrawProperties(
+    bool update_lcd_text,
+    bool force_skip_verify_visible_rect_calculations) {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -957,6 +959,13 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     bool can_render_to_separate_surface =
         (!is_in_resourceless_software_draw_mode());
 
+    // We verify visible rect calculations whenever we verify clip tree
+    // calculations except when this function is explicitly passed a flag asking
+    // us to skip it.
+    bool verify_visible_rect_calculations =
+        force_skip_verify_visible_rect_calculations
+            ? false
+            : settings().verify_clip_tree_calculations;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         layer_list_[0], DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
@@ -967,6 +976,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         settings().verify_clip_tree_calculations,
+        verify_visible_rect_calculations,
         settings().verify_transform_tree_calculations,
         &render_surface_layer_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);

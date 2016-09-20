@@ -121,10 +121,12 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
-  void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
-                                      float device_scale_factor,
-                                      float page_scale_factor,
-                                      LayerImpl* page_scale_layer) {
+  void ExecuteCalculateDrawProperties(
+      LayerImpl* root_layer,
+      float device_scale_factor,
+      float page_scale_factor,
+      LayerImpl* page_scale_layer,
+      bool skip_verify_visible_rect_calculations = false) {
     if (device_scale_factor !=
         root_layer->layer_tree_impl()->device_scale_factor())
       root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -149,6 +151,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_layer = page_scale_layer;
     inputs.can_adjust_raster_scales = true;
+    if (skip_verify_visible_rect_calculations)
+      inputs.verify_visible_rect_calculations = false;
 
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -229,12 +233,13 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                   root_layer->bounds().height() * device_scale_factor);
     update_layer_list_impl_.reset(new LayerImplList);
     root_layer->layer_tree_impl()->BuildLayerListForTesting();
+    bool verify_visible_rect_calculations = true;
     draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
         outer_viewport_scroll_layer, overscroll_elasticity_layer,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(),
-        can_render_to_separate_surface,
+        can_render_to_separate_surface, verify_visible_rect_calculations,
         root_layer->layer_tree_impl()->property_trees(),
         update_layer_list_impl_.get());
   }
@@ -8799,7 +8804,16 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   test_layer->SetBounds(gfx::Size(30, 30));
   test_layer->SetDrawsContent(true);
 
-  ExecuteCalculateDrawProperties(root);
+  float device_scale_factor = 1.f;
+  float page_scale_factor = 1.f;
+  LayerImpl* page_scale_layer = nullptr;
+  // Visible rects computed by combining clips in target space and root space
+  // don't match because of rotation transforms. So, we skip
+  // verify_visible_rect_calculations.
+  bool skip_verify_visible_rect_calculations = true;
+  ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
+                                 page_scale_layer,
+                                 skip_verify_visible_rect_calculations);
 
   TransformTree& transform_tree =
       root->layer_tree_impl()->property_trees()->transform_tree;
@@ -8817,6 +8831,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
   EXPECT_FALSE(clip_node->applies_local_clip);
   EXPECT_EQ(gfx::Rect(20, 20), test_layer->visible_layer_rect());
+
+  // Also test the visible rects computed by combining clips in root space.
+  gfx::Rect visible_rect = draw_property_utils::ComputeLayerVisibleRectDynamic(
+      root->layer_tree_impl()->property_trees(), test_layer);
+  EXPECT_EQ(gfx::Rect(30, 20), visible_rect);
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {

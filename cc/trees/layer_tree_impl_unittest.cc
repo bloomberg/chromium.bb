@@ -40,7 +40,9 @@ class LayerTreeImplTest : public testing::Test {
     return host_impl().active_tree()->RenderSurfaceLayerList();
   }
 
-  void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
+  void ExecuteCalculateDrawProperties(
+      LayerImpl* root_layer,
+      bool skip_verify_visible_rect_calculations = false) {
     // We are probably not testing what is intended if the root_layer bounds are
     // empty.
     DCHECK(!root_layer->bounds().IsEmpty());
@@ -49,6 +51,8 @@ class LayerTreeImplTest : public testing::Test {
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root_layer, root_layer->bounds(), &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;
+    if (skip_verify_visible_rect_calculations)
+      inputs.verify_visible_rect_calculations = false;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
@@ -620,6 +624,10 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
 
   root->SetBounds(gfx::Size(100, 100));
   root->SetMasksToBounds(true);
+  // Visible rects computed by combinig clips in target space and root space
+  // don't match because of rotation transforms. So, we skip
+  // verify_visible_rect_calculations.
+  bool skip_verify_visible_rect_calculations = true;
   {
     std::unique_ptr<LayerImpl> child =
         LayerImpl::Create(host_impl().active_tree(), 456);
@@ -659,11 +667,12 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
     child->test_properties()->AddChild(std::move(grand_child));
     root->test_properties()->AddChild(std::move(child));
 
-    ExecuteCalculateDrawProperties(root);
+    ExecuteCalculateDrawProperties(root, skip_verify_visible_rect_calculations);
   }
 
   host_impl().SetViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree(
+      skip_verify_visible_rect_calculations);
   // (11, 89) is close to the the bottom left corner within the clip, but it is
   // not inside the layer.
   gfx::PointF test_point(11.f, 89.f);
