@@ -345,6 +345,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
             @Override
             public void onClick(View widget) {
                 mListener.onAccountSelected(getSelectedAccountName(), true);
+                RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
             }
         };
         mSigninSettingsControl.setText(
@@ -460,6 +461,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
             @Override
             public void onClick(View v) {
                 mListener.onAccountSelected(getSelectedAccountName(), false);
+                RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
             }
         });
         setUpMoreButtonVisible(true);
