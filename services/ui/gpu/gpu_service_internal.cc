@@ -103,9 +103,9 @@ GpuServiceInternal::GpuServiceInternal(
 
 GpuServiceInternal::~GpuServiceInternal() {
   // Tear down the binding in the gpu thread.
-  gpu_thread_.task_runner()->PostTask(FROM_HERE,
-      base::Bind(&mojo::Binding<mojom::GpuServiceInternal>::Close,
-                 base::Unretained(&binding_)));
+  gpu_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&GpuServiceInternal::TearDownGpuThread,
+                            base::Unretained(this)));
   gpu_thread_.Stop();
 
   // Signal this event before destroying the child process.  That way all
@@ -128,6 +128,13 @@ void GpuServiceInternal::BindOnGpuThread(
     mojom::GpuServiceInternalRequest request) {
   binding_.Close();
   binding_.Bind(std::move(request));
+}
+
+void GpuServiceInternal::TearDownGpuThread() {
+  binding_.Close();
+  media_service_.reset();
+  gpu_channel_manager_.reset();
+  owned_sync_point_manager_.reset();
 }
 
 gfx::GpuMemoryBufferHandle GpuServiceInternal::CreateGpuMemoryBuffer(

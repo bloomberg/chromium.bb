@@ -36,7 +36,10 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
       base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));
 }
 
-GpuServiceProxy::~GpuServiceProxy() {}
+GpuServiceProxy::~GpuServiceProxy() {
+  if (gpu_channel_)
+    gpu_channel_->DestroyChannel();
+}
 
 void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));

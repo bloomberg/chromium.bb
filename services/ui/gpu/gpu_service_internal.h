@@ -68,6 +68,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                      gpu::GpuMemoryBufferFactory* memory_buffer_factory);
 
   void BindOnGpuThread(mojom::GpuServiceInternalRequest request);
+  void TearDownGpuThread();
 
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
@@ -115,12 +116,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   gpu::GpuWatchdogThread* watchdog_thread_;
 
-  std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
-
-  std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
-
-  std::unique_ptr<media::MediaService> media_service_;
-
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
 
   gpu::GpuPreferences gpu_preferences_;
@@ -128,6 +123,10 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
+  // All of the following are created, used, and destroyed in the gpu thread.
+  std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
+  std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
+  std::unique_ptr<media::MediaService> media_service_;
   mojo::Binding<mojom::GpuServiceInternal> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
