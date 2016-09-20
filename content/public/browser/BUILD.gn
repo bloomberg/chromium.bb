@@ -33,6 +33,7 @@ source_set("browser_sources") {
     "android/external_video_surface_container.h",
     "android/interface_provider_android.h",
     "android/interface_registry_android.h",
+    "android/java_interfaces.h",
     "android/synchronous_compositor.cc",
     "android/synchronous_compositor.h",
     "android/synchronous_compositor_client.h",

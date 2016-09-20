@@ -46,6 +46,10 @@ namespace net {
 struct LoadStateWithParam;
 }
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -727,6 +731,11 @@ class WebContents : public PageNavigator,
   // TODO(paulmeyer): This process will change slightly once multi-process
   // find-in-page is implemented. This comment should be updated at that time.
   virtual void RequestFindMatchRects(int current_version) = 0;
+
+  // Returns an InterfaceProvider for Java-implemented interfaces that are
+  // scoped to this WebContents. This provides access to interfaces implemented
+  // in Java in the browser process to C++ code in the browser process.
+  virtual shell::InterfaceProvider* GetJavaInterfaces() = 0;
 #elif defined(OS_MACOSX)
   // Allowing other views disables optimizations which assume that only a single
   // WebContents is present.

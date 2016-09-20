@@ -51,6 +51,10 @@
 
 struct ViewHostMsg_DateTimeDialogValue_Params;
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
@@ -415,6 +419,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual WebContentsAndroid* GetWebContentsAndroid();
   void ActivateNearestFindResult(float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
+  shell::InterfaceProvider* GetJavaInterfaces() override;
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
@@ -1447,6 +1452,10 @@ class CONTENT_EXPORT WebContentsImpl
   // Stores the RenderWidgetHost that currently holds a mouse lock or nullptr if
   // there's no RenderWidgetHost holding a lock.
   RenderWidgetHostImpl* mouse_lock_widget_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<shell::InterfaceProvider> java_interfaces_;
+#endif
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
