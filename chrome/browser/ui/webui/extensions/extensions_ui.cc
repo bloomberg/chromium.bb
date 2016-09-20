@@ -56,8 +56,10 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
 
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override {
-    if (render_frame_host != web_contents()->GetMainFrame())
+    if (render_frame_host != web_contents()->GetMainFrame() ||
+        !timer_) {  // See comment in DocumentOnLoadCompletedInMainFrame()
       return;
+    }
     if (is_md_) {
       UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
                           timer_->Elapsed());
@@ -68,6 +70,12 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
   }
 
   void DocumentOnLoadCompletedInMainFrame() override {
+    // Sometimes*, DidStartProvisionalLoadForFrame() isn't called before this
+    // or DocumentLoadedInFrame(). Don't log anything in those cases.
+    // *This appears to be for in-page navigations like hash changes.
+    // TODO(devlin): The usefulness of these metrics remains to be seen.
+    if (!timer_)
+      return;
     if (is_md_) {
       UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
                           timer_->Elapsed());
@@ -75,6 +83,7 @@ class ExtensionWebUiTimer : public content::WebContentsObserver {
       UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.Uber",
                           timer_->Elapsed());
     }
+    timer_.reset();
   }
 
   void WebContentsDestroyed() override { delete this; }
