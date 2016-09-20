@@ -54,6 +54,8 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
   void Attach(content::DevToolsExternalAgentProxy* proxy) override {
     proxy_ = proxy;
     MaterializeAgentHost();
+    if (agent_host_)
+      agent_host_->AttachClient(this);
   }
 
   void Detach() override {
@@ -170,10 +172,14 @@ DevToolsAgentHost::List GetDescriptors() {
       if (!tab)
         continue;
 
+      if (tab->web_contents())
+        tab_web_contents.insert(tab->web_contents());
+
       scoped_refptr<DevToolsAgentHost> host =
           DevToolsAgentHost::Forward(
               base::IntToString(tab->GetAndroidId()),
               base::WrapUnique(new TabProxyDelegate(tab)));
+      result.push_back(host);
     }
   }
 
