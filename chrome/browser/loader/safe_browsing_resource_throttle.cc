@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
+#include "chrome/browser/loader/safe_browsing_resource_throttle.h"
 
 #include <iterator>
 #include <utility>

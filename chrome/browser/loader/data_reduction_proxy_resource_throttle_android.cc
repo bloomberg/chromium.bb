@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
+#include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"

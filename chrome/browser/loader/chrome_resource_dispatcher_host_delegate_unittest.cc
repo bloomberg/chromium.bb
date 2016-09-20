@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/renderer_host/chrome_navigation_data.h"
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/test/test_browser_thread.h"

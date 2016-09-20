@@ -475,6 +475,12 @@ split_static_library("browser") {
     "lifetime/application_lifetime.cc",
     "lifetime/application_lifetime.h",
     "lifetime/application_lifetime_mac.mm",
+    "loader/chrome_navigation_data.cc",
+    "loader/chrome_navigation_data.h",
+    "loader/chrome_resource_dispatcher_host_delegate.cc",
+    "loader/chrome_resource_dispatcher_host_delegate.h",
+    "loader/predictor_resource_throttle.cc",
+    "loader/predictor_resource_throttle.h",
     "mac/bluetooth_utility.h",
     "mac/bluetooth_utility.mm",
     "mac/dock.h",
@@ -963,18 +969,12 @@ split_static_library("browser") {
     "renderer_context_menu/context_menu_content_type_factory.h",
     "renderer_context_menu/context_menu_content_type_panel.cc",
     "renderer_context_menu/context_menu_content_type_panel.h",
-    "renderer_host/chrome_navigation_data.cc",
-    "renderer_host/chrome_navigation_data.h",
     "renderer_host/chrome_render_message_filter.cc",
     "renderer_host/chrome_render_message_filter.h",
     "renderer_host/chrome_render_widget_host_view_mac_delegate.h",
     "renderer_host/chrome_render_widget_host_view_mac_delegate.mm",
     "renderer_host/chrome_render_widget_host_view_mac_history_swiper.h",
     "renderer_host/chrome_render_widget_host_view_mac_history_swiper.mm",
-    "renderer_host/chrome_resource_dispatcher_host_delegate.cc",
-    "renderer_host/chrome_resource_dispatcher_host_delegate.h",
-    "renderer_host/predictor_resource_throttle.cc",
-    "renderer_host/predictor_resource_throttle.h",
     "renderer_preferences_util.cc",
     "renderer_preferences_util.h",
     "resource_delegate_mac.h",
@@ -1918,8 +1918,8 @@ split_static_library("browser") {
     # "Safe Browsing Basic" files used for safe browsing in full mode
     # (safe_browsing=1) and mobile (=2)
     sources += [
-      "renderer_host/data_reduction_proxy_resource_throttle_android.cc",
-      "renderer_host/data_reduction_proxy_resource_throttle_android.h",
+      "loader/data_reduction_proxy_resource_throttle_android.cc",
+      "loader/data_reduction_proxy_resource_throttle_android.h",
       "safe_browsing/mock_permission_report_sender.cc",
       "safe_browsing/mock_permission_report_sender.h",
       "safe_browsing/permission_reporter.cc",
@@ -1955,8 +1955,8 @@ split_static_library("browser") {
       sources += [
         "download/download_completion_blocker.cc",
         "download/download_completion_blocker.h",
-        "renderer_host/safe_browsing_resource_throttle.cc",
-        "renderer_host/safe_browsing_resource_throttle.h",
+        "loader/safe_browsing_resource_throttle.cc",
+        "loader/safe_browsing_resource_throttle.h",
         "safe_browsing/browser_feature_extractor.cc",
         "safe_browsing/browser_feature_extractor.h",
         "safe_browsing/browser_features.cc",
@@ -2066,8 +2066,8 @@ split_static_library("browser") {
       }
     } else if (safe_browsing_mode == 2) {
       sources += [
-        "renderer_host/safe_browsing_resource_throttle.cc",
-        "renderer_host/safe_browsing_resource_throttle.h",
+        "loader/safe_browsing_resource_throttle.cc",
+        "loader/safe_browsing_resource_throttle.h",
         "safe_browsing/services_delegate_stub.cc",
         "safe_browsing/services_delegate_stub.h",
       ]

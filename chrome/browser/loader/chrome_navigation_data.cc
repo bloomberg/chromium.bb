@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/chrome_navigation_data.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "net/url_request/url_request.h"

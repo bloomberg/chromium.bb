@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_PREDICTOR_RESOURCE_THROTTLE_H_
-#define CHROME_BROWSER_RENDERER_HOST_PREDICTOR_RESOURCE_THROTTLE_H_
+#ifndef CHROME_BROWSER_LOADER_PREDICTOR_RESOURCE_THROTTLE_H_
+#define CHROME_BROWSER_LOADER_PREDICTOR_RESOURCE_THROTTLE_H_
 
 #include <memory>
 
@@ -56,4 +56,4 @@ class PredictorResourceThrottle : public content::ResourceThrottle {
   DISALLOW_COPY_AND_ASSIGN(PredictorResourceThrottle);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_PREDICTOR_RESOURCE_THROTTLE_H_
+#endif  // CHROME_BROWSER_LOADER_PREDICTOR_RESOURCE_THROTTLE_H_

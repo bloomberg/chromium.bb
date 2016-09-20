@@ -1,6 +1,5 @@
 per-file chrome_extension_message_filter.*=file://extensions/OWNERS
 
-per-file data_reduction_proxy_resource_throttle_android.*=sgurun@chromium.org
 per-file site_per_process_text_input_browsertest.cc=creis@chromium.org
 
 # Mac files

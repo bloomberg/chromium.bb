@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 
 #include <stdint.h>
 #include <string>
@@ -21,6 +21,9 @@
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/loader/predictor_resource_throttle.h"
+#include "chrome/browser/loader/safe_browsing_resource_throttle.h"
 #include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -31,9 +34,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/chrome_navigation_data.h"
-#include "chrome/browser/renderer_host/predictor_resource_throttle.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -104,7 +104,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
+#include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 
 #include <stddef.h>
 
@@ -19,9 +19,9 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/chrome_navigation_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
