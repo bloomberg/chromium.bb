@@ -37,8 +37,12 @@ def main():
   parser.add_argument(
       '--isolated-script-test-output', type=argparse.FileType('w'),
       required=True)
+  parser.add_argument(
+    '--isolated-script-test-chartjson-output', type=argparse.FileType('w'),
+    required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   args, rest_args = parser.parse_known_args()
+
   xvfb_proc = None
   openbox_proc = None
   xcompmgr_proc = None
