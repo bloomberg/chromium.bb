@@ -224,7 +224,6 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(D
 void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer, const String& premultiplyAlphaOption, const String& colorSpaceConversionOption)
 {
     ASSERT(!isMainThread());
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(static_cast<char*>(arrayBuffer->data()), static_cast<size_t>(arrayBuffer->byteLength()));
 
     ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
     if (premultiplyAlphaOption == "none")
@@ -232,7 +231,7 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied;
     if (colorSpaceConversionOption == "none")
         colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(sharedBuffer.release(), true, alphaOp, colorSpaceOp));
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(SegmentReader::createFromSkData(SkData::MakeWithoutCopy(arrayBuffer->data(), arrayBuffer->byteLength())), true, alphaOp, colorSpaceOp));
     sk_sp<SkImage> frame;
     if (decoder) {
         frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
