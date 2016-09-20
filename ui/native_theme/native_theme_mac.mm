@@ -127,7 +127,7 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
   // Even with --secondary-ui-md, menus use the platform colors and styling, and
-  // Mac has a couple of specific color overrides.
+  // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
     case kColorId_EnabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
@@ -147,8 +147,17 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
 
+    // Mac has a different "pressed button" styling because it doesn't use
+    // ripples.
     case kColorId_ButtonPressedShade:
       return SkColorSetA(SK_ColorBLACK, 0x08);
+
+    // There's a system setting General > Highlight color which sets the
+    // background color for text selections. We honor that setting.
+    // TODO(ellyjones): Listen for NSSystemColorsDidChangeNotification somewhere
+    // and propagate it to the View hierarchy.
+    case kColorId_TextfieldSelectionBackgroundFocused:
+      return NSSystemColorToSkColor([NSColor selectedTextBackgroundColor]);
     default:
       break;
   }
@@ -212,8 +221,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor textBackgroundColor]);
     case kColorId_TextfieldSelectionColor:
       return NSSystemColorToSkColor([NSColor selectedTextColor]);
-    case kColorId_TextfieldSelectionBackgroundFocused:
-      return NSSystemColorToSkColor([NSColor selectedTextBackgroundColor]);
 
     // Trees/Tables. For focused text, use the alternate* versions, which
     // NSColor documents as "the table and list view equivalent to the
