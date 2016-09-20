@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 
 namespace extensions {
 
@@ -120,9 +120,8 @@ ErrorMap::ExtensionEntry::~ExtensionEntry() {
 
 bool ErrorMap::ExtensionEntry::DeleteErrors(const Filter& filter) {
   bool deleted = false;
-  for (ErrorList::iterator iter = list_.begin(); iter != list_.end();) {
-    if (filter.Matches(*iter)) {
-      delete *iter;
+  for (auto iter = list_.begin(); iter != list_.end();) {
+    if (filter.Matches(iter->get())) {
       iter = list_.erase(iter);
       deleted = true;
     } else {
@@ -133,21 +132,19 @@ bool ErrorMap::ExtensionEntry::DeleteErrors(const Filter& filter) {
 }
 
 void ErrorMap::ExtensionEntry::DeleteAllErrors() {
-  base::STLDeleteContainerPointers(list_.begin(), list_.end());
   list_.clear();
 }
 
 const ExtensionError* ErrorMap::ExtensionEntry::AddError(
     std::unique_ptr<ExtensionError> error) {
-  for (ErrorList::iterator iter = list_.begin(); iter != list_.end(); ++iter) {
+  for (auto iter = list_.begin(); iter != list_.end(); ++iter) {
     // If we find a duplicate error, remove the old error and add the new one,
     // incrementing the occurrence count of the error. We use the new error
     // for runtime errors, so we can link to the latest context, inspectable
     // view, etc.
-    if (error->IsEqual(*iter)) {
+    if (error->IsEqual(iter->get())) {
       error->set_occurrences((*iter)->occurrences() + 1);
       error->set_id((*iter)->id());
-      delete *iter;
       list_.erase(iter);
       break;
     }
@@ -155,16 +152,14 @@ const ExtensionError* ErrorMap::ExtensionEntry::AddError(
 
   // If there are too many errors for an extension already, limit ourselves to
   // the most recent ones.
-  if (list_.size() >= kMaxErrorsPerExtension) {
-    delete list_.front();
+  if (list_.size() >= kMaxErrorsPerExtension)
     list_.pop_front();
-  }
 
   if (error->id() == 0)
     error->set_id(kNextErrorId++);
 
-  list_.push_back(error.release());
-  return list_.back();
+  list_.push_back(std::move(error));
+  return list_.back().get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,24 +173,23 @@ ErrorMap::~ErrorMap() {
 
 const ErrorList& ErrorMap::GetErrorsForExtension(
     const std::string& extension_id) const {
-  EntryMap::const_iterator iter = map_.find(extension_id);
+  auto iter = map_.find(extension_id);
   return iter != map_.end() ? *iter->second->list() : g_empty_error_list.Get();
 }
 
 const ExtensionError* ErrorMap::AddError(
     std::unique_ptr<ExtensionError> error) {
-  EntryMap::iterator iter = map_.find(error->extension_id());
-  if (iter == map_.end()) {
-    iter = map_.insert(std::pair<std::string, ExtensionEntry*>(
-        error->extension_id(), new ExtensionEntry)).first;
-  }
-  return iter->second->AddError(std::move(error));
+  std::unique_ptr<ExtensionEntry>& entry = map_[error->extension_id()];
+  if (!entry)
+    entry = base::MakeUnique<ExtensionEntry>();
+
+  return entry->AddError(std::move(error));
 }
 
 void ErrorMap::RemoveErrors(const Filter& filter,
                             std::set<std::string>* affected_ids) {
   if (!filter.restrict_to_extension_id.empty()) {
-    EntryMap::iterator iter = map_.find(filter.restrict_to_extension_id);
+    auto iter = map_.find(filter.restrict_to_extension_id);
     if (iter != map_.end()) {
       if (iter->second->DeleteErrors(filter) && affected_ids)
         affected_ids->insert(filter.restrict_to_extension_id);
@@ -209,8 +203,6 @@ void ErrorMap::RemoveErrors(const Filter& filter,
 }
 
 void ErrorMap::RemoveAllErrors() {
-  for (EntryMap::iterator iter = map_.begin(); iter != map_.end(); ++iter)
-    delete iter->second;
   map_.clear();
 }
 

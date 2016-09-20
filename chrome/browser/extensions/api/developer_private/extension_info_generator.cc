@@ -466,7 +466,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   if (error_console_enabled) {
     const ErrorList& errors =
         error_console_->GetErrorsForExtension(extension.id());
-    for (const ExtensionError* error : errors) {
+    for (const auto& error : errors) {
       switch (error->type()) {
         case ExtensionError::MANIFEST_ERROR:
           info->manifest_errors.push_back(ConstructManifestError(

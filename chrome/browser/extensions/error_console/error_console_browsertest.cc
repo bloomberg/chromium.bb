@@ -311,14 +311,14 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
   const ExtensionError* permissions_error = NULL;
   const ExtensionError* unknown_key_error = NULL;
   const char kFakeKey[] = "not_a_real_key";
-  for (size_t i = 0; i < errors.size(); ++i) {
-    ASSERT_EQ(ExtensionError::MANIFEST_ERROR, errors[i]->type());
+  for (const auto& error : errors) {
+    ASSERT_EQ(ExtensionError::MANIFEST_ERROR, error->type());
     std::string utf8_key = base::UTF16ToUTF8(
-        (static_cast<const ManifestError*>(errors[i]))->manifest_key());
+        (static_cast<const ManifestError*>(error.get()))->manifest_key());
     if (utf8_key == manifest_keys::kPermissions)
-      permissions_error = errors[i];
+      permissions_error = error.get();
     else if (utf8_key == kFakeKey)
-      unknown_key_error = errors[i];
+      unknown_key_error = error.get();
   }
   ASSERT_TRUE(permissions_error);
   ASSERT_TRUE(unknown_key_error);
@@ -384,16 +384,15 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
       error_console()->GetErrorsForExtension(extension->id());
 
   // The first error should be a console log.
-  CheckRuntimeError(errors[0],
-                    extension->id(),
+  CheckRuntimeError(errors[0].get(), extension->id(),
                     script_url,  // The source should be the content script url.
-                    false,  // Not from incognito.
+                    false,       // Not from incognito.
                     "Hello, World!",  // The error message is the log.
                     logging::LOG_INFO,
                     GetTestURL(),  // Content scripts run in the web page.
                     2u);
 
-  const StackTrace& stack_trace1 = GetStackTraceFromError(errors[0]);
+  const StackTrace& stack_trace1 = GetStackTraceFromError(errors[0].get());
   CheckStackFrame(stack_trace1[0],
                   script_url,
                   "logHelloWorld",  // function name
@@ -407,17 +406,14 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
                   1u);
 
   // The second error should be a runtime error.
-  CheckRuntimeError(errors[1],
-                    extension->id(),
-                    script_url,
+  CheckRuntimeError(errors[1].get(), extension->id(), script_url,
                     false,  // not from incognito
                     "Uncaught TypeError: "
-                        "Cannot set property 'foo' of undefined",
+                    "Cannot set property 'foo' of undefined",
                     logging::LOG_ERROR,  // JS errors are always ERROR level.
-                    GetTestURL(),
-                    1u);
+                    GetTestURL(), 1u);
 
-  const StackTrace& stack_trace2 = GetStackTraceFromError(errors[1]);
+  const StackTrace& stack_trace2 = GetStackTraceFromError(errors[1].get());
   CheckStackFrame(stack_trace2[0],
                   script_url,
                   kAnonymousFunction,
@@ -455,17 +451,13 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
                          kAnonymousFunction);
 
   CheckRuntimeError(
-      errors[0],
-      extension->id(),
-      script_url,
+      errors[0].get(), extension->id(), script_url,
       false,  // not incognito
       "Error in event handler for browserAction.onClicked: ReferenceError: "
-          "baz is not defined",
-      logging::LOG_ERROR,
-      extension->url().Resolve(kBackgroundPageName),
-      1u);
+      "baz is not defined",
+      logging::LOG_ERROR, extension->url().Resolve(kBackgroundPageName), 1u);
 
-  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0].get());
   // Note: This test used to have a stack trace of length 6 that contains stack
   // frames in the extension code, but since crbug.com/404406 was fixed only
   // stack frames within user-defined extension code are printed.
@@ -490,18 +482,15 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
       base::StringPrintf("extensions::%s", kSchemaUtils);
 
   CheckRuntimeError(
-      errors[0],
-      extension->id(),
+      errors[0].get(), extension->id(),
       schema_utils_str,  // API calls are checked in schemaUtils.js.
-      false,  // not incognito
+      false,             // not incognito
       "Uncaught Error: Invocation of form "
-          "tabs.get(string, function) doesn't match definition "
-          "tabs.get(integer tabId, function callback)",
-      logging::LOG_ERROR,
-      extension->url().Resolve(kBackgroundPageName),
-      1u);
+      "tabs.get(string, function) doesn't match definition "
+      "tabs.get(integer tabId, function callback)",
+      logging::LOG_ERROR, extension->url().Resolve(kBackgroundPageName), 1u);
 
-  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0].get());
   ASSERT_EQ(1u, stack_trace.size());
   CheckStackFrame(stack_trace[0],
                   schema_utils_str,
@@ -526,16 +515,12 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
       error_console()->GetErrorsForExtension(extension->id());
 
   CheckRuntimeError(
-      errors[0],
-      extension->id(),
-      script_url,
+      errors[0].get(), extension->id(), script_url,
       false,  // not incognito
       "Uncaught TypeError: Cannot read property 'addUrl' of undefined",
-      logging::LOG_ERROR,
-      extension->url().Resolve(kBackgroundPageName),
-      1u);
+      logging::LOG_ERROR, extension->url().Resolve(kBackgroundPageName), 1u);
 
-  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0].get());
   ASSERT_EQ(1u, stack_trace.size());
   CheckStackFrame(stack_trace[0],
                   script_url,
@@ -574,17 +559,13 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, CatchesLastError) {
   std::string script_url = extension->url().Resolve("background.js").spec();
 
   CheckRuntimeError(
-      errors[0],
-      extension->id(),
-      script_url,
+      errors[0].get(), extension->id(), script_url,
       false,  // not incognito
       "Unchecked runtime.lastError while running permissions.remove: "
-          "'foobar' is not a recognized permission.",
-      logging::LOG_ERROR,
-      extension->url().Resolve(kBackgroundPageName),
-      1u);
+      "'foobar' is not a recognized permission.",
+      logging::LOG_ERROR, extension->url().Resolve(kBackgroundPageName), 1u);
 
-  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0].get());
   ASSERT_EQ(1u, stack_trace.size());
   CheckStackFrame(stack_trace[0],
                   script_url,

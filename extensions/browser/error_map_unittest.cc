@@ -163,7 +163,7 @@ TEST_F(ErrorMapUnitTest, DuplicateErrorsAreReplaced) {
   ASSERT_EQ(kNumErrors, list.size());
 
   // The duplicate error should be the last reported (pointer comparison)...
-  ASSERT_EQ(weak_error, list.back());
+  ASSERT_EQ(weak_error, list.back().get());
   // ... and should have two reported occurrences.
   ASSERT_EQ(2u, list.back()->occurrences());
 }
