@@ -34,6 +34,7 @@ TEST_FILENAME = re.compile(r"""
     test # The word test
     \.   # A literal '.'
     """, re.VERBOSE)
+NON_NEWLINE = re.compile(r'.+')
 CPP_COMMENT = re.compile(r"""
     \s*             # Optional whitespace
     (?:             # Non-capturing group
@@ -128,19 +129,37 @@ class DirectoryNotFoundException(Exception):
     return self.msg
 
 
+def keepOnlyNewlines(match_object):
+  """Remove everything from a matched string except for the newline characters.
+  Takes a MatchObject argument so that it can be used directly as the repl
+  argument to re.sub().
+
+  Args:
+    match_object: A MatchObject referencing the string to be substituted, e.g.
+    '  // My histogram\n   '
+
+  Returns:
+     The string with non-newlines removed, eg.
+     '\n'
+  """
+  return NON_NEWLINE.sub('', match_object.group(0))
+
+
 def removeComments(string):
   """Remove any comments from an expression, including leading and trailing
-  whitespace. This does not correctly ignore comments embedded in strings,
-  but that shouldn't matter for this script.
+  whitespace. This does not correctly ignore comments embedded in strings, but
+  that shouldn't matter for this script. Newlines in the removed text are
+  preserved so that line numbers don't change.
 
   Args:
     string: The string to remove comments from, e.g.
     '  // My histogram\n   "My.Important.Counts" '
 
   Returns:
-    The string with comments removed, e.g. '"My.Important.Counts" '
+    The string with comments removed, e.g. '"\nMy.Important.Counts" '
+
   """
-  return CPP_COMMENT.sub('', string)
+  return CPP_COMMENT.sub(keepOnlyNewlines, string)
 
 
 def collapseAdjacentCStrings(string):
@@ -231,7 +250,7 @@ def readChromiumHistograms():
   for filename in filenames:
     contents = ''
     with open(filename, 'r') as f:
-      contents = f.read()
+      contents = removeComments(f.read())
 
     for match in HISTOGRAM_REGEX.finditer(contents):
       line_number = contents[:match.start()].count('\n') + 1
@@ -245,7 +264,7 @@ def readChromiumHistograms():
 
         continue
 
-      histogram = removeComments(match.group(3))
+      histogram = match.group(3).strip()
       histogram = collapseAdjacentCStrings(histogram)
 
       # Must begin and end with a quotation mark.
