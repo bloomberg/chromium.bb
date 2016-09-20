@@ -19,7 +19,7 @@ const int kBlankCharactersThreshold = 200;
 
 // FirstMeaningfulPaintDetector stops observing layouts and reports First
 // Meaningful Paint when this duration passed from last network activity.
-const double kSecondsWithoutNetworkActivityThreshold = 2.0;
+const double kSecondsWithoutNetworkActivityThreshold = 0.5;
 
 } // namespace
 
