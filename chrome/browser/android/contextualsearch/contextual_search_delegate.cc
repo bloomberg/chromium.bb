@@ -55,6 +55,12 @@ const char kDoPreventPreloadValue[] = "1";
 // The number of characters that should be shown after the selected expression.
 const int kSurroundingSizeForUI = 60;
 
+// Contextual Cards (aka Now on Tap) integration.
+const char kContextualSearchContextualCards[] = "contextual_cards";
+const char kContextualSearchCards[] = "cards";
+const char kContextualSearchSingleCard[] = "singleCard";
+const char kContextualSearchSubTitle[] = "subtitle";
+const char kContextualSearchThumbnailUri[] = "thumbnail.uri";
 // The version of the Now on Tap API that we want to invoke.
 const int kNowOnTapVersion = 1;
 
@@ -457,7 +463,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   JSONStringValueDeserializer deserializer(proper_json);
   std::unique_ptr<base::Value> root =
       deserializer.Deserialize(nullptr, nullptr);
-  std::unique_ptr<base::DictionaryValue> dict =
+  const std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(root));
   if (!dict)
     return;
@@ -496,7 +502,7 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   }
 
   if (field_trial_->IsNowOnTapBarIntegrationEnabled()) {
-    // TODO(donnd): extract thumbnail_url and caption.
+    DecodeContextualCardsResponse(*dict.get(), caption, thumbnail_url);
   }
 }
 
@@ -539,4 +545,37 @@ base::string16 ContextualSearchDelegate::SurroundingTextForIcing(
   *start = start_offset;
   *end = end_offset;
   return result_text;
+}
+
+void ContextualSearchDelegate::DecodeContextualCardsResponse(
+    const base::DictionaryValue& dict,
+    std::string* subtitle,
+    std::string* thumbnail) {
+  const base::DictionaryValue* contextual_cards_dict = nullptr;
+  if (!dict.GetDictionary(kContextualSearchContextualCards,
+                          &contextual_cards_dict))
+    return;
+
+  const base::ListValue* card_list = nullptr;
+  if (!contextual_cards_dict->GetList(kContextualSearchCards, &card_list))
+    return;
+
+  // TODO(donnd): remove these DCHECKS.  They are not needed since we never
+  // dereference if the values are missing.
+  DCHECK(card_list);
+  for (const auto& card : *card_list) {
+    const base::DictionaryValue* card_dict = nullptr;
+    if (!card->GetAsDictionary(&card_dict))
+      continue;
+
+    DCHECK(card_dict);
+    const base::DictionaryValue* single_card = nullptr;
+    if (!card_dict->GetDictionary(kContextualSearchSingleCard, &single_card))
+      continue;
+
+    DCHECK(single_card);
+    single_card->GetString(kContextualSearchSubTitle, subtitle);
+    single_card->GetString(kContextualSearchThumbnailUri, thumbnail);
+    return;
+  }
 }

@@ -6,9 +6,12 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
+#include <string>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -17,6 +20,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/escape.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -39,6 +43,8 @@ class ContextualSearchDelegateTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableContextualSearchNowOnTapBarIntegration);
     request_context_ =
         new net::TestURLRequestContextGetter(io_message_loop_.task_runner());
     template_url_service_.reset(CreateTemplateURLService());
@@ -99,6 +105,34 @@ class ContextualSearchDelegateTest : public testing::Test {
         ContextualSearchDelegate::kContextualSearchURLFetcherID);
     ASSERT_TRUE(fetcher_);
     ASSERT_TRUE(fetcher());
+  }
+
+  // Allows using the vertical bar "|" as a quote character, which makes
+  // test cases more readable versus the escaped double quote that is otherwise
+  // needed for JSON literals.
+  std::string escapeBarQuoted(std::string bar_quoted) {
+    std::replace(bar_quoted.begin(), bar_quoted.end(), '|', '\"');
+    return bar_quoted;
+  }
+
+  void CreateDefaultSearchWithContextualCardsData(
+      const std::string contextual_cards_data) {
+    CreateDefaultSearchContextAndRequestSearchTerm();
+    fetcher()->set_response_code(200);
+    std::string response =
+        escapeBarQuoted("{|search_term|:|obama|" + contextual_cards_data + "}");
+    fetcher()->SetResponseString(response);
+    fetcher()->delegate()->OnURLFetchComplete(fetcher());
+
+    EXPECT_FALSE(is_invalid());
+    EXPECT_EQ(200, response_code());
+    EXPECT_EQ("obama", search_term());
+  }
+
+  void CreateDefaultSearchWithContextualCardsValue(
+      const std::string contextual_cards_value) {
+    CreateDefaultSearchWithContextualCardsData(", |contextual_cards|:" +
+                                               contextual_cards_value);
   }
 
   void SetResponseStringAndFetch(const std::string& selected_text,
@@ -172,6 +206,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string display_text() { return display_text_; }
   std::string alternate_term() { return alternate_term_; }
   std::string mid() { return mid_; }
+  std::string caption() { return caption_; }
+  std::string thumbnail_url() { return thumbnail_url_; }
   bool do_prevent_preload() { return prevent_preload_; }
   std::string after_text() { return after_text_; }
   int start_adjust() { return start_adjust_; }
@@ -190,6 +226,8 @@ class ContextualSearchDelegateTest : public testing::Test {
     display_text_ = resolved_search_term.display_text;
     alternate_term_ = resolved_search_term.alternate_term;
     mid_ = resolved_search_term.mid;
+    thumbnail_url_ = resolved_search_term.thumbnail_url;
+    caption_ = resolved_search_term.caption;
     prevent_preload_ = resolved_search_term.prevent_preload;
     start_adjust_ = resolved_search_term.selection_start_adjust;
     end_adjust_ = resolved_search_term.selection_end_adjust;
@@ -213,6 +251,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string display_text_;
   std::string alternate_term_;
   std::string mid_;
+  std::string thumbnail_url_;
+  std::string caption_;
   bool prevent_preload_;
   int start_adjust_;
   int end_adjust_;
@@ -542,4 +582,87 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {
 TEST_F(ContextualSearchDelegateTest, HeaderContainsBasePageUrl) {
   CreateDefaultSearchContextAndRequestSearchTerm();
   EXPECT_EQ(kSomeSpecificBasePage, getBasePageUrlFromRequest());
+}
+
+// Tests a response with a single card from Contextual Cards.
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseSingleCardBarQuotedTest) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|singleCard|:{|subtitle|: |president|,"
+      "|thumbnail|:{|uri|:|https://t0.gstatic.com/images?q=tbn:ANd9|}}}]}");
+  EXPECT_EQ("president", caption());
+  EXPECT_EQ("https://t0.gstatic.com/images?q=tbn:ANd9", thumbnail_url());
+}
+
+// Missing all Contextual Cards data.
+TEST_F(ContextualSearchDelegateTest, ContextualCardsResponseWithNoData) {
+  CreateDefaultSearchWithContextualCardsData("");
+  EXPECT_EQ("", caption());
+  EXPECT_EQ("", thumbnail_url());
+}
+
+// Missing subtitle (for caption).
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseWithMissingCaption) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|singleCard|:{|stubtitlemisspelled|: |president|,"
+      "|thumbnail|:{|uri|:|https://t0.gstatic.com/images?q=tbn:ANd9|}}}]}");
+  EXPECT_EQ("", caption());
+  EXPECT_EQ("https://t0.gstatic.com/images?q=tbn:ANd9", thumbnail_url());
+}
+
+// Missing the Thumbnail URI.
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseWithMissingThumbnailUri) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|singleCard|:{|subtitle|: |president|,"
+      "|thumbnail|:{}}}]}");
+  EXPECT_EQ("president", caption());
+  EXPECT_EQ("", thumbnail_url());
+}
+
+// Missing the whole Thumbnail.
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseWithMissingThumbnail) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|singleCard|:{|subtitle|: |president|,"
+      "|ignored key|:|ignored value|}}]}");
+  EXPECT_EQ("president", caption());
+  EXPECT_EQ("", thumbnail_url());
+}
+
+// Empty cards list.
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseWithMissingSingleCard) {
+  CreateDefaultSearchWithContextualCardsValue("{|cards|:[]}");
+  EXPECT_EQ("", caption());
+  EXPECT_EQ("", thumbnail_url());
+}
+
+// Tests carouselCard followed by singleCard.
+TEST_F(ContextualSearchDelegateTest,
+       ContextualCardsResponseWithSingleAndCarouselCards) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|carouselCard|:{}},{|singleCard|:{|subtitle|: |president|,"
+      "|thumbnail|:{|uri|:|https://t0.gstatic.com/images?q=tbn:ANd9|}}}]}");
+  EXPECT_EQ("president", caption());
+  EXPECT_EQ("https://t0.gstatic.com/images?q=tbn:ANd9", thumbnail_url());
+}
+
+// Missing cards.
+TEST_F(ContextualSearchDelegateTest, ContextualCardsResponseWithMissingCards) {
+  CreateDefaultSearchWithContextualCardsValue("{}");
+  EXPECT_EQ("", caption());
+  EXPECT_EQ("", thumbnail_url());
+}
+
+// Multiple cards (latter should be ignored).
+TEST_F(ContextualSearchDelegateTest, ContextualCardsResponseWithMultipleCards) {
+  CreateDefaultSearchWithContextualCardsValue(
+      "{|cards|:[{|singleCard|:{|subtitle|: |president|,"
+      "|thumbnail|:{|uri|:|https://t0.gstatic.com/images?q=tbn:ANd9|}}},"
+      "{|singleCard|:{|subtitle|:|wrong subtitle|,"
+      "|thumbnail|:{|uri|:|https://t0.gstatic.com/wrongThumbnail|}}}]}");
+  EXPECT_EQ("president", caption());
+  EXPECT_EQ("https://t0.gstatic.com/images?q=tbn:ANd9", thumbnail_url());
 }

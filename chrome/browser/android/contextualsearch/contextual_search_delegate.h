@@ -202,6 +202,12 @@ class ContextualSearchDelegate
                                int* startResult,
                                int* endResult);
 
+  // Decodes the Contextual Cards (Now on Tap) response from the given
+  // dictionary, and sets the subtitle and/or thumbnail if they are present.
+  void DecodeContextualCardsResponse(const base::DictionaryValue& dict,
+                                     std::string* subtitle,
+                                     std::string* thumbnail);
+
   // Generates a subset of the given surrounding_text string, for Icing
   // integration.
   // |surrounding_text| the entire text context that contains the selection.
