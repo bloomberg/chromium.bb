@@ -219,8 +219,7 @@ void RemoteChannelMain::NotifyReadyToCommitOnImpl(
 }
 
 void RemoteChannelMain::SynchronouslyInitializeImpl(
-    LayerTreeHostInProcess* layer_tree_host,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    LayerTreeHostInProcess* layer_tree_host) {
   TRACE_EVENT0("cc.remote", "RemoteChannelMain::SynchronouslyInitializeImpl");
   DCHECK(!initialized_);
 

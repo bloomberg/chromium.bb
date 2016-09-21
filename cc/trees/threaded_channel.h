@@ -112,8 +112,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
-      LayerTreeHostInProcess* layer_tree_host,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
+      LayerTreeHostInProcess* layer_tree_host) override;
   void SynchronouslyCloseImpl() override;
 
   // ChannelImpl Implementation
@@ -136,8 +135,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
       LayerTreeHostInProcess* layer_tree_host,
-      TaskRunnerProvider* task_runner_provider,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+      TaskRunnerProvider* task_runner_provider);
 
  private:
   // The members of this struct should be accessed on the main thread only.
@@ -173,10 +171,8 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   };
 
   // Called on impl thread.
-  void InitializeImplOnImpl(
-      CompletionEvent* completion,
-      LayerTreeHostInProcess* layer_tree_host,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+  void InitializeImplOnImpl(CompletionEvent* completion,
+                            LayerTreeHostInProcess* layer_tree_host);
   void CloseImplOnImpl(CompletionEvent* completion);
 
   bool IsInitialized() const;

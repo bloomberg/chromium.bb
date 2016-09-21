@@ -126,7 +126,6 @@ class TestScheduler : public Scheduler {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       OrderedSimpleTaskRunner* task_runner,
-      BeginFrameSource* begin_frame_source,
       std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
 
   // Extra test helper functionality

@@ -349,17 +349,13 @@ void ProxyMain::MainThreadHasStoppedFlinging() {
   channel_main_->MainThreadHasStoppedFlingingOnImpl();
 }
 
-void ProxyMain::Start(
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+void ProxyMain::Start() {
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_->IsThreaded() || layer_tree_host_->IsRemoteServer());
   DCHECK(channel_main_);
-  DCHECK(!layer_tree_host_->GetSettings().use_external_begin_frame_source ||
-         external_begin_frame_source);
 
   // Create LayerTreeHostImpl.
-  channel_main_->SynchronouslyInitializeImpl(
-      layer_tree_host_, std::move(external_begin_frame_source));
+  channel_main_->SynchronouslyInitializeImpl(layer_tree_host_);
 
   started_ = true;
 }

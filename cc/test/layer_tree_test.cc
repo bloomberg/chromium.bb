@@ -23,7 +23,6 @@
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -354,7 +353,6 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source,
       ImageSerializationProcessor* image_serialization_processor) {
     LayerTreeHostInProcess::InitParams params;
     params.client = client;
@@ -382,7 +380,6 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
                                           task_runner_provider.get());
         break;
       case CompositorMode::REMOTE:
-        DCHECK(!external_begin_frame_source);
         // The Remote LayerTreeHost on the client has the impl task runner.
         if (task_runner_provider->HasImplThread()) {
           proxy = base::MakeUnique<RemoteChannelImpl>(
@@ -395,9 +392,8 @@ class LayerTreeHostForTesting : public LayerTreeHostInProcess {
         }
         break;
     }
-    layer_tree_host->InitializeForTesting(
-        std::move(task_runner_provider), std::move(proxy),
-        std::move(external_begin_frame_source));
+    layer_tree_host->InitializeForTesting(std::move(task_runner_provider),
+                                          std::move(proxy));
     return layer_tree_host;
   }
 
@@ -636,7 +632,7 @@ void LayerTreeTest::DoBeginTest() {
     layer_tree_host_ = LayerTreeHostForTesting::Create(
         this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_main,
         nullptr, nullptr, task_graph_runner_.get(), settings_,
-        base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
         image_serialization_processor_.get());
     DCHECK(remote_proto_channel_bridge_.channel_main.HasReceiver());
 
@@ -646,14 +642,14 @@ void LayerTreeTest::DoBeginTest() {
         this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
         nullptr, nullptr, task_graph_runner_.get(), settings,
         base::ThreadTaskRunnerHandle::Get(), impl_thread_->task_runner(),
-        nullptr, image_serialization_processor_.get());
+        image_serialization_processor_.get());
     DCHECK(remote_proto_channel_bridge_.channel_impl.HasReceiver());
   } else {
     layer_tree_host_ = LayerTreeHostForTesting::Create(
         this, mode_, client_.get(), nullptr, shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
         base::ThreadTaskRunnerHandle::Get(),
-        impl_thread_ ? impl_thread_->task_runner() : nullptr, nullptr,
+        impl_thread_ ? impl_thread_->task_runner() : nullptr,
         image_serialization_processor_.get());
   }
 
@@ -822,11 +818,7 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   settings_.verify_transform_tree_calculations = true;
   settings_.renderer_settings.buffer_to_texture_target_map =
       DefaultBufferToTextureTargetMapForTesting();
-  // The TestCompositorFrameSink will provide a BeginFrameSource.
-  settings_.use_compositor_frame_sink_begin_frame_source = true;
   InitializeSettings(&settings_);
-  DCHECK(settings_.use_compositor_frame_sink_begin_frame_source);
-  DCHECK(!settings_.use_external_begin_frame_source);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

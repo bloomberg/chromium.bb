@@ -38,10 +38,6 @@ class CC_EXPORT LayerTreeSettings {
 
   RendererSettings renderer_settings;
   bool single_thread_proxy_scheduler = true;
-  // TODO(enne): Remove this after everything uses output surface begin frames.
-  bool use_external_begin_frame_source = false;
-  // TODO(enne): Temporary staging for unified begin frame source work.
-  bool use_compositor_frame_sink_begin_frame_source = true;
   bool main_frame_before_activation_enabled = false;
   bool using_synchronous_renderer_compositor = false;
   bool enable_latency_recovery = true;

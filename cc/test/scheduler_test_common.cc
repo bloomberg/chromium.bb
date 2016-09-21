@@ -147,13 +147,11 @@ TestScheduler::TestScheduler(
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
     OrderedSimpleTaskRunner* task_runner,
-    BeginFrameSource* begin_frame_source,
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
                 task_runner,
-                begin_frame_source,
                 std::move(compositor_timing_history)),
       now_src_(now_src) {}
 

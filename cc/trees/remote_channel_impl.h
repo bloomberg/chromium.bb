@@ -87,8 +87,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   virtual std::unique_ptr<ProxyImpl> CreateProxyImpl(
       ChannelImpl* channel_impl,
       LayerTreeHostInProcess* layer_tree_host,
-      TaskRunnerProvider* task_runner_provider,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+      TaskRunnerProvider* task_runner_provider);
 
  private:
   struct MainThreadOnly {
@@ -145,8 +144,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void MainThreadHasStoppedFlinging() override;
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
-  void Start(
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
+  void Start() override;
   void Stop() override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;

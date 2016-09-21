@@ -267,11 +267,10 @@ class SchedulerTest : public testing::Test {
             scheduler_settings_.using_synchronous_renderer_compositor);
     fake_compositor_timing_history_ = fake_compositor_timing_history.get();
 
-    scheduler_.reset(
-        new TestScheduler(now_src_.get(), client_.get(), scheduler_settings_, 0,
-                          task_runner_.get(), frame_source,
-                          std::move(fake_compositor_timing_history)));
-    DCHECK(scheduler_);
+    scheduler_.reset(new TestScheduler(
+        now_src_.get(), client_.get(), scheduler_settings_, 0,
+        task_runner_.get(), std::move(fake_compositor_timing_history)));
+    scheduler_->SetBeginFrameSource(frame_source);
     client_->set_scheduler(scheduler_.get());
 
     // Use large estimates by default to avoid latency recovery in most tests.

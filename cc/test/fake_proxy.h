@@ -33,8 +33,7 @@ class FakeProxy : public Proxy {
   void MainThreadHasStoppedFlinging() override {}
   bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
-  void Start(
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override {}
+  void Start() override {}
   void Stop() override {}
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;

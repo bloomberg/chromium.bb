@@ -91,7 +91,7 @@ class MockLayerTreeHost : public LayerTreeHostInProcess {
   explicit MockLayerTreeHost(LayerTreeHostInProcess::InitParams* params)
       : LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED) {
     InitializeSingleThreaded(&single_thread_client_,
-                             base::ThreadTaskRunnerHandle::Get(), nullptr);
+                             base::ThreadTaskRunnerHandle::Get());
   }
 
   StubLayerTreeHostSingleThreadClient single_thread_client_;

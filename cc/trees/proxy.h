@@ -65,9 +65,9 @@ class CC_EXPORT Proxy {
   virtual bool BeginMainFrameRequested() const = 0;
 
   // Must be called before using the proxy.
-  virtual void Start(
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) = 0;
-  virtual void Stop() = 0;   // Must be called before deleting the proxy.
+  virtual void Start() = 0;
+  // Must be called before deleting the proxy.
+  virtual void Stop() = 0;
 
   virtual void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) = 0;
 

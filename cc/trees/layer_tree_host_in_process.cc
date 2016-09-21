@@ -49,7 +49,6 @@
 #include "cc/proto/layer_tree.pb.h"
 #include "cc/proto/layer_tree_host.pb.h"
 #include "cc/resources/ui_resource_manager.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -136,9 +135,8 @@ std::unique_ptr<LayerTreeHostInProcess> LayerTreeHostInProcess::CreateThreaded(
   DCHECK(params->settings);
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
       new LayerTreeHostInProcess(params, CompositorMode::THREADED));
-  layer_tree_host->InitializeThreaded(
-      params->main_task_runner, impl_task_runner,
-      std::move(params->external_begin_frame_source));
+  layer_tree_host->InitializeThreaded(params->main_task_runner,
+                                      impl_task_runner);
   return layer_tree_host;
 }
 
@@ -149,9 +147,8 @@ LayerTreeHostInProcess::CreateSingleThreaded(
   DCHECK(params->settings);
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
       new LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED));
-  layer_tree_host->InitializeSingleThreaded(
-      single_thread_client, params->main_task_runner,
-      std::move(params->external_begin_frame_source));
+  layer_tree_host->InitializeSingleThreaded(single_thread_client,
+                                            params->main_task_runner);
   return layer_tree_host;
 }
 
@@ -164,10 +161,6 @@ LayerTreeHostInProcess::CreateRemoteServer(
   DCHECK(remote_proto_channel);
   TRACE_EVENT0("cc.remote", "LayerTreeHostInProcess::CreateRemoteServer");
 
-  // Using an external begin frame source is not supported on the server in
-  // remote mode.
-  DCHECK(!params->settings->use_external_begin_frame_source);
-  DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
@@ -185,12 +178,6 @@ LayerTreeHostInProcess::CreateRemoteClient(
   DCHECK(params->main_task_runner.get());
   DCHECK(params->settings);
   DCHECK(remote_proto_channel);
-
-  // Using an external begin frame source is not supported in remote mode.
-  // TODO(khushalsagar): Add support for providing an external begin frame
-  // source on the client LayerTreeHostInProcess. crbug/576962
-  DCHECK(!params->settings->use_external_begin_frame_source);
-  DCHECK(!params->external_begin_frame_source);
   DCHECK(params->image_serialization_processor);
 
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
@@ -241,24 +228,20 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(
 
 void LayerTreeHostInProcess::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
   std::unique_ptr<ProxyMain> proxy_main =
       ProxyMain::CreateThreaded(this, task_runner_provider_.get());
-  InitializeProxy(std::move(proxy_main),
-                  std::move(external_begin_frame_source));
+  InitializeProxy(std::move(proxy_main));
 }
 
 void LayerTreeHostInProcess::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
   InitializeProxy(SingleThreadProxy::Create(this, single_thread_client,
-                                            task_runner_provider_.get()),
-                  std::move(external_begin_frame_source));
+                                            task_runner_provider_.get()));
 }
 
 void LayerTreeHostInProcess::InitializeRemoteServer(
@@ -272,8 +255,7 @@ void LayerTreeHostInProcess::InitializeRemoteServer(
     layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
   }
   InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
-                                          task_runner_provider_.get()),
-                  nullptr);
+                                          task_runner_provider_.get()));
 }
 
 void LayerTreeHostInProcess::InitializeRemoteClient(
@@ -296,20 +278,17 @@ void LayerTreeHostInProcess::InitializeRemoteClient(
   // to the RemoteChannelMain on the server which directs them to ProxyMain and
   // the remote server LayerTreeHostInProcess.
   InitializeProxy(base::MakeUnique<RemoteChannelImpl>(
-                      this, remote_proto_channel, task_runner_provider_.get()),
-                  nullptr);
+      this, remote_proto_channel, task_runner_provider_.get()));
 }
 
 void LayerTreeHostInProcess::InitializeForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider,
-    std::unique_ptr<Proxy> proxy_for_testing,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    std::unique_ptr<Proxy> proxy_for_testing) {
   task_runner_provider_ = std::move(task_runner_provider);
 
   InitializePictureCacheForTesting();
 
-  InitializeProxy(std::move(proxy_for_testing),
-                  std::move(external_begin_frame_source));
+  InitializeProxy(std::move(proxy_for_testing));
 }
 
 void LayerTreeHostInProcess::InitializePictureCacheForTesting() {
@@ -337,14 +316,12 @@ void LayerTreeHostInProcess::SetUIResourceManagerForTesting(
   ui_resource_manager_ = std::move(ui_resource_manager);
 }
 
-void LayerTreeHostInProcess::InitializeProxy(
-    std::unique_ptr<Proxy> proxy,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+void LayerTreeHostInProcess::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::InitializeForReal");
   DCHECK(task_runner_provider_);
 
   proxy_ = std::move(proxy);
-  proxy_->Start(std::move(external_begin_frame_source));
+  proxy_->Start();
 
   layer_tree_->animation_host()->SetSupportsScrollAnimations(
       proxy_->SupportsImplScrolling());

@@ -148,8 +148,7 @@ void ThreadedChannel::NotifyReadyToCommitOnImpl(
 }
 
 void ThreadedChannel::SynchronouslyInitializeImpl(
-    LayerTreeHostInProcess* layer_tree_host,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    LayerTreeHostInProcess* layer_tree_host) {
   TRACE_EVENT0("cc", "ThreadChannel::SynchronouslyInitializeImpl");
   DCHECK(IsMainThread());
   {
@@ -158,8 +157,7 @@ void ThreadedChannel::SynchronouslyInitializeImpl(
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&ThreadedChannel::InitializeImplOnImpl,
-                   base::Unretained(this), &completion, layer_tree_host,
-                   base::Passed(&external_begin_frame_source)));
+                   base::Unretained(this), &completion, layer_tree_host));
     completion.Wait();
   }
   main().initialized = true;
@@ -262,22 +260,18 @@ void ThreadedChannel::BeginMainFrame(
 std::unique_ptr<ProxyImpl> ThreadedChannel::CreateProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHostInProcess* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    TaskRunnerProvider* task_runner_provider) {
   DCHECK(IsImplThread());
   return base::MakeUnique<ProxyImpl>(channel_impl, layer_tree_host,
-                                     task_runner_provider,
-                                     std::move(external_begin_frame_source));
+                                     task_runner_provider);
 }
 
 void ThreadedChannel::InitializeImplOnImpl(
     CompletionEvent* completion,
-    LayerTreeHostInProcess* layer_tree_host,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    LayerTreeHostInProcess* layer_tree_host) {
   DCHECK(IsImplThread());
   impl().proxy_impl =
-      CreateProxyImpl(this, layer_tree_host, task_runner_provider_,
-                      std::move(external_begin_frame_source));
+      CreateProxyImpl(this, layer_tree_host, task_runner_provider_);
   impl().proxy_impl_weak_factory =
       base::MakeUnique<base::WeakPtrFactory<ProxyImpl>>(
           impl().proxy_impl.get());

@@ -907,7 +907,7 @@ class MockLayerTreeHost : public LayerTreeHostInProcess {
             CompositorMode::SINGLE_THREADED,
             base::MakeUnique<StrictMock<MockLayerTree>>(params, this)) {
     InitializeSingleThreaded(single_thread_client,
-                             base::ThreadTaskRunnerHandle::Get(), nullptr);
+                             base::ThreadTaskRunnerHandle::Get());
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());

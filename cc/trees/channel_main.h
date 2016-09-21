@@ -62,8 +62,7 @@ class CC_EXPORT ChannelMain {
 
   // Must be called before using the channel.
   virtual void SynchronouslyInitializeImpl(
-      LayerTreeHostInProcess* layer_tree_host,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) = 0;
+      LayerTreeHostInProcess* layer_tree_host) = 0;
 
   // Must be called before deleting the channel.
   virtual void SynchronouslyCloseImpl() = 0;

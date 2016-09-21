@@ -39,13 +39,10 @@ RemoteChannelImpl::~RemoteChannelImpl() {
 std::unique_ptr<ProxyImpl> RemoteChannelImpl::CreateProxyImpl(
     ChannelImpl* channel_impl,
     LayerTreeHostInProcess* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+    TaskRunnerProvider* task_runner_provider) {
   DCHECK(task_runner_provider_->IsImplThread());
-  DCHECK(!external_begin_frame_source);
   return base::MakeUnique<ProxyImpl>(channel_impl, layer_tree_host,
-                                     task_runner_provider,
-                                     std::move(external_begin_frame_source));
+                                     task_runner_provider);
 }
 
 void RemoteChannelImpl::OnProtoReceived(
@@ -229,11 +226,9 @@ bool RemoteChannelImpl::BeginMainFrameRequested() const {
   return false;
 }
 
-void RemoteChannelImpl::Start(
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+void RemoteChannelImpl::Start() {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(!main().started);
-  DCHECK(!external_begin_frame_source);
 
   CompletionEvent completion;
   {
@@ -448,7 +443,7 @@ void RemoteChannelImpl::InitializeImplOnImpl(
   DCHECK(task_runner_provider_->IsImplThread());
 
   impl().proxy_impl =
-      CreateProxyImpl(this, layer_tree_host, task_runner_provider_, nullptr);
+      CreateProxyImpl(this, layer_tree_host, task_runner_provider_);
   impl().proxy_impl_weak_factory =
       base::MakeUnique<base::WeakPtrFactory<ProxyImpl>>(
           impl().proxy_impl.get());

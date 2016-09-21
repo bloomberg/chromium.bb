@@ -35,7 +35,7 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_ =
         FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_, settings);
     layer_tree_host_->InitializeSingleThreaded(
-        &single_thread_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
+        &single_thread_client_, base::ThreadTaskRunnerHandle::Get());
 
     root_layer_ = Layer::Create();
     layer_tree_host_->SetRootLayer(root_layer_);

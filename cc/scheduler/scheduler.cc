@@ -27,24 +27,11 @@ const base::TimeDelta kDeadlineFudgeFactor =
     base::TimeDelta::FromMicroseconds(1000);
 }
 
-std::unique_ptr<Scheduler> Scheduler::Create(
-    SchedulerClient* client,
-    const SchedulerSettings& settings,
-    int layer_tree_host_id,
-    base::SingleThreadTaskRunner* task_runner,
-    BeginFrameSource* begin_frame_source,
-    std::unique_ptr<CompositorTimingHistory> compositor_timing_history) {
-  return base::WrapUnique(new Scheduler(client, settings, layer_tree_host_id,
-                                        task_runner, begin_frame_source,
-                                        std::move(compositor_timing_history)));
-}
-
 Scheduler::Scheduler(
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
-    BeginFrameSource* begin_frame_source,
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
     : settings_(settings),
       client_(client),
@@ -69,7 +56,6 @@ Scheduler::Scheduler(
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
-  SetBeginFrameSource(begin_frame_source);
   ProcessScheduledActions();
 }
 

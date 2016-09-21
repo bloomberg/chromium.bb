@@ -26,8 +26,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
  public:
   ProxyImpl(ChannelImpl* channel_impl,
             LayerTreeHostInProcess* layer_tree_host,
-            TaskRunnerProvider* task_runner_provider,
-            std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+            TaskRunnerProvider* task_runner_provider);
   ~ProxyImpl() override;
 
   // Virtual for testing.
@@ -133,8 +132,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   TaskRunnerProvider* task_runner_provider_;
 
   DelayedUniqueNotifier smoothness_priority_expiration_notifier_;
-
-  std::unique_ptr<BeginFrameSource> external_begin_frame_source_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 

@@ -15,7 +15,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/fake_compositor_frame_sink.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"

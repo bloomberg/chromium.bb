@@ -59,10 +59,8 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHostInProcess* layer_tree_host,
   DCHECK(layer_tree_host);
 }
 
-void SingleThreadProxy::Start(
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source) {
+void SingleThreadProxy::Start() {
   DebugScopedSetImplThread impl(task_runner_provider_);
-  external_begin_frame_source_ = std::move(external_begin_frame_source);
 
   const LayerTreeSettings& settings = layer_tree_host_->GetSettings();
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
@@ -74,15 +72,10 @@ void SingleThreadProxy::Start(
             scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
-
-    // TODO(enne): remove these settings.
-    DCHECK(!settings.use_external_begin_frame_source);
-    DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
-    scheduler_on_impl_thread_ =
-        Scheduler::Create(this, scheduler_settings, layer_tree_host_->GetId(),
-                          task_runner_provider_->MainThreadTaskRunner(),
-                          external_begin_frame_source_.get(),
-                          std::move(compositor_timing_history));
+    scheduler_on_impl_thread_.reset(
+        new Scheduler(this, scheduler_settings, layer_tree_host_->GetId(),
+                      task_runner_provider_->MainThreadTaskRunner(),
+                      std::move(compositor_timing_history)));
   }
 
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
@@ -422,12 +415,6 @@ void SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread() {
 }
 
 void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
-  DCHECK(layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
-  // TODO(enne): this overrides any preexisting begin frame source.  Those
-  // other sources will eventually be removed and this will be the only path.
-  if (!layer_tree_host_->GetSettings()
-           .use_compositor_frame_sink_begin_frame_source)
-    return;
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetBeginFrameSource(source);
 }

@@ -27,7 +27,7 @@ class LayerTreeHostSingleThreadClient;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
                                     NON_EXPORTED_BASE(LayerTreeHostImplClient),
-                                    SchedulerClient {
+                                    public SchedulerClient {
  public:
   static std::unique_ptr<Proxy> Create(
       LayerTreeHostInProcess* layer_tree_host,
@@ -52,8 +52,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool CommitRequested() const override;
   bool BeginMainFrameRequested() const override;
   void MainThreadHasStoppedFlinging() override {}
-  void Start(
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
+  void Start() override;
   void Stop() override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;
@@ -133,7 +132,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 
   // Accessed from both threads.
-  std::unique_ptr<BeginFrameSource> external_begin_frame_source_;
   std::unique_ptr<Scheduler> scheduler_on_impl_thread_;
 
   std::unique_ptr<BlockingTaskRunner::CapturePostTasks>

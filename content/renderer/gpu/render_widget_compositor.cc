@@ -242,7 +242,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.main_task_runner =
       compositor_deps_->GetCompositorMainThreadTaskRunner();
   params.animation_host = cc::AnimationHost::CreateMainInstance();
-  DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
 
   if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
     DCHECK(!threaded_);

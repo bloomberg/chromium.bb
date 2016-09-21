@@ -91,7 +91,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
     TaskGraphRunner* task_graph_runner = nullptr;
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source;
     ImageSerializationProcessor* image_serialization_processor = nullptr;
     std::unique_ptr<AnimationHost> animation_host;
 
@@ -255,12 +254,10 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
 
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   void InitializeSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   void InitializeRemoteServer(
       RemoteProtoChannel* remote_proto_channel,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
@@ -270,8 +267,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   void InitializeForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider,
-      std::unique_ptr<Proxy> proxy_for_testing,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+      std::unique_ptr<Proxy> proxy_for_testing);
   void InitializePictureCacheForTesting();
   void SetTaskRunnerProviderForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider);
@@ -308,9 +304,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
 
   void ApplyViewportDeltas(ScrollAndScaleSet* info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
-  void InitializeProxy(
-      std::unique_ptr<Proxy> proxy,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source);
+  void InitializeProxy(std::unique_ptr<Proxy> proxy);
 
   bool DoUpdateLayers(Layer* root_layer);
   void UpdateHudLayer();

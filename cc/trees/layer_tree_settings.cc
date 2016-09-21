@@ -26,8 +26,6 @@ LayerTreeSettings::~LayerTreeSettings() = default;
 bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
   return renderer_settings == other.renderer_settings &&
          single_thread_proxy_scheduler == other.single_thread_proxy_scheduler &&
-         use_external_begin_frame_source ==
-             other.use_external_begin_frame_source &&
          main_frame_before_activation_enabled ==
              other.main_frame_before_activation_enabled &&
          using_synchronous_renderer_compositor ==

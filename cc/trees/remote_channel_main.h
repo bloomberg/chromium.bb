@@ -55,8 +55,7 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation) override;
   void SynchronouslyInitializeImpl(
-      LayerTreeHostInProcess* layer_tree_host,
-      std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
+      LayerTreeHostInProcess* layer_tree_host) override;
   void SynchronouslyCloseImpl() override;
 
   // RemoteProtoChannel::ProtoReceiver implementation

@@ -36,11 +36,9 @@ unsigned int nextBeginFrameId = 0;
 
 }  // namespace
 
-ProxyImpl::ProxyImpl(
-    ChannelImpl* channel_impl,
-    LayerTreeHostInProcess* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider,
-    std::unique_ptr<BeginFrameSource> external_begin_frame_source)
+ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
+                     LayerTreeHostInProcess* layer_tree_host,
+                     TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_id_(layer_tree_host->GetId()),
       commit_completion_waits_for_activation_(false),
       commit_completion_event_(nullptr),
@@ -54,7 +52,6 @@ ProxyImpl::ProxyImpl(
           base::Bind(&ProxyImpl::RenewTreePriority, base::Unretained(this)),
           base::TimeDelta::FromSecondsD(
               kSmoothnessTakesPriorityExpirationDelay)),
-      external_begin_frame_source_(std::move(external_begin_frame_source)),
       rendering_stats_instrumentation_(
           layer_tree_host->rendering_stats_instrumentation()),
       channel_impl_(channel_impl) {
@@ -76,14 +73,9 @@ ProxyImpl::ProxyImpl(
           scheduler_settings.using_synchronous_renderer_compositor,
           CompositorTimingHistory::RENDERER_UMA,
           rendering_stats_instrumentation_));
-
-  // TODO(enne): remove these settings.
-  DCHECK(!settings.use_external_begin_frame_source);
-  DCHECK(settings.use_compositor_frame_sink_begin_frame_source);
-  scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
+  scheduler_.reset(new Scheduler(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),
-                                 external_begin_frame_source_.get(),
-                                 std::move(compositor_timing_history));
+                                 std::move(compositor_timing_history)));
 
   DCHECK_EQ(scheduler_->visible(), layer_tree_host_impl_->visible());
 }
@@ -104,7 +96,6 @@ ProxyImpl::~ProxyImpl() {
   layer_tree_host_impl_->ReleaseCompositorFrameSink();
 
   scheduler_ = nullptr;
-  external_begin_frame_source_ = nullptr;
   layer_tree_host_impl_ = nullptr;
   // We need to explicitly shutdown the notifier to destroy any weakptrs it is
   // holding while still on the compositor thread. This also ensures any
