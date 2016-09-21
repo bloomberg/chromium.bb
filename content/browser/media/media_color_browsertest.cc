@@ -19,8 +19,6 @@ class MediaColorTest : public MediaBrowserTest {
   }
 };
 
-// Android doesn't support Theora.
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pTheora) {
   RunColorTest("yuv420p.ogv");
 }
@@ -32,7 +30,6 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv422pTheora) {
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pTheora) {
   RunColorTest("yuv444p.ogv");
 }
-#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pVp8) {
   RunColorTest("yuv420p.webm");
@@ -69,8 +66,6 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pRec709H264) {
   RunColorTest("yuv420p_rec709.mp4");
 }
 
-// Android devices usually only support baseline, main and high.
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pHighBitDepth) {
   RunColorTest("yuv420p_hi10p.mp4");
 }
@@ -82,7 +77,6 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv422pH264) {
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pH264) {
   RunColorTest("yuv444p.mp4");
 }
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pMpeg4) {
