@@ -73,14 +73,6 @@ class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
 #if defined(OS_WIN)
       command_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif
-      if (target.instance() == "font_service" || target.instance() == "ui") {
-        base::CommandLine::StringVector argv(command_line->argv());
-        auto iter = std::find(argv.begin(), argv.end(),
-                              FILE_PATH_LITERAL("--enable-sandbox"));
-        if (iter != argv.end())
-          argv.erase(iter);
-        *command_line = base::CommandLine(argv);
-      }
       return;
     }
 

@@ -4,8 +4,7 @@
   "display_name": "File System Service",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] },
-      "mojo:shell": { "classes": ["shell:unsandboxed"] }
+      "*": { "classes": [ "app" ] }
     }
   }
 }

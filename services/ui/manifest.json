@@ -26,13 +26,7 @@
     "required": {
       "mojo:ui": { "classes": [ "ozone" ] },
       "*": { "classes": [ "app" ] },
-      "mojo:shell": {
-        "classes": [
-          "shell:all_users",
-          "shell:explicit_class",
-          "shell:unsandboxed"
-        ]
-      }
+      "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
     }
   }
 }

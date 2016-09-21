@@ -9,8 +9,7 @@
       ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "mojo:shell": { "classes": ["shell:unsandboxed"] }
+      "*": { "classes": [ "app" ] }
     }
   }
 }
