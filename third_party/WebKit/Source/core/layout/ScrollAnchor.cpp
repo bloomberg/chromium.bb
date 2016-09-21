@@ -263,6 +263,11 @@ void ScrollAnchor::restore()
         // This minimizes redundant calls to findAnchor.
         // TODO(skobes): add UMA metric for this.
         clear();
+
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, suppressedBySanaclapHistogram,
+            ("Layout.ScrollAnchor.SuppressedBySanaclap", 2));
+        suppressedBySanaclapHistogram.count(1);
+
         return;
     }
 

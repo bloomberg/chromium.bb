@@ -21108,6 +21108,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Layout.ScrollAnchor.SuppressedBySanaclap" enum="BooleanHit">
+  <owner>ymalik@chromium.org</owner>
+  <summary>
+    Records the number of times scroll anchoring is suppressed because of the
+    SANACLAP bit being set on an ancestor (see bit.ly/sanaclap).
+  </summary>
+</histogram>
+
 <histogram name="Layout.ScrollAnchor.TimeToFindAnchor" units="microseconds">
   <owner>ymalik@chromium.org</owner>
   <summary>The time it took to find a suitable anchor element.</summary>
