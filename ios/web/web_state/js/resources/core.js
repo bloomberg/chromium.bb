@@ -339,10 +339,6 @@ goog.require('__crWeb.message');
     __gCrWeb.message.invokeOnHost(command);
   };
 
-  function invokeOnHostImmediate_(command) {
-    __gCrWeb.message.invokeOnHostImmediate(command);
-  };
-
   /**
    * Gets the referrer policy to use for navigations away from the current page.
    * If a link element is passed, and it includes a rel=noreferrer tag, that
@@ -553,15 +549,10 @@ goog.require('__crWeb.message');
       // W3C recommended behavior.
       href = 'about:blank';
     }
-    // ExternalRequest messages need to be handled before the expected
-    // shouldStartLoadWithRequest, as such we cannot wait for the regular
-    // message queue invoke which delays to avoid illegal recursion into
-    // UIWebView. This immediate class of messages is handled ASAP by
-    // CRWWebController.
-    invokeOnHostImmediate_({'command': 'externalRequest',
-                               'href': href,
-                             'target': target,
-                     'referrerPolicy': getReferrerPolicy_()});
+    invokeOnHost_({'command': 'externalRequest',
+                      'href': href,
+                    'target': target,
+            'referrerPolicy': getReferrerPolicy_()});
   };
 
   var resetExternalRequest_ = function() {

@@ -180,8 +180,6 @@ const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
 const NSUInteger kWebViewTag = 0x3eb71e3;
 // URL scheme for messages sent from javascript for asynchronous processing.
 NSString* const kScriptMessageName = @"crwebinvoke";
-// URL scheme for messages sent from javascript for immediate processing.
-NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Constants for storing the source of NSErrors received by WKWebViews:
 // - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
@@ -2630,8 +2628,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!message->GetDictionary("crwCommand", &command)) {
     return NO;
   }
-  if ([scriptMessage.name isEqualToString:kScriptImmediateName] ||
-      [scriptMessage.name isEqualToString:kScriptMessageName]) {
+  if ([scriptMessage.name isEqualToString:kScriptMessageName]) {
     return [self respondToMessage:command
                 userIsInteracting:[self userIsInteracting]
                         originURL:net::GURLWithNSURL([_webView URL])];
@@ -4654,14 +4651,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Set up the new web view.
   if (webView) {
     base::WeakNSObject<CRWWebController> weakSelf(self);
-    void (^messageHandler)(WKScriptMessage*) = ^(WKScriptMessage* message) {
+    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
       [weakSelf didReceiveScriptMessage:message];
-    };
-    [messageRouter setScriptMessageHandler:messageHandler
+    }
                                       name:kScriptMessageName
-                                   webView:webView];
-    [messageRouter setScriptMessageHandler:messageHandler
-                                      name:kScriptImmediateName
                                    webView:webView];
     _windowIDJSManager.reset(
         [[CRWJSWindowIDManager alloc] initWithWebView:webView]);

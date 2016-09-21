@@ -59,27 +59,6 @@ TEST_F(CRWWebControllerObserverTest, HandleCommand) {
       [fake_web_controller_observer_ commandsReceived][0]->Equals(&command));
 }
 
-// Tests that web controller receives an immediate JS message from the page.
-TEST_F(CRWWebControllerObserverTest, HandleImmediateCommand) {
-  LoadHtml(@"<p></p>");
-  ASSERT_NSNE(@"http://testimmediate#target",
-              [web_controller() externalRequestWindowName]);
-  // The only valid immediate commands are window.unload and externalRequest.
-  base::DictionaryValue command;
-  command.SetString("command", "externalRequest");
-  command.SetString("href", "http://testimmediate");
-  command.SetString("target", "target");
-  command.SetString("referrerPolicy", "referrerPolicy");
-  std::string message;
-  base::JSONWriter::Write(command, &message);
-  ExecuteJavaScript(
-      [NSString stringWithFormat:@"__gCrWeb.message.invokeOnHostImmediate(%s)",
-                                 message.c_str()]);
-  WaitForBackgroundTasks();
-  ASSERT_NSEQ(@"http://testimmediate#target",
-              [web_controller() externalRequestWindowName]);
-}
-
 // Send a large number of commands and check each one is immediately received.
 TEST_F(CRWWebControllerObserverTest, HandleMultipleCommands) {
   LoadHtml(@"<p></p>");
