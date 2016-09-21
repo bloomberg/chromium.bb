@@ -765,8 +765,6 @@ HTMLImportLoader* Document::importLoader() const
 
 bool Document::haveImportsLoaded() const
 {
-    if (m_styleEngine->ignoringPendingStylesheets())
-        return true;
     if (!m_importsController)
         return true;
     return !m_importsController->shouldBlockScriptExecution(*this);
