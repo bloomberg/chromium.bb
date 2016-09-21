@@ -592,6 +592,10 @@ void BlinkTestRunner::TestFinished() {
     RenderView::ForEach(&visitor);
     Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
   } else {
+    // clean out the lifecycle if needed before capturing the layout tree
+    // dump and pixels from the compositor.
+    render_view()->GetWebView()->mainFrame()->toWebLocalFrame()
+        ->frameWidget()->updateAllLifecyclePhases();
     CaptureDump();
   }
 }
@@ -876,20 +880,7 @@ void BlinkTestRunner::CaptureDumpContinued() {
     return;
   }
 
-#ifndef NDEBUG
-  // Force a layout/paint by the end of the test to ensure test coverage of
-  // incremental painting.
-  test_runner::LayoutAndPaintAsyncThen(
-      render_view()
-          ->GetWebView()
-          ->mainFrame()
-          ->toWebLocalFrame()
-          ->frameWidget(),
-      base::Bind(&BlinkTestRunner::CaptureDumpComplete,
-                 base::Unretained(this)));
-#else
   CaptureDumpComplete();
-#endif
 }
 
 void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
