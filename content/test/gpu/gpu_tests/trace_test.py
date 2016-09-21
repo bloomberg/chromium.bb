@@ -64,6 +64,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')
+    options.AppendExtraBrowserArgs('--enable-experimental-canvas-features')
 
   def WillNavigateToPage(self, page, tab):
     config = tracing_config.TracingConfig()

@@ -65,6 +65,14 @@ class DisableMacOverlaysSharedPageState(gpu_test_base.GpuSharedPageState):
       ['--disable-mac-overlays'])
 
 
+class EnableExperimentalCanvasFeaturesSharedPageState(
+        gpu_test_base.GpuSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(EnableExperimentalCanvasFeaturesSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--enable-experimental-canvas-features'])
+
 class PixelTestsStorySet(story_set_module.StorySet):
 
   """ Some basic test cases for GPU. """
@@ -172,7 +180,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       test_rect=[0, 0, 300, 300],
       revision=1,
       story_set=self,
-      shared_page_state_class=shared_page_state_class,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
       expectations=expectations))
 
     self.AddStory(PixelTestsPage(
