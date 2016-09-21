@@ -141,18 +141,20 @@ void RequestCoordinator::GetQueuedRequestsCallback(
   callback.Run(std::move(requests));
 }
 
-void RequestCoordinator::StopPrerendering() {
+void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
   if (offliner_ && is_busy_) {
     DCHECK(active_request_.get());
     offliner_->Cancel();
     AbortRequestAttempt(active_request_.get());
   }
 
-  // Stopping offliner means it will not call callback.
-  last_offlining_status_ =
-      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED;
+  // Stopping offliner means it will not call callback so set last status.
+  last_offlining_status_ = stop_status;
 
   if (active_request_) {
+    event_logger_.RecordOfflinerResult(active_request_->client_id().name_space,
+                                       last_offlining_status_,
+                                       active_request_->request_id());
     RecordOfflinerResultUMA(active_request_->client_id(),
                             last_offlining_status_);
     is_busy_ = false;
@@ -189,7 +191,7 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   if (active_request_ != nullptr) {
     if (request_ids.end() != std::find(request_ids.begin(), request_ids.end(),
                                        active_request_->request_id())) {
-      StopPrerendering();
+      StopPrerendering(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
       return true;
     }
   }
@@ -344,8 +346,17 @@ void RequestCoordinator::ScheduleAsNeeded() {
 }
 
 void RequestCoordinator::StopProcessing() {
+  StopProcessingWithStatus(Offliner::REQUEST_COORDINATOR_CANCELED);
+}
+
+void RequestCoordinator::HandleWatchdogTimeout() {
+  StopProcessingWithStatus(Offliner::REQUEST_COORDINATOR_TIMED_OUT);
+}
+
+void RequestCoordinator::StopProcessingWithStatus(
+    Offliner::RequestStatus stop_status) {
   is_stopped_ = true;
-  StopPrerendering();
+  StopPrerendering(stop_status);
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
@@ -482,7 +493,7 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
 
     // Start a watchdog timer to catch pre-renders running too long
     watchdog_timer_.Start(FROM_HERE, offliner_timeout_, this,
-                          &RequestCoordinator::StopProcessing);
+                          &RequestCoordinator::HandleWatchdogTimeout);
   } else {
     is_busy_ = false;
     DVLOG(0) << "Unable to start LoadAndSave";

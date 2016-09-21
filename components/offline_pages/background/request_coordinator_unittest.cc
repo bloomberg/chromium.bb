@@ -852,7 +852,7 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
 
   EXPECT_FALSE(is_starting());
   EXPECT_TRUE(OfflinerWasCanceled());
-  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT,
             last_offlining_status());
 }
 

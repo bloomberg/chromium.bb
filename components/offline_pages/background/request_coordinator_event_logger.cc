@@ -27,6 +27,8 @@ static std::string OfflinerRequestStatusToString(
       return "SAVE_FAILED";
     case Offliner::FOREGROUND_CANCELED:
       return "FOREGROUND_CANCELED";
+    case Offliner::REQUEST_COORDINATOR_TIMED_OUT:
+      return "REQUEST_COORDINATOR_TIMED_OUT";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

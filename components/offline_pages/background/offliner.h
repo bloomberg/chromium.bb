@@ -38,6 +38,8 @@ class Offliner {
     SAVE_FAILED = 6,
     // Foreground transition canceled request.
     FOREGROUND_CANCELED = 7,
+    // RequestCoordinator canceled request attempt per time limit.
+    REQUEST_COORDINATOR_TIMED_OUT = 8,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

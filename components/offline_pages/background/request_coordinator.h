@@ -218,8 +218,12 @@ class RequestCoordinator : public KeyedService,
   // processing for.
   void RequestNotPicked(bool non_user_requested_tasks_remaining);
 
+  void HandleWatchdogTimeout();
+
+  void StopProcessingWithStatus(Offliner::RequestStatus stop_status);
+
   // Cancels an in progress pre-rendering, and updates state appropriately.
-  void StopPrerendering();
+  void StopPrerendering(Offliner::RequestStatus stop_status);
 
   void SendRequestToOffliner(const SavePageRequest& request);
 

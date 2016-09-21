@@ -89867,6 +89867,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Prerendering failed"/>
   <int value="6" label="Save failed"/>
   <int value="7" label="Foreground transition canceled"/>
+  <int value="8" label="RequestCoordinator timed-out"/>
 </enum>
 
 <enum name="OfflinePagesClearAllStatus" type="int">
