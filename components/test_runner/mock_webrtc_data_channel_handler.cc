@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
@@ -34,9 +33,9 @@ void MockWebRTCDataChannelHandler::setClient(
     WebRTCDataChannelHandlerClient* client) {
   client_ = client;
   if (client_)
-    delegate_->PostTask(new WebCallbackTask(
+    delegate_->PostTask(
         base::Bind(&MockWebRTCDataChannelHandler::ReportOpenedState,
-                   weak_factory_.GetWeakPtr())));
+                   weak_factory_.GetWeakPtr()));
 }
 
 blink::WebString MockWebRTCDataChannelHandler::label() {
@@ -94,9 +93,9 @@ bool MockWebRTCDataChannelHandler::sendRawData(const char* data, size_t size) {
 
 void MockWebRTCDataChannelHandler::close() {
   DCHECK(client_);
-  delegate_->PostTask(new WebCallbackTask(
+  delegate_->PostTask(
       base::Bind(&MockWebRTCDataChannelHandler::ReportClosedState,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void MockWebRTCDataChannelHandler::ReportOpenedState() {

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandlerClient.h"
@@ -50,8 +49,8 @@ bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,
   tone_buffer_ = tones;
   base::Closure closure = base::Bind(&MockWebRTCDTMFSenderHandler::PlayTone,
                                      weak_factory_.GetWeakPtr());
-  delegate_->PostTask(new WebCallbackTask(closure));
-  delegate_->PostTask(new WebCallbackTask(closure));
+  delegate_->PostTask(closure);
+  delegate_->PostTask(closure);
   return true;
 }
 

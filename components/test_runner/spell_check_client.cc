@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "components/test_runner/mock_grammar_check.h"
 #include "components/test_runner/test_runner.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
@@ -73,8 +72,8 @@ void SpellCheckClient::requestCheckingOfText(
     FinishLastTextCheck();
   else
     delegate_->PostDelayedTask(
-        new WebCallbackTask(base::Bind(&SpellCheckClient::FinishLastTextCheck,
-                                       weak_factory_.GetWeakPtr())),
+        base::Bind(&SpellCheckClient::FinishLastTextCheck,
+                   weak_factory_.GetWeakPtr()),
         0);
 }
 

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
@@ -257,8 +256,8 @@ void MockWebSpeechRecognizer::ClearTaskQueue() {
 
 void MockWebSpeechRecognizer::PostRunTaskFromQueue() {
   task_queue_running_ = true;
-  delegate_->PostTask(new WebCallbackTask(base::Bind(
-      &MockWebSpeechRecognizer::RunTaskFromQueue, weak_factory_.GetWeakPtr())));
+  delegate_->PostTask(base::Bind(&MockWebSpeechRecognizer::RunTaskFromQueue,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void MockWebSpeechRecognizer::RunTaskFromQueue() {

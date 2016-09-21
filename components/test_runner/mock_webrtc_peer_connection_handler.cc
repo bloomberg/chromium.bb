@@ -15,7 +15,6 @@
 #include "components/test_runner/mock_webrtc_data_channel_handler.h"
 #include "components/test_runner/mock_webrtc_dtmf_sender_handler.h"
 #include "components/test_runner/test_interfaces.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -136,9 +135,9 @@ void MockWebRTCPeerConnectionHandler::ReportInitializeCompleted() {
 bool MockWebRTCPeerConnectionHandler::initialize(
     const WebRTCConfiguration& configuration,
     const WebMediaConstraints& constraints) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&MockWebRTCPeerConnectionHandler::ReportInitializeCompleted,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -151,32 +150,32 @@ void MockWebRTCPeerConnectionHandler::createOffer(
 void MockWebRTCPeerConnectionHandler::PostRequestResult(
     const WebRTCSessionDescriptionRequest& request,
     const WebRTCSessionDescription& session_description) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&WebRTCSessionDescriptionRequest::requestSucceeded,
                  base::Owned(new WebRTCSessionDescriptionRequest(request)),
-                 session_description)));
+                 session_description));
 }
 
 void MockWebRTCPeerConnectionHandler::PostRequestFailure(
     const WebRTCSessionDescriptionRequest& request) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&WebRTCSessionDescriptionRequest::requestFailed,
                  base::Owned(new WebRTCSessionDescriptionRequest(request)),
-                 WebString("TEST_ERROR"))));
+                 WebString("TEST_ERROR")));
 }
 
 void MockWebRTCPeerConnectionHandler::PostRequestResult(
     const WebRTCVoidRequest& request) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&WebRTCVoidRequest::requestSucceeded,
-                 base::Owned(new WebRTCVoidRequest(request)))));
+                 base::Owned(new WebRTCVoidRequest(request))));
 }
 
 void MockWebRTCPeerConnectionHandler::PostRequestFailure(
     const WebRTCVoidRequest& request) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(base::Bind(
+  interfaces_->GetDelegate()->PostTask(base::Bind(
       &WebRTCVoidRequest::requestFailed,
-      base::Owned(new WebRTCVoidRequest(request)), WebString("TEST_ERROR"))));
+      base::Owned(new WebRTCVoidRequest(request)), WebString("TEST_ERROR")));
 }
 
 void MockWebRTCPeerConnectionHandler::createOffer(
@@ -387,9 +386,9 @@ void MockWebRTCPeerConnectionHandler::getStats(
       response.addStats(video_stats);
     }
   }
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&blink::WebRTCStatsRequest::requestSucceeded,
-                 base::Owned(new WebRTCStatsRequest(request)), response)));
+                 base::Owned(new WebRTCStatsRequest(request)), response));
 }
 
 void MockWebRTCPeerConnectionHandler::ReportCreationOfDataChannel() {
@@ -403,9 +402,9 @@ void MockWebRTCPeerConnectionHandler::ReportCreationOfDataChannel() {
 WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::createDataChannel(
     const WebString& label,
     const blink::WebRTCDataChannelInit& init) {
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(
+  interfaces_->GetDelegate()->PostTask(
       base::Bind(&MockWebRTCPeerConnectionHandler::ReportCreationOfDataChannel,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()));
 
   // TODO(lukasza): Unclear if it is okay to return a different object than the
   // one created in ReportCreationOfDataChannel.

@@ -83,9 +83,8 @@ class WebTestDelegate {
 
   // The delegate takes ownership of the WebTask objects and is responsible
   // for deleting them.
-  virtual void PostTask(blink::WebTaskRunner::Task* task) = 0;
-  virtual void PostDelayedTask(blink::WebTaskRunner::Task* task,
-                               long long ms) = 0;
+  virtual void PostTask(const base::Closure& task) = 0;
+  virtual void PostDelayedTask(const base::Closure& task, long long ms) = 0;
 
   // Register a new isolated filesystem with the given files, and return the
   // new filesystem id.

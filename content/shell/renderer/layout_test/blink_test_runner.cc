@@ -293,13 +293,15 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }
 
-void BlinkTestRunner::PostTask(blink::WebTaskRunner::Task* task) {
-  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, task);
+void BlinkTestRunner::PostTask(const base::Closure& task) {
+  Platform::current()
+      ->currentThread()
+      ->getWebTaskRunner()
+      ->toSingleThreadTaskRunner()
+      ->PostTask(BLINK_FROM_HERE, task);
 }
 
-void BlinkTestRunner::PostDelayedTask(blink::WebTaskRunner::Task* task,
-                                      long long ms) {
+void BlinkTestRunner::PostDelayedTask(const base::Closure& task, long long ms) {
   Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE, task, ms);
 }

@@ -29,7 +29,6 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/test_runner_for_specific_view.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
@@ -1496,8 +1495,8 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
 
   if (!queue_.empty()) {
     // We delay processing queued work to avoid recursion problems.
-    controller_->delegate_->PostTask(new WebCallbackTask(base::Bind(
-        &TestRunner::WorkQueue::ProcessWork, weak_factory_.GetWeakPtr())));
+    controller_->delegate_->PostTask(base::Bind(
+        &TestRunner::WorkQueue::ProcessWork, weak_factory_.GetWeakPtr()));
   } else if (!controller_->layout_test_runtime_flags_.wait_until_done()) {
     controller_->delegate_->TestFinished();
   }

@@ -89,8 +89,6 @@ component("test_runner") {
     "web_frame_test_client.h",
     "web_frame_test_proxy.cc",
     "web_frame_test_proxy.h",
-    "web_task.cc",
-    "web_task.h",
     "web_test_delegate.h",
     "web_test_interfaces.cc",
     "web_test_interfaces.h",

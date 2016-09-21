@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -38,9 +37,9 @@ void MockWebMIDIAccessor::startSession() {
                             "MockOutputName",
                             "MockOutputVersion",
                             state);
-  interfaces_->GetDelegate()->PostTask(new WebCallbackTask(base::Bind(
+  interfaces_->GetDelegate()->PostTask(base::Bind(
       &MockWebMIDIAccessor::ReportStartedSession, weak_factory_.GetWeakPtr(),
-      interfaces_->GetTestRunner()->midiAccessorResult())));
+      interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
 void MockWebMIDIAccessor::ReportStartedSession(bool success) {

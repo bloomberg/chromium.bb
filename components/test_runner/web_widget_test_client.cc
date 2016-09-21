@@ -12,7 +12,6 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/test_runner_for_specific_view.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "components/test_runner/web_widget_test_proxy.h"
@@ -46,8 +45,8 @@ void WebWidgetTestClient::scheduleAnimation() {
         web_widget_test_proxy_base_->web_widget());
 
     web_view_test_proxy_base_->delegate()->PostDelayedTask(
-        new WebCallbackTask(base::Bind(&WebWidgetTestClient::AnimateNow,
-                                       weak_factory_.GetWeakPtr())),
+        base::Bind(&WebWidgetTestClient::AnimateNow,
+                   weak_factory_.GetWeakPtr()),
         1);
   }
 }

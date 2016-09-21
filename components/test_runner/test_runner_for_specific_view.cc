@@ -28,7 +28,6 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/test_runner.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
@@ -144,12 +143,12 @@ bool TestRunnerForSpecificView::isPointerLocked() {
 }
 
 void TestRunnerForSpecificView::PostTask(const base::Closure& callback) {
-  delegate()->PostTask(new WebCallbackTask(callback));
+  delegate()->PostTask(callback);
 }
 
 void TestRunnerForSpecificView::PostDelayedTask(long long delay,
                                                 const base::Closure& callback) {
-  delegate()->PostDelayedTask(new WebCallbackTask(callback), delay);
+  delegate()->PostDelayedTask(callback, delay);
 }
 
 void TestRunnerForSpecificView::PostV8Callback(

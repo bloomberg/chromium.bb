@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -54,9 +53,9 @@ void MockWebUserMediaClient::requestUserMedia(
     WebUserMediaRequest request = stream_request;
 
     if (request.ownerDocument().isNull() || !request.ownerDocument().frame()) {
-      delegate_->PostTask(new WebCallbackTask(base::Bind(
+      delegate_->PostTask(base::Bind(
           &WebUserMediaRequest::requestFailed,
-          base::Owned(new WebUserMediaRequest(request)), WebString())));
+          base::Owned(new WebUserMediaRequest(request)), WebString()));
       return;
     }
 
@@ -89,9 +88,9 @@ void MockWebUserMediaClient::requestUserMedia(
       stream.addTrack(web_track);
     }
 
-    delegate_->PostTask(new WebCallbackTask(
+    delegate_->PostTask(
         base::Bind(&WebUserMediaRequest::requestSucceeded,
-                   base::Owned(new WebUserMediaRequest(request)), stream)));
+                   base::Owned(new WebUserMediaRequest(request)), stream));
 }
 
 void MockWebUserMediaClient::cancelUserMediaRequest(
@@ -143,9 +142,9 @@ void MockWebUserMediaClient::requestMediaDevices(
                           WebString::fromUTF8(test_devices[i].group_id));
   }
 
-  delegate_->PostTask(new WebCallbackTask(
+  delegate_->PostTask(
       base::Bind(&WebMediaDevicesRequest::requestSucceeded,
-                 base::Owned(new WebMediaDevicesRequest(request)), devices)));
+                 base::Owned(new WebMediaDevicesRequest(request)), devices));
 
   should_enumerate_extra_device_ = !should_enumerate_extra_device_;
   if (!media_device_change_observer_.isNull())
@@ -186,9 +185,9 @@ void MockWebUserMediaClient::requestSources(
                         test_sources[i].facing);
   }
 
-  delegate_->PostTask(new WebCallbackTask(base::Bind(
+  delegate_->PostTask(base::Bind(
       &WebMediaStreamTrackSourcesRequest::requestSucceeded,
-      base::Owned(new WebMediaStreamTrackSourcesRequest(request)), sources)));
+      base::Owned(new WebMediaStreamTrackSourcesRequest(request)), sources));
 }
 
 void MockWebUserMediaClient::setMediaDeviceChangeObserver(

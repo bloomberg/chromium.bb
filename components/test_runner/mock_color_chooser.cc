@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "components/test_runner/test_runner.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 
 namespace test_runner {
@@ -28,10 +27,9 @@ MockColorChooser::~MockColorChooser() {
 void MockColorChooser::setSelectedColor(const blink::WebColor color) {}
 
 void MockColorChooser::endChooser() {
-  delegate_->PostDelayedTask(
-      new WebCallbackTask(base::Bind(&MockColorChooser::InvokeDidEndChooser,
-                                     weak_factory_.GetWeakPtr())),
-      0);
+  delegate_->PostDelayedTask(base::Bind(&MockColorChooser::InvokeDidEndChooser,
+                                        weak_factory_.GetWeakPtr()),
+                             0);
 }
 
 void MockColorChooser::InvokeDidEndChooser() {

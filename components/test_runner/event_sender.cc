@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "components/test_runner/mock_spell_check.h"
 #include "components/test_runner/test_interfaces.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "gin/handle.h"
@@ -2208,20 +2207,20 @@ void EventSender::MouseLeave() {
 
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  delegate()->PostTask(new WebCallbackTask(
-      base::Bind(&EventSender::MouseDown, weak_factory_.GetWeakPtr(),
-                 button_number, modifiers)));
-  delegate()->PostTask(new WebCallbackTask(
-      base::Bind(&EventSender::MouseUp, weak_factory_.GetWeakPtr(),
-                 button_number, modifiers)));
+  delegate()->PostTask(base::Bind(&EventSender::MouseDown,
+                                  weak_factory_.GetWeakPtr(), button_number,
+                                  modifiers));
+  delegate()->PostTask(base::Bind(&EventSender::MouseUp,
+                                  weak_factory_.GetWeakPtr(), button_number,
+                                  modifiers));
 }
 
 void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  delegate()->PostTask(new WebCallbackTask(
-      base::Bind(&EventSender::KeyDown, weak_factory_.GetWeakPtr(), code_str,
-                 modifiers, location)));
+  delegate()->PostTask(base::Bind(&EventSender::KeyDown,
+                                  weak_factory_.GetWeakPtr(), code_str,
+                                  modifiers, location));
 }
 
 double EventSender::GetCurrentEventTimeSec() {
