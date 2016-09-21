@@ -27,6 +27,7 @@
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
+#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
@@ -76,6 +77,8 @@ Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
+  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen())
+    return Status(kUnexpectedAlertOpen);
   std::string frame_id = session->GetCurrentFrameId();
   std::unique_ptr<base::Value> result;
   return web_view->EvaluateScript(frame_id, expression, &result);

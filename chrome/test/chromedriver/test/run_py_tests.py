@@ -864,6 +864,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     except chromedriver.ChromeDriverException as e:
       self.fail('exception while calling GetLog on a closed tab: ' + e.message)
 
+  def testGetLogOnWindowWithAlert(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('alert("alert!");')
+    try:
+      self._driver.GetLog('browser')
+    except Exception as e:
+      self.fail(e.message)
+
   def testAutoReporting(self):
     self.assertFalse(self._driver.IsAutoReporting())
     self._driver.SetAutoReporting(True)
