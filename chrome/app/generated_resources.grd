@@ -6866,7 +6866,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Force UI direction
       </message>
       <message name="IDS_FLAGS_FORCE_UI_DIRECTION_DESCRIPTION" desc="Description for the flag to force a specific UI direction.">
-          Explicitly force the UI to left-to-right or right-to-left mode, overriding the default direction of the UI language.
+          Explicitly force the UI to left-to-right (LTR) or right-to-left (RTL) mode, overriding the default direction of the UI language.
       </message>
       <message name="IDS_FLAGS_FORCE_UI_DIRECTION_LTR" desc="Name for the option to force left-to-right UI direction mode.">
           Left-to-right
