@@ -650,6 +650,12 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
 # when we swith to swiftshader.
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
+# Similarly, these tests draw incorrectly because of osmesa's poor support for shader derivatives and should work
+# with swiftshader.
+crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ Failure Pass ]
+crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
+crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-arc-circumference.html [ Failure Pass ]
+crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Failure Pass ]
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash ]
