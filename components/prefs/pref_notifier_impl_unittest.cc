@@ -59,7 +59,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
     if (observer_iterator == pref_observers()->end())
       return false;
 
-    PrefObserverList* observer_list = observer_iterator->second;
+    PrefObserverList* observer_list = observer_iterator->second.get();
     PrefObserverList::Iterator it(observer_list);
     PrefObserver* existing_obs;
     size_t count = 0;

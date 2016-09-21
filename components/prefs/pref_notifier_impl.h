@@ -6,6 +6,7 @@
 #define COMPONENTS_PREFS_PREF_NOTIFIER_IMPL_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -49,7 +50,8 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl
   // order they are added. These should only be accessed externally for unit
   // testing.
   typedef base::ObserverList<PrefObserver> PrefObserverList;
-  typedef base::hash_map<std::string, PrefObserverList*> PrefObserverMap;
+  typedef base::hash_map<std::string, std::unique_ptr<PrefObserverList>>
+      PrefObserverMap;
 
   typedef std::list<base::Callback<void(bool)>> PrefInitObserverList;
 
