@@ -106,7 +106,7 @@ class StatusUploaderTest : public testing::Test {
                                         base::TimeDelta expected_delay) {
     // Running the task should pass two callbacks into GetDeviceStatusAsync
     // and GetDeviceSessionStatusAsync. We'll grab these two callbacks.
-    EXPECT_FALSE(task_runner_->GetPendingTasks().empty());
+    EXPECT_TRUE(task_runner_->HasPendingTask());
     DeviceStatusCollector::DeviceStatusCallback ds_callback;
     DeviceStatusCollector::DeviceSessionStatusCallback ss_callback;
     EXPECT_CALL(*collector_ptr_, GetDeviceStatusAsync(_))
@@ -134,7 +134,7 @@ class StatusUploaderTest : public testing::Test {
 
     // Make sure no status upload is queued up yet (since an upload is in
     // progress).
-    EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+    EXPECT_FALSE(task_runner_->HasPendingTask());
 
     // Now invoke the response.
     callback.Run(true);
@@ -169,7 +169,7 @@ class StatusUploaderTest : public testing::Test {
 };
 
 TEST_F(StatusUploaderTest, BasicTest) {
-  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner_->HasPendingTask());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.
@@ -182,7 +182,7 @@ TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
   settings_helper_.SetInteger(chromeos::kReportUploadFrequency, new_delay);
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
       new_delay);
-  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner_->HasPendingTask());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
   ASSERT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.

@@ -113,7 +113,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   }
 
   base::TimeDelta GetFirstDelay() const {
-    if (task_runner_->GetPendingTasks().empty()) {
+    if (!task_runner_->HasPendingTask()) {
       ADD_FAILURE();
       return base::TimeDelta();
     }

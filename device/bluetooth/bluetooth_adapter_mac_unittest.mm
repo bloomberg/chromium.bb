@@ -148,7 +148,7 @@ class BluetoothAdapterMacTest : public testing::Test {
 
 TEST_F(BluetoothAdapterMacTest, Poll) {
   PollAdapter();
-  EXPECT_FALSE(ui_task_runner_->GetPendingTasks().empty());
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
 }
 
 TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {

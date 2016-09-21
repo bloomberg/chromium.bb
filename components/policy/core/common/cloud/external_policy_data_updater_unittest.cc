@@ -157,7 +157,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, FetchSuccess) {
   EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, PayloadSizeExceedsLimit) {
@@ -296,7 +296,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryLimit) {
     // Fast-forward time to the scheduled retry.
     backend_task_runner_->RunPendingTasks();
     io_task_runner_->RunUntilIdle();
-    EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+    EXPECT_FALSE(backend_task_runner_->HasPendingTask());
     ++fetcher_id;
   }
 
@@ -316,7 +316,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryLimit) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(fetcher_id));
 
   // Verify that no further retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, RetryWithBackoff) {
@@ -375,7 +375,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryWithBackoff) {
     // Fast-forward time to the scheduled retry.
     backend_task_runner_->RunPendingTasks();
     io_task_runner_->RunUntilIdle();
-    EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+    EXPECT_FALSE(backend_task_runner_->HasPendingTask());
     ++fetcher_id;
   }
 }
@@ -452,7 +452,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, DataRejectedByCallback) {
   // Fast-forward time to the scheduled retry.
   backend_task_runner_->RunPendingTasks();
   io_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 
   // Verify that the fetch has been restarted.
   fetcher = fetcher_factory_.GetFetcherByID(1);
@@ -475,7 +475,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, DataRejectedByCallback) {
   io_task_runner_->RunUntilIdle();
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, URLChanged) {
@@ -502,7 +502,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, URLChanged) {
   EXPECT_EQ(GURL(kExternalPolicyDataURLs[1]), fetcher->GetOriginalURL());
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, JobInvalidated) {
@@ -570,7 +570,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, FetchCanceled) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobs) {
@@ -665,7 +665,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobs) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(2));
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsFinishingOutOfOrder) {
@@ -760,7 +760,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsFinishingOutOfOrder) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(2));
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithRetry) {
@@ -805,7 +805,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithRetry) {
   // Fast-forward time to the scheduled retry.
   backend_task_runner_->RunPendingTasks();
   io_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 
   // Verify that the first fetch has not been restarted yet.
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(3));
@@ -839,7 +839,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithRetry) {
   EXPECT_EQ(GURL(kExternalPolicyDataURLs[0]), fetcher->GetOriginalURL());
 
   // Verify that no further retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithCancel) {
@@ -924,7 +924,7 @@ TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithCancel) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(2));
 
   // Verify that no retries have been scheduled.
-  EXPECT_TRUE(backend_task_runner_->GetPendingTasks().empty());
+  EXPECT_FALSE(backend_task_runner_->HasPendingTask());
 }
 
 TEST_F(ExternalPolicyDataUpdaterTest, ParallelJobsWithInvalidatedJob) {

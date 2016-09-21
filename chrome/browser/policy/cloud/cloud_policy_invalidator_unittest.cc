@@ -411,7 +411,7 @@ bool CloudPolicyInvalidatorTest::CheckPolicyRefreshed(base::TimeDelta delay) {
   base::TimeDelta max_delay = delay + base::TimeDelta::FromMilliseconds(
       CloudPolicyInvalidator::kMaxFetchDelayMin);
 
-  if (task_runner_->GetPendingTasks().empty())
+  if (!task_runner_->HasPendingTask())
     return false;
   base::TimeDelta actual_delay = task_runner_->GetPendingTasks().back().delay;
   EXPECT_GE(actual_delay, delay);

@@ -474,7 +474,7 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissedLocal));
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
   EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 0);
-  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner()->HasPendingTask());
 
   ShowChromeNowNotification();
 
@@ -498,7 +498,7 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
   SetElapsedTime(requested_show_time);
   task_runner()->RunPendingTasks();
 
-  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner()->HasPendingTask());
   EXPECT_EQ(message_center()->add_notification_calls(), 1);
   EXPECT_EQ(message_center()->remove_notification_calls(), 1);
   EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
@@ -520,7 +520,7 @@ TEST_F(ExtensionWelcomeNotificationTest, NotificationPreviouslyExpired) {
   EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissedLocal));
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
   EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 1);
-  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner()->HasPendingTask());
 
   const base::TimeDelta requested_show_time =
       base::TimeDelta::FromDays(
@@ -528,7 +528,7 @@ TEST_F(ExtensionWelcomeNotificationTest, NotificationPreviouslyExpired) {
   SetElapsedTime(requested_show_time);
   ShowChromeNowNotification();
 
-  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+  EXPECT_FALSE(task_runner()->HasPendingTask());
   EXPECT_EQ(message_center()->add_notification_calls(), 0);
   EXPECT_EQ(message_center()->remove_notification_calls(), 0);
   EXPECT_EQ(message_center()->notifications_with_shown_as_popup(), 0);
