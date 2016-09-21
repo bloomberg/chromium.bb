@@ -106,6 +106,17 @@ class ExtensionMessageBubbleBrowserTest
   // search engine is shown.
   void TestControlledSearchBubbleShown();
 
+  // Tests that the bubble indicating an extension is controlling a user's
+  // startup pages is shown.
+  void PreTestControlledStartupBubbleShown();
+  void TestControlledStartupBubbleShown();
+
+  // Tests that the startup controlled bubble is *not* shown in the case of a
+  // browser restart, since restarts always result in a session restore rather
+  // than showing the normal startup pages.
+  void PreTestControlledStartupNotShownOnRestart();
+  void TestControlledStartupNotShownOnRestart();
+
   // Tests that having multiple windows, all of which could be vying to show a
   // warning bubble, behaves properly.
   void TestBubbleWithMultipleWindows();

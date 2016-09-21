@@ -16,6 +16,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 class ExtensionAction;
+class ScopedTestingLocalState;
 class ToolbarActionsBar;
 
 namespace content {
@@ -98,6 +99,9 @@ class ToolbarActionsBarUnitTest :
 
   std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
       material_design_state_;
+
+  // Local state for the browser process.
+  std::unique_ptr<ScopedTestingLocalState> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
 };

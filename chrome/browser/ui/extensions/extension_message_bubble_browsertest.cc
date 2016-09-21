@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/pref_names.h"
@@ -254,6 +256,31 @@ void ExtensionMessageBubbleBrowserTest::TestControlledSearchBubbleShown() {
 
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);
   CloseBubble(browser());
+}
+
+void ExtensionMessageBubbleBrowserTest::PreTestControlledStartupBubbleShown() {
+  ASSERT_TRUE(InstallExtensionWithPermissionsGranted(
+      test_data_dir_.AppendASCII("startup_pages"), 1));
+}
+
+void ExtensionMessageBubbleBrowserTest::TestControlledStartupBubbleShown() {
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(browser(), ANCHOR_BROWSER_ACTION, true);
+  CloseBubble(browser());
+}
+
+void ExtensionMessageBubbleBrowserTest::
+    PreTestControlledStartupNotShownOnRestart() {
+  ASSERT_TRUE(InstallExtensionWithPermissionsGranted(
+      test_data_dir_.AppendASCII("startup_pages"), 1));
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+}
+
+void ExtensionMessageBubbleBrowserTest::
+    TestControlledStartupNotShownOnRestart() {
+  EXPECT_TRUE(StartupBrowserCreator::WasRestarted());
+  CheckBubbleIsNotPresent(browser(), false, false);
 }
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {

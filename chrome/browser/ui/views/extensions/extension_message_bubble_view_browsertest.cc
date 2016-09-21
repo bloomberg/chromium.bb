@@ -190,6 +190,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledSearchMessageBubble) {
   TestControlledSearchBubbleShown();
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       PRE_TestControlledStartupMessageBubble) {
+  PreTestControlledStartupBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestControlledStartupMessageBubble) {
+  TestControlledStartupBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       PRE_TestControlledStartupNotShownOnRestart) {
+  PreTestControlledStartupNotShownOnRestart();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestControlledStartupNotShownOnRestart) {
+  TestControlledStartupNotShownOnRestart();
+}
+
 #endif  // defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,

@@ -239,3 +239,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestControlledSearchMessageBubble) {
   TestControlledSearchBubbleShown();
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       PRE_TestControlledStartupMessageBubble) {
+  PreTestControlledStartupBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestControlledStartupMessageBubble) {
+  TestControlledStartupBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       PRE_TestControlledStartupNotShownOnRestart) {
+  PreTestControlledStartupNotShownOnRestart();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestControlledStartupNotShownOnRestart) {
+  TestControlledStartupNotShownOnRestart();
+}

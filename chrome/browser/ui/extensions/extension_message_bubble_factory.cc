@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/feature_switch.h"
@@ -133,8 +134,10 @@ ExtensionMessageBubbleFactory::GetController() {
   }
 
   if (EnableSettingsApiBubble()) {
-    // No use showing this if it's not the startup of the profile.
-    if (is_initial_check) {
+    // No use showing this if it's not the startup of the profile, and if the
+    // browser was restarted, then we always do a session restore (rather than
+    // showing normal startup pages).
+    if (is_initial_check && !StartupBrowserCreator::WasRestarted()) {
       controller.reset(new extensions::ExtensionMessageBubbleController(
               new extensions::SettingsApiBubbleDelegate(
                   browser_->profile(), extensions::BUBBLE_TYPE_STARTUP_PAGES),

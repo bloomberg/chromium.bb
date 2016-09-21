@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -92,6 +94,9 @@ ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
+  local_state_.reset(
+      new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
+
   // The toolbar typically displays extension icons, so create some extension
   // test infrastructure.
   extensions::TestExtensionSystem* extension_system =
@@ -123,6 +128,7 @@ void ToolbarActionsBarUnitTest::TearDown() {
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   material_design_state_.reset();
+  local_state_.reset();
   BrowserWithTestWindowTest::TearDown();
 }
 

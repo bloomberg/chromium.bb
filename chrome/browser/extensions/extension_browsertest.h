@@ -152,6 +152,18 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
                                     install_source);
   }
 
+  // Installs an extension and grants it the permissions it requests.
+  // TODO(devlin): It seems like this is probably the desired outcome most of
+  // the time - otherwise the extension installs in a disabled state.
+  const extensions::Extension* InstallExtensionWithPermissionsGranted(
+      const base::FilePath& file_path,
+      int expected_change) {
+    return InstallOrUpdateExtension(
+        std::string(), file_path, INSTALL_UI_TYPE_NONE, expected_change,
+        extensions::Manifest::INTERNAL, browser(),
+        extensions::Extension::NO_FLAGS, false, true);
+  }
+
   // Installs extension as if it came from the Chrome Webstore.
   const extensions::Extension* InstallExtensionFromWebstore(
       const base::FilePath& path, int expected_change);
@@ -195,14 +207,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       int expected_change,
       extensions::Manifest::Location install_source,
       extensions::Extension::InitFromValueFlags creation_flags) {
-    return InstallOrUpdateExtension(std::string(),
-                                    path,
-                                    INSTALL_UI_TYPE_NONE,
-                                    expected_change,
-                                    install_source,
-                                    browser(),
-                                    creation_flags,
-                                    false);
+    return InstallOrUpdateExtension(std::string(), path, INSTALL_UI_TYPE_NONE,
+                                    expected_change, install_source, browser(),
+                                    creation_flags, false, false);
   }
 
   // Begins install process but simulates a user cancel.
@@ -359,7 +366,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       extensions::Manifest::Location install_source,
       Browser* browser,
       extensions::Extension::InitFromValueFlags creation_flags,
-      bool wait_for_idle);
+      bool wait_for_idle,
+      bool grant_permissions);
 
   // Make the current channel "dev" for the duration of the test.
   extensions::ScopedCurrentChannel current_channel_;
