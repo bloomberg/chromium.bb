@@ -74,27 +74,6 @@ static void ValidatePointsWithinDeltaOf(const DrawPolygon& polygon,
   }
 }
 
-std::unique_ptr<DrawPolygon> ClonePolygon(const DrawPolygon& polygon) {
-  return base::MakeUnique<DrawPolygon>(polygon.original_ref(), polygon.points(),
-                                       polygon.normal(), polygon.order_index());
-}
-
-// Classifies polygon a with respect to b
-BspCompareResult SideCompare(const DrawPolygon& a, const DrawPolygon& b) {
-  std::unique_ptr<DrawPolygon> front;
-  std::unique_ptr<DrawPolygon> back;
-  bool is_coplanar;
-  b.SplitPolygon(ClonePolygon(a), &front, &back, &is_coplanar);
-  if (is_coplanar) {
-    return (front != nullptr) ? BSP_COPLANAR_FRONT : BSP_COPLANAR_BACK;
-  }
-  if (front == nullptr)
-    return BSP_BACK;
-  if (back == nullptr)
-    return BSP_FRONT;
-  return BSP_SPLIT;
-}
-
 // A simple square in a plane.
 TEST(DrawPolygonConstructionTest, NormalNormal) {
   gfx::Transform Identity;
@@ -242,9 +221,15 @@ TEST(DrawPolygonSplitTest, NearlyTouchingOrder) {
   gfx::Vector3dF normal(0.0f, 0.0f, 1.0f);
 
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal, 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal, 1);
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b, normal, 1);
 
-  EXPECT_EQ(BSP_BACK, SideCompare(polygon_b, polygon_a));
+  std::unique_ptr<DrawPolygon> front;
+  std::unique_ptr<DrawPolygon> back;
+  bool is_coplanar;
+  polygon_a.SplitPolygon(std::move(polygon_b), &front, &back, &is_coplanar);
+  EXPECT_EQ(is_coplanar, false);
+  EXPECT_EQ(front, nullptr);
+  EXPECT_NE(back, nullptr);
 }
 
 // Two quads are definitely not touching and so no split should occur.
@@ -268,9 +253,15 @@ TEST(DrawPolygonSplitTest, NotClearlyInFront) {
   normal_b.Scale(1.0f / normal_b.Length());
 
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a, normal_a, 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b, normal_b, 1);
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b, normal_b, 1);
 
-  EXPECT_EQ(BSP_FRONT, SideCompare(polygon_b, polygon_a));
+  std::unique_ptr<DrawPolygon> front;
+  std::unique_ptr<DrawPolygon> back;
+  bool is_coplanar;
+  polygon_a.SplitPolygon(std::move(polygon_b), &front, &back, &is_coplanar);
+  EXPECT_EQ(is_coplanar, false);
+  EXPECT_NE(front, nullptr);
+  EXPECT_EQ(back, nullptr);
 }
 
 // Two quads are definitely not touching and so no split should occur.
@@ -288,10 +279,16 @@ TEST(DrawPolygonSplitTest, NotTouchingNoSplit) {
 
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a,
                           gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b,
-                          gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b,
+                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
 
-  EXPECT_EQ(BSP_FRONT, SideCompare(polygon_b, polygon_a));
+  std::unique_ptr<DrawPolygon> front;
+  std::unique_ptr<DrawPolygon> back;
+  bool is_coplanar;
+  polygon_a.SplitPolygon(std::move(polygon_b), &front, &back, &is_coplanar);
+  EXPECT_EQ(is_coplanar, false);
+  EXPECT_NE(front, nullptr);
+  EXPECT_EQ(back, nullptr);
 }
 
 // One quad is resting against another, but doesn't cross its plane so no
@@ -311,10 +308,16 @@ TEST(DrawPolygonSplitTest, BarelyTouchingNoSplit) {
 
   CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a,
                           gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
-  CREATE_NEW_DRAW_POLYGON(polygon_b, vertices_b,
-                          gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b,
+                              gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1);
 
-  EXPECT_EQ(BSP_BACK, SideCompare(polygon_b, polygon_a));
+  std::unique_ptr<DrawPolygon> front;
+  std::unique_ptr<DrawPolygon> back;
+  bool is_coplanar;
+  polygon_a.SplitPolygon(std::move(polygon_b), &front, &back, &is_coplanar);
+  EXPECT_EQ(is_coplanar, false);
+  EXPECT_EQ(front, nullptr);
+  EXPECT_NE(back, nullptr);
 }
 
 // One quad intersects another and becomes two pieces.
