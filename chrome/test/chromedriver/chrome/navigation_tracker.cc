@@ -281,15 +281,24 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
         pending_frame_set_.clear();
         scheduled_frame_set_.clear();
       } else {
+        // Discard pending and scheduled frames, except for the root frame,
+        // which just navigated (and which we should consider pending until we
+        // receive a Page.frameStoppedLoading event for it).
+        std::string frame_id;
+        if (!params.GetString("frame.id", &frame_id))
+          return Status(kUnknownError, "missing or invalid 'frame.id'");
+        bool frame_was_pending = pending_frame_set_.count(frame_id) > 0;
+        pending_frame_set_.clear();
+        scheduled_frame_set_.clear();
+        if (frame_was_pending)
+          pending_frame_set_.insert(frame_id);
         // If the URL indicates that the web page is unreachable (the sad tab
-        // page) then discard any pending or scheduled navigations.
+        // page) then discard all pending navigations.
         std::string frame_url;
         if (!params.GetString("frame.url", &frame_url))
           return Status(kUnknownError, "missing or invalid 'frame.url'");
-        if (frame_url == kUnreachableWebDataURL) {
+        if (frame_url == kUnreachableWebDataURL)
           pending_frame_set_.clear();
-          scheduled_frame_set_.clear();
-        }
       }
     } else {
       // If a child frame just navigated, check if it is the dummy frame that
