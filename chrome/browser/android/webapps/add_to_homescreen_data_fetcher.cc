@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
@@ -205,8 +206,12 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   is_installable_check_complete_ = true;
 
-  if (check_webapk_compatibility_)
-    weak_observer_->OnDidDetermineWebApkCompatibility(data.is_installable);
+  if (check_webapk_compatibility_) {
+    bool webapk_compatible =
+        (data.error_code == NO_ERROR_DETECTED &&
+         AreWebManifestUrlsWebApkCompatible(data.manifest));
+    weak_observer_->OnDidDetermineWebApkCompatibility(webapk_compatible);
+  }
 
   if (!data.manifest.IsEmpty()) {
     content::RecordAction(
