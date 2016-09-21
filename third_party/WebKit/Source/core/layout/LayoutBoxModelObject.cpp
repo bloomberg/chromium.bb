@@ -358,6 +358,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
                 // the sticky position constraints then.
                 if (layer())
                     layer()->setNeedsCompositingInputsUpdate();
+
+                // TODO(pdr): When slimming paint v2 is enabled, we will need to
+                // invalidate the scroll paint property subtree for this so main
+                // thread scroll reasons are recomputed.
             } else {
                 // This may get re-added to viewport constrained objects if the object went
                 // from sticky to fixed.
@@ -370,6 +374,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
                     if (const PaintLayer* ancestorOverflowLayer = layer()->ancestorOverflowLayer())
                         ancestorOverflowLayer->getScrollableArea()->invalidateStickyConstraintsFor(layer());
                 }
+
+                // TODO(pdr): When slimming paint v2 is enabled, we will need to
+                // invalidate the scroll paint property subtree for this so main
+                // thread scroll reasons are recomputed.
             }
         }
 

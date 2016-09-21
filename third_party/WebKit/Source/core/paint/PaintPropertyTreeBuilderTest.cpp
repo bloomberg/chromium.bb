@@ -2038,7 +2038,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ThreadedScrollingDisabledMainThreadScrollRe
     EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kThreadedScrollingDisabled));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithNestedScrollers)
+TEST_P(PaintPropertyTreeBuilderTest, BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers)
 {
     setBodyInnerHTML(
         "<style>"
@@ -2091,7 +2091,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithNestedScrollers)
     EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithFixedScroller)
+TEST_P(PaintPropertyTreeBuilderTest, BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller)
 {
     setBodyInnerHTML(
         "<style>"
@@ -2135,6 +2135,101 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithFixedScroller)
     EXPECT_FALSE(rootScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, PositionStickyMainThreadScrollReasonsWithNestedScrollers)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  #overflowA {"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  #overflowB {"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .positionSticky {"
+        "    position: sticky;"
+        "    top: 0;"
+        "    left: 0;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA'>"
+        "  <div id='overflowB' class='positionSticky'>"
+        "    <div id='overflowBChild'></div>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+    Element* overflowA = document().getElementById("overflowA");
+    Element* overflowB = document().getElementById("overflowB");
+    Element* overflowBChild = document().getElementById("overflowBChild");
+
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(!overflowBChild->layoutObject()->objectPaintProperties() || !overflowBChild->layoutObject()->objectPaintProperties()->scroll());
+
+    // Removing a main thread scrolling reason should update the entire tree.
+    overflowB->removeAttribute("class");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(!overflowBChild->layoutObject()->objectPaintProperties() || !overflowBChild->layoutObject()->objectPaintProperties()->scroll());
+
+    // Adding a main thread scrolling reason should update the entire tree.
+    overflowBChild->setAttribute(HTMLNames::classAttr, "positionSticky");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_TRUE(!overflowBChild->layoutObject()->objectPaintProperties() || !overflowBChild->layoutObject()->objectPaintProperties()->scroll());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithNestedPositionStickyScrollers)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  #overflowA {"
+        "    overflow: scroll;"
+        "    width: 20px;"
+        "    height: 20px;"
+        "  }"
+        "  #overflowB {"
+        "    overflow: scroll;"
+        "    width: 5px;"
+        "    height: 3px;"
+        "  }"
+        "  .positionSticky {"
+        "    position: sticky;"
+        "    top: 0;"
+        "    left: 0;"
+        "  }"
+        "  .forceScroll {"
+        "    height: 4000px;"
+        "  }"
+        "</style>"
+        "<div id='overflowA' class='positionSticky'>"
+        "  <div id='overflowB'>"
+        "    <div class='forceScroll'></div>"
+        "  </div>"
+        "  <div class='forceScroll'></div>"
+        "</div>"
+        "<div class='forceScroll'></div>");
+    Element* overflowA = document().getElementById("overflowA");
+    Element* overflowB = document().getElementById("overflowB");
+
+    EXPECT_TRUE(frameScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects));
 }
 
 } // namespace blink

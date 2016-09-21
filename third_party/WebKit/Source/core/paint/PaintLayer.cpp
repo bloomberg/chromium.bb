@@ -2752,8 +2752,12 @@ void PaintLayer::removeAncestorOverflowLayer(const PaintLayer* removedLayer)
     if (ancestorOverflowLayer() && ancestorOverflowLayer() != removedLayer)
         return;
 
-    if (ancestorOverflowLayer())
+    if (ancestorOverflowLayer()) {
+        // TODO(pdr): When slimming paint v2 is enabled, we will need to
+        // invalidate the scroll paint property subtree for this so main
+        // thread scroll reasons are recomputed.
         ancestorOverflowLayer()->getScrollableArea()->invalidateStickyConstraintsFor(this);
+    }
     updateAncestorOverflowLayer(nullptr);
     PaintLayer* current = m_first;
     while (current) {

@@ -345,6 +345,13 @@ void PaintPropertyTreeBuilder::updateMainThreadScrollingReasons(const LayoutObje
             scrollNode = scrollNode->parent();
         }
     }
+    if (object.styleRef().position() == StickyPosition) {
+        auto* scrollNode = context.current.scroll;
+        while (scrollNode && !scrollNode->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects)) {
+            scrollNode->addMainThreadScrollingReasons(MainThreadScrollingReason::kHasStickyPositionObjects);
+            scrollNode = scrollNode->parent();
+        }
+    }
 }
 
 void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
