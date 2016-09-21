@@ -1178,17 +1178,6 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env,
   SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::SelectBetweenCoordinates(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jfloat x1,
-    jfloat y1,
-    jfloat x2,
-    jfloat y2) {
-  SelectBetweenCoordinates(gfx::PointF(x1 / dpi_scale(), y1 / dpi_scale()),
-                           gfx::PointF(x2 / dpi_scale(), y2 / dpi_scale()));
-}
-
 void ContentViewCoreImpl::DismissTextHandles(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();

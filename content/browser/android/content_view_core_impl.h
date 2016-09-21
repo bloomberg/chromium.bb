@@ -200,12 +200,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                jfloat x,
                jfloat y,
                jfloat delta);
-  void SelectBetweenCoordinates(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>& obj,
-                                jfloat x1,
-                                jfloat y1,
-                                jfloat x2,
-                                jfloat y2);
   void DismissTextHandles(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
   void SetTextHandlesTemporarilyHidden(
