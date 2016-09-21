@@ -611,6 +611,21 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
 bool FrameFetchContext::isControlledByServiceWorker() const
 {
     DCHECK(m_documentLoader || frame()->loader().documentLoader());
+
+    // Service workers are bypassed by suborigins (see
+    // https://w3c.github.io/webappsec-suborigins/). Since service worker
+    // controllers are assigned based on physical origin, without knowledge of
+    // whether the context is in a suborigin, it is necessary to explicitly
+    // bypass service workers on a per-request basis. Additionally, it is
+    // necessary to explicitly return |false| here so that it is clear that the
+    // SW will be bypassed. In particular, this is important for
+    // ResourceFetcher::getCacheIdentifier(), which will return the SW's cache
+    // if the context's isControlledByServiceWorker() returns |true|, and thus
+    // will returned cached resources from the service worker. That would have
+    // the effect of not bypassing the SW.
+    if (getSecurityOrigin() && getSecurityOrigin()->hasSuborigin())
+        return false;
+
     if (m_documentLoader)
         return frame()->loader().client()->isControlledByServiceWorker(*m_documentLoader);
     // m_documentLoader is null while loading resources from an HTML import.

@@ -1057,6 +1057,14 @@ bool ResourceFetcher::startLoad(Resource* resource)
     ResourceRequest request(resource->resourceRequest());
     willSendRequest(resource->identifier(), request, ResourceResponse(), resource->options());
 
+    // Resource requests from suborigins should not be intercepted by the
+    // service worker of the physical origin. This has the effect that, for
+    // now, suborigins do not work with service workers. See
+    // https://w3c.github.io/webappsec-suborigins/.
+    SecurityOrigin* sourceOrigin = context().getSecurityOrigin();
+    if (sourceOrigin && sourceOrigin->hasSuborigin())
+        request.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
+
     ResourceLoader* loader = ResourceLoader::create(this, resource);
     if (resource->shouldBlockLoadEvent())
         m_loaders.add(loader);
@@ -1064,7 +1072,7 @@ bool ResourceFetcher::startLoad(Resource* resource)
         m_nonBlockingLoaders.add(loader);
 
     storeResourceTimingInitiatorInformation(resource);
-    resource->setFetcherSecurityOrigin(context().getSecurityOrigin());
+    resource->setFetcherSecurityOrigin(sourceOrigin);
     loader->start(request, context().loadingTaskRunner(), context().defersLoading());
     return true;
 }
