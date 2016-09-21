@@ -133,8 +133,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     kInitialized,    // Initialize() returned true; ready to start decoding.
     kDecoding,       // DecodeBufferInitial() successful; decoding frames.
     kResetting,      // Presently resetting.
-    // Performing resolution change, all remaining pre-change frames decoded
-    // and processed.
+    // Performing resolution change and waiting for image processor to return
+    // all frames.
     kChangingResolution,
     // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
     // AssignPictureBuffers().
@@ -329,6 +329,15 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
 
+  // Destroy buffers.
+  void DestroyInputBuffers();
+  // In contrast to DestroyInputBuffers, which is called only on destruction,
+  // we call DestroyOutputBuffers also during playback, on resolution change.
+  // Even if anything fails along the way, we still want to go on and clean
+  // up as much as possible, so return false if this happens, so that the
+  // caller can error out on resolution change.
+  bool DestroyOutputBuffers();
+
   // Set input and output formats before starting decode.
   bool SetupFormats();
   // Return a usable input format of image processor. Return 0 if not found.
@@ -341,16 +350,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   //
   // Methods run on child thread.
   //
-
-  // Destroy buffers.
-  void DestroyInputBuffers();
-  // In contrast to DestroyInputBuffers, which is called only from destructor,
-  // we call DestroyOutputBuffers also during playback, on resolution change.
-  // Even if anything fails along the way, we still want to go on and clean
-  // up as much as possible, so return false if this happens, so that the
-  // caller can error out on resolution change.
-  bool DestroyOutputBuffers();
-  void ResolutionChangeDestroyBuffers();
 
   // Send decoded pictures to PictureReady.
   void SendPictureReady();

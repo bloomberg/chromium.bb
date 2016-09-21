@@ -186,9 +186,6 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   DCHECK(!decoder_thread_.IsRunning());
   DCHECK(!device_poll_thread_.IsRunning());
 
-  DestroyInputBuffers();
-  DestroyOutputBuffers();
-
   // These maps have members that should be manually destroyed, e.g. file
   // descriptors, mmap() segments, etc.
   DCHECK(input_buffer_map_.empty());
@@ -432,8 +429,7 @@ void V4L2VideoDecodeAccelerator::CreateEGLImages(
                   << " index=" << i
                   << " texture_id=" << buffers[i].texture_ids()[0];
       for (EGLImageKHR image : egl_images) {
-        if (egl_image_device_->DestroyEGLImage(egl_display_, image) != EGL_TRUE)
-          DVLOGF(1) << "DestroyEGLImage failed.";
+        egl_image_device_->DestroyEGLImage(egl_display_, image);
       }
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
@@ -1576,6 +1572,9 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
 
   // Set our state to kError.  Just in case.
   decoder_state_ = kError;
+
+  DestroyInputBuffers();
+  DestroyOutputBuffers();
 }
 
 bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
@@ -1689,12 +1688,13 @@ void V4L2VideoDecodeAccelerator::StartResolutionChange() {
   if (image_processor_)
     image_processor_.release()->Destroy();
 
-  // Post a task to clean up buffers on child thread. This will also ensure
-  // that we won't accept ReusePictureBuffer() anymore after that.
-  child_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2VideoDecodeAccelerator::ResolutionChangeDestroyBuffers,
-                 weak_this_));
+  if (!DestroyOutputBuffers()) {
+    LOGF(ERROR) << "Failed destroying output buffers.";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+
+  FinishResolutionChange();
 }
 
 void V4L2VideoDecodeAccelerator::FinishResolutionChange() {
@@ -2127,7 +2127,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
 
 void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   DVLOGF(3);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
@@ -2150,7 +2150,7 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
 
 bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   DVLOGF(3);
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
   bool success = true;
 
@@ -2158,11 +2158,10 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
     OutputRecord& output_record = output_buffer_map_[i];
 
     if (output_record.egl_image != EGL_NO_IMAGE_KHR) {
-      if (egl_image_device_->DestroyEGLImage(
-              egl_display_, output_record.egl_image) != EGL_TRUE) {
-        DVLOGF(1) << "DestroyEGLImage failed.";
-        success = false;
-      }
+      child_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage), device_,
+                     egl_display_, output_record.egl_image));
     }
 
     if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
@@ -2197,22 +2196,6 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   decoder_frames_at_client_ = 0;
 
   return success;
-}
-
-void V4L2VideoDecodeAccelerator::ResolutionChangeDestroyBuffers() {
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DVLOGF(3);
-
-  if (!DestroyOutputBuffers()) {
-    LOGF(ERROR) << "Failed destroying output buffers.";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  // Finish resolution change on decoder thread.
-  decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::FinishResolutionChange,
-                            base::Unretained(this)));
 }
 
 void V4L2VideoDecodeAccelerator::SendPictureReady() {

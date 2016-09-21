@@ -296,7 +296,11 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
 
 EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
                                               EGLImageKHR egl_image) {
-  return eglDestroyImageKHR(egl_display, egl_image);
+  EGLBoolean result = eglDestroyImageKHR(egl_display, egl_image);
+  if (result != EGL_TRUE) {
+    LOG(WARNING) << "Destroy EGLImage failed.";
+  }
+  return result;
 }
 
 GLenum GenericV4L2Device::GetTextureTarget() {
