@@ -177,6 +177,7 @@ private:
     LayoutUnit rowAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
     LayoutUnit columnAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
     ContentAlignmentData computeContentPositionAndDistributionOffset(GridTrackSizingDirection, const LayoutUnit& availableFreeSpace, unsigned numberOfGridTracks) const;
+    LayoutPoint gridAreaLogicalPosition(const GridArea&) const;
     LayoutPoint findChildLogicalPosition(const LayoutBox&, GridSizingData&) const;
     GridArea cachedGridArea(const LayoutBox&) const;
     GridSpan cachedGridSpan(const LayoutBox&, GridTrackSizingDirection) const;

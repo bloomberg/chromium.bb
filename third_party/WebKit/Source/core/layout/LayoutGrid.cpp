@@ -1922,8 +1922,8 @@ void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
         updateAutoMarginsInColumnAxisIfNeeded(*child);
         updateAutoMarginsInRowAxisIfNeeded(*child);
 
-#if ENABLE(ASSERT)
         const GridArea& area = cachedGridArea(*child);
+#if ENABLE(ASSERT)
         ASSERT(area.columns.startLine() < sizingData.columnTracks.size());
         ASSERT(area.rows.startLine() < sizingData.rowTracks.size());
 #endif
@@ -1931,10 +1931,10 @@ void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
 
         // Keep track of children overflowing their grid area as we might need to paint them even if the grid-area is not visible.
         // Using physical dimensions for simplicity, so we can forget about orthogonalty.
-        // TODO (lajava): Child's margins should account when evaluating whether it overflows its grid area (http://crbug.com/628155).
         LayoutUnit childGridAreaHeight = isHorizontalWritingMode() ? overrideContainingBlockContentLogicalHeight : overrideContainingBlockContentLogicalWidth;
         LayoutUnit childGridAreaWidth = isHorizontalWritingMode() ? overrideContainingBlockContentLogicalWidth : overrideContainingBlockContentLogicalHeight;
-        if (child->size().height() > childGridAreaHeight || child->size().width() > childGridAreaWidth)
+        LayoutRect gridAreaRect(gridAreaLogicalPosition(area), LayoutSize(childGridAreaWidth, childGridAreaHeight));
+        if (!gridAreaRect.contains(child->frameRect()))
             m_gridItemsOverflowingGridArea.append(child);
     }
 }
@@ -2659,6 +2659,16 @@ LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSiz
     // logical position, which will only take into account the child's writing-mode.
     LayoutPoint childLocation(rowAxisOffset, columnAxisOffset);
     return isOrthogonalChild(child) ? childLocation.transposedPoint() : childLocation;
+}
+
+LayoutPoint LayoutGrid::gridAreaLogicalPosition(const GridArea& area) const
+{
+    LayoutUnit columnAxisOffset = m_rowPositions[area.rows.startLine()];
+    LayoutUnit rowAxisOffset = m_columnPositions[area.columns.startLine()];
+
+    // See comment in findChildLogicalPosition() about why we need sometimes to translate from RTL
+    // to LTR the rowAxisOffset coordinate.
+    return LayoutPoint(style()->isLeftToRightDirection() ? rowAxisOffset : translateRTLCoordinate(rowAxisOffset), columnAxisOffset);
 }
 
 void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
