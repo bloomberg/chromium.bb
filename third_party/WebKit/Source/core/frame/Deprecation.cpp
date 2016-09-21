@@ -14,31 +14,32 @@
 
 namespace {
 
-const char* milestoneString(int milestone)
+enum Milestone {
+    M53,
+    M55,
+    M56,
+    M57,
+    M58,
+    M59,
+};
+
+const char* milestoneString(Milestone milestone)
 {
     // These are the Estimated Stable Dates:
     // https://www.chromium.org/developers/calendar
 
     switch (milestone) {
-    case 50:
-        return "M50, around April 2016";
-    case 51:
-        return "M51, around May 2016";
-    case 52:
-        return "M52, around July 2016";
-    case 53:
+    case M53:
         return "M53, around September 2016";
-    case 54:
-        return "M54, around October 2016";
-    case 55:
+    case M55:
         return "M55, around December 2016";
-    case 56:
+    case M56:
         return "M56, around January 2017";
-    case 57:
+    case M57:
         return "M57, around March 2017";
-    case 58:
+    case M58:
         return "M58, around April 2017";
-    case 59:
+    case M59:
         return "M59, around June 2017";
     }
 
@@ -51,12 +52,12 @@ String replacedBy(const char* feature, const char* replacement)
     return String::format("%s is deprecated. Please use %s instead.", feature, replacement);
 }
 
-String willBeRemoved(const char* feature, int milestone, const char* details)
+String willBeRemoved(const char* feature, Milestone milestone, const char* details)
 {
     return String::format("%s is deprecated and will be removed in %s. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
 }
 
-String dopplerWillBeRemoved(const char* feature, int milestone, const char* details)
+String dopplerWillBeRemoved(const char* feature, Milestone milestone, const char* details)
 {
     return String::format("%s is deprecated and will be removed in %s. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/%s for more details.", feature, milestoneString(milestone), details);
 }
@@ -265,16 +266,16 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2";
 
     case UseCounter::AudioListenerDopplerFactor:
-        return dopplerWillBeRemoved("'AudioListener.dopplerFactor'", 55, "5238926818148352");
+        return dopplerWillBeRemoved("'AudioListener.dopplerFactor'", M55, "5238926818148352");
 
     case UseCounter::AudioListenerSpeedOfSound:
-        return dopplerWillBeRemoved("'AudioListener.speedOfSound'", 55, "5238926818148352");
+        return dopplerWillBeRemoved("'AudioListener.speedOfSound'", M55, "5238926818148352");
 
     case UseCounter::AudioListenerSetVelocity:
-        return dopplerWillBeRemoved("'AudioListener.setVelocity()'", 55, "5238926818148352");
+        return dopplerWillBeRemoved("'AudioListener.setVelocity()'", M55, "5238926818148352");
 
     case UseCounter::PannerNodeSetVelocity:
-        return dopplerWillBeRemoved("'PannerNode.setVelocity()'", 55, "5238926818148352");
+        return dopplerWillBeRemoved("'PannerNode.setVelocity()'", M55, "5238926818148352");
 
     case UseCounter::PrefixedWindowURL:
         return replacedBy("'webkitURL'", "'URL'");
@@ -347,43 +348,43 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.";
 
     case UseCounter::HTMLKeygenElement:
-        return willBeRemoved("The <keygen> element", 56, "5716060992962560");
+        return willBeRemoved("The <keygen> element", M56, "5716060992962560");
 
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
-        return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(56));
+        return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(M56));
 
     case UseCounter::UntrustedEventDefaultHandled:
-        return String::format("A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in %s. See https://www.chromestatus.com/features/5718803933560832 for more details.", milestoneString(53));
+        return String::format("A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in %s. See https://www.chromestatus.com/features/5718803933560832 for more details.", milestoneString(M53));
 
     case UseCounter::TouchStartUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchstart events", 55, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchstart events", M55, "5649871251963904");
 
     case UseCounter::TouchMoveUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchmove events", 55, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchmove events", M55, "5649871251963904");
 
     case UseCounter::TouchEndDuringScrollUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchend events that occur as part of a scroll", 55, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchend events that occur as part of a scroll", M55, "5649871251963904");
 
     case UseCounter::MIDIMessageEventReceivedTime:
-        return willBeRemoved("MIDIMessageEvent.receivedTime", 56, "5665772797952000");
+        return willBeRemoved("MIDIMessageEvent.receivedTime", M56, "5665772797952000");
 
     case UseCounter::V8SVGSVGElement_UseCurrentView_AttributeGetter:
-        return willBeRemoved("SVGSVGElement.useCurrentView", 56, "4511711998509056");
+        return willBeRemoved("SVGSVGElement.useCurrentView", M56, "4511711998509056");
 
     case UseCounter::V8SVGSVGElement_CurrentView_AttributeGetter:
-        return willBeRemoved("SVGSVGElement.currentView", 56, "4511711998509056");
+        return willBeRemoved("SVGSVGElement.currentView", M56, "4511711998509056");
 
     case UseCounter::V8SVGViewElement_ViewTarget_AttributeGetter:
-        return willBeRemoved("SVGViewElement.viewTarget", 56, "5665473114931200");
+        return willBeRemoved("SVGViewElement.viewTarget", M56, "5665473114931200");
 
     case UseCounter::NavigatorPointerEnabled:
         return "Navigator.pointerEnabled is a non-standard API added for experiments only. It will be removed in near future.";
 
     case UseCounter::WebAudioAutoplayCrossOriginIframe:
-        return willBeRemoved("Web Audio autoplay (without user gesture) from cross-origin iframes", 55, "6406908126691328");
+        return willBeRemoved("Web Audio autoplay (without user gesture) from cross-origin iframes", M55, "6406908126691328");
 
     case UseCounter::ScriptInvalidTypeOrLanguage:
-        return String::format("Fetching scripts with an invalid type/language attributes is deprecated and will be removed in %s. See https://www.chromestatus.com/feature/5760718284521472 for more details.", milestoneString(56));
+        return willBeRemoved("Fetching scripts with an invalid type/language attributes", M56, "5760718284521472");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

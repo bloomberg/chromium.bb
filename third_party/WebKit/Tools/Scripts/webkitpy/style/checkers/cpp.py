@@ -1266,22 +1266,20 @@ class _EnumState(object):
 
     def __init__(self):
         self.in_enum_decl = False
-        self.is_webidl_enum = False
 
     def process_clean_line(self, line):
         # FIXME: The regular expressions for expr_all_uppercase and expr_enum_end only accept integers
         # and identifiers for the value of the enumerator, but do not accept any other constant
         # expressions. However, this is sufficient for now (11/27/2012).
-        expr_all_uppercase = r'\s*[A-Z0-9_]+\s*(?:=\s*[a-zA-Z0-9]+\s*)?,?\s*$'
+        expr_all_uppercase = r'\s*[A-Z][0-9_]*[A-Z][A-Z0-9_]*\s*(?:=\s*[a-zA-Z0-9]+\s*)?,?\s*$'
         expr_starts_lowercase = r'\s*[a-jl-z]|k[a-z]'
         expr_enum_end = r'}\s*(?:[a-zA-Z0-9]+\s*(?:=\s*[a-zA-Z0-9]+)?)?\s*;\s*'
         expr_enum_start = r'\s*enum(?:\s+[a-zA-Z0-9]+)?\s*\{?\s*'
         if self.in_enum_decl:
             if match(r'\s*' + expr_enum_end + r'$', line):
                 self.in_enum_decl = False
-                self.is_webidl_enum = False
             elif match(expr_all_uppercase, line):
-                return self.is_webidl_enum
+                return False
             elif match(expr_starts_lowercase, line):
                 return False
         else:
@@ -1292,14 +1290,10 @@ class _EnumState(object):
                 matched = match(expr_enum_start + r'(?P<members>.*)' + expr_enum_end + r'$', line)
                 if matched:
                     members = matched.group('members').split(',')
-                    found_invalid_member = False
                     for member in members:
                         if match(expr_all_uppercase, member):
-                            found_invalid_member = not self.is_webidl_enum
+                            return False
                         if match(expr_starts_lowercase, member):
-                            found_invalid_member = True
-                        if found_invalid_member:
-                            self.is_webidl_enum = False
                             return False
                     return True
         return True
@@ -2166,8 +2160,6 @@ def check_enum_casing(clean_lines, line_number, enum_state, error):
       enum_state: A _EnumState instance which maintains enum declaration state.
       error: The function to call with any errors found.
     """
-
-    enum_state.is_webidl_enum |= bool(match(r'\s*// Web(?:Kit)?IDL enum\s*$', clean_lines.raw_lines[line_number]))
 
     line = clean_lines.elided[line_number]  # Get rid of comments and strings.
     if not enum_state.process_clean_line(line):
