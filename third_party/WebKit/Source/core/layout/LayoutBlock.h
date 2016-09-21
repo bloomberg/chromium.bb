@@ -381,15 +381,7 @@ protected:
     bool isPageLogicalHeightKnown(LayoutUnit logicalOffset) const { return pageLogicalHeightForOffset(logicalOffset); }
 
     // Returns the logical offset at the top of the next page, for a given offset.
-    //
-    // If the given offset is at a page boundary, using AssociateWithLatterPage as PageBoundaryRule
-    // will move us one page ahead (since the offset is at the top of the "current" page). Using
-    // AssociateWithFormerPage instead will keep us where we are (since the offset is at the bottom
-    // of the "current" page, which is exactly the same offset as the top offset on the next page).
-    //
-    // For a page height of 800px, AssociateWithLatterPage will return 1600 if the value passed in
-    // is 800. AssociateWithFormerPage will simply return 800.
-    LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule) const;
+    LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset) const;
 
     // Paginated content inside this block was laid out.
     // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the child content after

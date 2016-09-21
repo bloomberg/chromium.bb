@@ -1459,7 +1459,7 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child, MarginInfo& margin
     LayoutState* layoutState = view()->layoutState();
     if (layoutState->isPaginated() && isPageLogicalHeightKnown(beforeCollapseLogicalTop) && logicalTop > beforeCollapseLogicalTop) {
         LayoutUnit oldLogicalTop = logicalTop;
-        logicalTop = std::min(logicalTop, nextPageLogicalTop(beforeCollapseLogicalTop, AssociateWithLatterPage));
+        logicalTop = std::min(logicalTop, nextPageLogicalTop(beforeCollapseLogicalTop));
         setLogicalHeight(logicalHeight() + (logicalTop - oldLogicalTop));
     }
 
@@ -1684,7 +1684,7 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const B
     // page.
     LayoutState* layoutState = view()->layoutState();
     if (layoutState->isPaginated() && isPageLogicalHeightKnown(logicalHeight()) && logicalTopEstimate > logicalHeight())
-        logicalTopEstimate = std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight(), AssociateWithLatterPage));
+        logicalTopEstimate = std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight()));
 
     logicalTopEstimate += getClearDelta(&child, logicalTopEstimate);
 
@@ -1894,13 +1894,19 @@ bool LayoutBlockFlow::mustSeparateMarginAfterForChild(const LayoutBox& child) co
 
 LayoutUnit LayoutBlockFlow::applyForcedBreak(LayoutUnit logicalOffset, EBreak breakValue)
 {
+    if (!isForcedFragmentainerBreakValue(breakValue))
+        return logicalOffset;
     // TODO(mstensho): honor breakValue. There are different types of forced breaks. We currently
     // just assume that we want to break to the top of the next fragmentainer of the fragmentation
     // context we're in. However, we may want to find the next left or right page - even if we're
     // inside a multicol container when printing.
-    if (isForcedFragmentainerBreakValue(breakValue))
-        return nextPageLogicalTop(logicalOffset, AssociateWithFormerPage);
-    return logicalOffset;
+    LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
+    if (!pageLogicalHeight)
+        return logicalOffset; // Page height is still unknown, so we cannot insert forced breaks.
+    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
+    if (remainingLogicalHeight == pageLogicalHeight)
+        return logicalOffset; // Don't break if we're already at the block start of a fragmentainer.
+    return logicalOffset + remainingLogicalHeight;
 }
 
 void LayoutBlockFlow::setBreakBefore(EBreak breakValue)
