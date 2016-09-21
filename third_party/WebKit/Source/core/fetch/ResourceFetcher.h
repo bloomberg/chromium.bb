@@ -101,6 +101,7 @@ public:
     void clearPreloads(ClearPreloadsPolicy = ClearAllPreloads);
     void preloadStarted(Resource*);
     void logPreloadStats();
+    void warnUnusedPreloads();
 
     MHTMLArchive* archive() const { return m_archive.get(); }
     ArchiveResource* createArchive(Resource*);

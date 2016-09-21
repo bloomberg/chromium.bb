@@ -96,7 +96,7 @@ public:
     bool pageDismissalEventBeingDispatched() const override;
     bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
     void sendImagePing(const KURL&) override;
-    void addConsoleMessage(const String&) const override;
+    void addConsoleMessage(const String&, LogMessageType = LogErrorMessage) const override;
     SecurityOrigin* getSecurityOrigin() const override;
     void upgradeInsecureRequest(ResourceRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;

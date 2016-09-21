@@ -59,6 +59,11 @@ enum FetchResourceType {
 class CORE_EXPORT FetchContext : public GarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
+    enum LogMessageType {
+        LogErrorMessage,
+        LogWarningMessage
+    };
+
     static FetchContext& nullInstance();
 
     virtual ~FetchContext() { }
@@ -100,7 +105,7 @@ public:
     virtual bool pageDismissalEventBeingDispatched() const { return false; }
     virtual bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) { return false; }
     virtual void sendImagePing(const KURL&);
-    virtual void addConsoleMessage(const String&) const;
+    virtual void addConsoleMessage(const String&, LogMessageType = LogErrorMessage) const;
     virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
     virtual void upgradeInsecureRequest(ResourceRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);

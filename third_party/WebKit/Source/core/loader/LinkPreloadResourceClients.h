@@ -69,7 +69,7 @@ private:
     LinkPreloadScriptResourceClient(LinkLoader* loader, ScriptResource* resource)
         : LinkPreloadResourceClient(loader)
     {
-        setResource(resource);
+        setResource(resource, Resource::DontMarkAsReferenced);
     }
 };
 
@@ -102,7 +102,7 @@ private:
     LinkPreloadStyleResourceClient(LinkLoader* loader, CSSStyleSheetResource* resource)
         : LinkPreloadResourceClient(loader)
     {
-        setResource(resource);
+        setResource(resource, Resource::DontMarkAsReferenced);
     }
 };
 
@@ -135,7 +135,7 @@ private:
     LinkPreloadImageResourceClient(LinkLoader* loader, ImageResource* resource)
         : LinkPreloadResourceClient(loader)
     {
-        setResource(resource);
+        setResource(resource, Resource::DontMarkAsReferenced);
     }
 };
 
@@ -168,7 +168,7 @@ private:
     LinkPreloadFontResourceClient(LinkLoader* loader, FontResource* resource)
         : LinkPreloadResourceClient(loader)
     {
-        setResource(resource);
+        setResource(resource, Resource::DontMarkAsReferenced);
     }
 };
 
@@ -201,7 +201,7 @@ private:
     LinkPreloadRawResourceClient(LinkLoader* loader, RawResource* resource)
         : LinkPreloadResourceClient(loader)
     {
-        setResource(resource);
+        setResource(resource, Resource::DontMarkAsReferenced);
     }
 };
 

@@ -47,6 +47,7 @@
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/PopStateEvent.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -82,6 +83,9 @@
 #include <memory>
 
 namespace blink {
+
+// Timeout for link preloads to be used after window.onload
+static const int unusedPreloadTimeoutInSeconds = 3;
 
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
@@ -260,6 +264,7 @@ bool LocalDOMWindow::allowPopUp()
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frame(&frame)
     , m_visualViewport(DOMVisualViewport::create(this))
+    , m_unusedPreloadsTimer(this, &LocalDOMWindow::warnUnusedPreloads)
     , m_shouldPrintWhenFinishedLoading(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
@@ -275,6 +280,7 @@ void LocalDOMWindow::clearDocument()
     // FIXME: This should be part of ActiveDOMObject shutdown
     clearEventQueue();
 
+    m_unusedPreloadsTimer.stop();
     m_document->clearDOMWindow();
     m_document = nullptr;
 }
@@ -1336,6 +1342,16 @@ void LocalDOMWindow::removedEventListener(const AtomicString& eventType, const R
     }
 }
 
+void LocalDOMWindow::warnUnusedPreloads(TimerBase* base)
+{
+    if (frame() && frame()->loader().documentLoader()) {
+        ResourceFetcher* fetcher = frame()->loader().documentLoader()->fetcher();
+        DCHECK(fetcher);
+        if (fetcher->countPreloads())
+            fetcher->warnUnusedPreloads();
+    }
+}
+
 void LocalDOMWindow::dispatchLoadEvent()
 {
     Event* loadEvent(Event::create(EventTypeNames::load));
@@ -1345,6 +1361,11 @@ void LocalDOMWindow::dispatchLoadEvent()
         timing.markLoadEventStart();
         dispatchEvent(loadEvent, document());
         timing.markLoadEventEnd();
+        DCHECK(documentLoader->fetcher());
+        // If fetcher->countPreloads() is not empty here, it's full of link preloads,
+        // as speculatove preloads were cleared at DCL.
+        if (frame() && documentLoader == frame()->loader().documentLoader() && documentLoader->fetcher()->countPreloads())
+            m_unusedPreloadsTimer.startOneShot(unusedPreloadTimeoutInSeconds, BLINK_FROM_HERE);
     } else {
         dispatchEvent(loadEvent, document());
     }

@@ -907,7 +907,7 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
 
     logPreloadStats();
 
-    for (auto resource : *m_preloads) {
+    for (const auto& resource : *m_preloads) {
         if (policy == ClearAllPreloads || !resource->isLinkPreload()) {
             resource->decreasePreloadCount();
             if (resource->getPreloadResult() == Resource::PreloadNotReferenced)
@@ -917,6 +917,17 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
     }
     if (!m_preloads->size())
         m_preloads.clear();
+}
+
+void ResourceFetcher::warnUnusedPreloads()
+{
+    if (!m_preloads)
+        return;
+    for (const auto& resource : *m_preloads) {
+        if (resource && resource->isLinkPreload() && resource->getPreloadResult() == Resource::PreloadNotReferenced) {
+            context().addConsoleMessage("The resource " + resource->url().getString() + " was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it wasn't preloaded for nothing.", FetchContext::LogWarningMessage);
+        }
+    }
 }
 
 ArchiveResource* ResourceFetcher::createArchive(Resource* resource)
@@ -1194,7 +1205,7 @@ void ResourceFetcher::logPreloadStats()
     unsigned importMisses = 0;
     unsigned raws = 0;
     unsigned rawMisses = 0;
-    for (auto resource : *m_preloads) {
+    for (const auto& resource : *m_preloads) {
         int missCount = resource->getPreloadResult() == Resource::PreloadNotReferenced ? 1 : 0;
         switch (resource->getType()) {
         case Resource::Image:

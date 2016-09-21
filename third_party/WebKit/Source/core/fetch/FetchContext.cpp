@@ -101,7 +101,7 @@ void FetchContext::sendImagePing(const KURL&)
 {
 }
 
-void FetchContext::addConsoleMessage(const String&) const
+void FetchContext::addConsoleMessage(const String&, FetchContext::LogMessageType) const
 {
 }
 

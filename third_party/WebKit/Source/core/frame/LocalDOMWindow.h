@@ -224,6 +224,7 @@ private:
     // already LocalDOMWindow.
     bool isLocalDOMWindow() const override { return true; }
     bool isRemoteDOMWindow() const override { return false; }
+    void warnUnusedPreloads(TimerBase*);
 
     explicit LocalDOMWindow(LocalFrame&);
     void dispose();
@@ -236,6 +237,7 @@ private:
     Member<LocalFrame> m_frame;
     Member<Document> m_document;
     Member<DOMVisualViewport> m_visualViewport;
+    Timer<LocalDOMWindow> m_unusedPreloadsTimer;
 
     bool m_shouldPrintWhenFinishedLoading;
 

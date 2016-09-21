@@ -653,10 +653,11 @@ void FrameFetchContext::sendImagePing(const KURL& url)
     PingLoader::loadImage(frame(), url);
 }
 
-void FrameFetchContext::addConsoleMessage(const String& message) const
+void FrameFetchContext::addConsoleMessage(const String& message, LogMessageType messageType) const
 {
+    MessageLevel level = messageType == LogWarningMessage ? WarningMessageLevel : ErrorMessageLevel;
     if (frame()->document())
-        frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+        frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message));
 }
 
 SecurityOrigin* FrameFetchContext::getSecurityOrigin() const

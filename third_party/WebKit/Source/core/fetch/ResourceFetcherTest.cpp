@@ -613,12 +613,27 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse)
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     fetcher2->preloadStarted(secondResource);
 
+    // Link rel preload scanner
+    FetchRequest fetchRequestLinkPreloadScanner = FetchRequest(url, FetchInitiatorInfo());
+    fetchRequestLinkPreloadScanner.setLinkPreload(true);
+    Resource* linkPreloadScannerResource = fetcher->requestResource(fetchRequestLinkPreloadScanner, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, linkPreloadScannerResource);
+    EXPECT_TRUE(resource->isLinkPreload());
+    fetcher->preloadStarted(resource);
+
     // Image preload scanner
     FetchRequest fetchRequestPreloadScanner = FetchRequest(url, FetchInitiatorInfo());
     Resource* imgPreloadScannerResource = fetcher->requestResource(fetchRequestPreloadScanner, TestResourceFactory(Resource::Image));
     EXPECT_EQ(resource, imgPreloadScannerResource);
     EXPECT_FALSE(resource->isLinkPreload());
     fetcher->preloadStarted(resource);
+
+    // Image preload scanner on the second fetcher
+    FetchRequest fetchRequestPreloadScanner2 = FetchRequest(url, FetchInitiatorInfo());
+    Resource* imgPreloadScannerResource2 = fetcher2->requestResource(fetchRequestPreloadScanner2, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, imgPreloadScannerResource2);
+    EXPECT_FALSE(resource->isLinkPreload());
+    fetcher2->preloadStarted(resource);
 
     // Image created by parser
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
@@ -627,6 +642,12 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse)
     EXPECT_EQ(resource, newResource);
     EXPECT_FALSE(resource->isLinkPreload());
 
+    // Image created by parser on the second fetcher
+    FetchRequest fetchRequest2 = FetchRequest(url, FetchInitiatorInfo());
+    Resource* newResource2 = fetcher2->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
+    Persistent<MockResourceClient> client2 = new MockResourceClient(newResource2);
+    EXPECT_EQ(resource, newResource2);
+    EXPECT_FALSE(resource->isLinkPreload());
     // DCL reached on first fetcher
     EXPECT_TRUE(resource->isPreloaded());
     fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
