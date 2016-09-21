@@ -1237,5 +1237,5 @@ crbug.com/646598 [ Mac ] fast/canvas/text-rendering-frameless-canvas.html [ Fail
 
 crbug.com/492785 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruction-on-inserting-style-sheet.html [ Failure ]
 
-crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import_crash.html [ Timeout ]
+crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash Timeout ]
 crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash ]
