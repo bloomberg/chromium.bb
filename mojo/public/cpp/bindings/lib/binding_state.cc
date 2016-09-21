@@ -138,7 +138,6 @@ void MultiplexedBindingState::EnableTestingMode() {
 
 void MultiplexedBindingState::BindInternal(
     ScopedMessagePipeHandle handle,
-    MultiplexRouter::Config config,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
@@ -147,7 +146,8 @@ void MultiplexedBindingState::BindInternal(
     uint32_t interface_version) {
   DCHECK(!router_);
 
-  router_ = new MultiplexRouter(std::move(handle), config, false, runner);
+  router_ = new MultiplexRouter(
+      std::move(handle), MultiplexRouter::MULTI_INTERFACE, false, runner);
   router_->SetMasterInterfaceName(interface_name);
 
   endpoint_client_.reset(new InterfaceEndpointClient(
