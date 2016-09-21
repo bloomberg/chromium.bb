@@ -14,9 +14,14 @@
       <option>garply</option>
   </optgroup>
 </select>
+<select id="menu2">
+  <option>abc</option>
+  <option>xyz</option>
+</select>
 <div id="console"></div>
 <script>
 var menu = document.getElementById('menu');
+var menu2 = document.getElementById('menu2');
 var picker = null;
 function openPickerErrorCallback() {
     testFailed('picker didn\'t open')
@@ -170,6 +175,19 @@ function test6() {
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menu.value', 'foo');
     shouldBeEqualToString('internals.selectMenuListText(menu)', 'foo');
+
+    waitUntilClosing(() => {
+        menu2.selectedIndex = -1;
+        openPicker(menu2, testEnterWithoutSelection, openPickerErrorCallback);
+    });
+}
+
+function testEnterWithoutSelection() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '');
+    eventSender.keyDown('Enter');
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menu2.value', '');
 
     finishJSTest();
 }

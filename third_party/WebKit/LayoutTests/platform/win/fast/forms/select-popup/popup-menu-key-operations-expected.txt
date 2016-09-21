@@ -1,4 +1,4 @@
-
+ 
 PASS picker._selectElement.value is "1"
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "bar"
@@ -63,6 +63,9 @@ PASS internals.selectMenuListText(menu) is "bar"
 PASS window.internals.pagePopupWindow is null
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "foo"
+PASS picker._selectElement.value is ""
+PASS window.internals.pagePopupWindow is null
+PASS menu2.value is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE
