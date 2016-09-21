@@ -32,7 +32,6 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMarqueeElement.h"
 #include "core/layout/HitTestLocation.h"
@@ -50,6 +49,7 @@
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/Page.h"
+#include "core/paint/BlockPaintInvalidator.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
@@ -930,12 +930,12 @@ void LayoutBlock::removePositionedObject(LayoutBox* o)
 
 PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    PaintInvalidationReason reason = LayoutBox::invalidatePaintIfNeeded(paintInvalidationState);
-    if (reason != PaintInvalidationNone && hasCaret()) {
-        frame()->selection().setCaretRectNeedsUpdate();
-        frame()->selection().invalidateCaretRect(true);
-    }
-    return reason;
+    return LayoutBox::invalidatePaintIfNeeded(paintInvalidationState);
+}
+
+PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
+{
+    return BlockPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
 void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState containingBlockState)

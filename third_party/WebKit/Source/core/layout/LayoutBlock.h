@@ -364,6 +364,7 @@ public:
 
 protected:
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
 
 private:
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) final;
