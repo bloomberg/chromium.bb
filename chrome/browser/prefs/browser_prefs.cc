@@ -241,6 +241,10 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/ui/webui/md_history_ui.cc"
+#endif
+
 namespace {
 
 #if defined(OS_WIN)
@@ -618,6 +622,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(USE_ASH)
   ash::launcher::RegisterChromeLauncherUserPrefs(registry);
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  MdHistoryUI::RegisterProfilePrefs(registry);
 #endif
 
   // Preferences registered only for migration (clearing or moving to a new key)

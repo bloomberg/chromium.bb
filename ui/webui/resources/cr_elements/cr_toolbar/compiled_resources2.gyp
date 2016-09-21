@@ -13,6 +13,7 @@
     {
       'target_name': 'cr_toolbar',
       'dependencies': [
+        '<(EXTERNS_GYP):web_animations',
         'cr_toolbar_search_field',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

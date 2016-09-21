@@ -6056,11 +6056,17 @@ Polymer({
     searchPrompt: String,
     clearLabel: String,
     menuLabel: String,
+    menuPromo: String,
     spinnerActive: Boolean,
     showMenu: {
       type: Boolean,
       value: false
     },
+    showMenuPromo: {
+      type: Boolean,
+      value: false
+    },
+    closeMenuPromo: String,
     narrow_: {
       type: Boolean,
       reflectToAttribute: true
@@ -6070,13 +6076,108 @@ Polymer({
       reflectToAttribute: true
     }
   },
+  observers: [ 'possiblyShowMenuPromo_(showMenu, showMenuPromo, showingSearch_)' ],
   getSearchField: function() {
     return this.$.search;
   },
-  onMenuTap_: function(e) {
+  onClosePromoTap_: function() {
+    this.showMenuPromo = false;
+  },
+  onMenuTap_: function() {
     this.fire('cr-menu-tap');
+    this.onClosePromoTap_();
+  },
+  possiblyShowMenuPromo_: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      if (this.showMenu && this.showMenuPromo && !this.showingSearch_) {
+        this.$$('#menuPromo').animate({
+          opacity: [ 0, .9 ]
+        }, {
+          duration: 500,
+          fill: 'forwards'
+        });
+        this.fire('cr-menu-promo-shown');
+      }
+    }.bind(this));
+  },
+  titleIfNotShowMenuPromo_: function(title, showMenuPromo) {
+    return showMenuPromo ? '' : title;
   }
 });
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+cr.define('md_history', function() {
+  function BrowserService() {
+    this.pendingDeleteItems_ = null;
+    this.pendingDeletePromise_ = null;
+  }
+  BrowserService.prototype = {
+    deleteItems: function(items) {
+      if (this.pendingDeleteItems_ != null) {
+        return new Promise(function(resolve, reject) {
+          reject(items);
+        });
+      }
+      var removalList = items.map(function(item) {
+        return {
+          url: item.url,
+          timestamps: item.allTimestamps
+        };
+      });
+      this.pendingDeleteItems_ = items;
+      this.pendingDeletePromise_ = new PromiseResolver();
+      chrome.send('removeVisits', removalList);
+      return this.pendingDeletePromise_.promise;
+    },
+    removeBookmark: function(url) {
+      chrome.send('removeBookmark', [ url ]);
+    },
+    openForeignSessionAllTabs: function(sessionTag) {
+      chrome.send('openForeignSession', [ sessionTag ]);
+    },
+    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
+      chrome.send('openForeignSession', [ sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey ]);
+    },
+    deleteForeignSession: function(sessionTag) {
+      chrome.send('deleteForeignSession', [ sessionTag ]);
+    },
+    openClearBrowsingData: function() {
+      chrome.send('clearBrowsingData');
+    },
+    recordHistogram: function(histogram, value, max) {
+      chrome.send('metricsHandler:recordInHistogram', [ histogram, value, max ]);
+    },
+    recordAction: function(action) {
+      if (action.indexOf('_') == -1) action = 'HistoryPage_' + action;
+      chrome.send('metricsHandler:recordAction', [ action ]);
+    },
+    resolveDelete_: function(successful) {
+      if (this.pendingDeleteItems_ == null || this.pendingDeletePromise_ == null) {
+        return;
+      }
+      if (successful) this.pendingDeletePromise_.resolve(this.pendingDeleteItems_); else this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
+      this.pendingDeleteItems_ = null;
+      this.pendingDeletePromise_ = null;
+    },
+    menuPromoShown: function() {
+      chrome.send('menuPromoShown');
+    }
+  };
+  cr.addSingletonGetter(BrowserService);
+  return {
+    BrowserService: BrowserService
+  };
+});
+
+function deleteComplete() {
+  md_history.BrowserService.getInstance().resolveDelete_(true);
+}
+
+function deleteFailed() {
+  md_history.BrowserService.getInstance().resolveDelete_(false);
+}
 
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -6119,7 +6220,13 @@ Polymer({
       notify: true
     },
     queryStartTime: String,
-    queryEndTime: String
+    queryEndTime: String,
+    showMenuPromo_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showMenuPromo');
+      }
+    }
   },
   changeToolbarView_: function() {
     this.itemsSelected_ = this.count > 0;
@@ -6130,6 +6237,9 @@ Polymer({
     var searchField = this.$['main-toolbar'].getSearchField();
     searchField.showAndFocus();
     searchField.setValue(search);
+  },
+  onMenuPromoShown_: function() {
+    md_history.BrowserService.getInstance().menuPromoShown();
   },
   onSearchChanged_: function(event) {
     this.searchTerm = event.detail;
@@ -6416,77 +6526,6 @@ Polymer({
   is: 'paper-item',
   behaviors: [ Polymer.PaperItemBehavior ]
 });
-
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-cr.define('md_history', function() {
-  function BrowserService() {
-    this.pendingDeleteItems_ = null;
-    this.pendingDeletePromise_ = null;
-  }
-  BrowserService.prototype = {
-    deleteItems: function(items) {
-      if (this.pendingDeleteItems_ != null) {
-        return new Promise(function(resolve, reject) {
-          reject(items);
-        });
-      }
-      var removalList = items.map(function(item) {
-        return {
-          url: item.url,
-          timestamps: item.allTimestamps
-        };
-      });
-      this.pendingDeleteItems_ = items;
-      this.pendingDeletePromise_ = new PromiseResolver();
-      chrome.send('removeVisits', removalList);
-      return this.pendingDeletePromise_.promise;
-    },
-    removeBookmark: function(url) {
-      chrome.send('removeBookmark', [ url ]);
-    },
-    openForeignSessionAllTabs: function(sessionTag) {
-      chrome.send('openForeignSession', [ sessionTag ]);
-    },
-    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
-      chrome.send('openForeignSession', [ sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey ]);
-    },
-    deleteForeignSession: function(sessionTag) {
-      chrome.send('deleteForeignSession', [ sessionTag ]);
-    },
-    openClearBrowsingData: function() {
-      chrome.send('clearBrowsingData');
-    },
-    recordHistogram: function(histogram, value, max) {
-      chrome.send('metricsHandler:recordInHistogram', [ histogram, value, max ]);
-    },
-    recordAction: function(action) {
-      if (action.indexOf('_') == -1) action = 'HistoryPage_' + action;
-      chrome.send('metricsHandler:recordAction', [ action ]);
-    },
-    resolveDelete_: function(successful) {
-      if (this.pendingDeleteItems_ == null || this.pendingDeletePromise_ == null) {
-        return;
-      }
-      if (successful) this.pendingDeletePromise_.resolve(this.pendingDeleteItems_); else this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
-      this.pendingDeleteItems_ = null;
-      this.pendingDeletePromise_ = null;
-    }
-  };
-  cr.addSingletonGetter(BrowserService);
-  return {
-    BrowserService: BrowserService
-  };
-});
-
-function deleteComplete() {
-  md_history.BrowserService.getInstance().resolveDelete_(true);
-}
-
-function deleteFailed() {
-  md_history.BrowserService.getInstance().resolveDelete_(false);
-}
 
 Polymer({
   is: 'iron-collapse',
