@@ -7,6 +7,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
 
@@ -348,29 +349,6 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << " " << (field.should_autocomplete ? "true" : "false") << " "
             << role_str << " " << field.text_direction << " "
             << field.properties_mask;
-}
-
-bool IsCheckable(const FormFieldData::CheckStatus& check_status) {
-  return check_status != FormFieldData::CheckStatus::NOT_CHECKABLE;
-}
-
-bool IsChecked(const FormFieldData::CheckStatus& check_status) {
-  return check_status == FormFieldData::CheckStatus::CHECKED;
-}
-
-void SetCheckStatus(FormFieldData* form_field_data,
-                    bool isCheckable,
-                    bool isChecked) {
-  if (isChecked) {
-    form_field_data->check_status = FormFieldData::CheckStatus::CHECKED;
-  } else {
-    if (isCheckable) {
-      form_field_data->check_status =
-          FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED;
-    } else {
-      form_field_data->check_status = FormFieldData::CheckStatus::NOT_CHECKABLE;
-    }
-  }
 }
 
 }  // namespace autofill

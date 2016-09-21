@@ -574,7 +574,7 @@ class TestAutofillManager : public AutofillManager {
 
   void UploadFormData(const FormStructure& submitted_form,
                       bool observed_submission) override {
-    submitted_form_signature_ = submitted_form.FormSignature();
+    submitted_form_signature_ = submitted_form.FormSignatureAsStr();
   }
 
   const std::string GetSubmittedFormSignature() {
@@ -3249,8 +3249,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignature());
-  signatures.push_back(form_structure2->FormSignature());
+  signatures.push_back(form_structure->FormSignatureAsStr());
+  signatures.push_back(form_structure2->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
   autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
@@ -3299,7 +3299,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignature());
+  signatures.push_back(form_structure->FormSignatureAsStr());
 
   // Reset the manager (such as during a navigation).
   autofill_manager_->Reset();
@@ -3401,7 +3401,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDifferentFields) {
   FormsSeen(forms);
 
   // Cache the expected form signature.
-  std::string signature = FormStructure(form).FormSignature();
+  std::string signature = FormStructure(form).FormSignatureAsStr();
 
   // Change the structure of the form prior to submission.
   // Websites would typically invoke JavaScript either on page load or on form

@@ -105,4 +105,31 @@ bool IsDesktopPlatform() {
 #endif
 }
 
+bool ShouldSkipField(const FormFieldData& field) {
+  return IsCheckable(field.check_status);
+}
+
+bool IsCheckable(const FormFieldData::CheckStatus& check_status) {
+  return check_status != FormFieldData::CheckStatus::NOT_CHECKABLE;
+}
+
+bool IsChecked(const FormFieldData::CheckStatus& check_status) {
+  return check_status == FormFieldData::CheckStatus::CHECKED;
+}
+
+void SetCheckStatus(FormFieldData* form_field_data,
+                    bool isCheckable,
+                    bool isChecked) {
+  if (isChecked) {
+    form_field_data->check_status = FormFieldData::CheckStatus::CHECKED;
+  } else {
+    if (isCheckable) {
+      form_field_data->check_status =
+          FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED;
+    } else {
+      form_field_data->check_status = FormFieldData::CheckStatus::NOT_CHECKABLE;
+    }
+  }
+}
+
 }  // namespace autofill

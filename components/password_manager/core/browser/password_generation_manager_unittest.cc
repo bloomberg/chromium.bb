@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -31,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using autofill::FormStructure;
 using base::ASCIIToUTF16;
 using testing::_;
 
@@ -189,6 +191,7 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   autofill::FormStructure form1(login_form);
   std::vector<autofill::FormStructure*> forms;
   forms.push_back(&form1);
+
   autofill::FormData account_creation_form;
   account_creation_form.origin = GURL("http://accounts.yahoo.com/");
   account_creation_form.action = GURL("http://accounts.yahoo.com/signup");
@@ -200,8 +203,13 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   confirm_password.name = ASCIIToUTF16("password");
   confirm_password.form_control_type = "password";
   account_creation_form.fields.push_back(confirm_password);
+  autofill::FormSignature account_creation_form_signature =
+      autofill::CalculateFormSignature(account_creation_form);
+  autofill::FieldSignature account_creation_field_signature =
+      autofill::CalculateFieldSignatureForField(password);
   autofill::FormStructure form2(account_creation_form);
   forms.push_back(&form2);
+
   autofill::FormData change_password_form;
   change_password_form.origin = GURL("http://accounts.yahoo.com/");
   change_password_form.action = GURL("http://accounts.yahoo.com/change");
@@ -210,6 +218,10 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   change_password_form.fields[0].name = ASCIIToUTF16("new_password");
   change_password_form.fields.push_back(confirm_password);
   autofill::FormStructure form3(change_password_form);
+  autofill::FormSignature change_password_form_signature =
+      autofill::CalculateFormSignature(change_password_form);
+  autofill::FieldSignature change_password_field_signature =
+      autofill::CalculateFieldSignatureForField(change_password_form.fields[0]);
   forms.push_back(&form3);
 
   // Simulate the server response to set the field types.
@@ -233,21 +245,19 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
 
   DetectFormsEligibleForGeneration(forms);
   EXPECT_EQ(2u, GetTestDriver()->GetFoundEligibleForGenerationForms().size());
-  EXPECT_EQ(GURL("http://accounts.yahoo.com/signup"),
-            GetTestDriver()->GetFoundEligibleForGenerationForms()[0].action);
-  EXPECT_EQ(account_creation_form.name,
-            GetTestDriver()->GetFoundEligibleForGenerationForms()[0].name);
-  EXPECT_EQ(password.name, GetTestDriver()
-                               ->GetFoundEligibleForGenerationForms()[0]
-                               .generation_field.name);
-  EXPECT_EQ(GURL("http://accounts.yahoo.com/change"),
-            GetTestDriver()->GetFoundEligibleForGenerationForms()[1].action);
-  EXPECT_EQ(ASCIIToUTF16("new_password"),
-            GetTestDriver()
-                ->GetFoundEligibleForGenerationForms()[1]
-                .generation_field.name);
-  EXPECT_EQ(change_password_form.name,
-            GetTestDriver()->GetFoundEligibleForGenerationForms()[1].name);
+  EXPECT_EQ(
+      account_creation_form_signature,
+      GetTestDriver()->GetFoundEligibleForGenerationForms()[0].form_signature);
+  EXPECT_EQ(
+      account_creation_field_signature,
+      GetTestDriver()->GetFoundEligibleForGenerationForms()[0].field_signature);
+
+  EXPECT_EQ(
+      change_password_form_signature,
+      GetTestDriver()->GetFoundEligibleForGenerationForms()[1].form_signature);
+  EXPECT_EQ(
+      change_password_field_signature,
+      GetTestDriver()->GetFoundEligibleForGenerationForms()[1].field_signature);
 }
 
 TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {

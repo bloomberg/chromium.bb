@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
 
@@ -41,6 +42,14 @@ size_t GetTextSelectionStart(const base::string16& suggestion,
 // Returns true if running on a desktop platform. Any platform that is not
 // Android or iOS is considered desktop.
 bool IsDesktopPlatform();
+
+bool ShouldSkipField(const FormFieldData& field);
+
+bool IsCheckable(const FormFieldData::CheckStatus& check_status);
+bool IsChecked(const FormFieldData::CheckStatus& check_status);
+void SetCheckStatus(FormFieldData* form_field_data,
+                    bool isCheckable,
+                    bool isChecked);
 
 }  // namespace autofill
 

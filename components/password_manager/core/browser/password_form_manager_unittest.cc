@@ -119,7 +119,7 @@ MATCHER_P2(CheckUploadedAutofillTypesAndSignature,
            form_signature,
            expected_types,
            "Unexpected autofill types or form signature") {
-  if (form_signature != arg.FormSignature()) {
+  if (form_signature != arg.FormSignatureAsStr()) {
     // An unexpected form is uploaded.
     return false;
   }
@@ -156,10 +156,10 @@ MATCHER_P2(CheckUploadedGenerationTypesAndSignature,
            form_signature,
            expected_generation_types,
            "Unexpected generation types or form signature") {
-  if (form_signature != arg.FormSignature()) {
+  if (form_signature != arg.FormSignatureAsStr()) {
     // Unexpected form's signature.
     ADD_FAILURE() << "Expected form signature is " << form_signature
-                  << ", but found " << arg.FormSignature();
+                  << ", but found " << arg.FormSignatureAsStr();
     return false;
   }
   for (const autofill::AutofillField* field : arg) {
@@ -499,10 +499,10 @@ class PasswordFormManagerTest : public testing::Test {
     std::string expected_login_signature;
     autofill::FormStructure observed_structure(observed_form_data);
     autofill::FormStructure pending_structure(saved_match()->form_data);
-    if (observed_structure.FormSignature() !=
-            pending_structure.FormSignature() &&
+    if (observed_structure.FormSignatureAsStr() !=
+            pending_structure.FormSignatureAsStr() &&
         times_used == 0) {
-      expected_login_signature = observed_structure.FormSignature();
+      expected_login_signature = observed_structure.FormSignatureAsStr();
     }
     autofill::ServerFieldTypeSet expected_available_field_types;
     expected_available_field_types.insert(autofill::USERNAME);
@@ -522,11 +522,11 @@ class PasswordFormManagerTest : public testing::Test {
 
     if (field_type) {
       EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-                  StartUploadRequest(
-                      CheckUploadedAutofillTypesAndSignature(
-                          pending_structure.FormSignature(), expected_types),
-                      false, expected_available_field_types,
-                      expected_login_signature, true));
+                  StartUploadRequest(CheckUploadedAutofillTypesAndSignature(
+                                         pending_structure.FormSignatureAsStr(),
+                                         expected_types),
+                                     false, expected_available_field_types,
+                                     expected_login_signature, true));
     } else {
       EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
                   StartUploadRequest(_, _, _, _, _))
@@ -592,12 +592,13 @@ class PasswordFormManagerTest : public testing::Test {
     expected_available_field_types.insert(field_type);
 
     std::string observed_form_signature =
-        autofill::FormStructure(observed_form()->form_data).FormSignature();
+        autofill::FormStructure(observed_form()->form_data)
+            .FormSignatureAsStr();
 
     std::string expected_login_signature;
     if (field_type == autofill::NEW_PASSWORD) {
       autofill::FormStructure pending_structure(saved_match()->form_data);
-      expected_login_signature = pending_structure.FormSignature();
+      expected_login_signature = pending_structure.FormSignatureAsStr();
     }
     EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
                 StartUploadRequest(CheckUploadedAutofillTypesAndSignature(
@@ -715,7 +716,7 @@ class PasswordFormManagerTest : public testing::Test {
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(
             CheckUploadedGenerationTypesAndSignature(
-                form_structure.FormSignature(), expected_generation_types),
+                form_structure.FormSignatureAsStr(), expected_generation_types),
             false, expected_available_field_types, std::string(), true));
 
     form_manager.ProvisionallySave(
@@ -2766,10 +2767,10 @@ TEST_F(PasswordFormManagerTest,
   expected_available_field_types.insert(autofill::NEW_PASSWORD);
 
   std::string observed_form_signature =
-      autofill::FormStructure(observed_form()->form_data).FormSignature();
+      autofill::FormStructure(observed_form()->form_data).FormSignatureAsStr();
 
   std::string expected_login_signature =
-      autofill::FormStructure(saved_match()->form_data).FormSignature();
+      autofill::FormStructure(saved_match()->form_data).FormSignatureAsStr();
 
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(CheckUploadedAutofillTypesAndSignature(
@@ -2988,7 +2989,7 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(
                   CheckUploadedAutofillTypesAndSignature(
-                      pending_structure.FormSignature(), expected_types),
+                      pending_structure.FormSignatureAsStr(), expected_types),
                   false, expected_available_field_types, std::string(), true));
 
   form_manager.ProvisionallySave(

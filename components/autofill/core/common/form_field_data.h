@@ -103,12 +103,6 @@ bool DeserializeFormFieldData(base::PickleIterator* pickle_iterator,
 // So we can compare FormFieldDatas with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
-bool IsCheckable(const FormFieldData::CheckStatus& check_status);
-bool IsChecked(const FormFieldData::CheckStatus& check_status);
-void SetCheckStatus(FormFieldData* form_field_data,
-                    bool isCheckable,
-                    bool isChecked);
-
 // Prefer to use this macro in place of |EXPECT_EQ()| for comparing
 // |FormFieldData|s in test code.
 #define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \

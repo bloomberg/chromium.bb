@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 
 namespace autofill {
 
@@ -67,7 +68,10 @@ class AutofillField : public FormFieldData {
 
   // The unique signature of this field, composed of the field name and the html
   // input type in a 32-bit hash.
-  std::string FieldSignature() const;
+  FieldSignature GetFieldSignature() const;
+
+  // Returns the field signature as string.
+  std::string FieldSignatureAsStr() const;
 
   // Returns true if the field type has been determined (without the text in the
   // field).

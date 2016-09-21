@@ -36,11 +36,14 @@ static_library("common") {
     "password_generation_util.h",
     "save_password_progress_logger.cc",
     "save_password_progress_logger.h",
+    "signatures_util.cc",
+    "signatures_util.h",
   ]
 
   deps = [
     "//base",
     "//base:i18n",
+    "//third_party/re2",
     "//url",
   ]
 

@@ -91,9 +91,8 @@ class FormStructure {
   // Returns whether sending autofill field metadata to the server is enabled.
   static bool IsAutofillFieldMetadataEnabled();
 
-  // The unique signature for this form, composed of the target url domain,
-  // the form name, and the form field names in a 64-bit hash.
-  std::string FormSignature() const;
+  // Return the form signature as string.
+  std::string FormSignatureAsStr() const;
 
   // Runs a quick heuristic to rule out forms that are obviously not
   // auto-fillable, like google/yahoo/msn search, etc.
@@ -221,6 +220,8 @@ class FormStructure {
 
   bool all_fields_are_passwords() const { return all_fields_are_passwords_; }
 
+  FormSignature form_signature() const { return form_signature_; }
+
   // Returns a FormData containing the data this form structure knows about.
   FormData ToFormData() const;
 
@@ -239,11 +240,6 @@ class FormStructure {
 
   // Encodes information about this form and its fields into |upload|.
   void EncodeFormForUpload(autofill::AutofillUploadContents* upload) const;
-
-  // 64-bit hash of the string - used in FormSignature and unit-tests.
-  static uint64_t Hash64Bit(const std::string& str);
-
-  uint64_t FormSignature64Bit() const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
@@ -290,11 +286,6 @@ class FormStructure {
   // included in queries to the Autofill server.
   size_t active_field_count_;
 
-  // The names of the form input elements, that are part of the form signature.
-  // The string starts with "&" and the names are also separated by the "&"
-  // character. E.g.: "&form_input1_name&form_input2_name&...&form_inputN_name"
-  std::string form_signature_field_names_;
-
   // Whether the server expects us to always upload, never upload, or default
   // to the stored upload rates.
   UploadRequired upload_required_;
@@ -323,6 +314,10 @@ class FormStructure {
 
   // True if all form fields are password fields.
   bool all_fields_are_passwords_;
+
+  // The unique signature for this form, composed of the target url domain,
+  // the form name, and the form field names in a 64-bit hash.
+  FormSignature form_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

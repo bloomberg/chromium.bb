@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -197,9 +198,8 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
 void CheckEqualPasswordFormGenerationData(
     const PasswordFormGenerationData& expected,
     const PasswordFormGenerationData& actual) {
-  EXPECT_EQ(expected.name, actual.name);
-  EXPECT_EQ(expected.action, actual.action);
-  EXPECT_EQ(expected.generation_field, actual.generation_field);
+  EXPECT_EQ(expected.form_signature, actual.form_signature);
+  EXPECT_EQ(expected.field_signature, actual.field_signature);
 }
 
 }  // namespace
@@ -403,7 +403,10 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
 TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
   FormData form;
   test::CreateTestAddressFormData(&form);
-  PasswordFormGenerationData input{form.name, form.action, form.fields[0]};
+  FormSignature form_signature = CalculateFormSignature(form);
+  FieldSignature field_signature =
+      CalculateFieldSignatureForField(form.fields[0]);
+  PasswordFormGenerationData input{form_signature, field_signature};
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

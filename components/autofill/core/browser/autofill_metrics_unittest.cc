@@ -755,7 +755,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignature());
+  signatures.push_back(form_structure->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
   autofill_manager_->OnLoadedServerPredictions(response_string, signatures);

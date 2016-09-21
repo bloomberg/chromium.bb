@@ -37,7 +37,7 @@ void BrowserSavePasswordProgressLogger::LogFormSignatures(
   autofill::FormStructure form_structure(form.form_data);
   std::string message = GetStringFromID(label) + ": {\n";
   message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-             ScrubNonDigit(form_structure.FormSignature()) + "\n";
+             ScrubNonDigit(form_structure.FormSignatureAsStr()) + "\n";
   message += GetStringFromID(STRING_SIGNON_REALM) + ": " +
              ScrubURL(GURL(form.signon_realm)) + "\n";
   message +=
@@ -50,8 +50,8 @@ void BrowserSavePasswordProgressLogger::LogFormSignatures(
 
   for (const autofill::AutofillField* field : form_structure) {
     std::string field_info = ScrubElementID(field->name) + ": " +
-                             ScrubNonDigit(field->FieldSignature()) + ", " +
-                             ScrubElementID(field->form_control_type);
+                             ScrubNonDigit(field->FieldSignatureAsStr()) +
+                             ", " + ScrubElementID(field->form_control_type);
     if (!field->autocomplete_attribute.empty())
       field_info += ", " + ScrubElementID(field->autocomplete_attribute);
     message += field_info + "\n";

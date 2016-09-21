@@ -368,7 +368,7 @@ void PasswordFormManager::Update(
   if (observed_form_.IsPossibleChangePasswordForm()) {
     FormStructure form_structure(credentials_to_update.form_data);
     UploadChangePasswordForm(autofill::NEW_PASSWORD,
-                             form_structure.FormSignature());
+                             form_structure.FormSignatureAsStr());
   }
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
@@ -715,7 +715,8 @@ void PasswordFormManager::SendAutofillVotes(
   // to PasswordForm. Even without this check, these FormStructure's won't
   // be uploaded, but it makes it hard to see if we are encountering
   // unexpected errors.
-  if (pending_structure.FormSignature() != observed_structure.FormSignature()) {
+  if (pending_structure.FormSignatureAsStr() !=
+      observed_structure.FormSignatureAsStr()) {
     // Only upload if this is the first time the password has been used.
     // Otherwise the credentials have been used on the same field before so
     // they aren't from an account creation form.
@@ -725,7 +726,7 @@ void PasswordFormManager::SendAutofillVotes(
     if (pending->times_used == 1 && selected_username_.empty()) {
       if (UploadPasswordForm(pending->form_data, pending->username_element,
                              autofill::ACCOUNT_CREATION_PASSWORD,
-                             observed_structure.FormSignature())) {
+                             observed_structure.FormSignatureAsStr())) {
         pending->generation_upload_status =
             autofill::PasswordForm::POSITIVE_SIGNAL_SENT;
       }

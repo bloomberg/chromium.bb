@@ -513,10 +513,8 @@ bool StructTraits<mojom::PasswordFormGenerationDataDataView,
                   PasswordFormGenerationData>::
     Read(mojom::PasswordFormGenerationDataDataView data,
          PasswordFormGenerationData* out) {
-  if (!data.ReadName(&out->name) || !data.ReadAction(&out->action) ||
-      !data.ReadGenerationField(&out->generation_field))
-    return false;
-
+  out->form_signature = data.form_signature();
+  out->field_signature = data.field_signature();
   return true;
 }
 

@@ -10,6 +10,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -41,8 +42,8 @@ void SetAccountCreationFormsDetectedMessage(
 
   std::vector<autofill::PasswordFormGenerationData> forms;
   forms.push_back(autofill::PasswordFormGenerationData{
-      form_data.name, form_util::StripAuthAndParams(form_data.action),
-      form_data.fields[field_index]});
+      CalculateFormSignature(form_data),
+      CalculateFieldSignatureForField(form_data.fields[field_index])});
   generation_agent->FoundFormsEligibleForGeneration(forms);
 }
 

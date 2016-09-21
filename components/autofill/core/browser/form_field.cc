@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
 namespace {

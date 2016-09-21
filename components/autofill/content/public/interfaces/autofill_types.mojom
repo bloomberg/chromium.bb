@@ -150,9 +150,8 @@ struct PasswordFormFillData {
 
 // autofill::PasswordFormGenerationData
 struct PasswordFormGenerationData {
-  string name;
-  url.mojom.Url action;
-  FormFieldData generation_field;
+  uint64 form_signature;
+  uint32 field_signature;
 };
 
 // autofill::PasswordForm

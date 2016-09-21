@@ -277,7 +277,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(net::HTTP_NOT_FOUND, responses_.front().error);
-  EXPECT_EQ(form_structures[1]->FormSignature(),
+  EXPECT_EQ(form_structures[1]->FormSignatureAsStr(),
             responses_.front().signature);
   // Expected response on non-query request is an empty string.
   EXPECT_EQ(std::string(), responses_.front().response);
@@ -426,7 +426,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
             responses_.front().type_of_response);
   EXPECT_EQ(net::HTTP_NOT_FOUND, responses_.front().error);
-  EXPECT_EQ(form_structure->FormSignature(), responses_.front().signature);
+  EXPECT_EQ(form_structure->FormSignatureAsStr(), responses_.front().signature);
   // Expected response on non-query request is an empty string.
   EXPECT_EQ(std::string(), responses_.front().response);
   responses_.pop_front();

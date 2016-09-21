@@ -215,7 +215,7 @@ bool AutofillDownloadManager::StartUploadRequest(
   }
 
   FormRequestData request_data;
-  request_data.form_signatures.push_back(form.FormSignature());
+  request_data.form_signatures.push_back(form.FormSignatureAsStr());
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
   request_data.payload = payload;
 

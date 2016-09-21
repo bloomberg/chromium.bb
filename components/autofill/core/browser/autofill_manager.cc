@@ -906,7 +906,7 @@ void AutofillManager::OnLoadedServerPredictions(
   std::vector<FormStructure*> queried_forms;
   for (const std::string& signature : base::Reversed(form_signatures)) {
     for (FormStructure* cur_form : base::Reversed(form_structures_)) {
-      if (cur_form->FormSignature() == signature) {
+      if (cur_form->FormSignatureAsStr() == signature) {
         queried_forms.push_back(cur_form);
         break;
       }
@@ -1272,7 +1272,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form,
 
   // Check if the form is among the forms that were recently auto-filled.
   bool was_autofilled = false;
-  std::string form_signature = submitted_form.FormSignature();
+  std::string form_signature = submitted_form.FormSignatureAsStr();
   for (const std::string& cur_sig : autofilled_form_signatures_) {
     if (cur_sig == form_signature) {
       was_autofilled = true;
@@ -1539,7 +1539,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     }
   }
 
-  autofilled_form_signatures_.push_front(form_structure->FormSignature());
+  autofilled_form_signatures_.push_front(form_structure->FormSignatureAsStr());
   // Only remember the last few forms that we've seen, both to avoid false
   // positives and to avoid wasting memory.
   if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)

@@ -198,29 +198,29 @@ TEST_F(AutofillFieldTest, IsEmpty) {
   EXPECT_FALSE(field.IsEmpty());
 }
 
-TEST_F(AutofillFieldTest, FieldSignature) {
+TEST_F(AutofillFieldTest, FieldSignatureAsStr) {
   AutofillField field;
   ASSERT_EQ(base::string16(), field.name);
   ASSERT_EQ(std::string(), field.form_control_type);
 
   // Signature is empty.
-  EXPECT_EQ("2085434232", field.FieldSignature());
+  EXPECT_EQ("2085434232", field.FieldSignatureAsStr());
 
   // Field name is set.
   field.name = ASCIIToUTF16("Name");
-  EXPECT_EQ("1606968241", field.FieldSignature());
+  EXPECT_EQ("1606968241", field.FieldSignatureAsStr());
 
   // Field form control type is set.
   field.form_control_type = "text";
-  EXPECT_EQ("502192749", field.FieldSignature());
+  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Heuristic type does not affect FieldSignature.
   field.set_heuristic_type(NAME_FIRST);
-  EXPECT_EQ("502192749", field.FieldSignature());
+  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Server type does not affect FieldSignature.
   field.set_server_type(NAME_LAST);
-  EXPECT_EQ("502192749", field.FieldSignature());
+  EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 }
 
 TEST_F(AutofillFieldTest, IsFieldFillable) {

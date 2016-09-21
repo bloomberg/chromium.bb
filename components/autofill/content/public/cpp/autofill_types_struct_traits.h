@@ -365,18 +365,14 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 template <>
 struct StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
                     autofill::PasswordFormGenerationData> {
-  static const base::string16& name(
+  static uint64_t form_signature(
       const autofill::PasswordFormGenerationData& r) {
-    return r.name;
+    return r.form_signature;
   }
 
-  static const GURL& action(const autofill::PasswordFormGenerationData& r) {
-    return r.action;
-  }
-
-  static const autofill::FormFieldData& generation_field(
+  static uint32_t field_signature(
       const autofill::PasswordFormGenerationData& r) {
-    return r.generation_field;
+    return r.field_signature;
   }
 
   static bool Read(autofill::mojom::PasswordFormGenerationDataDataView data,

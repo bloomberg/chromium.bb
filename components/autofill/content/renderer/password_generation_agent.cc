@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -55,39 +56,39 @@ bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
   return std::find(urls.begin(), urls.end(), url) != urls.end();
 }
 
-// Finds a form in |forms| that has the same action and name as |form|.
+// Calculates the signature of |form| and searches it in |forms|.
 const PasswordFormGenerationData* FindFormGenerationData(
     const std::vector<PasswordFormGenerationData>& forms,
     const PasswordForm& form) {
+  FormSignature form_signature = CalculateFormSignature(form.form_data);
   for (const auto& form_it : forms) {
-    if (form_it.name == form.form_data.name && form_it.action == form.action)
+    if (form_it.form_signature == form_signature)
       return &form_it;
   }
   return nullptr;
 }
 
 // This function returns a vector of password fields into which Chrome should
-// fill the generated password. It assumes that |field_data| describes the field
-// where Chrome shows the password generation prompt. It returns no more
+// fill the generated password. It assumes that |field_signature| describes the
+// field where Chrome shows the password generation prompt. It returns no more
 // than 2 elements.
 std::vector<blink::WebInputElement> FindPasswordElementsForGeneration(
     const std::vector<blink::WebInputElement>& all_password_elements,
-    const base::string16& field_name) {
-  auto iter =
-      std::find_if(all_password_elements.begin(), all_password_elements.end(),
-                   [&field_name](const blink::WebInputElement& input) {
-                     // Make explicit conversion before comparing with string16.
-                     base::string16 input_name = input.nameForAutofill();
-                     return input_name == field_name;
-                   });
+    const FieldSignature field_signature) {
+  auto iter = std::find_if(
+      all_password_elements.begin(), all_password_elements.end(),
+      [&field_signature](const blink::WebInputElement& input) {
+        FieldSignature signature = CalculateFieldSignatureByNameAndType(
+            input.nameForAutofill(), input.formControlType().utf8());
+        return signature == field_signature;
+      });
   std::vector<blink::WebInputElement> passwords;
 
   // We copy not more than 2 fields because occasionally there are forms where
   // the security question answers are put in password fields and we don't want
   // to fill those.
-  for (; iter != all_password_elements.end() && passwords.size() < 2; ++iter) {
+  for (; iter != all_password_elements.end() && passwords.size() < 2; ++iter)
     passwords.push_back(*iter);
-  }
   return passwords;
 }
 
@@ -403,7 +404,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     std::vector<blink::WebInputElement> password_elements =
         generation_data ? FindPasswordElementsForGeneration(
                               possible_form_data.password_elements,
-                              generation_data->generation_field.name)
+                              generation_data->field_signature)
                         : possible_form_data.password_elements;
     if (password_elements.empty()) {
       // It might be if JavaScript changes field names.
@@ -565,7 +566,10 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
   std::vector<blink::WebInputElement> password_elements;
   GetAccountCreationPasswordFields(control_elements, &password_elements);
   password_elements = FindPasswordElementsForGeneration(
-      password_elements, last_focused_password_element_.nameForAutofill());
+      password_elements,
+      CalculateFieldSignatureByNameAndType(
+          last_focused_password_element_.nameForAutofill(),
+          last_focused_password_element_.formControlType().utf8()));
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
   is_manually_triggered_ = true;

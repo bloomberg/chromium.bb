@@ -27,13 +27,14 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_field.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
-#include "third_party/re2/src/re2/re2.h"
 
 namespace autofill {
 namespace {
@@ -41,9 +42,6 @@ namespace {
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kBillingMode[] = "billing";
 const char kShippingMode[] = "shipping";
-
-// Strip away >= 5 consecutive digits.
-const char kIgnorePatternInFieldName[] = "\\d{5,}";
 
 // A form is considered to have a high prediction mismatch rate if the number of
 // mismatches exceeds this threshold.
@@ -272,14 +270,6 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   return HTML_TYPE_UNRECOGNIZED;
 }
 
-std::string StripDigitsIfRequired(const base::string16& input) {
-  std::string return_string = base::UTF16ToUTF8(input);
-
-  re2::RE2::GlobalReplace(&return_string, re2::RE2(kIgnorePatternInFieldName),
-                          std::string());
-  return return_string;
-}
-
 std::ostream& operator<<(
     std::ostream& out,
     const autofill::AutofillQueryResponseContents& response) {
@@ -317,14 +307,8 @@ FormStructure::FormStructure(const FormData& form)
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
-    if (!ShouldSkipField(field)) {
-      // Add all supported form fields (including with empty names) to the
-      // signature.  This is a requirement for Autofill servers.
-      form_signature_field_names_.append("&");
-      form_signature_field_names_.append(StripDigitsIfRequired(field.name));
-
+    if (!ShouldSkipField(field))
       ++active_field_count_;
-    }
 
     if (field.form_control_type == "password")
       has_password_field_ = true;
@@ -340,6 +324,7 @@ FormStructure::FormStructure(const FormData& form)
     fields_.push_back(new AutofillField(field, unique_name));
   }
 
+  form_signature_ = autofill::CalculateFormSignature(form);
   // Do further processing on the fields, as needed.
   ProcessExtractedFields();
 }
@@ -403,12 +388,12 @@ bool FormStructure::EncodeUploadRequest(
 
   upload->set_submission(observed_submission);
   upload->set_client_version(kClientVersion);
-  upload->set_form_signature(FormSignature64Bit());
+  upload->set_form_signature(form_signature());
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
 
   if (IsAutofillFieldMetadataEnabled()) {
-    upload->set_action_signature(Hash64Bit(target_url_.host()));
+    upload->set_action_signature(StrToHash64Bit(target_url_.host()));
     if (!form_name().empty())
       upload->set_form_name(base::UTF16ToUTF8(form_name()));
   }
@@ -441,7 +426,7 @@ bool FormStructure::EncodeQueryRequest(
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
   for (const auto* form : forms) {
-    std::string signature(form->FormSignature());
+    std::string signature(form->FormSignatureAsStr());
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
@@ -545,13 +530,13 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     form.data.origin = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.data.is_form_tag = form_structure->is_form_tag_;
-    form.signature = form_structure->FormSignature();
+    form.signature = form_structure->FormSignatureAsStr();
 
     for (const AutofillField* field : form_structure->fields_) {
       form.data.fields.push_back(FormFieldData(*field));
 
       FormFieldDataPredictions annotated_field;
-      annotated_field.signature = field->FieldSignature();
+      annotated_field.signature = field->FieldSignatureAsStr();
       annotated_field.heuristic_type =
           AutofillType(field->heuristic_type()).ToString();
       annotated_field.server_type =
@@ -574,8 +559,8 @@ bool FormStructure::IsAutofillFieldMetadataEnabled() {
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
-std::string FormStructure::FormSignature() const {
-  return base::Uint64ToString(FormSignature64Bit());
+std::string FormStructure::FormSignatureAsStr() const {
+  return base::Uint64ToString(form_signature());
 }
 
 bool FormStructure::IsAutofillable() const {
@@ -642,12 +627,12 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   std::map<std::string, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
     const AutofillField* field = cached_form.field(i);
-    cached_fields[field->FieldSignature()] = field;
+    cached_fields[field->FieldSignatureAsStr()] = field;
   }
 
   for (AutofillField* field : *this) {
-    std::map<std::string, const AutofillField*>::const_iterator
-        cached_field = cached_fields.find(field->FieldSignature());
+    std::map<std::string, const AutofillField*>::const_iterator cached_field =
+        cached_fields.find(field->FieldSignatureAsStr());
     if (cached_field != cached_fields.end()) {
       if (field->form_control_type != "select-one" &&
           field->value == cached_field->second->value) {
@@ -678,7 +663,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   DCHECK_EQ(cached_form.form_name_, form_name_);
   DCHECK_EQ(cached_form.source_url_, source_url_);
   DCHECK_EQ(cached_form.target_url_, target_url_);
-  form_signature_field_names_ = cached_form.form_signature_field_names_;
+  form_signature_ = cached_form.form_signature_;
 }
 
 void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
@@ -1128,19 +1113,14 @@ void FormStructure::EncodeFormForQuery(
     AutofillQueryContents::Form* query_form) const {
   DCHECK(!IsMalformed());
 
-  query_form->set_signature(FormSignature64Bit());
+  query_form->set_signature(form_signature());
   for (const AutofillField* field : fields_) {
     if (ShouldSkipField(*field))
       continue;
 
     AutofillQueryContents::Form::Field* added_field = query_form->add_field();
-    unsigned sig = 0;
 
-    // The signature is a required field. If it can't be parsed, the proto would
-    // not serialize.
-    if (!base::StringToUint(field->FieldSignature(), &sig))
-      continue;
-    added_field->set_signature(sig);
+    added_field->set_signature(field->GetFieldSignature());
 
     if (IsAutofillFieldMetadataEnabled()) {
       added_field->set_type(field->form_control_type);
@@ -1176,12 +1156,7 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
             field->form_classifier_outcome());
       }
 
-      unsigned sig = 0;
-      // The signature is a required field. If it can't be parsed, the proto
-      // would not serialize.
-      if (!base::StringToUint(field->FieldSignature(), &sig))
-        continue;
-      added_field->set_signature(sig);
+      added_field->set_signature(field->GetFieldSignature());
 
       if (IsAutofillFieldMetadataEnabled()) {
         added_field->set_type(field->form_control_type);
@@ -1200,40 +1175,6 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       }
     }
   }
-}
-
-uint64_t FormStructure::Hash64Bit(const std::string& str) {
-  std::string hash_bin = base::SHA1HashString(str);
-  DCHECK_EQ(base::kSHA1Length, hash_bin.length());
-
-  uint64_t hash64 = (((static_cast<uint64_t>(hash_bin[0])) & 0xFF) << 56) |
-                    (((static_cast<uint64_t>(hash_bin[1])) & 0xFF) << 48) |
-                    (((static_cast<uint64_t>(hash_bin[2])) & 0xFF) << 40) |
-                    (((static_cast<uint64_t>(hash_bin[3])) & 0xFF) << 32) |
-                    (((static_cast<uint64_t>(hash_bin[4])) & 0xFF) << 24) |
-                    (((static_cast<uint64_t>(hash_bin[5])) & 0xFF) << 16) |
-                    (((static_cast<uint64_t>(hash_bin[6])) & 0xFF) << 8) |
-                    ((static_cast<uint64_t>(hash_bin[7])) & 0xFF);
-
-  return hash64;
-}
-
-uint64_t FormStructure::FormSignature64Bit() const {
-  std::string scheme(target_url_.scheme());
-  std::string host(target_url_.host());
-
-  // If target host or scheme is empty, set scheme and host of source url.
-  // This is done to match the Toolbar's behavior.
-  if (scheme.empty() || host.empty()) {
-    scheme = source_url_.scheme();
-    host = source_url_.host();
-  }
-
-  std::string form_string = scheme + "://" + host + "&" +
-                            base::UTF16ToUTF8(form_name_) +
-                            form_signature_field_names_;
-
-  return Hash64Bit(form_string);
 }
 
 bool FormStructure::IsMalformed() const {
