@@ -101,6 +101,8 @@ class MediaTest : public testing::WithParamInterface<bool>,
   }
 };
 
+// Android doesn't support Theora.
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearTheora) {
   PlayVideo("bear.ogv", GetParam());
 }
@@ -108,6 +110,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearTheora) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv", GetParam());
 }
+#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWebm) {
   PlayVideo("bear.webm", GetParam());
@@ -136,9 +139,12 @@ IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearMp4) {
   PlayVideo("bear.mp4", GetParam());
 }
 
+// Android devices usually only support baseline, main and high.
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
   PlayVideo("bear-320x180-hi10p.mp4", GetParam());
 }
+#endif  // !defined(OS_ANDROID)
 
 // Crashes on Mac only.  http://crbug.com/621857
 #if defined(OS_MACOSX)
@@ -237,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
 
 // Covers tear-down when navigating away as opposed to browser exiting.
 IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
-  PlayVideo("bear.ogv", false);
+  PlayVideo("bear.webm", false);
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
