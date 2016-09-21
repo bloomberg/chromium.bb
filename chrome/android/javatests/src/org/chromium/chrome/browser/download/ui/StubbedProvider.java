@@ -265,6 +265,16 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("eighth_guid")
                     .setMimeType("application/pdf")
                     .build());
+        } else if (which == 8) {
+            // This is a duplicate of item 7 above.
+            item = new DownloadItem(false, new DownloadInfo.Builder()
+                    .setUrl("https://sleepy.com")
+                    .setContentLength(ONE_GIGABYTE / 2)
+                    .setFileName("sleep.pdf")
+                    .setFilePath("/storage/fake_path/Downloads/sleep.pdf")
+                    .setDownloadGuid("ninth_guid")
+                    .setMimeType("application/pdf")
+                    .build());
         } else {
             return null;
         }

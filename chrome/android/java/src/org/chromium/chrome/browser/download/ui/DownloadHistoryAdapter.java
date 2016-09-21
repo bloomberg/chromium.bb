@@ -59,6 +59,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final List<DownloadItemWrapper> mDownloadOffTheRecordItems = new ArrayList<>();
     private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
     private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
+    private final FilePathsToDownloadItemsMap mFilePathsToItemsMap =
+            new FilePathsToDownloadItemsMap();
+
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
@@ -114,6 +117,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             } else {
                 list.add(wrapper);
                 mItemCounts[wrapper.getFilterType()]++;
+                mFilePathsToItemsMap.addItem(wrapper);
             }
         }
 
@@ -127,7 +131,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mLoadingDelegate.updateLoadingState(LoadingStateDelegate.OFFLINE_PAGE_LOADED);
         mOfflinePageItems.clear();
         for (OfflinePageDownloadItem item : result) {
-            mOfflinePageItems.add(createOfflinePageItemWrapper(item));
+            OfflinePageItemWrapper wrapper = createOfflinePageItemWrapper(item);
+            mOfflinePageItems.add(wrapper);
+            mFilePathsToItemsMap.addItem(wrapper);
         }
 
         if (mLoadingDelegate.isLoaded()) filter(mLoadingDelegate.getPendingFilter());
@@ -198,9 +204,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         if (index == INVALID_INDEX) {
             // Add a new entry.
             list.add(wrapper);
+            mFilePathsToItemsMap.addItem(wrapper);
         } else {
             // Update the old one.
             list.set(index, wrapper);
+            mFilePathsToItemsMap.replaceItem(wrapper);
         }
 
         filter(mFilter);
@@ -213,7 +221,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
      */
     public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
-        if (removeItemFromList(getDownloadItemList(isOffTheRecord), guid)) filter(mFilter);
+        if (removeItemFromList(getDownloadItemList(isOffTheRecord), guid)) {
+            filter(mFilter);
+        }
     }
 
     @Override
@@ -238,6 +248,47 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             sExternallyDeletedItems.clear();
             sExternallyDeletedOffTheRecordItems.clear();
         }
+    }
+
+    /**
+     * @param items The items to remove from this adapter. This should be used to remove items
+     *              from the adapter during deletions.
+     */
+    void removeItemsFromAdapter(List<DownloadHistoryItemWrapper> items) {
+        for (DownloadHistoryItemWrapper item : items) {
+            if (item instanceof DownloadItemWrapper) {
+                getDownloadItemList(item.isOffTheRecord()).remove(item);
+            } else {
+                mOfflinePageItems.remove(item);
+            }
+            mFilePathsToItemsMap.removeItem(item);
+        }
+        filter(mFilter);
+    }
+
+    /**
+     * @param items The items to add to this adapter. This should be used to add items back to the
+     *              adapter when undoing deletions.
+     */
+    void addItemsToAdapter(List<DownloadHistoryItemWrapper> items) {
+        for (DownloadHistoryItemWrapper item : items) {
+            if (item instanceof DownloadItemWrapper) {
+                getDownloadItemList(item.isOffTheRecord()).add((DownloadItemWrapper) item);
+            } else {
+                mOfflinePageItems.add((OfflinePageItemWrapper) item);
+            }
+            mFilePathsToItemsMap.addItem(item);
+        }
+        filter(mFilter);
+    }
+
+    /**
+     * Gets all DownloadHistoryItemWrappers that point to the same path in the user's storage.
+     * @param filePath The file path used to retrieve items.
+     * @return DownloadHistoryItemWrappers associated with filePath.
+     */
+    List<DownloadHistoryItemWrapper> getItemsForFilePath(String filePath) {
+        return mFilePathsToItemsMap.getItemsForFilePath(filePath);
     }
 
     private DownloadDelegate getDownloadDelegate() {
@@ -342,6 +393,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         int index = findItemIndex(list, guid);
         if (index != INVALID_INDEX) {
             T wrapper = list.remove(index);
+            mFilePathsToItemsMap.removeItem(wrapper);
+
             if (getSelectionDelegate().isItemSelected(wrapper)) {
                 getSelectionDelegate().toggleSelectionForItem(wrapper);
             }
@@ -377,6 +430,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private void removeExternallyDeletedItem(DownloadItemWrapper wrapper, boolean isOffTheRecord) {
         getExternallyDeletedItemsMap(isOffTheRecord).put(wrapper.getId(), true);
         wrapper.remove();
+        mFilePathsToItemsMap.removeItem(wrapper);
         RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeleted");
     }
 

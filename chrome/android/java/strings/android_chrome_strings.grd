@@ -2373,6 +2373,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_UNDO_BAR_MULTIPLE_DELETE_MESSAGE" desc="Message shown when you can undo several bookmark delete actions.">
         <ph name="NUMBER_OF_BOOKMARKS">%1$s<ex>3</ex></ph> bookmarks deleted
       </message>
+      <message name="IDS_UNDO_BAR_MULTIPLE_DOWNLOADS_DELETE_MESSAGE" desc="Message shown when you can undo deleting several downloads.">
+        <ph name="NUMBER_OF_DOWNLOADS">%1$s<ex>3</ex></ph> downloads deleted
+      </message>
 
       <!-- MultiWindow -->
       <message name="IDS_UNSUPPORTED_NUMBER_OF_WINDOWS" desc="Popup message for when the user has tried to start too many concurrent versions of Chrome.">

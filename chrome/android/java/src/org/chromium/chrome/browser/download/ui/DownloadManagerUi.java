@@ -38,6 +38,10 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
@@ -46,7 +50,10 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Displays and manages the UI for the download manager.
@@ -115,6 +122,51 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         }
     }
 
+    private class UndoDeletionSnackbarController implements SnackbarController {
+        @Override
+        public void onAction(Object actionData) {
+            @SuppressWarnings("unchecked")
+            List<DownloadHistoryItemWrapper> items = (List<DownloadHistoryItemWrapper>) actionData;
+
+            // Deletion was undone. Add items back to the adapter.
+            mHistoryAdapter.addItemsToAdapter(items);
+
+            RecordUserAction.record("Android.DownloadManager.UndoDelete");
+        }
+
+        @Override
+        public void onDismissNoAction(Object actionData) {
+            @SuppressWarnings("unchecked")
+            List<DownloadHistoryItemWrapper> items = (List<DownloadHistoryItemWrapper>) actionData;
+
+            // Deletion was not undone. Remove downloads from backend.
+            final ArrayList<File> filesToDelete = new ArrayList<>();
+
+            // Some types of DownloadHistoryItemWrappers delete their own files when #remove()
+            // is called. Determine which files are not deleted by the #remove() call.
+            for (int i = 0; i < items.size(); i++) {
+                DownloadHistoryItemWrapper wrappedItem  = items.get(i);
+                if (!wrappedItem.remove()) filesToDelete.add(wrappedItem.getFile());
+            }
+
+            // Delete the files associated with the download items (if necessary) using a single
+            // AsyncTask that batch deletes all of the files. The thread pool has a finite
+            // number of tasks that can be queued at once. If too many tasks are queued an
+            // exception is thrown. See crbug.com/643811.
+            if (filesToDelete.size() != 0) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    public Void doInBackground(Void... params) {
+                        FileUtils.batchDeleteFiles(filesToDelete);
+                        return null;
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+
+            RecordUserAction.record("Android.DownloadManager.Delete");
+        }
+    }
+
     private static BackendProvider sProviderForTests;
 
     private final DownloadHistoryAdapter mHistoryAdapter;
@@ -123,7 +175,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final BackendProvider mBackendProvider;
 
     private final Activity mActivity;
-    private final boolean mIsOffTheRecord;
     private final ViewGroup mMainView;
     private final DownloadManagerToolbar mToolbar;
     private final SpaceDisplay mSpaceDisplay;
@@ -133,6 +184,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final LoadingView mLoadingView;
 
     private BasicNativePage mNativePage;
+    private UndoDeletionSnackbarController mUndoDeletionSnackbarController;
 
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
@@ -153,7 +205,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;
-        mIsOffTheRecord = isOffTheRecord;
         mBackendProvider =
                 sProviderForTests == null ? new DownloadBackendProvider() : sProviderForTests;
 
@@ -207,6 +258,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         }
 
         mToolbar.setTitle(R.string.menu_downloads);
+
+        mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
     }
 
     /**
@@ -224,6 +277,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             observer.onManagerDestroyed();
             removeObserver(observer);
         }
+
+        dismissUndoDeletionSnackbars();
 
         mBackendProvider.destroy();
 
@@ -372,38 +427,42 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private void deleteSelectedItems() {
         List<DownloadHistoryItemWrapper> selectedItems =
                 mBackendProvider.getSelectionDelegate().getSelectedItems();
-        final ArrayList<File> filesToDelete = new ArrayList<>();
+        final List<DownloadHistoryItemWrapper> itemsToDelete = getItemsForDeletion();
 
-        for (int i = 0; i < selectedItems.size(); i++) {
-            DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
-            if (!wrappedItem.remove()) filesToDelete.add(wrappedItem.getFile());
-        }
+        mHistoryAdapter.removeItemsFromAdapter(itemsToDelete);
 
-        // Delete the files associated with the download items (if necessary) using a single
-        // AsyncTask that batch deletes all of the files. The thread pool has a finite number
-        // of tasks that can be queued at once. If too many tasks are queued an exception is
-        // thrown. See crbug.com/643811.
-        if (filesToDelete.size() != 0) {
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                public Void doInBackground(Void... params) {
-                    FileUtils.batchDeleteFiles(filesToDelete);
-                    return null;
-                }
+        dismissUndoDeletionSnackbars();
 
-                @Override
-                public void onPostExecute(Void unused) {
-                    // More than one download item may be associated with the same file path.
-                    // Initiate a check for removed download files so that any download items
-                    // associated with the same path as a deleted item are updated.
-                    DownloadUtils.checkForExternallyRemovedDownloads(
-                            mBackendProvider, mIsOffTheRecord);
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+        boolean singleItemDeleted = selectedItems.size() == 1;
+        String snackbarText = singleItemDeleted ? selectedItems.get(0).getDisplayFileName() :
+                String.format(Locale.getDefault(), "%d", selectedItems.size());
+        int snackbarTemplateId = singleItemDeleted ? R.string.undo_bar_delete_message
+                : R.string.undo_bar_multiple_downloads_delete_message;
+
+        Snackbar snackbar = Snackbar.make(snackbarText, mUndoDeletionSnackbarController,
+                Snackbar.TYPE_ACTION, Snackbar.UMA_DOWNLOAD_DELETE_UNDO);
+        snackbar.setAction(mActivity.getString(R.string.undo), itemsToDelete);
+        snackbar.setTemplateText(mActivity.getString(snackbarTemplateId));
+
+        ((SnackbarManageable) mActivity).getSnackbarManager().showSnackbar(snackbar);
 
         mBackendProvider.getSelectionDelegate().clearSelection();
-        RecordUserAction.record("Android.DownloadManager.Delete");
+    }
+
+    private List<DownloadHistoryItemWrapper> getItemsForDeletion() {
+        List<DownloadHistoryItemWrapper> selectedItems =
+                mBackendProvider.getSelectionDelegate().getSelectedItems();
+        List<DownloadHistoryItemWrapper> itemsToRemove = new ArrayList<>();
+        Set<String> filePathsToRemove = new HashSet<>();
+
+        for (DownloadHistoryItemWrapper item : selectedItems) {
+            if (!filePathsToRemove.contains(item.getFilePath())) {
+                itemsToRemove.addAll(mHistoryAdapter.getItemsForFilePath(item.getFilePath()));
+                filePathsToRemove.add(item.getFilePath());
+            }
+        }
+
+        return itemsToRemove;
     }
 
     private void addDrawerListener(DrawerLayout drawer) {
@@ -425,6 +484,16 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             public void onDrawerStateChanged(int newState) {
             }
         });
+    }
+
+    private void dismissUndoDeletionSnackbars() {
+        ((SnackbarManageable) mActivity).getSnackbarManager().dismissSnackbars(
+                mUndoDeletionSnackbarController);
+    }
+
+    @VisibleForTesting
+    public SnackbarManager getSnackbarManagerForTesting() {
+        return ((SnackbarManageable) mActivity).getSnackbarManager();
     }
 
     /** Returns the {@link DownloadManagerToolbar}. */

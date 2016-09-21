@@ -49,6 +49,7 @@ public class Snackbar {
     public static final int UMA_DOWNLOAD_FAILED = 10;
     public static final int UMA_TAB_CLOSE_UNDO = 11;
     public static final int UMA_TAB_CLOSE_ALL_UNDO = 12;
+    public static final int UMA_DOWNLOAD_DELETE_UNDO = 13;
 
     private SnackbarController mController;
     private CharSequence mText;

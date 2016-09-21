@@ -95861,6 +95861,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="DOWNLOAD_FAILED"/>
   <int value="11" label="TAB_CLOSE_UNDO"/>
   <int value="12" label="TAB_CLOSE_ALL_UNDO"/>
+  <int value="13" label="DOWNLOAD_DELETE_UNDO"/>
 </enum>
 
 <enum name="SnippetOpenMethod" type="int">

@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.download.ui.DownloadItemView;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -211,6 +212,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     @MediumTest
     @RetryOnFailure
     public void testDeleteFiles() throws Exception {
+        SnackbarManager.setDurationForTesting(1);
+
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -238,12 +241,162 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                         .performIdentifierAction(R.id.selection_mode_delete_menu_id, 0));
             }
         });
+
         mStubbedProvider.getDownloadDelegate().removeDownloadCallback.waitForCallback(0);
-        mStubbedProvider.getDownloadDelegate().checkExternalCallback.waitForCallback(0);
+        assertEquals(1,
+                mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
         mStubbedProvider.getOfflinePageBridge().deleteItemCallback.waitForCallback(0);
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(8, mAdapter.getItemCount());
         assertEquals("0.00 GB used", mSpaceUsedDisplay.getText());
+    }
+
+    @MediumTest
+    public void testUndoDelete() throws Exception {
+        // Adapter positions:
+        // 0 = date
+        // 1 = download item #7
+        // 2 = download item #8
+        // 3 = date
+        // 4 = download item #6
+        // 5 = offline page #3
+
+        SnackbarManager.setDurationForTesting(5000);
+
+        // Add duplicate items.
+        int callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        final DownloadItem item7 = StubbedProvider.createDownloadItem(7, "20161021 07:28");
+        final DownloadItem item8 = StubbedProvider.createDownloadItem(8, "20161021 17:28");
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onDownloadItemUpdated(item7, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
+            }
+        });
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
+
+        // This first check is a Criteria because initialization of the Adapter is asynchronous.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals("7.00 GB used", mSpaceUsedDisplay.getText());
+            }
+        });
+
+        // Select download item #7 and offline page #3.
+        toggleItemSelection(1);
+        toggleItemSelection(5);
+
+        assertEquals(14, mAdapter.getItemCount());
+
+        // Click the delete button.
+        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(mUi.getDownloadManagerToolbarForTests().getMenu()
+                        .performIdentifierAction(R.id.selection_mode_delete_menu_id, 0));
+            }
+        });
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+
+        // Assert that items are temporarily removed from the adapter. The two selected items,
+        // one duplicate item, and one date bucket should be removed.
+        assertEquals(10, mAdapter.getItemCount());
+        assertEquals("1.00 GB used", mSpaceUsedDisplay.getText());
+
+        // Click "Undo" on the snackbar.
+        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        final View rootView = mUi.getView().getRootView();
+        assertNotNull(rootView.findViewById(R.id.snackbar));
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rootView.findViewById(R.id.snackbar_button).callOnClick();
+            }
+        });
+
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+
+        // Assert that items are restored.
+        assertEquals(0,
+                mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());
+        assertEquals(0,
+                mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
+        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        assertEquals(14, mAdapter.getItemCount());
+        assertEquals("7.00 GB used", mSpaceUsedDisplay.getText());
+    }
+
+    @MediumTest
+    public void testUndoDeleteDuplicatesSelected() throws Exception {
+        // Adapter positions:
+        // 0 = date
+        // 1 = download item #7
+        // 2 = download item #8
+        // ....
+
+        SnackbarManager.setDurationForTesting(5000);
+
+        // Add duplicate items.
+        int callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        final DownloadItem item7 = StubbedProvider.createDownloadItem(7, "20161021 07:28");
+        final DownloadItem item8 = StubbedProvider.createDownloadItem(8, "20161021 17:28");
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onDownloadItemUpdated(item7, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
+            }
+        });
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
+
+        // This first check is a Criteria because initialization of the Adapter is asynchronous.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals("7.00 GB used", mSpaceUsedDisplay.getText());
+            }
+        });
+
+        // Select download item #7 and download item #8.
+        toggleItemSelection(1);
+        toggleItemSelection(2);
+
+        assertEquals(14, mAdapter.getItemCount());
+
+        // Click the delete button.
+        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(mUi.getDownloadManagerToolbarForTests().getMenu()
+                        .performIdentifierAction(R.id.selection_mode_delete_menu_id, 0));
+            }
+        });
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+
+        // Assert that the two items and their date bucket are temporarily removed from the adapter.
+        assertEquals(11, mAdapter.getItemCount());
+        assertEquals("6.00 GB used", mSpaceUsedDisplay.getText());
+
+        // Click "Undo" on the snackbar.
+        callCount = mAdapterObserver.onChangedCallback.getCallCount();
+        final View rootView = mUi.getView().getRootView();
+        assertNotNull(rootView.findViewById(R.id.snackbar));
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rootView.findViewById(R.id.snackbar_button).callOnClick();
+            }
+        });
+
+        mAdapterObserver.onChangedCallback.waitForCallback(callCount);
+
+        // Assert that items are restored.
+        assertEquals(14, mAdapter.getItemCount());
+        assertEquals("7.00 GB used", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest

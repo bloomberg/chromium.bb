@@ -101,6 +101,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
      */
     abstract boolean hasBeenExternallyRemoved();
 
+    /**
+     * @return Whether this download is associated with the off the record profile.
+     */
+    abstract boolean isOffTheRecord();
+
     protected void recordOpenSuccess() {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
                 getFilterType(), DownloadFilter.FILTER_BOUNDARY);
@@ -251,6 +256,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
             return mItem.hasBeenExternallyRemoved();
         }
 
+        @Override
+        boolean isOffTheRecord() {
+            return mIsOffTheRecord;
+        }
+
         /** Identifies the type of file represented by the given MIME type string. */
         private static int convertMimeTypeToFilterType(String mimeType) {
             if (TextUtils.isEmpty(mimeType)) return DownloadFilter.FILTER_OTHER;
@@ -355,6 +365,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         boolean hasBeenExternallyRemoved() {
             // We don't currently detect when offline pages have been removed externally.
+            return false;
+        }
+
+        @Override
+        boolean isOffTheRecord() {
             return false;
         }
     }

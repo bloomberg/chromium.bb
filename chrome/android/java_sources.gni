@@ -327,6 +327,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/ui/DownloadItemView.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadManagerUi.java",
   "java/src/org/chromium/chrome/browser/download/ui/DownloadManagerToolbar.java",
+  "java/src/org/chromium/chrome/browser/download/ui/FilePathsToDownloadItemsMap.java",
   "java/src/org/chromium/chrome/browser/download/ui/FilterAdapter.java",
   "java/src/org/chromium/chrome/browser/download/ui/SpaceDisplay.java",
   "java/src/org/chromium/chrome/browser/download/ui/ThumbnailProvider.java",
