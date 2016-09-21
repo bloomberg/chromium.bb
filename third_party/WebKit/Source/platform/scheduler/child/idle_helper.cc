@@ -418,8 +418,7 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
     if (!idle_period_deadline_.is_null() && now > idle_period_deadline_) {
       TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
           tracing_category_, idle_period_tracing_name_, this, "DeadlineOverrun",
-          std::max(idle_period_deadline_, last_idle_task_trace_time_)
-              .ToInternalValue());
+          std::max(idle_period_deadline_, last_idle_task_trace_time_));
     }
   }
 

@@ -352,8 +352,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
           phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,     \
           trace_event_internal::kGlobalScope, trace_event_internal::kNoId,   \
           TRACE_EVENT_API_CURRENT_THREAD_ID,                                 \
-          base::TimeTicks::FromInternalValue(timestamp),                     \
-          flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,                       \
+          timestamp, flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,            \
           trace_event_internal::kNoId, ##__VA_ARGS__);                       \
     }                                                                        \
   } while (0)
@@ -371,7 +370,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
       trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(          \
           phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,    \
           trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),      \
-          thread_id, base::TimeTicks::FromInternalValue(timestamp),         \
+          thread_id, timestamp,                                             \
           trace_event_flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,          \
           trace_event_internal::kNoId, ##__VA_ARGS__);                      \
     }                                                                       \

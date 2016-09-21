@@ -27,10 +27,13 @@ namespace TraceEvent {
 
 using base::trace_event::TraceScopedTrackableObject;
 
-inline int64_t toTraceTimestamp(double seconds)
+inline base::TimeTicks toTraceTimestamp(double seconds)
 {
-    return (base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds)).ToInternalValue();
+    return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
 }
+
+// This is to avoid error of passing a chromium time internal value.
+void toTraceTimestamp(int64_t);
 
 } // namespace TraceEvent
 } // namespace blink

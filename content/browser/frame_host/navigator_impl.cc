@@ -309,7 +309,7 @@ bool NavigatorImpl::NavigateToEntry(
   base::TimeTicks navigation_start = base::TimeTicks::Now();
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "navigation,rail", "NavigationTiming navigationStart",
-      TRACE_EVENT_SCOPE_GLOBAL, navigation_start.ToInternalValue());
+      TRACE_EVENT_SCOPE_GLOBAL, navigation_start);
 
   // Determine if LoFi should be used for the navigation.
   LoFiState lofi_state = LOFI_UNSPECIFIED;
@@ -344,7 +344,7 @@ bool NavigatorImpl::NavigateToEntry(
       TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
           "navigation", "Navigation timeToNetworkStack",
           frame_tree_node->navigation_request()->navigation_handle(),
-          navigation_start.ToInternalValue(),
+          navigation_start,
           "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
     }
 

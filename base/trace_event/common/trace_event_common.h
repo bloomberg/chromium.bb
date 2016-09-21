@@ -957,8 +957,8 @@
 #define TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts)         \
   INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                     \
       TRACE_EVENT_PHASE_CLOCK_SYNC, "__metadata", "clock_sync",                \
-      issue_end_ts.ToInternalValue(), TRACE_EVENT_FLAG_NONE,                   \
-      "sync_id", sync_id, "issue_ts", issue_ts.ToInternalValue())
+      issue_end_ts, TRACE_EVENT_FLAG_NONE,                                     \
+      "sync_id", sync_id, "issue_ts", issue_ts)
 
 // Macros to track the life time and value of arbitrary client objects.
 // See also TraceTrackableObject.

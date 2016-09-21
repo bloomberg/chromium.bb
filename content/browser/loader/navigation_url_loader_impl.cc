@@ -35,7 +35,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   // FrameTreeNode id as a parameter.
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
       "navigation", "Navigation timeToResponseStarted", core_,
-      request_info->common_params.navigation_start.ToInternalValue(),
+      request_info->common_params.navigation_start,
       "FrameTreeNode id", request_info->frame_tree_node_id);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

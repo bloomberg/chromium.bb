@@ -82,7 +82,7 @@ NavigationHandleImpl::NavigationHandleImpl(
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "navigation", "Navigation StartToCommit", this,
-        navigation_start.ToInternalValue(), "Initial URL", url_.spec());
+        navigation_start, "Initial URL", url_.spec());
   }
 }
 

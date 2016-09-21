@@ -258,10 +258,10 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
   do {                                                                        \
     UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, end_ticks - begin_ticks);  \
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                  \
-        "startup", basename, 0, begin_ticks.ToInternalValue(), "Temperature", \
+        "startup", basename, 0, begin_ticks, "Temperature",                   \
         g_startup_temperature);                                               \
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                    \
-        "startup", basename, 0, end_ticks.ToInternalValue(), "Temperature",   \
+        "startup", basename, 0, end_ticks, "Temperature",                     \
         g_startup_temperature);                                               \
   } while (0)
 
@@ -271,11 +271,11 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
     UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(                    \
         type, basename, end_ticks - begin_ticks);                             \
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP2(                                  \
-        "startup", basename, 0, begin_ticks.ToInternalValue(), "Temperature", \
+        "startup", basename, 0, begin_ticks, "Temperature",                   \
         g_startup_temperature, "Startups with current version",               \
         g_startups_with_current_version);                                     \
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP2(                                    \
-        "startup", basename, 0, end_ticks.ToInternalValue(), "Temperature",   \
+        "startup", basename, 0, end_ticks, "Temperature",                     \
         g_startup_temperature, "Startups with current version",               \
         g_startups_with_current_version);                                     \
   } while (0)
@@ -472,13 +472,13 @@ void AddStartupEventsForTelemetry()
 
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "startup", "Startup.BrowserMainEntryPoint", 0,
-      g_browser_main_entry_point_ticks.Get().ToInternalValue());
+      g_browser_main_entry_point_ticks.Get());
 
   if (!g_process_creation_ticks.Get().is_null())
   {
     TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
         "startup", "Startup.BrowserProcessCreation", 0,
-        g_process_creation_ticks.Get().ToInternalValue());
+        g_process_creation_ticks.Get());
   }
 }
 

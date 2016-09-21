@@ -303,8 +303,7 @@ void Sampler::InjectPendingEvents() {
     TRACE_EVENT_SAMPLE_WITH_TID_AND_TIMESTAMP1(
         TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), "V8Sample",
         platform_data_.thread_id(),
-        (record->timestamp() - base::TimeTicks()).InMicroseconds(), "data",
-        record->ToTraceFormat());
+        record->timestamp(), "data", record->ToTraceFormat());
     samples_data_->Remove();
     record = samples_data_->Peek();
     base::subtle::NoBarrier_AtomicIncrement(&samples_count_, 1);
