@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -173,7 +174,9 @@ void MediaRouterIntegrationBrowserTest::ChooseSink(
   content::WebContents* dialog_contents = GetMRDialog(web_contents);
   std::string script = base::StringPrintf(
       kChooseSinkScript, sink_name.c_str());
-  ASSERT_TRUE(content::ExecuteScript(dialog_contents, script));
+  // Execute javascript to choose sink, but don't wait until it finishes.
+  dialog_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::UTF8ToUTF16(script));
 }
 
 void MediaRouterIntegrationBrowserTest::CheckStartFailed(
