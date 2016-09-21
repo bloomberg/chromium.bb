@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -30,7 +31,7 @@ class OmniboxFieldTrialTest : public testing::Test {
     // a DCHECK.
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("foo")));
+        base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
     variations::testing::ClearAllVariationParams();
   }
 

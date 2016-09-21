@@ -164,7 +164,8 @@ void CrossDevicePromoTest::ResetFieldTrialList() {
   // a DCHECK.
   field_trial_list_.reset();
   field_trial_list_.reset(
-      new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+      new base::FieldTrialList(
+          base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
   variations::testing::ClearAllVariationParams();
 }
 

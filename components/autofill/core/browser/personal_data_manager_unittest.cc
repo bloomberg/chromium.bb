@@ -18,6 +18,7 @@
 #include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -308,7 +309,8 @@ class PersonalDataManagerTest : public testing::Test {
     // Clear the existing |field_trial_list_| and variation parameters.
     field_trial_list_.reset(NULL);
     field_trial_list_.reset(
-        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+        new base::FieldTrialList(
+            base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;

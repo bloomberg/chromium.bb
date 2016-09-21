@@ -223,7 +223,7 @@ void ZeroSuggestProviderTest::ResetFieldTrialList() {
   // a DCHECK.
   field_trial_list_.reset();
   field_trial_list_.reset(new base::FieldTrialList(
-      new metrics::SHA1EntropyProvider("foo")));
+      base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
   variations::testing::ClearAllVariationParams();
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -204,7 +205,8 @@ class NetworkTimeTrackerTest : public testing::Test {
 
     field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
     field_trial_list_.reset(
-        new base::FieldTrialList(new base::MockEntropyProvider()));
+        new base::FieldTrialList(
+            base::MakeUnique<base::MockEntropyProvider>()));
     // refcounted, and reference held by field_trial_list_.
     base::FieldTrial* trial = base::FieldTrialList::FactoryGetFieldTrial(
         kTrialName, 100, kGroupName, 1971, 1, 1,

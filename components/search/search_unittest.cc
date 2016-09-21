@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/statistics_recorder.h"
 #include "build/build_config.h"
@@ -18,7 +19,7 @@ class EmbeddedSearchFieldTrialTest : public testing::Test {
  protected:
   void SetUp() override {
     field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("42")));
+        base::MakeUnique<metrics::SHA1EntropyProvider>("42")));
     base::StatisticsRecorder::Initialize();
   }
 

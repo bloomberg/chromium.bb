@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,7 +90,7 @@ TEST_F(ChromeBlacklistTrialTest, BlacklistDisabledRun) {
 
   // Create the field trial with the blacklist disabled group.
   base::FieldTrialList field_trial_list(
-    new metrics::SHA1EntropyProvider("test"));
+      base::MakeUnique<metrics::SHA1EntropyProvider>("test"));
 
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::CreateFieldTrial(

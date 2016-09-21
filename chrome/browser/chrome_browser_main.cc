@@ -799,8 +799,7 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
   DCHECK(!field_trial_list_);
   field_trial_list_.reset(
       new base::FieldTrialList(browser_process_->GetMetricsServicesManager()
-                                   ->CreateEntropyProvider()
-                                   .release()));
+                                   ->CreateEntropyProvider()));
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();

@@ -10,6 +10,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -465,7 +467,8 @@ TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
   {
     std::unique_ptr<base::FieldTrialList> field_trial_list_;
     field_trial_list_.reset(
-        new base::FieldTrialList(new base::MockEntropyProvider()));
+        new base::FieldTrialList(
+            base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;
@@ -481,7 +484,8 @@ TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
   {
     std::unique_ptr<base::FieldTrialList> field_trial_list_;
     field_trial_list_.reset(
-        new base::FieldTrialList(new base::MockEntropyProvider()));
+        new base::FieldTrialList(
+            base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
 
     std::map<std::string, std::string> params;

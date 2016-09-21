@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
@@ -281,8 +282,8 @@ TEST_F(PasswordGenerationManagerTest, CheckIfFormClassifierShouldRun) {
     std::unique_ptr<base::FieldTrialList> field_trial_list;
     scoped_refptr<base::FieldTrial> field_trial;
     if (is_autofill_field_metadata_enabled) {
-      field_trial_list.reset(
-          new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+      field_trial_list.reset(new base::FieldTrialList(
+          base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
       field_trial = base::FieldTrialList::CreateFieldTrial(
           "AutofillFieldMetadata", "Enabled");
       EXPECT_CALL(*GetTestDriver(), AllowToRunFormClassifier())

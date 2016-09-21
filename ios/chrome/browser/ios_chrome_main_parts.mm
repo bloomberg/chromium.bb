@@ -201,8 +201,7 @@ void IOSChromeMainParts::SetUpMetricsAndFieldTrials() {
   DCHECK(!field_trial_list_);
   field_trial_list_.reset(
       new base::FieldTrialList(application_context_->GetMetricsServicesManager()
-                                   ->CreateEntropyProvider()
-                                   .release()));
+                                   ->CreateEntropyProvider()));
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();

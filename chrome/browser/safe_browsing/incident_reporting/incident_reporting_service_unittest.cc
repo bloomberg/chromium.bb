@@ -220,7 +220,8 @@ class IncidentReportingServiceTest : public testing::Test {
 
   void SetFieldTrialAndCreateService(bool enabled) {
     field_trial_list_.reset(
-        new base::FieldTrialList(new base::MockEntropyProvider()));
+        new base::FieldTrialList(
+            base::MakeUnique<base::MockEntropyProvider>()));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         "SafeBrowsingIncidentReportingService",
         enabled ? "Enabled" : "Disabled");

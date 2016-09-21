@@ -19,7 +19,7 @@ typedef ExtensionApiUnittest ExperienceSamplingPrivateTest;
 TEST_F(ExperienceSamplingPrivateTest, GetBrowserInfoTest) {
   // Start with an empty FieldTrialList.
   std::unique_ptr<base::FieldTrialList> trial_list(
-      new base::FieldTrialList(NULL));
+      new base::FieldTrialList(nullptr));
   std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       new ExperienceSamplingPrivateGetBrowserInfoFunction(), "[]"));
   ASSERT_TRUE(result->HasKey("variations"));

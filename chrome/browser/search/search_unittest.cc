@@ -50,7 +50,7 @@ class SearchTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("42")));
+        base::MakeUnique<metrics::SHA1EntropyProvider>("42")));
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =

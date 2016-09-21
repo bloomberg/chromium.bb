@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -129,7 +130,7 @@ class ResourceSchedulerTest : public testing::Test {
   ResourceSchedulerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
-        field_trial_list_(new base::MockEntropyProvider()) {
+        field_trial_list_(base::MakeUnique<base::MockEntropyProvider>()) {
     InitializeScheduler();
     context_.set_http_server_properties(&http_server_properties_);
   }

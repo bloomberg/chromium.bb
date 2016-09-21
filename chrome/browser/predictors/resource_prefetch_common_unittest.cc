@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/statistics_recorder.h"
@@ -108,7 +109,8 @@ ResourcePrefetchCommonTest::ResourcePrefetchCommonTest()
 
 void ResourcePrefetchCommonTest::SetUp() {
   field_trial_list_.reset(new base::FieldTrialList(
-      new metrics::SHA1EntropyProvider("ResourcePrefetchCommonTest")));
+      base::MakeUnique<metrics::SHA1EntropyProvider>(
+          "ResourcePrefetchCommonTest")));
   base::StatisticsRecorder::Initialize();
 }
 

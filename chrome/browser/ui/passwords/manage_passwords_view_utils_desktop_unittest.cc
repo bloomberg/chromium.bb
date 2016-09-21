@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils_desktop.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_entropy_provider.h"
@@ -150,7 +152,8 @@ TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
   };
 
   for (const auto& test_case : kTestData) {
-    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+    base::FieldTrialList field_trial_list(
+        base::MakeUnique<base::MockEntropyProvider>());
     SCOPED_TRACE(testing::Message(test_case.description));
     ProfileSyncService* sync_service;
     if (test_case.user_type == SMART_LOCK_USER)

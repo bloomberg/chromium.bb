@@ -1562,7 +1562,7 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
                                        public SupervisedUserService::Delegate {
  public:
   ExtensionServiceTestSupervised()
-      : field_trial_list_(new base::MockEntropyProvider()) {}
+      : field_trial_list_(base::MakeUnique<base::MockEntropyProvider>()) {}
 
   void SetUp() override {
     ExtensionServiceSyncTest::SetUp();

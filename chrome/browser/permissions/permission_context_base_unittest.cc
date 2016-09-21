@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -106,14 +107,15 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
       const ContentSettingsType content_settings_type)
       : TestPermissionContext(profile, permission_type, content_settings_type),
         field_trial_list_(
-            new base::FieldTrialList(new base::MockEntropyProvider)) {}
+            new base::FieldTrialList(
+                base::MakeUnique<base::MockEntropyProvider>())) {}
 
   void ResetFieldTrialList() {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(
-        new base::MockEntropyProvider));
+        base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
   }
 

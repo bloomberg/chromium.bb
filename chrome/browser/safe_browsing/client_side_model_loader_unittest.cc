@@ -54,8 +54,8 @@ class MockModelLoader : public ModelLoader {
 class ModelLoaderTest : public testing::Test {
  protected:
   ModelLoaderTest()
-      : factory_(new net::FakeURLFetcherFactory(NULL)),
-        field_trials_(new base::FieldTrialList(NULL)) {}
+      : factory_(new net::FakeURLFetcherFactory(nullptr)),
+        field_trials_(new base::FieldTrialList(nullptr)) {}
 
   void SetUp() override {
     variations::testing::ClearAllVariationIDs();
@@ -68,7 +68,7 @@ class ModelLoaderTest : public testing::Test {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trials_.reset();
-    field_trials_.reset(new base::FieldTrialList(NULL));
+    field_trials_.reset(new base::FieldTrialList(nullptr));
     variations::testing::ClearAllVariationIDs();
     variations::testing::ClearAllVariationParams();
 

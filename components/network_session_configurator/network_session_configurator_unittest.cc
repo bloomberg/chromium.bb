@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -21,7 +22,8 @@ class NetworkSessionConfiguratorTest : public testing::Test {
   NetworkSessionConfiguratorTest()
       : quic_user_agent_id_("Chrome/52.0.2709.0 Linux x86_64") {
     field_trial_list_.reset(
-        new base::FieldTrialList(new base::MockEntropyProvider()));
+        new base::FieldTrialList(
+            base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
   }
 

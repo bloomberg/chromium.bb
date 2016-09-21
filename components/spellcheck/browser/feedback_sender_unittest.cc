@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
@@ -120,7 +121,8 @@ class FeedbackSenderTest : public testing::Test {
     // The field trial is temporary.
     // TODO(rouslan): Remove the field trial. http://crbug.com/247726
     field_trial_list_.reset(
-        new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+        new base::FieldTrialList(
+            base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         kFeedbackFieldTrialName, kFeedbackFieldTrialEnabledGroupName);
     field_trial_->group();
