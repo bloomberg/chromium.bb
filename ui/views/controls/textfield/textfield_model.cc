@@ -344,11 +344,15 @@ void TextfieldModel::Append(const base::string16& new_text) {
 }
 
 bool TextfieldModel::Delete(bool add_to_kill_buffer) {
+  // |add_to_kill_buffer| should never be true for an obscured textfield.
+  DCHECK(!add_to_kill_buffer || !render_text_->obscured());
+
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
     return true;
   }
+
   if (HasSelection()) {
     if (add_to_kill_buffer)
       SetKillBuffer(GetSelectedText());
@@ -369,11 +373,15 @@ bool TextfieldModel::Delete(bool add_to_kill_buffer) {
 }
 
 bool TextfieldModel::Backspace(bool add_to_kill_buffer) {
+  // |add_to_kill_buffer| should never be true for an obscured textfield.
+  DCHECK(!add_to_kill_buffer || !render_text_->obscured());
+
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
     return true;
   }
+
   if (HasSelection()) {
     if (add_to_kill_buffer)
       SetKillBuffer(GetSelectedText());
@@ -430,8 +438,7 @@ bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {
 }
 
 base::string16 TextfieldModel::GetSelectedText() const {
-  return text().substr(render_text_->selection().GetMin(),
-                       render_text_->selection().length());
+  return GetTextFromRange(render_text_->selection());
 }
 
 void TextfieldModel::SelectRange(const gfx::Range& range) {

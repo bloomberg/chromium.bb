@@ -1582,7 +1582,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
-      add_to_kill_buffer = true;
+      add_to_kill_buffer = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
     // Fall through.
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
@@ -2015,7 +2015,8 @@ void Textfield::CreateTouchSelectionControllerAndNotifyIt() {
 
 void Textfield::UpdateSelectionClipboard() const {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (performing_user_action_ && HasSelection()) {
+  if (performing_user_action_ && HasSelection() &&
+      text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
     ui::ScopedClipboardWriter(
         ui::CLIPBOARD_TYPE_SELECTION).WriteText(GetSelectedText());
     if (controller_)

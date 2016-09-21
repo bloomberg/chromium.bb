@@ -73,7 +73,8 @@ class VIEWS_EXPORT Textfield : public View,
   // features. The flags is the bit map of ui::TextInputFlags.
   void SetTextInputFlags(int flags);
 
-  // Gets the text currently displayed in the Textfield.
+  // Gets the text for the Textfield. Call sites should take care to not reveal
+  // the text for a password textfield.
   const base::string16& text() const { return model_->text(); }
 
   // Sets the text currently displayed in the Textfield.  This doesn't
@@ -88,7 +89,8 @@ class VIEWS_EXPORT Textfield : public View,
   // Inserts |new_text| at the cursor position, replacing any selected text.
   void InsertOrReplaceText(const base::string16& new_text);
 
-  // Returns the text that is currently selected.
+  // Returns the text that is currently selected. Call sites should take care to
+  // not reveal the text for a password textfield.
   base::string16 GetSelectedText() const;
 
   // Select the entire text range. If |reversed| is true, the range will end at
@@ -386,7 +388,8 @@ class VIEWS_EXPORT Textfield : public View,
 
   void CreateTouchSelectionControllerAndNotifyIt();
 
-  // Updates the selection clipboard to any non-empty text selection.
+  // Updates the selection clipboard to any non-empty text selection for a non-
+  // password textfield.
   void UpdateSelectionClipboard() const;
 
   // Pastes the selection clipboard for the specified mouse event.
