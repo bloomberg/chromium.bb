@@ -1053,11 +1053,6 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTracer {
     if (p_data_ && *data_.category_group_enabled) {
       TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
           data_.category_group_enabled, data_.name, data_.event_handle);
-      if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_FILTERING_MODE(
-              *data_.category_group_enabled)) {
-        TRACE_EVENT_API_END_FILTERED_EVENT(data_.category_group_enabled,
-                                           data_.name, data_.event_handle);
-      }
     }
   }
 
