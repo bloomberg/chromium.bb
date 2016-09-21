@@ -1331,7 +1331,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // the calls below end up implicitly creating threads and as such new calls
   // typically either belong before them or in a later startup phase.
 
-  // Now the command line has been mutated based on about:flags, we can
+  // Now that the command line has been mutated based on about:flags, we can
   // initialize field trials and setup metrics. The field trials are needed by
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupFieldTrials();
