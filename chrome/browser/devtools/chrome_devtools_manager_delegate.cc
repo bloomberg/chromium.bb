@@ -30,8 +30,6 @@ char ChromeDevToolsManagerDelegate::kTypeWebView[] = "webview";
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
-  content::DevToolsAgentHost::AddDiscoveryProvider(
-      base::Bind(&content::DevToolsAgentHost::GetOrCreateAll));
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {

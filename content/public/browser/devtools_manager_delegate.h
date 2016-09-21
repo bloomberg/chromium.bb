@@ -8,6 +8,7 @@
 #include <string>
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -17,7 +18,6 @@ class DictionaryValue;
 namespace content {
 
 class BrowserContext;
-class DevToolsAgentHost;
 class RenderFrameHost;
 
 class CONTENT_EXPORT DevToolsManagerDelegate {
@@ -36,6 +36,12 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
 
   // Returns DevToolsAgentHost title to use for given |host| target.
   virtual std::string GetTargetDescription(RenderFrameHost* host);
+
+  // Returns all targets embedder would like to report as discoverable.
+  // If returns false, all targets content is aware of and only those
+  // should be discoverable.
+  virtual bool DiscoverTargets(
+      const DevToolsAgentHost::DiscoveryCallback& callback);
 
   // Creates new inspectable target given the |url|.
   virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url);

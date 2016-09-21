@@ -4391,7 +4391,8 @@
                     { "name": "targetInfo", "type": "array", "items": { "$ref": "TargetInfo" } }
                 ],
                 "description": "Returns target information for all potential targets.",
-                "handlers": ["browser"]
+                "handlers": ["browser"],
+                "async": true
             },
             {
                 "name": "attach",
@@ -4399,13 +4400,20 @@
                 "parameters": [
                     {"name": "targetId", "$ref": "TargetID", "description": "Target id." }
                 ],
-                "handlers": ["browser"]
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
+                ],
+                "handlers": ["browser"],
+                "async": true
             },
             {
                 "name": "detach",
                 "description": "Detaches from the target with given id.",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether detach succeeded." }
                 ],
                 "handlers": ["browser"]
             },

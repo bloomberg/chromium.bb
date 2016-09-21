@@ -534,17 +534,10 @@ void DevToolsHttpHandler::OnJsonRequest(
   }
 
   if (command == "list") {
-    std::string host = info.headers["host"];
-    DevToolsAgentHost::List agent_hosts =
-        DevToolsAgentHost::DiscoverAllHosts();
-    std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
-    agent_host_map_.clear();
-    base::ListValue list_value;
-    for (auto& agent_host : agent_hosts) {
-      agent_host_map_[agent_host->GetId()] = agent_host;
-      list_value.Append(SerializeDescriptor(agent_host, host));
-    }
-    SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
+    DevToolsAgentHost::DiscoverAllHosts(
+        base::Bind(&DevToolsHttpHandler::RespondToJsonList,
+                   weak_factory_.GetWeakPtr(), connection_id,
+                   info.headers["host"]));
     return;
   }
 
@@ -611,6 +604,21 @@ void DevToolsHttpHandler::OnJsonRequest(
            NULL,
            "Unknown command: " + command);
   return;
+}
+
+void DevToolsHttpHandler::RespondToJsonList(
+    int connection_id,
+    const std::string& host,
+    DevToolsAgentHost::List hosts) {
+  DevToolsAgentHost::List agent_hosts = std::move(hosts);
+  std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
+  agent_host_map_.clear();
+  base::ListValue list_value;
+  for (auto& agent_host : agent_hosts) {
+    agent_host_map_[agent_host->GetId()] = agent_host;
+    list_value.Append(SerializeDescriptor(agent_host, host));
+  }
+  SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
 }
 
 scoped_refptr<DevToolsAgentHost> DevToolsHttpHandler::GetAgentHost(

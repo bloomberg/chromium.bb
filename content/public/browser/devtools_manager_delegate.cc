@@ -27,6 +27,11 @@ std::string DevToolsManagerDelegate::GetTargetDescription(
   return std::string();
 }
 
+bool DevToolsManagerDelegate::DiscoverTargets(
+    const DevToolsAgentHost::DiscoveryCallback& callback) {
+  return false;
+}
+
 scoped_refptr<DevToolsAgentHost> DevToolsManagerDelegate::CreateNewTarget(
     const GURL& url) {
   return nullptr;

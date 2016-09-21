@@ -19,8 +19,6 @@ using content::RenderFrameHost;
 namespace android_webview {
 
 AwDevToolsManagerDelegate::AwDevToolsManagerDelegate() {
-  content::DevToolsAgentHost::AddDiscoveryProvider(
-      base::Bind(&DevToolsAgentHost::GetOrCreateAll));
 }
 
 AwDevToolsManagerDelegate::~AwDevToolsManagerDelegate() {

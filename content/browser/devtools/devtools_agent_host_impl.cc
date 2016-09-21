@@ -31,8 +31,6 @@ base::LazyInstance<AgentStateCallbacks>::Leaky g_callbacks =
     LAZY_INSTANCE_INITIALIZER;
 using DiscoveryCallbacks =
     std::vector<DevToolsAgentHost::DiscoveryCallback>;
-base::LazyInstance<DiscoveryCallbacks>::Leaky g_providers =
-    LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 char DevToolsAgentHost::kTypePage[] = "page";
@@ -54,12 +52,6 @@ bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
 }
 
 // static
-void DevToolsAgentHost::AddDiscoveryProvider(
-    const DiscoveryCallback& callback) {
-  g_providers.Get().push_back(callback);
-}
-
-// static
 DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   List result;
   SharedWorkerDevToolsAgentHost::List shared_list;
@@ -77,17 +69,10 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
 }
 
 // static
-DevToolsAgentHost::List DevToolsAgentHost::DiscoverAllHosts() {
-  content::DevToolsAgentHost::List result;
-  // Force create all the delegates.
-  DevToolsManager::GetInstance();
-  if (!g_providers.Get().size())
-    return DevToolsAgentHost::GetOrCreateAll();
-  for (auto& provider : g_providers.Get()) {
-    content::DevToolsAgentHost::List partial = provider.Run();
-    result.insert(result.begin(), partial.begin(), partial.end());
-  }
-  return result;
+void DevToolsAgentHost::DiscoverAllHosts(const DiscoveryCallback& callback) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (!manager->delegate() || !manager->delegate()->DiscoverTargets(callback))
+    callback.Run(DevToolsAgentHost::GetOrCreateAll());
 }
 
 // Called on the UI thread.

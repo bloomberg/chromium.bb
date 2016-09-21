@@ -159,51 +159,10 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
   DISALLOW_COPY_AND_ASSIGN(TabProxyDelegate);
 };
 
-DevToolsAgentHost::List GetDescriptors() {
-  DevToolsAgentHost::List result;
-
-  // Enumerate existing tabs, including the ones with no WebContents.
-  std::set<WebContents*> tab_web_contents;
-  for (TabModelList::const_iterator iter = TabModelList::begin();
-      iter != TabModelList::end(); ++iter) {
-    TabModel* model = *iter;
-    for (int i = 0; i < model->GetTabCount(); ++i) {
-      TabAndroid* tab = model->GetTabAt(i);
-      if (!tab)
-        continue;
-
-      if (tab->web_contents())
-        tab_web_contents.insert(tab->web_contents());
-
-      scoped_refptr<DevToolsAgentHost> host =
-          DevToolsAgentHost::Forward(
-              base::IntToString(tab->GetAndroidId()),
-              base::WrapUnique(new TabProxyDelegate(tab)));
-      result.push_back(host);
-    }
-  }
-
-  // Add descriptors for targets not associated with any tabs.
-  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
-  for (DevToolsAgentHost::List::iterator it = agents.begin();
-       it != agents.end(); ++it) {
-    if (WebContents* web_contents = (*it)->GetWebContents()) {
-      if (tab_web_contents.find(web_contents) != tab_web_contents.end())
-        continue;
-    }
-    result.push_back(*it);
-  }
-
-  return result;
-}
-
 } //  namespace
 
 DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  DevToolsAgentHost::AddDiscoveryProvider(base::Bind(&GetDescriptors));
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() {
@@ -235,6 +194,49 @@ std::string DevToolsManagerDelegateAndroid::GetTargetTitle(
       content::WebContents::FromRenderFrameHost(host);
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   return tab ? base::UTF16ToUTF8(tab->GetTitle()) : "";
+}
+
+bool DevToolsManagerDelegateAndroid::DiscoverTargets(
+      const DevToolsAgentHost::DiscoveryCallback& callback) {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  // Enumerate existing tabs, including the ones with no WebContents.
+  DevToolsAgentHost::List result;
+  std::set<WebContents*> tab_web_contents;
+  for (TabModelList::const_iterator iter = TabModelList::begin();
+      iter != TabModelList::end(); ++iter) {
+    TabModel* model = *iter;
+    for (int i = 0; i < model->GetTabCount(); ++i) {
+      TabAndroid* tab = model->GetTabAt(i);
+      if (!tab)
+        continue;
+
+      if (tab->web_contents())
+        tab_web_contents.insert(tab->web_contents());
+
+      scoped_refptr<DevToolsAgentHost> host =
+          DevToolsAgentHost::Forward(
+              base::IntToString(tab->GetAndroidId()),
+              base::WrapUnique(new TabProxyDelegate(tab)));
+      result.push_back(host);
+    }
+  }
+
+  // Add descriptors for targets not associated with any tabs.
+  DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
+  for (DevToolsAgentHost::List::iterator it = agents.begin();
+       it != agents.end(); ++it) {
+    if (WebContents* web_contents = (*it)->GetWebContents()) {
+      if (tab_web_contents.find(web_contents) != tab_web_contents.end())
+        continue;
+    }
+    result.push_back(*it);
+  }
+
+  callback.Run(std::move(result));
+  return true;
+#else
+  return false;
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 scoped_refptr<DevToolsAgentHost>

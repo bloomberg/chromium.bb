@@ -98,17 +98,13 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   using List = std::vector<scoped_refptr<DevToolsAgentHost>>;
 
-  using DiscoveryCallback = base::Callback<List()>;
-
-  // Registers embedder's custom host providers that are available via
-  // DiscoverAllHosts.
-  static void AddDiscoveryProvider(const DiscoveryCallback& callback);
-
   // Returns all DevToolsAgentHosts content is aware of.
   static List GetOrCreateAll();
 
+  using DiscoveryCallback = base::Callback<void(List)>;
+
   // Returns all possible DevToolsAgentHosts embedder is aware of.
-  static List DiscoverAllHosts();
+  static void DiscoverAllHosts(const DiscoveryCallback& callback);
 
   // Starts remote debugging.
   // Takes ownership over |socket_factory|.
