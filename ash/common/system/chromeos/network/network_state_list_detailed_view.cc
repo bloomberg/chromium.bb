@@ -395,10 +395,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
   } else if (sender == button_mobile_) {
     ToggleMobile();
   } else if (sender == settings_) {
-    WmShell::Get()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
-                                    : UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
-    delegate->ShowNetworkSettingsForGuid("");
+    ShowSettings();
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
@@ -457,7 +454,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_WIFI));
     button_wifi_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
-    title_row()->AddButton(button_wifi_);
+    title_row()->AddViewToRowNonMd(button_wifi_, true);
     if (network_state_handler->IsTechnologyProhibited(
             NetworkTypePattern::WiFi())) {
       button_wifi_->SetState(views::Button::STATE_DISABLED);
@@ -481,13 +478,13 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       button_mobile_->SetToggledTooltipText(l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
     }
-    title_row()->AddButton(button_mobile_);
+    title_row()->AddViewToRowNonMd(button_mobile_, true);
   }
 
   views::View* info_throbber_container = new views::View();
   InfoThrobberLayout* info_throbber_layout = new InfoThrobberLayout;
   info_throbber_container->SetLayoutManager(info_throbber_layout);
-  title_row()->AddView(info_throbber_container, true /* add_separator */);
+  title_row()->AddViewToRowNonMd(info_throbber_container, true);
 
   if (list_type_ != LIST_TYPE_VPN) {
     // Place the throbber behind the info icon so that the icon receives
@@ -502,6 +499,13 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
   info_icon_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
   info_throbber_container->AddChildView(info_icon_);
+}
+
+void NetworkStateListDetailedView::ShowSettings() {
+  WmShell::Get()->RecordUserMetricsAction(
+      list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
+                                  : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
+  WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid("");
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {

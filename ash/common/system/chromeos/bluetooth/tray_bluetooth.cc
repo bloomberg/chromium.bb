@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -113,7 +114,8 @@ class BluetoothDetailedView : public TrayDetailsView {
         manage_devices_(nullptr),
         throbber_(nullptr),
         toggle_bluetooth_(nullptr),
-        enable_bluetooth_(nullptr) {
+        enable_bluetooth_(nullptr),
+        toggle_(nullptr) {
     CreateItems();
   }
 
@@ -359,8 +361,12 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override {
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // TODO(fukino): Make the toggle button functional.
+      if (sender == toggle_)
+        toggle_->SetIsOn(toggle_->is_on(), true);
       return;
+    }
 
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (sender == toggle_bluetooth_)
@@ -370,18 +376,18 @@ class BluetoothDetailedView : public TrayDetailsView {
   }
 
   void CreateExtraTitleRowButtons() override {
-    // TODO(tdanderson|fukino): The material design version of the detailed
-    // view requires different buttons. See crbug.com/632128.
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      return;
-
     if (login_ == LoginStatus::LOCKED)
       return;
+
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      toggle_ = title_row()->AddToggleButton(this);
+      return;
+    }
 
     throbber_ = new ThrobberView;
     throbber_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING));
-    title_row()->AddView(throbber_, false /* separator */);
+    title_row()->AddViewToRowNonMd(throbber_, false);
 
     // Do not allow toggling bluetooth in the lock screen.
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
@@ -397,7 +403,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     toggle_bluetooth_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
     toggle_bluetooth_->EnableCanvasFlippingForRTLUI(false);
-    title_row()->AddButton(toggle_bluetooth_);
+    title_row()->AddViewToRowNonMd(toggle_bluetooth_, true);
   }
 
   LoginStatus login_;
@@ -416,6 +422,9 @@ class BluetoothDetailedView : public TrayDetailsView {
   BluetoothDeviceList connecting_devices_;
   BluetoothDeviceList paired_not_connected_devices_;
   BluetoothDeviceList discovered_not_paired_devices_;
+
+  // The on/off toggle button used in material design.
+  views::ToggleButton* toggle_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);
 };

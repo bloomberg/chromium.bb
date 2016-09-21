@@ -76,6 +76,9 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Creates and adds subclass-specific buttons to the title row.
   virtual void CreateExtraTitleRowButtons();
 
+  // Overridden to show WebUI settings for subclass-specific detailed views.
+  virtual void ShowSettings();
+
   // Transition to default view from details view. If |title_row_| has focus
   // before transition, the default view should focus on the owner of this
   // details view.
@@ -86,6 +89,13 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
   ScrollBorder* scroll_border_;  // Weak reference
+
+  // The back button that appears in the material design title row. Not owned.
+  views::Button* back_button_;
+
+  // The settings button that appears in the material design title row. Not
+  // owned.
+  views::Button* settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };
