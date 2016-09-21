@@ -201,8 +201,7 @@ class InterfacePtr {
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.
-  internal::InterfacePtrState<Interface, Interface::PassesAssociatedKinds_>*
-  internal_state() {
+  internal::InterfacePtrState<Interface, true>* internal_state() {
     return &internal_state_;
   }
 
@@ -210,9 +209,7 @@ class InterfacePtr {
   // implicitly convertible to a real bool (which is dangerous).
  private:
   // TODO(dcheng): Use an explicit conversion operator.
-  typedef internal::InterfacePtrState<Interface,
-                                      Interface::PassesAssociatedKinds_>
-      InterfacePtr::*Testable;
+  typedef internal::InterfacePtrState<Interface, true> InterfacePtr::*Testable;
 
  public:
   operator Testable() const {
@@ -228,8 +225,7 @@ class InterfacePtr {
   template <typename T>
   bool operator!=(const InterfacePtr<T>& other) const = delete;
 
-  typedef internal::InterfacePtrState<Interface,
-                                      Interface::PassesAssociatedKinds_> State;
+  typedef internal::InterfacePtrState<Interface, true> State;
   mutable State internal_state_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfacePtr);

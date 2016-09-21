@@ -180,6 +180,7 @@ class MultiplexedBindingState {
 
  protected:
   void BindInternal(ScopedMessagePipeHandle handle,
+                    MultiplexRouter::Config config,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
@@ -205,7 +206,10 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
   void Bind(ScopedMessagePipeHandle handle,
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
     MultiplexedBindingState::BindInternal(
-        std::move(handle), runner, Interface::Name_,
+        std::move(handle),
+        Interface::PassesAssociatedKinds_ ? MultiplexRouter::MULTI_INTERFACE
+                                          : MultiplexRouter::SINGLE_INTERFACE,
+        runner, Interface::Name_,
         base::MakeUnique<typename Interface::RequestValidator_>(),
         Interface::HasSyncMethods_, &stub_, Interface::Version_);
     stub_.serialization_context()->group_controller = router_;

@@ -271,8 +271,7 @@ class Binding {
   void EnableTestingMode() { internal_state_.EnableTestingMode(); }
 
  private:
-  internal::BindingState<Interface, Interface::PassesAssociatedKinds_>
-      internal_state_;
+  internal::BindingState<Interface, true> internal_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Binding);
 };
