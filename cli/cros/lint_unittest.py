@@ -95,6 +95,11 @@ class DocStringCheckerTest(CheckerTestCase):
       Yields:
         a spoon
       """,
+      """Don't flag args variables as sections.
+
+      Args:
+        return: Foo!
+      """,
   )
 
   BAD_FUNC_DOCSTRINGS = (

@@ -229,10 +229,18 @@ class DocStringChecker(BaseChecker):
         'yield', 'yeild', 'yeilds',
         'raise', 'throw', 'throws',
     )
+    indent_len = self._docstring_indent(node)
 
+    in_args_section = False
     last = lines[0].strip()
     for i, line in enumerate(lines[1:]):
-      margs = {'offset': i + 1, 'line': line}
+      line_indent_len = len(line) - len(line.lstrip(' '))
+      margs = {
+          'offset': i + 1,
+          'line': line,
+          'want_indent': indent_len,
+          'curr_indent': line_indent_len,
+      }
       l = line.strip()
 
       # Catch semi-common javadoc style.
@@ -241,7 +249,16 @@ class DocStringChecker(BaseChecker):
 
       # See if we can detect incorrect behavior.
       section = l.split(':', 1)[0]
-      if section in self.VALID_SECTIONS or section.lower() in invalid_sections:
+
+      # Remember whether we're currently in the Args: section so we don't treat
+      # named arguments as sections (e.g. a function has a "returns" arg).  Use
+      # the indentation level to detect the start of the next section.
+      if in_args_section:
+        in_args_section = (indent_len < line_indent_len)
+
+      if (not in_args_section and
+          (section in self.VALID_SECTIONS or
+           section.lower() in invalid_sections)):
         # Make sure it has some number of leading whitespace.
         if not line.startswith(' '):
           self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
@@ -263,6 +280,11 @@ class DocStringChecker(BaseChecker):
 
       last = l
 
+      # Detect whether we're in the Args section once we've processed the Args
+      # section itself.
+      if not in_args_section:
+        in_args_section = (section == 'Args')
+
     # Make sure the sections are in the right order.
     valid_lineno = lambda x: x >= 0
     lineno_sections = filter(valid_lineno, lineno_sections)
@@ -270,7 +292,6 @@ class DocStringChecker(BaseChecker):
       self.add_message('C9008', node=node, line=node.fromlineno)
 
     # Check the indentation level on all the sections.
-    indent_len = self._docstring_indent(node)
     for lineno in lineno_sections:
       # First the section header (e.g. Args:).
       lineno += 1
