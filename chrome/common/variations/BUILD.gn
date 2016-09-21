@@ -6,25 +6,7 @@ action("fieldtrial_testing_config_action") {
   visibility = [ ":fieldtrial_testing_config" ]
   script = "//tools/variations/fieldtrial_to_struct.py"
 
-  if (is_win) {
-    source = "//testing/variations/fieldtrial_testing_config_win.json"
-  }
-  if (is_mac) {
-    source = "//testing/variations/fieldtrial_testing_config_mac.json"
-  }
-  if (is_linux) {
-    source = "//testing/variations/fieldtrial_testing_config_linux.json"
-  }
-  if (is_chromeos) {
-    source = "//testing/variations/fieldtrial_testing_config_chromeos.json"
-  }
-  if (is_android) {
-    source = "//testing/variations/fieldtrial_testing_config_android.json"
-  }
-  if (is_ios) {
-    source = "//testing/variations/fieldtrial_testing_config_ios.json"
-  }
-
+  source = "//testing/variations/fieldtrial_testing_config.json"
   inputs = [
     "//tools/json_to_struct/element_generator.py",
     "//tools/json_to_struct/json_to_struct.py",
@@ -43,6 +25,7 @@ action("fieldtrial_testing_config_action") {
     "--namespace=chrome_variations",
     "--schema=" +
         rebase_path("fieldtrial_testing_config_schema.json", root_build_dir),
+    "--platform=" + current_os,
     "--output=$out_name",
   ]
 }
