@@ -508,6 +508,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'intel', 'opengl'], bug=634525)
 
     # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
     # https://patchwork.freedesktop.org/patch/76903
@@ -598,6 +600,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'amd'], bug=634525)
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
