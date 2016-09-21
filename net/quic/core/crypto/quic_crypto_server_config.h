@@ -89,11 +89,10 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
  public:
   // Opaque token that holds information about the client_hello and
   // its validity.  Can be interpreted by calling ProcessClientHello.
-  struct NET_EXPORT_PRIVATE Result {
+  struct NET_EXPORT_PRIVATE Result : public base::RefCountedThreadSafe<Result> {
     Result(const CryptoHandshakeMessage& in_client_hello,
            IPAddress in_client_ip,
            QuicWallTime in_now);
-    ~Result();
 
     CryptoHandshakeMessage client_hello;
     ClientHelloInfo info;
@@ -102,12 +101,16 @@ class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
 
     // Populated if the CHLO STK contained a CachedNetworkParameters proto.
     CachedNetworkParameters cached_network_params;
+
+   private:
+    friend class base::RefCountedThreadSafe<Result>;
+    ~Result();
   };
 
   ValidateClientHelloResultCallback();
-  virtual ~ValidateClientHelloResultCallback();
-  virtual void Run(std::unique_ptr<Result> result,
+  virtual void Run(scoped_refptr<Result> result,
                    std::unique_ptr<ProofSource::Details> details) = 0;
+  virtual ~ValidateClientHelloResultCallback();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ValidateClientHelloResultCallback);
@@ -285,7 +288,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     initially encrypted packets.
   // error_details: used to store a std::string describing any error.
   QuicErrorCode ProcessClientHello(
-      const ValidateClientHelloResultCallback::Result& validate_chlo_result,
+      scoped_refptr<ValidateClientHelloResultCallback::Result>
+          validate_chlo_result,
       bool reject_only,
       QuicConnectionId connection_id,
       const IPAddress& server_ip,
@@ -518,12 +522,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       scoped_refptr<Config> requested_config,
       scoped_refptr<Config> primary_config,
       QuicCryptoProof* crypto_proof,
-      std::unique_ptr<ValidateClientHelloResultCallback::Result>
+      scoped_refptr<ValidateClientHelloResultCallback::Result>
           client_hello_state,
       std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
 
   // Callback class for bridging between EvaluateClientHello and
-  // EvaluateClientHelloAfterGetProof
+  // EvaluateClientHelloAfterGetProof.
+  class EvaluateClientHelloCallback;
   friend class EvaluateClientHelloCallback;
 
   // Continuation of EvaluateClientHello after the call to
@@ -541,7 +546,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicCryptoProof* crypto_proof,
       std::unique_ptr<ProofSource::Details> proof_source_details,
       bool get_proof_failed,
-      std::unique_ptr<ValidateClientHelloResultCallback::Result>
+      scoped_refptr<ValidateClientHelloResultCallback::Result>
           client_hello_state,
       std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
 
