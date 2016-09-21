@@ -276,7 +276,6 @@ crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
-crbug.com/634285 fast/forms/select-popup/popup-menu-appearance-minimum-font.html [ NeedsRebaseline ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/timeline-misc/timeline-event-dispatch.html [ Failure Pass ]
