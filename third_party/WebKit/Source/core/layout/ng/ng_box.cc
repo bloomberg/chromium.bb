@@ -82,7 +82,7 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
       toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
     } else {
-      layout_box_->layoutIfNeeded();
+      layout_box_->forceLayout();
     }
     LayoutRect overflow = layout_box_->layoutOverflowRect();
     // TODO(layout-ng): This does not handle writing modes correctly (for
