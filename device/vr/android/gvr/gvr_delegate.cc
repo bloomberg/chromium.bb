@@ -5,48 +5,19 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 
 namespace device {
 
-GvrDelegateManager* GvrDelegateManager::GetInstance() {
-  return base::Singleton<GvrDelegateManager>::get();
+GvrDelegateProvider* GvrDelegateProvider::delegate_provider_ = nullptr;
+
+GvrDelegateProvider* GvrDelegateProvider::GetInstance() {
+  return delegate_provider_;
 }
 
-GvrDelegateManager::GvrDelegateManager() : delegate_(nullptr) {}
-
-GvrDelegateManager::~GvrDelegateManager() {}
-
-void GvrDelegateManager::AddClient(GvrDelegateClient* client) {
-  clients_.push_back(client);
-
-  if (delegate_)
-    client->OnDelegateInitialized(delegate_);
-}
-
-void GvrDelegateManager::RemoveClient(GvrDelegateClient* client) {
-  clients_.erase(std::remove(clients_.begin(), clients_.end(), client),
-                 clients_.end());
-}
-
-void GvrDelegateManager::Initialize(GvrDelegate* delegate) {
-  // Don't initialize the delegate manager twice.
-  DCHECK(!delegate_);
-
-  delegate_ = delegate;
-
-  for (const auto& client : clients_)
-    client->OnDelegateInitialized(delegate_);
-}
-
-void GvrDelegateManager::Shutdown() {
-  if (!delegate_)
-    return;
-
-  delegate_ = nullptr;
-
-  for (const auto& client : clients_)
-    client->OnDelegateShutdown();
+void GvrDelegateProvider::SetInstance(GvrDelegateProvider* delegate_provider) {
+  // Don't initialize the delegate_provider_ twice.
+  DCHECK(!delegate_provider_);
+  delegate_provider_ = delegate_provider;
 }
 
 }  // namespace device

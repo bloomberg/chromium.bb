@@ -5,9 +5,11 @@
 package org.chromium.device.vr;
 
 import android.content.Context;
+import android.os.StrictMode;
 
 import com.google.vr.ndk.base.GvrLayout;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -18,21 +20,9 @@ import org.chromium.base.annotations.JNINamespace;
 class GvrDeviceProvider {
     private static final String TAG = "GvrDeviceProvider";
     private final GvrLayout mLayout;
-    private Thread mGvrInitThread;
 
     private GvrDeviceProvider(Context context) {
         mLayout = new GvrLayout(context);
-
-        // Initialize the GVR API on a separate thread to avoid strict mode
-        // violations. Note that this doesn't fix the underlying issue of
-        // blocking on disk reads here.
-        mGvrInitThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mLayout.getGvrApi();
-            }
-        });
-        mGvrInitThread.start();
     }
 
     @CalledByNative
@@ -42,11 +32,20 @@ class GvrDeviceProvider {
 
     @CalledByNative
     private long getNativeContext() {
+        long nativeGvrContext = 0;
+
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+
         try {
-            mGvrInitThread.join();
+            nativeGvrContext = mLayout.getGvrApi().getNativeGvrContext();
         } catch (Exception ex) {
+            Log.e(TAG, "Unable to instantiate GvrApi", ex);
+            return 0;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-        return mLayout.getGvrApi().getNativeGvrContext();
+
+        return nativeGvrContext;
     }
 
     @CalledByNative

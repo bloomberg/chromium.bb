@@ -16,6 +16,7 @@ class VRClientDispatcher {
   virtual void OnDeviceChanged(VRDisplayPtr device) = 0;
   virtual void OnDeviceConnectionStatusChanged(VRDevice* device,
                                                bool is_connected) = 0;
+  virtual void OnPresentEnded(VRDevice* device) = 0;
 };
 
 }  // namespace device

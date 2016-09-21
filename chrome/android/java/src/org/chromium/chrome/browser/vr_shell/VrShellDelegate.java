@@ -15,6 +15,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -24,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Manages interactions with the VR Shell.
  */
+@JNINamespace("vr_shell")
 public class VrShellDelegate {
     private static final String TAG = "VrShellDelegate";
 
@@ -36,6 +39,7 @@ public class VrShellDelegate {
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private String mVrExtra;
+    private long mNativeVrShellDelegate;
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
@@ -49,6 +53,16 @@ public class VrShellDelegate {
                 Log.e(TAG, "Unable to read VR_EXTRA field", e);
                 mVrShellEnabled = false;
             }
+        }
+    }
+
+    /**
+     * Should be called once the native library is loaded so that the native portion of this
+     * class can be initialized.
+     */
+    public void onNativeLibraryReady() {
+        if (mVrShellEnabled) {
+            mNativeVrShellDelegate = nativeInit();
         }
     }
 
@@ -67,10 +81,12 @@ public class VrShellDelegate {
      *
      * This function performs native initialization, and so must only be called after native
      * libraries are ready.
-     * @Returns Whether or not we are in VR when this function returns.
+     * @param inWebVR If true should begin displaying WebVR content rather than the VrShell UI.
+     * @return Whether or not we are in VR when this function returns.
      */
-    public boolean enterVRIfNecessary() {
-        if (!mVrShellEnabled) return false;
+    @CalledByNative
+    public boolean enterVRIfNecessary(boolean inWebVR) {
+        if (!mVrShellEnabled || mNativeVrShellDelegate == 0) return false;
         Tab tab = mActivity.getActivityTab();
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
         // entered without any current tabs.
@@ -86,9 +102,21 @@ public class VrShellDelegate {
         }
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShell.onNativeLibraryReady(tab);
+        mVrShell.initializeNative(tab, this);
+        if (inWebVR) mVrShell.setWebVrModeEnabled(true);
         mVrShell.setVrModeEnabled(true);
         mInVr = true;
+        return true;
+    }
+
+    @CalledByNative
+    private boolean exitWebVR() {
+        if (!mInVr) return false;
+        mVrShell.setWebVrModeEnabled(false);
+        // TODO(bajones): Once VR Shell can be invoked outside of WebVR this
+        // should no longer exit the shell outright. Need a way to determine
+        // how VrShell was created.
+        shutdownVR();
         return true;
     }
 
@@ -108,11 +136,26 @@ public class VrShellDelegate {
     }
 
     /**
-     * Exits VR Shell, performing all necessary cleanup.
-     * @Returns Whether or not we exited VR.
+     * Exits the current VR mode (WebVR or VRShell)
+     * @return Whether or not we exited VR.
      */
     public boolean exitVRIfNecessary() {
         if (!mInVr) return false;
+        // If WebVR is presenting instruct it to exit. VR mode should not
+        // exit in this scenario, in case we want to return to the VrShell.
+        if (!nativeExitWebVRIfNecessary(mNativeVrShellDelegate)) {
+            // If WebVR was not presenting, shutdown VR mode entirely.
+            shutdownVR();
+        }
+
+        return true;
+    }
+
+    /**
+     * Exits VR Shell, performing all necessary cleanup.
+     */
+    private void shutdownVR() {
+        if (!mInVr) return;
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         mVrShell.setVrModeEnabled(false);
         mVrShell.pause();
@@ -120,7 +163,6 @@ public class VrShellDelegate {
         clearVrModeWindowFlags();
         destroyVrShell();
         mInVr = false;
-        return true;
     }
 
     private boolean createVrShell() {
@@ -205,4 +247,15 @@ public class VrShellDelegate {
     public boolean isVrShellEnabled() {
         return mVrShellEnabled;
     }
+
+    /**
+     * @return Pointer to the native VrShellDelegate object.
+     */
+    @CalledByNative
+    private long getNativePointer() {
+        return mNativeVrShellDelegate;
+    }
+
+    private native long nativeInit();
+    private native boolean nativeExitWebVRIfNecessary(long nativeVrShellDelegate);
 }

@@ -27,6 +27,7 @@ class WindowAndroid;
 namespace vr_shell {
 
 class VrCompositor;
+class VrShellDelegate;
 class VrShellRenderer;
 
 
@@ -39,6 +40,9 @@ class VrShell : public device::GvrDelegate {
   void UpdateCompositorLayers(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetDelegate(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& delegate);
   void GvrInit(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jlong native_gvr_api);
@@ -48,10 +52,11 @@ class VrShell : public device::GvrDelegate {
   void DrawFrame(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SetWebVrMode(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    bool enabled);
 
-  // GvrDelegate
-  void RequestWebVRPresent() override;
-  void ExitWebVRPresent() override;
+  // device::GvrDelegate implementation
   void SubmitWebVRFrame() override;
   void UpdateWebVRTextureBounds(
       int eye, float left, float top, float width, float height) override;
@@ -109,6 +114,7 @@ class VrShell : public device::GvrDelegate {
   std::unique_ptr<VrCompositor> content_compositor_view_;
   content::ContentViewCore* content_cvc_;
 
+  VrShellDelegate* delegate_;
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 

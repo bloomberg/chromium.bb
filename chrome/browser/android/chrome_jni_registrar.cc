@@ -174,6 +174,7 @@
 
 #if defined(ENABLE_VR_SHELL)
 #include "chrome/browser/android/vr_shell/vr_shell.h"
+#include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #endif
 
 namespace chrome {
@@ -370,6 +371,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"VariationsSession", chrome::android::RegisterVariationsSession},
 #if defined(ENABLE_VR_SHELL)
     {"VrShell", vr_shell::RegisterVrShell},
+    {"VrShellDelegate", vr_shell::RegisterVrShellDelegate},
 #endif
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},

@@ -16,7 +16,7 @@ public interface VrShellInterface {
     /**
      * Performs native VrShell initialization.
      */
-    void onNativeLibraryReady(Tab currentTab);
+    void initializeNative(Tab currentTab, VrShellDelegate delegate);
 
     /**
      * Pauses VrShell.
@@ -37,6 +37,11 @@ public interface VrShellInterface {
      * Sets Android VR Mode to |enabled|.
      */
     void setVrModeEnabled(boolean enabled);
+
+    /**
+     * Sets whether we're presenting WebVR content or not.
+     */
+    void setWebVrModeEnabled(boolean enabled);
 
     /**
      * Returns the GVRLayout as a FrameLayout.

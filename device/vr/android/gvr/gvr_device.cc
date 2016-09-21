@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/vr_device_manager.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/transform.h"
@@ -23,17 +24,17 @@ static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
 }  // namespace
 
-GvrDevice::GvrDevice(VRDeviceProvider* provider, GvrDelegate* delegate)
-    : VRDevice(provider), delegate_(delegate) {}
+GvrDevice::GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate)
+    : VRDevice(provider), delegate_(delegate), gvr_provider_(provider) {}
 
 GvrDevice::~GvrDevice() {}
 
 VRDisplayPtr GvrDevice::GetVRDevice() {
   TRACE_EVENT0("input", "GvrDevice::GetVRDevice");
 
-  gvr::GvrApi* gvr_api = delegate_->gvr_api();
-
   VRDisplayPtr device = VRDisplay::New();
+
+  device->index = id();
 
   device->capabilities = VRDisplayCapabilities::New();
   device->capabilities->hasOrientation = true;
@@ -46,7 +47,52 @@ VRDisplayPtr GvrDevice::GetVRDevice() {
   VREyeParametersPtr& left_eye = device->leftEye;
   VREyeParametersPtr& right_eye = device->rightEye;
 
-  device->displayName = gvr_api->GetViewerModel();
+  left_eye->fieldOfView = VRFieldOfView::New();
+  right_eye->fieldOfView = VRFieldOfView::New();
+
+  left_eye->offset = mojo::Array<float>::New(3);
+  right_eye->offset = mojo::Array<float>::New(3);
+
+  // TODO(bajones): GVR has a bug that causes it to return bad render target
+  // sizes when the phone is in portait mode. Send arbitrary,
+  // not-horrifically-wrong values instead.
+  //  gvr::Sizei render_target_size = gvr_api->GetRecommendedRenderTargetSize();
+  left_eye->renderWidth = 1024;   // render_target_size.width / 2;
+  left_eye->renderHeight = 1024;  // render_target_size.height;
+
+  right_eye->renderWidth = left_eye->renderWidth;
+  right_eye->renderHeight = left_eye->renderHeight;
+
+  gvr::GvrApi* gvr_api = GetGvrApi();
+  if (!gvr_api) {
+    // We may not be able to get an instance of GvrApi right away, so
+    // stub in some data till we have one.
+    device->displayName = "Unknown";
+
+    left_eye->fieldOfView->upDegrees = 45;
+    left_eye->fieldOfView->downDegrees = 45;
+    left_eye->fieldOfView->leftDegrees = 45;
+    left_eye->fieldOfView->rightDegrees = 45;
+
+    right_eye->fieldOfView->upDegrees = 45;
+    right_eye->fieldOfView->downDegrees = 45;
+    right_eye->fieldOfView->leftDegrees = 45;
+    right_eye->fieldOfView->rightDegrees = 45;
+
+    left_eye->offset[0] = -0.0;
+    left_eye->offset[1] = -0.0;
+    left_eye->offset[2] = -0.03;
+
+    right_eye->offset[0] = 0.0;
+    right_eye->offset[1] = 0.0;
+    right_eye->offset[2] = 0.03;
+
+    return device;
+  }
+
+  std::string vendor = gvr_api->GetViewerVendor();
+  std::string model = gvr_api->GetViewerModel();
+  device->displayName = vendor + " " + model;
 
   gvr::BufferViewportList gvr_buffer_viewports =
       gvr_api->CreateEmptyBufferViewportList();
@@ -55,7 +101,6 @@ VRDisplayPtr GvrDevice::GetVRDevice() {
   gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
   gvr_buffer_viewports.GetBufferViewport(GVR_LEFT_EYE, &eye_viewport);
   gvr::Rectf eye_fov = eye_viewport.GetSourceFov();
-  left_eye->fieldOfView = VRFieldOfView::New();
   left_eye->fieldOfView->upDegrees = eye_fov.top;
   left_eye->fieldOfView->downDegrees = eye_fov.bottom;
   left_eye->fieldOfView->leftDegrees = eye_fov.left;
@@ -64,35 +109,20 @@ VRDisplayPtr GvrDevice::GetVRDevice() {
   eye_viewport = gvr_api->CreateBufferViewport();
   gvr_buffer_viewports.GetBufferViewport(GVR_RIGHT_EYE, &eye_viewport);
   eye_fov = eye_viewport.GetSourceFov();
-  right_eye->fieldOfView = VRFieldOfView::New();
   right_eye->fieldOfView->upDegrees = eye_fov.top;
   right_eye->fieldOfView->downDegrees = eye_fov.bottom;
   right_eye->fieldOfView->leftDegrees = eye_fov.left;
   right_eye->fieldOfView->rightDegrees = eye_fov.right;
 
   gvr::Mat4f left_eye_mat = gvr_api->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
-  gvr::Mat4f right_eye_mat = gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
-
-  left_eye->offset = mojo::Array<float>::New(3);
   left_eye->offset[0] = -left_eye_mat.m[0][3];
   left_eye->offset[1] = -left_eye_mat.m[1][3];
   left_eye->offset[2] = -left_eye_mat.m[2][3];
 
-  right_eye->offset = mojo::Array<float>::New(3);
+  gvr::Mat4f right_eye_mat = gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
   right_eye->offset[0] = -right_eye_mat.m[0][3];
   right_eye->offset[1] = -right_eye_mat.m[1][3];
   right_eye->offset[2] = -right_eye_mat.m[2][3];
-
-  //  gvr::Sizei render_target_size = gvr_api->GetRecommendedRenderTargetSize();
-
-  // TODO(bajones): GVR has a bug that causes it to return bad render target
-  // sizes when the phone is in portait mode. Send arbitrary,
-  // not-horrifically-wrong values instead.
-  left_eye->renderWidth = 1024;   // render_target_size.width / 2;
-  left_eye->renderHeight = 1024;  // render_target_size.height;
-
-  right_eye->renderWidth = left_eye->renderWidth;
-  right_eye->renderHeight = left_eye->renderHeight;
 
   return device;
 }
@@ -100,11 +130,22 @@ VRDisplayPtr GvrDevice::GetVRDevice() {
 VRPosePtr GvrDevice::GetPose() {
   TRACE_EVENT0("input", "GvrDevice::GetSensorState");
 
-  gvr::GvrApi* gvr_api = delegate_->gvr_api();
-
   VRPosePtr pose = VRPose::New();
 
   pose->timestamp = base::Time::Now().ToJsTime();
+
+  pose->orientation = mojo::Array<float>::New(4);
+
+  gvr::GvrApi* gvr_api = GetGvrApi();
+  if (!gvr_api) {
+    // If we don't have a GvrApi instance return a static forward orientation.
+    pose->orientation[0] = 0.0;
+    pose->orientation[1] = 0.0;
+    pose->orientation[2] = 0.0;
+    pose->orientation[3] = 1.0;
+
+    return pose;
+  }
 
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
@@ -122,7 +163,6 @@ VRPosePtr GvrDevice::GetPose() {
     gfx::DecomposedTransform decomposed_transform;
     gfx::DecomposeTransform(&decomposed_transform, transform);
 
-    pose->orientation = mojo::Array<float>::New(4);
     pose->orientation[0] = decomposed_transform.quaternion[0];
     pose->orientation[1] = decomposed_transform.quaternion[1];
     pose->orientation[2] = decomposed_transform.quaternion[2];
@@ -138,30 +178,50 @@ VRPosePtr GvrDevice::GetPose() {
 }
 
 void GvrDevice::ResetPose() {
-  delegate_->gvr_api()->ResetTracking();
+  gvr::GvrApi* gvr_api = GetGvrApi();
+  if (gvr_api)
+    gvr_api->ResetTracking();
 }
 
 bool GvrDevice::RequestPresent() {
-  delegate_->RequestWebVRPresent();
-  return true;
+  return gvr_provider_->RequestPresent();
 }
 
 void GvrDevice::ExitPresent() {
-  delegate_->ExitWebVRPresent();
+  gvr_provider_->ExitPresent();
 }
 
 void GvrDevice::SubmitFrame(VRPosePtr pose) {
-  delegate_->SubmitWebVRFrame();
+  if (delegate_)
+    delegate_->SubmitWebVRFrame();
 }
 
 void GvrDevice::UpdateLayerBounds(VRLayerBoundsPtr leftBounds,
                                   VRLayerBoundsPtr rightBounds) {
+  if (!delegate_)
+    return;
+
   delegate_->UpdateWebVRTextureBounds(0,  // Left eye
                                       leftBounds->left, leftBounds->top,
                                       leftBounds->width, leftBounds->height);
   delegate_->UpdateWebVRTextureBounds(1,  // Right eye
                                       rightBounds->left, rightBounds->top,
                                       rightBounds->width, rightBounds->height);
+}
+
+void GvrDevice::SetDelegate(GvrDelegate* delegate) {
+  delegate_ = delegate;
+
+  // Notify the clients that this device has changed
+  if (delegate_)
+    VRDeviceManager::GetInstance()->OnDeviceChanged(GetVRDevice());
+}
+
+gvr::GvrApi* GvrDevice::GetGvrApi() {
+  if (!delegate_)
+    return nullptr;
+
+  return delegate_->gvr_api();
 }
 
 }  // namespace device

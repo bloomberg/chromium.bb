@@ -10,20 +10,25 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_utils.h"
 #include "base/android/scoped_java_ref.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/vr_device_manager.h"
 #include "jni/GvrDeviceProvider_jni.h"
+#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 
 using base::android::AttachCurrentThread;
 using base::android::GetApplicationContext;
 
 namespace device {
 
-// A temporary delegate till the VrShell is available.
-class GvrDeviceProviderDelegate : public GvrDelegate {
+// A temporary delegate till a VrShell instance becomes available.
+class GvrNonPresentingDelegate : public GvrDelegate {
  public:
-  GvrDeviceProviderDelegate() {
-    // TODO: This should eventually be handled by an actual GvrLayout instance
-    // in the view tree.
+  GvrNonPresentingDelegate() { Initialize(); }
+
+  virtual ~GvrNonPresentingDelegate() { Shutdown(); }
+
+  void Initialize() {
     if (j_device_.is_null()) {
       JNIEnv* env = AttachCurrentThread();
 
@@ -37,25 +42,19 @@ class GvrDeviceProviderDelegate : public GvrDelegate {
 
       gvr_api_ =
           gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(context));
-
-      GvrDelegateManager::GetInstance()->Initialize(this);
     }
   }
 
-  virtual ~GvrDeviceProviderDelegate() {
-    // TODO: This should eventually be handled by an actual GvrLayout instance
-    // in the view tree.
-    GvrDelegateManager::GetInstance()->Shutdown();
+  void Shutdown() {
     if (!j_device_.is_null()) {
+      gvr_api_ = nullptr;
       JNIEnv* env = AttachCurrentThread();
       Java_GvrDeviceProvider_shutdown(env, j_device_.obj());
+      j_device_ = nullptr;
     }
   }
 
   // GvrDelegate implementation
-  void RequestWebVRPresent() override {}
-  void ExitWebVRPresent() override {}
-
   void SubmitWebVRFrame() override {}
   void UpdateWebVRTextureBounds(int eye,
                                 float left,
@@ -70,12 +69,12 @@ class GvrDeviceProviderDelegate : public GvrDelegate {
   std::unique_ptr<gvr::GvrApi> gvr_api_;
 };
 
-GvrDeviceProvider::GvrDeviceProvider() : VRDeviceProvider() {
-  GvrDelegateManager::GetInstance()->AddClient(this);
-}
+GvrDeviceProvider::GvrDeviceProvider()
+    : VRDeviceProvider(),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 GvrDeviceProvider::~GvrDeviceProvider() {
-  GvrDelegateManager::GetInstance()->RemoveClient(this);
+  ExitPresent();
 }
 
 void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
@@ -91,20 +90,59 @@ void GvrDeviceProvider::SetClient(VRClientDispatcher* client) {
 }
 
 void GvrDeviceProvider::Initialize() {
-  if (!delegate_)
-    delegate_.reset(new GvrDeviceProviderDelegate());
+  if (!non_presenting_delegate_) {
+    non_presenting_delegate_.reset(new GvrNonPresentingDelegate());
+    if (non_presenting_delegate_->gvr_api()) {
+      vr_device_.reset(new GvrDevice(this, non_presenting_delegate_.get()));
+      client_->OnDeviceConnectionStatusChanged(vr_device_.get(), true);
+    }
+  }
 }
 
-void GvrDeviceProvider::OnDelegateInitialized(GvrDelegate* delegate) {
+bool GvrDeviceProvider::RequestPresent() {
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  if (!delegate_provider)
+    return false;
+
+  return delegate_provider->RequestWebVRPresent(this);
+}
+
+void GvrDeviceProvider::ExitPresent() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   if (!vr_device_)
-    vr_device_.reset(new GvrDevice(this, delegate));
+    return;
 
-  client_->OnDeviceConnectionStatusChanged(vr_device_.get(), true);
+  vr_device_->SetDelegate(non_presenting_delegate_.get());
+
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  if (delegate_provider)
+    delegate_provider->ExitWebVRPresent();
+
+  if (client_)
+    client_->OnPresentEnded(vr_device_.get());
 }
 
-void GvrDeviceProvider::OnDelegateShutdown() {
-  if (client_ && vr_device_)
-    client_->OnDeviceConnectionStatusChanged(vr_device_.get(), false);
+void GvrDeviceProvider::OnGvrDelegateReady(GvrDelegate* delegate) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GvrDeviceProvider::GvrDelegateReady, base::Unretained(this),
+                 base::Unretained(delegate)));
+}
+
+void GvrDeviceProvider::OnGvrDelegateRemoved() {
+  if (!vr_device_)
+    return;
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GvrDeviceProvider::ExitPresent, base::Unretained(this)));
+}
+
+void GvrDeviceProvider::GvrDelegateReady(GvrDelegate* delegate) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  vr_device_->SetDelegate(delegate);
 }
 
 }  // namespace device

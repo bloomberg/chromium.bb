@@ -134,7 +134,9 @@ mojo::Array<VRDisplayPtr> VRDeviceManager::GetVRDevices() {
     if (vr_device_info.is_null())
       continue;
 
-    vr_device_info->index = device->id();
+    // GetVRDevice should always set the index of the VRDisplay to its own id.
+    DCHECK(vr_device_info->index == device->id());
+
     out_devices.push_back(std::move(vr_device_info));
   }
 
@@ -261,6 +263,22 @@ void VRDeviceManager::OnDeviceConnectionStatusChanged(VRDevice* device,
     for (const auto& service : services_)
       service->client()->OnDisplayDisconnected(device->id());
   }
+}
+
+void VRDeviceManager::OnPresentEnded(VRDevice* device) {
+  // Ensure the presenting device is the one that we've been requested to stop.
+  if (!presenting_device_ || presenting_device_ != device)
+    return;
+
+  // Should never have a presenting device without a presenting service.
+  DCHECK(presenting_service_);
+
+  // Notify the presenting service that it's been forced to end presentation.
+  presenting_service_->client()->OnExitPresent(device->id());
+
+  // Clear the presenting service and device.
+  presenting_service_ = nullptr;
+  presenting_device_ = nullptr;
 }
 
 void VRDeviceManager::InitializeProviders() {

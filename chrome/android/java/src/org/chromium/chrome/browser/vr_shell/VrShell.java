@@ -103,7 +103,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     }
 
     @Override
-    public void onNativeLibraryReady(Tab currentTab) {
+    public void initializeNative(Tab currentTab, VrShellDelegate delegate) {
         assert currentTab.getContentViewCore() != null;
         mTab = currentTab;
         mCVC = mTab.getContentViewCore();
@@ -111,6 +111,8 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
         mNativeVrShell = nativeInit(mCVC.getWebContents(),
                 mVRWindowAndroid.getNativePointer());
+
+        nativeSetDelegate(mNativeVrShell, delegate);
 
         reparentContentWindow();
 
@@ -266,6 +268,11 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     }
 
     @Override
+    public void setWebVrModeEnabled(boolean enabled) {
+        nativeSetWebVrMode(mNativeVrShell, enabled);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         return true;
     }
@@ -294,24 +301,17 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
     private native long nativeInit(WebContents contentWebContents,
             long nativeContentWindowAndroid);
-
+    private native void nativeSetDelegate(long nativeVrShell, VrShellDelegate delegate);
     private native void nativeGvrInit(long nativeVrShell, long nativeGvrApi);
-
     private native void nativeDestroy(long nativeVrShell);
-
     private native void nativeInitializeGl(
             long nativeVrShell, int contentDataHandle);
-
     private native void nativeDrawFrame(long nativeVrShell);
-
     private native void nativeOnPause(long nativeVrShell);
-
     private native void nativeOnResume(long nativeVrShell);
-
     private native void nativeContentSurfaceDestroyed(long nativeVrShell);
-
     private native void nativeContentSurfaceChanged(
             long nativeVrShell, int width, int height, Surface surface);
-
     private native void nativeUpdateCompositorLayers(long nativeVrShell);
+    private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
 }

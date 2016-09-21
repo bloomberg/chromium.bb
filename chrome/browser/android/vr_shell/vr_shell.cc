@@ -9,6 +9,7 @@
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
+#include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_widget_host.h"
@@ -65,7 +66,8 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
       desktop_position_(kDesktopPositionDefault),
-      content_cvc_(content_core) {
+      content_cvc_(content_core),
+      delegate_(nullptr) {
   j_vr_shell_.Reset(env, obj);
   content_compositor_view_.reset(new VrCompositor(content_window));
   ui_rects_.emplace_back(new ContentRectangle());
@@ -99,7 +101,12 @@ bool RegisterVrShell(JNIEnv* env) {
 }
 
 VrShell::~VrShell() {
-  device::GvrDelegateManager::GetInstance()->Shutdown();
+}
+
+void VrShell::SetDelegate(JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& delegate) {
+  delegate_ = VrShellDelegate::getNativeDelegate(env, delegate);
 }
 
 void VrShell::GvrInit(JNIEnv* env,
@@ -108,7 +115,8 @@ void VrShell::GvrInit(JNIEnv* env,
   gvr_api_ =
       gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(native_gvr_api));
 
-  device::GvrDelegateManager::GetInstance()->Initialize(this);
+  if (delegate_)
+    delegate_->OnVrShellReady(this);
 }
 
 void VrShell::InitializeGl(JNIEnv* env,
@@ -382,12 +390,10 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gvr_api_->ResumeTracking();
 }
 
-void VrShell::RequestWebVRPresent() {
-  webvr_mode_ = true;
-}
-
-void VrShell::ExitWebVRPresent() {
-  webvr_mode_ = false;
+void VrShell::SetWebVrMode(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           bool enabled) {
+  webvr_mode_ = enabled;
 }
 
 void VrShell::SubmitWebVRFrame() {

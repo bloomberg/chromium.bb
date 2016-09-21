@@ -241,6 +241,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             super.initializeCompositor();
 
             mTabModelSelectorImpl.onNativeLibraryReady(getTabContentManager());
+            mVrShellDelegate.onNativeLibraryReady();
 
             mTabModelObserver = new EmptyTabModelObserver() {
                 @Override
@@ -417,7 +418,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 handleDebugIntent(intent);
             }
             if (!mVrShellDelegate.isInVR() && mVrShellDelegate.isVrIntent(intent)) {
-                mVrShellDelegate.enterVRIfNecessary();
+                mVrShellDelegate.enterVRIfNecessary(false);
             }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
@@ -606,7 +607,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 if (mVrShellDelegate.isVrIntent(intent)) {
                     // TODO(mthiesse): Improve startup when started from a VR intent. Right now
                     // we launch out of VR, partially load out of VR, then switch into VR.
-                    mVrShellDelegate.enterVRIfNecessary();
+                    mVrShellDelegate.enterVRIfNecessary(false);
                 } else if (!mIntentHandler.shouldIgnoreIntent(ChromeTabbedActivity.this, intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(ChromeTabbedActivity.this,
                             intent);
@@ -1138,7 +1139,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
         } else if (id == R.id.enter_vr_id) {
-            mVrShellDelegate.enterVRIfNecessary();
+            mVrShellDelegate.enterVRIfNecessary(false);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }

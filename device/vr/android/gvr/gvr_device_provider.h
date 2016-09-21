@@ -8,16 +8,19 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "device/vr/android/gvr/gvr_delegate.h"
+#include "base/single_thread_task_runner.h"
 #include "device/vr/vr_client_dispatcher.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
+#include "device/vr/vr_export.h"
 
 namespace device {
 
-class GvrDeviceProviderDelegate;
+class GvrDelegate;
+class GvrDevice;
+class GvrNonPresentingDelegate;
 
-class GvrDeviceProvider : public VRDeviceProvider, public GvrDelegateClient {
+class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
  public:
   GvrDeviceProvider();
   ~GvrDeviceProvider() override;
@@ -25,16 +28,25 @@ class GvrDeviceProvider : public VRDeviceProvider, public GvrDelegateClient {
   void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
-  // GvrDelegateClient
-  void OnDelegateInitialized(GvrDelegate* delegate) override;
-  void OnDelegateShutdown() override;
+  // Called from GvrDevice
+  bool RequestPresent();
+  void ExitPresent();
+
+  // Called from GvrDelegate
+  void OnGvrDelegateReady(GvrDelegate* delegate);
+  void OnGvrDelegateRemoved();
 
   void SetClient(VRClientDispatcher* client) override;
 
  private:
+  void GvrDelegateReady(GvrDelegate* delegate);
+  void GvrDelegateRemoved();
+
   std::unique_ptr<VRClientDispatcher> client_;
-  std::unique_ptr<VRDevice> vr_device_;
-  std::unique_ptr<GvrDeviceProviderDelegate> delegate_;
+  std::unique_ptr<GvrDevice> vr_device_;
+  std::unique_ptr<GvrNonPresentingDelegate> non_presenting_delegate_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };
