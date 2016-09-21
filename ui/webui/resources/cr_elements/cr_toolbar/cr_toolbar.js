@@ -18,10 +18,6 @@ Polymer({
     // Tooltip to display on the menu button.
     menuLabel: String,
 
-    // Promotional toolstip string, shown in narrow mode if showMenuPromo is
-    // true.
-    menuPromo: String,
-
     // Value is proxied through to cr-toolbar-search-field. When true,
     // the search field will show a processing spinner.
     spinnerActive: Boolean,
@@ -31,14 +27,6 @@ Polymer({
       type: Boolean,
       value: false
     },
-
-    // Whether to show menu promo tooltip.
-    showMenuPromo: {
-      type: Boolean,
-      value: false,
-    },
-
-    closeMenuPromo: String,
 
     /** @private */
     narrow_: {
@@ -53,47 +41,13 @@ Polymer({
     },
   },
 
-  observers: [
-    'possiblyShowMenuPromo_(showMenu, showMenuPromo, showingSearch_)',
-  ],
-
   /** @return {!CrToolbarSearchFieldElement} */
   getSearchField: function() {
     return this.$.search;
   },
 
   /** @private */
-  onClosePromoTap_: function() {
-    this.showMenuPromo = false;
-  },
-
-  /** @private */
-  onMenuTap_: function() {
+  onMenuTap_: function(e) {
     this.fire('cr-menu-tap');
-    this.onClosePromoTap_();
-  },
-
-  /** @private */
-  possiblyShowMenuPromo_: function() {
-    Polymer.RenderStatus.afterNextRender(this, function() {
-      if (this.showMenu && this.showMenuPromo && !this.showingSearch_) {
-        this.$$('#menuPromo').animate({
-          opacity: [0, .9],
-        }, /** @type {!KeyframeEffectOptions} */({
-          duration: 500,
-          fill: 'forwards'
-        }));
-        this.fire('cr-menu-promo-shown');
-      }
-    }.bind(this));
-  },
-
-  /**
-   * @param {string} title
-   * @param {boolean} showMenuPromo
-   * @return {string} The title if the menu promo isn't showing, else "".
-   */
-  titleIfNotShowMenuPromo_: function(title, showMenuPromo) {
-    return showMenuPromo ? '' : title;
-  },
+  }
 });

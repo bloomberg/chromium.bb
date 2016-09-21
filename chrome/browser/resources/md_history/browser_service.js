@@ -117,10 +117,6 @@ cr.define('md_history', function() {
       this.pendingDeleteItems_ = null;
       this.pendingDeletePromise_ = null;
     },
-
-    menuPromoShown: function() {
-      chrome.send('menuPromoShown');
-    },
   };
 
   cr.addSingletonGetter(BrowserService);

@@ -305,9 +305,6 @@ extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kAllowDeletingBrowserHistory[];
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-extern const char kMdHistoryMenuPromoShown[];
-#endif
 extern const char kForceGoogleSafeSearch[];
 extern const char kForceYouTubeSafetyMode[];
 extern const char kForceSessionSync[];

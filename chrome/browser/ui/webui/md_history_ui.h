@@ -12,16 +12,7 @@
 class Profile;
 
 namespace base {
-class ListValue;
 class RefCountedMemory;
-}
-
-namespace content {
-class WebUIDataSource;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 class MdHistoryUI : public content::WebUIController {
@@ -34,17 +25,10 @@ class MdHistoryUI : public content::WebUIController {
   // Reset the current list of features and explicitly set MD History enabled.
   static void SetEnabledForTesting(bool enabled);
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
  private:
-  // Handler for the "menuPromoShown" message from the page. No arguments.
-  void HandleMenuPromoShown(const base::ListValue* args);
-
-  content::WebUIDataSource* data_source_;  // weak
-
   DISALLOW_COPY_AND_ASSIGN(MdHistoryUI);
 };
 

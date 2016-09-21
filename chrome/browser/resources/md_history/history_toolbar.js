@@ -63,15 +63,6 @@ Polymer({
 
     // The end time of the query range.
     queryEndTime: String,
-
-    // Whether to show the menu promo (a tooltip that points at the menu button
-    // in narrow mode).
-    showMenuPromo_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showMenuPromo');
-      },
-    },
   },
 
   /**
@@ -97,11 +88,6 @@ Polymer({
                           .getSearchField();
     searchField.showAndFocus();
     searchField.setValue(search);
-  },
-
-  /** @private */
-  onMenuPromoShown_: function() {
-    md_history.BrowserService.getInstance().menuPromoShown();
   },
 
   /**

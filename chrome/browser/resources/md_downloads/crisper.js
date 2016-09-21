@@ -6768,17 +6768,11 @@ Polymer({
     searchPrompt: String,
     clearLabel: String,
     menuLabel: String,
-    menuPromo: String,
     spinnerActive: Boolean,
     showMenu: {
       type: Boolean,
       value: false
     },
-    showMenuPromo: {
-      type: Boolean,
-      value: false
-    },
-    closeMenuPromo: String,
     narrow_: {
       type: Boolean,
       reflectToAttribute: true
@@ -6788,32 +6782,11 @@ Polymer({
       reflectToAttribute: true
     }
   },
-  observers: [ 'possiblyShowMenuPromo_(showMenu, showMenuPromo, showingSearch_)' ],
   getSearchField: function() {
     return this.$.search;
   },
-  onClosePromoTap_: function() {
-    this.showMenuPromo = false;
-  },
-  onMenuTap_: function() {
+  onMenuTap_: function(e) {
     this.fire('cr-menu-tap');
-    this.onClosePromoTap_();
-  },
-  possiblyShowMenuPromo_: function() {
-    Polymer.RenderStatus.afterNextRender(this, function() {
-      if (this.showMenu && this.showMenuPromo && !this.showingSearch_) {
-        this.$$('#menuPromo').animate({
-          opacity: [ 0, .9 ]
-        }, {
-          duration: 500,
-          fill: 'forwards'
-        });
-        this.fire('cr-menu-promo-shown');
-      }
-    }.bind(this));
-  },
-  titleIfNotShowMenuPromo_: function(title, showMenuPromo) {
-    return showMenuPromo ? '' : title;
   }
 });
 
