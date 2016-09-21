@@ -244,7 +244,14 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   root->SetDrawsContent(true);
 
   host_impl().SetViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  // While computing visible rects by combining clips in screen space, we set
+  // the entire layer as visible if the screen space transform is singular. This
+  // is not always true when we combine clips in target space because if the
+  // intersection of combined_clip in taret space with layer_rect projected to
+  // target space is empty, we set it to an empty rect.
+  bool skip_verify_visible_rect_calculations = true;
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree(
+      skip_verify_visible_rect_calculations);
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
@@ -1333,7 +1340,14 @@ TEST_F(LayerTreeImplTest,
   root->SetTouchEventHandlerRegion(touch_handler_region);
 
   host_impl().SetViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  // While computing visible rects by combining clips in screen space, we set
+  // the entire layer as visible if the screen space transform is singular. This
+  // is not always true when we combine clips in target space because if the
+  // intersection of combined_clip in taret space with layer_rect projected to
+  // target space is empty, we set it to an empty rect.
+  bool skip_verify_visible_rect_calculations = true;
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree(
+      skip_verify_visible_rect_calculations);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());

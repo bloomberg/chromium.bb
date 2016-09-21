@@ -174,7 +174,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 
   const LayerList* GetUpdateLayerList() { return &update_layer_list_; }
 
-  void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
+  void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(Layer* root_layer) {
     DCHECK(root_layer->GetLayerTree());
     PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
 
@@ -210,7 +210,9 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         property_trees->effect_tree, &update_layer_list_);
   }
 
-  void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* root_layer) {
+  void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
+      LayerImpl* root_layer,
+      bool skip_verify_visible_rect_calculations = false) {
     DCHECK(root_layer->layer_tree_impl());
     PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer);
 
@@ -233,15 +235,20 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                   root_layer->bounds().height() * device_scale_factor);
     update_layer_list_impl_.reset(new LayerImplList);
     root_layer->layer_tree_impl()->BuildLayerListForTesting();
-    bool verify_visible_rect_calculations = true;
+    PropertyTrees* property_trees =
+        root_layer->layer_tree_impl()->property_trees();
     draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
         outer_viewport_scroll_layer, overscroll_elasticity_layer,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(),
-        can_render_to_separate_surface, verify_visible_rect_calculations,
-        root_layer->layer_tree_impl()->property_trees(),
+        can_render_to_separate_surface, property_trees,
         update_layer_list_impl_.get());
+    draw_property_utils::VerifyClipTreeCalculations(*update_layer_list_impl_,
+                                                    property_trees);
+    if (!skip_verify_visible_rect_calculations)
+      draw_property_utils::VerifyVisibleRectsCalculations(
+          *update_layer_list_impl_, property_trees);
   }
 
   void ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
@@ -1189,7 +1196,16 @@ TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
   grand_child->SetBounds(gfx::Size(100, 100));
   grand_child->test_properties()->should_flatten_transform = false;
   grand_child->SetDrawsContent(true);
-  ExecuteCalculateDrawProperties(root);
+  float device_scale_factor = 1.f;
+  float page_scale_factor = 1.f;
+  LayerImpl* page_scale_layer = nullptr;
+  // Visible rects computed by combining clips in target space and root space
+  // don't match because of rotation transforms. So, we skip
+  // verify_visible_rect_calculations.
+  bool skip_verify_visible_rect_calculations = true;
+  ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
+                                 page_scale_layer,
+                                 skip_verify_visible_rect_calculations);
 
   // Mapping grand_child's bounds to target space produces a non-empty rect
   // that is fully contained within the target's bounds, so grand_child should
@@ -1723,7 +1739,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   child->SetDrawsContent(true);
 
   {
-    ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+    ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
     // The root layer always creates a render surface
     EXPECT_TRUE(root->has_render_surface());
@@ -1733,7 +1749,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   {
     render_surface1->test_properties()->force_render_surface = false;
     render_surface1->layer_tree_impl()->property_trees()->needs_rebuild = true;
-    ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+    ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
     EXPECT_TRUE(root->has_render_surface());
     EXPECT_FALSE(render_surface1->has_render_surface());
   }
@@ -4202,7 +4218,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   // Note: No layers preserve 3d. According to current W3C CSS gfx::Transforms
   // spec, these layers should blindly use their own local transforms to
   // determine back-face culling.
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
   EXPECT_FALSE(front_facing_child->has_render_surface());
@@ -4311,7 +4327,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   front_facing_child_of_back_facing_surface->Set3dSortingContextId(1);
   back_facing_child_of_back_facing_surface->Set3dSortingContextId(1);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created and used.
   EXPECT_FALSE(front_facing_child->has_render_surface());
@@ -4387,7 +4403,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   animating_child->test_properties()->transform = backface_matrix;
   child2->SetBounds(gfx::Size(100, 100));
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   EXPECT_FALSE(child->has_render_surface());
   EXPECT_TRUE(animating_surface->has_render_surface());
@@ -4446,7 +4462,7 @@ TEST_F(LayerTreeHostCommonTest,
   front_facing_surface->Set3dSortingContextId(1);
   back_facing_surface->Set3dSortingContextId(1);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created and used.
   EXPECT_TRUE(front_facing_surface->has_render_surface());
@@ -5968,7 +5984,7 @@ TEST_F(LayerTreeHostCommonTest,
   child3->SetBounds(bounds);
   child3->SetDrawsContent(true);
   child3->Set3dSortingContextId(1);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
   EXPECT_TRUE(root->has_render_surface());
@@ -7890,7 +7906,7 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByBoundsDeltaGetUpdated) {
   fixed_to_inner->SetPositionConstraint(fixed_to_right);
   fixed_to_outer->SetPositionConstraint(fixed_to_right);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   TransformTree& transform_tree = host()->property_trees()->transform_tree;
   EXPECT_TRUE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
@@ -7900,13 +7916,13 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByBoundsDeltaGetUpdated) {
   fixed_to_left.set_is_fixed_position(true);
   fixed_to_inner->SetPositionConstraint(fixed_to_left);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
   EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
 
   fixed_to_outer->SetPositionConstraint(fixed_to_left);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
   EXPECT_FALSE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
 }
@@ -7935,7 +7951,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
       animated->element_id(), timeline_impl(), 10.0, 0.f, 1.f, false);
   animated->test_properties()->opacity_can_animate = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   EXPECT_FALSE(animated->visible_layer_rect().IsEmpty());
 }
@@ -7973,7 +7989,7 @@ TEST_F(LayerTreeHostCommonTest,
   AddAnimatedTransformToElementWithPlayer(
       animated->element_id(), timeline_impl(), 10.0, start_transform_operations,
       end_transform_operations);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // The animated layer has a singular transform and maps to a non-empty rect in
   // clipped target space, so is treated as fully visible.
@@ -7988,11 +8004,24 @@ TEST_F(LayerTreeHostCommonTest,
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
   root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
       zero_matrix, animated->transform_tree_index(), root->layer_tree_impl());
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
+  // While computing visible rects by combining clips in screen space, we set
+  // the entire layer as visible if the screen space transform is singular. This
+  // is not always true when we combine clips in target space because if the
+  // intersection of combined_clip in taret space with layer_rect projected to
+  // target space is empty, we set it to an empty rect.
+  bool skip_verify_visible_rect_calculations = true;
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
+      root, skip_verify_visible_rect_calculations);
 
   // The animated layer maps to the empty rect in clipped target space, so is
   // treated as having an empty visible rect.
   EXPECT_EQ(gfx::Rect(), animated->visible_layer_rect());
+
+  // The animated layer will be treated as fully visible when we combine clips
+  // in screen space.
+  gfx::Rect visible_rect = draw_property_utils::ComputeLayerVisibleRectDynamic(
+      root->layer_tree_impl()->property_trees(), animated);
+  EXPECT_EQ(gfx::Rect(120, 120), visible_rect);
 
   // This time, flattening does not make |animated|'s transform invertible. This
   // means the clip cannot be projected into |surface|'s space, so we treat
@@ -8227,7 +8256,7 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
 
   host()->SetRootLayer(root);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_FALSE(host()->property_trees()->needs_rebuild);
 
   root->SetTransform(translate);
@@ -8317,7 +8346,7 @@ TEST_F(LayerTreeHostCommonTest, NumCopyRequestsInTargetSubtree) {
   greatgrandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
   child2->SetOpacity(0.f);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   EXPECT_EQ(root->num_copy_requests_in_target_subtree(), 2);
   EXPECT_EQ(child1->num_copy_requests_in_target_subtree(), 2);
@@ -8349,7 +8378,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   host()->GetLayerTree()->SetElementIdsForTesting();
 
   // Check the non-skipped case.
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   const LayerList* update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
@@ -8361,13 +8390,13 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   singular.matrix().set(0, 0, 0);
 
   child->SetTransform(singular);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
   child->SetTransform(gfx::Transform());
 
   child->SetHideLayerAndSubtree(true);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
   child->SetHideLayerAndSubtree(false);
@@ -8386,7 +8415,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   AddAnimationToElementWithPlayer(child->element_id(), timeline(),
                                   std::move(animation));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
@@ -8394,7 +8423,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
                                                animation_id);
   child->SetTransform(gfx::Transform());
   child->SetOpacity(0.f);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_FALSE(VerifyLayerInList(grandchild, update_list));
 
@@ -8403,7 +8432,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // processed anyhow.
   grandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 
@@ -8416,7 +8445,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   AddAnimationToElementWithExistingPlayer(child->element_id(), timeline(),
                                           std::move(animation));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   update_list = GetUpdateLayerList();
   EXPECT_TRUE(VerifyLayerInList(grandchild, update_list));
 }
@@ -8456,7 +8485,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   host_impl.active_tree()->SetElementIdsForTesting();
 
   // Check the non-skipped case.
-  // ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  // ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   // EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   // Now we will reset the visible rect from property trees for the grandchild,
@@ -8480,18 +8509,18 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
 
   child_ptr->test_properties()->transform = singular;
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->transform = gfx::Transform();
 
   child_ptr->test_properties()->hide_layer_and_subtree = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->hide_layer_and_subtree = false;
 
   child_ptr->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
       0.f, child_ptr->effect_tree_index(), child_ptr->layer_tree_impl());
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->opacity = 1.f;
 
@@ -8500,7 +8529,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   // invertible transform can be tested.
   child_ptr->test_properties()->transform = rotate;
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   root_ptr->test_properties()->transform = gfx::Transform();
   child_ptr->test_properties()->transform = gfx::Transform();
@@ -8508,7 +8537,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   root_ptr->test_properties()->opacity = 0.f;
   child_ptr->test_properties()->opacity = 0.7f;
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   root_ptr->test_properties()->opacity = 1.f;
 
@@ -8519,7 +8548,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   grandchild_ptr->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateEmptyRequest());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   host_impl.active_tree()->property_trees()->effect_tree.ClearCopyRequests();
@@ -8531,7 +8560,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   child_ptr->test_properties()->double_sided = true;
   child_ptr->test_properties()->transform = rotate_back_and_translate;
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->transform = gfx::Transform();
 
@@ -8561,7 +8590,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   root_ptr->test_properties()->transform = singular;
   child_ptr->test_properties()->transform = singular;
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
   host_impl.active_tree()->animation_host()->UnregisterPlayerForElement(
@@ -8652,7 +8681,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   host_impl.pending_tree()->SetElementIdsForTesting();
 
   // Check the non-skipped case.
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
@@ -8676,7 +8705,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   host_impl.active_tree()->animation_host()->UnregisterPlayerForElement(
@@ -8742,11 +8771,11 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   child->RequestCopyOfOutput(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_EQ(parent->num_unclipped_descendants(), 1u);
 
   EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
 }
 
@@ -8765,12 +8794,12 @@ TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
 
   host()->SetRootLayer(root);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_NE(-1, child->transform_tree_index());
 
   child->RemoveFromParent();
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_EQ(-1, child->transform_tree_index());
 }
 
@@ -9474,7 +9503,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
 
   root->SetBounds(gfx::Size(100, 100));
   child->SetBounds(gfx::Size(20, 20));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   // Changing the opacity from 1 to non-1 value should trigger rebuild of
   // property trees as a new effect node will be created.
@@ -9482,7 +9511,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   PropertyTrees* property_trees = host()->property_trees();
   EXPECT_TRUE(property_trees->needs_rebuild);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_NE(property_trees->effect_id_to_index_map.find(child->id()),
             property_trees->effect_id_to_index_map.end());
 
@@ -9492,7 +9521,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   property_trees = host()->property_trees();
   EXPECT_FALSE(property_trees->needs_rebuild);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_NE(property_trees->effect_id_to_index_map.find(child->id()),
             property_trees->effect_id_to_index_map.end());
 
@@ -9502,7 +9531,7 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   property_trees = host()->property_trees();
   EXPECT_TRUE(property_trees->needs_rebuild);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
   EXPECT_EQ(property_trees->effect_id_to_index_map.find(child->id()),
             property_trees->effect_id_to_index_map.end());
 }
@@ -9536,7 +9565,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   AddAnimationToElementWithExistingPlayer(animated->element_id(), timeline(),
                                           std::move(animation));
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   EffectTree& tree = root->GetLayerTree()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(animated->effect_tree_index());
@@ -9593,7 +9622,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   AddAnimationToElementWithExistingPlayer(animated->element_id(), timeline(),
                                           std::move(animation));
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
   TransformTree& tree = root->GetLayerTree()->property_trees()->transform_tree;
   TransformNode* node = tree.Node(animated->transform_tree_index());
@@ -9734,7 +9763,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
 
   host()->GetLayerTree()->RegisterViewportLayers(nullptr, page_scale_layer,
                                                  parent2, nullptr);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root1.get());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root1.get());
 
   const int kInvalidPropertyTreeNodeId = -1;
   const int kRootPropertyTreeNodeId = 0;

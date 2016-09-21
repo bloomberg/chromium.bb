@@ -558,8 +558,7 @@ void CalculateDrawPropertiesInternal(
           inputs->elastic_overscroll, inputs->page_scale_factor,
           inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
           inputs->device_transform, inputs->can_render_to_separate_surface,
-          inputs->verify_visible_rect_calculations, inputs->property_trees,
-          &visible_layer_list);
+          inputs->property_trees, &visible_layer_list);
 
       // Property trees are normally constructed on the main thread and
       // passed to compositor thread. Source to parent updates on them are not
@@ -601,8 +600,7 @@ void CalculateDrawPropertiesInternal(
           inputs->device_transform);
       draw_property_utils::ComputeVisibleRects(
           inputs->root_layer, inputs->property_trees,
-          inputs->can_render_to_separate_surface,
-          inputs->verify_visible_rect_calculations, &visible_layer_list);
+          inputs->can_render_to_separate_surface, &visible_layer_list);
       break;
     }
   }
@@ -627,6 +625,9 @@ void CalculateDrawPropertiesInternal(
   if (inputs->verify_clip_tree_calculations)
     draw_property_utils::VerifyClipTreeCalculations(visible_layer_list,
                                                     inputs->property_trees);
+  if (inputs->verify_visible_rect_calculations)
+    draw_property_utils::VerifyVisibleRectsCalculations(visible_layer_list,
+                                                        inputs->property_trees);
   if (inputs->verify_transform_tree_calculations)
     draw_property_utils::VerifyTransformTreeCalculations(
         visible_layer_list, inputs->property_trees);
