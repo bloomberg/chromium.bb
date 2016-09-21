@@ -245,19 +245,17 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+    // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
+    // Returns undefined without setting the value if the value is invalid.
+    TrackExceptionState trackExceptionState;
     const char* validValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
         "EnumValue3",
     };
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
-        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
-        // http://heycam.github.io/webidl/#idl-enums
-        // Assignment of an invalid string value to an attribute is ignored,
-        // while passing such a value as an operation argument results in
-        // an exception being thrown.
-        exceptionState.clearException();
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", trackExceptionState)) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
         return;
     }
     impl->setTestEnumAttribute(cppValue);
@@ -1131,17 +1129,15 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+    // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
+    // Returns undefined without setting the value if the value is invalid.
+    TrackExceptionState trackExceptionState;
     const char* validValues[] = {
         "foo",
         "bar",
     };
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", exceptionState)) {
-        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
-        // http://heycam.github.io/webidl/#idl-enums
-        // Assignment of an invalid string value to an attribute is ignored,
-        // while passing such a value as an operation argument results in
-        // an exception being thrown.
-        exceptionState.clearException();
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", trackExceptionState)) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
         return;
     }
     TestInterfacePartial::setPartialPartialEnumTypeAttribute(*impl, cppValue);

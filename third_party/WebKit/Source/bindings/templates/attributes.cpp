@@ -304,19 +304,12 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
         return;
     }
     {% elif attribute.enum_values %}
-    {# Setter ignores invalid enum values:
-       http://www.w3.org/TR/WebIDL/#idl-enums #}
-    {% if not attribute.has_setter_exception_state %}
-    NonThrowableExceptionState exceptionState;
-    {% endif %}
+    // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
+    // Returns undefined without setting the value if the value is invalid.
+    TrackExceptionState trackExceptionState;
     {{declare_enum_validation_variable(attribute.enum_values) | indent}}
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", exceptionState)) {
-        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
-        // http://heycam.github.io/webidl/#idl-enums
-        // Assignment of an invalid string value to an attribute is ignored,
-        // while passing such a value as an operation argument results in
-        // an exception being thrown.
-        exceptionState.clearException();
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", trackExceptionState)) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
         return;
     }
     {% endif %}
