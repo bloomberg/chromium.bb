@@ -24,6 +24,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
+#include "media/base/stream_parser.h"
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
 #include "media/base/time_source.h"
@@ -373,6 +374,29 @@ class MockCdmContext : public CdmContext {
   int cdm_id_ = CdmContext::kInvalidCdmId;
 
   DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
+};
+
+class MockStreamParser : public StreamParser {
+ public:
+  MockStreamParser();
+  ~MockStreamParser() override;
+
+  // StreamParser interface
+  MOCK_METHOD8(
+      Init,
+      void(const InitCB& init_cb,
+           const NewConfigCB& config_cb,
+           const NewBuffersCB& new_buffers_cb,
+           bool ignore_text_track,
+           const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+           const NewMediaSegmentCB& new_segment_cb,
+           const EndMediaSegmentCB& end_of_segment_cb,
+           const scoped_refptr<MediaLog>& media_log));
+  MOCK_METHOD0(Flush, void());
+  MOCK_METHOD2(Parse, bool(const uint8_t*, int));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockStreamParser);
 };
 
 }  // namespace media

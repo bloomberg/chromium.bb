@@ -55,10 +55,6 @@ ACTION_P(ReturnBuffer, buffer) {
   arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
 }
 
-MATCHER(IsEndOfStream, "end of stream") {
-  return arg->end_of_stream();
-}
-
 }  // namespace
 
 class DecryptingDemuxerStreamTest : public testing::Test {

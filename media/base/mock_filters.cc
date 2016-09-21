@@ -142,4 +142,8 @@ void MockCdmContext::set_cdm_id(int cdm_id) {
   cdm_id_ = cdm_id;
 }
 
+MockStreamParser::MockStreamParser() {}
+
+MockStreamParser::~MockStreamParser() {}
+
 }  // namespace media

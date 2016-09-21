@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/non_thread_safe.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -145,6 +146,101 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 // Verify if a fake video DecoderBuffer is valid.
 bool VerifyFakeVideoBufferForTest(const scoped_refptr<DecoderBuffer>& buffer,
                                   const VideoDecoderConfig& config);
+
+MATCHER_P(HasTimestamp, timestamp_in_ms, "") {
+  return arg.get() && !arg->end_of_stream() &&
+         arg->timestamp().InMilliseconds() == timestamp_in_ms;
+}
+
+MATCHER(IsEndOfStream, "") {
+  return arg.get() && arg->end_of_stream();
+}
+
+MATCHER_P(SegmentMissingFrames, track_id, "") {
+  return CONTAINS_STRING(
+      arg, "Media segment did not contain any coded frames for track " +
+               std::string(track_id));
+}
+
+MATCHER(StreamParsingFailed, "") {
+  return CONTAINS_STRING(arg, "Append: stream parsing failed.");
+}
+
+MATCHER_P(FoundStream, stream_type_string, "") {
+  return CONTAINS_STRING(
+             arg, "found_" + std::string(stream_type_string) + "_stream") &&
+         CONTAINS_STRING(arg, "true");
+}
+
+MATCHER_P2(CodecName, stream_type_string, codec_string, "") {
+  return CONTAINS_STRING(arg,
+                         std::string(stream_type_string) + "_codec_name") &&
+         CONTAINS_STRING(arg, std::string(codec_string));
+}
+
+MATCHER_P2(InitSegmentMismatchesMimeType, stream_type, codec_name, "") {
+  return CONTAINS_STRING(arg, std::string(stream_type) + " stream codec " +
+                                  std::string(codec_name) +
+                                  " doesn't match SourceBuffer codecs.");
+}
+
+MATCHER_P(InitSegmentMissesExpectedTrack, missing_codec, "") {
+  return CONTAINS_STRING(arg, "Initialization segment misses expected " +
+                                  std::string(missing_codec) + " track.");
+}
+
+MATCHER_P2(UnexpectedTrack, track_type, id, "") {
+  return CONTAINS_STRING(arg, std::string("Got unexpected ") + track_type +
+                                  " track track_id=" + id);
+}
+
+MATCHER_P2(GeneratedSplice, duration_microseconds, time_microseconds, "") {
+  return CONTAINS_STRING(arg, "Generated splice of overlap duration " +
+                                  base::IntToString(duration_microseconds) +
+                                  "us into new buffer at " +
+                                  base::IntToString(time_microseconds) + "us.");
+}
+
+MATCHER_P2(SkippingSpliceAtOrBefore,
+           new_microseconds,
+           existing_microseconds,
+           "") {
+  return CONTAINS_STRING(
+      arg, "Skipping splice frame generation: first new buffer at " +
+               base::IntToString(new_microseconds) +
+               "us begins at or before existing buffer at " +
+               base::IntToString(existing_microseconds) + "us.");
+}
+
+MATCHER_P(SkippingSpliceAlreadySpliced, time_microseconds, "") {
+  return CONTAINS_STRING(
+      arg, "Skipping splice frame generation: overlapped buffers at " +
+               base::IntToString(time_microseconds) +
+               "us are in a previously buffered splice.");
+}
+
+MATCHER_P(WebMSimpleBlockDurationEstimated, estimated_duration_ms, "") {
+  return CONTAINS_STRING(arg, "Estimating WebM block duration to be " +
+                                  base::IntToString(estimated_duration_ms) +
+                                  "ms for the last (Simple)Block in the "
+                                  "Cluster for this Track. Use BlockGroups "
+                                  "with BlockDurations at the end of each "
+                                  "Track in a Cluster to avoid estimation.");
+}
+
+MATCHER_P(WebMNegativeTimecodeOffset, timecode_string, "") {
+  return CONTAINS_STRING(arg, "Got a block with negative timecode offset " +
+                                  std::string(timecode_string));
+}
+
+MATCHER(WebMOutOfOrderTimecode, "") {
+  return CONTAINS_STRING(
+      arg, "Got a block with a timecode before the previous block.");
+}
+
+MATCHER(WebMClusterBeforeFirstInfo, "") {
+  return CONTAINS_STRING(arg, "Found Cluster element before Info.");
+}
 
 }  // namespace media
 

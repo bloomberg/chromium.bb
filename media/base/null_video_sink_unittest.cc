@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/gmock_callback_support.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,10 +20,6 @@ using testing::DoAll;
 using testing::Return;
 
 namespace media {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 class NullVideoSinkTest : public testing::Test,
                           public VideoRendererSink::RenderCallback {

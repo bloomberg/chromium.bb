@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/layers/video_frame_provider.h"
+#include "media/base/gmock_callback_support.h"
 #include "media/base/video_frame.h"
 #include "media/blink/video_frame_compositor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,10 +19,6 @@ using testing::DoAll;
 using testing::Return;
 
 namespace media {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 class VideoFrameCompositorTest : public testing::Test,
                                  public cc::VideoFrameProvider::Client,

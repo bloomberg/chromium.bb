@@ -28,6 +28,10 @@ ACTION_TEMPLATE(RunClosure,
   ::std::tr1::get<k>(args).Run();
 }
 
+ACTION_P(RunClosure, closure) {
+  closure.Run();
+}
+
 // Various overloads for RunCallback<N>().
 //
 // The RunCallback<N>(p1, p2, ..., p_k) action invokes Run() method on the N-th
