@@ -375,6 +375,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private boolean mUnselectAllOnActionModeDismiss;
     private boolean mPreserveSelectionOnNextLossOfFocus;
     private WebActionModeCallback.ActionHandler mActionHandler;
+
+    // Selection rectangle in DIP.
     private final Rect mSelectionRect = new Rect();
 
     // Whether native accessibility, i.e. without any script injection, is allowed.
@@ -1965,11 +1967,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 }
 
                 @Override
-                public void onGetContentRect(Rect outRect) {
+                public void onGetContentRect(Rect outRectPix) {
+                    final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
+                    outRectPix.set((int) (mSelectionRect.left * deviceScale),
+                            (int) (mSelectionRect.top * deviceScale),
+                            (int) (mSelectionRect.right * deviceScale),
+                            (int) (mSelectionRect.bottom * deviceScale));
+
                     // The selection coordinates are relative to the content viewport, but we need
                     // coordinates relative to the containing View.
-                    outRect.set(mSelectionRect);
-                    outRect.offset(0, (int) mRenderCoordinates.getContentOffsetYPix());
+                    outRectPix.offset(0, (int) mRenderCoordinates.getContentOffsetYPix());
                 }
 
                 @Override
@@ -2109,6 +2116,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return mHasInsertion;
     }
 
+    // All coordinates are in DIP.
     @CalledByNative
     private void onSelectionEvent(
             int eventType, int xAnchor, int yAnchor, int left, int top, int right, int bottom) {
@@ -2195,7 +2203,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 assert false : "Invalid selection event type.";
         }
         if (mContextualSearchClient != null) {
-            mContextualSearchClient.onSelectionEvent(eventType, xAnchor, yAnchor);
+            final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
+            int xAnchorPix = (int) (xAnchor * deviceScale);
+            int yAnchorPix = (int) (yAnchor * deviceScale);
+            mContextualSearchClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
         }
     }
 
@@ -2495,17 +2506,23 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return false;
     }
 
+    // Coordinates are in DIP.
     private boolean showPastePopup(int x, int y) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
             return false;
         }
 
         if (!mHasInsertion || !canPaste()) return false;
-        final float topControlsShown = mRenderCoordinates.getContentOffsetYPix();
+
         PastePopupMenu pastePopupMenu = getPastePopup();
         if (pastePopupMenu == null) return false;
+
+        final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
+        final int xPix = (int) (x * deviceScale);
+        final int yPix = (int) (y * deviceScale);
+        final float topControlsShownPix = mRenderCoordinates.getContentOffsetYPix();
         try {
-            pastePopupMenu.show(x, (int) (y + topControlsShown));
+            pastePopupMenu.show(xPix, (int) (yPix + topControlsShownPix));
         } catch (WindowManager.BadTokenException e) {
             return false;
         }

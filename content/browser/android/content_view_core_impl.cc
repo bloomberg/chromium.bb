@@ -646,13 +646,10 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
   if (j_obj.is_null())
     return;
 
-  gfx::PointF selection_anchor_pix =
-      gfx::ScalePoint(selection_anchor, dpi_scale());
-  gfx::RectF selection_rect_pix = gfx::ScaleRect(selection_rect, dpi_scale());
   Java_ContentViewCore_onSelectionEvent(
-      env, j_obj, event, selection_anchor_pix.x(), selection_anchor_pix.y(),
-      selection_rect_pix.x(), selection_rect_pix.y(),
-      selection_rect_pix.right(), selection_rect_pix.bottom());
+      env, j_obj, event, selection_anchor.x(), selection_anchor.y(),
+      selection_rect.x(), selection_rect.y(), selection_rect.right(),
+      selection_rect.bottom());
 }
 
 bool ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
@@ -666,9 +663,8 @@ bool ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_ContentViewCore_showPastePopupWithFeedback(
-      env, obj, static_cast<jint>(x_dip * dpi_scale()),
-      static_cast<jint>(y_dip * dpi_scale()));
+  return Java_ContentViewCore_showPastePopupWithFeedback(env, obj, x_dip,
+                                                         y_dip);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url,
