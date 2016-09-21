@@ -23,7 +23,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "manifest_no_type_caps_test_page.html",
+  "start_url": "manifest_test_page.html",
   "display": "standalone",
   "orientation": "landscape"
 }

@@ -136,6 +136,14 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  // Returns a test server URL to a page controlled by a service worker with
+  // |manifest_url| injected as the manifest tag.
+  std::string GetURLOfPageWithServiceWorkerAndManifest(
+      const std::string& manifest_url) {
+    return "/banners/manifest_test_page.html?manifest=" +
+           embedded_test_server()->GetURL(manifest_url).spec();
+  }
+
   void NavigateAndRunInstallableManager(CallbackTester* tester,
                                         const InstallableParams& params,
                                         const std::string& url) {
@@ -212,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifest404) {
       new CallbackTester(run_loop.QuitClosure()));
 
   NavigateAndRunInstallableManager(tester.get(), GetManifestParams(),
-                                   "/banners/manifest_bad_link.html");
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_missing.json"));
   run_loop.Run();
 
   // The installable manager should return a manifest URL even if it 404s.
@@ -523,7 +532,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
       new CallbackTester(run_loop.QuitClosure()));
 
   NavigateAndRunInstallableManager(tester.get(), GetIconParams(),
-                                   "/banners/manifest_bad_icon_test_page.html");
+                                   GetURLOfPageWithServiceWorkerAndManifest(
+                                       "/banners/manifest_bad_icon.json"));
   run_loop.Run();
 
   EXPECT_FALSE(tester->manifest().IsEmpty());

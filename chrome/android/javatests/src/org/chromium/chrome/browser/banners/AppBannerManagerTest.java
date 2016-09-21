@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationList
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -69,8 +70,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     private static final String WEB_APP_PATH =
             "/chrome/test/data/banners/manifest_test_page.html";
 
-    private static final String WEB_APP_SHORT_TITLE_PATH =
-            "/chrome/test/data/banners/manifest_short_name_only_test_page.html";
+    private static final String WEB_APP_SHORT_TITLE_MANIFEST =
+            "/chrome/test/data/banners/manifest_short_name_only.json";
 
     private static final String WEB_APP_TITLE = "Manifest test app";
 
@@ -472,7 +473,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @Feature({"AppBanners"})
     @RetryOnFailure
     public void testBannerFallsBackToShortName() throws Exception {
-        triggerWebAppBanner(mTestServer.getURL(WEB_APP_SHORT_TITLE_PATH), WEB_APP_SHORT_TITLE);
+        triggerWebAppBanner(WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
+                                    mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
+                WEB_APP_SHORT_TITLE);
     }
 
     @SmallTest

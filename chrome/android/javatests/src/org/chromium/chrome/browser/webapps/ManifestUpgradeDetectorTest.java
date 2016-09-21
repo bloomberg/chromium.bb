@@ -14,7 +14,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -30,7 +30,7 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
 
     // Data contained in {@link WEBAPK_MANIFEST_URL}.
     private static final String WEBAPK_START_URL =
-            "/chrome/test/data/banners/manifest_one_icon_test_page.html";
+            "/chrome/test/data/banners/manifest_test_page.html";
     private static final String WEBAPK_SCOPE_URL = "/chrome/test/data/banners/";
     private static final String WEBAPK_NAME = "Manifest test app";
     private static final String WEBAPK_SHORT_NAME = "Manifest test app";
@@ -157,11 +157,11 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         // URL canonicalization should replace "%74" with 't'.
         CreationData creationData = new CreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
-                "/chrome/test/data/banners/manifest_one_icon_%74est_page.html");
+                "/chrome/test/data/banners/manifest_%74est_page.html");
         startManifestUpgradeDetector(creationData, waiter);
 
-        TabLoadObserver tabLoadObserver = new TabLoadObserver(mTab);
-        tabLoadObserver.fullyLoadUrl(mTestServer.getURL(WEBAPK_START_URL));
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
         waiter.waitForCallback(0);
 
         assertEquals(WEBAPK_NAME, waiter.name());
@@ -179,11 +179,11 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         // URL canonicalization should replace "%62" with 'b'.
         CreationData creationData = new CreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
-                "/chrome/test/data/banners/manifest_one_icon_%62est_page.html");
+                "/chrome/test/data/banners/manifest_%62est_page.html");
         startManifestUpgradeDetector(creationData, waiter);
 
-        TabLoadObserver tabLoadObserver = new TabLoadObserver(mTab);
-        tabLoadObserver.fullyLoadUrl(mTestServer.getURL(WEBAPK_START_URL));
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
         waiter.waitForCallback(0);
 
         assertEquals(WEBAPK_NAME, waiter.name());

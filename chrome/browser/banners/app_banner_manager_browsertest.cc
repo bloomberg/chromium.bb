@@ -120,6 +120,14 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                                 (manager->will_show() ? 1 : 0));
   }
 
+  // Returns a test server URL to a page controlled by a service worker with
+  // |manifest_url| injected as the manifest tag.
+  std::string GetURLOfPageWithServiceWorkerAndManifest(
+      const std::string& manifest_url) {
+    return "/banners/manifest_test_page.html?manifest=" +
+           embedded_test_server()->GetURL(manifest_url).spec();
+  }
+
   void RunBannerTest(const std::string& url,
                      ui::PageTransition transition,
                      unsigned int unshown_repetitions,
@@ -344,13 +352,15 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        WebAppBannerNoTypeInManifest) {
-  RunBannerTest("/banners/manifest_no_type_test_page.html",
+  RunBannerTest(GetURLOfPageWithServiceWorkerAndManifest(
+                    "/banners/manifest_no_type.json"),
                 ui::PAGE_TRANSITION_TYPED, 1, SHOWING_WEB_APP_BANNER, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        WebAppBannerNoTypeInManifestCapsExtension) {
-  RunBannerTest("/banners/manifest_no_type_caps_test_page.html",
+  RunBannerTest(GetURLOfPageWithServiceWorkerAndManifest(
+                    "/banners/manifest_no_type_caps.json"),
                 ui::PAGE_TRANSITION_TYPED, 1, SHOWING_WEB_APP_BANNER, true);
 }
 
@@ -360,8 +370,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, NoManifest) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, MissingManifest) {
-  RunBannerTest("/banners/manifest_bad_link.html", ui::PAGE_TRANSITION_TYPED, 0,
-                MANIFEST_EMPTY, false);
+  RunBannerTest(GetURLOfPageWithServiceWorkerAndManifest(
+                    "/banners/manifest_missing.json"),
+                ui::PAGE_TRANSITION_TYPED, 0, MANIFEST_EMPTY, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CancelBannerDirect) {

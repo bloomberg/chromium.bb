@@ -22,7 +22,7 @@
       "sizes": "192x192"
     }
   ],
-  "start_url": "manifest_no_type_test_page.html",
+  "start_url": "manifest_test_page.html",
   "display": "standalone",
   "orientation": "landscape"
 }

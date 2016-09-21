@@ -37,6 +37,7 @@ android_library("chrome_java_test_support") {
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModel.java",
     "javatests/src/org/chromium/chrome/test/util/browser/tabmodel/MockTabModelSelector.java",
     "javatests/src/org/chromium/chrome/test/util/browser/TabTitleObserver.java",
+    "javatests/src/org/chromium/chrome/test/util/browser/WebappTestPage.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeDisableIf.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeRestriction.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeSigninUtils.java",

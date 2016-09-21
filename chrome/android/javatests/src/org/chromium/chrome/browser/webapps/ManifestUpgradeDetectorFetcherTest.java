@@ -14,7 +14,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -22,10 +22,6 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests the ManifestUpgradeDetectorFetcher.
  */
 public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTestBase {
-
-    private static final String PAGE_URL1 = "/chrome/test/data/banners/manifest_test_page.html";
-    private static final String PAGE_URL2 =
-            "/chrome/test/data/banners/manifest_short_name_only_test_page.html";
 
     // Data for {@link PAGE_URL1}'s Web Manifest.
     private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
@@ -108,8 +104,8 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
         startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL1), waiter);
 
-        TabLoadObserver tabLoadObserver = new TabLoadObserver(mTab);
-        tabLoadObserver.fullyLoadUrl(mTestServer.getURL(PAGE_URL1));
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEB_MANIFEST_URL1);
         waiter.waitForCallback(0);
 
         assertEquals(WEB_MANIFEST_NAME1, waiter.name());
@@ -128,9 +124,10 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
         startManifestUpgradeDetectorFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
 
-        TabLoadObserver tabLoadObserver = new TabLoadObserver(mTab);
-        tabLoadObserver.fullyLoadUrl(mTestServer.getURL(PAGE_URL1));
-        tabLoadObserver.fullyLoadUrl(mTestServer.getURL(PAGE_URL2));
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEB_MANIFEST_URL1);
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, WEB_MANIFEST_URL2);
         waiter.waitForCallback(0);
 
         assertEquals(WEB_MANIFEST_NAME2, waiter.name());

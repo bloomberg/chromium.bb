@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -336,8 +337,8 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @Feature("{Webapp}")
     public void testAddShortcutManifestFetchTimesOutWhenWebApkEnabled() throws Exception {
         ChromeWebApkHost.initForTesting(true);
-        loadUrl(mTestServer.getURL("/chrome/test/data/banners/manifest_times_out_test_page.html"),
-                MANIFEST_TITLE);
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, mTestServer.getURL("/slow?10000"));
         checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
     }
 
@@ -345,8 +346,8 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @Feature("{Webapp}")
     public void testAddShortcutManifestFetchTimesOutWhenWebApkDisabled() throws Exception {
         ChromeWebApkHost.initForTesting(false);
-        loadUrl(mTestServer.getURL("/chrome/test/data/banners/manifest_times_out_test_page.html"),
-                MANIFEST_TITLE);
+        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+                mTestServer, mTab, mTestServer.getURL("/slow?10000"));
         checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
     }
 
