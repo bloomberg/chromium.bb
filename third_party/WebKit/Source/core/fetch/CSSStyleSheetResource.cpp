@@ -120,8 +120,10 @@ void CSSStyleSheetResource::checkNotify()
         m_decodedSheetText = decodedText();
 
     ResourceClientWalker<StyleSheetResourceClient> w(clients());
-    while (StyleSheetResourceClient* c = w.next())
+    while (StyleSheetResourceClient* c = w.next()) {
+        markClientFinished(c);
         c->setCSSStyleSheet(resourceRequest().url(), response().url(), encoding(), this);
+    }
     // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
     m_decodedSheetText = String();
 }

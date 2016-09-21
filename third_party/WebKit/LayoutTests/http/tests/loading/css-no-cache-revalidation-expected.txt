@@ -1,0 +1,33 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+frame "A" - didStartProvisionalLoadForFrame
+main frame - didFinishDocumentLoadForFrame
+frame "A" - didCommitLoadForFrame
+frame "A" - didFinishDocumentLoadForFrame
+frame "A" - didFinishDocumentLoadForFrame
+frame "A" - didHandleOnloadEventsForFrame
+frame "A" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+frame "B" - didStartProvisionalLoadForFrame
+frame "B" - didCommitLoadForFrame
+frame "B" - didFinishDocumentLoadForFrame
+frame "B" - didFinishDocumentLoadForFrame
+frame "B" - didHandleOnloadEventsForFrame
+frame "B" - didFinishLoadForFrame
+frame "A" - didStartProvisionalLoadForFrame
+frame "A" - didCommitLoadForFrame
+frame "A" - didFinishDocumentLoadForFrame
+frame "A" - didFinishDocumentLoadForFrame
+frame "A" - didHandleOnloadEventsForFrame
+frame "A" - didFinishLoadForFrame
+frame "B" - didStartProvisionalLoadForFrame
+frame "B" - didCommitLoadForFrame
+frame "B" - didFinishDocumentLoadForFrame
+frame "B" - didFinishDocumentLoadForFrame
+frame "B" - didHandleOnloadEventsForFrame
+frame "B" - didFinishLoadForFrame
+This is a testharness.js-based test.
+PASS Revalidated CSS should not be unapplied on existing clients. 
+Harness: the test ran to completion.
+
