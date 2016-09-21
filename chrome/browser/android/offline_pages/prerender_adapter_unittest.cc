@@ -110,7 +110,6 @@ class PrerenderAdapterTest : public testing::Test,
   ~PrerenderAdapterTest() override;
 
   // PrerenderAdapter::Observer implementation:
-  void OnPrerenderStart() override;
   void OnPrerenderStopLoading() override;
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;
@@ -124,7 +123,6 @@ class PrerenderAdapterTest : public testing::Test,
   }
   Profile* profile() { return &profile_; }
   PrerenderManager* prerender_manager() { return prerender_manager_; }
-  bool observer_start_called() const { return observer_start_called_; }
   bool observer_stop_loading_called() const {
     return observer_stop_loading_called_;
   }
@@ -139,7 +137,6 @@ class PrerenderAdapterTest : public testing::Test,
   std::unique_ptr<PrerenderAdapter> adapter_;
   StubPrerenderContentsFactory* prerender_contents_factory_;
   PrerenderManager* prerender_manager_;
-  bool observer_start_called_;
   bool observer_stop_loading_called_;
   bool observer_dom_content_loaded_called_;
   bool observer_stop_called_;
@@ -150,14 +147,9 @@ class PrerenderAdapterTest : public testing::Test,
 PrerenderAdapterTest::PrerenderAdapterTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       prerender_manager_(nullptr),
-      observer_start_called_(false),
       observer_stop_loading_called_(false),
       observer_dom_content_loaded_called_(false),
       observer_stop_called_(false) {}
-
-void PrerenderAdapterTest::OnPrerenderStart() {
-  observer_start_called_ = true;
-}
 
 PrerenderAdapterTest::~PrerenderAdapterTest() {
   if (prerender_manager_)
@@ -187,7 +179,6 @@ void PrerenderAdapterTest::SetUp() {
         prerender_contents_factory_);
     prerender_manager_->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   }
-  observer_start_called_ = false;
   observer_stop_loading_called_ = false;
   observer_dom_content_loaded_called_ = false;
   observer_stop_called_ = false;
@@ -238,15 +229,11 @@ TEST_F(PrerenderAdapterTest, StartPrerenderSucceeds) {
   EXPECT_TRUE(prerender_contents_factory()->create_prerender_contents_called());
   EXPECT_NE(nullptr, prerender_contents_factory()->last_prerender_contents());
   EXPECT_TRUE(adapter()->IsActive());
-  EXPECT_FALSE(observer_start_called());
   EXPECT_FALSE(observer_stop_loading_called());
   EXPECT_FALSE(observer_dom_content_loaded_called());
   EXPECT_FALSE(observer_stop_called());
 
   // Exercise observer event call paths.
-  prerender_contents_factory()->last_prerender_contents()->ReportStartEvent();
-  // PumpLoop();
-  EXPECT_TRUE(observer_start_called());
   prerender_contents_factory()
       ->last_prerender_contents()
       ->ReportDomContentEvent();

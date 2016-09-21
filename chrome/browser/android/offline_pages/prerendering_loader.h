@@ -76,7 +76,6 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
       std::unique_ptr<PrerenderAdapter> prerender_adapter);
 
   // PrerenderAdapter::Observer implementation:
-  void OnPrerenderStart() override;
   void OnPrerenderStopLoading() override;
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;

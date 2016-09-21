@@ -41,13 +41,17 @@ bool PrerenderAdapter::StartPrerender(
       prerender::PrerenderManagerFactory::GetForBrowserContext(browser_context);
   DCHECK(manager);
 
-  // Start prerendering the url and capture the handle for the prerendering.
+  // AddPrerenderForOffline() triggers the start event, and it is before the
+  // observer is set.
   active_handle_ =
       manager->AddPrerenderForOffline(url, session_storage_namespace, size);
   if (!active_handle_)
     return false;
+  DCHECK(active_handle_->contents());
+  DCHECK(active_handle_->contents()->prerendering_has_started());
 
   active_handle_->SetObserver(this);
+
   return true;
 }
 
@@ -80,8 +84,8 @@ void PrerenderAdapter::DestroyActive() {
 }
 
 void PrerenderAdapter::OnPrerenderStart(prerender::PrerenderHandle* handle) {
-  DCHECK_EQ(active_handle_.get(), handle);
-  observer_->OnPrerenderStart();
+  // Not expected as the start event will happen before the observer is set.
+  NOTREACHED();
 }
 
 void PrerenderAdapter::OnPrerenderStopLoading(

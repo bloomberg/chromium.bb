@@ -218,7 +218,6 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
       gurl,
       base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
 
-  test_adapter()->GetObserver()->OnPrerenderStart();
   PumpLoop();
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());

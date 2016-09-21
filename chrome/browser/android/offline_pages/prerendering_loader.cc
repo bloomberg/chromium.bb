@@ -58,7 +58,7 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
       new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
   callback_ = callback;
   session_contents_.swap(new_web_contents);
-  state_ = State::PENDING;
+  state_ = State::LOADING;
   return true;
 }
 
@@ -86,12 +86,6 @@ void PrerenderingLoader::SetAdapterForTesting(
     std::unique_ptr<PrerenderAdapter> prerender_adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   adapter_ = std::move(prerender_adapter);
-}
-
-void PrerenderingLoader::OnPrerenderStart() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(state_ == State::PENDING);
-  state_ = State::LOADING;
 }
 
 void PrerenderingLoader::OnPrerenderStopLoading() {

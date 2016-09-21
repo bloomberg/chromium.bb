@@ -30,9 +30,6 @@ class PrerenderAdapter : public prerender::PrerenderHandle::Observer {
   // An observer of PrerenderHandle events that does not expose the handle.
   class Observer {
    public:
-    // Signals that the prerender has started running.
-    virtual void OnPrerenderStart() = 0;
-
     // Signals that the prerender has had its load event.
     virtual void OnPrerenderStopLoading() = 0;
 
