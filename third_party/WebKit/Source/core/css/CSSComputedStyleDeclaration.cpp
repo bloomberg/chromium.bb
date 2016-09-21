@@ -355,11 +355,9 @@ static const Vector<CSSPropertyID>& computableProperties()
 
 CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(Node* n, bool allowVisitedStyle, const String& pseudoElementName)
     : m_node(n)
+    , m_pseudoElementSpecifier(CSSSelector::parsePseudoId(pseudoElementName))
     , m_allowVisitedStyle(allowVisitedStyle)
 {
-    unsigned nameWithoutColonsStart = pseudoElementName[0] == ':' ? (pseudoElementName[1] == ':' ? 2 : 1) : 0;
-    m_pseudoElementSpecifier = CSSSelector::pseudoId(CSSSelector::parsePseudoType(
-        AtomicString(pseudoElementName.substring(nameWithoutColonsStart)), false));
 }
 
 CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration()

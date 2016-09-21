@@ -468,6 +468,13 @@ CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name, b
     return PseudoUnknown;
 }
 
+PseudoId CSSSelector::parsePseudoId(const String& name)
+{
+    unsigned nameWithoutColonsStart = name[0] == ':' ? (name[1] == ':' ? 2 : 1) : 0;
+    return pseudoId(parsePseudoType(
+        AtomicString(name.substring(nameWithoutColonsStart)), false));
+}
+
 void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
 {
     ASSERT(m_match == PseudoClass || m_match == PseudoElement || m_match == PagePseudoClass);
