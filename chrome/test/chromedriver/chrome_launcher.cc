@@ -62,9 +62,10 @@
 namespace {
 
 const char* const kCommonSwitches[] = {
+  "disable-infobars",
   "disable-popup-blocking",
   "ignore-certificate-errors",
-  "metrics-recording-only"
+  "metrics-recording-only",
 };
 
 const char* const kDesktopSwitches[] = {
@@ -82,12 +83,12 @@ const char* const kDesktopSwitches[] = {
   "log-level=0",
   "password-store=basic",
   "use-mock-keychain",
-  "test-type=webdriver"
+  "test-type=webdriver",
 };
 
 const char* const kAndroidSwitches[] = {
   "disable-fre",
-  "enable-remote-debugging"
+  "enable-remote-debugging",
 };
 
 #if defined(OS_LINUX)
