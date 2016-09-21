@@ -5444,7 +5444,6 @@ void RenderFrameImpl::OpenURL(
   if (is_history_navigation_in_new_child) {
     DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
     params.is_history_navigation_in_new_child = true;
-    params.frame_unique_name = frame_->uniqueName().utf8();
   }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));

@@ -443,16 +443,12 @@ bool NavigatorImpl::NavigateToPendingEntry(
 }
 
 bool NavigatorImpl::NavigateNewChildFrame(
-    RenderFrameHostImpl* render_frame_host,
-    const std::string& unique_name) {
+    RenderFrameHostImpl* render_frame_host) {
   NavigationEntryImpl* entry =
       controller_->GetEntryWithUniqueID(render_frame_host->nav_entry_id());
   if (!entry)
     return false;
 
-  // TODO(creis): Remove unique_name from the IPC, now that we can rely on the
-  // replication state.
-  DCHECK_EQ(render_frame_host->frame_tree_node()->unique_name(), unique_name);
   FrameNavigationEntry* frame_entry =
       entry->GetFrameEntry(render_frame_host->frame_tree_node());
   if (!frame_entry)

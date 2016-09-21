@@ -61,8 +61,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                               const FrameNavigationEntry& frame_entry,
                               ReloadType reload_type,
                               bool is_same_document_history_load) override;
-  bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
-                             const std::string& unique_name) override;
+  bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const GURL& url,
                       bool uses_post,

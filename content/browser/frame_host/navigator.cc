@@ -25,8 +25,7 @@ bool Navigator::NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
   return false;
 }
 
-bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
-                                      const std::string& unique_name) {
+bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host) {
   return false;
 }
 
