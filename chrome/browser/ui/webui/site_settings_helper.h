@@ -15,6 +15,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/common/extension.h"
 
 class ChooserContextBase;
 class HostContentSettingsMap;
@@ -40,6 +41,7 @@ extern const char kSetting[];
 extern const char kOrigin[];
 extern const char kPolicyProviderId[];
 extern const char kSource[];
+extern const char kIncognito[];
 extern const char kEmbeddingOrigin[];
 extern const char kPreferencesSource[];
 
@@ -54,6 +56,18 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
 
 // Gets a string identifier for the group name.
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
+
+// Helper function to construct a dictonary for an exception.
+std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
+    const ContentSettingsPattern& pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    const ContentSetting& setting,
+    const std::string& provider_name,
+    bool incognito);
+
+// Helper function to construct a dictonary for a hosted app exception.
+void AddExceptionForHostedApp(const std::string& url_pattern,
+    const extensions::Extension& app, base::ListValue* exceptions);
 
 // Fills in |exceptions| with Values for the given |type| from |map|.
 // If |filter| is not null then only exceptions with matching primary patterns

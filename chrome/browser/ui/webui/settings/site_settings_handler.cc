@@ -40,8 +40,6 @@ namespace settings {
 
 namespace {
 
-const char kAppName[] = "appName";
-const char kAppId[] = "appId";
 const char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
@@ -59,25 +57,6 @@ extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
     return extensions::APIPermission::APIPermission::kNotifications;
 
   return extensions::APIPermission::APIPermission::kInvalid;
-}
-
-// Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
-// the web extent of a hosted |app|.
-void AddExceptionForHostedApp(const std::string& url_pattern,
-    const extensions::Extension& app, base::ListValue* exceptions) {
-  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
-
-  std::string setting_string =
-      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
-  DCHECK(!setting_string.empty());
-
-  exception->SetString(site_settings::kSetting, setting_string);
-  exception->SetString(site_settings::kOrigin, url_pattern);
-  exception->SetString(site_settings::kEmbeddingOrigin, url_pattern);
-  exception->SetString(site_settings::kSource, "HostedApp");
-  exception->SetString(kAppName, app.name());
-  exception->SetString(kAppId, app.id());
-  exceptions->Append(std::move(exception));
 }
 
 // Asks the |profile| for hosted apps which have the |permission| set, and
@@ -98,7 +77,8 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
     for (extensions::URLPatternSet::const_iterator pattern = web_extent.begin();
          pattern != web_extent.end(); ++pattern) {
       std::string url_pattern = pattern->GetAsString();
-      AddExceptionForHostedApp(url_pattern, *extension->get(), exceptions);
+      site_settings::AddExceptionForHostedApp(
+          url_pattern, *extension->get(), exceptions);
     }
     // Retrieve the launch URL.
     GURL launch_url =
@@ -106,7 +86,8 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
     // Skip adding the launch URL if it is part of the web extent.
     if (web_extent.MatchesURL(launch_url))
       continue;
-    AddExceptionForHostedApp(launch_url.spec(), *extension->get(), exceptions);
+    site_settings::AddExceptionForHostedApp(
+        launch_url.spec(), *extension->get(), exceptions);
   }
 }
 

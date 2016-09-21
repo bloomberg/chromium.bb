@@ -18,6 +18,8 @@
 
 namespace site_settings {
 
+const char kAppName[] = "appName";
+const char kAppId[] = "appId";
 const char kSetting[] = "setting";
 const char kOrigin[] = "origin";
 const char kPolicyProviderId[] = "policy";
@@ -76,6 +78,26 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
 
   NOTREACHED() << type << " is not a recognized content settings type.";
   return std::string();
+}
+
+// Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
+// the web extent of a hosted |app|.
+void AddExceptionForHostedApp(const std::string& url_pattern,
+    const extensions::Extension& app, base::ListValue* exceptions) {
+  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, url_pattern);
+  exception->SetString(site_settings::kEmbeddingOrigin, url_pattern);
+  exception->SetString(site_settings::kSource, "HostedApp");
+  exception->SetBoolean(site_settings::kIncognito, false);
+  exception->SetString(kAppName, app.name());
+  exception->SetString(kAppId, app.id());
+  exceptions->Append(std::move(exception));
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row

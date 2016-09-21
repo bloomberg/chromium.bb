@@ -61,6 +61,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   friend class SiteSettingsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);

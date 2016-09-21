@@ -15,6 +15,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -254,6 +255,58 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   // Verify the reset was successful.
   handler()->HandleGetExceptionList(&listArgs);
   ValidateNoOrigin(4U);
+}
+
+TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]google.com");
+  std::unique_ptr<base::DictionaryValue> exception =
+      site_settings::GetExceptionForPage(pattern, pattern,
+          CONTENT_SETTING_BLOCK, "preference", false);
+
+  std::string primary_pattern, secondary_pattern, type;
+  bool incognito;
+  CHECK(exception->GetString(site_settings::kOrigin, &primary_pattern));
+  CHECK(exception->GetString(site_settings::kEmbeddingOrigin,
+                             &secondary_pattern));
+  CHECK(exception->GetString(site_settings::kSetting, &type));
+  CHECK(exception->GetBoolean(site_settings::kIncognito, &incognito));
+
+  base::ListValue args;
+  args.AppendString(primary_pattern);
+  args.AppendString(secondary_pattern);
+  args.AppendString("notifications");  // Chosen arbitrarily.
+  args.AppendString(type);
+  args.AppendBoolean(incognito);
+
+  // We don't need to check the results. This is just to make sure it doesn't
+  // crash on the input.
+  handler()->HandleSetCategoryPermissionForOrigin(&args);
+
+  scoped_refptr<const extensions::Extension> extension;
+  extension = extensions::ExtensionBuilder()
+                  .SetManifest(extensions::DictionaryBuilder()
+                                   .Set("name", "Test extension")
+                                   .Set("version", "1.0.0")
+                                   .Set("manifest_version", 2)
+                                   .Build())
+                  .SetID("ahfgeienlihckogmohjhadlkjgocpleb")
+                  .Build();
+
+  std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
+  site_settings::AddExceptionForHostedApp(
+      "[*.]google.com", *extension.get(), exceptions.get());
+
+  const base::DictionaryValue* dictionary;
+  CHECK(exceptions->GetDictionary(0, &dictionary));
+  CHECK(dictionary->GetString(site_settings::kOrigin, &primary_pattern));
+  CHECK(dictionary->GetString(site_settings::kEmbeddingOrigin,
+                              &secondary_pattern));
+  CHECK(dictionary->GetString(site_settings::kSetting, &type));
+  CHECK(dictionary->GetBoolean(site_settings::kIncognito, &incognito));
+
+  // Again, don't need to check the results.
+  handler()->HandleSetCategoryPermissionForOrigin(&args);
 }
 
 TEST_F(SiteSettingsHandlerTest, Patterns) {
