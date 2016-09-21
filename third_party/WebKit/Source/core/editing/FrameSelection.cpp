@@ -179,10 +179,8 @@ void FrameSelection::moveTo(const Position &pos, TextAffinity affinity)
 template <typename Strategy>
 static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& visibleBase, VisiblePositionTemplate<Strategy>& visibleExtent)
 {
-    // TODO(xiaochengh): Replace it with |DCHECK(visibleBase.isValid())| and
-    // |DCHECK(visibleExtent.isValid())| once |VisiblePosition::isValid| is
-    // implemented.
-    DCHECK(visibleBase.isNull() || !visibleBase.deepEquivalent().document()->needsLayoutTreeUpdate());
+    DCHECK(visibleBase.isValid());
+    DCHECK(visibleExtent.isValid());
 
     RenderedPosition base(visibleBase);
     RenderedPosition extent(visibleExtent);

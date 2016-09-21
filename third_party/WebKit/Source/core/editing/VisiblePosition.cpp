@@ -45,12 +45,20 @@ using namespace HTMLNames;
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy>::VisiblePositionTemplate()
+#if DCHECK_IS_ON()
+    : m_domTreeVersion(0)
+    , m_styleVersion(0)
+#endif
 {
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
     : m_positionWithAffinity(positionWithAffinity)
+#if DCHECK_IS_ON()
+    , m_domTreeVersion(positionWithAffinity.position().document()->domTreeVersion())
+    , m_styleVersion(positionWithAffinity.position().document()->styleVersion())
+#endif
 {
 }
 
@@ -213,6 +221,19 @@ void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 }
 
 #endif
+
+template <typename Strategy>
+bool VisiblePositionTemplate<Strategy>::isValid() const
+{
+#if DCHECK_IS_ON()
+    if (isNull())
+        return true;
+    Document& document = *m_positionWithAffinity.position().document();
+    return m_domTreeVersion == document.domTreeVersion() && m_styleVersion == document.styleVersion() && !document.needsLayoutTreeUpdate();
+#else
+    return true;
+#endif
+}
 
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInFlatTreeStrategy>;

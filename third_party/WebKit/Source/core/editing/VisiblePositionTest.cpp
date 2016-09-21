@@ -4,6 +4,7 @@
 
 #include "core/editing/VisiblePosition.h"
 
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisibleUnits.h"
 
@@ -35,5 +36,69 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes)
     EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), canonicalPositionOf(PositionInFlatTree(two, 0)));
     EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), createVisiblePosition(PositionInFlatTree(two, 0)).deepEquivalent());
 }
+
+#if DCHECK_IS_ON()
+
+TEST_F(VisiblePositionTest, NullIsValid)
+{
+    EXPECT_TRUE(VisiblePosition().isValid());
+}
+
+TEST_F(VisiblePositionTest, NonNullIsValidBeforeMutation)
+{
+    setBodyContent("<p>one</p>");
+
+    Element* paragraph = document().querySelector("p");
+    Position position(paragraph->firstChild(), 1);
+    EXPECT_TRUE(createVisiblePosition(position).isValid());
+}
+
+TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange)
+{
+    setBodyContent("<p>one</p>");
+
+    Element* paragraph = document().querySelector("p");
+    Position position(paragraph->firstChild(), 1);
+    VisiblePosition nullVisiblePosition;
+    VisiblePosition nonNullVisiblePosition = createVisiblePosition(position);
+
+    Element* div = document().createElement("div", ASSERT_NO_EXCEPTION);
+    document().body()->appendChild(div);
+
+    EXPECT_TRUE(nullVisiblePosition.isValid());
+    EXPECT_FALSE(nonNullVisiblePosition.isValid());
+
+    updateAllLifecyclePhases();
+
+    // Invalid VisiblePosition can never become valid again.
+    EXPECT_FALSE(nonNullVisiblePosition.isValid());
+}
+
+TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange)
+{
+    setBodyContent("<div>one</div><p>two</p>");
+
+    Element* paragraph = document().querySelector("p");
+    Element* div = document().querySelector("div");
+    Position position(paragraph->firstChild(), 1);
+
+    VisiblePosition visiblePosition1 = createVisiblePosition(position);
+    div->style()->setProperty("color", "red", "important", ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(visiblePosition1.isValid());
+
+    updateAllLifecyclePhases();
+
+    VisiblePosition visiblePosition2 = createVisiblePosition(position);
+    div->style()->setProperty("display", "none", "important", ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(visiblePosition2.isValid());
+
+    updateAllLifecyclePhases();
+
+    // Invalid VisiblePosition can never become valid again.
+    EXPECT_FALSE(visiblePosition1.isValid());
+    EXPECT_FALSE(visiblePosition2.isValid());
+}
+
+#endif
 
 } // namespace blink

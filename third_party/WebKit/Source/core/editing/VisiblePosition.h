@@ -82,6 +82,11 @@ public:
     bool operator==(const VisiblePositionTemplate&) const = delete;
     bool operator!=(const VisiblePositionTemplate&) const = delete;
 
+    bool isValid() const;
+
+    // TODO(xiaochengh): We should have |DCHECK(isValid())| in the following
+    // functions. However, there are some clients storing a VisiblePosition and
+    // inspecting its properties after mutation. This should be fixed.
     bool isNull() const { return m_positionWithAffinity.isNull(); }
     bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
     bool isOrphan() const { return deepEquivalent().isOrphan(); }
@@ -111,6 +116,11 @@ private:
     explicit VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>&);
 
     PositionWithAffinityTemplate<Strategy> m_positionWithAffinity;
+
+#if DCHECK_IS_ON()
+    uint64_t m_domTreeVersion;
+    uint64_t m_styleVersion;
+#endif
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;

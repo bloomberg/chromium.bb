@@ -1337,13 +1337,13 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
 
 VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
+    DCHECK(visiblePosition.isValid());
+
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
 
     if (!node)
         return VisiblePosition();
-
-    DCHECK(!node->document().needsLayoutTreeUpdate());
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
@@ -1390,13 +1390,13 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
 
 VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
+    DCHECK(visiblePosition.isValid());
+
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
 
     if (!node)
         return VisiblePosition();
-
-    DCHECK(!node->document().needsLayoutTreeUpdate());
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
