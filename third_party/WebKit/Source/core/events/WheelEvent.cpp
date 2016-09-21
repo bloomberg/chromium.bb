@@ -94,7 +94,8 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable,
         // TODO(zino): Should support canvas hit region because the wheel event
         // is a kind of mouse event. Please see http://crbug.com/594075
-        String())
+        String(),
+        nullptr)
     , m_wheelDelta(wheelTicks.x() * TickMultiplier, wheelTicks.y() * TickMultiplier)
     , m_deltaX(-rawDelta.x())
     , m_deltaY(-rawDelta.y())
@@ -121,7 +122,7 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable,
         // TODO(zino): Should support canvas hit region because the wheel event
         // is a kind of mouse event. Please see http://crbug.com/594075
-        String())
+        String(), nullptr)
     , m_wheelDelta(wheelTicks.x() * TickMultiplier, wheelTicks.y() * TickMultiplier)
     , m_deltaX(-rawDelta.x())
     , m_deltaY(-rawDelta.y())

@@ -50,7 +50,8 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view
         event.movementDelta().x(), event.movementDelta().y(),
         event.getModifiers(), static_cast<short>(event.pointerProperties().button),
         platformModifiersToButtons(event.getModifiers()),
-        relatedTarget, event.timestamp(), event.getSyntheticEventType(), event.region());
+        relatedTarget, event.timestamp(), event.getSyntheticEventType(), event.region(),
+        &event);
 }
 
 MouseEvent* MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
@@ -61,12 +62,13 @@ MouseEvent* MouseEvent::create(const AtomicString& type, bool canBubble, bool ca
     EventTarget* relatedTarget,
     double platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    const String& region)
+    const String& region,
+    const PlatformMouseEvent* mouseEvent)
 {
     return new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, windowX, windowY,
         movementX, movementY,
-        modifiers, button, buttons, relatedTarget, platformTimeStamp, syntheticEventType, region);
+        modifiers, button, buttons, relatedTarget, platformTimeStamp, syntheticEventType, region, mouseEvent);
 }
 
 MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view, Event* underlyingEvent, SimulatedClickCreationScope creationScope)
@@ -89,7 +91,7 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view
     double timestamp = underlyingEvent ? underlyingEvent->platformTimeStamp() : monotonicallyIncreasingTime();
     MouseEvent* createdEvent = MouseEvent::create(eventType, true, true, view,
         0, screenX, screenY, 0, 0, 0, 0, modifiers, 0, 0, nullptr,
-        timestamp, syntheticType, String());
+        timestamp, syntheticType, String(), nullptr);
 
     createdEvent->setTrusted(creationScope == SimulatedClickCreationScope::FromUserAgent);
     createdEvent->setUnderlyingEvent(underlyingEvent);
@@ -117,7 +119,8 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     EventTarget* relatedTarget,
     double platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
-    const String& region)
+    const String& region,
+    const PlatformMouseEvent* mouseEvent)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY), IntPoint(movementX, movementY), modifiers,
         platformTimeStamp,
@@ -129,6 +132,8 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_syntheticEventType(syntheticEventType)
     , m_region(region)
 {
+    if (mouseEvent)
+        m_mouseEvent.reset(new PlatformMouseEvent(*mouseEvent));
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& initializer)

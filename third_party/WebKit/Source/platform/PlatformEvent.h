@@ -32,7 +32,6 @@
 namespace blink {
 
 class PlatformEvent {
-    DISALLOW_NEW();
 public:
     enum EventType {
         NoType = 0,

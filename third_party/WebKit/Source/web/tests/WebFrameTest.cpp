@@ -5725,7 +5725,7 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick)
 
     Event* event = MouseEvent::create(EventTypeNames::click, false, false,
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, 0,
-        PlatformMouseEvent::RealOrIndistinguishable, String());
+        PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     toLocalFrame(webViewHelper.webView()->page()->mainFrame())->loader().load(frameRequest);
@@ -5775,7 +5775,7 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow)
     // ctrl+click event
     Event* event = MouseEvent::create(EventTypeNames::click, false, false,
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr, 0,
-        PlatformMouseEvent::RealOrIndistinguishable, String());
+        PlatformMouseEvent::RealOrIndistinguishable, String(), nullptr);
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);

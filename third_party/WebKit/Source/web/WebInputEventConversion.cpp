@@ -509,6 +509,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutIte
     clickCount = event.detail();
 
     pointerType = WebPointerProperties::PointerType::Mouse;
+    if (event.mouseEvent())
+        pointerType = event.mouseEvent()->pointerProperties().pointerType;
 }
 
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a mouse

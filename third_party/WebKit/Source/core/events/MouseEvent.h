@@ -50,7 +50,8 @@ public:
         EventTarget* relatedTarget,
         double platformTimeStamp,
         PlatformMouseEvent::SyntheticEventType,
-        const String& region);
+        const String& region,
+        const PlatformMouseEvent*);
 
     static MouseEvent* create(const AtomicString& eventType, AbstractView*, const PlatformMouseEvent&, int detail, Node* relatedTarget);
 
@@ -94,6 +95,8 @@ public:
 
     int clickCount() { return detail(); }
 
+    const PlatformMouseEvent* mouseEvent() const { return m_mouseEvent.get(); }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -104,7 +107,8 @@ protected:
         EventTarget* relatedTarget,
         double platformTimeStamp,
         PlatformMouseEvent::SyntheticEventType,
-        const String& region);
+        const String& region,
+        const PlatformMouseEvent*);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -124,6 +128,7 @@ private:
     Member<EventTarget> m_relatedTarget;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
     String m_region;
+    std::unique_ptr<PlatformMouseEvent> m_mouseEvent;
 };
 
 class MouseEventDispatchMediator final : public EventDispatchMediator {
