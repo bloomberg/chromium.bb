@@ -20,9 +20,6 @@
 
 namespace offline_pages {
 
-using StoreState = OfflinePageMetadataStore::StoreState;
-using ItemActionStatus = OfflinePageMetadataStore::ItemActionStatus;
-
 namespace {
 
 // This is a macro instead of a const so that
@@ -213,28 +210,27 @@ ItemActionStatus Insert(sql::Connection* db, const OfflinePageItem& item) {
   return ItemActionStatus::SUCCESS;
 }
 
-bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
+bool Update(sql::Connection* db, const OfflinePageItem& item) {
   const char kSql[] =
-      "INSERT OR REPLACE INTO " OFFLINE_PAGES_TABLE_NAME
-      " (offline_id, online_url, client_namespace, client_id, file_path, "
-      "file_size, creation_time, last_access_time, access_count, "
-      "expiration_time, title)"
-      " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
+      " SET online_url = ?, client_namespace = ?, client_id = ?, file_path = ?,"
+      " file_size = ?, creation_time = ?, last_access_time = ?,"
+      " access_count = ?, expiration_time = ?, title = ?"
+      " WHERE offline_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, item.offline_id);
-  statement.BindString(1, item.url.spec());
-  statement.BindString(2, item.client_id.name_space);
-  statement.BindString(3, item.client_id.id);
-  statement.BindString(4, GetUTF8StringFromPath(item.file_path));
-  statement.BindInt64(5, item.file_size);
-  statement.BindInt64(6, item.creation_time.ToInternalValue());
-  statement.BindInt64(7, item.last_access_time.ToInternalValue());
-  statement.BindInt(8, item.access_count);
-  statement.BindInt64(9, item.expiration_time.ToInternalValue());
-  statement.BindString16(10, item.title);
-  return statement.Run();
+  statement.BindString(0, item.url.spec());
+  statement.BindString(1, item.client_id.name_space);
+  statement.BindString(2, item.client_id.id);
+  statement.BindString(3, GetUTF8StringFromPath(item.file_path));
+  statement.BindInt64(4, item.file_size);
+  statement.BindInt64(5, item.creation_time.ToInternalValue());
+  statement.BindInt64(6, item.last_access_time.ToInternalValue());
+  statement.BindInt(7, item.access_count);
+  statement.BindInt64(8, item.expiration_time.ToInternalValue());
+  statement.BindString16(9, item.title);
+  statement.BindInt64(10, item.offline_id);
+  return statement.Run() && db->GetLastChangeCount() > 0;
 }
 
 bool InitDatabase(sql::Connection* db, base::FilePath path) {
@@ -278,10 +274,25 @@ void OpenConnectionSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
                         const base::Callback<void(StoreState)>& callback) {
-  StoreState state = InitDatabase(db, path)
-                         ? OfflinePageMetadataStore::LOADED
-                         : OfflinePageMetadataStore::FAILED_INITIALIZATION;
+  StoreState state =
+      InitDatabase(db, path) ? StoreState::LOADED : StoreState::FAILED_LOADING;
   runner->PostTask(FROM_HERE, base::Bind(callback, state));
+}
+
+bool GetPageByOfflineIdSync(sql::Connection* db,
+                            int64_t offline_id,
+                            OfflinePageItem* item) {
+  const char kSql[] =
+      "SELECT * FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, offline_id);
+
+  if (statement.Step()) {
+    *item = MakeOfflinePageItem(&statement);
+    return true;
+  }
+
+  return false;
 }
 
 void GetOfflinePagesSync(
@@ -314,25 +325,67 @@ void AddOfflinePageSync(sql::Connection* db,
   runner->PostTask(FROM_HERE, base::Bind(callback, status));
 }
 
+void PostStoreUpdateResultForIds(
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    StoreState store_state,
+    const std::vector<int64_t>& offline_ids,
+    ItemActionStatus action_status,
+    const OfflinePageMetadataStore::UpdateCallback& callback) {
+  std::unique_ptr<StoreUpdateResult> result(new StoreUpdateResult(store_state));
+  for (const auto& offline_id : offline_ids)
+    result->item_statuses.push_back(std::make_pair(offline_id, action_status));
+  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
+}
+
+void PostStoreErrorForAllPages(
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const std::vector<OfflinePageItem>& pages,
+    const OfflinePageMetadataStore::UpdateCallback& callback) {
+  std::vector<int64_t> offline_ids;
+  for (const auto& page : pages)
+    offline_ids.push_back(page.offline_id);
+  PostStoreUpdateResultForIds(runner, StoreState::LOADED, offline_ids,
+                              ItemActionStatus::STORE_ERROR, callback);
+}
+
+void PostStoreErrorForAllIds(
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const std::vector<int64_t>& offline_ids,
+    const OfflinePageMetadataStore::UpdateCallback& callback) {
+  PostStoreUpdateResultForIds(runner, StoreState::LOADED, offline_ids,
+                              ItemActionStatus::STORE_ERROR, callback);
+}
+
 void UpdateOfflinePagesSync(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const std::vector<OfflinePageItem>& pages,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  // TODO(fgorski): Update the callback to provide information about all items
-  // and not just a high level boolean.
+  std::unique_ptr<StoreUpdateResult> result(
+      new StoreUpdateResult(StoreState::LOADED));
+
   sql::Transaction transaction(db);
   if (!transaction.Begin()) {
-    runner->PostTask(FROM_HERE, base::Bind(callback, false));
+    PostStoreErrorForAllPages(runner, pages, callback);
     return;
   }
 
-  // TODO(fgorski): Switch to only accept updates and not create new items.
-  for (auto& page : pages)
-    InsertOrReplace(db, page);
+  for (const auto& page : pages) {
+    if (Update(db, page)) {
+      result->updated_items.push_back(page);
+      result->item_statuses.push_back(
+          std::make_pair(page.offline_id, ItemActionStatus::SUCCESS));
+    } else {
+      result->item_statuses.push_back(
+          std::make_pair(page.offline_id, ItemActionStatus::NOT_FOUND));
+    }
+  }
 
-  bool result = transaction.Commit();
-  runner->PostTask(FROM_HERE, base::Bind(callback, result));
+  if (!transaction.Commit()) {
+    PostStoreErrorForAllPages(runner, pages, callback);
+    return;
+  }
+  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
 
 void RemoveOfflinePagesSync(
@@ -340,25 +393,39 @@ void RemoveOfflinePagesSync(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  // TODO(bburns): add UMA metrics here (and for levelDB).
+  // TODO(fgorski): Perhaps add metrics here.
+  std::unique_ptr<StoreUpdateResult> result(
+      new StoreUpdateResult(StoreState::LOADED));
 
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
   sql::Transaction transaction(db);
   if (!transaction.Begin()) {
-    runner->PostTask(FROM_HERE, base::Bind(callback, false));
+    PostStoreErrorForAllIds(runner, offline_ids, callback);
     return;
   }
 
-  for (auto offline_id : offline_ids) {
-    if (!DeleteByOfflineId(db, offline_id)) {
-      runner->PostTask(FROM_HERE, base::Bind(callback, false));
-      return;
+  for (int64_t offline_id : offline_ids) {
+    OfflinePageItem page;
+    ItemActionStatus status;
+    if (!GetPageByOfflineIdSync(db, offline_id, &page)) {
+      status = ItemActionStatus::NOT_FOUND;
+    } else if (!DeleteByOfflineId(db, offline_id)) {
+      status = ItemActionStatus::STORE_ERROR;
+    } else {
+      status = ItemActionStatus::SUCCESS;
+      result->updated_items.push_back(page);
     }
+
+    result->item_statuses.push_back(std::make_pair(offline_id, status));
   }
 
-  bool success = transaction.Commit();
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+  if (!transaction.Commit()) {
+    PostStoreErrorForAllIds(runner, offline_ids, callback);
+    return;
+  }
+
+  runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
 
 void ResetSync(sql::Connection* db,
@@ -370,11 +437,10 @@ void ResetSync(sql::Connection* db,
   db->Close();
   StoreState state;
   if (success) {
-    state = InitDatabase(db, db_file_path)
-                ? OfflinePageMetadataStore::LOADED
-                : OfflinePageMetadataStore::FAILED_INITIALIZATION;
+    state = InitDatabase(db, db_file_path) ? StoreState::LOADED
+                                           : StoreState::FAILED_LOADING;
   } else {
-    state = OfflinePageMetadataStore::FAILED_RESET;
+    state = StoreState::FAILED_RESET;
   }
   runner->PostTask(FROM_HERE, base::Bind(callback, state));
 }
@@ -386,7 +452,7 @@ OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
     const base::FilePath& path)
     : background_task_runner_(std::move(background_task_runner)),
       db_file_path_(path.AppendASCII("OfflinePages.db")),
-      state_(NOT_LOADED),
+      state_(StoreState::NOT_LOADED),
       weak_ptr_factory_(this) {
   OpenConnection();
 }
@@ -413,7 +479,7 @@ void OfflinePageMetadataStoreSQL::GetOfflinePages(
 void OfflinePageMetadataStoreSQL::AddOfflinePage(
     const OfflinePageItem& offline_page,
     const AddCallback& callback) {
-  if (!CheckDb(base::Bind(callback, STORE_ERROR)))
+  if (!CheckDb(base::Bind(callback, ItemActionStatus::STORE_ERROR)))
     return;
 
   background_task_runner_->PostTask(
@@ -425,8 +491,11 @@ void OfflinePageMetadataStoreSQL::AddOfflinePage(
 void OfflinePageMetadataStoreSQL::UpdateOfflinePages(
     const std::vector<OfflinePageItem>& pages,
     const UpdateCallback& callback) {
-  if (!CheckDb(base::Bind(callback, false)))
+  if (!db_.get()) {
+    PostStoreErrorForAllPages(base::ThreadTaskRunnerHandle::Get(), pages,
+                              callback);
     return;
+  }
 
   background_task_runner_->PostTask(
       FROM_HERE,
@@ -442,8 +511,9 @@ void OfflinePageMetadataStoreSQL::RemoveOfflinePages(
   if (offline_ids.empty()) {
     // Nothing to do, but post a callback instead of calling directly
     // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, true));
+    PostStoreUpdateResultForIds(
+        base::ThreadTaskRunnerHandle::Get(), state(), offline_ids,
+        ItemActionStatus::NOT_FOUND /* will be ignored */, callback);
     return;
   }
 
@@ -492,7 +562,7 @@ void OfflinePageMetadataStoreSQL::OnOpenConnectionDone(StoreState state) {
   state_ = state;
 
   // Unfortunately we were not able to open DB connection.
-  if (state != OfflinePageMetadataStore::LOADED)
+  if (state != StoreState::LOADED)
     db_.reset();
 
   // TODO(fgorski): This might be a place to start store recovery. Alternatively
@@ -502,11 +572,11 @@ void OfflinePageMetadataStoreSQL::OnOpenConnectionDone(StoreState state) {
 void OfflinePageMetadataStoreSQL::OnResetDone(const ResetCallback& callback,
                                               StoreState state) {
   OnOpenConnectionDone(state);
-  callback.Run(state == LOADED);
+  callback.Run(state == StoreState::LOADED);
 }
 
 bool OfflinePageMetadataStoreSQL::CheckDb(const base::Closure& callback) {
-  if (!db_.get() || state_ != LOADED) {
+  if (!db_.get() || state_ != StoreState::LOADED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback));
     return false;

@@ -54,6 +54,8 @@ struct OfflinePageItem {
   OfflinePageItem(const OfflinePageItem& other);
   ~OfflinePageItem();
 
+  bool operator==(const OfflinePageItem& other) const;
+
   // Gets a URL of the file under |file_path|.
   GURL GetOfflineURL() const;
 

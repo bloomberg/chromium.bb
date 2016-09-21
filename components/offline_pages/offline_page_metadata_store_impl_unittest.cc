@@ -233,8 +233,10 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   void GetOfflinePagesCallback(
       OfflinePageMetadataStore::LoadStatus load_status,
       const std::vector<OfflinePageItem>& offline_pages);
-  void AddCallback(OfflinePageMetadataStore::ItemActionStatus status);
-  void UpdateCallback(CalledCallback called_callback, bool success);
+  void AddCallback(ItemActionStatus status);
+  void UpdateCallback(CalledCallback called_callback,
+                      std::unique_ptr<StoreUpdateResult> result);
+  void ResetCallback(bool status);
 
   void ClearResults();
 
@@ -242,9 +244,12 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   void CheckThatOfflinePageCanBeSaved(
       std::unique_ptr<OfflinePageMetadataStore> store);
 
+  StoreUpdateResult* last_update_result() { return last_update_result_.get(); }
+
  protected:
   CalledCallback last_called_callback_;
   Status last_status_;
+  std::unique_ptr<StoreUpdateResult> last_update_result_;
   std::vector<OfflinePageItem> offline_pages_;
   OfflinePageMetadataStoreFactory factory_;
 
@@ -276,19 +281,24 @@ void OfflinePageMetadataStoreTest::GetOfflinePagesCallback(
   offline_pages_.swap(const_cast<std::vector<OfflinePageItem>&>(offline_pages));
 }
 
-void OfflinePageMetadataStoreTest::AddCallback(
-    OfflinePageMetadataStore::ItemActionStatus status) {
+void OfflinePageMetadataStoreTest::AddCallback(ItemActionStatus status) {
   last_called_callback_ = ADD;
   // TODO(fgorski): Add specific add status.
   // last_item_status_ = status;
   last_status_ =
-      status == OfflinePageMetadataStore::SUCCESS ? STATUS_TRUE : STATUS_FALSE;
+      status == ItemActionStatus::SUCCESS ? STATUS_TRUE : STATUS_FALSE;
 }
 
 void OfflinePageMetadataStoreTest::UpdateCallback(
     CalledCallback called_callback,
-    bool status) {
+    std::unique_ptr<StoreUpdateResult> result) {
   last_called_callback_ = called_callback;
+  last_status_ = result->updated_items.size() > 0 ? STATUS_TRUE : STATUS_FALSE;
+  last_update_result_ = std::move(result);
+}
+
+void OfflinePageMetadataStoreTest::ResetCallback(bool status) {
+  last_called_callback_ = RESET;
   last_status_ = status ? STATUS_TRUE : STATUS_FALSE;
 }
 
@@ -296,6 +306,7 @@ void OfflinePageMetadataStoreTest::ClearResults() {
   last_called_callback_ = NONE;
   last_status_ = STATUS_NONE;
   offline_pages_.clear();
+  last_update_result_.reset(nullptr);
 }
 
 OfflinePageItem OfflinePageMetadataStoreTest::CheckThatStoreHasOneItem() {
@@ -335,16 +346,7 @@ void OfflinePageMetadataStoreTest::CheckThatOfflinePageCanBeSaved(
       offline_pages_[0].offline_id != offline_page.offline_id) {
     std::swap(offline_pages_[0], offline_pages_[1]);
   }
-  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
-  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
-  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
-  EXPECT_EQ(offline_page.expiration_time, offline_pages_[0].expiration_time);
-  EXPECT_EQ(offline_page.title, offline_pages_[0].title);
-  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
-  EXPECT_EQ(1234LL, offline_pages_[0].offline_id);
-  EXPECT_EQ(kFileSize, offline_pages_[0].file_size);
-  EXPECT_EQ(kTestClientId1, offline_pages_[0].client_id);
+  EXPECT_EQ(offline_page, offline_pages_[0]);
 }
 
 std::unique_ptr<OfflinePageMetadataStore>
@@ -409,7 +411,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   OfflinePageMetadataStoreSQL* sql_store =
       static_cast<OfflinePageMetadataStoreSQL*>(store.get());
 
-  sql_store->SetStateForTesting(OfflinePageMetadataStore::NOT_LOADED, false);
+  sql_store->SetStateForTesting(StoreState::NOT_LOADED, false);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -418,8 +420,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::FAILED_INITIALIZATION, false);
+  sql_store->SetStateForTesting(StoreState::FAILED_LOADING, false);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -428,8 +429,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::FAILED_RESET, false);
+  sql_store->SetStateForTesting(StoreState::FAILED_RESET, false);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -438,8 +438,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::LOADED, true);
+  sql_store->SetStateForTesting(StoreState::LOADED, true);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -448,8 +447,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::NOT_LOADED, true);
+  sql_store->SetStateForTesting(StoreState::NOT_LOADED, true);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -458,8 +456,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::FAILED_INITIALIZATION, false);
+  sql_store->SetStateForTesting(StoreState::FAILED_LOADING, false);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -468,8 +465,7 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
   EXPECT_EQ(0UL, offline_pages_.size());
   EXPECT_EQ(STATUS_FALSE, last_status_);
 
-  sql_store->SetStateForTesting(
-      OfflinePageMetadataStore::FAILED_RESET, false);
+  sql_store->SetStateForTesting(StoreState::FAILED_RESET, false);
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
@@ -586,6 +582,12 @@ TEST_F(OfflinePageMetadataStoreTest, RemoveOfflinePage) {
   PumpLoop();
   EXPECT_EQ(REMOVE, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
+  ASSERT_TRUE(last_update_result() != nullptr);
+  EXPECT_EQ(1UL, last_update_result()->item_statuses.size());
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            last_update_result()->item_statuses.begin()->second);
+  EXPECT_EQ(1UL, last_update_result()->updated_items.size());
+  EXPECT_EQ(offline_page, *(last_update_result()->updated_items.begin()));
 
   ClearResults();
 
@@ -658,6 +660,12 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   PumpLoop();
   EXPECT_EQ(REMOVE, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
+  ASSERT_TRUE(last_update_result() != nullptr);
+  EXPECT_EQ(1UL, last_update_result()->item_statuses.size());
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            last_update_result()->item_statuses.begin()->second);
+  EXPECT_EQ(1UL, last_update_result()->updated_items.size());
+  EXPECT_EQ(offline_page_1, *(last_update_result()->updated_items.begin()));
 
   ClearResults();
 
@@ -707,15 +715,7 @@ TEST_F(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   ASSERT_EQ(1U, offline_pages_.size());
-  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
-  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
-  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
-  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
-  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
-  EXPECT_EQ(offline_page.expiration_time, offline_pages_[0].expiration_time);
-  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
-  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
+  EXPECT_EQ(offline_page, offline_pages_[0]);
 
   // Then update some data.
   offline_page.file_size = kFileSize + 1;
@@ -729,6 +729,12 @@ TEST_F(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   PumpLoop();
   EXPECT_EQ(UPDATE, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
+  ASSERT_TRUE(last_update_result() != nullptr);
+  EXPECT_EQ(1UL, last_update_result()->item_statuses.size());
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            last_update_result()->item_statuses.begin()->second);
+  EXPECT_EQ(1UL, last_update_result()->updated_items.size());
+  EXPECT_EQ(offline_page, *(last_update_result()->updated_items.begin()));
 
   ClearResults();
   store->GetOfflinePages(
@@ -739,15 +745,7 @@ TEST_F(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   ASSERT_EQ(1U, offline_pages_.size());
-  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
-  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
-  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
-  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
-  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
-  EXPECT_EQ(offline_page.expiration_time, offline_pages_[0].expiration_time);
-  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
-  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
+  EXPECT_EQ(offline_page, offline_pages_[0]);
 }
 
 TEST_F(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
@@ -787,8 +785,8 @@ TEST_F(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
   EXPECT_EQ(2U, offline_pages_.size());
 
   // Clear all records from the store.
-  store->Reset(base::Bind(&OfflinePageMetadataStoreTest::UpdateCallback,
-                          base::Unretained(this), RESET));
+  store->Reset(base::Bind(&OfflinePageMetadataStoreTest::ResetCallback,
+                          base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(RESET, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);

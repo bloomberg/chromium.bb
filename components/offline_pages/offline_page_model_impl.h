@@ -50,7 +50,6 @@ struct OfflinePageItem;
 
 class ArchiveManager;
 class ClientPolicyController;
-class OfflinePageMetadataStore;
 class OfflinePageStorageManager;
 
 // Implementation of service for saving pages offline, storing the offline
@@ -180,7 +179,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,
                             const OfflinePageItem& offline_page,
-                            OfflinePageMetadataStore::ItemActionStatus status);
+                            ItemActionStatus status);
   void InformSavePageDone(const SavePageCallback& callback,
                           SavePageResult result,
                           const ClientId& client_id,
@@ -191,14 +190,13 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnDeleteArchiveFilesDone(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback,
                                 bool success);
-  void OnRemoveOfflinePagesDone(const std::vector<int64_t>& offline_ids,
-                                const DeletePageCallback& callback,
-                                bool success);
+  void OnRemoveOfflinePagesDone(const DeletePageCallback& callback,
+                                std::unique_ptr<StoreUpdateResult> result);
   void InformDeletePageDone(const DeletePageCallback& callback,
                             DeletePageResult result);
 
   void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
-                             bool success);
+                             std::unique_ptr<StoreUpdateResult> result);
 
   // Callbacks for checking metadata consistency.
   void CheckMetadataConsistencyForArchivePaths(
@@ -243,9 +241,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                                          const DeletePageCallback& callback);
 
   // Callback completing page expiration.
-  void OnExpirePageDone(const std::vector<OfflinePageItem>& expired_pages,
-                        const base::Time& expiration_time,
-                        bool success);
+  void OnExpirePageDone(const base::Time& expiration_time,
+                        std::unique_ptr<StoreUpdateResult> result);
 
   // Clears expired pages if there are any.
   void ClearStorageIfNeeded(

@@ -6,6 +6,10 @@
 
 namespace offline_pages {
 
+StoreUpdateResult::StoreUpdateResult(StoreState state) : store_state(state) {}
+
+StoreUpdateResult::~StoreUpdateResult() {}
+
 OfflinePageMetadataStore::OfflinePageMetadataStore() {
 }
 

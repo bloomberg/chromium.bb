@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/offline_page_test_store.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,13 +39,13 @@ void OfflinePageTestStore::GetOfflinePages(const LoadCallback& callback) {
 void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
                                           const AddCallback& callback) {
   // TODO(fgorski): Add and cover scenario with existing item.
-  OfflinePageMetadataStore::ItemActionStatus result;
+  ItemActionStatus result;
   if (scenario_ == TestScenario::SUCCESSFUL) {
     offline_pages_[offline_page.offline_id] = offline_page;
     last_saved_page_ = offline_page;
-    result = OfflinePageMetadataStore::SUCCESS;
+    result = ItemActionStatus::SUCCESS;
   } else if (scenario_ == TestScenario::WRITE_FAILED) {
-    result = OfflinePageMetadataStore::STORE_ERROR;
+    result = ItemActionStatus::STORE_ERROR;
   }
   if (!callback.is_null())
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
@@ -52,35 +54,61 @@ void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
 void OfflinePageTestStore::UpdateOfflinePages(
     const std::vector<OfflinePageItem>& pages,
     const UpdateCallback& callback) {
-  bool result = scenario_ != TestScenario::WRITE_FAILED;
-  if (result) {
-    // TODO(fgorski): Cover scenario, where new items are being created, while
-    // they shouldn't.
-    for (auto& page : pages) {
+  // TODO(fgorski): Cover scenario where new items are being created while they
+  // shouldn't.
+  std::unique_ptr<StoreUpdateResult> result(
+      new StoreUpdateResult(StoreState::LOADED));
+  if (scenario_ == TestScenario::WRITE_FAILED) {
+    for (const auto& page : pages) {
+      result->item_statuses.push_back(
+          std::make_pair(page.offline_id, ItemActionStatus::STORE_ERROR));
+    }
+  } else {
+    for (const auto& page : pages) {
       offline_pages_[page.offline_id] = page;
       last_saved_page_ = page;
+      result->item_statuses.push_back(
+          std::make_pair(page.offline_id, ItemActionStatus::SUCCESS));
     }
+    result->updated_items.insert(result->updated_items.begin(), pages.begin(),
+                                 pages.end());
   }
   if (!callback.is_null())
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(callback, base::Passed(&result)));
 }
 
 void OfflinePageTestStore::RemoveOfflinePages(
     const std::vector<int64_t>& offline_ids,
     const UpdateCallback& callback) {
+  std::unique_ptr<StoreUpdateResult> result(
+      new StoreUpdateResult(StoreState::LOADED));
+
   ASSERT_FALSE(offline_ids.empty());
-  bool result = false;
-  if (scenario_ != TestScenario::REMOVE_FAILED) {
+  if (scenario_ == TestScenario::REMOVE_FAILED) {
+    for (const auto& offline_id : offline_ids) {
+      result->item_statuses.push_back(
+          std::make_pair(offline_id, ItemActionStatus::STORE_ERROR));
+    }
+    // Anything different that LOADED is good here.
+    result->store_state = StoreState::FAILED_LOADING;
+  } else {
     for (const auto& offline_id : offline_ids) {
       auto iter = offline_pages_.find(offline_id);
+      ItemActionStatus status;
       if (iter != offline_pages_.end()) {
+        result->updated_items.push_back(iter->second);
+        status = ItemActionStatus::SUCCESS;
         offline_pages_.erase(iter);
-        result = true;
+      } else {
+        status = ItemActionStatus::NOT_FOUND;
       }
+      result->item_statuses.push_back(std::make_pair(offline_id, status));
     }
   }
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(callback, base::Passed(&result)));
 }
 
 void OfflinePageTestStore::Reset(const ResetCallback& callback) {
@@ -88,8 +116,8 @@ void OfflinePageTestStore::Reset(const ResetCallback& callback) {
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
-OfflinePageMetadataStore::StoreState OfflinePageTestStore::state() const {
-  return LOADED;
+StoreState OfflinePageTestStore::state() const {
+  return StoreState::LOADED;
 }
 
 void OfflinePageTestStore::UpdateLastAccessTime(

@@ -61,6 +61,19 @@ OfflinePageItem::OfflinePageItem(const OfflinePageItem& other) = default;
 OfflinePageItem::~OfflinePageItem() {
 }
 
+bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
+  return url == other.url &&
+         offline_id == other.offline_id &&
+         client_id == other.client_id &&
+         file_path == other.file_path &&
+         creation_time == other.creation_time &&
+         last_access_time == other.last_access_time &&
+         expiration_time == other.expiration_time &&
+         access_count == other.access_count &&
+         title == other.title &&
+         flags == other.flags;
+}
+
 GURL OfflinePageItem::GetOfflineURL() const {
   return net::FilePathToFileURL(file_path);
 }
