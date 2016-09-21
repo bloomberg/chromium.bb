@@ -32,22 +32,6 @@ class SVGElement;
 class SVGLength;
 class UnzoomedLength;
 
-enum SVGLengthType {
-    LengthTypeUnknown = 0,
-    LengthTypeNumber,
-    LengthTypePercentage,
-    LengthTypeEMS,
-    LengthTypeEXS,
-    LengthTypePX,
-    LengthTypeCM,
-    LengthTypeMM,
-    LengthTypeIN,
-    LengthTypePT,
-    LengthTypePC,
-    LengthTypeREMS,
-    LengthTypeCHS
-};
-
 enum class SVGLengthMode {
     Width,
     Height,

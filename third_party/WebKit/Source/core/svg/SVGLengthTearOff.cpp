@@ -65,38 +65,38 @@ inline bool canResolveRelativeUnits(const SVGElement* contextElement)
 inline CSSPrimitiveValue::UnitType toCSSUnitType(unsigned short type)
 {
     ASSERT(isValidLengthUnit(type));
-    if (type == LengthTypeNumber)
+    if (type == SVGLengthTearOff::kSvgLengthtypeNumber)
         return CSSPrimitiveValue::UnitType::UserUnits;
     return static_cast<CSSPrimitiveValue::UnitType>(type);
 }
 
-inline SVGLengthType toSVGLengthType(CSSPrimitiveValue::UnitType type)
+inline unsigned short toInterfaceConstant(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
     case CSSPrimitiveValue::UnitType::Unknown:
-        return LengthTypeUnknown;
+        return SVGLengthTearOff::kSvgLengthtypeUnknown;
     case CSSPrimitiveValue::UnitType::UserUnits:
-        return LengthTypeNumber;
+        return SVGLengthTearOff::kSvgLengthtypeNumber;
     case CSSPrimitiveValue::UnitType::Percentage:
-        return LengthTypePercentage;
+        return SVGLengthTearOff::kSvgLengthtypePercentage;
     case CSSPrimitiveValue::UnitType::Ems:
-        return LengthTypeEMS;
+        return SVGLengthTearOff::kSvgLengthtypeEms;
     case CSSPrimitiveValue::UnitType::Exs:
-        return LengthTypeEXS;
+        return SVGLengthTearOff::kSvgLengthtypeExs;
     case CSSPrimitiveValue::UnitType::Pixels:
-        return LengthTypePX;
+        return SVGLengthTearOff::kSvgLengthtypePx;
     case CSSPrimitiveValue::UnitType::Centimeters:
-        return LengthTypeCM;
+        return SVGLengthTearOff::kSvgLengthtypeCm;
     case CSSPrimitiveValue::UnitType::Millimeters:
-        return LengthTypeMM;
+        return SVGLengthTearOff::kSvgLengthtypeMm;
     case CSSPrimitiveValue::UnitType::Inches:
-        return LengthTypeIN;
+        return SVGLengthTearOff::kSvgLengthtypeIn;
     case CSSPrimitiveValue::UnitType::Points:
-        return LengthTypePT;
+        return SVGLengthTearOff::kSvgLengthtypePt;
     case CSSPrimitiveValue::UnitType::Picas:
-        return LengthTypePC;
+        return SVGLengthTearOff::kSvgLengthtypePc;
     default:
-        return LengthTypeUnknown;
+        return SVGLengthTearOff::kSvgLengthtypeUnknown;
     }
 }
 
@@ -113,9 +113,9 @@ bool SVGLengthTearOff::hasExposedLengthUnit()
         || unit == CSSPrimitiveValue::UnitType::UserUnits;
 }
 
-SVGLengthType SVGLengthTearOff::unitType()
+unsigned short SVGLengthTearOff::unitType()
 {
-    return hasExposedLengthUnit() ? toSVGLengthType(target()->typeWithCalcResolved()) : LengthTypeUnknown;
+    return hasExposedLengthUnit() ? toInterfaceConstant(target()->typeWithCalcResolved()) : kSvgLengthtypeUnknown;
 }
 
 SVGLengthMode SVGLengthTearOff::unitMode()

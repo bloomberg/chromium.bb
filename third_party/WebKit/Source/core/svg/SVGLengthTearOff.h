@@ -32,7 +32,6 @@
 #define SVGLengthTearOff_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
@@ -43,17 +42,17 @@ class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength>, public Scri
 public:
     // Forward declare these enums in the w3c naming scheme, for IDL generation
     enum {
-        kSvgLengthtypeUnknown = LengthTypeUnknown,
-        kSvgLengthtypeNumber = LengthTypeNumber,
-        kSvgLengthtypePercentage = LengthTypePercentage,
-        kSvgLengthtypeEms = LengthTypeEMS,
-        kSvgLengthtypeExs = LengthTypeEXS,
-        kSvgLengthtypePx = LengthTypePX,
-        kSvgLengthtypeCm = LengthTypeCM,
-        kSvgLengthtypeMm = LengthTypeMM,
-        kSvgLengthtypeIn = LengthTypeIN,
-        kSvgLengthtypePt = LengthTypePT,
-        kSvgLengthtypePc = LengthTypePC
+        kSvgLengthtypeUnknown = 0,
+        kSvgLengthtypeNumber = 1,
+        kSvgLengthtypePercentage = 2,
+        kSvgLengthtypeEms = 3,
+        kSvgLengthtypeExs = 4,
+        kSvgLengthtypePx = 5,
+        kSvgLengthtypeCm = 6,
+        kSvgLengthtypeMm = 7,
+        kSvgLengthtypeIn = 8,
+        kSvgLengthtypePt = 9,
+        kSvgLengthtypePc = 10
     };
 
     static SVGLengthTearOff* create(SVGLength* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
@@ -61,7 +60,7 @@ public:
         return new SVGLengthTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
-    SVGLengthType unitType();
+    unsigned short unitType();
     SVGLengthMode unitMode();
     float value(ExceptionState&);
     void setValue(float value, ExceptionState&);
