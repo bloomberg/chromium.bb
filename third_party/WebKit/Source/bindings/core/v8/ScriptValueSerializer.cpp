@@ -1812,10 +1812,9 @@ bool SerializedScriptValueReader::readImageBitmap(v8::Local<v8::Value>* value)
     uint32_t pixelDataLength;
     if (!doReadImageDataProperties(&width, &height, &pixelDataLength))
         return false;
-    std::unique_ptr<uint8_t[]> pixelData = wrapArrayUnique(new uint8_t[pixelDataLength]);
-    memcpy(pixelData.get(), m_buffer + m_position, pixelDataLength);
+    const void* pixelData = m_buffer + m_position;
     m_position += pixelDataLength;
-    ImageBitmap* imageBitmap = ImageBitmap::create(std::move(pixelData), width, height, isPremultiplied, isOriginClean);
+    ImageBitmap* imageBitmap = ImageBitmap::create(pixelData, width, height, isPremultiplied, isOriginClean);
     if (!imageBitmap)
         return false;
     *value = toV8(imageBitmap, m_scriptState->context()->Global(), isolate());

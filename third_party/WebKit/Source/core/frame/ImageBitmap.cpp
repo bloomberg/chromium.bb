@@ -413,10 +413,11 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, Optional<IntRect> cropRect, 
     m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
+ImageBitmap::ImageBitmap(const void* pixelData, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
 {
     SkImageInfo info = SkImageInfo::MakeN32(width, height, isImageBitmapPremultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-    m_image = StaticBitmapImage::create(SkImage::MakeRasterCopy(SkPixmap(info, data.get(), info.bytesPerPixel() * width)));
+    SkPixmap pixmap(info, pixelData, info.bytesPerPixel() * width);
+    m_image = StaticBitmapImage::create(SkImage::MakeRasterCopy(pixmap));
     if (!m_image)
         return;
     m_image->setPremultiplied(isImageBitmapPremultiplied);
@@ -630,9 +631,9 @@ ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
     return new ImageBitmap(std::move(image));
 }
 
-ImageBitmap* ImageBitmap::create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
+ImageBitmap* ImageBitmap::create(const void* pixelData, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
 {
-    return new ImageBitmap(std::move(data), width, height, isImageBitmapPremultiplied, isImageBitmapOriginClean);
+    return new ImageBitmap(pixelData, width, height, isImageBitmapPremultiplied, isImageBitmapOriginClean);
 }
 
 void ImageBitmap::close()

@@ -48,7 +48,7 @@ public:
     // This function is called by structured-cloning an ImageBitmap.
     // isImageBitmapPremultiplied indicates whether the original ImageBitmap is premultiplied or not.
     // isImageBitmapOriginClean indicates whether the original ImageBitmap is origin clean or not.
-    static ImageBitmap* create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
+    static ImageBitmap* create(const void* pixelData, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
     static sk_sp<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
     static bool isResizeOptionValid(const ImageBitmapOptions&, ExceptionState&);
     static bool isSourceSizeValid(int sourceWidth, int sourceHeight, ExceptionState&);
@@ -95,7 +95,7 @@ private:
     ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, Optional<IntRect>, const ImageBitmapOptions&);
-    ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
+    ImageBitmap(const void* pixelData, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
 
     RefPtr<StaticBitmapImage> m_image;
     bool m_isNeutered = false;
