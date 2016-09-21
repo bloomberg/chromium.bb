@@ -29,7 +29,10 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
     NGBox* first_child)
-    : style_(style), first_child_(first_child), state_(kStateInit) {
+    : style_(style),
+      first_child_(first_child),
+      state_(kStateInit),
+      is_fragment_margin_strut_block_start_updated_(false) {
   DCHECK(style_);
 }
 
@@ -78,8 +81,8 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
             constraint_space_for_children_->WritingMode(),
             constraint_space_for_children_->Direction());
 
-        LayoutUnit margin_block_start = CollapseMargins(
-            *constraint_space, child_margins, fragment->MarginStrut());
+        LayoutUnit margin_block_start =
+            CollapseMargins(*constraint_space, child_margins, *fragment);
 
         // TODO(layout-ng): Support auto margins
         builder_->AddChild(fragment,
@@ -121,20 +124,26 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
 LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
     const NGConstraintSpace& space,
     const NGBoxStrut& margins,
-    const NGMarginStrut& children_margin_strut) {
-  // Calculate margin strut for the current child.
-  NGMarginStrut curr_margin_strut = children_margin_strut;
+    const NGFragment& fragment) {
+  // TODO(chrome-layout-team): Do not collapse margins for elements that
+  // establish new block formatting contexts
+
+  // Zero-height boxes are ignored and do not participate in margin collapsing.
+  bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty();
+  if (is_zero_height_box)
+    return LayoutUnit();
+
+  // Create the current child's margin strut from its children's margin strut.
+  NGMarginStrut curr_margin_strut = fragment.MarginStrut();
 
   // Calculate borders and padding for the current child.
-  NGBoxStrut borders = computeBorders(*current_child_->Style());
-  NGBoxStrut paddings = computePadding(space, *current_child_->Style());
-  LayoutUnit border_and_padding_before =
-      borders.block_start + paddings.block_start;
-  LayoutUnit border_and_padding_after = borders.block_end + paddings.block_end;
+  NGBoxStrut border_and_padding =
+      computeBorders(*current_child_->Style()) +
+      computePadding(space, *current_child_->Style());
 
   // Collapse BLOCK-START margins if there is no padding or border between
   // parent (current child) and its first in-flow child.
-  if (border_and_padding_before) {
+  if (border_and_padding.block_start) {
     curr_margin_strut.SetMarginBlockStart(margins.block_start);
   } else {
     curr_margin_strut.AppendMarginBlockStart(margins.block_start);
@@ -145,29 +154,31 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
   //    first/last in-flow child
   // 2) parent's logical height is auto.
   if (current_child_->Style()->logicalHeight().isAuto() &&
-      !border_and_padding_after) {
+      !border_and_padding.block_end) {
     curr_margin_strut.AppendMarginBlockEnd(margins.block_end);
   } else {
     curr_margin_strut.SetMarginBlockEnd(margins.block_end);
   }
 
-  // Set the margin strut for the resultant fragment if this is the first or
-  // last child fragment.
-  if (current_child_ == first_child_)
-    builder_->SetMarginStrutBlockStart(curr_margin_strut);
-  if (!current_child_->NextSibling())
-    builder_->SetMarginStrutBlockEnd(curr_margin_strut);
+  // Update the parent fragment's margin strut
+  UpdateMarginStrut(curr_margin_strut);
 
   // Compute the margin block start for adjoining blocks.
   LayoutUnit margin_block_start;
-  if (current_child_ != first_child_)
+  if (is_fragment_margin_strut_block_start_updated_) {
     margin_block_start = ComputeCollapsedMarginBlockStart(
         prev_child_margin_strut_, curr_margin_strut);
-
+  }
   prev_child_margin_strut_ = curr_margin_strut;
-  // TODO(layout-ng): support other Margin Collapsing use cases,
-  // i.e. support 0 height elements etc.
   return margin_block_start;
+}
+
+void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
+  if (!is_fragment_margin_strut_block_start_updated_) {
+    builder_->SetMarginStrutBlockStart(from);
+    is_fragment_margin_strut_block_start_updated_ = true;
+  }
+  builder_->SetMarginStrutBlockEnd(from);
 }
 
 }  // namespace blink

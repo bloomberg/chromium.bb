@@ -27,8 +27,6 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& AddChild(NGFragment*, NGLogicalOffset);
 
   // Sets MarginStrut for the resultant fragment.
-  // These 2 methods below should be only called once as we update the
-  // fragment's MarginStrut block start/end from first/last children MarginStrut
   NGFragmentBuilder& SetMarginStrutBlockStart(const NGMarginStrut& from);
   NGFragmentBuilder& SetMarginStrutBlockEnd(const NGMarginStrut& from);
 
@@ -52,11 +50,6 @@ class CORE_EXPORT NGFragmentBuilder final
 
   HeapVector<Member<NGPhysicalFragmentBase>> children_;
   Vector<NGLogicalOffset> offsets_;
-
-  // Whether MarginStrut block start/end was updated.
-  // It's used for DCHECK safety check.
-  bool is_margin_strut_block_start_updated_ : 1;
-  bool is_margin_strut_block_end_updated_ : 1;
 };
 
 }  // namespace blink

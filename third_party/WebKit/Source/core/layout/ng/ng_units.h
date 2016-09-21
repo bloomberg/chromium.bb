@@ -110,6 +110,8 @@ struct NGBoxStrut {
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return block_start + block_end; }
 
+  bool IsEmpty() const;
+
   // The following two operators exist primarily to have an easy way to access
   // the sum of border and padding.
   NGBoxStrut& operator+=(const NGBoxStrut& other) {
@@ -125,6 +127,8 @@ struct NGBoxStrut {
     result += other;
     return result;
   }
+
+  bool operator==(const NGBoxStrut& other) const;
 };
 
 // This struct is used for the margin collapsing calculation.

@@ -52,11 +52,18 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   //
   // @param space Constraint space for the block.
   // @param child_margins Margins information for the current child.
-  // @param children_margin_strut MarginStrut for children of the current child.
+  // @param fragment Current child's fragment.
   // @return Margin block start based on collapsed margins result.
   LayoutUnit CollapseMargins(const NGConstraintSpace& space,
                              const NGBoxStrut& child_margins,
-                             const NGMarginStrut& children_margin_strut);
+                             const NGFragment& fragment);
+
+  // Updates block-{start|end} of the currently constructed fragment.
+  //
+  // This method is supposed to be called on every child but it only updates
+  // the block-start once (on the first non-zero height child fragment) and
+  // keeps updating block-end (on every non-zero height child).
+  void UpdateMarginStrut(const NGMarginStrut& from);
 
   RefPtr<const ComputedStyle> style_;
   Member<NGBox> first_child_;
@@ -71,6 +78,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   LayoutUnit max_inline_size_;
   // MarginStrut for the previous child.
   NGMarginStrut prev_child_margin_strut_;
+  // Whether the block-start was set for the currently built
+  // fragment's margin strut.
+  bool is_fragment_margin_strut_block_start_updated_ : 1;
 };
 
 }  // namespace blink

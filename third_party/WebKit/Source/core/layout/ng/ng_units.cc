@@ -61,6 +61,16 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
   }
 }
 
+bool NGBoxStrut::IsEmpty() const {
+  return *this == NGBoxStrut();
+}
+
+bool NGBoxStrut::operator==(const NGBoxStrut& other) const {
+  return std::tie(other.inline_start, other.inline_end, other.block_start,
+                  other.block_end) ==
+         std::tie(inline_start, inline_end, block_start, block_end);
+}
+
 void NGMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_start =

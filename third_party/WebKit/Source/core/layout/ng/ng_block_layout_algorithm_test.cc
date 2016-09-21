@@ -40,8 +40,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
                             NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, nullptr);
 
-  EXPECT_EQ(frag->Width(), LayoutUnit(30));
-  EXPECT_EQ(frag->Height(), LayoutUnit(40));
+  EXPECT_EQ(LayoutUnit(30), frag->Width());
+  EXPECT_EQ(LayoutUnit(40), frag->Height());
 }
 
 // Verifies that two children are laid out with the correct size and position.
@@ -70,18 +70,18 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
                             NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
-  EXPECT_EQ(frag->Width(), LayoutUnit(kWidth));
-  EXPECT_EQ(frag->Height(), LayoutUnit(kHeight1 + kHeight2 + kMarginTop));
-  EXPECT_EQ(frag->Type(), NGPhysicalFragmentBase::FragmentBox);
+  EXPECT_EQ(LayoutUnit(kWidth), frag->Width());
+  EXPECT_EQ(LayoutUnit(kHeight1 + kHeight2 + kMarginTop), frag->Height());
+  EXPECT_EQ(NGPhysicalFragmentBase::FragmentBox, frag->Type());
   ASSERT_EQ(frag->Children().size(), 2UL);
 
   const NGPhysicalFragmentBase* child = frag->Children()[0];
-  EXPECT_EQ(child->Height(), kHeight1);
-  EXPECT_EQ(child->TopOffset(), 0);
+  EXPECT_EQ(kHeight1, child->Height());
+  EXPECT_EQ(0, child->TopOffset());
 
   child = frag->Children()[1];
-  EXPECT_EQ(child->Height(), kHeight2);
-  EXPECT_EQ(child->TopOffset(), kHeight1 + kMarginTop);
+  EXPECT_EQ(kHeight2, child->Height());
+  EXPECT_EQ(kHeight1 + kMarginTop, child->TopOffset());
 }
 
 // Verifies that a child is laid out correctly if it's writing mode is different
@@ -134,7 +134,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
 // </div>
 //
 // Expected:
-//   Margins are collapsed resulting a single margin 20px = max(20px, 10px)
+// - Margins are collapsed resulting a single margin 20px = max(20px, 10px)
+// - The top offset of DIV2 == 20px
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
   const int kHeight = 50;
   const int kDiv1MarginTop = 20;
@@ -158,11 +159,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
                             NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
-  EXPECT_EQ(frag->MarginStrut(), NGMarginStrut({LayoutUnit(kDiv1MarginTop)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv1MarginTop)}), frag->MarginStrut());
   ASSERT_EQ(frag->Children().size(), 1UL);
   const NGPhysicalFragmentBase* div2_fragment = frag->Children()[0];
-  EXPECT_EQ(div2_fragment->MarginStrut(),
-            NGMarginStrut({LayoutUnit(kDiv2MarginTop)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2MarginTop)}),
+            div2_fragment->MarginStrut());
+  EXPECT_EQ(kDiv1MarginTop, div2_fragment->TopOffset());
 }
 
 // Verifies the collapsing margins case for the next pair:
@@ -171,21 +173,24 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
 // Test case's HTML representation:
 // <div style="margin-bottom: 20px; height: 50px;">  <!-- DIV1 -->
 //    <div style="margin-bottom: -15px"></div>       <!-- DIV2 -->
+//    <div></div>                                    <!-- DIV3 -->
 // </div>
-// <div style="margin-top: 10px; height: 50px;">     <!-- DIV3 -->
-//    <div style="margin-top: -30px"></div>          <!-- DIV4 -->
+// <div></div>                                       <!-- DIV4 -->
+// <div style="margin-top: 10px; height: 50px;">     <!-- DIV5 -->
+//    <div></div>                                    <!-- DIV6 -->
+//    <div style="margin-top: -30px"></div>          <!-- DIV7 -->
 // </div>
 //
 // Expected:
 //   Margins are collapsed resulting an overlap
 //   -10px = max(20px, 10px) - max(abs(-15px), abs(-30px))
-//   between DIV2 and DIV3.
+//   between DIV2 and DIV3. Zero-height blocks are ignored.
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   const int kHeight = 50;
   const int kDiv1MarginBottom = 20;
   const int kDiv2MarginBottom = -15;
-  const int kDiv3MarginTop = 10;
-  const int kDiv4MarginTop = -30;
+  const int kDiv5MarginTop = 10;
+  const int kDiv7MarginTop = -30;
   const int kExpectedCollapsedMargin = -10;
 
   // DIV1
@@ -199,35 +204,45 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   div2_style->setMarginBottom(Length(kDiv2MarginBottom, Fixed));
   NGBox* div2 = new NGBox(div2_style.get());
 
-  // DIV3
-  RefPtr<ComputedStyle> div3_style = ComputedStyle::create();
-  div3_style->setHeight(Length(kHeight, Fixed));
-  div3_style->setMarginTop(Length(kDiv3MarginTop, Fixed));
-  NGBox* div3 = new NGBox(div3_style.get());
+  // Empty DIVs: DIV3, DIV4, DIV6
+  NGBox* div3 = new NGBox(ComputedStyle::create().get());
+  NGBox* div4 = new NGBox(ComputedStyle::create().get());
+  NGBox* div6 = new NGBox(ComputedStyle::create().get());
 
-  // DIV4
-  RefPtr<ComputedStyle> div4_style = ComputedStyle::create();
-  div4_style->setMarginTop(Length(kDiv4MarginTop, Fixed));
-  NGBox* div4 = new NGBox(div4_style.get());
+  // DIV5
+  RefPtr<ComputedStyle> div5_style = ComputedStyle::create();
+  div5_style->setHeight(Length(kHeight, Fixed));
+  div5_style->setMarginTop(Length(kDiv5MarginTop, Fixed));
+  NGBox* div5 = new NGBox(div5_style.get());
+
+  // DIV7
+  RefPtr<ComputedStyle> div7_style = ComputedStyle::create();
+  div7_style->setMarginTop(Length(kDiv7MarginTop, Fixed));
+  NGBox* div7 = new NGBox(div7_style.get());
 
   div1->SetFirstChild(div2);
-  div3->SetFirstChild(div4);
-  div1->SetNextSibling(div3);
+  div2->SetNextSibling(div3);
+  div1->SetNextSibling(div4);
+  div4->SetNextSibling(div5);
+  div5->SetFirstChild(div6);
+  div6->SetNextSibling(div7);
 
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
                             NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
-  ASSERT_EQ(frag->Children().size(), 2UL);
+  ASSERT_EQ(frag->Children().size(), 3UL);
 
+  // DIV1
   const NGPhysicalFragmentBase* child = frag->Children()[0];
-  EXPECT_EQ(child->Height(), kHeight);
-  EXPECT_EQ(child->TopOffset(), 0);
+  EXPECT_EQ(kHeight, child->Height());
+  EXPECT_EQ(0, child->TopOffset());
 
-  child = frag->Children()[1];
-  EXPECT_EQ(child->Height(), kHeight);
-  EXPECT_EQ(child->TopOffset(), kHeight + kExpectedCollapsedMargin);
+  // DIV5
+  child = frag->Children()[2];
+  EXPECT_EQ(kHeight, child->Height());
+  EXPECT_EQ(kHeight + kExpectedCollapsedMargin, child->TopOffset());
 }
 
 // Verifies the collapsing margins case for the next pair:
@@ -267,14 +282,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins are collapsed.
-  EXPECT_EQ(frag->MarginStrut(),
-            NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv2MarginBottom)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv2MarginBottom)}),
+            frag->MarginStrut());
 
   // Verify that margins are NOT collapsed.
   div1_style->setHeight(Length(kHeight, Fixed));
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(frag->MarginStrut(),
-            NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv1MarginBottom)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv1MarginBottom)}),
+            frag->MarginStrut());
 }
 
 // Verifies that 2 adjoining margins are not collapsed if there is padding or
@@ -317,18 +332,64 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
 
   // Verify that margins do NOT collapse.
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(frag->MarginStrut(),
-            NGMarginStrut({LayoutUnit(kDiv1Margin), LayoutUnit(kDiv1Margin)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv1Margin), LayoutUnit(kDiv1Margin)}),
+            frag->MarginStrut());
   ASSERT_EQ(frag->Children().size(), 1UL);
-  EXPECT_EQ(frag->Children()[0]->MarginStrut(),
-            NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}));
+
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
+            frag->Children()[0]->MarginStrut());
 
   // Reset padding and verify that margins DO collapse.
   div1_style->setPaddingTop(Length(0, Fixed));
   div1_style->setPaddingBottom(Length(0, Fixed));
   frag = RunBlockLayoutAlgorithm(space, div1);
-  EXPECT_EQ(frag->MarginStrut(),
-            NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}));
+  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
+            frag->MarginStrut());
+}
+
+// Verifies that margins of 2 adjoining blocks with different writing modes
+// get collapsed.
+//
+// Test case's HTML representation:
+//   <div style="writing-mode: vertical-lr;">
+//     <div style="margin-right: 60px; width: 60px;">vertical</div>
+//     <div style="margin-left: 100px; writing-mode: horizontal-tb;">
+//       horizontal
+//     </div>
+//   </div>
+TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
+  const int kVerticalDivMarginRight = 60;
+  const int kVerticalDivWidth = 60;
+  const int kHorizontalDivMarginLeft = 100;
+
+  style_->setWidth(Length(500, Fixed));
+  style_->setHeight(Length(500, Fixed));
+  style_->setWritingMode(LeftToRightWritingMode);
+
+  // Vertical DIV
+  RefPtr<ComputedStyle> vertical_style = ComputedStyle::create();
+  vertical_style->setMarginRight(Length(kVerticalDivMarginRight, Fixed));
+  vertical_style->setWidth(Length(kVerticalDivWidth, Fixed));
+  NGBox* vertical_div = new NGBox(vertical_style.get());
+
+  // Horizontal DIV
+  RefPtr<ComputedStyle> horizontal_style = ComputedStyle::create();
+  horizontal_style->setMarginLeft(Length(kHorizontalDivMarginLeft, Fixed));
+  horizontal_style->setWritingMode(TopToBottomWritingMode);
+  NGBox* horizontal_div = new NGBox(horizontal_style.get());
+
+  vertical_div->SetNextSibling(horizontal_div);
+
+  auto* space =
+      new NGConstraintSpace(VerticalLeftRight, LeftToRight,
+                            NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, vertical_div);
+
+  ASSERT_EQ(frag->Children().size(), 2UL);
+  const NGPhysicalFragmentBase* child = frag->Children()[1];
+  // Horizontal div
+  EXPECT_EQ(0, child->TopOffset());
+  EXPECT_EQ(kVerticalDivWidth + kHorizontalDivMarginLeft, child->LeftOffset());
 }
 
 // Verifies that a box's size includes its borders and padding, and that
