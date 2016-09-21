@@ -192,6 +192,9 @@
     ],
     "MediaFoundationH264Encoding": [
         {
+            "enable_features": [
+                "MediaFoundationH264Encoding"
+            ],
             "group_name": "Enabled"
         }
     ],
