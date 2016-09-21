@@ -887,7 +887,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Since there is no default button in the bubble, it is safe to activate
   // all buttons on Enter as well, and be consistent with the Windows
   // implementation.
-  if ([event keyCode] == kVK_Return)
+  if ([event keyCode] == kVK_Return || [event keyCode] == kVK_ANSI_KeypadEnter)
     [self performClick:self];
   else
     [super keyDown:event];
