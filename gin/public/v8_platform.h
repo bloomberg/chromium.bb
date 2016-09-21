@@ -49,6 +49,9 @@ class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
                                 const char* name,
                                 uint64_t handle) override;
 
+  void AddTraceStateObserver(v8::Platform::TraceStateObserver*) override;
+  void RemoveTraceStateObserver(v8::Platform::TraceStateObserver*) override;
+
  private:
   friend struct base::DefaultLazyInstanceTraits<V8Platform>;
 

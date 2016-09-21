@@ -116,4 +116,66 @@ void V8Platform::UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
                                               traceEventHandle);
 }
 
+namespace {
+
+class EnabledStateObserverImpl final
+    : public base::trace_event::TraceLog::EnabledStateObserver {
+ public:
+  EnabledStateObserverImpl() = default;
+
+  void OnTraceLogEnabled() final {
+    base::AutoLock lock(mutex_);
+    for (auto o : observers_) {
+      o->OnTraceEnabled();
+    }
+  }
+
+  void OnTraceLogDisabled() final {
+    base::AutoLock lock(mutex_);
+    for (auto o : observers_) {
+      o->OnTraceDisabled();
+    }
+  }
+
+  void AddObserver(v8::Platform::TraceStateObserver* observer) {
+    base::AutoLock lock(mutex_);
+    DCHECK(!observers_.count(observer));
+    observers_.insert(observer);
+    if (observers_.size() == 1) {
+      base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+    }
+  }
+
+  void RemoveObserver(v8::Platform::TraceStateObserver* observer) {
+    base::AutoLock lock(mutex_);
+    DCHECK(observers_.count(observer) == 1);
+    observers_.erase(observer);
+    if (observers_.empty()) {
+      base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
+          this);
+    }
+  }
+
+ private:
+  base::Lock mutex_;
+  std::unordered_set<v8::Platform::TraceStateObserver*> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnabledStateObserverImpl);
+};
+
+base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+void V8Platform::AddTraceStateObserver(
+    v8::Platform::TraceStateObserver* observer) {
+  g_trace_state_dispatcher.Get().AddObserver(observer);
+}
+
+void V8Platform::RemoveTraceStateObserver(
+    v8::Platform::TraceStateObserver* observer) {
+  g_trace_state_dispatcher.Get().RemoveObserver(observer);
+}
+
 }  // namespace gin
