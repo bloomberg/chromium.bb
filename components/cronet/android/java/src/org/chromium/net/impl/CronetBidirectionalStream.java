@@ -13,6 +13,7 @@ import org.chromium.net.BidirectionalStream;
 import org.chromium.net.CronetException;
 import org.chromium.net.Preconditions;
 import org.chromium.net.QuicException;
+import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlResponseInfo;
@@ -21,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +85,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     private final String mInitialMethod;
     private final String mRequestHeaders[];
     private final boolean mDelayRequestHeadersUntilFirstFlush;
-
+    private final Collection<Object> mRequestAnnotations;
     /*
      * Synchronizes access to mNativeStream, mReadState and mWriteState.
      */
@@ -105,6 +107,10 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     @GuardedBy("mNativeStreamLock")
     // Whether request headers have been sent.
     private boolean mRequestHeadersSent;
+
+    @GuardedBy("mNativeStreamLock")
+    // Metrics information. Obtained when request succeeds, fails or is canceled.
+    private RequestFinishedInfo.Metrics mMetrics;
 
     /* Native BidirectionalStream object, owned by CronetBidirectionalStream. */
     @GuardedBy("mNativeStreamLock")
@@ -218,7 +224,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     CronetBidirectionalStream(CronetUrlRequestContext requestContext, String url,
             @BidirectionalStream.Builder.StreamPriority int priority, Callback callback,
             Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
-            boolean delayRequestHeadersUntilNextFlush) {
+            boolean delayRequestHeadersUntilNextFlush, Collection<Object> requestAnnotations) {
         mRequestContext = requestContext;
         mInitialUrl = url;
         mInitialPriority = convertStreamPriority(priority);
@@ -229,6 +235,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
         mDelayRequestHeadersUntilFirstFlush = delayRequestHeadersUntilNextFlush;
         mPendingData = new LinkedList<>();
         mFlushData = new LinkedList<>();
+        mRequestAnnotations = requestAnnotations;
     }
 
     @Override
@@ -692,11 +699,18 @@ public class CronetBidirectionalStream extends BidirectionalStream {
             return;
         }
         nativeDestroy(mNativeStream, sendOnCanceled);
-        mNativeStream = 0;
+        mRequestContext.reportFinished(getRequestFinishedInfo());
         mRequestContext.onRequestDestroyed();
+        mNativeStream = 0;
         if (mOnDestroyedCallbackForTesting != null) {
             mOnDestroyedCallbackForTesting.run();
         }
+    }
+
+    private RequestFinishedInfo getRequestFinishedInfo() {
+        // TODO(xunjieli): Fill this with real values.
+        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
+                RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
     }
 
     /**

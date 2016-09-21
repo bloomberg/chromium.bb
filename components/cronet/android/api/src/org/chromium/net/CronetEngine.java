@@ -875,6 +875,7 @@ public abstract class CronetEngine {
      * @param delayRequestHeadersUntilFirstFlush whether to delay sending request
      *         headers until flush() is called, and try to combine them
      *         with the next data frame.
+     * @param requestAnnotations Objects to pass on to {@link RequestFinishedInfo.Listener}.
      * @return a new stream.
      * @hide only used by internal implementation.
      */
@@ -882,7 +883,7 @@ public abstract class CronetEngine {
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority,
-            boolean delayRequestHeadersUntilFirstFlush);
+            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations);
 
     /**
      * @return {@code true} if the engine is enabled.

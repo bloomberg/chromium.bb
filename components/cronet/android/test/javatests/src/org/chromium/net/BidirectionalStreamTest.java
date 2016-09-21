@@ -4,12 +4,16 @@
 
 package org.chromium.net;
 
+import static org.chromium.base.CollectionUtil.newHashSet;
+
 import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
+import org.chromium.net.MetricsTestUtil.TestExecutor;
+import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.chromium.net.TestBidirectionalStreamCallback.FailureType;
 import org.chromium.net.TestBidirectionalStreamCallback.ResponseStep;
 import org.chromium.net.impl.CronetBidirectionalStream;
@@ -18,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -222,6 +227,10 @@ public class BidirectionalStreamTest extends CronetTestBase {
         callback.addWriteData("Test String".getBytes());
         callback.addWriteData("1234567890".getBytes());
         callback.addWriteData("woot!".getBytes());
+        TestExecutor testExecutor = new TestExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         // Create stream.
         BidirectionalStream stream = new BidirectionalStream
                                              .Builder(url, callback, callback.getExecutor(),
@@ -229,10 +238,20 @@ public class BidirectionalStreamTest extends CronetTestBase {
                                              .addHeader("foo", "bar")
                                              .addHeader("empty", "")
                                              .addHeader("Content-Type", "zebra")
+                                             .addRequestAnnotation(this)
+                                             .addRequestAnnotation("request annotation")
                                              .build();
         stream.start();
         callback.blockForDone();
+        testExecutor.runAllTasks();
         assertTrue(stream.isDone());
+        RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
+        assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
+        assertEquals(url, finishedInfo.getUrl());
+        assertEquals(newHashSet("request annotation", this),
+                new HashSet<Object>(finishedInfo.getAnnotations()));
+        assertNotNull(finishedInfo.getResponseInfo());
+        // TODO(xunjieli): Check other fields once metrics support is in crbug.com/648346.
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("Test String1234567890woot!", callback.mResponseAsString);
         assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));

@@ -4,13 +4,18 @@
 
 package org.chromium.net;
 
+import static org.chromium.base.CollectionUtil.newHashSet;
+
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
+import org.chromium.net.MetricsTestUtil.TestExecutor;
+import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 
 /**
  * Tests functionality of BidirectionalStream's QUIC implementation.
@@ -89,16 +94,30 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         callback.addWriteData("Test String".getBytes());
         callback.addWriteData("1234567890".getBytes());
         callback.addWriteData("woot!".getBytes());
+        TestExecutor testExecutor = new TestExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(testExecutor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         BidirectionalStream stream = new BidirectionalStream
                                              .Builder(quicURL, callback, callback.getExecutor(),
                                                      mTestFramework.mCronetEngine)
                                              .addHeader("foo", "bar")
                                              .addHeader("empty", "")
                                              .addHeader("Content-Type", "zebra")
+                                             .addRequestAnnotation("request annotation")
+                                             .addRequestAnnotation(this)
                                              .build();
         stream.start();
         callback.blockForDone();
+        testExecutor.runAllTasks();
         assertTrue(stream.isDone());
+        RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
+        assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
+        assertEquals(quicURL, finishedInfo.getUrl());
+        assertEquals(newHashSet("request annotation", this),
+                new HashSet<Object>(finishedInfo.getAnnotations()));
+        assertNotNull(finishedInfo.getResponseInfo());
+        // TODO(xunjieli): Check other fields once metrics support is in crbug.com/648346.
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
         assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());

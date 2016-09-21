@@ -68,7 +68,7 @@ final class JavaCronetEngine extends CronetEngine {
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority,
-            boolean delayRequestHeadersUntilFirstFlush) {
+            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> connectionAnnotations) {
         throw new UnsupportedOperationException(
                 "Can't create a bidi stream - httpurlconnection doesn't have those APIs");
     }

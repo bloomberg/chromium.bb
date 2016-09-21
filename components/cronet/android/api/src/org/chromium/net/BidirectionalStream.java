@@ -12,6 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -49,6 +50,9 @@ public abstract class BidirectionalStream {
         @StreamPriority private int mPriority = STREAM_PRIORITY_MEDIUM;
 
         private boolean mDelayRequestHeadersUntilFirstFlush;
+
+        // Request reporting annotations.
+        private Collection<Object> mRequestAnnotations;
 
         /**
          * Creates a builder for {@link BidirectionalStream} objects. All callbacks for
@@ -178,6 +182,28 @@ public abstract class BidirectionalStream {
         }
 
         /**
+         * Associates the annotation object with this request. May add more than one.
+         * Passed through to a {@link RequestFinishedInfo.Listener},
+         * see {@link RequestFinishedInfo#getAnnotations}.
+         *
+         * @param annotation an object to pass on to the {@link RequestFinishedInfo.Listener} with a
+         * {@link RequestFinishedInfo}.
+         * @return the builder to facilitate chaining.
+         *
+         * @hide as it's a prototype.
+         */
+        public Builder addRequestAnnotation(Object annotation) {
+            if (annotation == null) {
+                throw new NullPointerException("Invalid metrics annotation.");
+            }
+            if (mRequestAnnotations == null) {
+                mRequestAnnotations = new ArrayList<Object>();
+            }
+            mRequestAnnotations.add(annotation);
+            return this;
+        }
+
+        /**
          * Creates a {@link BidirectionalStream} using configuration from this
          * {@link Builder}. The returned {@code BidirectionalStream} can then be started
          * by calling {@link BidirectionalStream#start}.
@@ -188,7 +214,8 @@ public abstract class BidirectionalStream {
         @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
         public BidirectionalStream build() {
             return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
-                    mRequestHeaders, mPriority, mDelayRequestHeadersUntilFirstFlush);
+                    mRequestHeaders, mPriority, mDelayRequestHeadersUntilFirstFlush,
+                    mRequestAnnotations);
         }
     }
 

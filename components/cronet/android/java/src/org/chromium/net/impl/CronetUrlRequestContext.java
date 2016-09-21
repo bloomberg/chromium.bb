@@ -207,11 +207,12 @@ public class CronetUrlRequestContext extends CronetEngine {
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders,
             @BidirectionalStream.Builder.StreamPriority int priority,
-            boolean delayRequestHeadersUntilFirstFlush) {
+            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations) {
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetBidirectionalStream(this, url, priority, callback, executor,
-                    httpMethod, requestHeaders, delayRequestHeadersUntilFirstFlush);
+                    httpMethod, requestHeaders, delayRequestHeadersUntilFirstFlush,
+                    requestAnnotations);
         }
     }
 
