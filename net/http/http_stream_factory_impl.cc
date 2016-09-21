@@ -189,7 +189,7 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     bool direct,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    bool was_npn_negotiated,
+    bool was_alpn_negotiated,
     NextProto negotiated_protocol,
     bool using_spdy,
     const BoundNetLog& net_log) {
@@ -207,7 +207,7 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     if (!base::ContainsKey(spdy_session_request_map_, spdy_session_key))
       break;
     Request* request = *spdy_session_request_map_[spdy_session_key].begin();
-    request->Complete(was_npn_negotiated, negotiated_protocol, using_spdy);
+    request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
     if (for_websockets_) {
       // TODO(ricea): Restore this code path when WebSocket over SPDY
       // implementation is ready.

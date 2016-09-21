@@ -212,7 +212,7 @@ class HttpStreamFactoryImpl::Job {
   void SetPriority(RequestPriority priority);
 
   RequestPriority priority() const { return priority_; }
-  bool was_npn_negotiated() const;
+  bool was_alpn_negotiated() const;
   NextProto negotiated_protocol() const;
   bool using_spdy() const;
   const BoundNetLog& net_log() const { return net_log_; }
@@ -463,8 +463,8 @@ class HttpStreamFactoryImpl::Job {
   std::unique_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
   std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl_;
 
-  // True if we negotiated NPN.
-  bool was_npn_negotiated_;
+  // True if we negotiated ALPN.
+  bool was_alpn_negotiated_;
 
   // Protocol negotiated with the server.
   NextProto negotiated_protocol_;

@@ -197,7 +197,7 @@ class HttpStreamFactoryImpl::JobController
   void OnJobSucceeded(Job* job);
 
   // Marks completion of the |request_|.
-  void MarkRequestComplete(bool was_npn_negotiated,
+  void MarkRequestComplete(bool was_alpn_negotiated,
                            NextProto negotiated_protocol,
                            bool using_spdy);
 

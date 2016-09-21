@@ -7,8 +7,8 @@
 namespace content {
 
 WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl(
-    const std::string& npn_negotiated_protocol)
-    : npn_negotiated_protocol_(npn_negotiated_protocol),
+    const std::string& alpn_negotiated_protocol)
+    : alpn_negotiated_protocol_(alpn_negotiated_protocol),
       is_ftp_directory_listing_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}

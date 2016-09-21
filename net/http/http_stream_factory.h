@@ -180,8 +180,8 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   // Returns the LoadState for the request.
   virtual LoadState GetLoadState() const = 0;
 
-  // Returns true if TLS/NPN was negotiated for this stream.
-  virtual bool was_npn_negotiated() const = 0;
+  // Returns true if TLS/ALPN was negotiated for this stream.
+  virtual bool was_alpn_negotiated() const = 0;
 
   // Protocol negotiated with the server.
   virtual NextProto negotiated_protocol() const = 0;

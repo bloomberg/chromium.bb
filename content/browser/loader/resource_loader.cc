@@ -60,9 +60,9 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
   request->GetMimeType(&response->head.mime_type);
   net::HttpResponseInfo response_info = request->response_info();
   response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
-  response->head.was_npn_negotiated = response_info.was_npn_negotiated;
-  response->head.npn_negotiated_protocol =
-      response_info.npn_negotiated_protocol;
+  response->head.was_alpn_negotiated = response_info.was_alpn_negotiated;
+  response->head.alpn_negotiated_protocol =
+      response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.proxy_server = response_info.proxy_server;

@@ -783,8 +783,8 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
       HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
   response_info_->vary_data.Init(*request_info_,
                                  *response_info_->headers.get());
-  response_info_->was_npn_negotiated = true;
-  response_info_->npn_negotiated_protocol = "quic/1+spdy/3";
+  response_info_->was_alpn_negotiated = true;
+  response_info_->alpn_negotiated_protocol = "quic/1+spdy/3";
   response_info_->response_time = base::Time::Now();
   response_info_->request_time = request_time_;
   response_headers_received_ = true;

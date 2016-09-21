@@ -159,7 +159,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
                 response->connection_info);
       EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_TRUE(response->was_fetched_via_spdy);
-      EXPECT_TRUE(response->was_npn_negotiated);
+      EXPECT_TRUE(response->was_alpn_negotiated);
       EXPECT_EQ("127.0.0.1", response->socket_address.host());
       EXPECT_EQ(443, response->socket_address.port());
       output_.status_line = response->headers->GetStatusLine();
@@ -3959,7 +3959,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
             response->connection_info);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_TRUE(request.url.SchemeIs("https"));
   EXPECT_EQ("127.0.0.1", response->socket_address.host());
   EXPECT_EQ(443, response->socket_address.port());
@@ -4054,7 +4054,7 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
             response->connection_info);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
   EXPECT_TRUE(request.url.SchemeIs("https"));
   EXPECT_EQ("127.0.0.1", response->socket_address.host());
   EXPECT_EQ(70, response->socket_address.port());

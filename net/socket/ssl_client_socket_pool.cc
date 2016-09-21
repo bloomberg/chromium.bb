@@ -336,10 +336,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     server_address_ = IPEndPoint();
   }
 
-  // If we want SPDY over ALPN/NPN, make sure it succeeded.
+  // If we want SPDY over ALPN, make sure it succeeded.
   if (params_->expect_spdy() &&
       ssl_socket_->GetNegotiatedProtocol() != kProtoHTTP2) {
-    return ERR_NPN_NEGOTIATION_FAILED;
+    return ERR_ALPN_NEGOTIATION_FAILED;
   }
 
   if (result == OK ||

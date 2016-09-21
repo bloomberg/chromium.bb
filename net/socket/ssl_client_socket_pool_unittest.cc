@@ -428,7 +428,7 @@ TEST_F(SSLClientSocketPoolTest, DirectNoSPDY) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
 
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NPN_NEGOTIATION_FAILED));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_ALPN_NEGOTIATION_FAILED));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());

@@ -31,13 +31,13 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   }
   new_response->head.download_file_path = head.download_file_path;
   new_response->head.was_fetched_via_spdy = head.was_fetched_via_spdy;
-  new_response->head.was_npn_negotiated = head.was_npn_negotiated;
+  new_response->head.was_alpn_negotiated = head.was_alpn_negotiated;
   new_response->head.was_alternate_protocol_available =
       head.was_alternate_protocol_available;
   new_response->head.connection_info = head.connection_info;
   new_response->head.was_fetched_via_proxy = head.was_fetched_via_proxy;
   new_response->head.proxy_server = head.proxy_server;
-  new_response->head.npn_negotiated_protocol = head.npn_negotiated_protocol;
+  new_response->head.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
   new_response->head.socket_address = head.socket_address;
   new_response->head.was_fetched_via_service_worker =
       head.was_fetched_via_service_worker;

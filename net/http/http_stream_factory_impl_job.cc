@@ -202,7 +202,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       using_existing_quic_session_(false),
       spdy_certificate_error_(OK),
       establishing_tunnel_(false),
-      was_npn_negotiated_(false),
+      was_alpn_negotiated_(false),
       negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
       spdy_session_direct_(false),
@@ -322,8 +322,8 @@ void HttpStreamFactoryImpl::Job::SetPriority(RequestPriority priority) {
   // preconnect state.
 }
 
-bool HttpStreamFactoryImpl::Job::was_npn_negotiated() const {
-  return was_npn_negotiated_;
+bool HttpStreamFactoryImpl::Job::was_alpn_negotiated() const {
+  return was_alpn_negotiated_;
 }
 
 NextProto HttpStreamFactoryImpl::Job::negotiated_protocol() const {
@@ -1006,13 +1006,13 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
 
   if (ssl_started && (result == OK || IsCertificateError(result))) {
     if (using_quic_ && result == OK) {
-      was_npn_negotiated_ = true;
+      was_alpn_negotiated_ = true;
       negotiated_protocol_ = kProtoQUIC1SPDY3;
     } else {
       SSLClientSocket* ssl_socket =
           static_cast<SSLClientSocket*>(connection_->socket());
       if (ssl_socket->WasNpnNegotiated()) {
-        was_npn_negotiated_ = true;
+        was_alpn_negotiated_ = true;
         negotiated_protocol_ = ssl_socket->GetNegotiatedProtocol();
         net_log_.AddEvent(
             NetLogEventType::HTTP_STREAM_REQUEST_PROTO,
@@ -1029,7 +1029,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     if (!proxy_socket->IsConnected())
       return ERR_CONNECTION_CLOSED;
     if (proxy_socket->IsUsingSpdy()) {
-      was_npn_negotiated_ = true;
+      was_alpn_negotiated_ = true;
       negotiated_protocol_ = proxy_socket->GetProxyNegotiatedProtocol();
       SwitchToSpdyMode();
     }
@@ -1054,7 +1054,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (IsSpdyAlternative() && !using_spdy_)
-    return ERR_NPN_NEGOTIATION_FAILED;
+    return ERR_ALPN_NEGOTIATION_FAILED;
 
   if (!ssl_started && result < 0 &&
       (IsSpdyAlternative() || IsQuicAlternative()))

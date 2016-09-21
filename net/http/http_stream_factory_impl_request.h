@@ -70,7 +70,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   bool HasSpdySessionKey() const;
 
   // Marks completion of the request. Must be called before OnStreamReady().
-  void Complete(bool was_npn_negotiated,
+  void Complete(bool was_alpn_negotiated,
                 NextProto negotiated_protocol,
                 bool using_spdy);
 
@@ -119,7 +119,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   int RestartTunnelWithProxyAuth(const AuthCredentials& credentials) override;
   void SetPriority(RequestPriority priority) override;
   LoadState GetLoadState() const override;
-  bool was_npn_negotiated() const override;
+  bool was_alpn_negotiated() const override;
   NextProto negotiated_protocol() const override;
   bool using_spdy() const override;
   const ConnectionAttempts& connection_attempts() const override;
@@ -142,7 +142,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   std::unique_ptr<const SpdySessionKey> spdy_session_key_;
 
   bool completed_;
-  bool was_npn_negotiated_;
+  bool was_alpn_negotiated_;
   // Protocol negotiated with the server.
   NextProto negotiated_protocol_;
   bool using_spdy_;

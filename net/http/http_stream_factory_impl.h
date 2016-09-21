@@ -110,7 +110,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
                              bool direct,
                              const SSLConfig& used_ssl_config,
                              const ProxyInfo& used_proxy_info,
-                             bool was_npn_negotiated,
+                             bool was_alpn_negotiated,
                              NextProto negotiated_protocol,
                              bool using_spdy,
                              const BoundNetLog& net_log);

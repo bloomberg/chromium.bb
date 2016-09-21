@@ -89,7 +89,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   bool was_fetched_via_spdy;
 
   // True if the response was delivered after NPN is negotiated.
-  bool was_npn_negotiated;
+  bool was_alpn_negotiated;
 
   // True if response could use alternate protocol. However, browser will
   // ignore the alternate protocol when spdy is not enabled on browser side.
@@ -105,8 +105,8 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   bool was_fetched_via_proxy;
   net::HostPortPair proxy_server;
 
-  // NPN protocol negotiated with the server.
-  std::string npn_negotiated_protocol;
+  // ALPN protocol negotiated with the server.
+  std::string alpn_negotiated_protocol;
 
   // Remote address of the socket which fetched this resource.
   net::HostPortPair socket_address;

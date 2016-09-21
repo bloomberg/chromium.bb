@@ -4182,10 +4182,9 @@ void RenderFrameImpl::didReceiveResponse(
   if (extra_data) {
     document_state->set_was_fetched_via_spdy(
         extra_data->was_fetched_via_spdy());
-    document_state->set_was_npn_negotiated(
-        extra_data->was_npn_negotiated());
-    document_state->set_npn_negotiated_protocol(
-        extra_data->npn_negotiated_protocol());
+    document_state->set_was_alpn_negotiated(extra_data->was_alpn_negotiated());
+    document_state->set_alpn_negotiated_protocol(
+        extra_data->alpn_negotiated_protocol());
     document_state->set_was_alternate_protocol_available(
         extra_data->was_alternate_protocol_available());
     document_state->set_connection_info(

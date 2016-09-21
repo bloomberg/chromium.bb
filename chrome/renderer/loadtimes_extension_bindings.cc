@@ -168,9 +168,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     std::string navigation_type =
         GetNavigationType(data_source->navigationType());
     bool was_fetched_via_spdy = document_state->was_fetched_via_spdy();
-    bool was_npn_negotiated = document_state->was_npn_negotiated();
-    std::string npn_negotiated_protocol =
-        document_state->npn_negotiated_protocol();
+    bool was_alpn_negotiated = document_state->was_alpn_negotiated();
+    std::string alpn_negotiated_protocol =
+        document_state->alpn_negotiated_protocol();
     bool was_alternate_protocol_available =
         document_state->was_alternate_protocol_available();
     std::string connection_info = net::HttpResponseInfo::ConnectionInfoToString(
@@ -284,28 +284,27 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         .FromMaybe(false)) {
       return;
     }
-    if (!load_times->SetAccessor(
-            ctx,
-            v8::String::NewFromUtf8(
-                isolate, "wasNpnNegotiated", v8::NewStringType::kNormal)
-            .ToLocalChecked(),
-            LoadtimesGetter,
-            nullptr,
-            v8::Boolean::New(isolate, was_npn_negotiated))
-        .FromMaybe(false)) {
+    if (!load_times
+             ->SetAccessor(ctx,
+                           v8::String::NewFromUtf8(isolate, "wasNpnNegotiated",
+                                                   v8::NewStringType::kNormal)
+                               .ToLocalChecked(),
+                           LoadtimesGetter, nullptr,
+                           v8::Boolean::New(isolate, was_alpn_negotiated))
+             .FromMaybe(false)) {
       return;
     }
-    if (!load_times->SetAccessor(
-            ctx,
-            v8::String::NewFromUtf8(
-                isolate, "npnNegotiatedProtocol", v8::NewStringType::kNormal)
-            .ToLocalChecked(),
-            LoadtimesGetter,
-            nullptr,
-            v8::String::NewFromUtf8(isolate, npn_negotiated_protocol.c_str(),
-                                    v8::NewStringType::kNormal)
-            .ToLocalChecked())
-        .FromMaybe(false)) {
+    if (!load_times
+             ->SetAccessor(
+                 ctx, v8::String::NewFromUtf8(isolate, "npnNegotiatedProtocol",
+                                              v8::NewStringType::kNormal)
+                          .ToLocalChecked(),
+                 LoadtimesGetter, nullptr,
+                 v8::String::NewFromUtf8(isolate,
+                                         alpn_negotiated_protocol.c_str(),
+                                         v8::NewStringType::kNormal)
+                     .ToLocalChecked())
+             .FromMaybe(false)) {
       return;
     }
     if (!load_times->SetAccessor(

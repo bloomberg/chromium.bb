@@ -16,7 +16,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       encoded_body_length(-1),
       appcache_id(kAppCacheNoCacheId),
       was_fetched_via_spdy(false),
-      was_npn_negotiated(false),
+      was_alpn_negotiated(false),
       was_alternate_protocol_available(false),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_fetched_via_proxy(false),

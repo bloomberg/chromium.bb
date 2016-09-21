@@ -206,7 +206,7 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
       GetResponseHeaders(env).obj(),
       request->response_info().was_cached ? JNI_TRUE : JNI_FALSE,
       ConvertUTF8ToJavaString(env,
-                              request->response_info().npn_negotiated_protocol)
+                              request->response_info().alpn_negotiated_protocol)
           .obj(),
       ConvertUTF8ToJavaString(env,
                               request->response_info().proxy_server.ToString())
@@ -255,7 +255,7 @@ void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request,
       GetResponseHeaders(env).obj(),
       request->response_info().was_cached ? JNI_TRUE : JNI_FALSE,
       ConvertUTF8ToJavaString(env,
-                              request->response_info().npn_negotiated_protocol)
+                              request->response_info().alpn_negotiated_protocol)
           .obj(),
       ConvertUTF8ToJavaString(env,
                               request->response_info().proxy_server.ToString())

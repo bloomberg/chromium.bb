@@ -1020,10 +1020,10 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
   WebURLResponseExtraDataImpl* extra_data =
-      new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
+      new WebURLResponseExtraDataImpl(info.alpn_negotiated_protocol);
   response->setExtraData(extra_data);
   extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
-  extra_data->set_was_npn_negotiated(info.was_npn_negotiated);
+  extra_data->set_was_alpn_negotiated(info.was_alpn_negotiated);
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_connection_info(info.connection_info);
@@ -1071,8 +1071,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       load_info.addResponseHeader(WebString::fromLatin1(it->first),
           WebString::fromLatin1(it->second));
     }
-    load_info.setNPNNegotiatedProtocol(WebString::fromLatin1(
-        info.npn_negotiated_protocol));
+    load_info.setNPNNegotiatedProtocol(
+        WebString::fromLatin1(info.alpn_negotiated_protocol));
     response->setHTTPLoadInfo(load_info);
   }
 

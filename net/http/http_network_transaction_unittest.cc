@@ -9883,7 +9883,7 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -9938,7 +9938,7 @@ TEST_F(HttpNetworkTransactionTest,
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -10081,7 +10081,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -10134,7 +10134,7 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -10725,7 +10725,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
@@ -10835,7 +10835,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
@@ -10844,7 +10844,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(&trans3, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
@@ -10915,7 +10915,7 @@ TEST_F(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
 
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello world", response_data);
@@ -11053,7 +11053,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(&trans, &response_data), IsOk());
@@ -11151,7 +11151,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/0.9 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
@@ -11168,7 +11168,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
@@ -11265,7 +11265,7 @@ TEST_F(HttpNetworkTransactionTest,
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
@@ -11932,7 +11932,7 @@ TEST_F(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
   EXPECT_EQ("hello world", response_data);
 
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 }
 
 // Simulate the SSL handshake completing with an NPN negotiation followed by an
@@ -12845,7 +12845,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
@@ -12922,7 +12922,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
@@ -13050,7 +13050,7 @@ TEST_F(HttpNetworkTransactionTest,
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 }
@@ -13172,9 +13172,9 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   TestCompletionCallback callback;
 
   // HTTP/2 (or SPDY) is required for alternative service, if HTTP/1.1 is
-  // negotiated, the alternate Job should fail with ERR_NPN_NEGOTIATION_FAILED.
+  // negotiated, the alternate Job should fail with ERR_ALPN_NEGOTIATION_FAILED.
   int rv = trans.Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NPN_NEGOTIATION_FAILED));
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_ALPN_NEGOTIATION_FAILED));
 }
 
 // A request to a server with an alternative service fires two Jobs: one to the
@@ -13355,7 +13355,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   ASSERT_TRUE(response1);
   ASSERT_TRUE(response1->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response1->headers->GetStatusLine());
-  EXPECT_TRUE(response1->was_npn_negotiated);
+  EXPECT_TRUE(response1->was_alpn_negotiated);
   EXPECT_FALSE(response1->was_fetched_via_spdy);
   std::string response_data1;
   ASSERT_THAT(ReadTransaction(&trans1, &response_data1), IsOk());
@@ -13391,7 +13391,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   ASSERT_TRUE(response3);
   ASSERT_TRUE(response3->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response3->headers->GetStatusLine());
-  EXPECT_TRUE(response3->was_npn_negotiated);
+  EXPECT_TRUE(response3->was_alpn_negotiated);
   EXPECT_FALSE(response3->was_fetched_via_spdy);
   std::string response_data3;
   ASSERT_THAT(ReadTransaction(&trans3, &response_data3), IsOk());
@@ -13798,7 +13798,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
 
   std::string response_data;
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
@@ -13827,7 +13827,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_TRUE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
@@ -13855,7 +13855,7 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_FALSE(response->was_npn_negotiated);
+  EXPECT_FALSE(response->was_alpn_negotiated);
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
@@ -14264,7 +14264,7 @@ class FakeStreamRequest : public HttpStreamRequest,
 
   void SetPriority(RequestPriority priority) override { priority_ = priority; }
 
-  bool was_npn_negotiated() const override { return false; }
+  bool was_alpn_negotiated() const override { return false; }
 
   NextProto negotiated_protocol() const override { return kProtoUnknown; }
 

@@ -132,14 +132,14 @@ class CONTENT_EXPORT DocumentState
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
   void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
 
-  bool was_npn_negotiated() const { return was_npn_negotiated_; }
-  void set_was_npn_negotiated(bool value) { was_npn_negotiated_ = value; }
+  bool was_alpn_negotiated() const { return was_alpn_negotiated_; }
+  void set_was_alpn_negotiated(bool value) { was_alpn_negotiated_ = value; }
 
-  const std::string& npn_negotiated_protocol() const {
-    return npn_negotiated_protocol_;
+  const std::string& alpn_negotiated_protocol() const {
+    return alpn_negotiated_protocol_;
   }
-  void set_npn_negotiated_protocol(const std::string& value) {
-    npn_negotiated_protocol_ = value;
+  void set_alpn_negotiated_protocol(const std::string& value) {
+    alpn_negotiated_protocol_ = value;
   }
 
   bool was_alternate_protocol_available() const {
@@ -208,8 +208,8 @@ class CONTENT_EXPORT DocumentState
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
   bool was_fetched_via_spdy_;
-  bool was_npn_negotiated_;
-  std::string npn_negotiated_protocol_;
+  bool was_alpn_negotiated_;
+  std::string alpn_negotiated_protocol_;
   bool was_alternate_protocol_available_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_fetched_via_proxy_;
