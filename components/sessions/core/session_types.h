@@ -62,7 +62,7 @@ struct SESSIONS_EXPORT SessionTab {
   // Unique id of the window.
   SessionID window_id;
 
-  // Unique if of the tab.
+  // Unique id of the tab.
   SessionID tab_id;
 
   // Visual index of the tab within its window. There may be gaps in these
@@ -166,7 +166,7 @@ struct SESSIONS_EXPORT SessionWindow {
   base::Time timestamp;
 
   // The tabs, ordered by visual order.
-  std::vector<SessionTab*> tabs;
+  std::vector<std::unique_ptr<SessionTab>> tabs;
 
   // Is the window maximized, minimized, or normal?
   ui::WindowShowState show_state;

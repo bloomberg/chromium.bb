@@ -19,34 +19,21 @@ class GURL;
 
 namespace sessions_helper {
 
-typedef std::vector<const sync_sessions::SyncedSession*> SyncedSessionVector;
-typedef sync_sessions::SyncedSession::SyncedWindowMap SessionWindowMap;
-
-// Wrapper around a SyncedWindowMap that will automatically delete the
-// SessionWindow pointers it holds.
-class ScopedWindowMap {
- public:
-  ScopedWindowMap();
-  explicit ScopedWindowMap(SessionWindowMap* windows);
-  ~ScopedWindowMap();
-
-  const SessionWindowMap* Get() const;
-  SessionWindowMap* GetMutable();
-  void Reset(SessionWindowMap* windows);
- private:
-  SessionWindowMap windows_;
-};
+using SyncedSessionVector = std::vector<const sync_sessions::SyncedSession*>;
+using SessionWindowMap = std::map<SessionID::id_type, sessions::SessionWindow*>;
+using ScopedWindowMap =
+    std::map<SessionID::id_type, std::unique_ptr<sessions::SessionWindow>>;
 
 // Copies the local session windows of profile |index| to |local_windows|.
 // Returns true if successful.
-bool GetLocalWindows(int index, SessionWindowMap* local_windows);
+bool GetLocalWindows(int index, ScopedWindowMap* local_windows);
 
 // Creates and verifies the creation of a new window for profile |index| with
 // one tab displaying |url|. Copies the SessionWindow associated with the new
 // window to |local_windows|. Returns true if successful.
 bool OpenTabAndGetLocalWindows(int index,
                                const GURL& url,
-                               SessionWindowMap* local_windows);
+                               ScopedWindowMap* local_windows);
 
 // Checks that window count and foreign session count are 0.
 bool CheckInitialState(int index);
@@ -83,8 +70,8 @@ bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
 //    3. number of tab navigations per tab,
 //    4. actual tab navigations contents
 // - false otherwise.
-bool WindowsMatch(const SessionWindowMap& win1,
-                  const SessionWindowMap& win2);
+bool WindowsMatch(const ScopedWindowMap& win1, const ScopedWindowMap& win2);
+bool WindowsMatch(const SessionWindowMap& win1, const ScopedWindowMap& win2);
 
 // Retrieves the foreign sessions for a particular profile and compares them
 // with a reference SessionWindow list.

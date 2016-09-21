@@ -268,9 +268,10 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
   std::vector<SessionData> suggestion_candidates;
 
   for (const SyncedSession* session : foreign_sessions) {
-    for (const std::pair<const SessionID::id_type, SessionWindow*>& key_value :
+    for (const std::pair<const SessionID::id_type,
+                         std::unique_ptr<sessions::SessionWindow>>& key_value :
          session->windows) {
-      for (const SessionTab* tab : key_value.second->tabs) {
+      for (const std::unique_ptr<SessionTab>& tab : key_value.second->tabs) {
         if (tab->navigations.empty())
           continue;
 
@@ -284,7 +285,7 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
         if (dismissed_ids.find(unique_id) == dismissed_ids.end() &&
             (base::Time::Now() - tab->timestamp) < max_foreign_tab_age) {
           suggestion_candidates.push_back(
-              SessionData{session, tab, &navigation});
+              SessionData{session, tab.get(), &navigation});
         }
       }
     }

@@ -483,8 +483,8 @@ TEST_F(SessionsSyncManagerTest, PopulateSessionWindow) {
   std::string tag = "tag";
   SyncedSession* session = manager()->session_tracker_.GetSession(tag);
   manager()->session_tracker_.PutWindowInSession(tag, 0);
-  manager()->BuildSyncedSessionFromSpecifics(
-      tag, window_s, base::Time(), session->windows[0]);
+  manager()->BuildSyncedSessionFromSpecifics(tag, window_s, base::Time(),
+                                             session->windows[0].get());
   ASSERT_EQ(1U, session->windows[0]->tabs.size());
   ASSERT_EQ(1, session->windows[0]->selected_tab_index);
   ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, session->windows[0]->type);
@@ -2508,7 +2508,7 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
 
-  const std::vector<sessions::SessionTab*>& window_tabs =
+  const std::vector<std::unique_ptr<sessions::SessionTab>>& window_tabs =
       foreign_sessions[0]->windows.find(0)->second->tabs;
   ASSERT_EQ(3U, window_tabs.size());
   // The first one is from the original set of tabs.

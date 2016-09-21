@@ -244,7 +244,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // Removes unrestorable windows from the previous windows list.
   void RemoveUnusedRestoreWindows(
-      std::vector<sessions::SessionWindow*>* window_list);
+      std::vector<std::unique_ptr<sessions::SessionWindow>>* window_list);
 
   // Implementation of RestoreIfNecessary. If |browser| is non-null and we need
   // to restore, the tabs are added to it, otherwise a new browser is created.

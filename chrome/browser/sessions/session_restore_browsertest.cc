@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -780,32 +781,31 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   // Set up the restore data -- one window with two tabs.
   std::vector<const sessions::SessionWindow*> session;
   sessions::SessionWindow window;
-  sessions::SessionTab tab1;
+  auto tab1 = base::MakeUnique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(0);
     sync_data.set_current_navigation_index(0);
     sync_data.set_pinned(true);
     sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
-    tab1.SetFromSyncData(sync_data, base::Time::Now());
+    tab1->SetFromSyncData(sync_data, base::Time::Now());
   }
-  window.tabs.push_back(&tab1);
+  window.tabs.push_back(std::move(tab1));
 
-  sessions::SessionTab tab2;
+  auto tab2 = base::MakeUnique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(1);
     sync_data.set_current_navigation_index(0);
     sync_data.set_pinned(false);
     sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
-    tab2.SetFromSyncData(sync_data, base::Time::Now());
+    tab2->SetFromSyncData(sync_data, base::Time::Now());
   }
-  window.tabs.push_back(&tab2);
+  window.tabs.push_back(std::move(tab2));
 
-  // Leave tab3 empty. Should have no effect on restored session, but simulates
-  // partially complete foreign session data.
-  sessions::SessionTab tab3;
-  window.tabs.push_back(&tab3);
+  // Leave a third tab empty. Should have no effect on restored session, but
+  // simulates partially complete foreign session data.
+  window.tabs.push_back(base::MakeUnique<sessions::SessionTab>());
 
   session.push_back(static_cast<const sessions::SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
@@ -839,10 +839,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   entry = web_contents_2->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
   ASSERT_FALSE(entry->GetIsOverridingUserAgent());
-
-  // The SessionWindow destructor deletes the tabs, so we have to clear them
-  // here to avoid a crash.
-  window.tabs.clear();
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {

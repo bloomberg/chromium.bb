@@ -4,23 +4,18 @@
 
 #include "components/sync_sessions/synced_session.h"
 
-#include "base/stl_util.h"
-
 namespace sync_sessions {
 
 SyncedSession::SyncedSession()
     : session_tag("invalid"), device_type(TYPE_UNSET) {}
 
-SyncedSession::~SyncedSession() {
-  base::STLDeleteContainerPairSecondPointers(windows.begin(), windows.end());
-}
+SyncedSession::~SyncedSession() {}
 
 sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
   sync_pb::SessionHeader header;
-  SyncedWindowMap::const_iterator iter;
-  for (iter = windows.begin(); iter != windows.end(); ++iter) {
+  for (const auto& window_pair : windows) {
     sync_pb::SessionWindow* w = header.add_window();
-    w->CopyFrom(iter->second->ToSyncData());
+    w->CopyFrom(window_pair.second->ToSyncData());
   }
   header.set_client_name(session_name);
   switch (device_type) {

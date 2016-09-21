@@ -17,6 +17,7 @@
 
 using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;
+using sessions_helper::AwaitCheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
 using sessions_helper::DeleteForeignSession;
 using sessions_helper::GetLocalWindows;
@@ -62,14 +63,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tab and access a url on client 0
-  SessionWindowMap client0_windows;
+  ScopedWindowMap client0_windows;
   std::string url = base::StringPrintf("http://127.0.0.1/bubba%s",
       base::GenerateGUID().c_str());
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(url), &client0_windows));
 
   // Retain the window information on client 0
   std::vector<ScopedWindowMap> expected_windows(1);
-  expected_windows[0].Reset(&client0_windows);
+  expected_windows[0] = std::move(client0_windows);
 
   // Check the foreign windows on client 1
   ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(1, expected_windows));
@@ -82,11 +83,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   // Open tabs on all clients and retain window information.
   std::vector<ScopedWindowMap> client_windows(num_clients());
   for (int i = 0; i < num_clients(); ++i) {
-    SessionWindowMap windows;
+    ScopedWindowMap windows;
     std::string url = base::StringPrintf("http://127.0.0.1/bubba%s",
         base::GenerateGUID().c_str());
     ASSERT_TRUE(OpenTabAndGetLocalWindows(i, GURL(url), &windows));
-    client_windows[i].Reset(&windows);
+    client_windows[i] = std::move(windows);
   }
 
   // Get foreign session data from all clients and check it against all
@@ -120,8 +121,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(1));
 
   ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1), &client0_windows));
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 
   // Verify client 1's foreign session matches client 0 current window.
   ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, client0_windows));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
@@ -157,11 +157,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_BothChanged) {
 
   // Open tabs on both clients and retain window information.
   ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL2),
-      client0_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL2), &client0_windows));
   ScopedWindowMap client1_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(1, GURL(kURL1),
-      client1_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(1, GURL(kURL1), &client1_windows));
 
   // Wait for sync.
   ASSERT_TRUE(AwaitQuiescence());
@@ -176,8 +174,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_BothChanged) {
   // vice versa.
   ASSERT_EQ(1U, sessions0.size());
   ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
-  ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, client0_windows));
+  ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, client1_windows));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
@@ -188,8 +186,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
 
   // Client 0 opened some tabs then went idle.
   ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1), &client0_windows));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -199,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
 
   // Verify client 1's foreign session matches client 0 current window.
   ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, client0_windows));
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
@@ -217,14 +214,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 
   // Client 0 opened some tabs then went idle.
   ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1), &client0_windows));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   SyncedSessionVector sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
   ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, client0_windows));
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
@@ -232,10 +228,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 
   // Client 0 becomes active again with a new tab.
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL2),
-      client0_windows.GetMutable()));
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL2), &client0_windows));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetSessionData(1, &sessions1));
   ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, client0_windows));
 }

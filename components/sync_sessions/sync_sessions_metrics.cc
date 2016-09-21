@@ -50,9 +50,8 @@ base::Time SyncSessionsMetrics::MaxTabTimestamp(
     if (session->modified_time < best) {
       break;
     }
-    for (const std::pair<const SessionID::id_type, sessions::SessionWindow*>&
-             key_value : session->windows) {
-      for (const sessions::SessionTab* tab : key_value.second->tabs) {
+    for (const auto& key_value : session->windows) {
+      for (const auto& tab : key_value.second->tabs) {
         best = std::max(best, tab->timestamp);
       }
     }

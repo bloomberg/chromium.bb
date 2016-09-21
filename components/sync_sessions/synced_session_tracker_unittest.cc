@@ -64,7 +64,8 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   SyncedSession* session = GetTracker()->GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
   ASSERT_EQ(1U, session->windows[10]->tabs.size());
-  ASSERT_EQ(GetTracker()->GetTab("tag", 15, 1), session->windows[10]->tabs[0]);
+  ASSERT_EQ(GetTracker()->GetTab("tag", 15, 1),
+            session->windows[10]->tabs[0].get());
   // Should clean up memory on its own.
 }
 

@@ -65,9 +65,8 @@ bool ShouldSkipTab(const sessions::SessionTab& session_tab) {
 }
 
 bool ShouldSkipWindow(const sessions::SessionWindow& window) {
-  for (std::vector<sessions::SessionTab*>::const_iterator tab_it =
-           window.tabs.begin(); tab_it != window.tabs.end(); ++tab_it) {
-    const sessions::SessionTab &session_tab = **tab_it;
+  for (const auto& tab_ptr : window.tabs) {
+    const sessions::SessionTab& session_tab = *(tab_ptr.get());
     if (!ShouldSkipTab(session_tab))
       return false;
   }
@@ -75,9 +74,8 @@ bool ShouldSkipWindow(const sessions::SessionWindow& window) {
 }
 
 bool ShouldSkipSession(const SyncedSession& session) {
-  for (SyncedSession::SyncedWindowMap::const_iterator it =
-      session.windows.begin(); it != session.windows.end(); ++it) {
-    const sessions::SessionWindow  &window = *(it->second);
+  for (const auto& window_pair : session.windows) {
+    const sessions::SessionWindow& window = *(window_pair.second.get());
     if (!ShouldSkipWindow(window))
       return false;
   }
@@ -107,9 +105,8 @@ void CopyWindowToJava(
     JNIEnv* env,
     const sessions::SessionWindow& window,
     ScopedJavaLocalRef<jobject>& j_window) {
-  for (std::vector<sessions::SessionTab*>::const_iterator tab_it =
-           window.tabs.begin(); tab_it != window.tabs.end(); ++tab_it) {
-    const sessions::SessionTab &session_tab = **tab_it;
+  for (const auto& tab_ptr : window.tabs) {
+    const sessions::SessionTab& session_tab = *(tab_ptr.get());
 
     if (ShouldSkipTab(session_tab))
       return;
@@ -122,9 +119,8 @@ void CopySessionToJava(
     JNIEnv* env,
     const SyncedSession& session,
     ScopedJavaLocalRef<jobject>& j_session) {
-  for (SyncedSession::SyncedWindowMap::const_iterator it =
-      session.windows.begin(); it != session.windows.end(); ++it) {
-    const sessions::SessionWindow &window = *(it->second);
+  for (const auto& window_pair : session.windows) {
+    const sessions::SessionWindow& window = *(window_pair.second.get());
 
     if (ShouldSkipWindow(window))
       continue;

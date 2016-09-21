@@ -28,8 +28,9 @@ class LiveTabContext;
 
 // Callback from TabRestoreServiceClient::GetLastSession.
 // The second parameter is the id of the window that was last active.
-typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
-    GetLastSessionCallback;
+using GetLastSessionCallback =
+    base::Callback<void(std::vector<std::unique_ptr<SessionWindow>>,
+                        SessionID::id_type)>;
 
 // A client interface that needs to be supplied to the tab restore service by
 // the embedder.

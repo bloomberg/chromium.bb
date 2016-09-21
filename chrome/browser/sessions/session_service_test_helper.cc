@@ -57,7 +57,7 @@ void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
 
 // Be sure and null out service to force closing the file.
 void SessionServiceTestHelper::ReadWindows(
-    std::vector<sessions::SessionWindow*>* windows,
+    std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
     SessionID::id_type* active_window_id) {
   Time last_time;
   ScopedVector<sessions::SessionCommand> read_commands;
@@ -100,7 +100,7 @@ void SessionServiceTestHelper::AssertNavigationEquals(
 }
 
 void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(
-    const std::vector<sessions::SessionWindow*>& windows,
+    const std::vector<std::unique_ptr<sessions::SessionWindow>>& windows,
     size_t nav_count) {
   ASSERT_EQ(1U, windows.size());
   EXPECT_EQ(1U, windows[0]->tabs.size());

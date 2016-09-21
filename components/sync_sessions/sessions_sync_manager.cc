@@ -272,9 +272,9 @@ void SessionsSyncManager::AssociateWindows(
 
         // Update this window's representation in the synced session tracker.
         session_tracker_.PutWindowInSession(local_tag, window_id);
-        BuildSyncedSessionFromSpecifics(local_tag, window_s,
-                                        current_session->modified_time,
-                                        current_session->windows[window_id]);
+        BuildSyncedSessionFromSpecifics(
+            local_tag, window_s, current_session->modified_time,
+            current_session->windows[window_id].get());
       }
     }
   }
@@ -463,11 +463,9 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
       current_machine_tag(), current_session_name_, header_entity);
   list.push_back(data);
 
-  SyncedSession::SyncedWindowMap::const_iterator win_iter;
-  for (win_iter = session->windows.begin(); win_iter != session->windows.end();
-       ++win_iter) {
-    std::vector<sessions::SessionTab*>::const_iterator tabs_iter;
-    for (tabs_iter = win_iter->second->tabs.begin();
+  for (auto win_iter = session->windows.begin();
+       win_iter != session->windows.end(); ++win_iter) {
+    for (auto tabs_iter = win_iter->second->tabs.begin();
          tabs_iter != win_iter->second->tabs.end(); ++tabs_iter) {
       sync_pb::EntitySpecifics entity;
       sync_pb::SessionSpecifics* specifics = entity.mutable_session();
@@ -694,9 +692,9 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
       const sync_pb::SessionWindow& window_s = header.window(i);
       SessionID::id_type window_id = window_s.window_id();
       session_tracker_.PutWindowInSession(foreign_session_tag, window_id);
-      BuildSyncedSessionFromSpecifics(foreign_session_tag, window_s,
-                                      modification_time,
-                                      foreign_session->windows[window_id]);
+      BuildSyncedSessionFromSpecifics(
+          foreign_session_tag, window_s, modification_time,
+          foreign_session->windows[window_id].get());
     }
     // Delete any closed windows and unused tabs as necessary.
     session_tracker_.CleanupSession(foreign_session_tag);
@@ -814,7 +812,7 @@ void SessionsSyncManager::BuildSyncedSessionFromSpecifics(
     }
   }
   session_window->timestamp = mtime;
-  session_window->tabs.resize(specifics.tab_size(), NULL);
+  session_window->tabs.resize(specifics.tab_size());
   for (int i = 0; i < specifics.tab_size(); i++) {
     SessionID::id_type tab_id = specifics.tab(i);
     session_tracker_.PutTabInWindow(session_tag, session_window->window_id.id(),
@@ -904,7 +902,7 @@ bool SessionsSyncManager::GetForeignSessionTabs(
   for (size_t j = 0; j < windows.size(); ++j) {
     const sessions::SessionWindow* window = windows[j];
     for (size_t t = 0; t < window->tabs.size(); ++t) {
-      sessions::SessionTab* const tab = window->tabs[t];
+      sessions::SessionTab* const tab = window->tabs[t].get();
       if (tab->navigations.empty())
         continue;
       const sessions::SerializedNavigationEntry& current_navigation =

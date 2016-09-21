@@ -563,14 +563,13 @@ bool SessionService::ShouldRestoreWindowOfType(
 }
 
 void SessionService::RemoveUnusedRestoreWindows(
-    std::vector<sessions::SessionWindow*>* window_list) {
-  std::vector<sessions::SessionWindow*>::iterator i = window_list->begin();
+    std::vector<std::unique_ptr<sessions::SessionWindow>>* window_list) {
+  auto i = window_list->begin();
   while (i != window_list->end()) {
-    sessions::SessionWindow* window = *i;
+    sessions::SessionWindow* window = i->get();
     if (!ShouldRestoreWindowOfType(window->type,
                                    window->app_name.empty() ? TYPE_NORMAL :
                                                               TYPE_APP)) {
-      delete window;
       i = window_list->erase(i);
     } else {
       ++i;
@@ -716,12 +715,12 @@ void SessionService::OnBrowserSetLastActive(Browser* browser) {
 void SessionService::OnGotSessionCommands(
     const sessions::GetLastSessionCallback& callback,
     ScopedVector<sessions::SessionCommand> commands) {
-  ScopedVector<sessions::SessionWindow> valid_windows;
+  std::vector<std::unique_ptr<sessions::SessionWindow>> valid_windows;
   SessionID::id_type active_window_id = 0;
 
-  sessions::RestoreSessionFromCommands(
-      commands, &valid_windows.get(), &active_window_id);
-  RemoveUnusedRestoreWindows(&valid_windows.get());
+  sessions::RestoreSessionFromCommands(commands, &valid_windows,
+                                       &active_window_id);
+  RemoveUnusedRestoreWindows(&valid_windows);
 
   callback.Run(std::move(valid_windows), active_window_id);
 }

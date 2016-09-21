@@ -40,8 +40,7 @@ void SessionSyncTestHelper::AddWindowSpecifics(
   window->set_window_id(window_id);
   window->set_selected_tab_index(0);
   window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-  for (std::vector<int>::const_iterator iter = tab_list.begin();
-       iter != tab_list.end(); ++iter) {
+  for (auto iter = tab_list.begin(); iter != tab_list.end(); ++iter) {
     window->add_tab(*iter);
   }
 }
@@ -61,19 +60,18 @@ void SessionSyncTestHelper::VerifySyncedSession(
   for (std::vector<std::vector<int>>::const_iterator win_iter = windows.begin();
        win_iter != windows.end(); ++win_iter, ++i) {
     sessions::SessionWindow* win_ptr;
-    SyncedSession::SyncedWindowMap::const_iterator map_iter =
-        session.windows.find(i);
+    auto map_iter = session.windows.find(i);
     if (map_iter != session.windows.end())
-      win_ptr = map_iter->second;
+      win_ptr = map_iter->second.get();
     else
       FAIL();
     ASSERT_EQ(win_iter->size(), win_ptr->tabs.size());
     ASSERT_EQ(0, win_ptr->selected_tab_index);
     ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, win_ptr->type);
     int j = 0;
-    for (std::vector<int>::const_iterator tab_iter = (*win_iter).begin();
-         tab_iter != (*win_iter).end(); ++tab_iter, ++j) {
-      sessions::SessionTab* tab = win_ptr->tabs[j];
+    for (auto tab_iter = (*win_iter).begin(); tab_iter != (*win_iter).end();
+         ++tab_iter, ++j) {
+      sessions::SessionTab* tab = win_ptr->tabs[j].get();
       ASSERT_EQ(*tab_iter, tab->tab_id.id());
       ASSERT_EQ(1U, tab->navigations.size());
       ASSERT_EQ(1, tab->tab_visual_index);

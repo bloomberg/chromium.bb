@@ -88,39 +88,39 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoSessions) {
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoWindows) {
-  std::unique_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session = base::MakeUnique<SyncedSession>();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoTabs) {
-  std::unique_ptr<SyncedSession> session(new SyncedSession());
-  session->windows[0] = new SessionWindow();
+  std::unique_ptr<SyncedSession> session = base::MakeUnique<SyncedSession>();
+  session->windows[0] = base::MakeUnique<SessionWindow>();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoEntries) {
-  std::unique_ptr<SessionWindow> window(new SessionWindow());
-  window->tabs.push_back(new SessionTab());
-  std::unique_ptr<SyncedSession> session(new SyncedSession());
-  session->windows[0] = window.release();
+  std::unique_ptr<SessionWindow> window = base::MakeUnique<SessionWindow>();
+  window->tabs.push_back(base::MakeUnique<SessionTab>());
+  std::unique_ptr<SyncedSession> session = base::MakeUnique<SyncedSession>();
+  session->windows[0] = std::move(window);
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersSingle) {
-  std::unique_ptr<SessionTab> tab(new SessionTab());
+  std::unique_ptr<SessionTab> tab = base::MakeUnique<SessionTab>();
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 0;
-  std::unique_ptr<SessionWindow> window(new SessionWindow());
-  window->tabs.push_back(tab.release());
-  std::unique_ptr<SyncedSession> session(new SyncedSession());
-  session->windows[0] = window.release();
+  std::unique_ptr<SessionWindow> window = base::MakeUnique<SessionWindow>();
+  window->tabs.push_back(std::move(tab));
+  std::unique_ptr<SyncedSession> session = base::MakeUnique<SyncedSession>();
+  session->windows[0] = std::move(window);
   CheckAndExpect(session.get(), GURL(kExampleUrl), true, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
-  std::unique_ptr<SessionTab> tab(new SessionTab());
+  std::unique_ptr<SessionTab> tab = base::MakeUnique<SessionTab>();
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -128,10 +128,10 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 1;
-  std::unique_ptr<SessionWindow> window(new SessionWindow());
-  window->tabs.push_back(tab.release());
-  std::unique_ptr<SyncedSession> session(new SyncedSession());
-  session->windows[0] = window.release();
+  std::unique_ptr<SessionWindow> window = base::MakeUnique<SessionWindow>();
+  window->tabs.push_back(std::move(tab));
+  std::unique_ptr<SyncedSession> session = base::MakeUnique<SyncedSession>();
+  session->windows[0] = std::move(window);
 
   // The provider returns false when asked for foreign sessions, even though
   // it has has a valid tab.
@@ -143,25 +143,25 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
-  std::unique_ptr<SessionTab> tab1(new SessionTab());
+  std::unique_ptr<SessionTab> tab1 = base::MakeUnique<SessionTab>();
   tab1->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab1->current_navigation_index = 0;
 
-  std::unique_ptr<SessionTab> tab2(new SessionTab());
+  std::unique_ptr<SessionTab> tab2 = base::MakeUnique<SessionTab>();
   tab2->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab2->current_navigation_index = 0;
 
-  std::unique_ptr<SessionTab> tab3(new SessionTab());
+  std::unique_ptr<SessionTab> tab3 = base::MakeUnique<SessionTab>();
   tab3->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab3->current_navigation_index = 0;
 
-  std::unique_ptr<SessionTab> tab4(new SessionTab());
+  std::unique_ptr<SessionTab> tab4 = base::MakeUnique<SessionTab>();
   tab4->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -170,19 +170,19 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
           kDifferentUrl, ""));
   tab4->current_navigation_index = 1;
 
-  std::unique_ptr<SessionWindow> window1(new SessionWindow());
-  window1->tabs.push_back(tab1.release());
-  std::unique_ptr<SessionWindow> window2(new SessionWindow());
-  window2->tabs.push_back(tab2.release());
-  std::unique_ptr<SessionWindow> window3(new SessionWindow());
-  window3->tabs.push_back(tab3.release());
-  window3->tabs.push_back(tab4.release());
+  std::unique_ptr<SessionWindow> window1 = base::MakeUnique<SessionWindow>();
+  window1->tabs.push_back(std::move(tab1));
+  std::unique_ptr<SessionWindow> window2 = base::MakeUnique<SessionWindow>();
+  window2->tabs.push_back(std::move(tab2));
+  std::unique_ptr<SessionWindow> window3 = base::MakeUnique<SessionWindow>();
+  window3->tabs.push_back(std::move(tab3));
+  window3->tabs.push_back(std::move(tab4));
 
-  std::unique_ptr<SyncedSession> session1(new SyncedSession());
-  session1->windows[1] = window1.release();
-  std::unique_ptr<SyncedSession> session2(new SyncedSession());
-  session2->windows[2] = window2.release();
-  session2->windows[3] = window3.release();
+  std::unique_ptr<SyncedSession> session1 = base::MakeUnique<SyncedSession>();
+  session1->windows[1] = std::move(window1);
+  std::unique_ptr<SyncedSession> session2 = base::MakeUnique<SyncedSession>();
+  session2->windows[2] = std::move(window2);
+  session2->windows[3] = std::move(window3);
 
   std::vector<const SyncedSession*> sessions;
   sessions.push_back(session1.get());

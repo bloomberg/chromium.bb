@@ -52,11 +52,10 @@ const char kUrl11[] = "http://www.fake11.com/";
 const char kTitle[] = "title is ignored";
 
 SessionWindow* GetOrCreateWindow(SyncedSession* session, int window_id) {
-  if (session->windows.find(window_id) == session->windows.end()) {
-    // The session deletes the windows it points at upon destruction.
-    session->windows[window_id] = new SessionWindow();
-  }
-  return session->windows[window_id];
+  if (session->windows.find(window_id) == session->windows.end())
+    session->windows[window_id] = base::MakeUnique<SessionWindow>();
+
+  return session->windows[window_id].get();
 }
 
 void AddTabToSession(SyncedSession* session,
@@ -73,7 +72,7 @@ void AddTabToSession(SyncedSession* session,
 
   SessionWindow* window = GetOrCreateWindow(session, window_id);
   // The window deletes the tabs it points at upon destruction.
-  window->tabs.push_back(tab.release());
+  window->tabs.push_back(std::move(tab));
 }
 
 class FakeForeignSessionsProvider : public ForeignSessionsProvider {

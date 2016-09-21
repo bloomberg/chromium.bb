@@ -242,7 +242,7 @@ std::unique_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   // from most recent to least recent.
   std::vector<const sessions::SessionTab*> tabs_in_window;
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    const sessions::SessionTab* tab = window.tabs[i];
+    const sessions::SessionTab* tab = window.tabs[i].get();
     if (tab->navigations.empty())
       continue;
     const sessions::SerializedNavigationEntry& current_navigation =
@@ -335,8 +335,7 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
   device_struct.info = session->session_name;
   device_struct.device_name = session->session_name;
 
-  for (sync_sessions::SyncedSession::SyncedWindowMap::const_iterator it =
-           session->windows.begin();
+  for (auto it = session->windows.begin();
        it != session->windows.end() &&
        static_cast<int>(device_struct.sessions.size()) < max_results;
        ++it) {

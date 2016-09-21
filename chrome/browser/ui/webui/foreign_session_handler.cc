@@ -108,8 +108,9 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
   std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
   // Calculate the last |modification_time| for all entries within a window.
   base::Time modification_time = window.timestamp;
-  for (const ::sessions::SessionTab* tab : window.tabs) {
-    std::unique_ptr<base::DictionaryValue> tab_value(SessionTabToValue(*tab));
+  for (const std::unique_ptr<sessions::SessionTab>& tab : window.tabs) {
+    std::unique_ptr<base::DictionaryValue> tab_value(
+        SessionTabToValue(*tab.get()));
     if (tab_value.get()) {
       modification_time = std::max(modification_time,
                                    tab->timestamp);
@@ -304,9 +305,9 @@ void ForeignSessionHandler::HandleGetForeignSessions(
           base::FieldTrialList::FindFullName("TabSyncByRecency");
       if (group_name != "Enabled") {
         // Order tabs by visual order within window.
-        for (auto map_iter : session->windows) {
+        for (const auto& window_pair : session->windows) {
           std::unique_ptr<base::DictionaryValue> window_data(
-              SessionWindowToValue(*map_iter.second));
+              SessionWindowToValue(*window_pair.second.get()));
           if (window_data.get())
             window_list->Append(std::move(window_data));
         }

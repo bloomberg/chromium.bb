@@ -56,17 +56,16 @@ void SessionsPageRevisitObserver::CheckForRevisit(
   std::vector<const SyncedSession*> foreign_sessions;
   if (provider_->GetAllForeignSessions(&foreign_sessions)) {
     for (const SyncedSession* session : foreign_sessions) {
-      for (const std::pair<const SessionID::id_type, sessions::SessionWindow*>&
-               key_value : session->windows) {
-        for (const sessions::SessionTab* tab : key_value.second->tabs) {
+      for (const auto& key_value : session->windows) {
+        for (const auto& tab : key_value.second->tabs) {
           // These matchers look identical and could easily implement an
           // interface and we could iterate through a vector of matchers here.
           // However this would cause quite a bit of overhead at the inner most
           // loop of something that takes linear time in relation to the number
           // of open foreign tabs. A small fraction of users have thousands of
           // open tabs.
-          current_matcher.Check(tab);
-          offset_matcher.Check(tab);
+          current_matcher.Check(tab.get());
+          offset_matcher.Check(tab.get());
         }
       }
     }

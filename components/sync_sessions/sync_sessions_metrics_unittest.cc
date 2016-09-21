@@ -69,14 +69,16 @@ class SyncSessionsMetricsTest : public ::testing::Test {
     }
     if (sessions_[tabIndex]->windows.find(windowIndex) ==
         sessions_[tabIndex]->windows.end()) {
-      sessions_[tabIndex]->windows[windowIndex] = new SessionWindow();
+      sessions_[tabIndex]->windows[windowIndex] =
+          base::MakeUnique<SessionWindow>();
     }
 
     sessions_[tabIndex]->modified_time =
         std::max(sessions_[tabIndex]->modified_time, timestamp);
     sessions_[tabIndex]->windows[windowIndex]->timestamp = std::max(
         sessions_[tabIndex]->windows[windowIndex]->timestamp, timestamp);
-    sessions_[tabIndex]->windows[windowIndex]->tabs.push_back(new SessionTab());
+    sessions_[tabIndex]->windows[windowIndex]->tabs.push_back(
+        base::MakeUnique<SessionTab>());
     sessions_[tabIndex]->windows[windowIndex]->tabs.back()->timestamp =
         timestamp;
   }
@@ -89,7 +91,6 @@ class SyncSessionsMetricsTest : public ::testing::Test {
         std::max(sessions_[tabIndex]->modified_time, timestamp);
     sessions_[tabIndex]->windows[windowIndex]->timestamp = std::max(
         sessions_[tabIndex]->windows[windowIndex]->timestamp, timestamp);
-    delete sessions_[tabIndex]->windows[windowIndex]->tabs.back();
     sessions_[tabIndex]->windows[windowIndex]->tabs.pop_back();
   }
 

@@ -13,9 +13,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -38,31 +38,6 @@ using sync_datatype_helper::test;
 
 namespace sessions_helper {
 
-ScopedWindowMap::ScopedWindowMap() {
-}
-
-ScopedWindowMap::ScopedWindowMap(SessionWindowMap* windows) {
-  Reset(windows);
-}
-
-ScopedWindowMap::~ScopedWindowMap() {
-  base::STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
-}
-
-SessionWindowMap* ScopedWindowMap::GetMutable() {
-  return &windows_;
-}
-
-const SessionWindowMap* ScopedWindowMap::Get() const {
-  return &windows_;
-}
-
-void ScopedWindowMap::Reset(SessionWindowMap* windows) {
-  base::STLDeleteContainerPairSecondPointers(windows_.begin(), windows_.end());
-  windows_.clear();
-  std::swap(*windows, windows_);
-}
-
 bool GetLocalSession(int index, const sync_sessions::SyncedSession** session) {
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       test()->GetProfile(index))->GetOpenTabsUIDelegate()->
@@ -83,15 +58,13 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
 
   int nav_index;
   sessions::SerializedNavigationEntry nav;
-  for (SessionWindowMap::const_iterator it =
-           local_session->windows.begin();
+  for (auto it = local_session->windows.begin();
        it != local_session->windows.end(); ++it) {
     if (it->second->tabs.size() == 0) {
       DVLOG(1) << "Empty tabs vector";
       continue;
     }
-    for (std::vector<sessions::SessionTab*>::const_iterator tab_it =
-             it->second->tabs.begin();
+    for (auto tab_it = it->second->tabs.begin();
          tab_it != it->second->tabs.end(); ++tab_it) {
       if ((*tab_it)->navigations.size() == 0) {
         DVLOG(1) << "Empty navigations vector";
@@ -200,27 +173,30 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
   return true;
 }
 
-bool GetLocalWindows(int index, SessionWindowMap* local_windows) {
+bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
   // The local session provided by GetLocalSession is owned, and has lifetime
   // controlled, by the model associator, so we must make our own copy.
   const sync_sessions::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
-  for (SessionWindowMap::const_iterator w = local_session->windows.begin();
+  for (auto w = local_session->windows.begin();
        w != local_session->windows.end(); ++w) {
     const sessions::SessionWindow& window = *(w->second);
-    sessions::SessionWindow* new_window = new sessions::SessionWindow();
+    std::unique_ptr<sessions::SessionWindow> new_window =
+        base::MakeUnique<sessions::SessionWindow>();
     new_window->window_id.set_id(window.window_id.id());
     for (size_t t = 0; t < window.tabs.size(); ++t) {
       const sessions::SessionTab& tab = *window.tabs.at(t);
-      sessions::SessionTab* new_tab = new sessions::SessionTab();
+      std::unique_ptr<sessions::SessionTab> new_tab =
+          base::MakeUnique<sessions::SessionTab>();
       new_tab->navigations.resize(tab.navigations.size());
       std::copy(tab.navigations.begin(), tab.navigations.end(),
                 new_tab->navigations.begin());
-      new_window->tabs.push_back(new_tab);
+      new_window->tabs.push_back(std::move(new_tab));
     }
-    (*local_windows)[new_window->window_id.id()] = new_window;
+    auto id = new_window->window_id.id();
+    (*local_windows)[id] = std::move(new_window);
   }
 
   return true;
@@ -228,7 +204,7 @@ bool GetLocalWindows(int index, SessionWindowMap* local_windows) {
 
 bool OpenTabAndGetLocalWindows(int index,
                                const GURL& url,
-                               SessionWindowMap* local_windows) {
+                               ScopedWindowMap* local_windows) {
   if (!OpenTab(index, url)) {
     return false;
   }
@@ -321,8 +297,10 @@ bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
   return true;
 }
 
-bool WindowsMatch(const SessionWindowMap& win1,
-                  const SessionWindowMap& win2) {
+namespace {
+
+template <typename T1, typename T2>
+bool WindowsMatchImpl(const T1& win1, const T2& win2) {
   sessions::SessionTab* client0_tab;
   sessions::SessionTab* client1_tab;
   if (win1.size() != win2.size()) {
@@ -332,9 +310,8 @@ bool WindowsMatch(const SessionWindowMap& win1,
         << win2.size();
     return false;
   }
-  for (SessionWindowMap::const_iterator i = win1.begin();
-       i != win1.end(); ++i) {
-    SessionWindowMap::const_iterator j = win2.find(i->first);
+  for (auto i = win1.begin(); i != win1.end(); ++i) {
+    auto j = win2.find(i->first);
     if (j == win2.end()) {
       LOG(ERROR) << "Session doesn't match";
       return false;
@@ -347,8 +324,8 @@ bool WindowsMatch(const SessionWindowMap& win1,
       return false;
     }
     for (size_t t = 0; t < i->second->tabs.size(); ++t) {
-      client0_tab = i->second->tabs[t];
-      client1_tab = j->second->tabs[t];
+      client0_tab = i->second->tabs[t].get();
+      client1_tab = j->second->tabs[t].get();
       for (size_t n = 0; n < client0_tab->navigations.size(); ++n) {
         if (!NavigationEquals(client0_tab->navigations[n],
                               client1_tab->navigations[n])) {
@@ -359,6 +336,16 @@ bool WindowsMatch(const SessionWindowMap& win1,
   }
 
   return true;
+}
+
+}  // namespace
+
+bool WindowsMatch(const ScopedWindowMap& win1, const ScopedWindowMap& win2) {
+  return WindowsMatchImpl(win1, win2);
+}
+
+bool WindowsMatch(const SessionWindowMap& win1, const ScopedWindowMap& win2) {
+  return WindowsMatchImpl(win1, win2);
 }
 
 bool CheckForeignSessionsAgainst(
@@ -379,7 +366,7 @@ bool CheckForeignSessionsAgainst(
     size_t s_index = 0;
 
     for (; s_index < sessions.size(); ++s_index) {
-      if (WindowsMatch(sessions[s_index]->windows, *(windows[w_index].Get())))
+      if (WindowsMatch(sessions[s_index]->windows, windows[w_index]))
         break;
     }
 
