@@ -405,27 +405,45 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
       right_(-1),
       bottom_(-1) {
   DCHECK(tiling_);
+  DCHECK_GE(dest_scale, tiling_->contents_scale_);
+
+  // Clamp dest_rect_ to the bounds of the layer.
+  dest_layer_bounds_ =
+      gfx::ScaleToCeiledSize(tiling->raster_source_->GetSize(), dest_scale);
+  dest_rect_.Intersect(gfx::Rect(dest_layer_bounds_));
   if (dest_rect_.IsEmpty())
     return;
 
   dest_to_content_scale_ = tiling_->contents_scale_ / dest_scale;
 
-  gfx::Rect content_rect =
-      gfx::ScaleToEnclosingRect(dest_rect_,
-                                dest_to_content_scale_,
-                                dest_to_content_scale_);
-  // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
-  // check for non-intersection first.
-  content_rect.Intersect(gfx::Rect(tiling_->tiling_size()));
-  if (content_rect.IsEmpty())
-    return;
+  // Find the indices of the texel samples that enclose the rect we want to
+  // cover.
+  // Because we don't know the target transform at this point, we have to be
+  // pessimistic, i.e. assume every point (a pair of real number, not necessary
+  // snapped to a pixel sample) inside of the content rect may be sampled.
+  // This code maps the boundary points into contents space, then find out the
+  // enclosing texture samples. For example, assume we have:
+  // dest_scale : content_scale = 1.23 : 1
+  // dest_rect = (l:123, t:234, r:345, b:456)
+  // Then it follows that:
+  // content_rect = (l:100.00, t:190.24, r:280.49, b:370.73)
+  // Without MSAA, the sample point of a texel is at the center of that texel,
+  // thus the sample points we need to cover content_rect are:
+  // wanted_texels(sample coordinates) = (l:99.5, t:189.5, r:280.5, b:371.5)
+  // Or in integer index:
+  // wanted_texels(integer index) = (l:99, t:189, r:280, b:371)
+  gfx::RectF content_rect =
+      gfx::ScaleRect(gfx::RectF(dest_rect_), dest_to_content_scale_);
+  content_rect.Offset(-0.5f, -0.5f);
+  gfx::Rect wanted_texels = gfx::ToEnclosingRect(content_rect);
 
-  left_ = tiling_->tiling_data_.TileXIndexFromSrcCoord(content_rect.x());
-  top_ = tiling_->tiling_data_.TileYIndexFromSrcCoord(content_rect.y());
-  right_ = tiling_->tiling_data_.TileXIndexFromSrcCoord(
-      content_rect.right() - 1);
-  bottom_ = tiling_->tiling_data_.TileYIndexFromSrcCoord(
-      content_rect.bottom() - 1);
+  const TilingData& data = tiling_->tiling_data_;
+  left_ = data.LastBorderTileXIndexFromSrcCoord(wanted_texels.x());
+  top_ = data.LastBorderTileYIndexFromSrcCoord(wanted_texels.y());
+  right_ = std::max(
+      left_, data.FirstBorderTileXIndexFromSrcCoord(wanted_texels.right()));
+  bottom_ = std::max(
+      top_, data.FirstBorderTileYIndexFromSrcCoord(wanted_texels.bottom()));
 
   tile_i_ = left_ - 1;
   tile_j_ = top_;
@@ -455,15 +473,46 @@ PictureLayerTiling::CoverageIterator::operator++() {
 
   current_tile_ = tiling_->TileAt(tile_i_, tile_j_);
 
-  // Calculate the current geometry rect.  Due to floating point rounding
-  // and ToEnclosingRect, tiles might overlap in destination space on the
-  // edges.
+  // Calculate the current geometry rect. As we reserved overlap between tiles
+  // to accommodate bilinear filtering and rounding errors in destination
+  // space, the geometry rect might overlap on the edges.
   gfx::Rect last_geometry_rect = current_geometry_rect_;
 
-  gfx::Rect content_rect = tiling_->tiling_data_.TileBounds(tile_i_, tile_j_);
+  gfx::RectF texel_extent = tiling_->tiling_data_.TexelExtent(tile_i_, tile_j_);
+  {
+    // Adjust tile extent to accommodate numerical errors.
+    //
+    // Allow the tile to overreach by 1/1024 texels to avoid seams between
+    // tiles. The constant 1/1024 is picked by the fact that with bilinear
+    // filtering, the maximum error in color value introduced by clamping
+    // error in both u/v axis can't exceed
+    // 255 * (1 - (1 - 1/1024) * (1 - 1/1024)) ~= 0.498
+    // i.e. The color value can never flip over a rounding threshold.
+    constexpr float epsilon = 1.f / 1024.f;
+    texel_extent.Inset(-epsilon, -epsilon);
+  }
 
-  current_geometry_rect_ =
-      gfx::ScaleToEnclosingRect(content_rect, 1 / dest_to_content_scale_);
+  current_geometry_rect_ = gfx::ToEnclosedRect(
+      gfx::ScaleRect(texel_extent, 1 / dest_to_content_scale_));
+  {
+    // Adjust external edges to cover the whole layer in dest space.
+    //
+    // For external edges, extend the tile to scaled layer bounds. This is
+    // needed to fully cover the dest space because the sample extent doesn't
+    // cover the last 0.5 texel to layer edge, and also the dest space can be
+    // rounded up for up to 1 pixel. This overhang will never be sampled as the
+    // AA fragment shader clamps sample coordinate and antialiasing itself.
+    const TilingData& data = tiling_->tiling_data_;
+    current_geometry_rect_.Inset(
+        tile_i_ ? 0 : -current_geometry_rect_.x(),
+        tile_j_ ? 0 : -current_geometry_rect_.y(),
+        (tile_i_ != data.num_tiles_x() - 1)
+            ? 0
+            : current_geometry_rect_.right() - dest_layer_bounds_.width(),
+        (tile_j_ != data.num_tiles_y() - 1)
+            ? 0
+            : current_geometry_rect_.bottom() - dest_layer_bounds_.height());
+  }
 
   current_geometry_rect_.Intersect(dest_rect_);
   DCHECK(!current_geometry_rect_.IsEmpty());

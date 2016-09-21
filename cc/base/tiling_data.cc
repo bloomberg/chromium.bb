@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace cc {
@@ -277,6 +278,12 @@ int TilingData::TileSizeY(int y_index) const {
 
   NOTREACHED();
   return 0;
+}
+
+gfx::RectF TilingData::TexelExtent(int i, int j) const {
+  gfx::RectF result(TileBoundsWithBorder(i, j));
+  result.Inset(0.5f, 0.5f);
+  return result;
 }
 
 gfx::Vector2d TilingData::TextureOffset(int x_index, int y_index) const {

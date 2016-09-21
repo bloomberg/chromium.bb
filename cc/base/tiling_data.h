@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
+class RectF;
 class Vector2d;
 }
 
@@ -60,6 +61,8 @@ class CC_EXPORT TilingData {
   int TilePositionY(int y_index) const;
   int TileSizeX(int x_index) const;
   int TileSizeY(int y_index) const;
+
+  gfx::RectF TexelExtent(int i, int j) const;
 
   // Difference between TileBound's and TileBoundWithBorder's origin().
   gfx::Vector2d TextureOffset(int x_index, int y_index) const;

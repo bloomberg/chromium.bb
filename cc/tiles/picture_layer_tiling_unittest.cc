@@ -129,12 +129,11 @@ class PictureLayerTilingIteratorTest : public testing::Test {
       const gfx::Rect& expect_rect) {
     EXPECT_TRUE(request_rect.Contains(expect_rect));
 
-    // Iterators are not valid if this ratio is too large (i.e. the
-    // tiling is too high-res for a low-res destination rect.)  This is an
-    // artifact of snapping geometry to integer coordinates and then mapping
-    // back to floating point texture coordinates.
-    float dest_to_contents_scale = tiling_->contents_scale() / rect_scale;
-    ASSERT_LE(dest_to_contents_scale, 2.0);
+    // Iterators are not valid if the destination scale is smaller than the
+    // tiling scale. This is because coverage computation is done in integer
+    // grids in the dest space, and the overlap between tiles may not guarantee
+    // to enclose an integer grid line to round to if scaled down.
+    ASSERT_GE(rect_scale, tiling_->contents_scale());
 
     Region remaining = expect_rect;
     for (PictureLayerTiling::CoverageIterator
@@ -148,11 +147,21 @@ class PictureLayerTilingIteratorTest : public testing::Test {
       remaining.Subtract(geometry);
 
       // Sanity check that texture coords are within the texture rect.
+      // Skip check for external edges because they do overhang.
+      // For internal edges there is an inset of 0.5 texels because the sample
+      // points are at the center of the texels. An extra 1/1024 tolerance
+      // is allowed for numerical errors.
+      // Refer to picture_layer_tiling.cc for detailed analysis.
+      const float inset = loose_texel_extent_check_ ? 0 : (0.5f - 1.f / 1024.f);
       gfx::RectF texture_rect = iter.texture_rect();
-      EXPECT_GE(texture_rect.x(), 0);
-      EXPECT_GE(texture_rect.y(), 0);
-      EXPECT_LE(texture_rect.right(), client_.TileSize().width());
-      EXPECT_LE(texture_rect.bottom(), client_.TileSize().height());
+      if (iter.i())
+        EXPECT_GE(texture_rect.x(), inset);
+      if (iter.j())
+        EXPECT_GE(texture_rect.y(), inset);
+      if (iter.i() != tiling_->tiling_data()->num_tiles_x() - 1)
+        EXPECT_LE(texture_rect.right(), client_.TileSize().width() - inset);
+      if (iter.j() != tiling_->tiling_data()->num_tiles_y() - 1)
+        EXPECT_LE(texture_rect.bottom(), client_.TileSize().height() - inset);
     }
 
     // The entire rect must be filled by geometry from the tiling.
@@ -202,6 +211,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
  protected:
   FakePictureLayerTilingClient client_;
   std::unique_ptr<TestablePictureLayerTiling> tiling_;
+  bool loose_texel_extent_check_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingIteratorTest);
@@ -540,16 +550,16 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsNoScale) {
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsTilingScale) {
   Initialize(gfx::Size(200, 100), 2.0f, gfx::Size(1005, 2010));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect());
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 1005, 2010));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(50, 112, 512, 381));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect());
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(0, 0, 2010, 4020));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(100, 224, 1024, 762));
 
   Initialize(gfx::Size(3, 3), 2.0f, gfx::Size(10, 10));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect());
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 1, 1));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 2, 2));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(1, 1, 2, 2));
-  VerifyTilesExactlyCoverRect(1, gfx::Rect(3, 2, 5, 2));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect());
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(0, 0, 1, 1));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(0, 0, 2, 2));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(1, 1, 2, 2));
+  VerifyTilesExactlyCoverRect(2, gfx::Rect(3, 2, 5, 2));
 
   Initialize(gfx::Size(100, 200), 0.5f, gfx::Size(1005, 2010));
   VerifyTilesExactlyCoverRect(1, gfx::Rect(0, 0, 1005, 2010));
@@ -566,9 +576,9 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsTilingScale) {
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsBothScale) {
   Initialize(gfx::Size(50, 50), 4.0f, gfx::Size(800, 600));
-  VerifyTilesExactlyCoverRect(2.0f, gfx::Rect());
-  VerifyTilesExactlyCoverRect(2.0f, gfx::Rect(0, 0, 1600, 1200));
-  VerifyTilesExactlyCoverRect(2.0f, gfx::Rect(512, 365, 253, 182));
+  VerifyTilesExactlyCoverRect(4.0f, gfx::Rect());
+  VerifyTilesExactlyCoverRect(4.0f, gfx::Rect(0, 0, 3200, 2400));
+  VerifyTilesExactlyCoverRect(4.0f, gfx::Rect(1024, 730, 506, 364));
 
   float scale = 6.7f;
   gfx::Size bounds(800, 600);
@@ -597,7 +607,6 @@ TEST_F(PictureLayerTilingIteratorTest, LayerEdgeTextureCoordinates) {
   Initialize(gfx::Size(300, 300), 1.0f, gfx::Size(256, 256));
   // All of these sizes are 256x256, scaled and ceiled.
   VerifyTilesExactlyCoverRect(1.0f, gfx::Rect(0, 0, 256, 256));
-  VerifyTilesExactlyCoverRect(0.8f, gfx::Rect(0, 0, 205, 205));
   VerifyTilesExactlyCoverRect(1.2f, gfx::Rect(0, 0, 308, 308));
 }
 
@@ -607,12 +616,10 @@ TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {
   // Too large in all dimensions
   VerifyTilesCoverNonContainedRect(1.0f, gfx::Rect(-1000, -1000, 2000, 2000));
   VerifyTilesCoverNonContainedRect(1.5f, gfx::Rect(-1000, -1000, 2000, 2000));
-  VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, -1000, 2000, 2000));
 
   // Partially covering content, but too large
   VerifyTilesCoverNonContainedRect(1.0f, gfx::Rect(-1000, 100, 2000, 100));
   VerifyTilesCoverNonContainedRect(1.5f, gfx::Rect(-1000, 100, 2000, 100));
-  VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, 100, 2000, 100));
 }
 
 static void TileExists(bool exists, Tile* tile,
@@ -975,6 +982,8 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
 
 // This test runs into floating point issues because of big numbers.
 TEST_F(PictureLayerTilingIteratorTest, GiantRect) {
+  loose_texel_extent_check_ = true;
+
   gfx::Size tile_size(256, 256);
   gfx::Size layer_size(33554432, 33554432);
   float contents_scale = 1.f;
@@ -988,6 +997,69 @@ TEST_F(PictureLayerTilingIteratorTest, GiantRect) {
 
   gfx::Rect content_rect(25554432, 25554432, 950, 860);
   VerifyTilesExactlyCoverRect(contents_scale, content_rect);
+}
+
+TEST_F(PictureLayerTilingIteratorTest, QuadShouldNotUseLastHalfTexel) {
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(198, 198));
+  // Creates a situation that tile bounds get rounded up by almost 1px in the
+  // dest space. This test verifies that even in such situation the coverage
+  // iterator won't generate a texture rect that can potentially get clamped.
+  VerifyTilesExactlyCoverRect(1.000005f, gfx::Rect(199, 199));
+}
+
+static void TileHasGeometryRect(const gfx::Rect& expected_rect,
+                                Tile* tile,
+                                const gfx::Rect& geometry_rect) {
+  EXPECT_EQ(expected_rect, geometry_rect);
+}
+
+TEST_F(PictureLayerTilingIteratorTest, UseLeastTilesToCover) {
+  // This test verifies that when a dest pixel can be covered by more than
+  // one tiles, least number of tiles gets emitted.
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(1000, 1000));
+  gfx::RectF overlaped =
+      gfx::ScaleRect(gfx::RectF(198.f, 198.f, 1.f, 1.f), 1.f / 2.f);
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(0, 0).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 0).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(0, 1).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 1).Contains(overlaped));
+  VerifyTilesExactlyCoverRect(2.f, gfx::Rect(199, 199));
+  VerifyTiles(2.f, gfx::Rect(199, 199),
+              base::Bind(&TileHasGeometryRect, gfx::Rect(199, 199)));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, UseLeastTilesToCover2) {
+  // Similar to above test, but with an internal tile.
+  Initialize(gfx::Size(100, 100), 1.f, gfx::Size(1000, 1000));
+  gfx::RectF overlaped =
+      gfx::ScaleRect(gfx::RectF(197.f, 393.f, 1.f, 1.f), 1.f / 2.f);
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(0, 1).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 1).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(0, 2).Contains(overlaped));
+  ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 2).Contains(overlaped));
+  gfx::Rect dest_rect(197, 393, 198, 198);
+  VerifyTilesExactlyCoverRect(2.f, dest_rect);
+  VerifyTiles(2.f, dest_rect, base::Bind(&TileHasGeometryRect, dest_rect));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, TightCover) {
+  // This test verifies that the whole dest rect is still fully covered when
+  // numerical condition is tight.
+  // In this test, the right edge of tile #37 almost (but failed to) covered
+  // grid line x = 9654. Tile #38 needs to reach hard to x = 9653 to make up
+  // for this.
+  Initialize(gfx::Size(256, 256), 1.f, gfx::Size(10000, 1));
+  float dest_scale = 16778082.f / 16777216.f;  // 0b1.00000000 00000011 01100010
+  VerifyTilesExactlyCoverRect(dest_scale, gfx::Rect(10001, 2));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, TightCover2) {
+  // In this test, the left edge of tile #38 almost (but failed to) covered
+  // grid line x = 9653. Tile #37 needs to reach hard to x = 9654 to make up
+  // for this.
+  Initialize(gfx::Size(256, 256), 1.f, gfx::Size(10000, 1));
+  float dest_scale = 16778088.f / 16777216.f;  // 0b1.00000000 00000011 01101000
+  VerifyTilesExactlyCoverRect(dest_scale, gfx::Rect(10001, 2));
 }
 
 }  // namespace

@@ -1929,12 +1929,15 @@ TEST_F(PictureLayerImplTest,
 
   // All high res tiles drew, and the one ideal res tile drew.
   ASSERT_GT(render_pass->quad_list.size(), 9u);
-  EXPECT_EQ(gfx::SizeF(99.f, 99.f),
+  EXPECT_EQ(gfx::Rect(0, 0, 99, 99), render_pass->quad_list.front()->rect);
+  EXPECT_EQ(gfx::RectF(0.f, 0.f, 99.f, 99.f),
             TileDrawQuad::MaterialCast(render_pass->quad_list.front())
-                ->tex_coord_rect.size());
-  EXPECT_EQ(gfx::SizeF(49.5f, 49.5f),
+                ->tex_coord_rect);
+  EXPECT_EQ(gfx::Rect(99, 0, 100, 99),
+            render_pass->quad_list.ElementAt(1)->rect);
+  EXPECT_EQ(gfx::RectF(49.5f, 0.f, 50.f, 49.5f),
             TileDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(1))
-                ->tex_coord_rect.size());
+                ->tex_coord_rect);
 
   // Neither the high res nor the ideal tiles were considered as incomplete.
   EXPECT_EQ(0u, data.num_missing_tiles);
@@ -4129,6 +4132,13 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   bool update_lcd_text = false;
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
+  float dest_scale = std::max(active_layer()->MaximumTilingContentsScale(),
+                              pending_layer()->MaximumTilingContentsScale());
+  gfx::Rect dest_layer_bounds =
+      gfx::ScaleToEnclosingRect(gfx::Rect(layer_bounds), dest_scale);
+  gfx::Rect dest_invalidation_rect =
+      gfx::ScaleToEnclosingRect(invalidation_rect, dest_scale);
+
   // The expected number of occluded tiles on each of the 2 tilings for each of
   // the 3 tree priorities.
   size_t expected_occluded_tile_count_on_pending[] = {4u, 0u};
@@ -4142,12 +4152,12 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     size_t occluded_tile_count_on_pending = 0u;
-    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
-                                                   gfx::Rect(layer_bounds));
+    for (PictureLayerTiling::CoverageIterator iter(tiling, dest_scale,
+                                                   dest_layer_bounds);
          iter; ++iter) {
       Tile* tile = *iter;
 
-      if (invalidation_rect.Intersects(iter.geometry_rect()))
+      if (dest_invalidation_rect.Intersects(iter.geometry_rect()))
         EXPECT_TRUE(tile);
       else
         EXPECT_FALSE(tile);
@@ -4169,8 +4179,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
     size_t occluded_tile_count_on_active = 0u;
-    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
-                                                   gfx::Rect(layer_bounds));
+    for (PictureLayerTiling::CoverageIterator iter(tiling, dest_scale,
+                                                   dest_layer_bounds);
          iter; ++iter) {
       Tile* tile = *iter;
 
