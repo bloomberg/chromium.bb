@@ -641,8 +641,6 @@ InspectorTest.textContentWithLineBreaks = function(node)
         } else if (currentNode.nodeName === "STYLE") {
             currentNode = currentNode.traverseNextNode(node);
             continue;
-        } else if (currentNode.classList && currentNode.classList.contains("console-message")) {
-            buffer += "\n\n";
         } else if (currentNode.classList && currentNode.classList.contains("object-properties-section")) {
             ignoreFirst = true;
         }

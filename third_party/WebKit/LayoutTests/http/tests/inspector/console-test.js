@@ -100,7 +100,7 @@ InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, d
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
         var message = uiMessage.consoleMessage();
-        var element = uiMessage.contentElement();
+        var element = uiMessage.element();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -158,7 +158,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, r
 {
     if (forceInvalidate)
         WebInspector.ConsoleView.instance()._viewport.invalidate();
-    var table = viewMessage.contentElement();
+    var table = viewMessage.element();
     var headers = table.querySelectorAll("th > div:first-child");
     if (!headers.length)
         return false;
@@ -198,8 +198,8 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
     var result = [];
     var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].contentElement();
-        var messageText = InspectorTest.prepareConsoleMessageText(element)
+        var element = messageViews[i].element();
+        var messageText = InspectorTest.prepareConsoleMessageText(element);
         InspectorTest.addResult(messageText);
         var spans = element.querySelectorAll(".console-message-text > span *");
         for (var j = 0; j < spans.length; ++j)
@@ -211,9 +211,10 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
     var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].contentElement();
+        var element = messageViews[i].element();
+        var contentElement = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element);
-        result.push(messageText + " " + messageViews[i].toMessageElement().getAttribute("class") + " > " + element.getAttribute("class"));
+        result.push(messageText + " " + element.getAttribute("class") + " > " + contentElement.getAttribute("class"));
     }
     if (sortMessages)
         result.sort();
@@ -243,14 +244,14 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
 
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
-        messageViews[i].contentElement();
+        messageViews[i].element();
 
     InspectorTest.deprecatedRunAfterPendingDispatches(expandTreeElements);
 
     function expandTreeElements()
     {
         for (var i = 0; i < messageViews.length; ++i) {
-            var element = messageViews[i].contentElement();
+            var element = messageViews[i].element();
             for (var node = element; node; node = node.traverseNextNode(element)) {
                 if (node.treeElementForTest)
                     node.treeElementForTest.expand();
@@ -284,7 +285,7 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
     var propertiesCount  = 0;
     InspectorTest.addSniffer(WebInspector.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
     for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].contentElement();
+        var element = messageViews[i].element();
         for (var node = element; node; node = node.traverseNextNode(element)) {
             if (node.classList && node.classList.contains("object-value-calculate-value-button")) {
                 ++propertiesCount;
@@ -312,7 +313,7 @@ InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
     var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
-        messageViews[i].contentElement();
+        messageViews[i].element();
     InspectorTest.deprecatedRunAfterPendingDispatches(callback);
 }
 
