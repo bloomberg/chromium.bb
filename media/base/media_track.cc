@@ -19,4 +19,17 @@ MediaTrack::MediaTrack(Type type,
 
 MediaTrack::~MediaTrack() {}
 
+const char* TrackTypeToStr(MediaTrack::Type type) {
+  switch (type) {
+    case MediaTrack::Audio:
+      return "audio";
+    case MediaTrack::Text:
+      return "text";
+    case MediaTrack::Video:
+      return "video";
+  }
+  NOTREACHED();
+  return "INVALID";
+}
+
 }  // namespace media

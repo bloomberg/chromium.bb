@@ -38,12 +38,8 @@ WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
     blink::WebSourceBuffer** source_buffer) {
   std::string id = base::GenerateGUID();
 
-  std::vector<std::string> parsed_codec_ids;
-  media::ParseCodecString(codecs.utf8().data(), &parsed_codec_ids, false);
-
-  WebMediaSource::AddStatus result =
-      static_cast<WebMediaSource::AddStatus>(
-          demuxer_->AddId(id, type.utf8().data(), parsed_codec_ids));
+  WebMediaSource::AddStatus result = static_cast<WebMediaSource::AddStatus>(
+      demuxer_->AddId(id, type.utf8().data(), codecs.utf8().data()));
 
   if (result == WebMediaSource::AddStatusOk)
     *source_buffer = new WebSourceBufferImpl(id, demuxer_);

@@ -60,6 +60,9 @@ class MEDIA_EXPORT MediaTrack {
   std::string language_;
 };
 
+// Helper for logging.
+MEDIA_EXPORT const char* TrackTypeToStr(MediaTrack::Type type);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_TRACK_H_

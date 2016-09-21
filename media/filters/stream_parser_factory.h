@@ -28,16 +28,11 @@ class MEDIA_EXPORT StreamParserFactory {
   // something wrong with |type| or the codec IDs in |codecs|.
   // Returns a new StreamParser object if |type| and all codecs listed in
   //   |codecs| are supported.
-  //   |has_audio| is true if an audio codec was specified.
-  //   |has_video| is true if a video codec was specified.
-  // Returns NULL otherwise. The values of |has_audio| and |has_video| are
-  //   undefined.
+  // Returns NULL otherwise.
   static std::unique_ptr<StreamParser> Create(
       const std::string& type,
       const std::vector<std::string>& codecs,
-      const scoped_refptr<MediaLog>& media_log,
-      bool* has_audio,
-      bool* has_video);
+      const scoped_refptr<MediaLog>& media_log);
 };
 
 }  // namespace media

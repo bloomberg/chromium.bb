@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/demuxer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/base/video_codecs.h"
 
 namespace media {
 
@@ -41,8 +43,7 @@ class MEDIA_EXPORT MediaSourceState {
   ~MediaSourceState();
 
   void Init(const StreamParser::InitCB& init_cb,
-            bool allow_audio,
-            bool allow_video,
+            const std::string& expected_codecs,
             const StreamParser::EncryptedMediaInitDataCB&
                 encrypted_media_init_data_cb,
             const NewTextTrackCB& new_text_track_cb);
@@ -136,8 +137,7 @@ class MEDIA_EXPORT MediaSourceState {
   // encountered.
   // Returns true on a successful call. Returns false if an error occurred while
   // processing decoder configurations.
-  bool OnNewConfigs(bool allow_audio,
-                    bool allow_video,
+  bool OnNewConfigs(std::string expected_codecs,
                     std::unique_ptr<MediaTracks> tracks,
                     const StreamParser::TextTrackConfigMap& text_configs);
 
@@ -157,11 +157,8 @@ class MEDIA_EXPORT MediaSourceState {
 
   void OnSourceInitDone(const StreamParser::InitParameters& params);
 
-  // EstimateVideoDataSize uses some heuristics to estimate the size of the
-  // video size in the chunk of muxed audio/video data without parsing it.
-  // This is used by EvictCodedFrames algorithm, which happens before Append
-  // (and therefore before parsing is performed) to prepare space for new data.
-  size_t EstimateVideoDataSize(size_t muxed_data_chunk_size) const;
+  // Sets memory limits for all demuxer streams.
+  void SetStreamMemoryLimits();
 
   // Tracks the number of MEDIA_LOGs emitted for segments missing expected audio
   // or video blocks. Useful to prevent log spam.
@@ -186,16 +183,17 @@ class MEDIA_EXPORT MediaSourceState {
   bool parsing_media_segment_;
 
   // Valid only while |parsing_media_segment_| is true. These flags enable
-  // warning when at least one frame for each A/V track is not in a parsed media
-  // segment.
-  bool media_segment_contained_audio_frame_;
-  bool media_segment_contained_video_frame_;
+  // warning when the parsed media segment doesn't have frames for some track.
+  std::map<StreamParser::TrackId, bool> media_segment_has_data_for_track_;
 
   // The object used to parse appended data.
   std::unique_ptr<StreamParser> stream_parser_;
 
-  ChunkDemuxerStream* audio_;  // Not owned by |this|.
-  ChunkDemuxerStream* video_;  // Not owned by |this|.
+  // Note that ChunkDemuxerStreams are created and owned by the parent
+  // ChunkDemuxer. They are not owned by |this|.
+  using DemuxerStreamMap = std::map<StreamParser::TrackId, ChunkDemuxerStream*>;
+  DemuxerStreamMap audio_streams_;
+  DemuxerStreamMap video_streams_;
 
   typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
   TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
@@ -214,6 +212,10 @@ class MEDIA_EXPORT MediaSourceState {
   // invoke this callback.
   Demuxer::MediaTracksUpdatedCB init_segment_received_cb_;
   bool append_in_progress_ = false;
+  bool first_init_segment_received_ = false;
+
+  std::vector<AudioCodec> expected_audio_codecs_;
+  std::vector<VideoCodec> expected_video_codecs_;
 
   // Indicates that timestampOffset should be updated automatically during
   // OnNewBuffers() based on the earliest end timestamp of the buffers provided.

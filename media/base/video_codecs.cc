@@ -285,4 +285,26 @@ bool ParseHEVCCodecId(const std::string& codec_id,
 }
 #endif
 
+VideoCodec StringToVideoCodec(const std::string& codec_id) {
+  std::vector<std::string> elem = base::SplitString(
+      codec_id, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (elem.empty())
+    return kUnknownVideoCodec;
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level = 0;
+  if (ParseAVCCodecId(codec_id, &profile, &level))
+    return kCodecH264;
+  if (codec_id == "vp8" || codec_id == "vp8.0")
+    return kCodecVP8;
+  if (codec_id == "vp9" || codec_id == "vp9.0")
+    return kCodecVP9;
+  if (codec_id == "theora")
+    return kCodecTheora;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  if (ParseHEVCCodecId(codec_id, &profile, &level))
+    return kCodecHEVC;
+#endif
+  return kUnknownVideoCodec;
+}
+
 }  // namespace media

@@ -43,6 +43,8 @@ enum AudioCodec {
 
 std::string MEDIA_EXPORT GetCodecName(AudioCodec codec);
 
+MEDIA_EXPORT AudioCodec StringToAudioCodec(const std::string& codec_id);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_AUDIO_CODECS_H_

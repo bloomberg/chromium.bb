@@ -561,8 +561,8 @@ class MockMediaSource {
   }
 
   void SetMemoryLimits(size_t limit_bytes) {
-    chunk_demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, limit_bytes);
-    chunk_demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, limit_bytes);
+    chunk_demuxer_->SetMemoryLimitsForTest(DemuxerStream::AUDIO, limit_bytes);
+    chunk_demuxer_->SetMemoryLimitsForTest(DemuxerStream::VIDEO, limit_bytes);
   }
 
   void EvictCodedFrames(base::TimeDelta currentMediaTime, size_t newDataSize) {
@@ -611,7 +611,7 @@ class MockMediaSource {
     // 2. video/webm;codec="vorbis,vp8".
     size_t semicolon = mimetype_.find(";");
     std::string type = mimetype_;
-    std::vector<std::string> codecs;
+    std::string codecs_param = "";
     if (semicolon != std::string::npos) {
       type = mimetype_.substr(0, semicolon);
       size_t codecs_param_start = mimetype_.find("codecs=\"", semicolon);
@@ -624,13 +624,11 @@ class MockMediaSource {
 
       CHECK_NE(codecs_param_end, std::string::npos);
 
-      std::string codecs_param = mimetype_.substr(
-          codecs_param_start, codecs_param_end - codecs_param_start);
-      codecs = base::SplitString(codecs_param, ",", base::KEEP_WHITESPACE,
-                                 base::SPLIT_WANT_NONEMPTY);
+      codecs_param = mimetype_.substr(codecs_param_start,
+                                      codecs_param_end - codecs_param_start);
     }
 
-    return chunk_demuxer_->AddId(kSourceId, type, codecs);
+    return chunk_demuxer_->AddId(kSourceId, type, codecs_param);
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,

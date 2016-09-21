@@ -565,30 +565,19 @@ bool FrameProcessor::ProcessFrame(
 
     // 5. Let track buffer equal the track buffer that the coded frame will be
     //    added to.
-
-    // Remap audio and video track types to their special singleton identifiers.
-    StreamParser::TrackId track_id = kAudioTrackId;
-    switch (frame->type()) {
-      case DemuxerStream::AUDIO:
-        break;
-      case DemuxerStream::VIDEO:
-        track_id = kVideoTrackId;
-        break;
-      case DemuxerStream::TEXT:
-        track_id = frame->track_id();
-        break;
-      case DemuxerStream::UNKNOWN:
-      case DemuxerStream::NUM_TYPES:
-        DCHECK(false) << ": Invalid frame type " << frame->type();
-        return false;
-    }
-
+    StreamParser::TrackId track_id = frame->track_id();
     MseTrackBuffer* track_buffer = FindTrack(track_id);
     if (!track_buffer) {
       MEDIA_LOG(ERROR, media_log_)
           << "Unknown track with type " << frame->GetTypeName()
           << ", frame processor track id " << track_id
           << ", and parser track id " << frame->track_id();
+      return false;
+    }
+    if (frame->type() != track_buffer->stream()->type()) {
+      MEDIA_LOG(ERROR, media_log_) << "Frame type " << frame->GetTypeName()
+                                   << " doesn't match track buffer type "
+                                   << track_buffer->stream()->type();
       return false;
     }
 

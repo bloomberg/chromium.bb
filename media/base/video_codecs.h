@@ -89,6 +89,8 @@ MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
                                    uint8_t* level_idc);
 #endif
 
+MEDIA_EXPORT VideoCodec StringToVideoCodec(const std::string& codec_id);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_VIDEO_CODECS_H_

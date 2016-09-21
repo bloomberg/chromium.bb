@@ -68,8 +68,8 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
             new MediaLog())),
         append_window_end_(kInfiniteDuration),
         frame_duration_(base::TimeDelta::FromMilliseconds(10)),
-        audio_id_(FrameProcessor::kAudioTrackId),
-        video_id_(FrameProcessor::kVideoTrackId) {}
+        audio_id_(1),
+        video_id_(2) {}
 
   enum StreamFlags {
     HAS_AUDIO = 1 << 0,

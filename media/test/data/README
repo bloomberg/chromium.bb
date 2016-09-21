@@ -203,6 +203,17 @@ test-25fps.vp9.context
   - Manually dumped from libvpx with bear-vp9.ivf and test-25fps.vp9. See
     vp9_parser_unittest.cc for description of their format.
 
+// WebM files for testing multiple tracks.
+green-a300hz.webm - WebM file containing 12 seconds of solid green video + 300Hz sine wave audio
+red-a500hz.webm - WebM file containing 10 seconds of solid red video + 500Hz sine wave audio
+  - Created with the following commands:
+    ffmpeg -f lavfi -i color=c=green:size=160x120 -t 12 -c:v libvpx green.webm
+    ffmpeg -f lavfi -i color=c=red:size=320x240 -t 10 -c:v libvpx red.webm
+    ffmpeg -f lavfi -i "sine=frequency=300:sample_rate=48000" -t 12 -c:v libvpx a300hz.webm
+    ffmpeg -f lavfi -i "sine=frequency=500:sample_rate=48000" -t 10 -c:v libvpx a500hz.webm
+    ffmpeg -i green.webm -i a300hz.webm -map 0 -map 1 green-a300hz.webm
+    ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
+
 // JPEG test files:
 pixel-1280x720.jpg - Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image does not have Huffman table.
 peach_pi-1280x720.jpg - Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13"). This image has Huffman table.

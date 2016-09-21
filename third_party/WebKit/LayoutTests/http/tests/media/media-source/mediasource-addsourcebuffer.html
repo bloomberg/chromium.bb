@@ -134,24 +134,48 @@
               test.done();
           }, "Test addSourceBuffer() with AAC and H.264 in separate SourceBuffers");
 
-          mediasource_test(function(test, mediaElement, mediaSource)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              var reachedLimit = false;
+              test.expectEvent(sourceBuffer, "updateend");
+              sourceBuffer.appendBuffer(mediaData);
+              test.waitForExpectedEvents(function()
+              {
+                  assert_throws({name: "QuotaExceededError"},
+                      function() { mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE); },
+                      "addSourceBuffer must throw an exception if the MediaSource has already received init segments for all sourcebuffers added at the time");
+                  test.done();
+              });
+          }, "Test addSourceBuffer() throws QuotaExceededError after MediaSource has completed init.");
 
-             // The 20 here is an arbitrary upper limit to make sure the test terminates. This test
-             // assumes that implementations won't support more than 20 SourceBuffers simultaneously.
-             for (var i = 0; i < 20; ++i) {
-                 try {
-                     mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
-                 } catch(e) {
-                     assert_equals(e.name, "QuotaExceededError");
-                     reachedLimit = true;
-                     break;
-                 }
-             }
-             assert_true(reachedLimit, "Reached SourceBuffer limit.");
-             test.done();
-          }, "Test addSourceBuffer() QuotaExceededError.");
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              test.expectEvent(sourceBuffer, "updateend");
+              // Append incomplete init segment to the first SourceBuffer.
+              sourceBuffer.appendBuffer(initSegment.slice(0, initSegment.length - 1));
+              test.waitForExpectedEvents(function()
+              {
+                  // We have not added a full init segment for the first SourceBuffer yet, so MediaSource init is not yet
+                  // finished and we should be able to add/remove one more SourceBuffer.
+                  var sourceBuffer2 = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+                  mediaSource.removeSourceBuffer(sourceBuffer2);
+
+                  // Now append the rest of the init segment, this should complete the initialization of the MediaSource.
+                  test.expectEvent(sourceBuffer, "updateend");
+                  test.expectEvent(mediaElement, "loadedmetadata", "mediaElement metadata.");
+                  sourceBuffer.appendBuffer(initSegment.slice(initSegment.length - 1));
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  // MediaSource is fully initialized now, so adding new SourceBuffers is no longer possible.
+                  assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_METADATA);
+                  assert_throws({name: "QuotaExceededError"},
+                      function() { mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE); },
+                      "addSourceBuffer must throw an exception if the media element has already reached HAVE_METADATA");
+                  test.done();
+              });
+          }, "Test addSourceBuffer() succeeds while incomplete init segment is appended, fails after MediaSource init completed.");
         </script>
     </body>
 </html>

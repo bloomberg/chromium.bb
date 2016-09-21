@@ -10,6 +10,7 @@
 
 #include <deque>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -217,8 +218,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // kNotSupported is returned if |type| is not a supported format.
   // kReachedIdLimit is returned if the demuxer cannot handle another ID right
   //    now.
-  Status AddId(const std::string& id, const std::string& type,
-               std::vector<std::string>& codecs);
+  Status AddId(const std::string& id,
+               const std::string& type,
+               const std::string& codecs);
 
   // Notifies a caller via |tracks_updated_cb| that the set of media tracks
   // for a given |id| has changed.
@@ -312,7 +314,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Sets the memory limit on each stream of a specific type.
   // |memory_limit| is the maximum number of bytes each stream of type |type|
   // is allowed to hold in its buffer.
-  void SetMemoryLimits(DemuxerStream::Type type, size_t memory_limit);
+  void SetMemoryLimitsForTest(DemuxerStream::Type type, size_t memory_limit);
 
   // Returns the ranges representing the buffered data in the demuxer.
   // TODO(wolenetz): Remove this method once MediaSourceDelegate no longer
@@ -344,12 +346,15 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool CanEndOfStream_Locked() const;
 
   // MediaSourceState callbacks.
-  void OnSourceInitDone(const StreamParser::InitParameters& params);
+  void OnSourceInitDone(const std::string& source_id,
+                        const StreamParser::InitParameters& params);
 
-  // Creates a DemuxerStream for the specified |type|.
-  // Returns a new ChunkDemuxerStream instance if a stream of this type
-  // has not been created before. Returns NULL otherwise.
-  ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type);
+  // Creates a DemuxerStream of the specified |type| for the MediaSourceState
+  // with the given |source_id|.
+  // Returns a pointer to a new ChunkDemuxerStream instance, which is owned by
+  // ChunkDemuxer.
+  ChunkDemuxerStream* CreateDemuxerStream(const std::string& source_id,
+                                          DemuxerStream::Type type);
 
   void OnNewTextTrack(ChunkDemuxerStream* text_stream,
                       const TextTrackConfig& config);
@@ -408,12 +413,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // http://crbug.com/308226
   PipelineStatusCB seek_cb_;
 
-  std::unique_ptr<ChunkDemuxerStream> audio_;
-  std::unique_ptr<ChunkDemuxerStream> video_;
+  std::vector<std::unique_ptr<ChunkDemuxerStream>> audio_streams_;
+  std::vector<std::unique_ptr<ChunkDemuxerStream>> video_streams_;
 
-  // Counter to ensure that we do not transition too early to INITIALIZED.
-  // Incremented in AddId(), decremented in OnSourceInitDone().
-  int pending_source_init_done_count_;
+  // Keep track of which ids still remain uninitialized so that we transition
+  // into the INITIALIZED only after all ids/SourceBuffers got init segment.
+  std::set<std::string> pending_source_init_ids_;
 
   base::TimeDelta duration_;
 
@@ -430,11 +435,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   typedef std::map<std::string, MediaSourceState*> MediaSourceStateMap;
   MediaSourceStateMap source_state_map_;
 
-  // Used to ensure that (1) config data matches the type and codec provided in
-  // AddId(), (2) only 1 audio and 1 video sources are added, and (3) ids may be
-  // removed with RemoveID() but can not be re-added (yet).
-  std::string source_id_audio_;
-  std::string source_id_video_;
+  std::map<std::string, std::vector<ChunkDemuxerStream*>> id_to_streams_map_;
+  // Used to hold alive the demuxer streams that were created for removed /
+  // released MediaSourceState objects. Demuxer clients might still have
+  // references to these streams, so we need to keep them alive. But they'll be
+  // in a shut down state, so reading from them will return EOS.
+  std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;
 
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;
@@ -444,7 +450,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   int detected_video_track_count_;
   int detected_text_track_count_;
 
-  std::map<MediaTrack::Id, const DemuxerStream*> track_id_to_demux_stream_map_;
+  std::map<MediaTrack::Id, DemuxerStream*> track_id_to_demux_stream_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxer);
 };

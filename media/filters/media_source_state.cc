@@ -4,6 +4,8 @@
 
 #include "media/filters/media_source_state.h"
 
+#include <set>
+
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -11,6 +13,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
+#include "media/base/mime_util.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/frame_processor.h"
 #include "media/filters/source_buffer_stream.h"
@@ -24,9 +27,36 @@ enum {
   kMaxMissingTrackInSegmentLogs = 10,
 };
 
-static TimeDelta EndTimestamp(const StreamParser::BufferQueue& queue) {
+namespace {
+
+TimeDelta EndTimestamp(const StreamParser::BufferQueue& queue) {
   return queue.back()->timestamp() + queue.back()->duration();
 }
+
+// Check the input |text_configs| and |bytestream_ids| and return false if
+// duplicate track ids are detected.
+bool CheckBytestreamTrackIds(
+    const MediaTracks& tracks,
+    const StreamParser::TextTrackConfigMap& text_configs) {
+  std::set<StreamParser::TrackId> bytestream_ids;
+  for (const auto& track : tracks.tracks()) {
+    const StreamParser::TrackId& track_id = track->bytestream_track_id();
+    if (bytestream_ids.find(track_id) != bytestream_ids.end()) {
+      return false;
+    }
+    bytestream_ids.insert(track_id);
+  }
+  for (const auto& text_track : text_configs) {
+    const StreamParser::TrackId& track_id = text_track.first;
+    if (bytestream_ids.find(track_id) != bytestream_ids.end()) {
+      return false;
+    }
+    bytestream_ids.insert(track_id);
+  }
+  return true;
+}
+
+}  // namespace
 
 // List of time ranges for each SourceBuffer.
 // static
@@ -94,11 +124,7 @@ MediaSourceState::MediaSourceState(
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       timestamp_offset_during_append_(NULL),
       parsing_media_segment_(false),
-      media_segment_contained_audio_frame_(false),
-      media_segment_contained_video_frame_(false),
       stream_parser_(stream_parser.release()),
-      audio_(NULL),
-      video_(NULL),
       frame_processor_(frame_processor.release()),
       media_log_(media_log),
       state_(UNINITIALIZED),
@@ -115,19 +141,37 @@ MediaSourceState::~MediaSourceState() {
 
 void MediaSourceState::Init(
     const StreamParser::InitCB& init_cb,
-    bool allow_audio,
-    bool allow_video,
+    const std::string& expected_codecs,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewTextTrackCB& new_text_track_cb) {
   DCHECK_EQ(state_, UNINITIALIZED);
   new_text_track_cb_ = new_text_track_cb;
   init_cb_ = init_cb;
 
+  std::vector<std::string> expected_codecs_parsed;
+  ParseCodecString(expected_codecs, &expected_codecs_parsed, false);
+
+  std::vector<AudioCodec> expected_acodecs;
+  std::vector<VideoCodec> expected_vcodecs;
+  for (const auto& codec_id : expected_codecs_parsed) {
+    AudioCodec acodec = StringToAudioCodec(codec_id);
+    if (acodec != kUnknownAudioCodec) {
+      expected_audio_codecs_.push_back(acodec);
+      continue;
+    }
+    VideoCodec vcodec = StringToVideoCodec(codec_id);
+    if (vcodec != kUnknownVideoCodec) {
+      expected_video_codecs_.push_back(vcodec);
+      continue;
+    }
+    MEDIA_LOG(INFO, media_log_) << "Unrecognized media codec: " << codec_id;
+  }
+
   state_ = PENDING_PARSER_CONFIG;
   stream_parser_->Init(
       base::Bind(&MediaSourceState::OnSourceInitDone, base::Unretained(this)),
       base::Bind(&MediaSourceState::OnNewConfigs, base::Unretained(this),
-                 allow_audio, allow_video),
+                 expected_codecs),
       base::Bind(&MediaSourceState::OnNewBuffers, base::Unretained(this)),
       new_text_track_cb_.is_null(), encrypted_media_init_data_cb,
       base::Bind(&MediaSourceState::OnNewMediaSegment, base::Unretained(this)),
@@ -196,18 +240,19 @@ void MediaSourceState::ResetParserState(TimeDelta append_window_start,
 
   frame_processor_->Reset();
   parsing_media_segment_ = false;
-  media_segment_contained_audio_frame_ = false;
-  media_segment_contained_video_frame_ = false;
+  media_segment_has_data_for_track_.clear();
 }
 
 void MediaSourceState::Remove(TimeDelta start,
                               TimeDelta end,
                               TimeDelta duration) {
-  if (audio_)
-    audio_->Remove(start, end, duration);
+  for (const auto& it : audio_streams_) {
+    it.second->Remove(start, end, duration);
+  }
 
-  if (video_)
-    video_->Remove(start, end, duration);
+  for (const auto& it : video_streams_) {
+    it.second->Remove(start, end, duration);
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -215,93 +260,64 @@ void MediaSourceState::Remove(TimeDelta start,
   }
 }
 
-size_t MediaSourceState::EstimateVideoDataSize(
-    size_t muxed_data_chunk_size) const {
-  DCHECK(audio_);
-  DCHECK(video_);
-
-  size_t videoBufferedSize = video_->GetBufferedSize();
-  size_t audioBufferedSize = audio_->GetBufferedSize();
-  if (videoBufferedSize == 0 || audioBufferedSize == 0) {
-    // At this point either audio or video buffer is empty, which means buffer
-    // levels are probably low anyway and we should have enough space in the
-    // buffers for appending new data, so just take a very rough guess.
-    return muxed_data_chunk_size * 7 / 8;
-  }
-
-  // We need to estimate how much audio and video data is going to be in the
-  // newly appended data chunk to make space for the new data. And we need to do
-  // that without parsing the data (which will happen later, in the Append
-  // phase). So for now we can only rely on some heuristic here. Let's assume
-  // that the proportion of the audio/video in the new data chunk is the same as
-  // the current ratio of buffered audio/video.
-  // Longer term this should go away once we further change the MSE GC algorithm
-  // to work across all streams of a SourceBuffer (see crbug.com/520704).
-  double videoBufferedSizeF = static_cast<double>(videoBufferedSize);
-  double audioBufferedSizeF = static_cast<double>(audioBufferedSize);
-
-  double totalBufferedSizeF = videoBufferedSizeF + audioBufferedSizeF;
-  CHECK_GT(totalBufferedSizeF, 0.0);
-
-  double videoRatio = videoBufferedSizeF / totalBufferedSizeF;
-  CHECK_GE(videoRatio, 0.0);
-  CHECK_LE(videoRatio, 1.0);
-  double estimatedVideoSize = muxed_data_chunk_size * videoRatio;
-  return static_cast<size_t>(estimatedVideoSize);
-}
-
 bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
                                         size_t newDataSize) {
-  bool success = true;
+  size_t total_buffered_size = 0;
+  for (const auto& it : audio_streams_)
+    total_buffered_size += it.second->GetBufferedSize();
+  for (const auto& it : video_streams_)
+    total_buffered_size += it.second->GetBufferedSize();
+  for (const auto& it : text_stream_map_)
+    total_buffered_size += it.second->GetBufferedSize();
 
   DVLOG(3) << __func__ << " media_time=" << media_time.InSecondsF()
            << " newDataSize=" << newDataSize
-           << " videoBufferedSize=" << (video_ ? video_->GetBufferedSize() : 0)
-           << " audioBufferedSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
+           << " total_buffered_size=" << total_buffered_size;
 
-  size_t newAudioSize = 0;
-  size_t newVideoSize = 0;
-  if (audio_ && video_) {
-    newVideoSize = EstimateVideoDataSize(newDataSize);
-    newAudioSize = newDataSize - newVideoSize;
-  } else if (video_) {
-    newVideoSize = newDataSize;
-  } else if (audio_) {
-    newAudioSize = newDataSize;
+  if (total_buffered_size == 0)
+    return true;
+
+  bool success = true;
+  for (const auto& it : audio_streams_) {
+    uint64_t curr_size = it.second->GetBufferedSize();
+    if (curr_size == 0)
+      continue;
+    uint64_t estimated_new_size = newDataSize * curr_size / total_buffered_size;
+    DCHECK_LE(estimated_new_size, SIZE_MAX);
+    success &= it.second->EvictCodedFrames(
+        media_time, static_cast<size_t>(estimated_new_size));
+  }
+  for (const auto& it : video_streams_) {
+    uint64_t curr_size = it.second->GetBufferedSize();
+    if (curr_size == 0)
+      continue;
+    uint64_t estimated_new_size = newDataSize * curr_size / total_buffered_size;
+    DCHECK_LE(estimated_new_size, SIZE_MAX);
+    success &= it.second->EvictCodedFrames(
+        media_time, static_cast<size_t>(estimated_new_size));
+  }
+  for (const auto& it : text_stream_map_) {
+    uint64_t curr_size = it.second->GetBufferedSize();
+    if (curr_size == 0)
+      continue;
+    uint64_t estimated_new_size = newDataSize * curr_size / total_buffered_size;
+    DCHECK_LE(estimated_new_size, SIZE_MAX);
+    success &= it.second->EvictCodedFrames(
+        media_time, static_cast<size_t>(estimated_new_size));
   }
 
-  DVLOG(3) << __func__
-           << " estimated audio/video sizes: newVideoSize=" << newVideoSize
-           << " newAudioSize=" << newAudioSize;
-
-  if (audio_)
-    success = audio_->EvictCodedFrames(media_time, newAudioSize) && success;
-
-  if (video_)
-    success = video_->EvictCodedFrames(media_time, newVideoSize) && success;
-
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    success = itr->second->EvictCodedFrames(media_time, 0) && success;
-  }
-
-  DVLOG(3) << __func__ << " result=" << success
-           << " videoBufferedSize=" << (video_ ? video_->GetBufferedSize() : 0)
-           << " audioBufferedSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
-
+  DVLOG(3) << __func__ << " success=" << success;
   return success;
 }
 
 Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
                                                       bool ended) const {
-  // TODO(acolwell): When we start allowing disabled tracks we'll need to update
-  // this code to only add ranges from active tracks.
   RangesList ranges_list;
-  if (audio_)
-    ranges_list.push_back(audio_->GetBufferedRanges(duration));
+  for (const auto& it : audio_streams_)
+    ranges_list.push_back(it.second->GetBufferedRanges(duration));
 
-  if (video_)
-    ranges_list.push_back(video_->GetBufferedRanges(duration));
+  for (const auto& it : video_streams_)
+    ranges_list.push_back(it.second->GetBufferedRanges(duration));
 
   for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -314,11 +330,13 @@ Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
 TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
   TimeDelta max_pts;
 
-  if (audio_)
-    max_pts = std::max(max_pts, audio_->GetHighestPresentationTimestamp());
+  for (const auto& it : audio_streams_) {
+    max_pts = std::max(max_pts, it.second->GetHighestPresentationTimestamp());
+  }
 
-  if (video_)
-    max_pts = std::max(max_pts, video_->GetHighestPresentationTimestamp());
+  for (const auto& it : video_streams_) {
+    max_pts = std::max(max_pts, it.second->GetHighestPresentationTimestamp());
+  }
 
   for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -331,11 +349,13 @@ TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
 TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
   TimeDelta max_duration;
 
-  if (audio_)
-    max_duration = std::max(max_duration, audio_->GetBufferedDuration());
+  for (const auto& it : audio_streams_) {
+    max_duration = std::max(max_duration, it.second->GetBufferedDuration());
+  }
 
-  if (video_)
-    max_duration = std::max(max_duration, video_->GetBufferedDuration());
+  for (const auto& it : video_streams_) {
+    max_duration = std::max(max_duration, it.second->GetBufferedDuration());
+  }
 
   for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -346,11 +366,13 @@ TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
 }
 
 void MediaSourceState::StartReturningData() {
-  if (audio_)
-    audio_->StartReturningData();
+  for (const auto& it : audio_streams_) {
+    it.second->StartReturningData();
+  }
 
-  if (video_)
-    video_->StartReturningData();
+  for (const auto& it : video_streams_) {
+    it.second->StartReturningData();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -359,11 +381,13 @@ void MediaSourceState::StartReturningData() {
 }
 
 void MediaSourceState::AbortReads() {
-  if (audio_)
-    audio_->AbortReads();
+  for (const auto& it : audio_streams_) {
+    it.second->AbortReads();
+  }
 
-  if (video_)
-    video_->AbortReads();
+  for (const auto& it : video_streams_) {
+    it.second->AbortReads();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -372,11 +396,13 @@ void MediaSourceState::AbortReads() {
 }
 
 void MediaSourceState::Seek(TimeDelta seek_time) {
-  if (audio_)
-    audio_->Seek(seek_time);
+  for (const auto& it : audio_streams_) {
+    it.second->Seek(seek_time);
+  }
 
-  if (video_)
-    video_->Seek(seek_time);
+  for (const auto& it : video_streams_) {
+    it.second->Seek(seek_time);
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -385,11 +411,13 @@ void MediaSourceState::Seek(TimeDelta seek_time) {
 }
 
 void MediaSourceState::CompletePendingReadIfPossible() {
-  if (audio_)
-    audio_->CompletePendingReadIfPossible();
+  for (const auto& it : audio_streams_) {
+    it.second->CompletePendingReadIfPossible();
+  }
 
-  if (video_)
-    video_->CompletePendingReadIfPossible();
+  for (const auto& it : video_streams_) {
+    it.second->CompletePendingReadIfPossible();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -398,11 +426,13 @@ void MediaSourceState::CompletePendingReadIfPossible() {
 }
 
 void MediaSourceState::OnSetDuration(TimeDelta duration) {
-  if (audio_)
-    audio_->OnSetDuration(duration);
+  for (const auto& it : audio_streams_) {
+    it.second->OnSetDuration(duration);
+  }
 
-  if (video_)
-    video_->OnSetDuration(duration);
+  for (const auto& it : video_streams_) {
+    it.second->OnSetDuration(duration);
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -411,11 +441,13 @@ void MediaSourceState::OnSetDuration(TimeDelta duration) {
 }
 
 void MediaSourceState::MarkEndOfStream() {
-  if (audio_)
-    audio_->MarkEndOfStream();
+  for (const auto& it : audio_streams_) {
+    it.second->MarkEndOfStream();
+  }
 
-  if (video_)
-    video_->MarkEndOfStream();
+  for (const auto& it : video_streams_) {
+    it.second->MarkEndOfStream();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -424,11 +456,13 @@ void MediaSourceState::MarkEndOfStream() {
 }
 
 void MediaSourceState::UnmarkEndOfStream() {
-  if (audio_)
-    audio_->UnmarkEndOfStream();
+  for (const auto& it : audio_streams_) {
+    it.second->UnmarkEndOfStream();
+  }
 
-  if (video_)
-    video_->UnmarkEndOfStream();
+  for (const auto& it : video_streams_) {
+    it.second->UnmarkEndOfStream();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -437,11 +471,13 @@ void MediaSourceState::UnmarkEndOfStream() {
 }
 
 void MediaSourceState::Shutdown() {
-  if (audio_)
-    audio_->Shutdown();
+  for (const auto& it : audio_streams_) {
+    it.second->Shutdown();
+  }
 
-  if (video_)
-    video_->Shutdown();
+  for (const auto& it : video_streams_) {
+    it.second->Shutdown();
+  }
 
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -453,12 +489,14 @@ void MediaSourceState::SetMemoryLimits(DemuxerStream::Type type,
                                        size_t memory_limit) {
   switch (type) {
     case DemuxerStream::AUDIO:
-      if (audio_)
-        audio_->SetStreamMemoryLimit(memory_limit);
+      for (const auto& it : audio_streams_) {
+        it.second->SetStreamMemoryLimit(memory_limit);
+      }
       break;
     case DemuxerStream::VIDEO:
-      if (video_)
-        video_->SetStreamMemoryLimit(memory_limit);
+      for (const auto& it : video_streams_) {
+        it.second->SetStreamMemoryLimit(memory_limit);
+      }
       break;
     case DemuxerStream::TEXT:
       for (TextStreamMap::iterator itr = text_stream_map_.begin();
@@ -474,11 +512,15 @@ void MediaSourceState::SetMemoryLimits(DemuxerStream::Type type,
 }
 
 bool MediaSourceState::IsSeekWaitingForData() const {
-  if (audio_ && audio_->IsSeekWaitingForData())
-    return true;
+  for (const auto& it : audio_streams_) {
+    if (it.second->IsSeekWaitingForData())
+      return true;
+  }
 
-  if (video_ && video_->IsSeekWaitingForData())
-    return true;
+  for (const auto& it : video_streams_) {
+    if (it.second->IsSeekWaitingForData())
+      return true;
+  }
 
   // NOTE: We are intentionally not checking the text tracks
   // because text tracks are discontinuous and may not have data
@@ -491,38 +533,150 @@ bool MediaSourceState::IsSeekWaitingForData() const {
 }
 
 bool MediaSourceState::OnNewConfigs(
-    bool allow_audio,
-    bool allow_video,
+    std::string expected_codecs,
     std::unique_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_configs) {
-  DCHECK_GE(state_, PENDING_PARSER_CONFIG);
   DCHECK(tracks.get());
+  DVLOG(1) << __func__ << " expected_codecs=" << expected_codecs
+           << " tracks=" << tracks->tracks().size();
+  DCHECK_GE(state_, PENDING_PARSER_CONFIG);
 
-  MediaTrack* audio_track = nullptr;
-  MediaTrack* video_track = nullptr;
-  AudioDecoderConfig audio_config;
-  VideoDecoderConfig video_config;
+  // Check that there is no clashing bytestream track ids.
+  if (!CheckBytestreamTrackIds(*tracks, text_configs)) {
+    MEDIA_LOG(ERROR, media_log_) << "Duplicate bytestream track ids detected";
+    for (const auto& track : tracks->tracks()) {
+      const StreamParser::TrackId& track_id = track->bytestream_track_id();
+      MEDIA_LOG(DEBUG, media_log_) << TrackTypeToStr(track->type()) << " track "
+                                   << " bytestream track id=" << track_id;
+    }
+    return false;
+  }
+
+  // MSE spec allows new configs to be emitted only during Append, but not
+  // during Flush or parser reset operations.
+  CHECK(append_in_progress_);
+
+  bool success = true;
+
+  // TODO(wolenetz): Update codec string strictness, if necessary, once spec
+  // issue https://github.com/w3c/media-source/issues/161 is resolved.
+  std::vector<AudioCodec> expected_acodecs = expected_audio_codecs_;
+  std::vector<VideoCodec> expected_vcodecs = expected_video_codecs_;
+
   for (const auto& track : tracks->tracks()) {
     const auto& track_id = track->bytestream_track_id();
 
     if (track->type() == MediaTrack::Audio) {
-      if (audio_track) {
-        MEDIA_LOG(ERROR, media_log_)
-            << "Error: more than one audio track is currently not supported.";
-        return false;
-      }
-      audio_track = track.get();
-      audio_config = tracks->getAudioConfig(track_id);
+      AudioDecoderConfig audio_config = tracks->getAudioConfig(track_id);
+      DVLOG(1) << "Audio track_id=" << track_id
+               << " config: " << audio_config.AsHumanReadableString();
       DCHECK(audio_config.IsValidConfig());
-    } else if (track->type() == MediaTrack::Video) {
-      if (video_track) {
-        MEDIA_LOG(ERROR, media_log_)
-            << "Error: more than one video track is currently not supported.";
+
+      const auto& it = std::find(expected_acodecs.begin(),
+                                 expected_acodecs.end(), audio_config.codec());
+      if (it == expected_acodecs.end()) {
+        MEDIA_LOG(ERROR, media_log_) << "Audio stream codec "
+                                     << GetCodecName(audio_config.codec())
+                                     << " doesn't match SourceBuffer codecs.";
         return false;
       }
-      video_track = track.get();
-      video_config = tracks->getVideoConfig(track_id);
+      expected_acodecs.erase(it);
+
+      ChunkDemuxerStream* stream = nullptr;
+      if (!first_init_segment_received_) {
+        DCHECK(audio_streams_.find(track_id) == audio_streams_.end());
+        stream = create_demuxer_stream_cb_.Run(DemuxerStream::AUDIO);
+        if (!stream || !frame_processor_->AddTrack(track_id, stream)) {
+          MEDIA_LOG(ERROR, media_log_) << "Failed to create audio stream.";
+          return false;
+        }
+        audio_streams_[track_id] = stream;
+        media_log_->SetBooleanProperty("found_audio_stream", true);
+        media_log_->SetStringProperty("audio_codec_name",
+                                      GetCodecName(audio_config.codec()));
+      } else {
+        if (audio_streams_.size() > 1) {
+          auto it = audio_streams_.find(track_id);
+          if (it != audio_streams_.end())
+            stream = it->second;
+        } else {
+          // If there is only one audio track then bytestream id might change in
+          // a new init segment. So update our state and nofity frame processor.
+          const auto& it = audio_streams_.begin();
+          if (it != audio_streams_.end()) {
+            stream = it->second;
+            if (it->first != track_id) {
+              frame_processor_->UpdateTrack(it->first, track_id);
+              audio_streams_[track_id] = stream;
+              audio_streams_.erase(it->first);
+            }
+          }
+        }
+        if (!stream) {
+          MEDIA_LOG(ERROR, media_log_) << "Got unexpected audio track"
+                                       << " track_id=" << track_id;
+          return false;
+        }
+      }
+
+      track->set_id(stream->media_track_id());
+      frame_processor_->OnPossibleAudioConfigUpdate(audio_config);
+      success &= stream->UpdateAudioConfig(audio_config, media_log_);
+    } else if (track->type() == MediaTrack::Video) {
+      VideoDecoderConfig video_config = tracks->getVideoConfig(track_id);
+      DVLOG(1) << "Video track_id=" << track_id
+               << " config: " << video_config.AsHumanReadableString();
       DCHECK(video_config.IsValidConfig());
+
+      const auto& it = std::find(expected_vcodecs.begin(),
+                                 expected_vcodecs.end(), video_config.codec());
+      if (it == expected_vcodecs.end()) {
+        MEDIA_LOG(ERROR, media_log_) << "Video stream codec "
+                                     << GetCodecName(video_config.codec())
+                                     << " doesn't match SourceBuffer codecs.";
+        return false;
+      }
+      expected_vcodecs.erase(it);
+
+      ChunkDemuxerStream* stream = nullptr;
+      if (!first_init_segment_received_) {
+        DCHECK(video_streams_.find(track_id) == video_streams_.end());
+        stream = create_demuxer_stream_cb_.Run(DemuxerStream::VIDEO);
+        if (!stream || !frame_processor_->AddTrack(track_id, stream)) {
+          MEDIA_LOG(ERROR, media_log_) << "Failed to create video stream.";
+          return false;
+        }
+        video_streams_[track_id] = stream;
+        media_log_->SetBooleanProperty("found_video_stream", true);
+        media_log_->SetStringProperty("video_codec_name",
+                                      GetCodecName(video_config.codec()));
+      } else {
+        if (video_streams_.size() > 1) {
+          auto it = video_streams_.find(track_id);
+          if (it != video_streams_.end())
+            stream = it->second;
+        } else {
+          // If there is only one video track then bytestream id might change in
+          // a new init segment. So update our state and nofity frame processor.
+          const auto& it = video_streams_.begin();
+          if (it != video_streams_.end()) {
+            stream = it->second;
+            if (it->first != track_id) {
+              frame_processor_->UpdateTrack(it->first, track_id);
+              video_streams_[track_id] = stream;
+              video_streams_.erase(it->first);
+            }
+          }
+        }
+        if (!stream) {
+          MEDIA_LOG(ERROR, media_log_) << "Got unexpected video track"
+                                       << " track_id=" << track_id;
+          return false;
+        }
+      }
+
+      track->set_id(stream->media_track_id());
+      success &= stream->UpdateVideoConfig(video_config, media_log_);
     } else {
       MEDIA_LOG(ERROR, media_log_) << "Error: unsupported media track type "
                                    << track->type();
@@ -530,124 +684,16 @@ bool MediaSourceState::OnNewConfigs(
     }
   }
 
-  DVLOG(1) << "OnNewConfigs(" << allow_audio << ", " << allow_video << ", "
-           << audio_config.IsValidConfig() << ", "
-           << video_config.IsValidConfig() << ")";
-  // MSE spec allows new configs to be emitted only during Append, but not
-  // during Flush or parser reset operations.
-  CHECK(append_in_progress_);
-
-  if (!audio_config.IsValidConfig() && !video_config.IsValidConfig()) {
-    DVLOG(1) << "OnNewConfigs() : Audio & video config are not valid!";
+  if (!expected_acodecs.empty() || !expected_vcodecs.empty()) {
+    for (const auto& acodec : expected_acodecs) {
+      MEDIA_LOG(ERROR, media_log_) << "Initialization segment misses expected "
+                                   << GetCodecName(acodec) << " track.";
+    }
+    for (const auto& vcodec : expected_vcodecs) {
+      MEDIA_LOG(ERROR, media_log_) << "Initialization segment misses expected "
+                                   << GetCodecName(vcodec) << " track.";
+    }
     return false;
-  }
-
-  // Signal an error if we get configuration info for stream types that weren't
-  // specified in AddId() or more configs after a stream is initialized.
-  if (allow_audio != audio_config.IsValidConfig()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Initialization segment"
-        << (audio_config.IsValidConfig() ? " has" : " does not have")
-        << " an audio track, but the mimetype"
-        << (allow_audio ? " specifies" : " does not specify")
-        << " an audio codec.";
-    return false;
-  }
-
-  if (allow_video != video_config.IsValidConfig()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Initialization segment"
-        << (video_config.IsValidConfig() ? " has" : " does not have")
-        << " a video track, but the mimetype"
-        << (allow_video ? " specifies" : " does not specify")
-        << " a video codec.";
-    return false;
-  }
-
-  bool success = true;
-  if (audio_config.IsValidConfig()) {
-    if (!audio_) {
-      media_log_->SetBooleanProperty("found_audio_stream", true);
-    }
-    if (!audio_ ||
-        audio_->audio_decoder_config().codec() != audio_config.codec()) {
-      media_log_->SetStringProperty("audio_codec_name",
-                                    GetCodecName(audio_config.codec()));
-    }
-
-    bool audio_stream_just_created = false;
-    if (!audio_) {
-      audio_ = create_demuxer_stream_cb_.Run(DemuxerStream::AUDIO);
-
-      if (!audio_) {
-        DVLOG(1) << "Failed to create an audio stream.";
-        return false;
-      }
-      audio_stream_just_created = true;
-
-      if (!frame_processor_->AddTrack(FrameProcessor::kAudioTrackId, audio_)) {
-        DVLOG(1) << "Failed to add audio track to frame processor.";
-        return false;
-      }
-    }
-
-    frame_processor_->OnPossibleAudioConfigUpdate(audio_config);
-    success &= audio_->UpdateAudioConfig(audio_config, media_log_);
-
-    if (audio_stream_just_created) {
-      std::string audio_buf_limit_switch =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMSEAudioBufferSizeLimit);
-      unsigned audio_buf_size_limit = 0;
-      if (base::StringToUint(audio_buf_limit_switch, &audio_buf_size_limit) &&
-          audio_buf_size_limit > 0) {
-        MEDIA_LOG(INFO, media_log_) << "Custom audio SourceBuffer size limit="
-                                    << audio_buf_size_limit;
-        audio_->SetStreamMemoryLimit(audio_buf_size_limit);
-      }
-    }
-  }
-
-  if (video_config.IsValidConfig()) {
-    if (!video_) {
-      media_log_->SetBooleanProperty("found_video_stream", true);
-    }
-    if (!video_ ||
-        video_->video_decoder_config().codec() != video_config.codec()) {
-      media_log_->SetStringProperty("video_codec_name",
-                                    GetCodecName(video_config.codec()));
-    }
-
-    bool video_stream_just_created = false;
-    if (!video_) {
-      video_ = create_demuxer_stream_cb_.Run(DemuxerStream::VIDEO);
-
-      if (!video_) {
-        DVLOG(1) << "Failed to create a video stream.";
-        return false;
-      }
-      video_stream_just_created = true;
-
-      if (!frame_processor_->AddTrack(FrameProcessor::kVideoTrackId, video_)) {
-        DVLOG(1) << "Failed to add video track to frame processor.";
-        return false;
-      }
-    }
-
-    success &= video_->UpdateVideoConfig(video_config, media_log_);
-
-    if (video_stream_just_created) {
-      std::string video_buf_limit_switch =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMSEVideoBufferSizeLimit);
-      unsigned video_buf_size_limit = 0;
-      if (base::StringToUint(video_buf_limit_switch, &video_buf_size_limit) &&
-          video_buf_size_limit > 0) {
-        MEDIA_LOG(INFO, media_log_) << "Custom video SourceBuffer size limit="
-                                    << video_buf_size_limit;
-        video_->SetStreamMemoryLimit(video_buf_size_limit);
-      }
-    }
   }
 
   typedef StreamParser::TextTrackConfigMap::const_iterator TextConfigItr;
@@ -725,15 +771,16 @@ bool MediaSourceState::OnNewConfigs(
     }
   }
 
+  if (audio_streams_.empty() && video_streams_.empty()) {
+    DVLOG(1) << __func__ << ": couldn't find a valid audio or video stream";
+    return false;
+  }
+
   frame_processor_->SetAllTrackBuffersNeedRandomAccessPoint();
 
-  if (audio_track) {
-    DCHECK(audio_);
-    audio_track->set_id(audio_->media_track_id());
-  }
-  if (video_track) {
-    DCHECK(video_);
-    video_track->set_id(video_->media_track_id());
+  if (!first_init_segment_received_) {
+    first_init_segment_received_ = true;
+    SetStreamMemoryLimits();
   }
 
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
@@ -747,12 +794,41 @@ bool MediaSourceState::OnNewConfigs(
   return success;
 }
 
+void MediaSourceState::SetStreamMemoryLimits() {
+  auto cmd_line = base::CommandLine::ForCurrentProcess();
+
+  std::string audio_buf_limit_switch =
+      cmd_line->GetSwitchValueASCII(switches::kMSEAudioBufferSizeLimit);
+  unsigned audio_buf_size_limit = 0;
+  if (base::StringToUint(audio_buf_limit_switch, &audio_buf_size_limit) &&
+      audio_buf_size_limit > 0) {
+    MEDIA_LOG(INFO, media_log_)
+        << "Custom audio per-track SourceBuffer size limit="
+        << audio_buf_size_limit;
+    for (const auto& it : audio_streams_) {
+      it.second->SetStreamMemoryLimit(audio_buf_size_limit);
+    }
+  }
+
+  std::string video_buf_limit_switch =
+      cmd_line->GetSwitchValueASCII(switches::kMSEVideoBufferSizeLimit);
+  unsigned video_buf_size_limit = 0;
+  if (base::StringToUint(video_buf_limit_switch, &video_buf_size_limit) &&
+      video_buf_size_limit > 0) {
+    MEDIA_LOG(INFO, media_log_)
+        << "Custom video per-track SourceBuffer size limit="
+        << video_buf_size_limit;
+    for (const auto& it : video_streams_) {
+      it.second->SetStreamMemoryLimit(video_buf_size_limit);
+    }
+  }
+}
+
 void MediaSourceState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = true;
-  media_segment_contained_audio_frame_ = false;
-  media_segment_contained_video_frame_ = false;
+  media_segment_has_data_for_track_.clear();
 }
 
 void MediaSourceState::OnEndOfMediaSegment() {
@@ -760,24 +836,31 @@ void MediaSourceState::OnEndOfMediaSegment() {
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = false;
 
-  const bool missing_audio = audio_ && !media_segment_contained_audio_frame_;
-  const bool missing_video = video_ && !media_segment_contained_video_frame_;
-  if (!missing_audio && !missing_video)
-    return;
-
-  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_missing_track_logs_,
-                    kMaxMissingTrackInSegmentLogs)
-      << "Media segment did not contain any "
-      << (missing_audio && missing_video ? "audio or video"
-                                         : missing_audio ? "audio" : "video")
-      << " coded frames, mismatching initialization segment. Therefore, MSE "
-         "coded frame processing may not interoperably detect discontinuities "
-         "in appended media.";
+  for (const auto& it : audio_streams_) {
+    if (!media_segment_has_data_for_track_[it.first]) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_missing_track_logs_,
+                        kMaxMissingTrackInSegmentLogs)
+          << "Media segment did not contain any coded frames for track "
+          << it.first << ", mismatching initialization segment. Therefore, MSE"
+                         " coded frame processing may not interoperably detect"
+                         " discontinuities in appended media.";
+    }
+  }
+  for (const auto& it : video_streams_) {
+    if (!media_segment_has_data_for_track_[it.first]) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_missing_track_logs_,
+                        kMaxMissingTrackInSegmentLogs)
+          << "Media segment did not contain any coded frames for track "
+          << it.first << ", mismatching initialization segment. Therefore, MSE"
+                         " coded frame processing may not interoperably detect"
+                         " discontinuities in appended media.";
+    }
+  }
 }
 
 bool MediaSourceState::OnNewBuffers(
     const StreamParser::BufferQueueMap& buffer_queue_map) {
-  DVLOG(2) << "OnNewBuffers()";
+  DVLOG(2) << __func__ << " buffer_queues=" << buffer_queue_map.size();
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   DCHECK(timestamp_offset_during_append_);
   DCHECK(parsing_media_segment_);
@@ -785,11 +868,7 @@ bool MediaSourceState::OnNewBuffers(
   for (const auto& it : buffer_queue_map) {
     const StreamParser::BufferQueue& bufq = it.second;
     DCHECK(!bufq.empty());
-    if (bufq[0]->type() == DemuxerStream::AUDIO) {
-      media_segment_contained_audio_frame_ = true;
-    } else if (bufq[0]->type() == DemuxerStream::VIDEO) {
-      media_segment_contained_video_frame_ = true;
-    }
+    media_segment_has_data_for_track_[it.first] = true;
   }
 
   const TimeDelta timestamp_offset_before_processing =
@@ -827,7 +906,6 @@ bool MediaSourceState::OnNewBuffers(
 
   return true;
 }
-
 void MediaSourceState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
   DCHECK_EQ(state_, PENDING_PARSER_INIT);

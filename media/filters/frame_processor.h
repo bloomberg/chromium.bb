@@ -25,15 +25,6 @@ class MEDIA_EXPORT FrameProcessor {
  public:
   typedef base::Callback<void(base::TimeDelta)> UpdateDurationCB;
 
-  // TODO(wolenetz/acolwell): Ensure that all TrackIds are coherent and unique
-  // for each track buffer. For now, special track identifiers are used for each
-  // of audio and video here, and text TrackIds are assumed to be non-negative.
-  // See http://crbug.com/341581.
-  enum {
-    kAudioTrackId = -2,
-    kVideoTrackId = -3
-  };
-
   FrameProcessor(const UpdateDurationCB& update_duration_cb,
                  const scoped_refptr<MediaLog>& media_log);
   ~FrameProcessor();

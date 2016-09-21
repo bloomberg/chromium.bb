@@ -5,6 +5,7 @@
 #include "media/base/audio_codecs.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 namespace media {
 
@@ -46,6 +47,28 @@ std::string GetCodecName(AudioCodec codec) {
   }
   NOTREACHED();
   return "";
+}
+
+AudioCodec StringToAudioCodec(const std::string& codec_id) {
+  if (codec_id == "aac")
+    return kCodecAAC;
+  if (codec_id == "ac-3" || codec_id == "mp4a.A5")
+    return kCodecAC3;
+  if (codec_id == "ec-3" || codec_id == "mp4a.A6")
+    return kCodecEAC3;
+  if (codec_id == "mp3")
+    return kCodecMP3;
+  if (codec_id == "alac")
+    return kCodecALAC;
+  if (codec_id == "flac")
+    return kCodecFLAC;
+  if (codec_id == "opus")
+    return kCodecOpus;
+  if (codec_id == "vorbis")
+    return kCodecVorbis;
+  if (base::StartsWith(codec_id, "mp4a.40.", base::CompareCase::SENSITIVE))
+    return kCodecAAC;
+  return kUnknownAudioCodec;
 }
 
 }  // namespace media
