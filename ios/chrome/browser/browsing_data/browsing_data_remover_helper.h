@@ -35,12 +35,6 @@ class BrowsingDataRemoverHelper
               browsing_data::TimePeriod time_period,
               const base::Closure& callback);
 
-  // DEPRECATED: Same as above, but setting the |time_period| to ALL_TIME.
-  // TODO(ioanap): Remove after all call sites are changed.
-  void Remove(ios::ChromeBrowserState* browser_state,
-              int remove_mask,
-              const base::Closure& callback);
-
  private:
   // Encapsulates the information that is needed to remove browsing data from
   // a ChromeBrowserState.

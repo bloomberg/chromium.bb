@@ -27,11 +27,6 @@ class ChromeBrowserState;
                           timePeriod:(browsing_data::TimePeriod)timePeriod
     NS_DESIGNATED_INITIALIZER;
 
-// DEPRECATED: Same as above, but setting |timePeriod| to ALL_TIME.
-// TODO(ioanap): Remove after all call sites are changed.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                mask:(int)mask;
-
 // When executed this command will remove browsing data for this BrowserState.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 

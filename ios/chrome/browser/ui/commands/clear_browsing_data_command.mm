@@ -31,11 +31,4 @@
   return self;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                mask:(int)mask {
-  return [self initWithBrowserState:browserState
-                               mask:mask
-                         timePeriod:browsing_data::ALL_TIME];
-}
-
 @end

@@ -58,12 +58,6 @@ void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
   }
 }
 
-void BrowsingDataRemoverHelper::Remove(ios::ChromeBrowserState* browser_state,
-                                       int remove_mask,
-                                       const base::Closure& callback) {
-  Remove(browser_state, remove_mask, browsing_data::ALL_TIME, callback);
-}
-
 void BrowsingDataRemoverHelper::OnIOSChromeBrowsingDataRemoverDone() {
   current_remover_ = nullptr;
 
