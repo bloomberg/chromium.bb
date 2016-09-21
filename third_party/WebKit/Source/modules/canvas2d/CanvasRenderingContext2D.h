@@ -165,7 +165,7 @@ public:
     SkImageFilter* stateGetFilter() final;
     void snapshotStateForFilter() final;
 
-    void validateStateStack() final;
+    void validateStateStack() const final;
 
     PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final;
 

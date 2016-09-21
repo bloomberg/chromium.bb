@@ -123,6 +123,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
         m_clipAntialiasing = AntiAliased;
     setShouldAntialias(true);
     ThreadState::current()->registerPreFinalizer(this);
+    validateStateStack();
 }
 
 void CanvasRenderingContext2D::setCanvasGetContextResult(RenderingContext& result)
@@ -148,7 +149,7 @@ void CanvasRenderingContext2D::dispose()
         Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
-void CanvasRenderingContext2D::validateStateStack()
+void CanvasRenderingContext2D::validateStateStack() const
 {
 #if ENABLE(ASSERT)
     SkCanvas* skCanvas = canvas()->existingDrawingCanvas();
@@ -156,6 +157,7 @@ void CanvasRenderingContext2D::validateStateStack()
         ASSERT(static_cast<size_t>(skCanvas->getSaveCount()) == m_stateStack.size());
     }
 #endif
+    CHECK(m_stateStack.first().get()); // Temporary for investigating crbug.com/648510
 }
 
 bool CanvasRenderingContext2D::isAccelerated() const

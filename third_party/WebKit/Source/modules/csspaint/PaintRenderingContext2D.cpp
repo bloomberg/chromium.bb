@@ -67,7 +67,7 @@ void PaintRenderingContext2D::didDraw(const SkIRect& dirtyRect)
     return m_imageBuffer->didDraw(SkRect::Make(dirtyRect));
 }
 
-void PaintRenderingContext2D::validateStateStack()
+void PaintRenderingContext2D::validateStateStack() const
 {
 #if ENABLE(ASSERT)
     SkCanvas* skCanvas = existingDrawingCanvas();

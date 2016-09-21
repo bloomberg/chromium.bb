@@ -60,7 +60,7 @@ public:
     SkImageFilter* stateGetFilter() final { return nullptr; }
     void snapshotStateForFilter() final { }
 
-    void validateStateStack() final;
+    void validateStateStack() const final;
 
     bool hasAlpha() const final { return m_hasAlpha; }
 

@@ -197,7 +197,7 @@ SkImageFilter* OffscreenCanvasRenderingContext2D::stateGetFilter()
     return nullptr;
 }
 
-void OffscreenCanvasRenderingContext2D::validateStateStack()
+void OffscreenCanvasRenderingContext2D::validateStateStack() const
 {
 #if ENABLE(ASSERT)
     SkCanvas* skCanvas = existingDrawingCanvas();

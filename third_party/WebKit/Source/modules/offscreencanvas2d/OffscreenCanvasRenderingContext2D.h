@@ -70,7 +70,7 @@ public:
     SkImageFilter* stateGetFilter() final;
     void snapshotStateForFilter() final { }
 
-    void validateStateStack() final;
+    void validateStateStack() const final;
 
     bool hasAlpha() const final { return creationAttributes().alpha(); }
     bool isContextLost() const override;
