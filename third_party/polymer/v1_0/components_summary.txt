@@ -312,9 +312,9 @@ Tree link: https://github.com/PolymerElements/paper-radio-group/tree/v1.2.0
 
 Name: paper-ripple
 Repository: git://github.com/PolymerElements/paper-ripple.git
-Tree: v1.0.8
-Revision: eb1c01cac162b7ce7e78760d5c0df61c9a5c2974
-Tree link: https://github.com/PolymerElements/paper-ripple/tree/v1.0.8
+Tree: 1.0.9
+Revision: 49cffa0778b45ba041879eaf29b11be21da424a4
+Tree link: https://github.com/PolymerElements/paper-ripple/tree/1.0.9
 
 Name: paper-slider
 Repository: git://github.com/PolymerElements/paper-slider.git
