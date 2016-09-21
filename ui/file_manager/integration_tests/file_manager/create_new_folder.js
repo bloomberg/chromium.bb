@@ -47,7 +47,7 @@ function selectFirstListItem(windowId) {
         ['div.detail-table > list > li[selected]']);
   }).then(function(elements) {
     chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq('detail-table-1', elements[0].attributes['id']);
+    chrome.test.assertEq('listitem-1', elements[0].attributes['id']);
   });
 }
 

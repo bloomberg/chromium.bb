@@ -333,19 +333,6 @@ cr.define('cr.ui', function() {
       // Make list focusable
       if (!this.hasAttribute('tabindex'))
         this.tabIndex = 0;
-
-      // Try to get an unique id prefix from the id of this element or the
-      // nearest ancestor with an id.
-      var element = this;
-      while (element && !element.id)
-        element = element.parentElement;
-      if (element && element.id)
-        this.uniqueIdPrefix_ = element.id;
-      else
-        this.uniqueIdPrefix_ = 'list';
-
-      // The next id suffix to use when giving each item an unique id.
-      this.nextUniqueIdSuffix_ = 0;
     },
 
     /**
@@ -626,6 +613,8 @@ cr.define('cr.ui', function() {
             self.scrollIndexIntoView(e.newValue);
           }, 0);
         }
+      } else {
+        this.removeAttribute('aria-activedescendant');
       }
     },
 
@@ -817,7 +806,6 @@ cr.define('cr.ui', function() {
     createItem: function(value) {
       var item = new this.itemConstructor_(value);
       item.label = value;
-      item.id = this.uniqueIdPrefix_ + '-' + this.nextUniqueIdSuffix_++;
       if (typeof item.decorate == 'function')
         item.decorate();
       return item;

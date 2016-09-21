@@ -11,6 +11,13 @@ cr.define('cr.ui', function() {
    */
   var ListItem = cr.ui.define('li');
 
+  /**
+   * The next id suffix to use when giving each item an unique id.
+   * @type {number}
+   * @private
+   */
+  ListItem.nextUniqueIdSuffix_ = 0;
+
   ListItem.prototype = {
     __proto__: HTMLLIElement.prototype,
 
@@ -36,6 +43,8 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       this.setAttribute('role', 'listitem');
+      if (!this.id)
+        this.id = 'listitem-' + ListItem.nextUniqueIdSuffix_++;
     },
 
     /**
