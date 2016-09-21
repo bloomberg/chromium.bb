@@ -85,8 +85,13 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
     host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
 
   // Host loads icon asynchronously, so use default icon so far.
-  const int resource_id = host_ && host_->app_id() == arc::kPlayStoreAppId ?
-      IDR_ARC_SUPPORT_ICON : IDR_APP_DEFAULT_ICON;
+  int resource_id;
+  if (host_ && host_->app_id() == arc::kPlayStoreAppId) {
+    resource_id = scale >= 1.5f ?
+        IDR_ARC_SUPPORT_ICON_48 : IDR_ARC_SUPPORT_ICON_96;
+  } else {
+    resource_id = IDR_APP_DEFAULT_ICON;
+  }
   const gfx::ImageSkia* default_image = ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(resource_id);
   CHECK(default_image);

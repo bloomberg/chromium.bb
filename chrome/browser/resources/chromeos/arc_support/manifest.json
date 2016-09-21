@@ -12,7 +12,8 @@
   "manifest_version": 2,
   "name": "Play Store",
   "icons": {
-    "48": "icon/48.png"
+    "48": "icon/48.png",
+    "96": "icon/96.png"
   },
   "permissions": [ "webview",
                    "browser",
