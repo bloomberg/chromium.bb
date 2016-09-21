@@ -169,7 +169,7 @@ ListPicker.prototype._handleWindowTouchEnd = function(event) {
     if (!touch)
         return;
     var target = document.elementFromPoint(touch.clientX, touch.clientY)
-    if (target.tagName === "OPTION")
+    if (target.tagName === "OPTION" && !target.disabled)
         window.pagePopupController.setValueAndClosePopup(0, this._selectElement.value);
     this._exitTouchSelectMode();
 };
@@ -183,7 +183,7 @@ ListPicker.prototype._getTouchForId = function (touchList, id) {
 };
 
 ListPicker.prototype._highlightOption = function(target) {
-    if (target.tagName !== "OPTION" || target.selected)
+    if (target.tagName !== "OPTION" || target.selected || target.disabled)
         return;
     var savedScrollTop = this._selectElement.scrollTop;
     // TODO(tkent): Updating HTMLOptionElement::selected is not efficient. We

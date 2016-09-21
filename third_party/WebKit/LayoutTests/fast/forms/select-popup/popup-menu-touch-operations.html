@@ -68,13 +68,46 @@ openPicker(menuElement, function () {
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menuElement.value', 'baz');
 
-    test2();
+    testDisabled();
 }, function () {
     testFailed('picker didn\'t open')
     finishJSTest();
 });
 
+function testDisabled() {
+    debug("==> Test disabled option");
+    menuElement.options[0].disabled = true;
+    openPicker(menuElement, () => {
+        picker = window.internals.pagePopupWindow.global.picker;
+        shouldBeEqualToString('picker._selectElement.value', '2');
+        shouldBeEqualToString('menuElement.value', 'baz');
+
+        var position = elementCenterPosition(picker._selectElement.children[2]);
+        eventSender.addTouchPoint(position[0], position[1]);
+        eventSender.touchStart();
+        shouldBeEqualToString('picker._selectElement.value', '2');
+
+        position = elementCenterPosition(picker._selectElement.children[0]);
+        eventSender.updateTouchPoint(0, position[0], position[1]);
+        eventSender.touchMove();
+        // The value is still 2 because children[0] is disabled.
+        shouldBeEqualToString('picker._selectElement.value', '2');
+
+        eventSender.releaseTouchPoint(0);
+        eventSender.touchEnd();
+
+        shouldNotBe('window.internals.pagePopupWindow', 'null');
+        shouldBeEqualToString('menuElement.value', 'baz');
+
+        test2();
+    }, function () {
+        testFailed('picker didn\'t open')
+        finishJSTest();
+    });
+}
+
 function test2() {
+    debug("==> Test scrollable popup");
     openPicker(menuElement2, function () {
         picker = window.internals.pagePopupWindow.global.picker;
         shouldBeEqualToString('picker._selectElement.value', '1');

@@ -4,6 +4,14 @@ PASS picker._selectElement.value is "0"
 PASS picker._selectElement.value is "2"
 PASS window.internals.pagePopupWindow is null
 PASS menuElement.value is "baz"
+==> Test disabled option
+PASS picker._selectElement.value is "2"
+PASS menuElement.value is "baz"
+PASS picker._selectElement.value is "2"
+PASS picker._selectElement.value is "2"
+PASS window.internals.pagePopupWindow is not null
+PASS menuElement.value is "baz"
+==> Test scrollable popup
 PASS picker._selectElement.value is "1"
 PASS menuElement2.value is "2"
 PASS picker._selectElement.value is "2"
