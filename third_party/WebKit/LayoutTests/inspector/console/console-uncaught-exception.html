@@ -10,7 +10,7 @@ function test()
     InspectorTest.evaluateInPage("loadIframe()");
     function addMessage(viewMessage)
     {
-        if (viewMessage.toString().indexOf("setTimeout") !== -1)
+        if (viewMessage.element().deepTextContent().indexOf("setTimeout") !== -1)
             InspectorTest.expandConsoleMessages(onExpanded);
     }
 

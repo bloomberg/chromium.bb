@@ -32,7 +32,7 @@ function test()
     function addMessage(uiMessage)
     {
         // There will be only one such message.
-        if (uiMessage.toString().indexOf("non-existent-iframe") !== -1)
+        if (uiMessage.element().deepTextContent().indexOf("non-existent-iframe") !== -1)
             InspectorTest.expandConsoleMessages(onExpandedMessages);
     }
 

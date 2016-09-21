@@ -21,7 +21,7 @@ function test()
     var completeMessageReceived = false;
     function messageSniffer(uiMessage)
     {
-        if (uiMessage.toString().indexOf("complete") !== -1) {
+        if (uiMessage.element().deepTextContent().indexOf("complete") !== -1) {
             completeMessageReceived = true;
             maybeCompleteTest();
         }
