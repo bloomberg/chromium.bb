@@ -11,7 +11,7 @@
 namespace switches {
 
 bool IsTouchDragDropEnabled() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTouchDragDrop);
 #else
