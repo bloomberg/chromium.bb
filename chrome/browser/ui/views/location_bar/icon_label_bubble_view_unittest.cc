@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/test/views_test_base.h"
@@ -26,8 +27,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
     SHRINKING,
   };
 
-  TestIconLabelBubbleView(const gfx::FontList& font_list, SkColor color)
-      : IconLabelBubbleView(0, font_list, color, false), value_(0) {
+  explicit TestIconLabelBubbleView(const gfx::FontList& font_list)
+      : IconLabelBubbleView(font_list, false), value_(0) {
     GetImageView()->SetImageSize(gfx::Size(kImageSize, kImageSize));
     SetLabel(base::ASCIIToUTF16("Label"));
   }
@@ -56,11 +57,11 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
  protected:
   // IconLabelBubbleView:
   SkColor GetTextColor() const override { return kTestColor; }
-  SkColor GetBorderColor() const override { return kTestColor; }
 
-  bool ShouldShowBackground() const override {
+  bool ShouldShowLabel() const override {
     return !IsShrinking() ||
-           (width() >= MinimumWidthForImageWithBackgroundShown());
+           (width() > (image()->GetPreferredSize().width() +
+                       2 * GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING)));
   }
 
   double WidthMultiplier() const override {
@@ -104,7 +105,7 @@ class IconLabelBubbleViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
     gfx::FontList font_list;
-    view_.reset(new TestIconLabelBubbleView(font_list, kTestColor));
+    view_.reset(new TestIconLabelBubbleView(font_list));
   }
 
   void VerifyWithAnimationStep(int step) {

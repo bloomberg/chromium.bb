@@ -8,11 +8,11 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -34,9 +34,8 @@ const int ContentSettingImageView::kAnimationDurationMS =
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingImageModel* image_model,
     LocationBarView* parent,
-    const gfx::FontList& font_list,
-    SkColor parent_background_color)
-    : IconLabelBubbleView(0, font_list, parent_background_color, false),
+    const gfx::FontList& font_list)
+    : IconLabelBubbleView(font_list, false),
       parent_(parent),
       content_setting_image_model_(image_model),
       slide_animator_(this),
@@ -44,17 +43,8 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_state_(0.0),
       bubble_view_(nullptr),
       suppress_mouse_released_action_(false) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  } else {
-    static const int kBackgroundImages[] =
-        IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
-    SetBackgroundImageGrid(kBackgroundImages);
-    image()->set_interactive(true);
-    image()->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  }
-
+  SetInkDropMode(InkDropMode::ON);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   image()->SetHorizontalAlignment(base::i18n::IsRTL()
                                       ? views::ImageView::TRAILING
                                       : views::ImageView::LEADING);
@@ -155,9 +145,7 @@ bool ContentSettingImageView::GetTooltipText(const gfx::Point& p,
 
 void ContentSettingImageView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    UpdateImage();
-
+  UpdateImage();
   IconLabelBubbleView::OnNativeThemeChanged(native_theme);
 }
 
@@ -170,13 +158,11 @@ SkColor ContentSettingImageView::GetTextColor() const {
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
-SkColor ContentSettingImageView::GetBorderColor() const {
-  return gfx::kGoogleYellow700;
-}
-
-bool ContentSettingImageView::ShouldShowBackground() const {
+bool ContentSettingImageView::ShouldShowLabel() const {
   return (!IsShrinking() ||
-          (width() >= MinimumWidthForImageWithBackgroundShown())) &&
+          (width() >
+           (image()->GetPreferredSize().width() +
+            2 * GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING)))) &&
          (slide_animator_.is_animating() || pause_animation_);
 }
 
@@ -214,8 +200,7 @@ bool ContentSettingImageView::OnActivate(const ui::Event& event) {
     // closes. The former looks more jerky, so we avoid it unless the animation
     // hasn't even fully exposed the image yet, in which case pausing with half
     // an image visible will look broken.
-    if (!pause_animation_ && ShouldShowBackground() &&
-        (width() > MinimumWidthForImageWithBackgroundShown())) {
+    if (!pause_animation_ && ShouldShowLabel()) {
       pause_animation_ = true;
       pause_animation_state_ = slide_animator_.GetCurrentValue();
     }
@@ -237,7 +222,7 @@ bool ContentSettingImageView::OnActivate(const ui::Event& event) {
     // bubble doesn't need an arrow. If the user clicks during an animation,
     // the animation simply pauses and no other visible state change occurs, so
     // show the arrow in this case.
-    if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_) {
+    if (!pause_animation_) {
       AnimateInkDrop(views::InkDropState::ACTIVATED,
                      ui::LocatedEvent::FromIfValid(&event));
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);

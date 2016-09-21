@@ -88,14 +88,8 @@ class BubbleIconView : public views::InkDropHostView,
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
 
-  // Gets the given vector icon in the correct color and size based on |active|
-  // and whether Chrome's in material design mode.
+  // Gets the given vector icon in the correct color and size based on |active|.
   virtual gfx::VectorIconId GetVectorIcon() const;
-
-  // Sets the image using a PNG from the resource bundle. Returns true if an
-  // image was set, or false if the icon should use a vector asset. This only
-  // exists for non-MD mode. TODO(estade): remove it.
-  virtual bool SetRasterIcon();
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

@@ -78,8 +78,7 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
   if (reason == USER_GESTURE) {
     // In the USER_GESTURE case, the icon will be in an active state so the
     // bubble doesn't need an arrow.
-    if (ui::MaterialDesignController::IsModeMaterial())
-      SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     GetWidget()->Show();
   } else {
     GetWidget()->ShowInactive();

@@ -24,7 +24,6 @@ class LocationIconView : public IconLabelBubbleView,
                          public gfx::AnimationDelegate {
  public:
   LocationIconView(const gfx::FontList& font_list,
-                   SkColor parent_background_color,
                    LocationBarView* location_bar);
   ~LocationIconView() override;
 
@@ -37,7 +36,6 @@ class LocationIconView : public IconLabelBubbleView,
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
-  SkColor GetBorderColor() const override;
   bool OnActivate(const ui::Event& event) override;
 
   // Whether we should show the tooltip for this icon or not.
@@ -47,10 +45,6 @@ class LocationIconView : public IconLabelBubbleView,
   gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;
 
   const gfx::FontList& GetFontList() const { return font_list(); }
-
-  // Set the background image. Pass false for |should_show_ev| for all non-EV
-  // HTTPS contexts.
-  void SetBackground(bool should_show_ev);
 
   // Sets whether the verbose security state text should be visible.
   // |should_animate| controls whether any necessary transition to this state

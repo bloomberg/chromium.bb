@@ -8,28 +8,17 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
-#include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/controls/image_view.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
 namespace {
@@ -78,24 +67,16 @@ KeywordHintView::KeywordHintView(Profile* profile,
       tab_key_height_(bubble_height) {
   leading_label_ =
       CreateLabel(font_list, text_color, background_color);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    TabKeyBubbleView* tab_key = new TabKeyBubbleView(bubble_font_list);
-    tab_key->SetEnabledColor(text_color);
-    bool inverted = color_utils::IsDark(background_color);
-    SkColor tab_bg_color =
-        inverted ? SK_ColorWHITE : SkColorSetA(text_color, 0x13);
-    SkColor tab_border_color = inverted ? SK_ColorWHITE : text_color;
-    tab_key->SetBackgroundColor(tab_bg_color);
-    tab_key->set_background(
-        new BackgroundWith1PxBorder(tab_bg_color, tab_border_color));
-    tab_key_view_ = tab_key;
-  } else {
-    views::ImageView* tab_image = new views::ImageView();
-    tab_image->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_OMNIBOX_KEYWORD_HINT_TAB));
-    tab_key_view_ = tab_image;
-  }
+  TabKeyBubbleView* tab_key = new TabKeyBubbleView(bubble_font_list);
+  tab_key->SetEnabledColor(text_color);
+  bool inverted = color_utils::IsDark(background_color);
+  SkColor tab_bg_color =
+      inverted ? SK_ColorWHITE : SkColorSetA(text_color, 0x13);
+  SkColor tab_border_color = inverted ? SK_ColorWHITE : text_color;
+  tab_key->SetBackgroundColor(tab_bg_color);
+  tab_key->set_background(
+      new BackgroundWith1PxBorder(tab_bg_color, tab_border_color));
+  tab_key_view_ = tab_key;
   AddChildView(tab_key_view_);
   trailing_label_ =
       CreateLabel(font_list, text_color, background_color);

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -17,21 +16,14 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/painter.h"
 
 using content::NavigationEntry;
 using content::WebContents;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
-                                   SkColor parent_background_color,
                                    LocationBarView* location_bar)
-    : IconLabelBubbleView(IDR_OMNIBOX_HTTPS_INVALID,
-                          font_list,
-                          parent_background_color,
-                          true),
+    : IconLabelBubbleView(font_list, true),
       suppress_mouse_released_action_(false),
       location_bar_(location_bar),
       animation_(this) {
@@ -43,7 +35,6 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
-  SetBackground(false);
   animation_.SetSlideDuration(kOpenTimeMS);
 }
 
@@ -108,10 +99,6 @@ SkColor LocationIconView::GetTextColor() const {
   return location_bar_->GetColor(LocationBarView::SECURITY_CHIP_TEXT);
 }
 
-SkColor LocationIconView::GetBorderColor() const {
-  return GetTextColor();
-}
-
 bool LocationIconView::OnActivate(const ui::Event& event) {
   WebContents* contents = location_bar_->GetWebContents();
   if (!contents)
@@ -139,14 +126,6 @@ gfx::Size LocationIconView::GetMinimumSizeForLabelText(
       GetSizeForLabelWidth(label.GetPreferredSize().width()));
 }
 
-void LocationIconView::SetBackground(bool should_show_ev) {
-  static const int kEvBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
-  if (should_show_ev)
-    SetBackgroundImageGrid(kEvBackgroundImages);
-  else
-    UnsetBackgroundImageGrid();
-}
-
 void LocationIconView::SetSecurityState(bool should_show, bool should_animate) {
   if (!should_animate) {
     animation_.Reset(should_show);
@@ -155,6 +134,8 @@ void LocationIconView::SetSecurityState(bool should_show, bool should_animate) {
   } else {
     animation_.Hide();
   }
+  // The label text color may have changed.
+  OnNativeThemeChanged(GetNativeTheme());
 }
 
 double LocationIconView::WidthMultiplier() const {

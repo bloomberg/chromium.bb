@@ -22,8 +22,6 @@ class Size;
 class SelectedKeywordView : public IconLabelBubbleView {
  public:
   SelectedKeywordView(const gfx::FontList& font_list,
-                      SkColor text_color,
-                      SkColor parent_background_color,
                       Profile* profile);
   ~SelectedKeywordView() override;
 
@@ -33,7 +31,6 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
   // IconLabelBubbleView:
   SkColor GetTextColor() const override;
-  SkColor GetBorderColor() const override;
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
@@ -47,8 +44,6 @@ class SelectedKeywordView : public IconLabelBubbleView {
  private:
   // IconLabelBubbleView:
   const char* GetClassName() const override;
-
-  SkColor text_color_;
 
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get

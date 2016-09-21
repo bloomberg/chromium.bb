@@ -112,6 +112,9 @@ class LocationBarView : public LocationBar,
     SECURITY_CHIP_TEXT,
   };
 
+  // Width (and height) of icons in location bar.
+  static constexpr int kLocationBarIconWidth = 16;
+
   // The location bar view's class name.
   static const char kViewClassName[];
 
@@ -123,8 +126,8 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
-  // Returns the color for the location bar border in MD windows and non-MD
-  // popup windows, given the window's |incognito| state.
+  // Returns the color for the location bar border given the window's
+  // |incognito| state.
   static SkColor GetBorderColor(bool incognito);
 
   // Initializes the LocationBarView.
@@ -185,9 +188,6 @@ class LocationBarView : public LocationBar,
   // Returns the screen coordinates of the omnibox (where the URL text appears,
   // not where the icons are shown).
   gfx::Point GetOmniboxViewOrigin() const;
-
-  // Returns the width of the location icon.
-  int GetLocationIconWidth() const;
 
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
@@ -275,7 +275,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the total amount of space reserved above or below the content,
   // which is the vertical edge thickness plus the padding next to it.
-  int GetVerticalEdgeThicknessWithPadding() const;
+  int GetTotalVerticalPadding() const;
 
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();
@@ -371,7 +371,6 @@ class LocationBarView : public LocationBar,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const ui::PaintContext& context) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
@@ -405,9 +404,6 @@ class LocationBarView : public LocationBar,
 
   // Our delegate.
   Delegate* delegate_;
-
-  // Object used to paint the border. Not used for material design.
-  std::unique_ptr<views::Painter> border_painter_;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.

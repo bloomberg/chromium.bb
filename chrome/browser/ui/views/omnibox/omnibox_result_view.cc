@@ -202,7 +202,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0)
-    default_icon_size_ = location_bar_view_->GetLocationIconWidth();
+    default_icon_size_ = LocationBarView::kLocationBarIconWidth;
   keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_->SetImage(GetKeywordIcon());

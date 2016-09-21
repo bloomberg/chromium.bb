@@ -4,21 +4,14 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/image/image_util.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -26,32 +19,12 @@ namespace {
 // Amount of space on either side of the separator that appears after the label.
 constexpr int kSpaceBesideSeparator = 8;
 
-SkColor CalculateImageColor(gfx::ImageSkia* image) {
-  // We grab the color of the middle pixel of the image, which we treat as
-  // the representative color of the entire image (reasonable, given the current
-  // appearance of these assets).
-  const SkBitmap& bitmap(image->GetRepresentation(1.0f).sk_bitmap());
-  SkAutoLockPixels pixel_lock(bitmap);
-  return bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);
-}
-
 }  // namespace
 
-IconLabelBubbleView::IconLabelBubbleView(int contained_image,
-                                         const gfx::FontList& font_list,
-                                         SkColor parent_background_color,
+IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
                                          bool elide_in_middle)
-    : background_painter_(nullptr),
-      image_(new views::ImageView()),
-      label_(new views::Label(base::string16(), font_list)),
-      is_extension_icon_(false),
-      parent_background_color_(parent_background_color) {
-  if (contained_image) {
-    image_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            contained_image));
-  }
-
+    : image_(new views::ImageView()),
+      label_(new views::Label(base::string16(), font_list)) {
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
   image_->set_interactive(false);
@@ -70,32 +43,11 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
   SetBorder(views::Border::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 
-  // Flip the canvas in MD RTL so the separator is drawn on the correct side.
-  EnableCanvasFlippingForRTLUI(ui::MaterialDesignController::IsModeMaterial());
+  // Flip the canvas in RTL so the separator is drawn on the correct side.
+  EnableCanvasFlippingForRTLUI(true);
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
-}
-
-void IconLabelBubbleView::SetBackgroundImageGrid(
-    const int background_images[]) {
-  should_show_background_ = true;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    background_painter_.reset(
-        views::Painter::CreateImageGridPainter(background_images));
-    // Use the middle image of the background to represent the color of the
-    // entire background.
-    gfx::ImageSkia* background_image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            background_images[4]);
-    SetLabelBackgroundColor(CalculateImageColor(background_image));
-  }
-  OnNativeThemeChanged(GetNativeTheme());
-}
-
-void IconLabelBubbleView::UnsetBackgroundImageGrid() {
-  should_show_background_ = false;
-  SetLabelBackgroundColor(SK_ColorTRANSPARENT);
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
@@ -106,8 +58,8 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
-bool IconLabelBubbleView::ShouldShowBackground() const {
-  return should_show_background_;
+bool IconLabelBubbleView::ShouldShowLabel() const {
+  return label_->visible() && !label_->text().empty();
 }
 
 double IconLabelBubbleView::WidthMultiplier() const {
@@ -140,26 +92,20 @@ bool IconLabelBubbleView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void IconLabelBubbleView::Layout() {
-  // Compute the image bounds.  In non-MD, the leading padding depends on
-  // whether this is an extension icon, since extension icons and
-  // Chrome-provided icons are different sizes.  In MD, these sizes are the
-  // same, so it's not necessary to handle the two types differently.
-  const bool icon_has_enough_padding =
-      !is_extension_icon_ || ui::MaterialDesignController::IsModeMaterial();
-  int image_x = GetOuterPadding(icon_has_enough_padding);
-  int bubble_trailing_padding = GetOuterPadding(false);
+  // Compute the image bounds. Leading and trailing padding are the same.
+  int image_x = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+  int bubble_trailing_padding = image_x;
 
-  // If ShouldShowBackground() is true, then either we show a background in the
+  // If ShouldShowLabel() is true, then either we show a label in the
   // steady state, or we're not yet in the last portion of the animation.  In
-  // these cases, we leave the leading and trailing padding alone; we don't want
-  // to let the image overlap the edge of the background, as this looks glitchy.
-  // If this is false, however, then we're only showing the image, and either
-  // the view width is the image width, or it's animating downwards and getting
-  // close to it.  In these cases, we want to shrink the trailing padding first,
-  // so the image slides all the way to the trailing edge before slowing or
-  // stopping; then we want to shrink the leading padding down to zero.
+  // these cases, we leave the leading and trailing padding alone.  If this is
+  // false, however, then we're only showing the image, and either the view
+  // width is the image width, or it's animating downwards and getting close to
+  // it.  In these cases, we want to shrink the trailing padding first, so the
+  // image slides all the way to the trailing edge before slowing or stopping;
+  // then we want to shrink the leading padding down to zero.
   const int image_preferred_width = image_->GetPreferredSize().width();
-  if (!ShouldShowBackground()) {
+  if (!ShouldShowLabel()) {
     image_x = std::min(image_x, width() - image_preferred_width);
     bubble_trailing_padding = std::min(
         bubble_trailing_padding, width() - image_preferred_width - image_x);
@@ -187,11 +133,8 @@ void IconLabelBubbleView::Layout() {
 void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   label_->SetEnabledColor(GetTextColor());
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    label_->SetBackgroundColor(GetParentBackgroundColor());
-    SchedulePaint();
-  }
+  label_->SetBackgroundColor(GetParentBackgroundColor());
+  SchedulePaint();
 }
 
 void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -217,10 +160,8 @@ SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
 }
 
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
-  return ui::MaterialDesignController::IsModeMaterial()
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_TextfieldDefaultBackground)
-             : parent_background_color_;
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
@@ -230,7 +171,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   // visible in order to slide the icon into its final position. Therefore it
   // is necessary to animate |total_width| even when the background is hidden
   // as long as the animation is still shrinking.
-  if (ShouldShowBackground() || shrinking) {
+  if (ShouldShowLabel() || shrinking) {
     // On scale factors < 2, we reserve 1 DIP for the 1 px separator.  For
     // higher scale factors, we simply take the separator px out of the
     // kSpaceBesideSeparator region before the separator, as that results in a
@@ -240,9 +181,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // There may be no widget in tests.
     const int separator_width =
         (widget && widget->GetCompositor()->device_scale_factor() >= 2) ? 0 : 1;
-    const int post_label_width = ui::MaterialDesignController::IsModeMaterial()
-        ? (kSpaceBesideSeparator + separator_width + GetPostSeparatorPadding())
-        : GetOuterPadding(false);
+    const int post_label_width =
+        (kSpaceBesideSeparator + separator_width + GetPostSeparatorPadding());
 
     // |multiplier| grows from zero to one, stays equal to one and then shrinks
     // to zero again. The view width should correspondingly grow from zero to
@@ -250,44 +190,14 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // enough to show the icon. We don't want to shrink all the way back to
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
-    const int max_width = GetImageTrailingEdge() + GetInternalSpacing() +
-                          label_width + post_label_width;
+    const int max_width = GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) +
+                          image_->GetPreferredSize().width() +
+                          GetInternalSpacing() + label_width + post_label_width;
     const int current_width = WidthMultiplier() * max_width;
     size.set_width(shrinking ? std::max(current_width, size.width())
                              : current_width);
   }
   return size;
-}
-
-int IconLabelBubbleView::MinimumWidthForImageWithBackgroundShown() const {
-  return GetImageTrailingEdge() + GetOuterPadding(false);
-}
-
-void IconLabelBubbleView::SetLabelBackgroundColor(
-    SkColor chip_background_color) {
-  // The background images are painted atop |parent_background_color_|.
-  // Alpha-blend |chip_background_color| with |parent_background_color_| to
-  // determine the actual color the label text will sit atop.
-  // Tricky bit: We alpha blend an opaque version of |chip_background_color|
-  // against |parent_background_color_| using the original image grid color's
-  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
-  // even if |a| is a color with non-255 alpha.
-  label_->SetBackgroundColor(color_utils::AlphaBlend(
-      SkColorSetA(chip_background_color, 255), GetParentBackgroundColor(),
-      SkColorGetA(chip_background_color)));
-}
-
-int IconLabelBubbleView::GetOuterPadding(bool leading) const {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
-
-  return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
-         GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
-         (leading ? 0 : kTrailingPaddingPreMd);
-}
-
-int IconLabelBubbleView::GetImageTrailingEdge() const {
-  return GetOuterPadding(true) + image_->GetPreferredSize().width();
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {
@@ -307,32 +217,25 @@ const char* IconLabelBubbleView::GetClassName() const {
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
-  if (!ShouldShowBackground())
+  if (!ShouldShowLabel())
     return;
-  if (background_painter_) {
-    views::Painter::PaintPainterAt(canvas, background_painter_.get(),
-                                   GetContentsBounds());
-  }
 
-  // In MD, draw a separator and not a background.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    const SkColor plain_text_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldDefaultColor);
-    const SkColor separator_color = SkColorSetA(
-        plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
+  const SkColor plain_text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  const SkColor separator_color = SkColorSetA(
+      plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
 
-    gfx::Rect bounds(GetLocalBounds());
-    const int kSeparatorHeight = 16;
-    bounds.Inset(GetPostSeparatorPadding(),
-                 (bounds.height() - kSeparatorHeight) / 2);
+  gfx::Rect bounds(GetLocalBounds());
+  const int kSeparatorHeight = 16;
+  bounds.Inset(GetPostSeparatorPadding(),
+               (bounds.height() - kSeparatorHeight) / 2);
 
-    // Draw the 1 px separator.
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float scale = canvas->UndoDeviceScaleFactor();
-    // Keep the separator aligned on a pixel center.
-    const gfx::RectF pixel_aligned_bounds =
-        gfx::ScaleRect(gfx::RectF(bounds), scale) - gfx::Vector2dF(0.5f, 0);
-    canvas->DrawLine(pixel_aligned_bounds.top_right(),
-                     pixel_aligned_bounds.bottom_right(), separator_color);
-  }
+  // Draw the 1 px separator.
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+  // Keep the separator aligned on a pixel center.
+  const gfx::RectF pixel_aligned_bounds =
+      gfx::ScaleRect(gfx::RectF(bounds), scale) - gfx::Vector2dF(0.5f, 0);
+  canvas->DrawLine(pixel_aligned_bounds.top_right(),
+                   pixel_aligned_bounds.bottom_right(), separator_color);
 }

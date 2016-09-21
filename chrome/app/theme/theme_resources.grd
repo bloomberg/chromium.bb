@@ -365,48 +365,49 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFIER_BLOCK_BUTTON" file="common/block_notifier.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER" file="common/omnibox_border.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_SELECTED" file="common/omnibox_calculator_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM" file="common/omnibox_content_setting_bubble_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_LEFT" file="common/omnibox_content_setting_bubble_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_content_setting_bubble_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_CENTER" file="common/omnibox_content_setting_bubble_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_LEFT" file="common/omnibox_content_setting_bubble_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_RIGHT" file="common/omnibox_content_setting_bubble_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP" file="common/omnibox_content_setting_bubble_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_LEFT" file="common/omnibox_content_setting_bubble_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_RIGHT" file="common/omnibox_content_setting_bubble_top_right.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM" file="common/omnibox_content_setting_bubble_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_LEFT" file="common/omnibox_content_setting_bubble_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_content_setting_bubble_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_CENTER" file="common/omnibox_content_setting_bubble_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_LEFT" file="common/omnibox_content_setting_bubble_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_RIGHT" file="common/omnibox_content_setting_bubble_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP" file="common/omnibox_content_setting_bubble_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_LEFT" file="common/omnibox_content_setting_bubble_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_RIGHT" file="common/omnibox_content_setting_bubble_top_right.png" />
+      </if>
       <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM" file="common/omnibox_dropdown_shadow_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_TOP" file="common/omnibox_dropdown_shadow_top.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM" file="common/omnibox_ev_bubble_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_LEFT" file="common/omnibox_ev_bubble_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_ev_bubble_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_CENTER" file="common/omnibox_ev_bubble_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_LEFT" file="common/omnibox_ev_bubble_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_RIGHT" file="common/omnibox_ev_bubble_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP" file="common/omnibox_ev_bubble_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_LEFT" file="common/omnibox_ev_bubble_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_RIGHT" file="common/omnibox_ev_bubble_top_right.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM" file="common/omnibox_ev_bubble_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_LEFT" file="common/omnibox_ev_bubble_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_ev_bubble_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_CENTER" file="common/omnibox_ev_bubble_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_LEFT" file="common/omnibox_ev_bubble_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_RIGHT" file="common/omnibox_ev_bubble_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP" file="common/omnibox_ev_bubble_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_LEFT" file="common/omnibox_ev_bubble_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_RIGHT" file="common/omnibox_ev_bubble_top_right.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="common/omnibox_extension_app_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="common/omnibox_http_selected.png" />
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />
       </if>
-      <if expr="not is_macosx and not is_ios">
-        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="common/omnibox_keyword_hint_tab.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM" file="common/omnibox_popup_border_and_shadow_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_LEFT" file="common/omnibox_popup_border_and_shadow_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_RIGHT" file="common/omnibox_popup_border_and_shadow_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_CENTER" file="common/omnibox_popup_border_and_shadow_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_LEFT" file="common/omnibox_popup_border_and_shadow_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_RIGHT" file="common/omnibox_popup_border_and_shadow_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP" file="common/omnibox_popup_border_and_shadow_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_LEFT" file="common/omnibox_popup_border_and_shadow_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_RIGHT" file="common/omnibox_popup_border_and_shadow_top_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_PDF_ICON" file="pdf.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM" file="common/omnibox_popup_border_and_shadow_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_LEFT" file="common/omnibox_popup_border_and_shadow_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_RIGHT" file="common/omnibox_popup_border_and_shadow_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_CENTER" file="common/omnibox_popup_border_and_shadow_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_LEFT" file="common/omnibox_popup_border_and_shadow_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_RIGHT" file="common/omnibox_popup_border_and_shadow_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP" file="common/omnibox_popup_border_and_shadow_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_LEFT" file="common/omnibox_popup_border_and_shadow_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_RIGHT" file="common/omnibox_popup_border_and_shadow_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_BOTTOM" file="common/omnibox_selected_keyword_bubble_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_BOTTOM_LEFT" file="common/omnibox_selected_keyword_bubble_bottom_left.png" />
@@ -663,8 +664,10 @@
         <structure type="chrome_scaled_image" name="IDR_SECONDARY_USER_SETTINGS" file="cros/secondary_user_settings.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
-      <structure type="chrome_scaled_image" name="IDR_STAR" file="common/star.png" />
-      <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="common/star_lit.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_STAR" file="common/star.png" />
+        <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="common/star_lit.png" />
+      </if>
       <if expr="toolkit_views or is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_STOP" file="common/browser_stop_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_STOP_D" file="common/browser_stop_disabled.png" />

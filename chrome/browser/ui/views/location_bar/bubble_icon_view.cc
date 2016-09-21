@@ -5,10 +5,9 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -24,12 +23,8 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   AddChildView(image_);
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  } else {
-    image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  }
+  SetInkDropMode(InkDropMode::ON);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 BubbleIconView::~BubbleIconView() {}
@@ -183,10 +178,6 @@ gfx::VectorIconId BubbleIconView::GetVectorIcon() const {
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
-bool BubbleIconView::SetRasterIcon() {
-  return false;
-}
-
 void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
@@ -194,18 +185,13 @@ void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void BubbleIconView::UpdateIcon() {
-  if (SetRasterIcon())
-    return;
-
-  const int icon_size =
-      ui::MaterialDesignController::IsModeMaterial() ? 16 : 18;
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color =
       active_
           ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
           : GetInkDropBaseColor();
-  image_->SetImage(
-      gfx::CreateVectorIcon(GetVectorIcon(), icon_size, icon_color));
+  image_->SetImage(gfx::CreateVectorIcon(
+      GetVectorIcon(), LocationBarView::kLocationBarIconWidth, icon_color));
 }
 
 void BubbleIconView::SetActiveInternal(bool active) {
