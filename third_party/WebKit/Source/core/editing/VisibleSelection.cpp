@@ -284,12 +284,12 @@ void VisibleSelectionTemplate<Strategy>::setBaseAndExtentToDeepEquivalents()
     // Move the selection to rendered positions, if possible.
     bool baseAndExtentEqual = m_base == m_extent;
     if (m_base.isNotNull()) {
-        m_base = createVisiblePositionDeprecated(m_base, m_affinity).deepEquivalent();
+        m_base = createVisiblePosition(m_base, m_affinity).deepEquivalent();
         if (baseAndExtentEqual)
             m_extent = m_base;
     }
     if (m_extent.isNotNull() && !baseAndExtentEqual)
-        m_extent = createVisiblePositionDeprecated(m_extent, m_affinity).deepEquivalent();
+        m_extent = createVisiblePosition(m_extent, m_affinity).deepEquivalent();
 
     // Make sure we do not have a dangling base or extent.
     if (m_base.isNull() && m_extent.isNull()) {
@@ -324,7 +324,7 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranu
         // the document, select that last word (LeftWordIfOnBoundary).
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
-        const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePositionDeprecated(m_start, m_affinity);
+        const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePosition(m_start, m_affinity);
         EWordSide side = RightWordIfOnBoundary;
         if (isEndOfEditableOrNonEditableContent(visibleStart) || (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) && !isEndOfParagraph(visibleStart)))
             side = LeftWordIfOnBoundary;
@@ -332,31 +332,31 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranu
         break;
     }
     case SentenceGranularity: {
-        m_start = startOfSentence(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfSentence(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
     case LineGranularity: {
-        m_start = startOfLine(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfLine(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
     case LineBoundary:
-        m_start = startOfLine(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfLine(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case ParagraphGranularity: {
-        VisiblePositionTemplate<Strategy> pos = createVisiblePositionDeprecated(m_start, m_affinity);
+        VisiblePositionTemplate<Strategy> pos = createVisiblePosition(m_start, m_affinity);
         if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
             pos = previousPositionOf(pos);
         m_start = startOfParagraph(pos).deepEquivalent();
         break;
     }
     case DocumentBoundary:
-        m_start = startOfDocument(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfDocument(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case ParagraphBoundary:
-        m_start = startOfParagraph(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfParagraph(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     case SentenceBoundary:
-        m_start = startOfSentence(createVisiblePositionDeprecated(m_start, m_affinity)).deepEquivalent();
+        m_start = startOfSentence(createVisiblePosition(m_start, m_affinity)).deepEquivalent();
         break;
     }
 
@@ -387,7 +387,7 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         // Edge case: If the caret is after the last word in a paragraph, select
         // from the the end of the last word to the line break (also
         // |RightWordIfOnBoundary|);
-        const VisiblePositionTemplate<Strategy> originalEnd = createVisiblePositionDeprecated(m_end, m_affinity);
+        const VisiblePositionTemplate<Strategy> originalEnd = createVisiblePosition(m_end, m_affinity);
         EWordSide side = RightWordIfOnBoundary;
         if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
             side = LeftWordIfOnBoundary;
@@ -419,11 +419,11 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         break;
     }
     case SentenceGranularity: {
-        m_end = endOfSentence(createVisiblePositionDeprecated(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfSentence(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     }
     case LineGranularity: {
-        VisiblePositionTemplate<Strategy> end = endOfLine(createVisiblePositionDeprecated(m_end, m_affinity));
+        VisiblePositionTemplate<Strategy> end = endOfLine(createVisiblePosition(m_end, m_affinity));
         // If the end of this line is at the end of a paragraph, include the
         // space after the end of the line in the selection.
         if (isEndOfParagraph(end)) {
@@ -435,10 +435,10 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         break;
     }
     case LineBoundary:
-        m_end = endOfLine(createVisiblePositionDeprecated(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfLine(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case ParagraphGranularity: {
-        const VisiblePositionTemplate<Strategy> visibleParagraphEnd = endOfParagraph(createVisiblePositionDeprecated(m_end, m_affinity));
+        const VisiblePositionTemplate<Strategy> visibleParagraphEnd = endOfParagraph(createVisiblePosition(m_end, m_affinity));
 
         // Include the "paragraph break" (the space from the end of this
         // paragraph to the start of the next one) in the selection.
@@ -464,13 +464,13 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         break;
     }
     case DocumentBoundary:
-        m_end = endOfDocument(createVisiblePositionDeprecated(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfDocument(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case ParagraphBoundary:
-        m_end = endOfParagraph(createVisiblePositionDeprecated(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfParagraph(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     case SentenceBoundary:
-        m_end = endOfSentence(createVisiblePositionDeprecated(m_end, m_affinity)).deepEquivalent();
+        m_end = endOfSentence(createVisiblePosition(m_end, m_affinity)).deepEquivalent();
         break;
     }
 
@@ -492,6 +492,15 @@ void VisibleSelectionTemplate<Strategy>::updateSelectionType()
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity)
 {
+    Document* document = m_base.isNotNull() ? m_base.document() : m_extent.document();
+    if (document) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited. see http://crbug.com/590369 for more details.
+        document->updateStyleAndLayoutIgnorePendingStylesheets();
+    }
+
+    // TODO(xiaochengh): Add a DocumentLifecycle::DisallowTransitionScope here.
+
     m_granularity = granularity;
     m_hasTrailingWhitespace = false;
     setBaseAndExtentToDeepEquivalents();
@@ -652,7 +661,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
                 if (p.isNull() && shadowAncestor)
                     p = PositionTemplate<Strategy>::afterNode(shadowAncestor);
             }
-            const VisiblePositionTemplate<Strategy> previous = createVisiblePositionDeprecated(p);
+            const VisiblePositionTemplate<Strategy> previous = createVisiblePosition(p);
 
             if (previous.isNull()) {
                 // The selection crosses an Editing boundary.  This is a
@@ -681,7 +690,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
                 if (p.isNull() && shadowAncestor)
                     p = PositionTemplate<Strategy>::beforeNode(shadowAncestor);
             }
-            const VisiblePositionTemplate<Strategy> next = createVisiblePositionDeprecated(p);
+            const VisiblePositionTemplate<Strategy> next = createVisiblePosition(p);
 
             if (next.isNull()) {
                 // The selection crosses an Editing boundary.  This is a
