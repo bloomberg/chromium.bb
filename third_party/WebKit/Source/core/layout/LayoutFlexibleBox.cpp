@@ -880,6 +880,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         if (childLayoutType == NeverLayout)
             return LayoutUnit();
 
+        updateBlockChildDirtyBitsBeforeLayout(childLayoutType == ForceLayout, child);
         if (child.needsLayout() || childLayoutType == ForceLayout || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
             child.forceChildLayout();
             cacheChildMainSize(child);
