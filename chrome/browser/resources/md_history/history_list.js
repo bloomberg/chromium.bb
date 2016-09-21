@@ -23,6 +23,8 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    lastFocused_: Object,
   },
 
   listeners: {

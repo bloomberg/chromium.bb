@@ -22,6 +22,7 @@ cr.define('md_history.history_list_test', function() {
           createHistoryEntry('2016-03-14 9:00', 'https://www.google.com'),
           createHistoryEntry('2016-03-13', 'https://en.wikipedia.org')
         ];
+        TEST_HISTORY_RESULTS[2].starred = true;
 
         ADDITIONAL_RESULTS = [
           createHistoryEntry('2016-03-13 10:00', 'https://en.wikipedia.org'),
@@ -500,6 +501,52 @@ cr.define('md_history.history_list_test', function() {
           });
 
           MockInteractions.tap(items[0].$.title);
+        });
+      });
+
+      test('focus and keyboard nav', function() {
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        return flush().then(function() {
+          var items = polymerSelectAll(element, 'history-item');
+
+          var focused = items[2].$.checkbox;
+          focused.focus();
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
+          focused = items[2].$.title;
+          assertEquals(focused, element.lastFocused_);
+          assertTrue(items[2].row_.isActive());
+          assertFalse(items[3].row_.isActive());
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+          focused = items[3].$.title;
+          assertEquals(focused, element.lastFocused_);
+          assertFalse(items[2].row_.isActive());
+          assertTrue(items[3].row_.isActive());
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
+          focused = items[3].$['menu-button'];
+          assertEquals(focused, element.lastFocused_);
+          assertFalse(items[2].row_.isActive());
+          assertTrue(items[3].row_.isActive());
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+          focused = items[2].$['menu-button'];
+          assertEquals(focused, element.lastFocused_);
+          assertTrue(items[2].row_.isActive());
+          assertFalse(items[3].row_.isActive());
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 37, [], 'ArrowLeft');
+          focused = items[2].$$('#bookmark-star');
+          assertEquals(focused, element.lastFocused_);
+          assertTrue(items[2].row_.isActive());
+          assertFalse(items[3].row_.isActive());
+
+          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+          focused = items[3].$.title;
+          assertEquals(focused, element.lastFocused_);
+          assertFalse(items[2].row_.isActive());
+          assertTrue(items[3].row_.isActive());
         });
       });
 

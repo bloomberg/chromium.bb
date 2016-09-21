@@ -132,7 +132,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @param {Element} sampleElement An element for to find an equivalent for.
+     * @param {!Element} sampleElement An element for to find an equivalent for.
      * @return {!Element} An equivalent element to focus for |sampleElement|.
      * @protected
      */

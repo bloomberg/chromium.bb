@@ -6371,7 +6371,7 @@ Polymer({
     this.itemData = itemData;
     this.lastAnchor_ = anchor;
     this.$.dropdown.restoreFocusOnClose = true;
-    var focusableChildren = Polymer.dom(this).querySelectorAll('[tabindex]:not([hidden]),button:not([hidden])');
+    var focusableChildren = Polymer.dom(this).querySelectorAll('[tabindex]:not([disabled]):not([hidden]),' + 'button:not([disabled]):not([hidden])');
     if (focusableChildren.length > 0) {
       this.$.dropdown.focusTarget = focusableChildren[0];
       this.firstFocus_ = focusableChildren[0];
@@ -6387,7 +6387,7 @@ Polymer({
     if (!this.firstFocus_ || !this.lastFocus_) return;
     var toFocus;
     var keyEvent = e.detail.keyboardEvent;
-    if (keyEvent.shiftKey && keyEvent.target == this.firstFocus_) toFocus = this.lastFocus_; else if (keyEvent.target == this.lastFocus_) toFocus = this.firstFocus_;
+    if (keyEvent.shiftKey && keyEvent.target == this.firstFocus_) toFocus = this.lastFocus_; else if (!keyEvent.shiftKey && keyEvent.target == this.lastFocus_) toFocus = this.firstFocus_;
     if (!toFocus) return;
     e.preventDefault();
     toFocus.focus();
@@ -6606,6 +6606,164 @@ Polymer({
   }
 });
 
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+var EventTrackerEntry;
+
+function EventTracker() {
+  this.listeners_ = [];
+}
+
+EventTracker.prototype = {
+  add: function(target, eventType, listener, opt_capture) {
+    var capture = !!opt_capture;
+    var h = {
+      target: target,
+      eventType: eventType,
+      listener: listener,
+      capture: capture
+    };
+    this.listeners_.push(h);
+    target.addEventListener(eventType, listener, capture);
+  },
+  remove: function(target, eventType) {
+    this.listeners_ = this.listeners_.filter(function(h) {
+      if (h.target == target && (!eventType || h.eventType == eventType)) {
+        EventTracker.removeEventListener_(h);
+        return false;
+      }
+      return true;
+    });
+  },
+  removeAll: function() {
+    this.listeners_.forEach(EventTracker.removeEventListener_);
+    this.listeners_ = [];
+  }
+};
+
+EventTracker.removeEventListener_ = function(h) {
+  h.target.removeEventListener(h.eventType, h.listener, h.capture);
+};
+
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+cr.define('cr.ui', function() {
+  function FocusRow(root, boundary, opt_delegate) {
+    this.root = root;
+    this.boundary_ = boundary || document.documentElement;
+    this.delegate = opt_delegate;
+    this.eventTracker = new EventTracker();
+  }
+  FocusRow.Delegate = function() {};
+  FocusRow.Delegate.prototype = {
+    onKeydown: assertNotReached,
+    onFocus: assertNotReached
+  };
+  FocusRow.ACTIVE_CLASS = 'focus-row-active';
+  FocusRow.isFocusable = function(element) {
+    if (!element || element.disabled) return false;
+    function isVisible(element) {
+      assertInstanceof(element, Element);
+      var style = window.getComputedStyle(element);
+      if (style.visibility == 'hidden' || style.display == 'none') return false;
+      var parent = element.parentNode;
+      if (!parent) return false;
+      if (parent == element.ownerDocument || parent instanceof DocumentFragment) return true;
+      return isVisible(parent);
+    }
+    return isVisible(element);
+  };
+  FocusRow.prototype = {
+    addItem: function(type, query) {
+      assert(type);
+      var element = this.root.querySelector(query);
+      if (!element) return false;
+      element.setAttribute('focus-type', type);
+      element.tabIndex = this.isActive() ? 0 : -1;
+      this.eventTracker.add(element, 'blur', this.onBlur_.bind(this));
+      this.eventTracker.add(element, 'focus', this.onFocus_.bind(this));
+      this.eventTracker.add(element, 'keydown', this.onKeydown_.bind(this));
+      this.eventTracker.add(element, 'mousedown', this.onMousedown_.bind(this));
+      return true;
+    },
+    destroy: function() {
+      this.eventTracker.removeAll();
+    },
+    getCustomEquivalent: function(sampleElement) {
+      return assert(this.getFirstFocusable());
+    },
+    getElements: function() {
+      var elements = this.root.querySelectorAll('[focus-type]');
+      return Array.prototype.slice.call(elements);
+    },
+    getEquivalentElement: function(sampleElement) {
+      if (this.getFocusableElements().indexOf(sampleElement) >= 0) return sampleElement;
+      var sampleFocusType = this.getTypeForElement(sampleElement);
+      if (sampleFocusType) {
+        var sameType = this.getFirstFocusable(sampleFocusType);
+        if (sameType) return sameType;
+      }
+      return this.getCustomEquivalent(sampleElement);
+    },
+    getFirstFocusable: function(opt_type) {
+      var filter = opt_type ? '="' + opt_type + '"' : '';
+      var elements = this.root.querySelectorAll('[focus-type' + filter + ']');
+      for (var i = 0; i < elements.length; ++i) {
+        if (cr.ui.FocusRow.isFocusable(elements[i])) return elements[i];
+      }
+      return null;
+    },
+    getFocusableElements: function() {
+      return this.getElements().filter(cr.ui.FocusRow.isFocusable);
+    },
+    getTypeForElement: function(element) {
+      return element.getAttribute('focus-type') || '';
+    },
+    isActive: function() {
+      return this.root.classList.contains(FocusRow.ACTIVE_CLASS);
+    },
+    makeActive: function(active) {
+      if (active == this.isActive()) return;
+      this.getElements().forEach(function(element) {
+        element.tabIndex = active ? 0 : -1;
+      });
+      this.root.classList.toggle(FocusRow.ACTIVE_CLASS, active);
+    },
+    onBlur_: function(e) {
+      if (!this.boundary_.contains(e.relatedTarget)) return;
+      var currentTarget = e.currentTarget;
+      if (this.getFocusableElements().indexOf(currentTarget) >= 0) this.makeActive(false);
+    },
+    onFocus_: function(e) {
+      if (this.delegate) this.delegate.onFocus(this, e);
+    },
+    onMousedown_: function(e) {
+      if (e.button) return;
+      if (!e.currentTarget.disabled) e.currentTarget.tabIndex = 0;
+    },
+    onKeydown_: function(e) {
+      var elements = this.getFocusableElements();
+      var currentElement = e.currentTarget;
+      var elementIndex = elements.indexOf(currentElement);
+      assert(elementIndex >= 0);
+      if (this.delegate && this.delegate.onKeydown(this, e)) return;
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      var index = -1;
+      if (e.key == 'ArrowLeft') index = elementIndex + (isRTL() ? 1 : -1); else if (e.key == 'ArrowRight') index = elementIndex + (isRTL() ? -1 : 1); else if (e.key == 'Home') index = 0; else if (e.key == 'End') index = elements.length - 1;
+      var elementToFocus = elements[index];
+      if (elementToFocus) {
+        this.getEquivalentElement(elementToFocus).focus();
+        e.preventDefault();
+      }
+    }
+  };
+  return {
+    FocusRow: FocusRow
+  };
+});
+
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -6686,7 +6844,40 @@ Polymer({
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+function HistoryFocusRow(root, boundary, delegate) {
+  cr.ui.FocusRow.call(this, root, boundary, delegate);
+  this.addItems();
+}
+
+HistoryFocusRow.prototype = {
+  __proto__: cr.ui.FocusRow.prototype,
+  getCustomEquivalent: function(sampleElement) {
+    var equivalent;
+    if (this.getTypeForElement(sampleElement) == 'star') equivalent = this.getFirstFocusable('title');
+    return equivalent || cr.ui.FocusRow.prototype.getCustomEquivalent.call(this, sampleElement);
+  },
+  addItems: function() {
+    this.destroy();
+    assert(this.addItem('checkbox', '#checkbox'));
+    assert(this.addItem('title', '#title'));
+    assert(this.addItem('menu-button', '#menu-button'));
+    this.addItem('star', '#bookmark-star');
+  }
+};
+
 cr.define('md_history', function() {
+  function FocusRowDelegate(historyItemElement) {
+    this.historyItemElement = historyItemElement;
+  }
+  FocusRowDelegate.prototype = {
+    onFocus: function(row, e) {
+      this.historyItemElement.lastFocused = e.path[0];
+    },
+    onKeydown: function(row, e) {
+      if (e.key == 'Enter') e.stopPropagation();
+      return false;
+    }
+  };
   var HistoryItem = Polymer({
     is: 'history-item',
     properties: {
@@ -6720,7 +6911,39 @@ cr.define('md_history', function() {
         type: Number
       },
       path: String,
-      index: Number
+      index: Number,
+      lastFocused: {
+        type: Object,
+        notify: true
+      },
+      ironListTabIndex: {
+        type: Number,
+        observer: 'ironListTabIndexChanged_'
+      }
+    },
+    row_: null,
+    attached: function() {
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        this.row_ = new HistoryFocusRow(this.$['sizing-container'], null, new FocusRowDelegate(this));
+        this.row_.makeActive(this.ironListTabIndex == 0);
+        this.listen(this, 'focus', 'onFocus_');
+        this.listen(this, 'dom-change', 'onDomChange_');
+      });
+    },
+    detached: function() {
+      this.unlisten(this, 'focus', 'onFocus_');
+      this.unlisten(this, 'dom-change', 'onDomChange_');
+      if (this.row_) this.row_.destroy();
+    },
+    onFocus_: function() {
+      if (this.lastFocused) this.row_.getEquivalentElement(this.lastFocused).focus(); else this.row_.getFirstFocusable().focus();
+      this.tabIndex = -1;
+    },
+    ironListTabIndexChanged_: function() {
+      if (this.row_) this.row_.makeActive(this.ironListTabIndex == 0);
+    },
+    onDomChange_: function() {
+      if (this.row_) this.row_.addItems();
     },
     onCheckboxSelected_: function(e) {
       this.fire('history-checkbox-select', {
@@ -7993,7 +8216,8 @@ Polymer({
     resultLoadingDisabled_: {
       type: Boolean,
       value: false
-    }
+    },
+    lastFocused_: Object
   },
   listeners: {
     scroll: 'notifyListScroll_',
