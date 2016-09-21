@@ -246,14 +246,16 @@ void DrawingBuffer::freeRecycledMailboxes()
 
 std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap()
 {
-    for (auto it = m_recycledBitmapQueue.begin(); it != m_recycledBitmapQueue.end(); ++it) {
-        if (it->size != m_size) {
-            m_recycledBitmapQueue.remove(it);
-            --it; // Removed this position so iterate on it again.
-        }
+    size_t i = 0;
+    while (i < m_recycledBitmap.size()) {
+        if (m_recycledBitmap[i].size != m_size)
+            m_recycledBitmap.remove(i); // Removed this position so iterate on it again.
+        else
+            ++i;
     }
-    if (!m_recycledBitmapQueue.isEmpty()) {
-        RecycledBitmap recycled = m_recycledBitmapQueue.takeLast();
+    if (!m_recycledBitmap.isEmpty()) {
+        RecycledBitmap recycled = std::move(m_recycledBitmap.last());
+        m_recycledBitmap.removeLast();
         DCHECK(recycled.size == m_size);
         return std::move(recycled.bitmap);
     }
@@ -414,7 +416,7 @@ void DrawingBuffer::softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap> bi
         return; // Just delete the bitmap.
 
     RecycledBitmap recycled = { std::move(bitmap), m_size };
-    m_recycledBitmapQueue.append(std::move(recycled));
+    m_recycledBitmap.append(std::move(recycled));
 }
 
 PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()

@@ -43,6 +43,7 @@
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include <memory>
 
 namespace cc {
@@ -490,7 +491,7 @@ private:
         IntSize size;
     };
     // Shared memory bitmaps that were released by the compositor and can be used again by this DrawingBuffer.
-    Deque<RecycledBitmap> m_recycledBitmapQueue;
+    Vector<RecycledBitmap> m_recycledBitmap;
 
     // If the width and height of the Canvas's backing store don't
     // match those that we were given in the most recent call to
