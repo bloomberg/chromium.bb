@@ -102,7 +102,7 @@ public:
     void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle)
     {
         if (layoutObject())
-            layoutObject()->setStyleInternal(computedStyle);
+            layoutObject()->setStyleInternal(std::move(computedStyle));
         else
             m_computedStyle = computedStyle;
     }

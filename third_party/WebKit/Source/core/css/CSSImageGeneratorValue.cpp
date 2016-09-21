@@ -115,7 +115,7 @@ Image* CSSImageGeneratorValue::getImage(const LayoutObject* layoutObject, const 
 
 void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> image)
 {
-    m_images.add(size, image);
+    m_images.add(size, std::move(image));
 }
 
 PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject& layoutObject, const IntSize& size, float zoom)

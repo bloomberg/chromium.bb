@@ -20,7 +20,7 @@ public:
 
     static PassRefPtr<CSSSizeNonInterpolableValue> create(PassRefPtr<NonInterpolableValue> lengthNonInterpolableValue)
     {
-        return adoptRef(new CSSSizeNonInterpolableValue(lengthNonInterpolableValue));
+        return adoptRef(new CSSSizeNonInterpolableValue(std::move(lengthNonInterpolableValue)));
     }
 
     bool isKeyword() const { return m_keyword != CSSValueInvalid; }

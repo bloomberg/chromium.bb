@@ -48,7 +48,7 @@ const size_t fifoSize = 8192;
 // Factory method: Chromium-implementation
 std::unique_ptr<AudioDestination> AudioDestination::create(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, PassRefPtr<SecurityOrigin> securityOrigin)
 {
-    return wrapUnique(new AudioDestination(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate, securityOrigin));
+    return wrapUnique(new AudioDestination(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate, std::move(securityOrigin)));
 }
 
 AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, PassRefPtr<SecurityOrigin> securityOrigin)
@@ -92,7 +92,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inpu
     if (m_callbackBufferSize + renderBufferSize > fifoSize)
         return;
 
-    m_audioDevice = wrapUnique(Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId, securityOrigin));
+    m_audioDevice = wrapUnique(Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId, std::move(securityOrigin)));
     ASSERT(m_audioDevice);
 
     // Record the sizes if we successfully created an output device.

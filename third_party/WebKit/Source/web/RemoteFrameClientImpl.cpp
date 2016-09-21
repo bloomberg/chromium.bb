@@ -151,7 +151,7 @@ void RemoteFrameClientImpl::forwardPostMessage(
     MessageEvent* event, PassRefPtr<SecurityOrigin> target, LocalFrame* sourceFrame) const
 {
     if (m_webFrame->client())
-        m_webFrame->client()->forwardPostMessage(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
+        m_webFrame->client()->forwardPostMessage(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
 }
 
 // FIXME: Remove this code once we have input routing in the browser

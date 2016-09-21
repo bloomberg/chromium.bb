@@ -23,7 +23,7 @@ public:
     bool operator==(const StyleVariableData& other) const;
     bool operator!=(const StyleVariableData& other) const { return !(*this == other); }
 
-    void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }
+    void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, std::move(value)); }
     CSSVariableData* getVariable(const AtomicString& name) const;
     void removeVariable(const AtomicString&);
 

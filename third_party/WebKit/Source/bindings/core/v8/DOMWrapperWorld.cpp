@@ -251,7 +251,7 @@ void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<Sec
 {
     ASSERT(isIsolatedWorldId(worldId));
     if (securityOrigin)
-        isolatedWorldSecurityOrigins().set(worldId, securityOrigin);
+        isolatedWorldSecurityOrigins().set(worldId, std::move(securityOrigin));
     else
         isolatedWorldSecurityOrigins().remove(worldId);
 }

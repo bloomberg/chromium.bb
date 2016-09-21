@@ -51,9 +51,9 @@ void createOrUpdateFrameViewPreTranslation(FrameView& frameView,
 {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
     if (TransformPaintPropertyNode* existingPreTranslation = frameView.preTranslation())
-        existingPreTranslation->update(parent, matrix, origin);
+        existingPreTranslation->update(std::move(parent), matrix, origin);
     else
-        frameView.setPreTranslation(TransformPaintPropertyNode::create(parent, matrix, origin));
+        frameView.setPreTranslation(TransformPaintPropertyNode::create(std::move(parent), matrix, origin));
 }
 
 void createOrUpdateFrameViewContentClip(FrameView& frameView,
@@ -63,9 +63,9 @@ void createOrUpdateFrameViewContentClip(FrameView& frameView,
 {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
     if (ClipPaintPropertyNode* existingContentClip = frameView.contentClip())
-        existingContentClip->update(parent, localTransformSpace, clipRect);
+        existingContentClip->update(std::move(parent), std::move(localTransformSpace), clipRect);
     else
-        frameView.setContentClip(ClipPaintPropertyNode::create(parent, localTransformSpace, clipRect));
+        frameView.setContentClip(ClipPaintPropertyNode::create(std::move(parent), std::move(localTransformSpace), clipRect));
 }
 
 void createOrUpdateFrameViewScrollTranslation(FrameView& frameView,
@@ -75,9 +75,9 @@ void createOrUpdateFrameViewScrollTranslation(FrameView& frameView,
 {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
     if (TransformPaintPropertyNode* existingScrollTranslation = frameView.scrollTranslation())
-        existingScrollTranslation->update(parent, matrix, origin);
+        existingScrollTranslation->update(std::move(parent), matrix, origin);
     else
-        frameView.setScrollTranslation(TransformPaintPropertyNode::create(parent, matrix, origin));
+        frameView.setScrollTranslation(TransformPaintPropertyNode::create(std::move(parent), matrix, origin));
 }
 
 void createOrUpdateFrameViewScroll(FrameView& frameView,
@@ -89,9 +89,9 @@ void createOrUpdateFrameViewScroll(FrameView& frameView,
 {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
     if (ScrollPaintPropertyNode* existingScroll = frameView.scroll())
-        existingScroll->update(parent, scrollOffset, clip, bounds, userScrollableHorizontal, userScrollableVertical);
+        existingScroll->update(std::move(parent), std::move(scrollOffset), clip, bounds, userScrollableHorizontal, userScrollableVertical);
     else
-        frameView.setScroll(ScrollPaintPropertyNode::create(parent, scrollOffset, clip, bounds, userScrollableHorizontal, userScrollableVertical));
+        frameView.setScroll(ScrollPaintPropertyNode::create(std::move(parent), std::move(scrollOffset), clip, bounds, userScrollableHorizontal, userScrollableVertical));
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)

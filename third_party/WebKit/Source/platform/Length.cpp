@@ -49,7 +49,7 @@ public:
         while (m_map.contains(m_index))
             m_index++;
 
-        m_map.set(m_index, calcValue);
+        m_map.set(m_index, std::move(calcValue));
 
         return m_index;
     }

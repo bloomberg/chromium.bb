@@ -128,7 +128,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<Se
     if (askedToTerminate())
         return;
 
-    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), crossThreadUnretained(&workerObjectProxy()));
+    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, std::move(message), passed(std::move(channels)), crossThreadUnretained(&workerObjectProxy()));
     if (workerThread()) {
         // A message event is an activity and may initiate another activity.
         m_workerGlobalScopeMayHavePendingActivity = true;

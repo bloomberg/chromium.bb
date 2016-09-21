@@ -20,7 +20,7 @@ public:
     }
     void setPropertyValue(CSSPropertyID property, PassRefPtr<AnimatableValue> value)
     {
-        m_propertyValues.set(property, value);
+        m_propertyValues.set(property, std::move(value));
     }
     void clearPropertyValue(CSSPropertyID property) { m_propertyValues.remove(property); }
     AnimatableValue* propertyValue(CSSPropertyID property) const
