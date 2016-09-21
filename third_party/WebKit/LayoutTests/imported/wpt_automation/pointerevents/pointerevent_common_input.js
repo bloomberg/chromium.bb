@@ -10,8 +10,8 @@ function delayPromise(delay) {
   });
 }
 
-function scrollPageIfNeeded(targetSelector) {
-  var target = document.querySelector(targetSelector);
+function scrollPageIfNeeded(targetSelector, targetDocument) {
+  var target = targetDocument.querySelector(targetSelector);
   var targetRect = target.getBoundingClientRect();
   if (targetRect.top < 0 || targetRect.left < 0 || targetRect.bottom > window.innerHeight || targetRect.right > window.innerWidth)
     window.scrollTo(targetRect.left, targetRect.top);
@@ -29,12 +29,21 @@ function mouseMoveToDocument() {
   });
 }
 
-function mouseMoveIntoTarget(targetSelector) {
+function mouseMoveIntoTarget(targetSelector, targetFrame) {
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
   return new Promise(function(resolve, reject) {
     if (window.eventSender) {
-      var target = document.querySelector(targetSelector);
+      var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      eventSender.mouseMoveTo(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset);
+      eventSender.mouseMoveTo(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset);
       resolve();
     } else {
       reject();
@@ -42,8 +51,8 @@ function mouseMoveIntoTarget(targetSelector) {
   });
 }
 
-function mouseClickInTarget(targetSelector) {
-  return mouseMoveIntoTarget(targetSelector).then(function() {
+function mouseClickInTarget(targetSelector, targetFrame) {
+  return mouseMoveIntoTarget(targetSelector, targetFrame).then(function() {
     return new Promise(function(resolve, reject) {
       if (window.eventSender) {
         eventSender.mouseDown(0);
@@ -93,15 +102,22 @@ function mouseWheelScroll(direction) {
 }
 
 // Touch inputs.
-function touchTapInTarget(targetSelector) {
+function touchTapInTarget(targetSelector, targetFrame) {
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector);
-      var target = document.querySelector(targetSelector);
+      scrollPageIfNeeded(targetSelector, targetDocument);
+      var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      chrome.gpuBenchmarking.tap(targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, function() {
-        resolve();
-      });
+      chrome.gpuBenchmarking.tap(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset, resolve);
     } else {
       reject();
     }
@@ -111,12 +127,11 @@ function touchTapInTarget(targetSelector) {
 function touchScrollInTarget(targetSelector, direction) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector);
+      scrollPageIfNeeded(targetSelector, document);
       var target = document.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, function() {
-        resolve();
-      }, targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, touchSourceType, direction);
+      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, resolve,
+          targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, touchSourceType, direction);
     } else {
       reject();
     }
@@ -135,12 +150,21 @@ function penMoveToDocument() {
   });
 }
 
-function penMoveIntoTarget(targetSelector) {
+function penMoveIntoTarget(targetSelector, targetFrame) {
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
   return new Promise(function(resolve, reject) {
     if (window.eventSender) {
-      var target = document.querySelector(targetSelector);
+      var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      eventSender.mouseMoveTo(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset, [], "pen", 0);
+      eventSender.mouseMoveTo(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset, [], "pen", 0);
       resolve();
     } else {
       reject();
@@ -148,8 +172,8 @@ function penMoveIntoTarget(targetSelector) {
   });
 }
 
-function penClickIntoTarget(targetSelector) {
-  return penMoveIntoTarget(targetSelector).then(function() {
+function penClickInTarget(targetSelector, targetFrame) {
+  return penMoveIntoTarget(targetSelector, targetFrame).then(function() {
     return new Promise(function(resolve, reject) {
       if (window.eventSender) {
         eventSender.mouseDown(0, [], "pen", 0);
