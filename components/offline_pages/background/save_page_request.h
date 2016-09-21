@@ -37,6 +37,8 @@ class SavePageRequest {
   SavePageRequest(const SavePageRequest& other);
   ~SavePageRequest();
 
+  bool operator==(const SavePageRequest& other) const;
+
   // Updates the |last_attempt_time_| and increments |attempt_count_|.
   void MarkAttemptStarted(const base::Time& start_time);
 

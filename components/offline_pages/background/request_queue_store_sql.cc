@@ -20,6 +20,8 @@ namespace offline_pages {
 
 namespace {
 
+using UpdateStatus = RequestQueueStore::UpdateStatus;
+
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define REQUEST_QUEUE_TABLE_NAME "request_queue_v1"
@@ -215,6 +217,34 @@ bool ChangeRequestsState(
   return true;
 }
 
+ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
+  const char kSql[] =
+      "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time,"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id)"
+      " VALUES "
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, request.request_id());
+  statement.BindInt64(1, request.creation_time().ToInternalValue());
+  statement.BindInt64(2, request.activation_time().ToInternalValue());
+  statement.BindInt64(3, request.last_attempt_time().ToInternalValue());
+  statement.BindInt64(4, request.started_attempt_count());
+  statement.BindInt64(5, request.completed_attempt_count());
+  statement.BindInt64(6, static_cast<int64_t>(request.request_state()));
+  statement.BindString(7, request.url().spec());
+  statement.BindString(8, request.client_id().name_space);
+  statement.BindString(9, request.client_id().id);
+
+  if (!statement.Run())
+    return ItemActionStatus::STORE_ERROR;
+  if (db->GetLastChangeCount() == 0)
+    return ItemActionStatus::ALREADY_EXISTS;
+  return ItemActionStatus::SUCCESS;
+}
+
 RequestQueueStore::UpdateStatus InsertOrReplace(
     sql::Connection* db,
     const SavePageRequest& request) {
@@ -279,6 +309,15 @@ void GetRequestsSync(sql::Connection* db,
 
   runner->PostTask(FROM_HERE, base::Bind(callback, statement.Succeeded(),
                                          base::Passed(&requests)));
+}
+
+void AddRequestSync(sql::Connection* db,
+                    scoped_refptr<base::SingleThreadTaskRunner> runner,
+                    const SavePageRequest& request,
+                    const RequestQueueStore::AddCallback& callback) {
+  // TODO(fgorski): add UMA metrics here.
+  ItemActionStatus status = Insert(db, request);
+  runner->PostTask(FROM_HERE, base::Bind(callback, status));
 }
 
 void AddOrUpdateRequestSync(sql::Connection* db,
@@ -376,6 +415,17 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
+void RequestQueueStoreSQL::AddRequest(const SavePageRequest& request,
+                                      const AddCallback& callback) {
+  if (!CheckDb(base::Bind(callback, ItemActionStatus::STORE_ERROR)))
+    return;
+
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AddRequestSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), request, callback));
+}
+
 void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
                                               const UpdateCallback& callback) {
   DCHECK(db_.get());
@@ -388,7 +438,6 @@ void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
                  base::ThreadTaskRunnerHandle::Get(), request, callback));
 }
 
-// RemoveRequestsByRequestId to be more parallell with RemoveRequestsByClientId.
 void RequestQueueStoreSQL::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const RemoveCallback& callback) {

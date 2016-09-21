@@ -32,6 +32,7 @@ class RequestQueue {
   enum class AddRequestResult {
     SUCCESS,
     STORE_FAILURE,
+    ALREADY_EXISTS,
     REQUEST_QUOTA_HIT,  // Cannot add a request with this namespace, as it has
                         // reached a quota of active requests.
   };

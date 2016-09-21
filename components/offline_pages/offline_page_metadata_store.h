@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_types.h"
 
 class GURL;
 
@@ -24,14 +25,6 @@ enum class StoreState {
   LOADED,          // Store is properly loaded and operational.
   FAILED_LOADING,  // Store initialization failed.
   FAILED_RESET,    // Resetting the store failed.
-};
-
-// Statuses referring to actions taken on items in the store.
-enum class ItemActionStatus {
-  SUCCESS,
-  ALREADY_EXISTS,
-  NOT_FOUND,
-  STORE_ERROR,
 };
 
 class StoreUpdateResult {

@@ -51,6 +51,18 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
 
 SavePageRequest::~SavePageRequest() {}
 
+bool SavePageRequest::operator==(const SavePageRequest& other) const {
+  return request_id_ == other.request_id_ &&
+         url_ == other.url_ &&
+         client_id_ == other.client_id_ &&
+         creation_time_ == other.creation_time_ &&
+         activation_time_ == other.activation_time_ &&
+         started_attempt_count_ == other.started_attempt_count_ &&
+         completed_attempt_count_ == other.completed_attempt_count_ &&
+         last_attempt_time_ == other.last_attempt_time_ &&
+         state_ == other.state_;
+}
+
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {
   DCHECK_LE(activation_time_, start_time);
   // TODO(fgorski): As part of introducing policy in GetStatus, we can make a

@@ -28,6 +28,21 @@ void RequestQueueInMemoryStore::GetRequests(
       base::Bind(callback, true, base::Passed(std::move(result_requests))));
 }
 
+void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
+                                           const AddCallback& callback) {
+  RequestsMap::iterator iter = requests_.find(request.request_id());
+  ItemActionStatus status;
+  if (iter == requests_.end()) {
+    requests_.insert(std::make_pair(request.request_id(), request));
+    status = ItemActionStatus::SUCCESS;
+  } else {
+    status = ItemActionStatus::ALREADY_EXISTS;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, status));
+}
+
 void RequestQueueInMemoryStore::AddOrUpdateRequest(
     const SavePageRequest& request,
     const UpdateCallback& callback) {

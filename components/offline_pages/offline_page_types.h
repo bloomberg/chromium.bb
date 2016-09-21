@@ -57,11 +57,12 @@ enum class DeletePageResult {
   RESULT_COUNT,
 };
 
-// Result of loading all pages.
-enum class LoadResult {
+// Statuses referring to actions taken on items in the stores.
+enum class ItemActionStatus {
   SUCCESS,
-  CANCELLED,
-  STORE_FAILURE,
+  ALREADY_EXISTS,
+  NOT_FOUND,
+  STORE_ERROR,
 };
 
 typedef std::set<GURL> CheckPagesExistOfflineResult;

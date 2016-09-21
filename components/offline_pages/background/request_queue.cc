@@ -30,11 +30,23 @@ void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
 // Completes the add request call.
 void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
                     const SavePageRequest& request,
-                    RequestQueueStore::UpdateStatus status) {
-  RequestQueue::AddRequestResult result =
-      (status == RequestQueueStore::UpdateStatus::UPDATED)
-          ? RequestQueue::AddRequestResult::SUCCESS
-          : RequestQueue::AddRequestResult::STORE_FAILURE;
+                    ItemActionStatus status) {
+  RequestQueue::AddRequestResult result;
+  switch (status) {
+    case ItemActionStatus::SUCCESS:
+      result = RequestQueue::AddRequestResult::SUCCESS;
+      break;
+    case ItemActionStatus::ALREADY_EXISTS:
+      result = RequestQueue::AddRequestResult::ALREADY_EXISTS;
+      break;
+    case ItemActionStatus::STORE_ERROR:
+      result = RequestQueue::AddRequestResult::STORE_FAILURE;
+      break;
+    case ItemActionStatus::NOT_FOUND:
+    default:
+      NOTREACHED();
+      return;
+  }
   callback.Run(result, request);
 }
 
@@ -80,8 +92,7 @@ void RequestQueue::AddRequest(const SavePageRequest& request,
                               const AddRequestCallback& callback) {
   // TODO(fgorski): check that request makes sense.
   // TODO(fgorski): check that request does not violate policy.
-  store_->AddOrUpdateRequest(request,
-                             base::Bind(&AddRequestDone, callback, request));
+  store_->AddRequest(request, base::Bind(&AddRequestDone, callback, request));
 }
 
 void RequestQueue::UpdateRequest(const SavePageRequest& update_request,

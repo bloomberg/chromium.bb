@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/save_page_request.h"
-#include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_types.h"
 
 namespace offline_pages {
 
@@ -28,6 +28,7 @@ class RequestQueueStore {
       bool /* success */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
+  typedef base::Callback<void(ItemActionStatus)> AddCallback;
   typedef base::Callback<void(UpdateStatus)> UpdateCallback;
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
@@ -43,6 +44,11 @@ class RequestQueueStore {
 
   // Gets all of the requests from the store.
   virtual void GetRequests(const GetRequestsCallback& callback) = 0;
+
+  // Asynchronously adds request in store. Fails if request with the same
+  // offline ID already exists.
+  virtual void AddRequest(const SavePageRequest& offline_page,
+                          const AddCallback& callback) = 0;
 
   // Asynchronously adds or updates request in store.
   // Result of the update is passed in the callback.
