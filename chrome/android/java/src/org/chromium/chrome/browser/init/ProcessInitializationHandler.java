@@ -231,8 +231,6 @@ public class ProcessInitializationHandler {
                 mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
                 mDevToolsServer.setRemoteDebuggingEnabled(
                         true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
-
-                startApplicationActivityTracker();
             }
         });
 
@@ -249,9 +247,4 @@ public class ProcessInitializationHandler {
             }
         });
     }
-
-    /**
-     * Initializes activity logging.
-     */
-    protected void startApplicationActivityTracker() {}
 }
