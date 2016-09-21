@@ -1883,5 +1883,22 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadUnsupportedFilter) {
   EXPECT_EQ(0U, ca_layer_list_.size());
 }
 
+TEST_F(CALayerOverlayRPDQTest, TooManyRenderPassDrawQuads) {
+  filters_.Append(FilterOperation::CreateBlurFilter(0.8f));
+  int count = 35;
+
+  for (int i = 0; i < count; ++i) {
+    RenderPassDrawQuad* quad =
+        pass_->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+    quad->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
+                 kOverlayRect, render_pass_id_, 2, gfx::Vector2dF(),
+                 gfx::Size(), filters_, gfx::Vector2dF(1, 1), gfx::PointF(),
+                 background_filters_);
+  }
+
+  ProcessForOverlays();
+  EXPECT_EQ(0U, ca_layer_list_.size());
+}
+
 }  // namespace
 }  // namespace cc

@@ -17,6 +17,13 @@ namespace cc {
 
 namespace {
 
+// If there are too many RenderPassDrawQuads, we shouldn't use Core Animation to
+// present them as individual layers, since that potentially doubles the amount
+// of work needed to present them. cc has to blit them into an IOSurface, and
+// then Core Animation has to blit them to the final surface.
+// https://crbug.com/636884.
+const int kTooManyRenderPassDrawQuads = 30;
+
 // This enum is used for histogram states and should only have new values added
 // to the end before COUNT.
 enum CALayerResult {
@@ -43,6 +50,7 @@ enum CALayerResult {
   CA_LAYER_FAILED_RENDER_PASS_MASK,
   CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION,
   CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID,
+  CA_LAYER_FAILED_TOO_MANY_RENDER_PASS_DRAW_QUADS,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -159,7 +167,8 @@ class CALayerOverlayProcessor {
                              const gfx::RectF& display_rect,
                              const DrawQuad* quad,
                              CALayerOverlay* ca_layer_overlay,
-                             bool* skip) {
+                             bool* skip,
+                             bool* render_pass_draw_quad) {
     if (quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
       return CA_LAYER_FAILED_QUAD_BLEND_MODE;
 
@@ -200,6 +209,7 @@ class CALayerOverlayProcessor {
 
     ca_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
 
+    *render_pass_draw_quad = quad->material == DrawQuad::RENDER_PASS;
     switch (quad->material) {
       case DrawQuad::TEXTURE_CONTENT:
         return FromTextureQuad(resource_provider,
@@ -254,16 +264,26 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
   CALayerResult result = CA_LAYER_SUCCESS;
   ca_layer_overlays->reserve(quad_list.size());
 
+  int render_pass_draw_quad_count = 0;
   CALayerOverlayProcessor processor;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad* quad = *it;
     CALayerOverlay ca_layer;
     bool skip = false;
+    bool render_pass_draw_quad = false;
     result = processor.FromDrawQuad(resource_provider, display_rect, quad,
-                                    &ca_layer, &skip);
+                                    &ca_layer, &skip, &render_pass_draw_quad);
     if (result != CA_LAYER_SUCCESS)
       break;
+
+    if (render_pass_draw_quad) {
+      ++render_pass_draw_quad_count;
+      if (render_pass_draw_quad_count > kTooManyRenderPassDrawQuads) {
+        result = CA_LAYER_FAILED_TOO_MANY_RENDER_PASS_DRAW_QUADS;
+        break;
+      }
+    }
 
     if (skip)
       continue;
