@@ -646,8 +646,17 @@ static void ClearBrowsingData(
     }
   }
   std::vector<std::string> excluding_domains;
-  base::android::AppendJavaStringArrayToStringVector(env, jexcluding_domains,
-                                                     &excluding_domains);
+  std::vector<int32_t> excluding_domain_reasons;
+  std::vector<std::string> ignoring_domains;
+  std::vector<int32_t> ignoring_domain_reasons;
+  base::android::AppendJavaStringArrayToStringVector(
+      env, jexcluding_domains.obj(), &excluding_domains);
+  base::android::JavaIntArrayToIntVector(env, jexcluding_domain_reasons.obj(),
+                                         &excluding_domain_reasons);
+  base::android::AppendJavaStringArrayToStringVector(
+      env, jignoring_domains.obj(), &ignoring_domains);
+  base::android::JavaIntArrayToIntVector(env, jignoring_domain_reasons.obj(),
+                                         &ignoring_domain_reasons);
   std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder(
       new RegistrableDomainFilterBuilder(BrowsingDataFilterBuilder::BLACKLIST));
   for (const std::string& domain : excluding_domains) {
@@ -655,8 +664,9 @@ static void ClearBrowsingData(
   }
 
   if (!excluding_domains.empty()) {
-    ImportantSitesUtil::RecordMetricsForBlacklistedSites(GetOriginalProfile(),
-                                                         excluding_domains);
+    ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
+        GetOriginalProfile(), excluding_domains, excluding_domain_reasons,
+        ignoring_domains, ignoring_domain_reasons);
   }
 
   // Delete the filterable types with a filter, and the rest completely.
@@ -701,27 +711,25 @@ static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
 static void FetchImportantSites(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 const JavaParamRef<jobject>& java_callback) {
-  std::vector<GURL> example_origins;
-  std::vector<std::string> important_domains =
-      ImportantSitesUtil::GetImportantRegisterableDomains(
-          GetOriginalProfile(), kMaxImportantSites, &example_origins);
+  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
+      ImportantSitesUtil::GetImportantRegisterableDomains(GetOriginalProfile(),
+                                                          kMaxImportantSites);
+
+  std::vector<std::string> important_domains;
+  std::vector<int32_t> important_domain_reasons;
+  std::vector<std::string> important_domain_examples;
+  for (const ImportantSitesUtil::ImportantDomainInfo& info : important_sites) {
+    important_domains.push_back(info.registerable_domain);
+    important_domain_reasons.push_back(info.reason_bitfield);
+    important_domain_examples.push_back(info.example_origin.spec());
+  }
+
   ScopedJavaLocalRef<jobjectArray> java_domains =
       base::android::ToJavaArrayOfStrings(env, important_domains);
-
-  // We reuse the important domains vector to convert example origins to
-  // strings.
-  important_domains.resize(example_origins.size());
-  std::transform(example_origins.begin(), example_origins.end(),
-                 important_domains.begin(),
-                 [](const GURL& origin) { return origin.spec(); });
-  ScopedJavaLocalRef<jobjectArray> java_origins =
-      base::android::ToJavaArrayOfStrings(env, important_domains);
-
-  // Empty reasons for now.
-  std::vector<int32_t> important_domain_reasons;
-  important_domain_reasons.resize(important_domains.size(), 0);
   ScopedJavaLocalRef<jintArray> java_reasons =
       base::android::ToJavaIntArray(env, important_domain_reasons);
+  ScopedJavaLocalRef<jobjectArray> java_origins =
+      base::android::ToJavaArrayOfStrings(env, important_domain_examples);
 
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
       env, java_callback.obj(), java_domains.obj(), java_origins.obj(),

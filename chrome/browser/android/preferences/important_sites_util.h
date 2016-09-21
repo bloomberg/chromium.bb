@@ -15,25 +15,37 @@ class Profile;
 
 class ImportantSitesUtil {
  public:
-  // This returns the top |<=max_results| important registerable
-  // domains. This uses site engagement and notifications to generate the list.
-  // |max_results| is assumed to be small.
-  // If |optional_example_origins| is specified we populate that list with
-  // example origins for each domain. This can be used to retrieve favicons.
+  struct ImportantDomainInfo {
+    std::string registerable_domain;
+    GURL example_origin;
+    double engagement_score = 0;
+    int32_t reason_bitfield = 0;
+  };
+
+  // This returns the top |<=max_results| important registrable domains. This
+  // uses site engagement and notifications to generate the list. |max_results|
+  // is assumed to be small.
   // See net/base/registry_controlled_domains/registry_controlled_domain.h for
   // more details on registrable domains and the current list of effective
   // eTLDs.
-  static std::vector<std::string> GetImportantRegisterableDomains(
+  static std::vector<ImportantDomainInfo> GetImportantRegisterableDomains(
       Profile* profile,
-      size_t max_results,
-      std::vector<GURL>* optional_example_origins);
+      size_t max_results);
 
-  static void RecordMetricsForBlacklistedSites(
+  // Record the sites that the user chose to blacklist from clearing (in the
+  // Clear Browsing Dialog) and the sites they ignored. The blacklisted sites
+  // are NOT cleared as they are 'blacklisted' from the clear operation.
+  // This records metrics for blacklisted and ignored sites and removes any
+  // 'ignored' sites from our important sites list if they were ignored 3 times
+  // in a row.
+  static void RecordBlacklistedAndIgnoredImportantSites(
       Profile* profile,
-      std::vector<std::string> blacklisted_sites);
+      const std::vector<std::string>& blacklisted_sites,
+      const std::vector<int32_t>& blacklisted_sites_reason_bitfield,
+      const std::vector<std::string>& ignored_sites,
+      const std::vector<int32_t>& ignored_sites_reason_bitfield);
 
-  // This marks the given origin as important so we can test features that rely
-  // on important sites.
+  // This marks the given origin as important for testing.
   static void MarkOriginAsImportantForTesting(Profile* profile,
                                               const GURL& origin);
 

@@ -59199,7 +59199,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Storage.BlacklistedImportantSites.Reason"
-    enum="ClearDataSiteBlacklistReason">
+    enum="ClearDataSiteBlacklistCrossedReason">
   <owner>dmurph@chromium.org</owner>
   <summary>
     This is recorded for every site that the user blacklists when they when they
@@ -59357,6 +59357,67 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     (which means the full file), or false if a specific file length was
     populated. Recorded in BlobStorageContext when we are adding a filesystem
     item to a blob.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.CBDChosenReason"
+    enum="ClearDataSiteBlacklistCrossedReason">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    When a user chooses to blacklist one or more sites when they clear browsing
+    data, this is recorded for every reason each chosen site was marked as
+    important. It indicates which signals were used to show the given site to
+    the user that the user then chose to exclude from clearing.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.CBDChosenReasonCount" units="count">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    This records the number of reasons each important site had that the user
+    chose to blacklist when clearing browsing data.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.CBDIgnoredReason"
+    enum="ClearDataSiteBlacklistCrossedReason">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    When a user chooses to blacklist one or more sites when they clear browsing
+    data, this is recorded for every reason each unchosen site was marked as
+    important. It indicates which signals were used to show the given site to
+    the user, which the user then ignored and did not select to blacklist from
+    clearing data.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.CBDIgnoredReasonCount" units="count">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    This records the number of reasons each important site had that the user
+    chose to NOT blacklist when clearing browsing data.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.GeneratedReason"
+    enum="ImportantSitesReason">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded when we generate a list of important sites. This can happen when
+    the user opens the Clear Browsing Data dialog on Android, views the Storage
+    tab in Site Settings on Android, or launches 'Manage Storage' from Android
+    System Settings for Chrome. We record every reason each site was chosen in
+    this metric. This means that we can report this metric multiple times for a
+    single site.
+  </summary>
+</histogram>
+
+<histogram name="Storage.ImportantSites.GeneratedReasonCount" units="count">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    This records the number of reasons qualifying a site for being 'important'.
+    We record this for every site when we generate a list of important sites,
+    described in &quot;Storage.ImportantSites.GeneratedReason&quot;.
   </summary>
 </histogram>
 
@@ -73419,7 +73480,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2119087611" label="nl"/>
 </enum>
 
-<enum name="ClearDataSiteBlacklistReason" type="int">
+<enum name="ClearDataSiteBlacklistCrossedReason" type="int">
   <int value="0" label="Durable"/>
   <int value="1" label="Notifications"/>
   <int value="2" label="Engagement"/>
@@ -84377,6 +84438,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="A11y"/>
   <int value="5" label="Handwriting"/>
   <int value="6" label="Emoji"/>
+</enum>
+
+<enum name="ImportantSitesReason" type="int">
+  <int value="0" label="Engagement"/>
+  <int value="1" label="Durable"/>
+  <int value="2" label="Bookmarks"/>
+  <int value="3" label="Home Screen"/>
+  <int value="4" label="Notifications"/>
 </enum>
 
 <enum name="ImporterType" type="int">

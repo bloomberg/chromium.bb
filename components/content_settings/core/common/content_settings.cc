@@ -57,6 +57,7 @@ ContentSettingsType kHistogramOrder[] = {
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+    CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
 };
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,

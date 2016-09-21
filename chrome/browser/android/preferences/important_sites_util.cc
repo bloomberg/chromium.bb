@@ -6,259 +6,391 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
+#include <utility>
 
+#include "base/containers/hash_tables.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
+#include "base/time/time.h"
+#include "base/values.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 namespace {
+using bookmarks::BookmarkModel;
+using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
+
+static const char kNumTimesIgnoredName[] = "NumTimesIgnored";
+static const int kTimesIgnoredForBlacklist = 3;
 
 // Do not change the values here, as they are used for UMA histograms.
-enum ReasonStatTypes {
-  DURABLE = 0,
-  NOTIFICATIONS,
-  ENGAGEMENT,
-  NOTIFICATIONS_AND_ENGAGEMENT,
-  DURABLE_AND_ENGAGEMENT,
-  NOTIFICATIONS_AND_DURABLE,
-  NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT,
-  REASON_UNKNOWN,
+enum ImportantReason {
+  ENGAGEMENT = 0,
+  DURABLE = 1,
+  BOOKMARKS = 2,
+  HOME_SCREEN = 3,
+  NOTIFICATIONS = 4,
   REASON_BOUNDARY
 };
 
-struct ImportantReason {
-  bool engagement = false;
-  bool notifications = false;
-  bool durable = false;
+// We need this to be a macro, as the histogram macros cache their pointers
+// after the first call, so when we change the uma name we check fail if we're
+// just a method.
+#define RECORD_UMA_FOR_IMPORTANT_REASON(uma_name, uma_count_name,    \
+                                        reason_bitfield)             \
+  do {                                                               \
+    int count = 0;                                                   \
+    int32_t bitfield = (reason_bitfield);                            \
+    for (int i = 0; i < ImportantReason::REASON_BOUNDARY; i++) {     \
+      if ((bitfield >> i) & 1) {                                     \
+        count++;                                                     \
+        UMA_HISTOGRAM_ENUMERATION((uma_name), i,                     \
+                                  ImportantReason::REASON_BOUNDARY); \
+      }                                                              \
+    }                                                                \
+    UMA_HISTOGRAM_ENUMERATION((uma_count_name), count,               \
+                              ImportantReason::REASON_BOUNDARY);     \
+  } while (0)
+
+// Do not change the values here, as they are used for UMA histograms and
+// testing in important_sites_util_unittest.
+enum CrossedReason {
+  CROSSED_DURABLE = 0,
+  CROSSED_NOTIFICATIONS = 1,
+  CROSSED_ENGAGEMENT = 2,
+  CROSSED_NOTIFICATIONS_AND_ENGAGEMENT = 3,
+  CROSSED_DURABLE_AND_ENGAGEMENT = 4,
+  CROSSED_NOTIFICATIONS_AND_DURABLE = 5,
+  CROSSED_NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT = 6,
+  CROSSED_REASON_UNKNOWN = 7,
+  CROSSED_REASON_BOUNDARY
 };
 
-std::vector<std::pair<GURL, double>> GetSortedTopEngagementOrigins(
-    const SiteEngagementService* site_engagement_service,
-    const std::map<GURL, double>& engagement_map,
-    SiteEngagementService::EngagementLevel minimum_engagement) {
-  std::vector<std::pair<GURL, double>> top_ranking_origins;
-  for (const auto& url_engagement_pair : engagement_map) {
-    if (!site_engagement_service->IsEngagementAtLeast(url_engagement_pair.first,
-                                                      minimum_engagement)) {
-      continue;
-    }
-    top_ranking_origins.push_back(url_engagement_pair);
-  }
-  std::sort(
-      top_ranking_origins.begin(), top_ranking_origins.end(),
-      [](const std::pair<GURL, double>& a, const std::pair<GURL, double>& b) {
-        return a.second > b.second;
-      });
-  return top_ranking_origins;
+CrossedReason GetCrossedReasonFromBitfield(int32_t reason_bitfield) {
+  bool durable = reason_bitfield & (1 << ImportantReason::DURABLE);
+  bool notifications = reason_bitfield & (1 << ImportantReason::NOTIFICATIONS);
+  bool engagement = reason_bitfield & (1 << ImportantReason::ENGAGEMENT);
+  if (durable && notifications && engagement)
+    return CROSSED_NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT;
+  else if (notifications && durable)
+    return CROSSED_NOTIFICATIONS_AND_DURABLE;
+  else if (notifications && engagement)
+    return CROSSED_NOTIFICATIONS_AND_ENGAGEMENT;
+  else if (durable && engagement)
+    return CROSSED_DURABLE_AND_ENGAGEMENT;
+  else if (notifications)
+    return CROSSED_NOTIFICATIONS;
+  else if (durable)
+    return CROSSED_DURABLE;
+  else if (engagement)
+    return CROSSED_ENGAGEMENT;
+  return CROSSED_REASON_UNKNOWN;
 }
 
-std::vector<std::pair<GURL, double>> GenerateSortedOriginsForContentTypeAllowed(
+std::string GetRegisterableDomainOrIP(const GURL& url) {
+  std::string registerable_domain =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (registerable_domain.empty() && url.HostIsIPAddress())
+    registerable_domain = url.host();
+  return registerable_domain;
+}
+
+void MaybePopulateImportantInfoForReason(
+    const GURL& origin,
+    std::set<GURL>* visited_origins,
+    ImportantReason reason,
+    base::hash_map<std::string, ImportantDomainInfo>* output) {
+  if (!origin.is_valid() || !visited_origins->insert(origin).second)
+    return;
+  std::string registerable_domain = GetRegisterableDomainOrIP(origin);
+  ImportantDomainInfo& info = (*output)[registerable_domain];
+  info.reason_bitfield |= 1 << reason;
+  if (info.example_origin.is_empty()) {
+    info.registerable_domain = registerable_domain;
+    info.example_origin = origin;
+  }
+}
+
+// Returns the score associated with the given reason. The order of
+// ImportantReason does not need to correspond to the score order. The higher
+// the score, the more important the reason is.
+int GetScoreForReason(ImportantReason reason) {
+  switch (reason) {
+    case ImportantReason::ENGAGEMENT:
+      return 1 << 0;
+    case ImportantReason::DURABLE:
+      return 1 << 1;
+    case ImportantReason::BOOKMARKS:
+      return 1 << 2;
+    case ImportantReason::HOME_SCREEN:
+      return 1 << 3;
+    case ImportantReason::NOTIFICATIONS:
+      return 1 << 4;
+    case ImportantReason::REASON_BOUNDARY:
+      return 0;
+  }
+  return 0;
+}
+
+int GetScoreForReasonsBitfield(int32_t reason_bitfield) {
+  int score = 0;
+  for (int i = 0; i < ImportantReason::REASON_BOUNDARY; i++) {
+    if ((reason_bitfield >> i) & 1) {
+      score += GetScoreForReason(static_cast<ImportantReason>(i));
+    }
+  }
+  return score;
+}
+
+// Returns if |a| has a higher score than |b|, so that when we sort the higher
+// score is first.
+bool CompareDescendingImportantInfo(
+    const std::pair<std::string, ImportantDomainInfo>& a,
+    const std::pair<std::string, ImportantDomainInfo>& b) {
+  int score_a = GetScoreForReasonsBitfield(a.second.reason_bitfield);
+  int score_b = GetScoreForReasonsBitfield(b.second.reason_bitfield);
+  int bitfield_diff = score_a - score_b;
+  if (bitfield_diff != 0)
+    return bitfield_diff > 0;
+  return a.second.engagement_score > b.second.engagement_score;
+}
+
+base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
+  ContentSettingsForOneType content_settings_list;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
+                             content_settings::ResourceIdentifier(),
+                             &content_settings_list);
+  base::hash_set<std::string> ignoring_domains;
+  for (const ContentSettingPatternSource& site : content_settings_list) {
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid() ||
+        base::ContainsKey(ignoring_domains, origin.host())) {
+      continue;
+    }
+
+    std::unique_ptr<base::DictionaryValue> dict =
+        base::DictionaryValue::From(map->GetWebsiteSetting(
+            origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+            nullptr));
+
+    if (!dict)
+      continue;
+
+    int times_ignored = 0;
+    if (!dict->GetInteger(kNumTimesIgnoredName, &times_ignored) ||
+        times_ignored < kTimesIgnoredForBlacklist) {
+      continue;
+    }
+
+    ignoring_domains.insert(origin.host());
+  }
+  return ignoring_domains;
+}
+
+void PopulateInfoMapWithSiteEngagement(
+    Profile* profile,
+    SiteEngagementService::EngagementLevel minimum_engagement,
+    base::hash_map<std::string, ImportantDomainInfo>* output) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
+  std::map<GURL, double> engagement_map = service->GetScoreMap();
+  // We can have multiple origins for a single domain, so we record the one
+  // with the highest engagement score.
+  for (const auto& url_engagement_pair : engagement_map) {
+    if (!service->IsEngagementAtLeast(url_engagement_pair.first,
+                                      minimum_engagement)) {
+      continue;
+    }
+    std::string registerable_domain =
+        GetRegisterableDomainOrIP(url_engagement_pair.first);
+    ImportantDomainInfo& info = (*output)[registerable_domain];
+    if (url_engagement_pair.second > info.engagement_score) {
+      info.registerable_domain = registerable_domain;
+      info.engagement_score = url_engagement_pair.second;
+      info.example_origin = url_engagement_pair.first;
+      info.reason_bitfield |= 1 << ImportantReason::ENGAGEMENT;
+    }
+  }
+}
+
+void PopulateInfoMapWithContentTypeAllowed(
     Profile* profile,
     ContentSettingsType content_type,
-    const std::map<GURL, double>& score_map) {
+    ImportantReason reason,
+    base::hash_map<std::string, ImportantDomainInfo>* output) {
   // Grab our content settings list.
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
       content_type, content_settings::ResourceIdentifier(),
       &content_settings_list);
-  // Extract a set of urls, using the primary pattern. We don't handle wildcard
-  // patterns.
+  // Extract a set of urls, using the primary pattern. We don't handle
+  // wildcard patterns.
   std::set<GURL> content_origins;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     if (site.setting != CONTENT_SETTING_ALLOW)
       continue;
-    GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid())
-      continue;
-    content_origins.insert(origin);
+    MaybePopulateImportantInfoForReason(GURL(site.primary_pattern.ToString()),
+                                        &content_origins, reason, output);
   }
-  std::vector<std::pair<GURL, double>> top_ranking_origins;
-  for (const GURL& notification_origin : content_origins) {
-    double score = 0;
-    auto score_it = score_map.find(notification_origin);
-    if (score_it != score_map.end())
-      score = score_it->second;
-    top_ranking_origins.push_back(std::make_pair(notification_origin, score));
-  }
-  std::sort(
-      top_ranking_origins.begin(), top_ranking_origins.end(),
-      [](const std::pair<GURL, double>& a, const std::pair<GURL, double>& b) {
-        return a.second > b.second;
-      });
-  return top_ranking_origins;
 }
 
-void FillTopRegisterableDomains(
-    const std::vector<std::pair<GURL, double>>& sorted_new_origins,
-    size_t max_important_domains,
-    std::vector<std::string>* final_list,
-    std::vector<GURL>* optional_example_origins) {
-  for (const auto& pair : sorted_new_origins) {
-    if (final_list->size() >= max_important_domains)
-      return;
-    std::string registerable_domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            pair.first,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    if (registerable_domain.empty() && pair.first.HostIsIPAddress())
-      registerable_domain = pair.first.host();
-    // Just iterate to find, as we assume our size is small.
-    if (std::find(final_list->begin(), final_list->end(),
-                  registerable_domain) == final_list->end()) {
-      final_list->push_back(registerable_domain);
-      if (optional_example_origins)
-        optional_example_origins->push_back(pair.first);
-    }
+void PopulateInfoMapWithBookmarks(
+    Profile* profile,
+    base::hash_map<std::string, ImportantDomainInfo>* output) {
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContextIfExists(profile);
+  if (!model)
+    return;
+  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  model->GetBookmarks(&bookmarks);
+  std::set<GURL> content_origins;
+  for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
+    MaybePopulateImportantInfoForReason(bookmark.url, &content_origins,
+                                        ImportantReason::BOOKMARKS, output);
+  }
+}
+
+void PopulateInfoMapWithHomeScreen(
+    Profile* profile,
+    base::hash_map<std::string, ImportantDomainInfo>* output) {
+  ContentSettingsForOneType content_settings_list;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_APP_BANNER, content_settings::ResourceIdentifier(),
+      &content_settings_list);
+  // Extract a set of urls, using the primary pattern. We don't handle
+  // wildcard patterns.
+  std::set<GURL> content_origins;
+  base::Time now = base::Time::Now();
+  for (const ContentSettingPatternSource& site : content_settings_list) {
+    GURL origin(site.primary_pattern.ToString());
+    if (!AppBannerSettingsHelper::WasLaunchedRecently(profile, origin, now))
+      continue;
+    MaybePopulateImportantInfoForReason(origin, &content_origins,
+                                        ImportantReason::HOME_SCREEN, output);
   }
 }
 
 }  // namespace
 
-std::vector<std::string> ImportantSitesUtil::GetImportantRegisterableDomains(
-    Profile* profile,
-    size_t max_results,
-    std::vector<GURL>* optional_example_origins) {
-  // First get data from site engagement.
-  SiteEngagementService* site_engagement_service =
-      SiteEngagementService::Get(profile);
-  // Engagement data.
-  std::map<GURL, double> engagement_map =
-      site_engagement_service->GetScoreMap();
-  std::vector<std::pair<GURL, double>> sorted_engagement_origins =
-      GetSortedTopEngagementOrigins(
-          site_engagement_service, engagement_map,
-          SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM);
+std::vector<ImportantDomainInfo>
+ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
+                                                    size_t max_results) {
+  base::hash_map<std::string, ImportantDomainInfo> important_info;
 
-  // Second we grab origins with desired content settings.
-  std::vector<std::pair<GURL, double>> sorted_notification_origins =
-      GenerateSortedOriginsForContentTypeAllowed(
-          profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, engagement_map);
+  PopulateInfoMapWithSiteEngagement(
+      profile, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM, &important_info);
 
-  std::vector<std::pair<GURL, double>> sorted_durable_origins =
-      GenerateSortedOriginsForContentTypeAllowed(
-          profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, engagement_map);
+  PopulateInfoMapWithContentTypeAllowed(
+      profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ImportantReason::NOTIFICATIONS, &important_info);
 
-  // Now we transform them into registerable domains, and add them into our
-  // final list. Since our # is small, we just iterate our vector to de-dup.
-  // Otherwise we can add a set later.
-  std::vector<std::string> final_list;
-  // We include sites in the following order:
-  // 1. Durable
-  // 2. Notifications
-  FillTopRegisterableDomains(sorted_durable_origins, max_results,
-                             &final_list, optional_example_origins);
-  FillTopRegisterableDomains(sorted_notification_origins, max_results,
-                             &final_list, optional_example_origins);
+  PopulateInfoMapWithContentTypeAllowed(
+      profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, ImportantReason::DURABLE,
+      &important_info);
 
-  // And now we fill the rest with high engagement sites.
-  FillTopRegisterableDomains(sorted_engagement_origins, max_results,
-                             &final_list, optional_example_origins);
+  PopulateInfoMapWithBookmarks(profile, &important_info);
+
+  PopulateInfoMapWithHomeScreen(profile, &important_info);
+
+  base::hash_set<std::string> blacklisted_domains =
+      GetBlacklistedImportantDomains(profile);
+
+  std::vector<std::pair<std::string, ImportantDomainInfo>> items(
+      important_info.begin(), important_info.end());
+  std::sort(items.begin(), items.end(), &CompareDescendingImportantInfo);
+
+  std::vector<ImportantDomainInfo> final_list;
+  for (std::pair<std::string, ImportantDomainInfo>& domain_info : items) {
+    if (final_list.size() >= max_results)
+      return final_list;
+    if (blacklisted_domains.find(domain_info.first) !=
+        blacklisted_domains.end()) {
+      continue;
+    }
+    final_list.push_back(domain_info.second);
+    RECORD_UMA_FOR_IMPORTANT_REASON(
+        "Storage.ImportantSites.GeneratedReason",
+        "Storage.ImportantSites.GeneratedReasonCount",
+        domain_info.second.reason_bitfield);
+  }
+
   return final_list;
 }
 
-void ImportantSitesUtil::RecordMetricsForBlacklistedSites(
+void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
     Profile* profile,
-    std::vector<std::string> blacklisted_sites) {
-  SiteEngagementService* site_engagement_service =
-      SiteEngagementService::Get(profile);
-
-  std::map<std::string, ImportantReason> reason_map;
-
-  std::map<GURL, double> engagement_map =
-      site_engagement_service->GetScoreMap();
-
-  // Site engagement.
-  for (const auto& url_score_pair : engagement_map) {
-    if (url_score_pair.second <
-        SiteEngagementScore::GetMediumEngagementBoundary()) {
-      continue;
-    }
-    const std::string& host = url_score_pair.first.host();
-    for (const std::string& blacklisted_site : blacklisted_sites) {
-      if (host.find(blacklisted_site) != std::string::npos) {
-        reason_map[blacklisted_site].engagement |= true;
-        break;
-      }
-    }
+    const std::vector<std::string>& blacklisted_sites,
+    const std::vector<int32_t>& blacklisted_sites_reason_bitfield,
+    const std::vector<std::string>& ignored_sites,
+    const std::vector<int32_t>& ignored_sites_reason_bitfield) {
+  // First, record the metrics for blacklisted and ignored sites.
+  for (int32_t reason_bitfield : blacklisted_sites_reason_bitfield) {
+    RECORD_UMA_FOR_IMPORTANT_REASON(
+        "Storage.ImportantSites.CBDChosenReason",
+        "Storage.ImportantSites.CBDChosenReasonCount", reason_bitfield);
+  }
+  for (int32_t reason_bitfield : ignored_sites_reason_bitfield) {
+    RECORD_UMA_FOR_IMPORTANT_REASON(
+        "Storage.ImportantSites.CBDIgnoredReason",
+        "Storage.ImportantSites.CBDIgnoredReasonCount", reason_bitfield);
   }
 
-  // Durable.
-  ContentSettingsForOneType content_settings_list;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
-      content_settings::ResourceIdentifier(), &content_settings_list);
-  for (const ContentSettingPatternSource& site : content_settings_list) {
-    if (site.setting != CONTENT_SETTING_ALLOW)
-      continue;
-    GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid())
-      continue;
-    const std::string& host = origin.host();
-    for (const std::string& blacklisted_site : blacklisted_sites) {
-      if (host.find(blacklisted_site) != std::string::npos) {
-        reason_map[blacklisted_site].durable |= true;
-        break;
-      }
-    }
+  // We use the ignored sites to update our important sites blacklist.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  for (const std::string& ignored_site : ignored_sites) {
+    GURL origin("http://" + ignored_site);
+    std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
+        origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "", nullptr);
+
+    std::unique_ptr<base::DictionaryValue> dict =
+        base::DictionaryValue::From(map->GetWebsiteSetting(
+            origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+            nullptr));
+
+    int times_ignored = 0;
+    if (dict)
+      dict->GetInteger(kNumTimesIgnoredName, &times_ignored);
+    else
+      dict = base::MakeUnique<base::DictionaryValue>();
+    dict->SetInteger(kNumTimesIgnoredName, ++times_ignored);
+
+    map->SetWebsiteSettingDefaultScope(
+        origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+        std::move(dict));
   }
 
-  // Notifications.
-  content_settings_list.clear();
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), &content_settings_list);
-  for (const ContentSettingPatternSource& site : content_settings_list) {
-    if (site.setting != CONTENT_SETTING_ALLOW)
-      continue;
-    GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid())
-      continue;
-    const std::string& host = origin.host();
-    for (const std::string& blacklisted_site : blacklisted_sites) {
-      if (host.find(blacklisted_site) != std::string::npos) {
-        reason_map[blacklisted_site].notifications |= true;
-        break;
-      }
-    }
+  // We clear our blacklist for sites that the user chose.
+  for (const std::string& ignored_site : blacklisted_sites) {
+    GURL origin("http://" + ignored_site);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetInteger(kNumTimesIgnoredName, 0);
+    map->SetWebsiteSettingDefaultScope(
+        origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+        std::move(dict));
   }
 
+  // Finally, record our old crossed-stats.
   // Note: we don't plan on adding new metrics here, this is just for the finch
   // experiment to give us initial data on what signals actually mattered.
-  for (const auto& reason_pair : reason_map) {
-    const ImportantReason& reason = reason_pair.second;
-    if (reason.notifications && reason.durable && reason.engagement) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT,
-                                REASON_BOUNDARY);
-    } else if (reason.notifications && reason.durable) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                NOTIFICATIONS_AND_DURABLE, REASON_BOUNDARY);
-    } else if (reason.notifications && reason.engagement) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                NOTIFICATIONS_AND_ENGAGEMENT, REASON_BOUNDARY);
-    } else if (reason.durable && reason.engagement) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                DURABLE_AND_ENGAGEMENT, REASON_BOUNDARY);
-    } else if (reason.notifications) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                NOTIFICATIONS, REASON_BOUNDARY);
-    } else if (reason.durable) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                DURABLE, REASON_BOUNDARY);
-    } else if (reason.engagement) {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                ENGAGEMENT, REASON_BOUNDARY);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
-                                REASON_UNKNOWN, REASON_BOUNDARY);
-
-    }
+  for (int32_t reason_bitfield : blacklisted_sites_reason_bitfield) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                              GetCrossedReasonFromBitfield(reason_bitfield),
+                              CROSSED_REASON_BOUNDARY);
   }
 }
 

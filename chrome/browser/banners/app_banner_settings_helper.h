@@ -56,8 +56,8 @@ class AppBannerSettingsHelper {
   // BannerEvents record the time that a site was accessed, along with an
   // engagement weight representing the importance of the access.
   struct BannerEvent {
-   base::Time time;
-   double engagement;
+    base::Time time;
+    double engagement;
   };
 
   // The content setting basically records a simplified subset of history.
@@ -137,7 +137,7 @@ class AppBannerSettingsHelper {
   // last ten days. This allows services outside app banners to utilise the
   // content setting that ensures app banners are not shown for sites which ave
   // already been added to homescreen.
-  static bool WasLaunchedRecently(content::WebContents* web_contents,
+  static bool WasLaunchedRecently(Profile* profile,
                                   const GURL& origin_url,
                                   base::Time now);
 

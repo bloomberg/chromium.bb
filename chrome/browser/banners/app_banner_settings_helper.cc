@@ -542,12 +542,9 @@ void AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
   banners::TrackMinutesFromFirstVisitToBannerShown(minutes);
 }
 
-bool AppBannerSettingsHelper::WasLaunchedRecently(
-    content::WebContents* web_contents,
-    const GURL& origin_url,
-    base::Time now) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
+                                                  const GURL& origin_url,
+                                                  base::Time now) {
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> origin_dict =
