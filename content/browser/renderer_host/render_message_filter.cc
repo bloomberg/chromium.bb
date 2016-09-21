@@ -134,6 +134,7 @@ RenderMessageFilter::RenderMessageFilter(
     CacheStorageContextImpl* cache_storage_context)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
+      BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       bitmap_manager_client_(HostSharedBitmapManager::current()),
       request_context_(request_context),
@@ -165,7 +166,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
@@ -295,8 +295,9 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
   render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
 }
 
-void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
-  *route_id = render_widget_helper_->GetNextRoutingID();
+void RenderMessageFilter::GenerateRoutingID(
+    const GenerateRoutingIDCallback& callback) {
+  callback.Run(render_widget_helper_->GetNextRoutingID());
 }
 
 #if defined(OS_MACOSX)

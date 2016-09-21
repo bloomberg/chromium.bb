@@ -28,6 +28,7 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/render_frame_message_filter.mojom.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
@@ -337,6 +338,7 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
   mojom::RenderFrameMessageFilter* render_frame_message_filter();
+  mojom::RenderMessageFilter* render_message_filter();
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
@@ -717,6 +719,7 @@ class CONTENT_EXPORT RenderThreadImpl
   mojom::StoragePartitionServicePtr storage_partition_service_;
 
   mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
+  mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
   bool is_renderer_suspended_;
 

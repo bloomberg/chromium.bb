@@ -23,6 +23,8 @@
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/common/render_message_filter.mojom.h"
+#include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
@@ -90,7 +92,10 @@ class ResourceDispatcherHostImpl;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT RenderMessageFilter
+    : public BrowserMessageFilter,
+      public BrowserAssociatedInterface<mojom::RenderMessageFilter>,
+      public mojom::RenderMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
@@ -130,7 +135,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
 #endif
 
-  void OnGenerateRoutingID(int* route_id);
+  // mojom::RenderMessageFilter:
+  void GenerateRoutingID(const GenerateRoutingIDCallback& routing_id) override;
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(IPC::Message* reply);

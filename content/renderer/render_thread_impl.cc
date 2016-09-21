@@ -1104,8 +1104,8 @@ mojom::StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
 }
 
 int RenderThreadImpl::GenerateRoutingID() {
-  int routing_id = MSG_ROUTING_NONE;
-  Send(new ViewHostMsg_GenerateRoutingID(&routing_id));
+  int32_t routing_id = MSG_ROUTING_NONE;
+  render_message_filter()->GenerateRoutingID(&routing_id);
   return routing_id;
 }
 
@@ -1996,6 +1996,12 @@ RenderThreadImpl::render_frame_message_filter() {
   if (!render_frame_message_filter_)
     GetChannel()->GetRemoteAssociatedInterface(&render_frame_message_filter_);
   return render_frame_message_filter_.get();
+}
+
+mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
+  if (!render_message_filter_)
+    GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);
+  return render_message_filter_.get();
 }
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
