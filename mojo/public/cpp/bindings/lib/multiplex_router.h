@@ -63,6 +63,9 @@ class MultiplexRouter
     // interfaces. In that case, this router may still receive pipe control
     // messages or messages targetting associated interfaces.
     SINGLE_INTERFACE,
+    // Similar to the mode above, there is only the master interface running on
+    // this router. Besides, the master interface has sync methods.
+    SINGLE_INTERFACE_WITH_SYNC_METHODS,
     // There may be associated interfaces running on this router.
     MULTI_INTERFACE
   };
@@ -234,7 +237,7 @@ class MultiplexRouter
   base::ThreadChecker thread_checker_;
 
   // Protects the following members.
-  // Sets to nullptr in Config::SINGLE_INTERFACE mode.
+  // Sets to nullptr in Config::SINGLE_INTERFACE* mode.
   std::unique_ptr<base::Lock> lock_;
   PipeControlMessageHandler control_message_handler_;
   PipeControlMessageProxy control_message_proxy_;

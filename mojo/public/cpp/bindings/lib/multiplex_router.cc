@@ -291,10 +291,10 @@ MultiplexRouter::MultiplexRouter(
       header_validator_(nullptr),
       filters_(this),
       connector_(std::move(message_pipe),
-                 config == SINGLE_INTERFACE ? Connector::SINGLE_THREADED_SEND
-                                            : Connector::MULTI_THREADED_SEND,
+                 config == MULTI_INTERFACE ? Connector::MULTI_THREADED_SEND
+                                           : Connector::SINGLE_THREADED_SEND,
                  std::move(runner)),
-      lock_(config == SINGLE_INTERFACE ? nullptr : new base::Lock),
+      lock_(config == MULTI_INTERFACE ? new base::Lock : nullptr),
       control_message_handler_(this),
       control_message_proxy_(&connector_),
       next_interface_id_value_(1),
@@ -303,10 +303,15 @@ MultiplexRouter::MultiplexRouter(
       paused_(false),
       testing_mode_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // Always participate in sync handle watching, because even if it doesn't
-  // expect sync requests during sync handle watching, it may still need to
-  // dispatch messages to associated endpoints on a different thread.
-  connector_.AllowWokenUpBySyncWatchOnSameThread();
+
+  if (config == SINGLE_INTERFACE_WITH_SYNC_METHODS ||
+      config == MULTI_INTERFACE) {
+    // Always participate in sync handle watching in multi-interface mode,
+    // because even if it doesn't expect sync requests during sync handle
+    // watching, it may still need to dispatch messages to associated endpoints
+    // on a different thread.
+    connector_.AllowWokenUpBySyncWatchOnSameThread();
+  }
   connector_.set_incoming_receiver(&filters_);
   connector_.set_connection_error_handler(
       base::Bind(&MultiplexRouter::OnPipeConnectionError,

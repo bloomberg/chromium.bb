@@ -107,6 +107,11 @@ SyncHandleRegistry::SyncHandleRegistry() {
 
 SyncHandleRegistry::~SyncHandleRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // If this breaks, it is likely that the global variable is bulit into and
+  // accessed from multiple modules.
+  CHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
+
   g_current_sync_handle_watcher.Pointer()->Set(nullptr);
 }
 
