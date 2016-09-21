@@ -175,9 +175,15 @@ void FrameSelection::moveTo(const Position &pos, TextAffinity affinity)
     setSelection(VisibleSelection(pos, affinity, selection().isDirectional()), options);
 }
 
+// TODO(xiaochengh): We should not use reference to return value.
 template <typename Strategy>
 static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& visibleBase, VisiblePositionTemplate<Strategy>& visibleExtent)
 {
+    // TODO(xiaochengh): Replace it with |DCHECK(visibleBase.isValid())| and
+    // |DCHECK(visibleExtent.isValid())| once |VisiblePosition::isValid| is
+    // implemented.
+    DCHECK(visibleBase.isNull() || !visibleBase.deepEquivalent().document()->needsLayoutTreeUpdate());
+
     RenderedPosition base(visibleBase);
     RenderedPosition extent(visibleExtent);
 
@@ -187,7 +193,7 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atLeftBoundaryOfBidiRun()) {
         if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight())
             && base.isEquivalent(extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
-            visibleBase = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(base.positionAtLeftBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtLeftBoundaryOfBiDiRun()));
             return;
         }
         return;
@@ -196,19 +202,19 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     if (base.atRightBoundaryOfBidiRun()) {
         if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft())
             && base.isEquivalent(extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
-            visibleBase = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(base.positionAtRightBoundaryOfBiDiRun()));
+            visibleBase = createVisiblePosition(fromPositionInDOMTree<Strategy>(base.positionAtRightBoundaryOfBiDiRun()));
             return;
         }
         return;
     }
 
     if (extent.atLeftBoundaryOfBidiRun() && extent.isEquivalent(base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
-        visibleExtent = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(extent.positionAtLeftBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtLeftBoundaryOfBiDiRun()));
         return;
     }
 
     if (extent.atRightBoundaryOfBidiRun() && extent.isEquivalent(base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
-        visibleExtent = createVisiblePositionDeprecated(fromPositionInDOMTree<Strategy>(extent.positionAtRightBoundaryOfBiDiRun()));
+        visibleExtent = createVisiblePosition(fromPositionInDOMTree<Strategy>(extent.positionAtRightBoundaryOfBiDiRun()));
         return;
     }
 }
@@ -218,11 +224,15 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionIn
     VisibleSelectionInFlatTree newSelection = passedNewSelection;
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     const PositionInFlatTree basePosition = m_originalBaseInFlatTree.deepEquivalent();
-    const VisiblePositionInFlatTree originalBase = basePosition.isConnected() ? createVisiblePositionDeprecated(basePosition) : VisiblePositionInFlatTree();
-    const VisiblePositionInFlatTree base = originalBase.isNotNull() ? originalBase : createVisiblePositionDeprecated(newSelection.base());
+    const VisiblePositionInFlatTree originalBase = basePosition.isConnected() ? createVisiblePosition(basePosition) : VisiblePositionInFlatTree();
+    const VisiblePositionInFlatTree base = originalBase.isNotNull() ? originalBase : createVisiblePosition(newSelection.base());
     VisiblePositionInFlatTree newBase = base;
-    const VisiblePositionInFlatTree extent = createVisiblePositionDeprecated(newSelection.extent());
+    const VisiblePositionInFlatTree extent = createVisiblePosition(newSelection.extent());
     VisiblePositionInFlatTree newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
@@ -745,7 +755,7 @@ bool FrameSelection::contains(const LayoutPoint& point)
     if (!innerNode || !innerNode->layoutObject())
         return false;
 
-    const VisiblePositionInFlatTree& visiblePos = createVisiblePositionDeprecated(fromPositionInDOMTree<EditingInFlatTreeStrategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
+    const VisiblePositionInFlatTree& visiblePos = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
     if (visiblePos.isNull())
         return false;
 
@@ -796,14 +806,18 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
     if (!ownerElementParent)
         return;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    ownerElementParent->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // This method's purpose is it to make it easier to select iframes (in order to delete them).  Don't do anything if the iframe isn't deletable.
     if (!blink::hasEditableStyle(*ownerElementParent))
         return;
 
     // Create compute positions before and after the element.
     unsigned ownerElementNodeIndex = ownerElement->nodeIndex();
-    VisiblePosition beforeOwnerElement = createVisiblePositionDeprecated(Position(ownerElementParent, ownerElementNodeIndex));
-    VisiblePosition afterOwnerElement = createVisiblePositionDeprecated(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE);
+    VisiblePosition beforeOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex));
+    VisiblePosition afterOwnerElement = createVisiblePosition(Position(ownerElementParent, ownerElementNodeIndex + 1), VP_UPSTREAM_IF_POSSIBLE);
 
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
@@ -1167,7 +1181,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = LayoutRect(absoluteCaretBounds());
         break;
     case RangeSelection:
-        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(createVisiblePositionDeprecated(extent())) : enclosingIntRect(unclippedBounds()));
+        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(createVisiblePosition(extent())) : enclosingIntRect(unclippedBounds()));
         break;
     }
 
