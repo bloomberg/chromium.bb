@@ -264,7 +264,9 @@ public class ExternalNavigationHandler {
                     Uri.parse(WebView.SCHEME_TEL
                             + params.getUrl().substring(SCHEME_WTAI_MC.length()))));
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-        } else if (params.getUrl().startsWith(SCHEME_WTAI)) {
+        }
+
+        if (params.getUrl().startsWith(SCHEME_WTAI)) {
             // TODO: handle other WTAI schemes.
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
@@ -315,6 +317,7 @@ public class ExternalNavigationHandler {
             if (hasBrowserFallbackUrl) {
                 return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
             }
+
             String packagename = intent.getPackage();
             if (packagename != null) {
                 String marketReferrer =
@@ -343,9 +346,9 @@ public class ExternalNavigationHandler {
                     // play market installed.
                     return OverrideUrlLoadingResult.NO_OVERRIDE;
                 }
-            } else {
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
+
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
         if (hasBrowserFallbackUrl) {
@@ -386,12 +389,16 @@ public class ExternalNavigationHandler {
                     mDelegate.startActivity(intent);
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
+
                 if (linkNotFromIntent && !params.isIncognito() && mDelegate.maybeLaunchInstantApp(
                         params.getUrl(), params.getReferrerUrl())) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
+
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
-            } else if (params.getReferrerUrl() != null && (isLink || isFormSubmit)) {
+            }
+
+            if (params.getReferrerUrl() != null && (isLink || isFormSubmit)) {
                 // Current URL has at least one specialized handler available. For navigations
                 // within the same host, keep the navigation inside the browser unless the set of
                 // available apps to handle the new navigation is different. http://crbug.com/463138
@@ -432,53 +439,52 @@ public class ExternalNavigationHandler {
                         hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
                         params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
-            } else {
+            }
 
-                // Some third-party app launched Chrome with an intent, and the URL got redirected.
-                // The user has explicitly chosen Chrome over other intent handlers, so stay in
-                // Chrome unless there was a new intent handler after redirection or Chrome cannot
-                // handle it any more.
-                if (params.getRedirectHandler() != null && incomingIntentRedirect) {
-                    if (!isExternalProtocol
-                            && !params.getRedirectHandler().hasNewResolver(intent)) {
-                        return OverrideUrlLoadingResult.NO_OVERRIDE;
-                    }
-                }
-                // The intent can be used to launch Chrome itself, record the user
-                // gesture here so that it can be used later.
-                if (params.hasUserGesture()) {
-                    IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
-                }
-
-                if (ChromeWebApkHost.isEnabled()) {
-                    // If the only specialized intent handler is a WebAPK, set the intent's package
-                    // to launch the WebAPK without showing the intent picker.
-                    String targetWebApkPackageName =
-                            mDelegate.findWebApkPackageName(resolvingInfos);
-
-                    // We can't rely on this falling through to startActivityIfNeeded and behaving
-                    // correctly for WebAPKs. This is because the target of the intent is the
-                    // WebApk's main activity but that's just a bouncer which will redirect to
-                    // WebApkActivity in chrome. To avoid bouncing indefinitely, don't override the
-                    // navigation if we are currently showing the WebApk
-                    // |params.webApkPackageName()| that we will redirect to.
-                    if (targetWebApkPackageName != null
-                            && targetWebApkPackageName.equals(params.webApkPackageName())) {
-                        return OverrideUrlLoadingResult.NO_OVERRIDE;
-                    }
-
-                    if (targetWebApkPackageName != null
-                            && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
-                        intent.setPackage(targetWebApkPackageName);
-                    }
-                }
-
-                if (mDelegate.startActivityIfNeeded(intent)) {
-                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-                } else {
+            // Some third-party app launched Chrome with an intent, and the URL got redirected. The
+            // user has explicitly chosen Chrome over other intent handlers, so stay in Chrome
+            // unless there was a new intent handler after redirection or Chrome cannot handle it
+            // any more.
+            if (params.getRedirectHandler() != null && incomingIntentRedirect) {
+                if (!isExternalProtocol
+                        && !params.getRedirectHandler().hasNewResolver(intent)) {
                     return OverrideUrlLoadingResult.NO_OVERRIDE;
                 }
             }
+
+            // The intent can be used to launch Chrome itself, record the user
+            // gesture here so that it can be used later.
+            if (params.hasUserGesture()) {
+                IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+            }
+
+            if (ChromeWebApkHost.isEnabled()) {
+                // If the only specialized intent handler is a WebAPK, set the intent's package to
+                // launch the WebAPK without showing the intent picker.
+                String targetWebApkPackageName = mDelegate.findWebApkPackageName(resolvingInfos);
+
+                // We can't rely on this falling through to startActivityIfNeeded and behaving
+                // correctly for WebAPKs. This is because the target of the intent is the WebApk's
+                // main activity but that's just a bouncer which will redirect to WebApkActivity in
+                // chrome. To avoid bouncing indefinitely, don't override the navigation if we are
+                // currently showing the WebApk |params.webApkPackageName()| that we will redirect
+                // to.
+                if (targetWebApkPackageName != null
+                        && targetWebApkPackageName.equals(params.webApkPackageName())) {
+                    return OverrideUrlLoadingResult.NO_OVERRIDE;
+                }
+
+                if (targetWebApkPackageName != null
+                        && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
+                    intent.setPackage(targetWebApkPackageName);
+                }
+            }
+
+            if (mDelegate.startActivityIfNeeded(intent)) {
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+            }
+
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
         } catch (ActivityNotFoundException ex) {
             // Ignore the error. If no application can handle the URL,
             // assume the browser can handle it.
