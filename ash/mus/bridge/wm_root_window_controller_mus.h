@@ -48,10 +48,12 @@ class WmRootWindowControllerMus : public WmRootWindowController {
 
   const display::Display& GetDisplay() const;
 
+  // Exposed as public so WindowManager can call it.
+  void MoveWindowsTo(WmWindow* dest);
+
   // WmRootWindowController:
   bool HasShelf() override;
   WmShell* GetShell() override;
-  AlwaysOnTopController* GetAlwaysOnTopController() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
   void ConfigureWidgetInitParamsForContainer(
@@ -63,6 +65,9 @@ class WmRootWindowControllerMus : public WmRootWindowController {
 
  private:
   friend class RootWindowController;
+
+  // WmRootWindowController:
+  bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) override;
 
   WmShellMus* shell_;
   RootWindowController* root_window_controller_;

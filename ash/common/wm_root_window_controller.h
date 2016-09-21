@@ -28,6 +28,8 @@ namespace ash {
 
 class AlwaysOnTopController;
 class AnimatingWallpaperWidgetController;
+class DockedWindowLayoutManager;
+class PanelLayoutManager;
 class SystemModalContainerLayoutManager;
 class WallpaperWidgetController;
 class WmShelf;
@@ -44,6 +46,12 @@ class ASH_EXPORT WmRootWindowController {
  public:
   explicit WmRootWindowController(WmWindow* window);
   virtual ~WmRootWindowController();
+
+  DockedWindowLayoutManager* docked_window_layout_manager() {
+    return docked_window_layout_manager_;
+  }
+
+  PanelLayoutManager* panel_layout_manager() { return panel_layout_manager_; }
 
   wm::RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
@@ -64,6 +72,10 @@ class ASH_EXPORT WmRootWindowController {
     return workspace_controller_.get();
   }
 
+  AlwaysOnTopController* always_on_top_controller() {
+    return always_on_top_controller_.get();
+  }
+
   wm::WorkspaceWindowState GetWorkspaceWindowState();
 
   // Returns the layout manager for the appropriate modal-container. If the
@@ -79,8 +91,6 @@ class ASH_EXPORT WmRootWindowController {
   virtual bool HasShelf() = 0;
 
   virtual WmShell* GetShell() = 0;
-
-  virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 
   virtual WmShelf* GetShelf() = 0;
 
@@ -128,7 +138,17 @@ class ASH_EXPORT WmRootWindowController {
   // Creates the LayoutManagers for the windows created by CreateContainers().
   void CreateLayoutManagers();
 
-  void DeleteWorkspaceController();
+  // Resets WmShell::GetRootWindowForNewWindows() if appropriate. This is called
+  // during shutdown to make sure GetRootWindowForNewWindows() isn't referencing
+  // this.
+  void ResetRootForNewWindowsIfNecessary();
+
+  // Called during shutdown to destroy state such as windows and LayoutManagers.
+  void CloseChildWindows();
+
+  // Called from CloseChildWindows() to determine if the specified window should
+  // be destroyed.
+  virtual bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) = 0;
 
  private:
   // Callback for MenuModelAdapter.
@@ -136,12 +156,17 @@ class ASH_EXPORT WmRootWindowController {
 
   WmWindow* root_;
 
-  wm::RootWindowLayoutManager* root_window_layout_manager_;
+  // LayoutManagers are owned by the window they are installed on.
+  DockedWindowLayoutManager* docked_window_layout_manager_ = nullptr;
+  PanelLayoutManager* panel_layout_manager_ = nullptr;
+  wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
   std::unique_ptr<AnimatingWallpaperWidgetController>
       animating_wallpaper_widget_controller_;
   std::unique_ptr<WorkspaceController> workspace_controller_;
+
+  std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Manages the context menu.
   std::unique_ptr<ui::MenuModel> menu_model_;

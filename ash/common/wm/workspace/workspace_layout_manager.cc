@@ -207,7 +207,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(
   if (property == WmWindowProperty::ALWAYS_ON_TOP &&
       window->GetBoolProperty(WmWindowProperty::ALWAYS_ON_TOP)) {
     WmWindow* container =
-        root_window_controller_->GetAlwaysOnTopController()->GetContainer(
+        root_window_controller_->always_on_top_controller()->GetContainer(
             window);
     if (window->GetParent() != container)
       container->AddChild(window);

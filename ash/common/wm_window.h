@@ -154,6 +154,7 @@ class ASH_EXPORT WmWindow {
   virtual void SetParentUsingContext(WmWindow* context,
                                      const gfx::Rect& screen_bounds) = 0;
   virtual void AddChild(WmWindow* window) = 0;
+  virtual void RemoveChild(WmWindow* child) = 0;
 
   WmWindow* GetParent() {
     return const_cast<WmWindow*>(

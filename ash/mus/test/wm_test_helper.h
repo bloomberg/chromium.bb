@@ -51,13 +51,18 @@ class WmTestHelper {
 
  private:
   // Creates a new RootWindowController given |display_spec|, which is the
-  // configuration of the display.
+  // configuration of the display. On entry |next_x| is the x-coordinate to
+  // place the display at, on exit |next_x| is set to the x-coordinate to place
+  // the next display at.
   RootWindowController* CreateRootWindowController(
-      const std::string& display_spec);
+      const std::string& display_spec,
+      int* next_x);
 
-  // Updates the display of an existing RootWindowController.
+  // Updates the display of an existing RootWindowController. See
+  // CreateRootWindowController() for details on |next_x|.
   void UpdateDisplay(RootWindowController* root_window_controller,
-                     const std::string& display_spec);
+                     const std::string& display_spec,
+                     int* next_x);
 
   // Destroys a RootWindowController.
   void DestroyRootWindowController(

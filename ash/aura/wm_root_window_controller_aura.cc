@@ -67,10 +67,6 @@ WmShell* WmRootWindowControllerAura::GetShell() {
   return WmShell::Get();
 }
 
-AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
-  return root_window_controller_->always_on_top_controller();
-}
-
 WmShelf* WmRootWindowControllerAura::GetShelf() {
   return root_window_controller_->wm_shelf_aura();
 }
@@ -116,6 +112,11 @@ void WmRootWindowControllerAura::OnWallpaperAnimationFinished(
     views::Widget* widget) {
   root_window_controller_->OnWallpaperAnimationFinished(widget);
   WmRootWindowController::OnWallpaperAnimationFinished(widget);
+}
+
+bool WmRootWindowControllerAura::ShouldDestroyWindowInCloseChildWindows(
+    WmWindow* window) {
+  return WmWindowAura::GetAuraWindow(window)->owned_by_parent();
 }
 
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
+#include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/move_event_handler.h"
@@ -151,7 +152,6 @@ RootWindowController* WindowManager::CreateRootWindowController(
   RootWindowController* root_window_controller =
       root_window_controller_ptr.get();
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
-  window->AddObserver(this);
 
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnRootWindowControllerAdded(root_window_controller));
@@ -170,19 +170,21 @@ RootWindowController* WindowManager::CreateRootWindowController(
 
 void WindowManager::DestroyRootWindowController(
     RootWindowController* root_window_controller) {
-  // TODO(sky): WindowManager shouldn't need to observe the windows. Instead
-  // WindowManager should have a specific API that is called when a display is
-  // removed.
+  if (root_window_controllers_.size() > 1) {
+    DCHECK_NE(root_window_controller, GetPrimaryRootWindowController());
+    root_window_controller->wm_root_window_controller()->MoveWindowsTo(
+        WmWindowMus::Get(GetPrimaryRootWindowController()->root()));
+  }
+
   ui::Window* root_window = root_window_controller->root();
   auto it = FindRootWindowControllerByWindow(root_window);
   DCHECK(it != root_window_controllers_.end());
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnWillDestroyRootWindowController((*it).get()));
+
+  (*it)->Shutdown();
+
+  // NOTE: classic ash deleted RootWindowController after a delay (DeleteSoon())
+  // this may need to change to mirror that.
   root_window_controllers_.erase(it);
-  // Remove the observer so we don't see the OnWindowDestroying/Destroyed as we
-  // already handled it here.
-  root_window->RemoveObserver(this);
-  root_window->Destroy();
 }
 
 void WindowManager::Shutdown() {
@@ -197,7 +199,7 @@ void WindowManager::Shutdown() {
   // Destroy the roots of the RootWindowControllers, which triggers removal
   // in OnWindowDestroyed().
   while (!root_window_controllers_.empty())
-    (*root_window_controllers_.begin())->root()->Destroy();
+    DestroyRootWindowController(root_window_controllers_.begin()->get());
 
   lookup_.reset();
   shell_->Shutdown();
@@ -220,18 +222,10 @@ WindowManager::FindRootWindowControllerByWindow(ui::Window* window) {
   return root_window_controllers_.end();
 }
 
-void WindowManager::OnWindowDestroying(ui::Window* window) {
-  auto it = FindRootWindowControllerByWindow(window);
-  DCHECK(it != root_window_controllers_.end());
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnWillDestroyRootWindowController((*it).get()));
-}
-
-void WindowManager::OnWindowDestroyed(ui::Window* window) {
-  auto it = FindRootWindowControllerByWindow(window);
-  DCHECK(it != root_window_controllers_.end());
-  window->RemoveObserver(this);
-  root_window_controllers_.erase(it);
+RootWindowController* WindowManager::GetPrimaryRootWindowController() {
+  return static_cast<WmRootWindowControllerMus*>(
+             WmShell::Get()->GetPrimaryRootWindowController())
+      ->root_window_controller();
 }
 
 void WindowManager::OnEmbed(ui::Window* root) {
@@ -298,8 +292,9 @@ void WindowManager::OnWmNewDisplay(ui::Window* window,
 }
 
 void WindowManager::OnWmDisplayRemoved(ui::Window* window) {
-  // TODO(sky): wire up this up correctly.
-  NOTIMPLEMENTED();
+  auto iter = FindRootWindowControllerByWindow(window);
+  DCHECK(iter != root_window_controllers_.end());
+  DestroyRootWindowController(iter->get());
 }
 
 void WindowManager::OnWmPerformMoveLoop(

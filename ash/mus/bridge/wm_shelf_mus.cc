@@ -21,11 +21,7 @@ WmShelfMus::WmShelfMus(WmWindow* root_window) {
   shelf_widget()->PostCreateShelf();
 }
 
-WmShelfMus::~WmShelfMus() {
-  ShutdownShelfWidget();
-  DestroyShelfWidget();
-  ShutdownShelf();
-}
+WmShelfMus::~WmShelfMus() {}
 
 void WmShelfMus::WillDeleteShelfLayoutManager() {
   ShutdownShelfWidget();

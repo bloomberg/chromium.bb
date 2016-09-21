@@ -104,7 +104,8 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager()->window_tree_client();
   window_tree_client_private_ =
       base::MakeUnique<ui::WindowTreeClientPrivate>(window_tree_client);
-  CreateRootWindowController("800x600");
+  int next_x = 0;
+  CreateRootWindowController("800x600", &next_x);
 }
 
 std::vector<RootWindowController*> WmTestHelper::GetRootsOrderedByDisplayId() {
@@ -121,13 +122,16 @@ void WmTestHelper::UpdateDisplay(const std::string& display_spec) {
       display_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::vector<RootWindowController*> root_window_controllers =
       GetRootsOrderedByDisplayId();
+  int next_x = 0;
   for (size_t i = 0,
               end = std::min(parts.size(), root_window_controllers.size());
        i < end; ++i) {
-    UpdateDisplay(root_window_controllers[i], parts[i]);
+    UpdateDisplay(root_window_controllers[i], parts[i], &next_x);
   }
-  for (size_t i = root_window_controllers.size(); i < parts.size(); ++i)
-    root_window_controllers.push_back(CreateRootWindowController(parts[i]));
+  for (size_t i = root_window_controllers.size(); i < parts.size(); ++i) {
+    root_window_controllers.push_back(
+        CreateRootWindowController(parts[i], &next_x));
+  }
   while (root_window_controllers.size() > parts.size()) {
     window_manager_app_->window_manager()->DestroyRootWindowController(
         root_window_controllers.back());
@@ -136,9 +140,12 @@ void WmTestHelper::UpdateDisplay(const std::string& display_spec) {
 }
 
 RootWindowController* WmTestHelper::CreateRootWindowController(
-    const std::string& display_spec) {
-  display::Display display(next_display_id_++,
-                           ParseDisplayBounds(display_spec));
+    const std::string& display_spec,
+    int* next_x) {
+  gfx::Rect bounds = ParseDisplayBounds(display_spec);
+  bounds.set_x(*next_x);
+  *next_x += bounds.size().width();
+  display::Display display(next_display_id_++, bounds);
   gfx::Rect work_area(display.bounds());
   // Offset the height slightly to give a different work area. -20 is arbitrary,
   // it could be anything.
@@ -149,8 +156,11 @@ RootWindowController* WmTestHelper::CreateRootWindowController(
 }
 
 void WmTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
-                                 const std::string& display_spec) {
+                                 const std::string& display_spec,
+                                 int* next_x) {
   gfx::Rect bounds = ParseDisplayBounds(display_spec);
+  bounds.set_x(*next_x);
+  *next_x += bounds.size().width();
   root_window_controller->display_.set_bounds(bounds);
   gfx::Rect work_area(bounds);
   // Offset the height slightly to give a different work area. -20 is arbitrary,

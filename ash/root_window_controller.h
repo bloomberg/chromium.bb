@@ -46,7 +46,6 @@ class ScopedCaptureClient;
 
 namespace ash {
 class AshWindowTreeHost;
-class AlwaysOnTopController;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
@@ -105,11 +104,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   WorkspaceController* workspace_controller();
 
-  AlwaysOnTopController* always_on_top_controller() {
-    return always_on_top_controller_.get();
-  }
-
   WmShelfAura* wm_shelf_aura() const { return wm_shelf_aura_.get(); }
+
+  WmRootWindowControllerAura* wm_root_window_controller() {
+    return wm_root_window_controller_;
+  }
 
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
@@ -222,6 +221,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Disables projection touch HUD.
   void DisableTouchHudProjection();
 
+  DockedWindowLayoutManager* docked_window_layout_manager();
+  PanelLayoutManager* panel_layout_manager();
+
   // Overridden from ShellObserver.
   void OnLoginStateChanged(LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
@@ -245,12 +247,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // this must be deleted before the container is deleted.
   std::unique_ptr<aura::Window> mouse_event_target_;
 
-  // Manages layout of docked windows. Owned by DockedContainer.
-  DockedWindowLayoutManager* docked_layout_manager_;
-
-  // Manages layout of panels. Owned by PanelContainer.
-  PanelLayoutManager* panel_layout_manager_;
-
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 
 #if defined(OS_CHROMEOS)
@@ -259,8 +255,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // feedback is on.
   std::unique_ptr<AshTouchExplorationManager> touch_exploration_manager_;
 #endif
-
-  std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Heads-up displays for touch events. These HUDs are not owned by the root
   // window controller and manage their own lifetimes.

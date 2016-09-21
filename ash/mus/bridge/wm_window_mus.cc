@@ -161,6 +161,8 @@ bool WmWindowMus::IsContainer() const {
 }
 
 void WmWindowMus::Destroy() {
+  // TODO(sky): to match aura behavior this should delete children.
+  // http://crbug.com/647513.
   window_->Destroy();
   // WARNING: this has been deleted.
 }
@@ -442,6 +444,10 @@ void WmWindowMus::SetParentUsingContext(WmWindow* context,
 
 void WmWindowMus::AddChild(WmWindow* window) {
   window_->AddChild(GetMusWindow(window));
+}
+
+void WmWindowMus::RemoveChild(WmWindow* child) {
+  window_->RemoveChild(GetMusWindow(child));
 }
 
 const WmWindow* WmWindowMus::GetParent() const {

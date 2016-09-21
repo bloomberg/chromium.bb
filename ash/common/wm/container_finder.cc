@@ -53,7 +53,7 @@ WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
 WmWindow* GetContainerFromAlwaysOnTopController(WmWindow* root,
                                                 WmWindow* window) {
   return root->GetRootWindowController()
-      ->GetAlwaysOnTopController()
+      ->always_on_top_controller()
       ->GetContainer(window);
 }
 

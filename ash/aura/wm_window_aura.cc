@@ -375,6 +375,10 @@ void WmWindowAura::AddChild(WmWindow* window) {
   window_->AddChild(GetAuraWindow(window));
 }
 
+void WmWindowAura::RemoveChild(WmWindow* child) {
+  window_->RemoveChild(GetAuraWindow(child));
+}
+
 const WmWindow* WmWindowAura::GetParent() const {
   return Get(window_->parent());
 }

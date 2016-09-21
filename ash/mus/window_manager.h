@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
-#include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 
@@ -52,7 +51,6 @@ class WmTestHelper;
 // a RootWindowController per Display. WindowManager takes ownership of
 // the WindowTreeClient.
 class WindowManager : public ui::WindowManagerDelegate,
-                      public ui::WindowObserver,
                       public ui::WindowTreeClientDelegate {
  public:
   explicit WindowManager(shell::Connector* connector);
@@ -113,9 +111,7 @@ class WindowManager : public ui::WindowManagerDelegate,
   RootWindowControllers::iterator FindRootWindowControllerByWindow(
       ui::Window* window);
 
-  // ui::WindowObserver:
-  void OnWindowDestroying(ui::Window* window) override;
-  void OnWindowDestroyed(ui::Window* window) override;
+  RootWindowController* GetPrimaryRootWindowController();
 
   // WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;

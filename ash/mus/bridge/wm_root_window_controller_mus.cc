@@ -75,16 +75,16 @@ const display::Display& WmRootWindowControllerMus::GetDisplay() const {
   return root_window_controller_->display();
 }
 
+void WmRootWindowControllerMus::MoveWindowsTo(WmWindow* dest) {
+  WmRootWindowController::MoveWindowsTo(dest);
+}
+
 bool WmRootWindowControllerMus::HasShelf() {
   return GetShelf() != nullptr;
 }
 
 WmShell* WmRootWindowControllerMus::GetShell() {
   return shell_;
-}
-
-AlwaysOnTopController* WmRootWindowControllerMus::GetAlwaysOnTopController() {
-  return root_window_controller_->always_on_top_controller();
 }
 
 WmShelf* WmRootWindowControllerMus::GetShelf() {
@@ -125,6 +125,13 @@ gfx::Point WmRootWindowControllerMus::GetLastMouseLocationInRoot() {
   location -=
       root_window_controller_->display().bounds().origin().OffsetFromOrigin();
   return location;
+}
+
+bool WmRootWindowControllerMus::ShouldDestroyWindowInCloseChildWindows(
+    WmWindow* window) {
+  ui::Window* ui_window = WmWindowMus::GetMusWindow(window);
+  return ui_window->WasCreatedByThisClient() ||
+         ui_window->window_tree()->GetRoots().count(ui_window);
 }
 
 }  // namespace mus

@@ -15,7 +15,6 @@
 
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -72,15 +71,17 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
     window_manager_->window_manager_client()->AddActivationParent(
         GetWindowByShellWindowId(kActivatableShellWindowIds[i])->mus_window());
   }
-
-  WmWindowMus* always_on_top_container =
-      GetWindowByShellWindowId(kShellWindowId_AlwaysOnTopContainer);
-  always_on_top_controller_.reset(
-      new AlwaysOnTopController(always_on_top_container));
 }
 
 RootWindowController::~RootWindowController() {
-  wm_root_window_controller_->DeleteWorkspaceController();
+  Shutdown();
+  root_->Destroy();
+}
+
+void RootWindowController::Shutdown() {
+  // NOTE: Shutdown() may be called multiple times.
+  wm_root_window_controller_->ResetRootForNewWindowsIfNecessary();
+  wm_root_window_controller_->CloseChildWindows();
 }
 
 shell::Connector* RootWindowController::GetConnector() {
@@ -179,21 +180,6 @@ void RootWindowController::CreateLayoutManagers() {
   workspace_layout_manager_ = new WorkspaceLayoutManager(default_container);
   default_container->SetLayoutManager(
       base::WrapUnique(workspace_layout_manager_));
-
-  WmWindowMus* docked_container =
-      GetWindowByShellWindowId(kShellWindowId_DockedContainer);
-  std::unique_ptr<DockedWindowLayoutManager> docked_window_layout_manager =
-      base::MakeUnique<DockedWindowLayoutManager>(docked_container);
-  docked_window_layout_manager->SetShelf(wm_shelf_.get());
-  docked_window_layout_manager->AddObserver(wm_shelf_->shelf_layout_manager());
-  docked_container->SetLayoutManager(std::move(docked_window_layout_manager));
-
-  WmWindowMus* panel_container =
-      GetWindowByShellWindowId(kShellWindowId_PanelContainer);
-  std::unique_ptr<PanelLayoutManager> panel_layout_manager =
-      base::MakeUnique<PanelLayoutManager>(panel_container);
-  panel_layout_manager->SetShelf(wm_shelf_.get());
-  panel_container->SetLayoutManager(std::move(panel_layout_manager));
 }
 
 }  // namespace mus

@@ -10,11 +10,15 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
+#include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/lock_layout_manager.h"
+#include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
@@ -138,8 +142,7 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
 
 }  // namespace
 
-WmRootWindowController::WmRootWindowController(WmWindow* root)
-    : root_(root), root_window_layout_manager_(nullptr) {}
+WmRootWindowController::WmRootWindowController(WmWindow* root) : root_(root) {}
 
 WmRootWindowController::~WmRootWindowController() {
   if (animating_wallpaper_widget_controller_.get())
@@ -241,7 +244,7 @@ void WmRootWindowController::OnWallpaperAnimationFinished(
 
 void WmRootWindowController::MoveWindowsTo(WmWindow* dest) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
-  DeleteWorkspaceController();
+  workspace_controller_.reset();
   ReparentAllWindows(GetWindow(), dest);
 }
 
@@ -446,10 +449,97 @@ void WmRootWindowController::CreateLayoutManagers() {
   DCHECK(lock_container);
   lock_container->SetLayoutManager(
       base::MakeUnique<LockLayoutManager>(lock_container));
+
+  WmWindow* always_on_top_container =
+      GetContainer(kShellWindowId_AlwaysOnTopContainer);
+  DCHECK(always_on_top_container);
+  always_on_top_controller_ =
+      base::MakeUnique<AlwaysOnTopController>(always_on_top_container);
+
+  // Create Docked windows layout manager
+  WmWindow* docked_container = GetContainer(kShellWindowId_DockedContainer);
+  docked_window_layout_manager_ =
+      new DockedWindowLayoutManager(docked_container);
+  docked_container->SetLayoutManager(
+      base::WrapUnique(docked_window_layout_manager_));
+
+  // Create Panel layout manager
+  WmWindow* panel_container = GetContainer(kShellWindowId_PanelContainer);
+  panel_layout_manager_ = new PanelLayoutManager(panel_container);
+  panel_container->SetLayoutManager(base::WrapUnique(panel_layout_manager_));
+
+  wm::WmSnapToPixelLayoutManager::InstallOnContainers(root_);
 }
 
-void WmRootWindowController::DeleteWorkspaceController() {
+void WmRootWindowController::ResetRootForNewWindowsIfNecessary() {
+  WmShell* shell = WmShell::Get();
+  // Change the target root window before closing child windows. If any child
+  // being removed triggers a relayout of the shelf it will try to build a
+  // window list adding windows from the target root window's containers which
+  // may have already gone away.
+  if (shell->GetRootWindowForNewWindows() == GetWindow()) {
+    // The root window for new windows is being destroyed. Switch to the primary
+    // root window if possible.
+    WmWindow* primary_root = shell->GetPrimaryRootWindow();
+    shell->set_root_window_for_new_windows(
+        primary_root == GetWindow() ? nullptr : primary_root);
+  }
+}
+
+void WmRootWindowController::CloseChildWindows() {
+  // NOTE: this may be called multiple times.
+
+  // |panel_layout_manager_| needs to be shut down before windows are destroyed.
+  if (panel_layout_manager_) {
+    panel_layout_manager_->Shutdown();
+    panel_layout_manager_ = nullptr;
+  }
+
+  // |docked_window_layout_manager_| needs to be shut down before windows are
+  // destroyed.
+  if (docked_window_layout_manager_) {
+    docked_window_layout_manager_->Shutdown();
+    docked_window_layout_manager_ = nullptr;
+  }
+
+  WmShelf* shelf = GetShelf();
+  shelf->ShutdownShelfWidget();
+
   workspace_controller_.reset();
+
+  // Explicitly destroy top level windows. We do this because such windows may
+  // query the RootWindow for state.
+  WmWindowTracker non_toplevel_windows;
+  non_toplevel_windows.Add(root_);
+  while (!non_toplevel_windows.windows().empty()) {
+    WmWindow* non_toplevel_window = non_toplevel_windows.Pop();
+    WmWindowTracker toplevel_windows;
+    for (WmWindow* child : non_toplevel_window->GetChildren()) {
+      if (!ShouldDestroyWindowInCloseChildWindows(child))
+        continue;
+      if (child->HasNonClientArea())
+        toplevel_windows.Add(child);
+      else
+        non_toplevel_windows.Add(child);
+    }
+    while (!toplevel_windows.windows().empty())
+      toplevel_windows.Pop()->Destroy();
+  }
+  // And then remove the containers.
+  while (!root_->GetChildren().empty()) {
+    WmWindow* child = root_->GetChildren()[0];
+    if (ShouldDestroyWindowInCloseChildWindows(child))
+      child->Destroy();
+    else
+      root_->RemoveChild(child);
+  }
+
+  shelf->DestroyShelfWidget();
+
+  // CloseChildWindows() may be called twice during the shutdown of ash
+  // unittests. Avoid notifying WmShelf that the shelf has been destroyed twice.
+  if (shelf->IsShelfInitialized())
+    shelf->ShutdownShelf();
 }
 
 void WmRootWindowController::OnMenuClosed() {

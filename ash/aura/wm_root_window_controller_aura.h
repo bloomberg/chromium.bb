@@ -32,7 +32,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
   // WmRootWindowController:
   bool HasShelf() override;
   WmShell* GetShell() override;
-  AlwaysOnTopController* GetAlwaysOnTopController() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
   void ConfigureWidgetInitParamsForContainer(
@@ -43,6 +42,10 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
   gfx::Point GetLastMouseLocationInRoot() override;
   void OnInitialWallpaperAnimationStarted() override;
   void OnWallpaperAnimationFinished(views::Widget* widget) override;
+
+ protected:
+  // WmRootWindowController:
+  bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) override;
 
  private:
   friend class RootWindowController;

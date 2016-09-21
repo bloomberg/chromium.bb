@@ -19,7 +19,6 @@ class Connector;
 
 namespace ash {
 
-class AlwaysOnTopController;
 class WorkspaceLayoutManager;
 
 namespace mus {
@@ -33,9 +32,7 @@ class WmTestHelper;
 class WmWindowMus;
 
 // RootWindowController manages the windows and state for a single display.
-// RootWindowController is tied to the lifetime of the ui::Window it is
-// created with. It is assumed the RootWindowController is deleted once the
-// associated ui::Window is destroyed.
+// RootWindowController takes ownership of the Window that it passed to it.
 class RootWindowController {
  public:
   RootWindowController(WindowManager* window_manager,
@@ -43,9 +40,14 @@ class RootWindowController {
                        const display::Display& display);
   ~RootWindowController();
 
+  void Shutdown();
+
   shell::Connector* GetConnector();
 
   ui::Window* root() { return root_; }
+  WmRootWindowControllerMus* wm_root_window_controller() {
+    return wm_root_window_controller_.get();
+  }
 
   ui::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
@@ -60,10 +62,6 @@ class RootWindowController {
 
   WorkspaceLayoutManager* workspace_layout_manager() {
     return workspace_layout_manager_;
-  }
-
-  AlwaysOnTopController* always_on_top_controller() {
-    return always_on_top_controller_.get();
   }
 
   WmShelfMus* wm_shelf() { return wm_shelf_.get(); }
@@ -90,8 +88,6 @@ class RootWindowController {
   // Owned by the corresponding container.
   WorkspaceLayoutManager* workspace_layout_manager_ = nullptr;
   std::map<ui::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
-
-  std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   std::unique_ptr<DisconnectedAppHandler> disconnected_app_handler_;
 

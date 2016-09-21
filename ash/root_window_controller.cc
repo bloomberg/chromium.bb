@@ -243,22 +243,10 @@ void RootWindowController::Shutdown() {
   touch_exploration_manager_.reset();
 #endif
 
-  aura::Window* root_window = GetRootWindow();
-  WmWindow* root_shutting_down = WmWindowAura::Get(root_window);
-  WmShell* shell = WmShell::Get();
-  // Change the target root window before closing child windows. If any child
-  // being removed triggers a relayout of the shelf it will try to build a
-  // window list adding windows from the target root window's containers which
-  // may have already gone away.
-  if (shell->GetRootWindowForNewWindows() == root_shutting_down) {
-    // The root window for new windows is being destroyed. Switch to the primary
-    // root window if possible.
-    WmWindow* primary_root = shell->GetPrimaryRootWindow();
-    shell->set_root_window_for_new_windows(
-        primary_root == root_shutting_down ? nullptr : primary_root);
-  }
+  wm_root_window_controller_->ResetRootForNewWindowsIfNecessary();
 
   CloseChildWindows();
+  aura::Window* root_window = GetRootWindow();
   GetRootWindowSettings(root_window)->controller = NULL;
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
@@ -336,12 +324,12 @@ void RootWindowController::CreateShelf() {
     return;
   wm_shelf_aura_->InitializeShelf();
 
-  if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(wm_shelf_aura_.get());
-  if (docked_layout_manager_) {
-    docked_layout_manager_->SetShelf(wm_shelf_aura_.get());
+  if (panel_layout_manager())
+    panel_layout_manager()->SetShelf(wm_shelf_aura_.get());
+  if (docked_window_layout_manager()) {
+    docked_window_layout_manager()->SetShelf(wm_shelf_aura_.get());
     if (wm_shelf_aura_->shelf_layout_manager()) {
-      docked_layout_manager_->AddObserver(
+      docked_window_layout_manager()->AddObserver(
           wm_shelf_aura_->shelf_layout_manager());
     }
   }
@@ -388,10 +376,11 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 void RootWindowController::CloseChildWindows() {
   mouse_event_target_.reset();
 
-  // Remove observer as deactivating keyboard causes |docked_layout_manager_|
-  // to fire notifications.
-  if (docked_layout_manager_ && wm_shelf_aura_->shelf_layout_manager()) {
-    docked_layout_manager_->RemoveObserver(
+  // Remove observer as deactivating keyboard causes
+  // docked_window_layout_manager() to fire notifications.
+  if (docked_window_layout_manager() &&
+      wm_shelf_aura_->shelf_layout_manager()) {
+    docked_window_layout_manager()->RemoveObserver(
         wm_shelf_aura_->shelf_layout_manager());
   }
 
@@ -399,61 +388,10 @@ void RootWindowController::CloseChildWindows() {
   // down associated layout managers.
   DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
-  // panel_layout_manager_ needs to be shut down before windows are destroyed.
-  if (panel_layout_manager_) {
-    panel_layout_manager_->Shutdown();
-    panel_layout_manager_ = NULL;
-  }
-  // docked_layout_manager_ needs to be shut down before windows are destroyed.
-  if (docked_layout_manager_) {
-    docked_layout_manager_->Shutdown();
-    docked_layout_manager_ = NULL;
-  }
-  wm_shelf_aura_->ShutdownShelfWidget();
+  wm_root_window_controller_->CloseChildWindows();
 
-  wm_root_window_controller_->DeleteWorkspaceController();
-
-  // Explicitly destroy top level windows. We do this as during part of
-  // destruction such windows may query the RootWindow for state.
-  aura::Window* root_window = GetRootWindow();
-  aura::WindowTracker non_toplevel_windows;
-  non_toplevel_windows.Add(root_window);
-  while (!non_toplevel_windows.windows().empty()) {
-    const aura::Window* non_toplevel_window =
-        *non_toplevel_windows.windows().begin();
-    non_toplevel_windows.Remove(const_cast<aura::Window*>(non_toplevel_window));
-    aura::WindowTracker toplevel_windows;
-    for (size_t i = 0; i < non_toplevel_window->children().size(); ++i) {
-      aura::Window* child = non_toplevel_window->children()[i];
-      if (!child->owned_by_parent())
-        continue;
-      if (child->delegate())
-        toplevel_windows.Add(child);
-      else
-        non_toplevel_windows.Add(child);
-    }
-    while (!toplevel_windows.windows().empty())
-      delete *toplevel_windows.windows().begin();
-  }
-  // And then remove the containers.
-  while (!root_window->children().empty()) {
-    aura::Window* window = root_window->children()[0];
-    if (window->owned_by_parent()) {
-      delete window;
-    } else {
-      root_window->RemoveChild(window);
-    }
-  }
-
-  wm_shelf_aura_->DestroyShelfWidget();
-
-  // CloseChildWindows may be called twice during the shutdown of ash unittests.
-  // Avoid notifying WmShelf that the shelf has been destroyed twice.
-  if (wm_shelf_aura_->IsShelfInitialized())
-    wm_shelf_aura_->ShutdownShelf();
-
-  aura::client::SetDragDropClient(root_window, nullptr);
-  aura::client::SetTooltipClient(root_window, nullptr);
+  aura::client::SetDragDropClient(GetRootWindow(), nullptr);
+  aura::client::SetTooltipClient(GetRootWindow(), nullptr);
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
@@ -493,11 +431,12 @@ void RootWindowController::ActivateKeyboard(
   }
   DCHECK(keyboard_controller);
   keyboard_controller->AddObserver(wm_shelf_aura_->shelf_layout_manager());
-  keyboard_controller->AddObserver(panel_layout_manager_);
-  keyboard_controller->AddObserver(docked_layout_manager_);
+  keyboard_controller->AddObserver(panel_layout_manager());
+  keyboard_controller->AddObserver(docked_window_layout_manager());
   keyboard_controller->AddObserver(workspace_controller()->layout_manager());
   keyboard_controller->AddObserver(
-      always_on_top_controller_->GetLayoutManager());
+      wm_root_window_controller_->always_on_top_controller()
+          ->GetLayoutManager());
   WmShell::Get()->NotifyVirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
@@ -522,12 +461,13 @@ void RootWindowController::DeactivateKeyboard(
     // observers that keyboard bounds changed to 0 before remove them.
     keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
     keyboard_controller->RemoveObserver(wm_shelf_aura_->shelf_layout_manager());
-    keyboard_controller->RemoveObserver(panel_layout_manager_);
-    keyboard_controller->RemoveObserver(docked_layout_manager_);
+    keyboard_controller->RemoveObserver(panel_layout_manager());
+    keyboard_controller->RemoveObserver(docked_window_layout_manager());
     keyboard_controller->RemoveObserver(
         workspace_controller()->layout_manager());
     keyboard_controller->RemoveObserver(
-        always_on_top_controller_->GetLayoutManager());
+        wm_root_window_controller_->always_on_top_controller()
+            ->GetLayoutManager());
     WmShell::Get()->NotifyVirtualKeyboardActivated(false);
   }
 }
@@ -551,8 +491,6 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host),
       wm_shelf_aura_(new WmShelfAura),
-      docked_layout_manager_(NULL),
-      panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
   aura::Window* root_window = GetRootWindow();
@@ -612,22 +550,15 @@ void RootWindowController::Init(RootWindowType root_window_type,
 }
 
 void RootWindowController::InitLayoutManagers() {
-  wm_root_window_controller_->CreateLayoutManagers();
-
-  aura::Window* root_window = GetRootWindow();
-
-  WmWindow* always_on_top_container =
-      WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));
-  always_on_top_controller_.reset(
-      new AlwaysOnTopController(always_on_top_container));
-
   // Create the shelf and status area widgets.
   DCHECK(!wm_shelf_aura_->shelf_widget());
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
   WmWindow* wm_status_container = WmWindowAura::Get(status_container);
-  wm_shelf_aura_->CreateShelfWidget(WmWindowAura::Get(root_window));
+  wm_shelf_aura_->CreateShelfWidget(WmWindowAura::Get(GetRootWindow()));
+
+  wm_root_window_controller_->CreateLayoutManagers();
 
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
@@ -650,23 +581,9 @@ void RootWindowController::InitLayoutManagers() {
     mouse_event_target_->Show();
   }
 
-  // Create Docked windows layout manager
-  WmWindow* docked_container =
-      WmWindowAura::Get(GetContainer(kShellWindowId_DockedContainer));
-  docked_layout_manager_ = new DockedWindowLayoutManager(docked_container);
-  docked_container->SetLayoutManager(base::WrapUnique(docked_layout_manager_));
-
-  // Installs WmSnapLayoutManager on appropriate containers.
-  wm::WmSnapToPixelLayoutManager::InstallOnContainers(
-      WmWindowAura::Get(root_window));
-
-  // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
-  WmWindow* wm_panel_container = WmWindowAura::Get(panel_container);
-  panel_layout_manager_ = new PanelLayoutManager(wm_panel_container);
-  wm_panel_container->SetLayoutManager(base::WrapUnique(panel_layout_manager_));
-  panel_container_handler_.reset(new PanelWindowEventHandler);
-  panel_container->AddPreTargetHandler(panel_container_handler_.get());
+  panel_container_handler_ = base::MakeUnique<PanelWindowEventHandler>();
+  GetContainer(kShellWindowId_PanelContainer)
+      ->AddPreTargetHandler(panel_container_handler_.get());
 
   // Install an AttachedPanelWindowTargeter on the panel container to make it
   // easier to correctly target shelf buttons with touch.
@@ -675,9 +592,10 @@ void RootWindowController::InitLayoutManagers() {
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend =
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  panel_container->SetEventTargeter(
-      std::unique_ptr<ui::EventTargeter>(new AttachedPanelWindowTargeter(
-          panel_container, mouse_extend, touch_extend, panel_layout_manager_)));
+  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
+  panel_container->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
+      new AttachedPanelWindowTargeter(panel_container, mouse_extend,
+                                      touch_extend, panel_layout_manager())));
 }
 
 void RootWindowController::InitTouchHuds() {
@@ -719,6 +637,15 @@ void RootWindowController::DisableTouchHudProjection() {
   if (!touch_hud_projection_)
     return;
   touch_hud_projection_->Remove();
+}
+
+DockedWindowLayoutManager*
+RootWindowController::docked_window_layout_manager() {
+  return wm_root_window_controller_->docked_window_layout_manager();
+}
+
+PanelLayoutManager* RootWindowController::panel_layout_manager() {
+  return wm_root_window_controller_->panel_layout_manager();
 }
 
 void RootWindowController::OnLoginStateChanged(LoginStatus status) {

@@ -156,6 +156,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetParentUsingContext(WmWindow* context,
                              const gfx::Rect& screen_bounds) override;
   void AddChild(WmWindow* window) override;
+  void RemoveChild(WmWindow* child) override;
   const WmWindow* GetParent() const override;
   const WmWindow* GetTransientParent() const override;
   std::vector<WmWindow*> GetTransientChildren() override;

@@ -17,8 +17,6 @@ class WindowManagerObserver {
   virtual void OnWindowTreeClientDestroyed() {}
 
   virtual void OnRootWindowControllerAdded(RootWindowController* controller) {}
-  virtual void OnWillDestroyRootWindowController(
-      RootWindowController* controller) {}
 
  protected:
   virtual ~WindowManagerObserver() {}

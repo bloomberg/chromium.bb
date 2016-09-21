@@ -95,7 +95,7 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
   // previous one for GPU performance reasons. Try to emulate the behavior
   // unless host origins are explicitly set.
   if (!is_host_origin_set) {
-    // Sart from (1,1) so that windows won't overlap with native mouse cursor.
+    // Start from (1,1) so that windows won't overlap with native mouse cursor.
     // See |AshTestBase::SetUp()|.
     int next_y = 1;
     for (DisplayInfoList::iterator iter = display_info_list.begin();
