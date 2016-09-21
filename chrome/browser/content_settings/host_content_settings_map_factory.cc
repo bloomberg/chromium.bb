@@ -66,8 +66,12 @@ scoped_refptr<RefcountedKeyedService>
 
   // If off the record, retrieve the host content settings map of the parent
   // profile in order to ensure the preferences have been migrated.
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE)
+  // TODO(crbug.com/277296): Remove check that profile does not equal the
+  // original profile once TestingProfile::ForceIncognito is gone.
+  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE &&
+      profile != profile->GetOriginalProfile()) {
     GetForProfile(profile->GetOriginalProfile());
+  }
 
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
       profile->GetPrefs(),

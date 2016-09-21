@@ -37,38 +37,53 @@ bool ShouldInterceptNavigation(
 }  // namespace
 
 // static
-std::unique_ptr<NavigationThrottle>
-FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
+bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
+    HostContentSettingsMap* host_content_settings_map,
+    const GURL& source_url,
+    const GURL& target_url,
+    bool has_user_gesture) {
   if (!base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
-    return nullptr;
+    return false;
 
-  if (!handle->HasUserGesture())
-    return nullptr;
+  if (!has_user_gesture)
+    return false;
 
-  if (!base::StartsWith(handle->GetURL().GetContent(), kFlashDownloadURL,
+  if (!base::StartsWith(target_url.GetContent(), kFlashDownloadURL,
                         base::CompareCase::INSENSITIVE_ASCII)) {
-    return nullptr;
+    return false;
   }
-
-  Profile* profile = Profile::FromBrowserContext(
-      handle->GetWebContents()->GetBrowserContext());
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  GURL page_url = handle->GetWebContents()->GetLastCommittedURL();
 
   std::unique_ptr<base::Value> general_setting =
       host_content_settings_map->GetWebsiteSetting(
-          page_url, page_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+          source_url, source_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
           nullptr);
   ContentSetting plugin_setting =
       content_settings::ValueToContentSetting(general_setting.get());
   plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
 
-  if (plugin_setting != CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
+  return plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
+}
+
+// static
+std::unique_ptr<NavigationThrottle>
+FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Never intercept Flash Download navigations in a new window.
+  if (handle->GetWebContents()->HasOpener())
     return nullptr;
+
+  Profile* profile = Profile::FromBrowserContext(
+      handle->GetWebContents()->GetBrowserContext());
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  GURL source_url = handle->GetWebContents()->GetLastCommittedURL();
+  if (!ShouldStopFlashDownloadAction(host_content_settings_map, source_url,
+                                     handle->GetURL(),
+                                     handle->HasUserGesture())) {
+    return nullptr;
+  }
 
   return base::MakeUnique<navigation_interception::InterceptNavigationThrottle>(
       handle, base::Bind(&ShouldInterceptNavigation), true);

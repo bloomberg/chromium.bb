@@ -14,11 +14,20 @@ class NavigationHandle;
 class NavigationThrottle;
 }
 
+class HostContentSettingsMap;
+class GURL;
+
 // This class creates navigation throttles that intercept navigations to Flash's
 // download page. The user is queried about activating Flash instead, since
 // Chrome already ships with it. Note that this is an UI thread class.
 class FlashDownloadInterception {
  public:
+  static bool ShouldStopFlashDownloadAction(
+      HostContentSettingsMap* host_content_settings_map,
+      const GURL& source_url,
+      const GURL& target_url,
+      bool has_user_gesture);
+
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* handle);
 

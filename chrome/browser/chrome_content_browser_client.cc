@@ -2252,6 +2252,16 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
+
+#if defined(ENABLE_PLUGINS)
+  if (FlashDownloadInterception::ShouldStopFlashDownloadAction(
+          content_settings, opener_top_level_frame_url, target_url,
+          user_gesture)) {
+    // TODO(crbug.com/626728): Implement permission prompt logic.
+    return false;
+  }
+#endif
+
   BlockedWindowParams blocked_params(target_url,
                                      referrer,
                                      frame_name,
