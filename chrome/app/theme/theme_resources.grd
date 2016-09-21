@@ -221,19 +221,6 @@
         </if>
         <structure type="chrome_scaled_image" name="IDR_FIRST_RUN_COMPLETION" file="cros/first_run_completion.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT" file="common/find_next.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_D" file="common/find_next_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_H" file="common/find_next_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_NEXT_P" file="common/find_next_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV" file="common/find_prev.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_D" file="common/find_prev_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_H" file="common/find_prev_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_P" file="common/find_prev_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_LEFT" file="common/find_dialog_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_MIDDLE" file="common/find_dialog_middle.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_RIGHT" file="common/find_dialog_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="common/find_dlg_left_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="common/find_dlg_right_bg.png" />
       <if expr="toolkit_views or is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_FORWARD" file="common/browser_forward_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="common/browser_forward_disabled.png" />
@@ -735,15 +722,17 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_TECHNICAL_ERROR" file="cros/technical_error.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM" file="common/textfield_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_LEFT" file="common/textfield_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_RIGHT" file="common/textfield_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_CENTER" file="common/textfield_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_LEFT" file="common/textfield_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_RIGHT" file="common/textfield_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP" file="common/textfield_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_LEFT" file="common/textfield_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_RIGHT" file="common/textfield_top_right.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM" file="common/textfield_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_LEFT" file="common/textfield_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_RIGHT" file="common/textfield_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_CENTER" file="common/textfield_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_LEFT" file="common/textfield_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_RIGHT" file="common/textfield_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP" file="common/textfield_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_LEFT" file="common/textfield_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_RIGHT" file="common/textfield_top_right.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" />
       <if expr="not use_ash">
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="theme_frame.png" />
