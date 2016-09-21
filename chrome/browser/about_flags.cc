@@ -648,7 +648,6 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
     {IDS_FLAGS_SSL_VERSION_MAX_TLS13, switches::kSSLVersionMax, "tls1.3"},
 };
 
-#if defined(OS_MACOSX)
 const FeatureEntry::Choice kSecurityVerboseChoices[] = {
     {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DEFAULT, "", ""},
     {IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_SHOW_ALL_ANIMATED,
@@ -664,7 +663,6 @@ const FeatureEntry::Choice kSecurityVerboseChoices[] = {
      switches::kMaterialSecurityVerbose,
      switches::kMaterialSecurityVerboseShowNonSecureNonAnimated},
 };
-#endif  // defined(OS_MACOSX)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -2101,11 +2099,9 @@ const FeatureEntry kFeatureEntries[] = {
          "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/"
          "ExchangeToken")},
 #endif
-#if defined(OS_MACOSX)
     {"material-security-verbose", IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME,
-     IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsMac,
+     IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kSecurityVerboseChoices)},
-#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

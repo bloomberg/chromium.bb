@@ -481,6 +481,10 @@ class LocationBarView : public LocationBar,
   // during the last RefreshPageAction.
   bool web_contents_null_at_last_refresh_;
 
+  // These allow toggling the verbose security state behavior via flags.
+  bool should_show_secure_state_;
+  bool should_animate_secure_state_;
+
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
 

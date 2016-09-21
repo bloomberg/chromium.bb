@@ -630,6 +630,16 @@ const char kLoadExtension[]                 = "load-extension";
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
+// Changes security chip behavior.
+const char kMaterialSecurityVerbose[] = "material-security-verbose";
+const char kMaterialSecurityVerboseShowAllAnimated[] = "show-all-animated";
+const char kMaterialSecurityVerboseShowAllNonAnimated[] =
+    "show-all-nonanimated";
+const char kMaterialSecurityVerboseShowNonSecureAnimated[] =
+    "show-nonsecure-animated";
+const char kMaterialSecurityVerboseShowNonSecureNonAnimated[] =
+    "show-nonsecure-nonanimated";
+
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
@@ -1184,15 +1194,6 @@ const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
-
-const char kMaterialSecurityVerbose[] = "material-security-verbose";
-const char kMaterialSecurityVerboseShowAllAnimated[] = "show-all-animated";
-const char kMaterialSecurityVerboseShowAllNonAnimated[] =
-    "show-all-nonanimated";
-const char kMaterialSecurityVerboseShowNonSecureAnimated[] =
-    "show-nonsecure-animated";
-const char kMaterialSecurityVerboseShowNonSecureNonAnimated[] =
-    "show-nonsecure-nonanimated";
 
 // This is how the metrics client ID is passed from the browser process to its
 // children. With Crashpad, the metrics client ID is distinct from the crash
