@@ -270,78 +270,10 @@ static void read_mv_probs(nmv_context *ctx, int allow_hp, aom_reader *r) {
   }
 }
 
-static void inverse_transform_block_inter(MACROBLOCKD *xd, int plane,
-                                          const TX_SIZE tx_size, uint8_t *dst,
-                                          int stride, int eob, int block) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  TX_TYPE tx_type = get_tx_type(pd->plane_type, xd, block);
-  const int seg_id = xd->mi[0]->mbmi.segment_id;
-  if (eob > 0) {
-    tran_low_t *const dqcoeff = pd->dqcoeff;
-#if CONFIG_AOM_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      switch (tx_size) {
-        case TX_4X4:
-          av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, stride, eob, xd->bd,
-                                      tx_type, xd->lossless[seg_id]);
-          break;
-        case TX_8X8:
-          av1_highbd_inv_txfm_add_8x8(dqcoeff, dst, stride, eob, xd->bd,
-                                      tx_type);
-          break;
-        case TX_16X16:
-          av1_highbd_inv_txfm_add_16x16(dqcoeff, dst, stride, eob, xd->bd,
-                                        tx_type);
-          break;
-        case TX_32X32:
-          av1_highbd_inv_txfm_add_32x32(dqcoeff, dst, stride, eob, xd->bd,
-                                        tx_type);
-          break;
-        default: assert(0 && "Invalid transform size"); return;
-      }
-    } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-      switch (tx_size) {
-        case TX_4X4:
-          av1_inv_txfm_add_4x4(dqcoeff, dst, stride, eob, tx_type,
-                               xd->lossless[seg_id]);
-          break;
-        case TX_8X8:
-          av1_inv_txfm_add_8x8(dqcoeff, dst, stride, eob, tx_type);
-          break;
-        case TX_16X16:
-          av1_inv_txfm_add_16x16(dqcoeff, dst, stride, eob, tx_type);
-          break;
-        case TX_32X32:
-          av1_inv_txfm_add_32x32(dqcoeff, dst, stride, eob, tx_type);
-          break;
-        default: assert(0 && "Invalid transform size"); return;
-      }
-#if CONFIG_AOM_HIGHBITDEPTH
-    }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
-    if (eob == 1) {
-      dqcoeff[0] = 0;
-    } else {
-#if CONFIG_ADAPT_SCAN
-      memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
-#else   // CONFIG_ADAPT_SCAN
-      if (tx_type == DCT_DCT && tx_size <= TX_16X16 && eob <= 10)
-        memset(dqcoeff, 0, 4 * tx_size_1d[tx_size] * sizeof(dqcoeff[0]));
-      else if (tx_size == TX_32X32 && eob <= 34)
-        memset(dqcoeff, 0, 256 * sizeof(dqcoeff[0]));
-      else
-        memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
-#endif  // CONFIG_ADAPT_SCAN
-    }
-  }
-}
-
-static void inverse_transform_block_intra(MACROBLOCKD *xd, int plane,
-                                          const TX_TYPE tx_type,
-                                          const TX_SIZE tx_size, uint8_t *dst,
-                                          int stride, int eob) {
+static void inverse_transform_block(MACROBLOCKD *xd, int plane,
+                                    const TX_TYPE tx_type,
+                                    const TX_SIZE tx_size, uint8_t *dst,
+                                    int stride, int eob) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int seg_id = xd->mi[0]->mbmi.segment_id;
   if (eob > 0) {
@@ -430,8 +362,8 @@ static void predict_and_reconstruct_intra_block(
 #if CONFIG_ADAPT_SCAN
     av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
 #endif
-    inverse_transform_block_intra(xd, plane, tx_type, tx_size, dst,
-                                  pd->dst.stride, eob);
+    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+                            eob);
   }
 }
 
@@ -449,9 +381,9 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_ADAPT_SCAN
   av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
 #endif
-  inverse_transform_block_inter(
-      xd, plane, tx_size, &pd->dst.buf[4 * row * pd->dst.stride + 4 * col],
-      pd->dst.stride, eob, block_idx);
+  inverse_transform_block(xd, plane, tx_type, tx_size,
+                          &pd->dst.buf[4 * row * pd->dst.stride + 4 * col],
+                          pd->dst.stride, eob);
   return eob;
 }
 
