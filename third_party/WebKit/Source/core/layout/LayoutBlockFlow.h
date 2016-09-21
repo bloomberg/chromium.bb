@@ -365,8 +365,7 @@ private:
     bool positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, BlockChildrenLayoutInfo&);
 
     // Handle breaking policy before the child, and insert a forced break in front of it if needed.
-    // Returns true if a forced break was inserted.
-    bool insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo&);
+    void insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo&);
 
     void layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo&);
     void adjustPositionedBlock(LayoutBox& child, const BlockChildrenLayoutInfo&);

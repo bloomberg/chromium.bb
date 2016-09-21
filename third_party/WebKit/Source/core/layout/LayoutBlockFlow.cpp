@@ -677,13 +677,13 @@ bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit
     return true;
 }
 
-bool LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
+void LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
 {
     if (layoutInfo.isAtFirstInFlowChild()) {
         // There's no class A break point before the first child (only *between* siblings), so
         // steal its break value and join it with what we already have here.
         setBreakBefore(joinFragmentainerBreakValues(breakBefore(), child.breakBefore()));
-        return false;
+        return;
     }
 
     // Figure out if a forced break should be inserted in front of the child. If we insert a forced
@@ -696,9 +696,7 @@ bool LayoutBlockFlow::insertForcedBreakBeforeChildIfNeeded(LayoutBox& child, Blo
         setLogicalHeight(newLogicalTop);
         LayoutUnit paginationStrut = newLogicalTop - oldLogicalTop;
         child.setPaginationStrut(paginationStrut);
-        return true;
     }
-    return false;
 }
 
 void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
@@ -737,7 +735,14 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
 
     // If there should be a forced break before the child, we need to insert it before attempting
     // to collapse margins or apply clearance.
-    bool forcedBreakWasInserted = paginated && insertForcedBreakBeforeChildIfNeeded(child, layoutInfo);
+    if (paginated) {
+        // We will now insert the strut needed by any forced break. After this operation, we will
+        // have calculated the offset where we can apply margin collapsing and clearance. After
+        // having applied those things, we'll be at the position where we can honor requirements of
+        // unbreakable content, which may extend the strut further.
+        child.resetPaginationStrut();
+        insertForcedBreakBeforeChildIfNeeded(child, layoutInfo);
+    }
 
     // Now determine the correct ypos based off examination of collapsing margin
     // values.
@@ -751,7 +756,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
     // determined. Otherwise, see if there are other reasons for breaking before it
     // (break-inside:avoid, or not enough space for the first piece of child content to fit in the
     // current fragmentainer), and adjust the position accordingly.
-    if (paginated && !forcedBreakWasInserted) {
+    if (paginated) {
         if (estimateWithoutPagination != newLogicalTop) {
             // We got a new position due to clearance or margin collapsing. Before we attempt to
             // paginate (which may result in the position changing again), let's try again at the
@@ -759,6 +764,8 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
             positionAndLayoutOnceIfNeeded(child, newLogicalTop, layoutInfo);
         }
 
+        // We have now applied forced breaks, margin collapsing and clearance, and we're at the
+        // position where we can honor requirements of unbreakable content.
         newLogicalTop = adjustBlockChildForPagination(newLogicalTop, child, layoutInfo, atBeforeSideOfBlock && logicalTopBeforeClear == newLogicalTop);
     }
 
@@ -821,9 +828,6 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
 
 LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo, bool atBeforeSideOfBlock)
 {
-    // Forced breaks trumps unforced ones, and if we have a forced break, we shouldn't even be here.
-    ASSERT(layoutInfo.isAtFirstInFlowChild() || !isForcedFragmentainerBreakValue(child.classABreakPointValue(layoutInfo.previousBreakAfterValue())));
-
     LayoutBlockFlow* childBlockFlow = child.isLayoutBlockFlow() ? toLayoutBlockFlow(&child) : 0;
 
     // See if we need a soft (unforced) break in front of this child, and set the pagination strut
@@ -834,10 +838,6 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     //
     // No matter which source, if we need to insert a strut, it should always take us to the exact
     // top of a page or column further ahead, or be zero.
-
-    // We're now going to calculate the child's final pagination strut. We may end up propagating
-    // it to its containing block (|this|), so reset it first.
-    child.resetPaginationStrut();
 
     // The first piece of content inside the child may have set a strut during layout. Currently,
     // only block flows support strut propagation, but this may (and should) change in the future.
@@ -852,7 +852,12 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     // ahead than the next one.
     LayoutUnit logicalTopAfterPagination = std::max(logicalTopWithContentStrut, logicalTopAfterUnsplittable);
     LayoutUnit newLogicalTop = logicalTop;
-    if (LayoutUnit paginationStrut = logicalTopAfterPagination - logicalTop) {
+
+    // Forced breaks may already have caused a strut, and this needs to be added together with
+    // any strut detected here in this method.
+    LayoutUnit previousStrut = child.paginationStrut();
+
+    if (LayoutUnit paginationStrut = logicalTopAfterPagination - logicalTop + previousStrut) {
         ASSERT(paginationStrut > 0);
         // If we're not at the first in-flow child, there's a class A break point before the child. If we *are* at the
         // first in-flow child, but the child isn't flush with the content edge of its container, due to e.g. clearance,
@@ -864,11 +869,13 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
             // and pushes to the next page anyway, so not too concerned about it.
             paginationStrut += logicalTop + marginBeforeIfFloating();
             setPaginationStrutPropagatedFromChild(paginationStrut);
+            child.resetPaginationStrut();
             if (childBlockFlow)
                 childBlockFlow->setPaginationStrutPropagatedFromChild(LayoutUnit());
         } else {
             child.setPaginationStrut(paginationStrut);
-            newLogicalTop += paginationStrut;
+            // |previousStrut| was already baked into the logical top, so don't add it again.
+            newLogicalTop += paginationStrut - previousStrut;
         }
     }
 
