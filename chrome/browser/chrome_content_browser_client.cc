@@ -1380,26 +1380,28 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   // field trial may overwrite another. See Source/core/frame/Settings.in in
   // Blink for the list of valid keys.
   static const char* const kBlinkSettingsFieldTrials[] = {
-    // Keys: backgroundHtmlParserOutstandingTokenLimit
-    //       backgroundHtmlParserPendingTokenLimit
-    "BackgroundHtmlParserTokenLimits",
+      // Keys: backgroundHtmlParserOutstandingTokenLimit
+      //       backgroundHtmlParserPendingTokenLimit
+      "BackgroundHtmlParserTokenLimits",
 
-    // Keys: doHtmlPreloadScanning
-    "HtmlPreloadScanning",
+      // Keys: doHtmlPreloadScanning
+      "HtmlPreloadScanning",
 
-    // Keys: lowPriorityIframes
-    "LowPriorityIFrames",
+      // Keys: lowPriorityIframes
+      "LowPriorityIFrames",
 
-    // Keys: disallowFetchForDocWrittenScriptsInMainFrame
-    "DisallowFetchForDocWrittenScriptsInMainFrame",
+      // Keys: disallowFetchForDocWrittenScriptsInMainFrame
+      //       disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections
+      //       disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G
+      "DisallowFetchForDocWrittenScriptsInMainFrame",
 
-    // Keys: parseHTMLOnMainThreadSyncTokenize
-    //       parseHTMLOnMainThreadCoalesceChunks
-    "ParseHTMLOnMainThread",
+      // Keys: parseHTMLOnMainThreadSyncTokenize
+      //       parseHTMLOnMainThreadCoalesceChunks
+      "ParseHTMLOnMainThread",
 
-    // Keys: cssExternalScannerNoPreload
-    //       cssExternalScannerPreload
-    "CSSExternalScanner",
+      // Keys: cssExternalScannerNoPreload
+      //       cssExternalScannerPreload
+      "CSSExternalScanner",
   };
 
   std::vector<std::string> blink_settings;

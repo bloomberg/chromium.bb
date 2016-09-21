@@ -88,6 +88,22 @@ void emitWarningForDocWriteScripts(const String& url, Document& document)
     WTFLogAlways("%s", message.utf8().data());
 }
 
+bool isConnectionEffectively2G(WebEffectiveConnectionType effectiveType)
+{
+    switch (effectiveType) {
+    case WebEffectiveConnectionType::TypeSlow2G:
+    case WebEffectiveConnectionType::Type2G:
+        return true;
+    case WebEffectiveConnectionType::Type3G:
+    case WebEffectiveConnectionType::Type4G:
+    case WebEffectiveConnectionType::TypeUnknown:
+    case WebEffectiveConnectionType::TypeOffline:
+        return false;
+    }
+    NOTREACHED();
+    return false;
+}
+
 bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, FetchRequest::DeferOption defer, Document& document)
 {
     // Only scripts inserted via document.write are candidates for having their
@@ -145,10 +161,11 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     // the flag will be conveyed to the browser process only once.
     document.loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock);
 
-    const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
-    const bool disallowFetch = document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && isSlowConnection);
+    const bool is2G = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+    WebEffectiveConnectionType effectiveConnection = document.frame()->loader().client()->getEffectiveConnectionType();
+    const bool is2GOrLike2G = is2G || isConnectionEffectively2G(effectiveConnection);
 
-    return disallowFetch;
+    return document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && is2G) || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G() && is2GOrLike2G);
 }
 
 } // namespace

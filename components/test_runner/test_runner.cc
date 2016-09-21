@@ -212,6 +212,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   void SetDumpConsoleMessages(bool value);
+  void SetEffectiveConnectionType(const std::string& connection_type);
   void SetMockSpellCheckerEnabled(bool enabled);
   void SetImagesAllowed(bool allowed);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
@@ -511,6 +512,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
       .SetMethod("setDumpConsoleMessages",
                  &TestRunnerBindings::SetDumpConsoleMessages)
+      .SetMethod("setEffectiveConnectionType",
+                 &TestRunnerBindings::SetEffectiveConnectionType)
       .SetMethod("setMockSpellCheckerEnabled",
                  &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
@@ -702,6 +705,29 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
   if (runner_)
     runner_->SetDumpConsoleMessages(enabled);
+}
+
+void TestRunnerBindings::SetEffectiveConnectionType(
+    const std::string& connection_type) {
+  blink::WebEffectiveConnectionType web_type =
+      blink::WebEffectiveConnectionType::TypeUnknown;
+  if (connection_type == "TypeUnknown")
+    web_type = blink::WebEffectiveConnectionType::TypeUnknown;
+  else if (connection_type == "TypeOffline")
+    web_type = blink::WebEffectiveConnectionType::TypeOffline;
+  else if (connection_type == "TypeSlow2G")
+    web_type = blink::WebEffectiveConnectionType::TypeSlow2G;
+  else if (connection_type == "Type2G")
+    web_type = blink::WebEffectiveConnectionType::Type2G;
+  else if (connection_type == "Type3G")
+    web_type = blink::WebEffectiveConnectionType::Type3G;
+  else if (connection_type == "Type4G")
+    web_type = blink::WebEffectiveConnectionType::Type4G;
+  else
+    NOTREACHED();
+
+  if (runner_)
+    runner_->SetEffectiveConnectionType(web_type);
 }
 
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
@@ -1553,6 +1579,8 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       chooser_count_(0),
       previously_focused_view_(nullptr),
       is_web_platform_tests_mode_(false),
+      effective_connection_type_(
+          blink::WebEffectiveConnectionType::TypeUnknown),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -2562,6 +2590,11 @@ void TestRunner::DumpNavigationPolicy() {
 void TestRunner::SetDumpConsoleMessages(bool value) {
   layout_test_runtime_flags_.set_dump_console_messages(value);
   OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::SetEffectiveConnectionType(
+    blink::WebEffectiveConnectionType connection_type) {
+  effective_connection_type_ = connection_type;
 }
 
 void TestRunner::SetMockSpellCheckerEnabled(bool enabled) {

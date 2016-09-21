@@ -105,6 +105,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void didClearWindowObject(blink::WebLocalFrame* frame) override;
   bool runFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;
+  blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
 
  private:
   // Borrowed pointers to other parts of Layout Tests state.

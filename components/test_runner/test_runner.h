@@ -18,6 +18,7 @@
 #include "components/test_runner/layout_test_runtime_flags.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_test_runner.h"
+#include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "v8/include/v8.h"
 
@@ -167,6 +168,10 @@ class TestRunner : public WebTestRunner {
   void DidCloseChooser();
 
   bool ShouldDumpConsoleMessages() const;
+
+  blink::WebEffectiveConnectionType effective_connection_type() const {
+    return effective_connection_type_;
+  }
 
   // A single item in the work queue.
   class WorkItem {
@@ -462,6 +467,12 @@ class TestRunner : public WebTestRunner {
   // to test output.
   void SetDumpConsoleMessages(bool value);
 
+  // Overrides the NetworkQualityEstimator's estimated network type. If |type|
+  // is TypeUnknown the NQE's value is used. Be sure to call this with
+  // TypeUnknown at the end of your test if you use this.
+  void SetEffectiveConnectionType(
+      blink::WebEffectiveConnectionType connection_type);
+
   // Controls whether the mock spell checker is enabled.
   void SetMockSpellCheckerEnabled(bool enabled);
 
@@ -639,6 +650,9 @@ class TestRunner : public WebTestRunner {
 
   // True if we run a test in LayoutTests/imported/{csswg-test,wpt}/.
   bool is_web_platform_tests_mode_;
+
+  // An effective connection type settable by layout tests.
+  blink::WebEffectiveConnectionType effective_connection_type_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

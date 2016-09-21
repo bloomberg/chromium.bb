@@ -695,4 +695,9 @@ bool WebFrameTestClient::runFileChooser(
   return false;
 }
 
+blink::WebEffectiveConnectionType
+WebFrameTestClient::getEffectiveConnectionType() {
+  return test_runner_->effective_connection_type();
+}
+
 }  // namespace test_runner

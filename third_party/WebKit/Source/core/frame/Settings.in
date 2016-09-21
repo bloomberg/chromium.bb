@@ -376,6 +376,11 @@ historyEntryRequiresUserGesture initial=false
 preferHiddenVolumeControls initial=false
 
 # Whether to disallow network fetches for parser blocking scripts in the main
+# frame inserted via document.write, for users on 2G or connections that are
+# effectively 2G.
+disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G initial=false
+
+# Whether to disallow network fetches for parser blocking scripts in the main
 # frame inserted via document.write, for users on slow connections.
 disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections initial=false
 
