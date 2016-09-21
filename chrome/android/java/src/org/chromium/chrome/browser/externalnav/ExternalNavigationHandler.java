@@ -376,6 +376,12 @@ public class ExternalNavigationHandler {
         }
 
         if (params.isIncognito()) {
+            // In incognito mode, links that can be handled within the browser should just do so,
+            // without asking the user.
+            if (!isExternalProtocol) {
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+
             IntentHandler.setPendingIncognitoUrl(intent);
         }
 

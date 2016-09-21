@@ -74,6 +74,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;S."
             + ExternalNavigationHandler.EXTRA_MARKET_REFERRER + "="
             + ENCODED_MARKET_REFERRER + ";end";
+    private static final String INTENT_APP_PACKAGE_NAME = "com.imdb.mobile";
 
     private static final String PLUS_STREAM_URL = "https://plus.google.com/stream";
     private static final String CALENDAR_URL = "http://www.google.com/calendar";
@@ -114,9 +115,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
 
     @SmallTest
     public void testOrdinaryIncognitoUri() {
+        // http://crbug.com/587306: Don't prompt the user for capturing URLs in incognito, just keep
+        // it within the browser.
         checkUrl("http://youtube.com/")
                 .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION, START_INCOGNITO);
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     @SmallTest
@@ -494,6 +497,23 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         assertEquals(IMDB_APP_INTENT_FOR_TOM_HANKS, invokedIntent.getData().toString());
         assertNull("The invoked intent should not have browser_fallback_url\n",
                 invokedIntent.getStringExtra(ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL));
+        assertNull(mDelegate.getNewUrlAfterClobbering());
+        assertNull(mDelegate.getReferrerUrlForClobbering());
+    }
+
+    @SmallTest
+    public void testFallbackUrl_IntentResolutionSucceedsInIncognito() {
+        // IMDB app is installed.
+        mDelegate.setCanResolveActivity(true);
+
+        // Expect that the user is prompted to leave incognito mode.
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withIsIncognito(true)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+                        START_INCOGNITO);
+
+        assertNull(mDelegate.startActivityIntent);
         assertNull(mDelegate.getNewUrlAfterClobbering());
         assertNull(mDelegate.getReferrerUrlForClobbering());
     }
@@ -956,7 +976,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             // should mimic the appropriate intent resolution intead.
             if (mQueryIntentOverride != null) {
                 if (mQueryIntentOverride.booleanValue()) {
-                    list.add(newResolveInfo("foo", "foo"));
+                    list.add(newResolveInfo(INTENT_APP_PACKAGE_NAME, INTENT_APP_PACKAGE_NAME));
                 } else {
                     return list;
                 }
@@ -1020,6 +1040,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             for (ResolveInfo info : infos) {
                 String packageName = info.activityInfo.packageName;
                 if (packageName.equals("youtube") || packageName.equals("calendar")
+                        || packageName.equals(INTENT_APP_PACKAGE_NAME)
                         || packageName.equals(COUNTERFEIT_WEBAPK_PACKAGE_NAME)
                         || packageName.equals(NATIVE_APP_PACKAGE_NAME)
                         || packageName.equals(WEBAPK_PACKAGE_NAME)
