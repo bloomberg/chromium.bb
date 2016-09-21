@@ -50,6 +50,29 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints)
     ASSERT_EQ(IntRect(15, 115, 100, 100), enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
 }
 
+// Verifies that the sticky constraints are not affected by transforms
+TEST_F(LayoutBoxModelObjectTest, StickyPositionTransforms)
+{
+    setBodyInnerHTML("<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; transform: scale(2); transform-origin: top left; }"
+        "#container { box-sizing: border-box; position: relative; top: 100px; height: 400px; width: 200px; padding: 10px; border: 5px solid black; transform: scale(2); transform-origin: top left; }"
+        "#scroller { height: 100px; overflow: auto; position: relative; top: 200px; }"
+        ".spacer { height: 1000px; }</style>"
+        "<div id='scroller'><div id='container'><div id='sticky'></div></div><div class='spacer'></div></div>");
+    LayoutBoxModelObject* scroller = toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+    scroller->getScrollableArea()->scrollToYOffset(50);
+    ASSERT_EQ(50.0, scroller->getScrollableArea()->scrollYOffset());
+    LayoutBoxModelObject* sticky = toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
+    sticky->updateStickyPositionConstraints();
+    ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
+
+    const StickyPositionScrollingConstraints& constraints = scroller->getScrollableArea()->stickyConstraintsMap().get(sticky->layer());
+    ASSERT_EQ(0.f, constraints.topOffset());
+
+    // The coordinates of the constraint rects should all be with respect to the unscrolled scroller.
+    ASSERT_EQ(IntRect(15, 115, 170, 370), enclosingIntRect(getScrollContainerRelativeContainingBlockRect(constraints)));
+    ASSERT_EQ(IntRect(15, 115, 100, 100), enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
+}
+
 // Verifies that the sticky constraints are correctly computed.
 TEST_F(LayoutBoxModelObjectTest, StickyPositionPercentageStyles)
 {

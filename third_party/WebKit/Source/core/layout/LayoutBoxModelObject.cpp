@@ -41,6 +41,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -701,33 +702,40 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const
     }
     LayoutBox* scrollAncestor = layer()->ancestorOverflowLayer()->isRootLayer() ? nullptr : toLayoutBox(layer()->ancestorOverflowLayer()->layoutObject());
 
-    LayoutRect containerContentRect = containingBlock->layoutOverflowRect();
     LayoutUnit maxContainerWidth = containingBlock->isLayoutView() ? containingBlock->logicalWidth() : containingBlock->containingBlockLogicalWidthForContent();
     // Sticky positioned element ignore any override logical width on the containing block (as they don't call
     // containingBlockLogicalWidthForContent). It's unclear whether this is totally fine.
     // Compute the container-relative area within which the sticky element is allowed to move.
     LayoutUnit maxWidth = containingBlock->availableLogicalWidth();
 
+    // Map the containing block to the scroll ancestor without transforms.
+    FloatRect scrollContainerRelativePaddingBoxRect(containingBlock->layoutOverflowRect());
+    if (containingBlock != scrollAncestor) {
+        FloatQuad localQuad(FloatRect(containingBlock->paddingBoxRect()));
+        TransformState transformState(TransformState::ApplyTransformDirection, localQuad.boundingBox().center(), localQuad);
+        containingBlock->mapLocalToAncestor(scrollAncestor, transformState, ApplyContainerFlip);
+        transformState.flatten();
+        scrollContainerRelativePaddingBoxRect = transformState.lastPlanarQuad().boundingBox();
+
+        // The sticky position constraint rects should be independent of the current scroll position, so after
+        // mapping we add in the scroll position to get the container's position within the ancestor scroller's
+        // unscrolled layout overflow.
+        FloatSize scrollOffset(scrollAncestor ? toFloatSize(scrollAncestor->getScrollableArea()->adjustedScrollOffset()) : FloatSize());
+        scrollContainerRelativePaddingBoxRect.move(scrollOffset);
+    }
+
+    LayoutRect scrollContainerRelativeContainingBlockRect(scrollContainerRelativePaddingBoxRect);
     // This is removing the padding of the containing block's overflow rect to get the flow
     // box rectangle and removing the margin of the sticky element to ensure that space between
     // the sticky element and its containing flow box. It is an open issue whether the margin
     // should collapse (See https://www.w3.org/TR/css-position-3/#sticky-pos).
-    containerContentRect.contractEdges(
+    scrollContainerRelativeContainingBlockRect.contractEdges(
         minimumValueForLength(containingBlock->style()->paddingTop(), maxContainerWidth) + minimumValueForLength(style()->marginTop(), maxWidth),
         minimumValueForLength(containingBlock->style()->paddingRight(), maxContainerWidth) + minimumValueForLength(style()->marginRight(), maxWidth),
         minimumValueForLength(containingBlock->style()->paddingBottom(), maxContainerWidth) + minimumValueForLength(style()->marginBottom(), maxWidth),
         minimumValueForLength(containingBlock->style()->paddingLeft(), maxContainerWidth) + minimumValueForLength(style()->marginLeft(), maxWidth));
 
-    // Map to the scroll ancestor.
-    FloatRect scrollContainerRelativeContainingBlockRect(containingBlock->localToAncestorQuad(FloatRect(containerContentRect), scrollAncestor).boundingBox());
-    FloatSize scrollOffset(scrollAncestor ? toFloatSize(scrollAncestor->getScrollableArea()->adjustedScrollOffset()) : FloatSize());
-
-    // The sticky position constraint rects should be independent of the current scroll position, so after
-    // mapping we add in the scroll position to get the container's position within the ancestor scroller's
-    // unscrolled layout overflow.
-    if (containingBlock != scrollAncestor)
-        scrollContainerRelativeContainingBlockRect.move(scrollOffset);
-    constraints.setScrollContainerRelativeContainingBlockRect(scrollContainerRelativeContainingBlockRect);
+    constraints.setScrollContainerRelativeContainingBlockRect(FloatRect(scrollContainerRelativeContainingBlockRect));
 
     FloatRect stickyBoxRect = isLayoutInline()
         ? FloatRect(toLayoutInline(this)->linesBoundingBox())
@@ -736,16 +744,13 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const
     containingBlock->flipForWritingMode(flippedStickyBoxRect);
     FloatPoint stickyLocation = flippedStickyBoxRect.location() + skippedContainersOffset;
 
-    // TODO(flackr): Unfortunate to call localToAncestorQuad again, but we can't just offset from the previously computed rect if there are transforms.
-    // Map to the scroll ancestor.
-    FloatRect scrollContainerRelativeContainerFrame = containingBlock->localToAncestorQuad(FloatRect(FloatPoint(), FloatSize(containingBlock->size())), scrollAncestor).boundingBox();
-    // The sticky position constraint rects should be independent of the current scroll position, so after
-    // mapping we add in the scroll position to get the container's position within the ancestor scroller's
-    // unscrolled layout overflow.
-    if (containingBlock != scrollAncestor)
-        scrollContainerRelativeContainerFrame.move(scrollOffset);
-
-    constraints.setScrollContainerRelativeStickyBoxRect(FloatRect(scrollContainerRelativeContainerFrame.location() + toFloatSize(stickyLocation), flippedStickyBoxRect.size()));
+    // The scrollContainerRelativePaddingBoxRect's position is the padding box so we need to remove the border when finding
+    // the position of the sticky box within the scroll ancestor if the container is not our scroll ancestor.
+    if (containingBlock != scrollAncestor) {
+        FloatSize containerBorderOffset(containingBlock->borderLeft(), containingBlock->borderTop());
+        stickyLocation -= containerBorderOffset;
+    }
+    constraints.setScrollContainerRelativeStickyBoxRect(FloatRect(scrollContainerRelativePaddingBoxRect.location() + toFloatSize(stickyLocation), flippedStickyBoxRect.size()));
 
     // We skip the right or top sticky offset if there is not enough space to honor both the left/right or top/bottom offsets.
     LayoutUnit horizontalOffsets = minimumValueForLength(style()->right(), LayoutUnit(constrainingSize.width())) +
@@ -753,8 +758,8 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const
     bool skipRight = false;
     bool skipLeft = false;
     if (!style()->left().isAuto() && !style()->right().isAuto()) {
-        if (horizontalOffsets > containerContentRect.width()
-            || horizontalOffsets + containerContentRect.width() > constrainingSize.width()) {
+        if (horizontalOffsets > scrollContainerRelativeContainingBlockRect.width()
+            || horizontalOffsets + scrollContainerRelativeContainingBlockRect.width() > constrainingSize.width()) {
             skipRight = style()->isLeftToRightDirection();
             skipLeft = !skipRight;
         }
@@ -776,8 +781,8 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const
     LayoutUnit verticalOffsets = minimumValueForLength(style()->top(), LayoutUnit(constrainingSize.height())) +
         minimumValueForLength(style()->bottom(), LayoutUnit(constrainingSize.height()));
     if (!style()->top().isAuto() && !style()->bottom().isAuto()) {
-        if (verticalOffsets > containerContentRect.height()
-            || verticalOffsets + containerContentRect.height() > constrainingSize.height()) {
+        if (verticalOffsets > scrollContainerRelativeContainingBlockRect.height()
+            || verticalOffsets + scrollContainerRelativeContainingBlockRect.height() > constrainingSize.height()) {
             skipBottom = true;
         }
     }
