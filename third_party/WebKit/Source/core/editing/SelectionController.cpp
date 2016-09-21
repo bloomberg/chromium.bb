@@ -114,7 +114,7 @@ bool canMouseDownStartSelect(Node* node)
 
 VisiblePositionInFlatTree visiblePositionOfHitTestResult(const HitTestResult& hitTestResult)
 {
-    return createVisiblePositionDeprecated(
+    return createVisiblePosition(
         fromPositionInDOMTree<EditingInFlatTreeStrategy>(hitTestResult.innerNode()->layoutObject()->positionForPoint(hitTestResult.localPoint())));
 }
 
@@ -144,14 +144,14 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
 
     VisiblePositionInFlatTree visiblePos = visiblePositionOfHitTestResult(event.hitTestResult());
     if (visiblePos.isNull())
-        visiblePos = createVisiblePositionDeprecated(PositionInFlatTree::firstPositionInOrBeforeNode(innerNode));
+        visiblePos = createVisiblePosition(PositionInFlatTree::firstPositionInOrBeforeNode(innerNode));
     PositionInFlatTree pos = visiblePos.deepEquivalent();
 
     VisibleSelectionInFlatTree newSelection = selection().visibleSelection<EditingInFlatTreeStrategy>();
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && !newSelection.isNone()) {
-        const VisibleSelectionInFlatTree selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionInFlatTree(createVisiblePositionDeprecated(pos))));
+        const VisibleSelectionInFlatTree selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionInFlatTree(createVisiblePosition(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)
                 pos = selectionInUserSelectAll.start();
@@ -198,8 +198,12 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
     if (!target)
         return;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     const PositionWithAffinity& rawTargetPosition = positionRespectingEditingBoundary(selection().selection().start(), hitTestResult.localPoint(), target);
-    VisiblePositionInFlatTree targetPosition = createVisiblePositionDeprecated(fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
+    VisiblePositionInFlatTree targetPosition = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
@@ -517,6 +521,10 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
         && dragStartPos == event.event().position()
         && selection().isRange()
         && event.event().pointerProperties().button != WebPointerProperties::Button::Right) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         VisibleSelectionInFlatTree newSelection;
         Node* node = event.innerNode();
         bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
@@ -640,6 +648,10 @@ void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitT
     IntPoint p = m_frame->view()->rootFrameToContents(mev.event().position());
     if (!selection().contains(p))
         return;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     const VisiblePositionInFlatTree& visiblePos = visiblePositionOfHitTestResult(mev.hitTestResult());
     VisibleSelectionInFlatTree newSelection(visiblePos);
