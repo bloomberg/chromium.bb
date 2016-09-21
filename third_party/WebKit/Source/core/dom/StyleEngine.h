@@ -180,6 +180,7 @@ public:
     void scheduleInvalidationsForInsertedSibling(Element* beforeElement, Element& insertedElement);
     void scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement);
     void scheduleNthPseudoInvalidations(ContainerNode&);
+    void scheduleInvalidationsForRuleSets(TreeScope&, const HeapVector<Member<const RuleSet>>&);
 
     unsigned styleForElementCount() const { return m_styleForElementCount; }
     void incStyleForElementCount() { m_styleForElementCount++; }
@@ -231,6 +232,8 @@ private:
     void updateActiveStyleSheetsInShadow(StyleResolverUpdateMode, TreeScope*, UnorderedTreeScopeSet& treeScopesRemoved);
 
     bool shouldSkipInvalidationFor(const Element&) const;
+    void scheduleRuleSetInvalidationsForElement(Element&, const HeapVector<Member<const RuleSet>>&);
+    void invalidateSlottedElements(HTMLSlotElement&);
 
     Member<Document> m_document;
     bool m_isMaster;

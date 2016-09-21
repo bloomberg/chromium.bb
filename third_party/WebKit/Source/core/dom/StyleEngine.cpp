@@ -46,6 +46,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
@@ -747,6 +748,78 @@ void StyleEngine::scheduleNthPseudoInvalidations(ContainerNode& nthParent)
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectNthInvalidationSet(invalidationLists);
     m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, nthParent);
+}
+
+void StyleEngine::scheduleRuleSetInvalidationsForElement(Element& element, const HeapVector<Member<const RuleSet>>& ruleSets)
+{
+    AtomicString id;
+    const SpaceSplitString* classNames = nullptr;
+
+    if (element.hasID())
+        id = element.idForStyleResolution();
+    if (element.hasClass())
+        classNames = &element.classNames();
+
+    InvalidationLists invalidationLists;
+    for (const auto& ruleSet : ruleSets) {
+        if (!id.isNull())
+            ruleSet->features().collectInvalidationSetsForId(invalidationLists, element, id);
+        if (classNames) {
+            unsigned classNameCount = classNames->size();
+            for (size_t i = 0; i < classNameCount; i++)
+                ruleSet->features().collectInvalidationSetsForClass(invalidationLists, element, (*classNames)[i]);
+        }
+        for (const Attribute& attribute : element.attributes())
+            ruleSet->features().collectInvalidationSetsForAttribute(invalidationLists, element, attribute.name());
+        if (ruleSet->tagRules(element.localNameForSelectorMatching()))
+            element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+    }
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
+}
+
+void StyleEngine::invalidateSlottedElements(HTMLSlotElement& slot)
+{
+    for (auto& node : slot.getDistributedNodes()) {
+        if (node->isElementNode())
+            node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+    }
+}
+
+void StyleEngine::scheduleInvalidationsForRuleSets(TreeScope& treeScope, const HeapVector<Member<const RuleSet>>& ruleSets)
+{
+#if DCHECK_IS_ON()
+    // Full scope recalcs should be handled while collecting the ruleSets before
+    // calling this method.
+    for (auto ruleSet : ruleSets)
+        DCHECK(!ruleSet->features().needsFullRecalcForRuleSetInvalidation());
+#endif // DCHECK_IS_ON()
+
+    bool invalidateSlotted = false;
+    if (treeScope.rootNode().isShadowRoot()) {
+        Element& host = toShadowRoot(treeScope.rootNode()).host();
+        scheduleRuleSetInvalidationsForElement(host, ruleSets);
+        if (host.getStyleChangeType() >= SubtreeStyleChange)
+            return;
+        for (auto ruleSet : ruleSets) {
+            if (ruleSet->hasSlottedRules()) {
+                invalidateSlotted = true;
+                break;
+            }
+        }
+    }
+
+    Node* stayWithin = &treeScope.rootNode();
+    Element* element = ElementTraversal::firstChild(*stayWithin);
+    while (element) {
+        scheduleRuleSetInvalidationsForElement(*element, ruleSets);
+        if (invalidateSlotted && isHTMLSlotElement(element))
+            invalidateSlottedElements(toHTMLSlotElement(*element));
+
+        if (element->getStyleChangeType() < SubtreeStyleChange)
+            element = ElementTraversal::next(*element, stayWithin);
+        else
+            element = ElementTraversal::nextSkippingChildren(*element, stayWithin);
+    }
 }
 
 void StyleEngine::setStatsEnabled(bool enabled)

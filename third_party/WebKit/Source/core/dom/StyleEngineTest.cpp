@@ -7,6 +7,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/shadow/ShadowRootInit.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -26,6 +27,9 @@ protected:
 
     bool isDocumentStyleSheetCollectionClean() { return !styleEngine().shouldUpdateDocumentStyleSheetCollection(AnalyzedStyleUpdate); }
 
+    enum RuleSetInvalidation { RuleSetInvalidationsScheduled, RuleSetInvalidationFullRecalc };
+    RuleSetInvalidation scheduleInvalidationsForRules(TreeScope&, const String& cssText);
+
 private:
     std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
@@ -33,6 +37,21 @@ private:
 void StyleEngineTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+}
+
+StyleEngineTest::RuleSetInvalidation
+StyleEngineTest::scheduleInvalidationsForRules(TreeScope& treeScope, const String& cssText)
+{
+    StyleSheetContents* sheet = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    sheet->parseString(cssText);
+    HeapVector<Member<const RuleSet>> ruleSets;
+    RuleSet& ruleSet = sheet->ensureRuleSet(MediaQueryEvaluator(), RuleHasDocumentSecurityOrigin);
+    ruleSet.compactRulesIfNeeded();
+    if (ruleSet.needsFullRecalcForRuleSetInvalidation())
+        return RuleSetInvalidationFullRecalc;
+    ruleSets.append(&ruleSet);
+    styleEngine().scheduleInvalidationsForRuleSets(treeScope, ruleSets);
+    return RuleSetInvalidationsScheduled;
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject)
@@ -100,6 +119,138 @@ TEST_F(StyleEngineTest, TextToSheetCache)
 
     // Check that we did not use a cached StyleSheetContents after the garbage collection.
     EXPECT_FALSE(sheet1->contents()->isUsedFromTextCache());
+}
+
+TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors)
+{
+    document().body()->setInnerHTML(
+        "<div>"
+        "  <span></span>"
+        "  <div></div>"
+        "</div>", ASSERT_NO_EXCEPTION);
+
+    document().view()->updateAllLifecyclePhases();
+
+    unsigned beforeCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(scheduleInvalidationsForRules(document(), "span { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    unsigned afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(1u, afterCount - beforeCount);
+
+    beforeCount = afterCount;
+    EXPECT_EQ(scheduleInvalidationsForRules(document(), "body div { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(2u, afterCount - beforeCount);
+
+    EXPECT_EQ(scheduleInvalidationsForRules(document(), "div * { background: green}"), RuleSetInvalidationFullRecalc);
+}
+
+TEST_F(StyleEngineTest, RuleSetInvalidationHost)
+{
+    document().body()->setInnerHTML("<div id=nohost></div><div id=host></div>", ASSERT_NO_EXCEPTION);
+    Element* host = document().getElementById("host");
+    ASSERT_TRUE(host);
+
+    ShadowRootInit init;
+    init.setMode("open");
+    ShadowRoot* shadowRoot = host->attachShadow(ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+    ASSERT_TRUE(shadowRoot);
+
+    shadowRoot->setInnerHTML("<div></div><div></div><div></div>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    unsigned beforeCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host(#nohost), #nohost { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    unsigned afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(0u, afterCount - beforeCount);
+
+    beforeCount = afterCount;
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host(#host) { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(1u, afterCount - beforeCount);
+
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host(*) { background: green}"), RuleSetInvalidationFullRecalc);
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host(*) :hover { background: green}"), RuleSetInvalidationFullRecalc);
+}
+
+TEST_F(StyleEngineTest, RuleSetInvalidationSlotted)
+{
+    document().body()->setInnerHTML(
+        "<div id=host>"
+        "  <span slot=other class=s1></span>"
+        "  <span class=s2></span>"
+        "  <span class=s1></span>"
+        "  <span></span>"
+        "</div>", ASSERT_NO_EXCEPTION);
+
+    Element* host = document().getElementById("host");
+    ASSERT_TRUE(host);
+
+    ShadowRootInit init;
+    init.setMode("open");
+    ShadowRoot* shadowRoot = host->attachShadow(ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+    ASSERT_TRUE(shadowRoot);
+
+    shadowRoot->setInnerHTML("<slot name=other></slot><slot></slot>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    unsigned beforeCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, "::slotted(.s1) { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    unsigned afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(4u, afterCount - beforeCount);
+
+    beforeCount = afterCount;
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, "::slotted(*) { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(4u, afterCount - beforeCount);
+}
+
+TEST_F(StyleEngineTest, RuleSetInvalidationHostContext)
+{
+    document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+    Element* host = document().getElementById("host");
+    ASSERT_TRUE(host);
+
+    ShadowRootInit init;
+    init.setMode("open");
+    ShadowRoot* shadowRoot = host->attachShadow(ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+    ASSERT_TRUE(shadowRoot);
+
+    shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    unsigned beforeCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host-context(.nomatch) .a { background: green}"), RuleSetInvalidationsScheduled);
+    document().view()->updateAllLifecyclePhases();
+    unsigned afterCount = styleEngine().styleForElementCount();
+    EXPECT_EQ(1u, afterCount - beforeCount);
+
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host-context(:hover) { background: green}"), RuleSetInvalidationFullRecalc);
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ":host-context(#host) { background: green}"), RuleSetInvalidationFullRecalc);
+}
+
+TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing)
+{
+    document().body()->setInnerHTML("<div id=host></div>", ASSERT_NO_EXCEPTION);
+    Element* host = document().getElementById("host");
+    ASSERT_TRUE(host);
+
+    ShadowRootInit init;
+    init.setMode("open");
+    ShadowRoot* shadowRoot = host->attachShadow(ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+    ASSERT_TRUE(shadowRoot);
+
+    shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ".a ::content span { background: green}"), RuleSetInvalidationFullRecalc);
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ".a /deep/ span { background: green}"), RuleSetInvalidationFullRecalc);
+    EXPECT_EQ(scheduleInvalidationsForRules(*shadowRoot, ".a::shadow span { background: green}"), RuleSetInvalidationFullRecalc);
 }
 
 } // namespace blink
