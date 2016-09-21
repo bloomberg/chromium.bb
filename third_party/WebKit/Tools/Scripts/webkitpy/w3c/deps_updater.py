@@ -292,12 +292,7 @@ class DepsUpdater(object):
         Returns:
             True if successfully committed, False otherwise.
         """
-        self.print_('## Uploading change list.')
-        cc_list = self.get_directory_owners_to_cc()
-        self.git_cl.run([
-            'upload', '-f', '--rietveld',
-            '-m', 'W3C auto test import CL.\n\nTBR=qyearsley@chromium.org',
-        ] + ['--cc=' + email for email in cc_list])
+        self._upload_cl()
 
         # First try: if there are failures, update expectations.
         self.print_('## Triggering try jobs.')
@@ -323,6 +318,19 @@ class DepsUpdater(object):
             return False
         self.print_('## Update completed.')
         return True
+
+    def _upload_cl(self):
+        self.print_('## Uploading change list.')
+        cc_list = self.get_directory_owners_to_cc()
+        last_commit_message = self.check_run(['git', 'log', '-1', '--format=%B'])
+        commit_message = last_commit_message + 'TBR=qyearsley@chromium.org'
+        self.git_cl.run([
+            'upload',
+            '-f',
+            '--rietveld',
+            '-m',
+            commit_message,
+        ] + ['--cc=' + email for email in cc_list])
 
     def get_directory_owners_to_cc(self):
         """Returns a list of email addresses to CC for the current import."""
@@ -369,6 +377,6 @@ class DepsUpdater(object):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
         self.run([self.host.executable, script_path, '--verbose'])
-        message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
+        message = 'Modify TestExpectations or download new baselines for tests.'
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.git_cl.run(['upload', '-m', message, '--rietveld'])
