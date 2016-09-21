@@ -95,6 +95,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
   // The protocol that is negotiated.
   NextProto negotiated_protocol_;
+  // Connect timing information for this stream. Populated when headers are
+  // received.
+  LoadTimingInfo::ConnectTiming connect_timing_;
+
   // User provided read buffer for ReadData() response.
   scoped_refptr<IOBuffer> read_buffer_;
   int read_buffer_len_;
@@ -109,6 +113,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   // After |stream_| has been closed, this keeps track of the total number of
   // bytes sent over the network for |stream_| while it was open.
   int64_t closed_stream_sent_bytes_;
+  // True if the stream is the first stream negotiated on the session. Set when
+  // the stream was closed. If |stream_| is failed to be created, this takes on
+  // the default value of false.
+  bool closed_is_first_stream_;
   // Indicates whether initial headers have been sent.
   bool has_sent_headers_;
   // Indicates whether initial headers have been received.

@@ -32,6 +32,7 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       headers_bytes_sent_(0),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
+      closed_is_first_stream_(false),
       has_sent_headers_(false),
       has_received_headers_(false),
       send_request_headers_automatically_(true),
@@ -217,7 +218,15 @@ int64_t BidirectionalStreamQuicImpl::GetTotalSentBytes() const {
 
 bool BidirectionalStreamQuicImpl::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  // TODO(xunjieli): implement this crbug.com/648346.
+  bool is_first_stream = closed_is_first_stream_;
+  if (stream_)
+    is_first_stream = stream_->IsFirstStream();
+  if (is_first_stream) {
+    load_timing_info->socket_reused = false;
+    load_timing_info->connect_timing = connect_timing_;
+  } else {
+    load_timing_info->socket_reused = true;
+  }
   return true;
 }
 
@@ -228,6 +237,7 @@ void BidirectionalStreamQuicImpl::OnHeadersAvailable(
   negotiated_protocol_ = kProtoQUIC1SPDY3;
   if (!has_received_headers_) {
     has_received_headers_ = true;
+    connect_timing_ = session_->GetConnectTiming();
     if (delegate_)
       delegate_->OnHeadersReceived(headers);
   } else {
@@ -347,6 +357,7 @@ void BidirectionalStreamQuicImpl::ResetStream() {
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
   closed_stream_sent_bytes_ = stream_->stream_bytes_written();
+  closed_is_first_stream_ = stream_->IsFirstStream();
   stream_->SetDelegate(nullptr);
   stream_ = nullptr;
 }
