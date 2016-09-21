@@ -67,6 +67,8 @@ constexpr int kEnableQuietModeDay = 2;
 
 constexpr int kMaximumSmallIconCount = 3;
 
+constexpr gfx::Size kTrayItemInnerIconSize(16, 16);
+constexpr gfx::Size kTrayItemInnerBellIconSizeNonMd(18, 18);
 constexpr gfx::Size kTrayItemOuterSize(26, 26);
 constexpr gfx::Insets kTrayItemInsets(3, 3);
 
@@ -240,11 +242,13 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
 class WebNotificationImage : public WebNotificationItem {
  public:
   WebNotificationImage(const gfx::ImageSkia& image,
+                       const gfx::Size& size,
                        gfx::AnimationContainer* container,
                        WebNotificationTray* tray)
       : WebNotificationItem(container, tray) {
     view_ = new views::ImageView();
     view_->SetImage(image);
+    view_->SetImageSize(size);
     AddChildView(view_);
   }
 
@@ -302,12 +306,15 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   DCHECK(status_area_window_);
   DCHECK(system_tray_);
 
+  const bool md_shelf = MaterialDesignController::IsShelfMaterial();
   gfx::ImageSkia bell_image =
-      MaterialDesignController::IsShelfMaterial()
+      md_shelf
           ? CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor)
           : CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS,
                              kNoUnreadIconSize, kWebNotificationColorNoUnread);
-  bell_icon_.reset(new WebNotificationImage(bell_image,
+  const gfx::Size bell_icon_size =
+      md_shelf ? kTrayItemInnerIconSize : kTrayItemInnerBellIconSizeNonMd;
+  bell_icon_.reset(new WebNotificationImage(bell_image, bell_icon_size,
                                             animation_container_.get(), this));
   tray_container()->AddChildView(bell_icon_.get());
 
@@ -592,8 +599,9 @@ void WebNotificationTray::UpdateTrayContent() {
     if (visible_small_icons_.count(notification->id()) != 0)
       continue;
 
-    auto* item = new WebNotificationImage(image.AsImageSkia(),
-                                          animation_container_.get(), this);
+    auto* item =
+        new WebNotificationImage(image.AsImageSkia(), kTrayItemInnerIconSize,
+                                 animation_container_.get(), this);
     visible_small_icons_.insert(std::make_pair(notification->id(), item));
 
     tray_container()->AddChildViewAt(item, 0);
