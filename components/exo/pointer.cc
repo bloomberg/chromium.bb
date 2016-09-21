@@ -72,6 +72,9 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   if (!focus_)
     return;
 
+  if (!widget_)
+    CreatePointerWidget();
+
   // If surface is different than the current pointer surface then remove the
   // current surface and add the new surface.
   if (surface != surface_) {
