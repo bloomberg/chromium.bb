@@ -67,6 +67,12 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
                       const JavaParamRef<jstring>& jdownload_guid,
                       bool is_off_the_record);
 
+  // Returns whether or not the given download can be opened by the browser.
+  bool IsDownloadOpenableInBrowser(JNIEnv* env,
+                                   jobject obj,
+                                   const JavaParamRef<jstring>& jdownload_guid,
+                                   bool is_off_the_record);
+
   // Called to request that the DownloadManagerService return data about all
   // downloads in the user's history.
   void GetAllDownloads(JNIEnv* env,

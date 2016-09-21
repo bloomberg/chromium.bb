@@ -33,6 +33,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     private static final String SAMPLE_URL = "https://www.google.com";
 
     private final boolean mShowShare;
+    private final boolean mIsMediaViewer;
+
     private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
     private final AsyncTask<Void, Void, String> mDefaultBrowserFetcher;
@@ -43,10 +45,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
-            List<String> menuEntries, boolean showShare, final boolean isOpenedByChrome) {
+            List<String> menuEntries, boolean showShare, final boolean isOpenedByChrome,
+            final boolean isMediaViewer) {
         super(activity);
         mMenuEntries = menuEntries;
         mShowShare = showShare;
+        mIsMediaViewer = isMediaViewer;
 
         mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
             @Override
@@ -91,9 +95,15 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                         mActivity, menu.findItem(R.id.direct_share_menu_id));
             }
 
+            MenuItem iconRow = menu.findItem(R.id.icon_row_menu_id);
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             MenuItem readItLaterItem = menu.findItem(R.id.read_it_later_id);
-            if (ChromeFeatureList.isEnabled("ReadItLaterInMenu")) {
+            if (mIsMediaViewer) {
+                // Most of the menu items don't make sense when viewing media.
+                iconRow.setVisible(false);
+                openInChromeItem.setVisible(false);
+                readItLaterItem.setVisible(false);
+            } else if (ChromeFeatureList.isEnabled("ReadItLaterInMenu")) {
                 // In the read-it-later experiment, Chrome will be the only browser to open the link
                 openInChromeItem.setTitle(R.string.menu_open_in_chrome);
             } else {
@@ -130,7 +140,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
     @Override
     public int getFooterResourceId() {
-        return R.layout.powered_by_chrome_footer;
+        return mIsMediaViewer ? 0 : R.layout.powered_by_chrome_footer;
     }
 
     /**

@@ -352,7 +352,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     private DownloadItemWrapper createDownloadItemWrapper(
             DownloadItem item, boolean isOffTheRecord) {
-        return new DownloadItemWrapper(item, isOffTheRecord, mBackendProvider);
+        return new DownloadItemWrapper(item, isOffTheRecord, mBackendProvider, mParentComponent);
     }
 
     private OfflinePageItemWrapper createOfflinePageItemWrapper(OfflinePageDownloadItem item) {

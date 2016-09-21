@@ -8,9 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.StrictMode;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,7 +17,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,10 +26,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -41,7 +36,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.FadingShadow;
@@ -120,10 +114,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             mThumbnailProvider = null;
         }
     }
-
-    private static final String TAG = "download_ui";
-    private static final String DEFAULT_MIME_TYPE = "*/*";
-    private static final String MIME_TYPE_DELIMITER = "/";
 
     private static BackendProvider sProviderForTests;
 
@@ -376,117 +366,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     public Intent createShareIntent() {
         List<DownloadHistoryItemWrapper> selectedItems =
                 mBackendProvider.getSelectionDelegate().getSelectedItems();
-
-        Intent shareIntent = new Intent();
-        String intentAction;
-        ArrayList<Uri> itemUris = new ArrayList<Uri>();
-        StringBuilder offlinePagesString = new StringBuilder();
-        int selectedItemsFilterType = selectedItems.get(0).getFilterType();
-
-        String intentMimeType = "";
-        String[] intentMimeParts = {"", ""};
-
-        for (int i = 0; i < selectedItems.size(); i++) {
-            DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
-
-            if (wrappedItem instanceof OfflinePageItemWrapper) {
-                if (offlinePagesString.length() != 0) {
-                    offlinePagesString.append("\n");
-                }
-                offlinePagesString.append(wrappedItem.getUrl());
-            } else {
-                itemUris.add(getUriForItem(wrappedItem));
-            }
-
-            if (selectedItemsFilterType != wrappedItem.getFilterType()) {
-                selectedItemsFilterType = DownloadFilter.FILTER_ALL;
-            }
-
-            String mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
-
-            // If a mime type was not retrieved from the backend or could not be normalized,
-            // set the mime type to the default.
-            if (TextUtils.isEmpty(mimeType)) {
-                intentMimeType = DEFAULT_MIME_TYPE;
-                continue;
-            }
-
-            // If the intent mime type has not been set yet, set it to the mime type for this item.
-            if (TextUtils.isEmpty(intentMimeType)) {
-                intentMimeType = mimeType;
-                if (!TextUtils.isEmpty(intentMimeType)) {
-                    intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
-                    // Guard against invalid mime types.
-                    if (intentMimeParts.length != 2) intentMimeType = DEFAULT_MIME_TYPE;
-                }
-                continue;
-            }
-
-            // Either the mime type is already the default or it matches the current item's mime
-            // type. In either case, intentMimeType is already the correct value.
-            if (TextUtils.equals(intentMimeType, DEFAULT_MIME_TYPE)
-                    || TextUtils.equals(intentMimeType, mimeType)) {
-                continue;
-            }
-
-            String[] mimeParts = mimeType.split(MIME_TYPE_DELIMITER);
-            if (!TextUtils.equals(intentMimeParts[0], mimeParts[0])) {
-                // The top-level types don't match; fallback to the default mime type.
-                intentMimeType = DEFAULT_MIME_TYPE;
-            } else {
-                // The mime type should be {top-level type}/*
-                intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
-            }
-        }
-
-        // Use Action_SEND if there is only one downloaded item or only text to share.
-        if (itemUris.size() == 0 || (itemUris.size() == 1 && offlinePagesString.length() == 0)) {
-            intentAction = Intent.ACTION_SEND;
-        } else {
-            intentAction = Intent.ACTION_SEND_MULTIPLE;
-        }
-
-        if (itemUris.size() == 1 && offlinePagesString.length() == 0) {
-            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(selectedItems.get(0)));
-        } else {
-            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);
-        }
-
-        if (offlinePagesString.length() != 0) {
-            shareIntent.putExtra(Intent.EXTRA_TEXT, offlinePagesString.toString());
-        }
-
-        shareIntent.setAction(intentAction);
-        shareIntent.setType(intentMimeType);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        recordShareHistograms(selectedItems.size(), selectedItemsFilterType);
-
-        return shareIntent;
-    }
-
-    private Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
-        Uri uri = null;
-
-        // #getContentUriFromFile causes a disk read when it calls into FileProvider#getUriForFile.
-        // Obtaining a content URI is on the critical path for creating a share intent after the
-        // user taps on the share button, so even if we were to run this method on a background
-        // thread we would have to wait. As it depends on user-selected items, we cannot
-        // know/preload which URIs we need until the user presses share.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            // Try to obtain a content:// URI, which is preferred to a file:/// URI so that
-            // receiving apps don't attempt to determine the file's mime type (which often fails).
-            uri = ContentUriUtils.getContentUriFromFile(mActivity.getApplicationContext(),
-                    itemWrapper.getFile());
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Could not create content uri: " + e);
-        }
-        StrictMode.setThreadPolicy(oldPolicy);
-
-        if (uri == null) uri = Uri.fromFile(itemWrapper.getFile());
-
-        return uri;
+        return DownloadUtils.createShareIntent(selectedItems);
     }
 
     private void deleteSelectedItems() {
@@ -545,14 +425,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             public void onDrawerStateChanged(int newState) {
             }
         });
-    }
-
-    private void recordShareHistograms(int count, int filterType) {
-        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
-                filterType, DownloadFilter.FILTER_BOUNDARY);
-
-        RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
-                count, 1, 20, 20);
     }
 
     /** Returns the {@link DownloadManagerToolbar}. */

@@ -78,6 +78,11 @@ public class StubbedProvider implements BackendProvider {
                 }
             });
         }
+
+        @Override
+        public boolean isDownloadOpenableInBrowser(String guid, boolean isOffTheRecord) {
+            return false;
+        }
     }
 
     /** Stubs out the OfflinePageDownloadBridge. */

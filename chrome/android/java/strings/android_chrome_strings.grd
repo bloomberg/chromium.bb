@@ -1660,13 +1660,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Cancel
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
-        Download complete.
+        Download complete
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
-        Download failed.
+        Download failed
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSED" desc="Download notification to be displayed when a download pauses.">
-        Download paused.
+        Download paused
       </message>
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can't open file
@@ -1793,6 +1793,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_EMPTY" desc="Indicates that there are no downloaded items.">
         No downloads here
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_VIEW_EXTERNALLY" desc="Menu item to open an item externally.">
+        Open externally
       </message>
 
       <!-- Document mode messages -->

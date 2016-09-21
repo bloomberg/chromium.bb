@@ -56,6 +56,10 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_IS_OPENED_BY_CHROME =
             "org.chromium.chrome.browser.customtabs.IS_OPENED_BY_CHROME";
 
+    /** Indicates that the Custom Tab should style itself as a media viewer. */
+    public static final String EXTRA_IS_MEDIA_VIEWER =
+            "org.chromium.chrome.browser.customtabs.IS_MEDIA_VIEWER";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
     private static final String ANIMATION_BUNDLE_PREFIX =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? "android:activity." : "android:";
@@ -64,9 +68,12 @@ public class CustomTabIntentDataProvider {
             ANIMATION_BUNDLE_PREFIX + "animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
             ANIMATION_BUNDLE_PREFIX + "animExitRes";
+
     private final CustomTabsSessionToken mSession;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
+    private final boolean mIsMediaViewer;
+
     private int mToolbarColor;
     private int mBottomBarColor;
     private boolean mEnableUrlBarHiding;
@@ -140,6 +147,8 @@ public class CustomTabIntentDataProvider {
                 CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
         mRemoteViewsPendingIntent = IntentUtils.safeGetParcelableExtra(intent,
                 CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
+        mIsMediaViewer = IntentHandler.isIntentChromeOrFirstParty(intent, context)
+                && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_MEDIA_VIEWER, false);
     }
 
     /**
@@ -413,6 +422,13 @@ public class CustomTabIntentDataProvider {
      */
     boolean isOpenedByChrome() {
         return mIsOpenedByChrome;
+    }
+
+    /**
+     * @return See {@link #EXTRA_IS_MEDIA_VIEWER}.
+     */
+    boolean isMediaViewer() {
+        return mIsMediaViewer;
     }
 
     /**

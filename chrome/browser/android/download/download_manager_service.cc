@@ -14,6 +14,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "jni/DownloadManagerService_jni.h"
@@ -124,6 +125,23 @@ void DownloadManagerService::RemoveDownload(
     RemoveDownloadInternal(download_guid, is_off_the_record);
   else
     EnqueueDownloadAction(download_guid, REMOVE);
+}
+
+bool DownloadManagerService::IsDownloadOpenableInBrowser(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
+    return false;
+
+  content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  if (!item)
+    return false;
+
+  return mime_util::IsSupportedMimeType(item->GetMimeType());
 }
 
 void DownloadManagerService::GetAllDownloads(JNIEnv* env,
