@@ -44,6 +44,10 @@ TEST(NGConstraintSpaceTest, WritingMode) {
   EXPECT_EQ(FragmentNone, vert_space->BlockFragmentationType());
 }
 
+static String OpportunityToString(const NGConstraintSpace* opportunity) {
+  return opportunity ? opportunity->ToString() : String("(null)");
+}
+
 TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
@@ -55,16 +59,11 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   bool for_inline_or_bfc = true;
   auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
 
-  const NGConstraintSpace* firstOpportunity = iterator->Next();
-  EXPECT_NE(nullptr, firstOpportunity);
-  EXPECT_EQ(LayoutUnit(600), firstOpportunity->Size().inline_size);
-  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
-
-  const NGConstraintSpace* secondOpportunity = iterator->Next();
-  EXPECT_EQ(nullptr, secondOpportunity);
+  EXPECT_EQ("0,0 600x400", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("(null)", OpportunityToString(iterator->Next()));
 }
 
-TEST(NGConstraintSpaceTest, LayoutOpportunitiesOneExclusion) {
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   NGPhysicalSize physical_size;
   physical_size.width = LayoutUnit(600);
   physical_size.height = LayoutUnit(400);
@@ -80,15 +79,102 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesOneExclusion) {
   auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
 
   // First opportunity should be to the left of the exclusion.
-  const NGConstraintSpace* firstOpportunity = iterator->Next();
-  EXPECT_NE(nullptr, firstOpportunity);
-  EXPECT_EQ(LayoutUnit(0), firstOpportunity->Offset().inline_offset);
-  EXPECT_EQ(LayoutUnit(0), firstOpportunity->Offset().block_offset);
-  EXPECT_EQ(LayoutUnit(500), firstOpportunity->Size().inline_size);
-  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
+  EXPECT_EQ("0,0 500x400", OpportunityToString(iterator->Next()));
 
-  const NGConstraintSpace* secondOpportunity = iterator->Next();
-  EXPECT_EQ(nullptr, secondOpportunity);
+  // Second opportunity should be below the exclusion.
+  EXPECT_EQ("0,100 600x300", OpportunityToString(iterator->Next()));
+
+  // There should be no third opportunity.
+  EXPECT_EQ("(null)", OpportunityToString(iterator->Next()));
+}
+
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+
+  // Add a 100x100 exclusion in the top left corner.
+  physical_space->AddExclusion(NGExclusion(LayoutUnit(0), LayoutUnit(100),
+                                           LayoutUnit(100), LayoutUnit(0)));
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+  bool for_inline_or_bfc = true;
+  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+
+  // First opportunity should be to the right of the exclusion.
+  EXPECT_EQ("100,0 500x400", OpportunityToString(iterator->Next()));
+
+  // Second opportunity should be below the exclusion.
+  EXPECT_EQ("0,100 600x300", OpportunityToString(iterator->Next()));
+
+  // There should be no third opportunity.
+  EXPECT_EQ("(null)", OpportunityToString(iterator->Next()));
+}
+
+//         100  200  300  400  500
+//     +----|----|----|----|----|----+
+//  50 |                             |
+// 100 |                             |
+// 150 |                             |
+// 200 |       **********            |
+// 250 |       **********            |
+// 300 |                             |
+// 350 |                        ***  |
+//     +-----------------------------+
+TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+
+  // Add a 200x100 exclusion at 150x200
+  physical_space->AddExclusion(NGExclusion(LayoutUnit(200), LayoutUnit(250),
+                                           LayoutUnit(300), LayoutUnit(150)));
+  // Add a 50x50 exclusion at 500x350
+  physical_space->AddExclusion(NGExclusion(LayoutUnit(350), LayoutUnit(550),
+                                           LayoutUnit(400), LayoutUnit(500)));
+
+  auto* space =
+      new NGConstraintSpace(HorizontalTopBottom, LeftToRight, physical_space);
+  bool for_inline_or_bfc = true;
+  auto* iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+
+  // First opportunity should be above the first exclusion.
+  EXPECT_EQ("0,0 600x200", OpportunityToString(iterator->Next()));
+
+  // Second opportunity should be full height to the left.
+  EXPECT_EQ("0,0 150x400", OpportunityToString(iterator->Next()));
+
+  // Third opportunity should be to the left of the first exclusion. This is a
+  // subset of the second opportunity but has a different location and might
+  // have a different alignment.
+  EXPECT_EQ("0,200 150x200", OpportunityToString(iterator->Next()));
+
+  // Fourth opportunity should be to the right of the first exclusion extending
+  // down until the top of the second exclusion.
+  EXPECT_EQ("250,200 350x150", OpportunityToString(iterator->Next()));
+
+  // Fifth opportunity should be to the right of the first exclusion until the
+  // left edge of the second exclusion and extending all the way down.
+  EXPECT_EQ("250,200 250x200", OpportunityToString(iterator->Next()));
+
+  // Sixth opportunity should be below first exclusion with full width.
+  EXPECT_EQ("0,300 600x50", OpportunityToString(iterator->Next()));
+
+  // Seventh opportunity should be below first exclusion until the left edge of
+  // the second exclusion extending all the way down.
+  EXPECT_EQ("0,300 500x100", OpportunityToString(iterator->Next()));
+
+  // Eight exclusion should be to the left of the last exclusion.
+  EXPECT_EQ("0,350 500x50", OpportunityToString(iterator->Next()));
+
+  // Ninth exclusion should be to the right of the last exclusion.
+  EXPECT_EQ("550,350 50x50", OpportunityToString(iterator->Next()));
+
+  // There should be no tenth opportunity.
+  EXPECT_EQ("(null)", OpportunityToString(iterator->Next()));
 }
 
 }  // namespace

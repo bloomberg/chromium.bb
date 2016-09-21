@@ -172,8 +172,10 @@ void NGConstraintSpace::SetFragmentationType(NGFragmentationType type) {
   }
 }
 
-String NGConstraintSpace::toString() const {
-  return String::format("Size: %s, %s",
+String NGConstraintSpace::ToString() const {
+  return String::format("%s,%s %sx%s",
+                        offset_.inline_offset.toString().ascii().data(),
+                        offset_.block_offset.toString().ascii().data(),
                         size_.inline_size.toString().ascii().data(),
                         size_.block_size.toString().ascii().data());
 }

@@ -41,12 +41,12 @@ struct NGExclusion {
   LayoutUnit Right() const { return rect.size.width + rect.location.left; }
   LayoutUnit Bottom() const { return rect.size.height + rect.location.top; }
   LayoutUnit Left() const { return rect.location.left; }
-  String toString() const {
-    return String::format(
-        "Exclusion: %0.2f, %0.2f, size: %0.2f, %0.2f (right %0.2f)",
-        rect.location.left.toFloat(), rect.location.top.toFloat(),
-        rect.size.width.toFloat(), rect.size.height.toFloat(),
-        Right().toFloat());
+  String ToString() const {
+    return String::format("%s,%s %sx%s",
+                          rect.location.left.toString().ascii().data(),
+                          rect.location.top.toString().ascii().data(),
+                          rect.size.width.toString().ascii().data(),
+                          rect.size.height.toString().ascii().data());
   }
   NGPhysicalRect rect;
 };

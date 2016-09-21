@@ -120,7 +120,7 @@ class CORE_EXPORT NGConstraintSpace final
   void SetFixedSize(bool inlineFixed, bool blockFixed);
   void SetFragmentationType(NGFragmentationType);
 
-  String toString() const;
+  String ToString() const;
 
  private:
   Member<NGPhysicalConstraintSpace> physical_space_;
@@ -132,7 +132,7 @@ class CORE_EXPORT NGConstraintSpace final
 
 inline std::ostream& operator<<(std::ostream& stream,
                                 const NGConstraintSpace& value) {
-  return stream << value.toString();
+  return stream << value.ToString();
 }
 
 }  // namespace blink

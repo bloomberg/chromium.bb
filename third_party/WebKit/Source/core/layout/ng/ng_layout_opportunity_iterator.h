@@ -29,8 +29,13 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   }
 
  private:
-  void computeForExclusion(unsigned index);
-  LayoutUnit heightForOpportunity(LayoutUnit left,
+  void FilterExclusions();
+  bool NextPosition();
+  bool IsValidPosition();
+  void FilterForPosition(Vector<NGExclusion>&);
+  void ComputeOpportunitiesForPosition();
+  LayoutUnit heightForOpportunity(const Vector<NGExclusion>&,
+                                  LayoutUnit left,
                                   LayoutUnit top,
                                   LayoutUnit right,
                                   LayoutUnit bottom);
@@ -44,7 +49,9 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   bool for_inline_or_bfc_;
   Vector<NGExclusion> filtered_exclusions_;
   HeapVector<Member<NGConstraintSpace>> current_opportunities_;
-  unsigned current_exclusion_idx_;
+
+  LayoutUnit current_x_;
+  LayoutUnit current_y_;
 };
 
 }  // namespace blink
