@@ -51,6 +51,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
@@ -73,6 +74,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 #include <memory>
@@ -233,6 +235,7 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
     updateTransform(layoutObject()->styleRef());
     updateFilters(layoutObject()->styleRef());
     updateBackdropFilters(layoutObject()->styleRef());
+    updateStickyConstraints(layoutObject()->styleRef());
     updateLayerBlendMode(layoutObject()->styleRef());
     updateIsRootForIsolatedGroup();
 }
@@ -281,6 +284,38 @@ void CompositedLayerMapping::updateFilters(const ComputedStyle& style)
 void CompositedLayerMapping::updateBackdropFilters(const ComputedStyle& style)
 {
     m_graphicsLayer->setBackdropFilters(owningLayer().createCompositorFilterOperationsForBackdropFilter(style));
+}
+
+void CompositedLayerMapping::updateStickyConstraints(const ComputedStyle& style)
+{
+    bool sticky = style.position() == EPosition::StickyPosition;
+    const PaintLayer* ancestorOverflowLayer = m_owningLayer.ancestorOverflowLayer();
+    // TODO(flackr): Do we still need this?
+    if (sticky) {
+        if (!ancestorOverflowLayer->isRootLayer()) {
+            sticky = ancestorOverflowLayer->needsCompositedScrolling();
+        } else {
+            sticky = layoutObject()->view()->frameView()->isScrollable();
+        }
+    }
+
+    WebLayerStickyPositionConstraint webConstraint;
+    if (sticky) {
+        const StickyPositionScrollingConstraints& constraints = ancestorOverflowLayer->getScrollableArea()->stickyConstraintsMap().get(&m_owningLayer);
+        webConstraint.isSticky = true;
+        webConstraint.isAnchoredLeft = constraints.anchorEdges() & StickyPositionScrollingConstraints::AnchorEdgeLeft;
+        webConstraint.isAnchoredRight = constraints.anchorEdges() & StickyPositionScrollingConstraints::AnchorEdgeRight;
+        webConstraint.isAnchoredTop = constraints.anchorEdges() & StickyPositionScrollingConstraints::AnchorEdgeTop;
+        webConstraint.isAnchoredBottom = constraints.anchorEdges() & StickyPositionScrollingConstraints::AnchorEdgeBottom;
+        webConstraint.leftOffset = constraints.leftOffset();
+        webConstraint.rightOffset = constraints.rightOffset();
+        webConstraint.topOffset = constraints.topOffset();
+        webConstraint.bottomOffset = constraints.bottomOffset();
+        webConstraint.scrollContainerRelativeStickyBoxRect = enclosingIntRect(constraints.scrollContainerRelativeStickyBoxRect());
+        webConstraint.scrollContainerRelativeContainingBlockRect = enclosingIntRect(constraints.scrollContainerRelativeContainingBlockRect());
+    }
+
+    m_graphicsLayer->setStickyPositionConstraint(webConstraint);
 }
 
 void CompositedLayerMapping::updateLayerBlendMode(const ComputedStyle& style)
@@ -748,6 +783,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
 
     if (!layoutObject()->style()->isRunningBackdropFilterAnimationOnCompositor())
         updateBackdropFilters(layoutObject()->styleRef());
+
+    updateStickyConstraints(layoutObject()->styleRef());
 
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;

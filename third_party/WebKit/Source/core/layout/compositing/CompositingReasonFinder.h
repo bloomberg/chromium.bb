@@ -38,7 +38,7 @@ private:
     CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForPositionFixed(const PaintLayer*) const;
+    bool requiresCompositingForScrollDependentPosition(const PaintLayer*) const;
 
     LayoutView& m_layoutView;
     CompositingTriggerFlags m_compositingTriggers;

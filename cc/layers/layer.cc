@@ -611,6 +611,15 @@ void Layer::SetPosition(const gfx::PointF& position) {
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
     transform_node->update_post_local_transform(position, transform_origin());
+    if (transform_node->sticky_position_constraint_id >= 0) {
+      StickyPositionNodeData* sticky_data =
+          property_trees->transform_tree.StickyPositionData(
+              transform_tree_index());
+      sticky_data->main_thread_offset =
+          position.OffsetFromOrigin() -
+          sticky_data->constraints.scroll_container_relative_sticky_box_rect
+              .OffsetFromOrigin();
+    }
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
     layer_tree_->property_trees()->transform_tree.set_needs_update(true);
@@ -1106,6 +1115,15 @@ void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
   if (inputs_.position_constraint == constraint)
     return;
   inputs_.position_constraint = constraint;
+  SetNeedsCommit();
+}
+
+void Layer::SetStickyPositionConstraint(
+    const LayerStickyPositionConstraint& constraint) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.sticky_position_constraint == constraint)
+    return;
+  inputs_.sticky_position_constraint = constraint;
   SetNeedsCommit();
 }
 

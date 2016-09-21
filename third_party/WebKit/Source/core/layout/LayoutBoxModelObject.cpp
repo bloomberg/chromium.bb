@@ -353,7 +353,6 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 
         if (newStyleIsSticky != oldStyleIsSticky) {
             if (newStyleIsSticky) {
-                frameView->addStickyPositionObject();
                 // During compositing inputs update we'll have the scroll
                 // ancestor without having to walk up the tree and can compute
                 // the sticky position constraints then.
@@ -367,7 +366,6 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
                 // This may get re-added to viewport constrained objects if the object went
                 // from sticky to fixed.
                 frameView->removeViewportConstrainedObject(this);
-                frameView->removeStickyPositionObject();
 
                 // Remove sticky constraints for this layer.
                 if (layer()) {

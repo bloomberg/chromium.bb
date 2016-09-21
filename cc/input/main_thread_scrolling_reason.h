@@ -28,7 +28,6 @@ struct MainThreadScrollingReason {
   // animation. Note that a scroll handled by the main thread can result in an
   // animation running on the main thread or on the compositor thread.
   enum : uint32_t { kHandlingScrollFromMainThread = 1 << 13 };
-  enum : uint32_t { kHasStickyPositionObjects = 1 << 14 };
   enum : uint32_t { kCustomScrollbarScrolling = 1 << 15 };
 
   // Transient scrolling reasons. These are computed for each scroll begin.
@@ -51,7 +50,7 @@ struct MainThreadScrollingReason {
         kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
-        kHasStickyPositionObjects | kCustomScrollbarScrolling;
+        kCustomScrollbarScrolling;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -94,8 +93,6 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Page overlay");
     if (reasons & MainThreadScrollingReason::kHandlingScrollFromMainThread)
       tracedValue->AppendString("Handling scroll from main thread");
-    if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
-      tracedValue->AppendString("Has sticky position objects");
     if (reasons & MainThreadScrollingReason::kCustomScrollbarScrolling)
       tracedValue->AppendString("Custom scrollbar scrolling");
 

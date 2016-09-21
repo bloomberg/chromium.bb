@@ -192,6 +192,8 @@ public:
     void updateFilters(const ComputedStyle&);
     void updateBackdropFilters(const ComputedStyle&);
 
+    void updateStickyConstraints(const ComputedStyle&);
+
     void setBlendMode(WebBlendMode);
 
     bool needsGraphicsLayerUpdate() { return m_pendingUpdateScope > GraphicsLayerUpdateNone; }

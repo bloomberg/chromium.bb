@@ -39,6 +39,7 @@ proto_library("proto_internal") {
     "layer.proto",
     "layer_position_constraint.proto",
     "layer_selection_bound.proto",
+    "layer_sticky_position_constraint.proto",
     "layer_tree.proto",
     "layer_tree_debug_state.proto",
     "layer_tree_host.proto",

@@ -15,6 +15,7 @@ TransformNode::TransformNode()
     : id(-1),
       parent_id(-1),
       owner_id(-1),
+      sticky_position_constraint_id(-1),
       source_node_id(-1),
       sorting_context_id(0),
       needs_local_transform_update(true),

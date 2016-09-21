@@ -25,6 +25,7 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
+#include "third_party/WebKit/public/platform/WebLayerStickyPositionConstraint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -361,6 +362,53 @@ void WebLayerImpl::setPositionConstraint(
 
 blink::WebLayerPositionConstraint WebLayerImpl::positionConstraint() const {
   return ToWebLayerPositionConstraint(layer_->position_constraint());
+}
+
+static blink::WebLayerStickyPositionConstraint
+ToWebLayerStickyPositionConstraint(
+    const cc::LayerStickyPositionConstraint& constraint) {
+  blink::WebLayerStickyPositionConstraint web_constraint;
+  web_constraint.isSticky = constraint.is_sticky;
+  web_constraint.isAnchoredLeft = constraint.is_anchored_left;
+  web_constraint.isAnchoredRight = constraint.is_anchored_right;
+  web_constraint.isAnchoredTop = constraint.is_anchored_top;
+  web_constraint.isAnchoredBottom = constraint.is_anchored_bottom;
+  web_constraint.leftOffset = constraint.left_offset;
+  web_constraint.rightOffset = constraint.right_offset;
+  web_constraint.topOffset = constraint.top_offset;
+  web_constraint.bottomOffset = constraint.bottom_offset;
+  web_constraint.scrollContainerRelativeStickyBoxRect =
+      constraint.scroll_container_relative_sticky_box_rect;
+  web_constraint.scrollContainerRelativeContainingBlockRect =
+      constraint.scroll_container_relative_containing_block_rect;
+  return web_constraint;
+}
+static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
+    const blink::WebLayerStickyPositionConstraint& web_constraint) {
+  cc::LayerStickyPositionConstraint constraint;
+  constraint.is_sticky = web_constraint.isSticky;
+  constraint.is_anchored_left = web_constraint.isAnchoredLeft;
+  constraint.is_anchored_right = web_constraint.isAnchoredRight;
+  constraint.is_anchored_top = web_constraint.isAnchoredTop;
+  constraint.is_anchored_bottom = web_constraint.isAnchoredBottom;
+  constraint.left_offset = web_constraint.leftOffset;
+  constraint.right_offset = web_constraint.rightOffset;
+  constraint.top_offset = web_constraint.topOffset;
+  constraint.bottom_offset = web_constraint.bottomOffset;
+  constraint.scroll_container_relative_sticky_box_rect =
+      web_constraint.scrollContainerRelativeStickyBoxRect;
+  constraint.scroll_container_relative_containing_block_rect =
+      web_constraint.scrollContainerRelativeContainingBlockRect;
+  return constraint;
+}
+void WebLayerImpl::setStickyPositionConstraint(
+    const blink::WebLayerStickyPositionConstraint& constraint) {
+  layer_->SetStickyPositionConstraint(ToStickyPositionConstraint(constraint));
+}
+blink::WebLayerStickyPositionConstraint WebLayerImpl::stickyPositionConstraint()
+    const {
+  return ToWebLayerStickyPositionConstraint(
+      layer_->sticky_position_constraint());
 }
 
 void WebLayerImpl::setScrollClient(blink::WebLayerScrollClient* scroll_client) {

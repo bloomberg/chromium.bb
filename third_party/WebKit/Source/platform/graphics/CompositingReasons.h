@@ -23,7 +23,7 @@ const uint64_t CompositingReasonIFrame                                   = UINT6
 const uint64_t CompositingReasonBackfaceVisibilityHidden                 = UINT64_C(1) << 5;
 const uint64_t CompositingReasonActiveAnimation                          = UINT64_C(1) << 6;
 const uint64_t CompositingReasonTransitionProperty                       = UINT64_C(1) << 7;
-const uint64_t CompositingReasonPositionFixed                            = UINT64_C(1) << 8;
+const uint64_t CompositingReasonScrollDependentPosition                            = UINT64_C(1) << 8;
 const uint64_t CompositingReasonOverflowScrollingTouch                   = UINT64_C(1) << 9;
 const uint64_t CompositingReasonOverflowScrollingParent                  = UINT64_C(1) << 10;
 const uint64_t CompositingReasonOutOfFlowClipping                        = UINT64_C(1) << 11;
@@ -89,7 +89,7 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonBackfaceVisibilityHidden
     | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
-    | CompositingReasonPositionFixed
+    | CompositingReasonScrollDependentPosition
     | CompositingReasonOverflowScrollingTouch
     | CompositingReasonOverflowScrollingParent
     | CompositingReasonOutOfFlowClipping

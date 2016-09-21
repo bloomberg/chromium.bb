@@ -227,7 +227,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         directReasons |= CompositingReasonVideoOverlay;
 
     if (currentRecursionData.m_hasCompositedScrollingAncestor && layer->layoutObject()->styleRef().hasViewportConstrainedPosition())
-        directReasons |= CompositingReasonPositionFixed;
+        directReasons |= CompositingReasonScrollDependentPosition;
 
     bool canBeComposited = compositor->canBeComposited(layer);
     if (canBeComposited) {

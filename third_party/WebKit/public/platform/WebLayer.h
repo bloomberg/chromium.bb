@@ -53,6 +53,7 @@ namespace blink {
 class WebLayerScrollClient;
 struct WebFloatPoint;
 struct WebLayerPositionConstraint;
+struct WebLayerStickyPositionConstraint;
 
 class WebLayer {
 public:
@@ -187,6 +188,11 @@ public:
     // to adjust layer position during threaded scrolling.
     virtual void setPositionConstraint(const WebLayerPositionConstraint&) = 0;
     virtual WebLayerPositionConstraint positionConstraint() const = 0;
+
+    // Sets the sticky position constraint. This will be used to adjust sticky
+    // position objects during threaded scrolling.
+    virtual void setStickyPositionConstraint(const WebLayerStickyPositionConstraint&) = 0;
+    virtual WebLayerStickyPositionConstraint stickyPositionConstraint() const = 0;
 
     // The scroll client is notified when the scroll position of the WebLayer
     // changes. Only a single scroll client can be set for a WebLayer at a time.

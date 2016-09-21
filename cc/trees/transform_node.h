@@ -53,6 +53,10 @@ struct CC_EXPORT TransformNode {
 
   gfx::Transform to_parent;
 
+  // This is the node which defines the sticky position constraints for this
+  // transform node. -1 indicates there are no sticky position constraints.
+  int sticky_position_constraint_id;
+
   // This is the node with respect to which source_offset is defined. This will
   // not be needed once layerization moves to cc, but is needed in order to
   // efficiently update the transform tree for changes to position in the layer

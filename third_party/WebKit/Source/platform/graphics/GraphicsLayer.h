@@ -48,6 +48,7 @@
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerScrollClient.h"
+#include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Vector.h"
@@ -173,6 +174,8 @@ public:
 
     void setFilters(CompositorFilterOperations);
     void setBackdropFilters(CompositorFilterOperations);
+
+    void setStickyPositionConstraint(const WebLayerStickyPositionConstraint&);
 
     void setFilterQuality(SkFilterQuality);
 

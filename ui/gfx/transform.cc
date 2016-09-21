@@ -175,8 +175,16 @@ void Transform::Scale3d(SkMScalar x, SkMScalar y, SkMScalar z) {
   matrix_.preScale(x, y, z);
 }
 
+void Transform::Translate(const Vector2dF& offset) {
+  Translate(offset.x(), offset.y());
+}
+
 void Transform::Translate(SkMScalar x, SkMScalar y) {
   matrix_.preTranslate(x, y, 0);
+}
+
+void Transform::Translate3d(const Vector3dF& offset) {
+  Translate3d(offset.x(), offset.y(), offset.z());
 }
 
 void Transform::Translate3d(SkMScalar x, SkMScalar y, SkMScalar z) {

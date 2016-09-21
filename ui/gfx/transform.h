@@ -96,7 +96,9 @@ class GFX_EXPORT Transform {
 
   // Applies the current transformation on a translation and assigns the result
   // to |this|.
+  void Translate(const Vector2dF& offset);
   void Translate(SkMScalar x, SkMScalar y);
+  void Translate3d(const Vector3dF& offset);
   void Translate3d(SkMScalar x, SkMScalar y, SkMScalar z);
 
   // Applies the current transformation on a skew and assigns the result

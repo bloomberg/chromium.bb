@@ -148,8 +148,9 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
             directReasons |= CompositingReasonOverflowScrollingParent;
     }
 
-    if (requiresCompositingForPositionFixed(layer))
-        directReasons |= CompositingReasonPositionFixed;
+    // TODO(flackr): Rename functions and variables to include sticky position (i.e. ScrollDependentPosition rather than PositionFixed).
+    if (requiresCompositingForScrollDependentPosition(layer))
+        directReasons |= CompositingReasonScrollDependentPosition;
 
     directReasons |= layoutObject->additionalCompositingReasons();
 
@@ -165,13 +166,15 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(const ComputedStyl
     return style.shouldCompositeForCurrentAnimations();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(const PaintLayer* layer) const
+bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(const PaintLayer* layer) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
-    return layer->scrollsWithViewport() && m_layoutView.frameView()->isScrollable();
+    if (layer->scrollsWithViewport())
+        return m_layoutView.frameView()->isScrollable();
+    return layer->layoutObject()->style()->position() == StickyPosition && layer->ancestorOverflowLayer()->scrollsOverflow();
 }
 
 } // namespace blink

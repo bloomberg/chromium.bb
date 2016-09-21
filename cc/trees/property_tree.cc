@@ -13,6 +13,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/proto/synced_property_conversions.h"
 #include "cc/trees/clip_node.h"
@@ -23,7 +24,6 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-
 namespace cc {
 
 template <typename T>
@@ -131,6 +131,20 @@ template class PropertyTree<ClipNode>;
 template class PropertyTree<EffectNode>;
 template class PropertyTree<ScrollNode>;
 
+void StickyPositionNodeData::ToProtobuf(
+    proto::StickyPositionNodeData* proto) const {
+  proto->set_scroll_ancestor(scroll_ancestor);
+  constraints.ToProtobuf(proto->mutable_constraints());
+  Vector2dFToProto(main_thread_offset, proto->mutable_main_thread_offset());
+}
+
+void StickyPositionNodeData::FromProtobuf(
+    const proto::StickyPositionNodeData& proto) {
+  scroll_ancestor = proto.scroll_ancestor();
+  constraints.FromProtobuf(proto.constraints());
+  main_thread_offset = ProtoToVector2dF(proto.main_thread_offset());
+}
+
 int TransformTree::Insert(const TransformNode& tree_node, int parent_id) {
   int node_id = PropertyTree<TransformNode>::Insert(tree_node, parent_id);
   DCHECK_EQ(node_id, static_cast<int>(cached_data_.size()));
@@ -149,6 +163,7 @@ void TransformTree::clear() {
   nodes_affected_by_outer_viewport_bounds_delta_.clear();
   cached_data_.clear();
   cached_data_.push_back(TransformCachedNodeData());
+  sticky_position_data_.clear();
 
 #if DCHECK_IS_ON()
   TransformTree tree;
@@ -250,10 +265,13 @@ void TransformTree::UpdateTransforms(int id) {
   TransformNode* target_node = Node(TargetId(id));
   TransformNode* source_node = Node(node->source_node_id);
   property_trees()->UpdateCachedNumber();
-  if (node->needs_local_transform_update || NeedsSourceToParentUpdate(node))
+  // TODO(flackr): Only dirty when scroll offset changes.
+  if (node->sticky_position_constraint_id >= 0 ||
+      node->needs_local_transform_update || NeedsSourceToParentUpdate(node)) {
     UpdateLocalTransform(node);
-  else
+  } else {
     UndoSnapping(node);
+  }
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSurfaceContentsScale(node);
   UpdateAnimationProperties(node, parent_node);
@@ -399,6 +417,86 @@ bool TransformTree::CombineInversesBetween(int source_id,
   return all_are_invertible;
 }
 
+gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
+  if (node->sticky_position_constraint_id == -1)
+    return gfx::Vector2dF();
+  const StickyPositionNodeData* sticky_data =
+      tree->StickyPositionData(node->id);
+  const LayerStickyPositionConstraint& constraint = sticky_data->constraints;
+  ScrollNode* scroll_node =
+      tree->property_trees()->scroll_tree.Node(sticky_data->scroll_ancestor);
+  gfx::ScrollOffset scroll_offset =
+      tree->property_trees()->scroll_tree.current_scroll_offset(
+          scroll_node->owner_id);
+
+  gfx::RectF clip(gfx::PointF(scroll_offset.x(), scroll_offset.y()),
+                  gfx::SizeF(scroll_node->scroll_clip_layer_bounds));
+  gfx::Vector2dF sticky_offset(
+      constraint.scroll_container_relative_sticky_box_rect.OffsetFromOrigin());
+  gfx::Vector2dF layer_offset(sticky_data->main_thread_offset);
+
+  // In each of the following cases, we measure the limit which is the point
+  // that the element should stick to, clamping on one side to 0 (because sticky
+  // only pushes elements in one direction). Then we clamp to how far we can
+  // push the element in that direction without being pushed outside of its
+  // containing block.
+  //
+  // Note: The order of applying the sticky constraints is applied such that
+  // left offset takes precedence over right offset, and top takes precedence
+  // over bottom offset.
+  if (constraint.is_anchored_right) {
+    float right_limit = clip.right() - constraint.right_offset;
+    float right_delta = std::min<float>(
+        0, right_limit -
+               constraint.scroll_container_relative_sticky_box_rect.right());
+    float available_space = std::min<float>(
+        0, constraint.scroll_container_relative_containing_block_rect.x() -
+               constraint.scroll_container_relative_sticky_box_rect.x());
+    if (right_delta < available_space)
+      right_delta = available_space;
+    sticky_offset.set_x(sticky_offset.x() + right_delta);
+  }
+  if (constraint.is_anchored_left) {
+    float left_limit = clip.x() + constraint.left_offset;
+    float left_delta = std::max<float>(
+        0,
+        left_limit - constraint.scroll_container_relative_sticky_box_rect.x());
+    float available_space = std::max<float>(
+        0, constraint.scroll_container_relative_containing_block_rect.right() -
+               constraint.scroll_container_relative_sticky_box_rect.right());
+    if (left_delta > available_space)
+      left_delta = available_space;
+    sticky_offset.set_x(sticky_offset.x() + left_delta);
+  }
+  if (constraint.is_anchored_bottom) {
+    float bottom_limit = clip.bottom() - constraint.bottom_offset;
+    float bottom_delta = std::min<float>(
+        0, bottom_limit -
+               constraint.scroll_container_relative_sticky_box_rect.bottom());
+    float available_space = std::min<float>(
+        0, constraint.scroll_container_relative_containing_block_rect.y() -
+               constraint.scroll_container_relative_sticky_box_rect.y());
+    if (bottom_delta < available_space)
+      bottom_delta = available_space;
+    sticky_offset.set_y(sticky_offset.y() + bottom_delta);
+  }
+  if (constraint.is_anchored_top) {
+    float top_limit = clip.y() + constraint.top_offset;
+    float top_delta = std::max<float>(
+        0,
+        top_limit - constraint.scroll_container_relative_sticky_box_rect.y());
+    float available_space = std::max<float>(
+        0, constraint.scroll_container_relative_containing_block_rect.bottom() -
+               constraint.scroll_container_relative_sticky_box_rect.bottom());
+    if (top_delta > available_space)
+      top_delta = available_space;
+    sticky_offset.set_y(sticky_offset.y() + top_delta);
+  }
+  return sticky_offset - layer_offset -
+         constraint.scroll_container_relative_sticky_box_rect
+             .OffsetFromOrigin();
+}
+
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
   gfx::Transform transform = node->post_local;
   if (NeedsSourceToParentUpdate(node)) {
@@ -448,8 +546,10 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
                           fixed_position_adjustment.x(),
                       node->source_to_parent.y() - node->scroll_offset.y() +
                           fixed_position_adjustment.y());
+  transform.Translate(StickyPositionOffset(this, node));
   transform.PreconcatTransform(node->local);
   transform.PreconcatTransform(node->pre_local);
+
   node->set_to_parent(transform);
   node->needs_local_transform_update = false;
 }
@@ -759,6 +859,15 @@ bool TransformTree::operator==(const TransformTree& other) const {
          cached_data_ == other.cached_data();
 }
 
+StickyPositionNodeData* TransformTree::StickyPositionData(int node_id) {
+  TransformNode* node = Node(node_id);
+  if (node->sticky_position_constraint_id == -1) {
+    node->sticky_position_constraint_id = sticky_position_data_.size();
+    sticky_position_data_.push_back(StickyPositionNodeData());
+  }
+  return &sticky_position_data_[node->sticky_position_constraint_id];
+}
+
 void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
   DCHECK(!proto->has_property_type());
   proto->set_property_type(proto::PropertyTree::Transform);
@@ -779,6 +888,9 @@ void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
 
   for (int i = 0; i < static_cast<int>(cached_data_.size()); ++i)
     cached_data_[i].ToProtobuf(data->add_cached_data());
+
+  for (int i = 0; i < static_cast<int>(sticky_position_data_.size()); ++i)
+    sticky_position_data_[i].ToProtobuf(data->add_sticky_position_data());
 }
 
 void TransformTree::FromProtobuf(
@@ -814,6 +926,12 @@ void TransformTree::FromProtobuf(
   for (int i = 1; i < data.cached_data_size(); ++i) {
     cached_data_.push_back(TransformCachedNodeData());
     cached_data_.back().FromProtobuf(data.cached_data(i));
+  }
+
+  DCHECK(static_cast<int>(sticky_position_data_.empty()));
+  for (int i = 0; i < data.sticky_position_data_size(); ++i) {
+    sticky_position_data_.push_back(StickyPositionNodeData());
+    sticky_position_data_.back().FromProtobuf(data.sticky_position_data(i));
   }
 }
 

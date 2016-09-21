@@ -5,6 +5,7 @@
 syntax = "proto2";
 
 import "element_id.proto";
+import "layer_sticky_position_constraint.proto";
 import "rectf.proto";
 import "scroll_offset.proto";
 import "size.proto";
@@ -66,6 +67,13 @@ message TransformCachedNodeData {
   optional Transform to_screen = 4;
   optional int64 target_id = 5;
   optional int64 content_target_id = 6;
+}
+
+// Proto for StickyPositionNodeData
+message StickyPositionNodeData {
+  optional int64 scroll_ancestor = 1;
+  optional LayerStickyPositionConstraint constraints = 2;
+  optional Vector2dF main_thread_offset = 3;
 }
 
 // Proto for struct ClipNodeData.
@@ -199,6 +207,7 @@ message TransformTreeData {
   repeated int64 nodes_affected_by_outer_viewport_bounds_delta = 8
       [packed = true];
   repeated TransformCachedNodeData cached_data = 9;
+  repeated StickyPositionNodeData sticky_position_data = 10;
 }
 
 // Proto for data members of class EffectTree.

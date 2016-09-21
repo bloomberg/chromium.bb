@@ -200,6 +200,7 @@ source_set("blink_headers") {
     "platform/WebLayer.h",
     "platform/WebLayerPositionConstraint.h",
     "platform/WebLayerScrollClient.h",
+    "platform/WebLayerStickyPositionConstraint.h",
     "platform/WebLayerTreeView.h",
     "platform/WebLayoutAndPaintAsyncCallback.h",
     "platform/WebLocalizedString.h",

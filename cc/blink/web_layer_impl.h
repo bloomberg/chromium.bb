@@ -124,6 +124,10 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void setPositionConstraint(
       const blink::WebLayerPositionConstraint& constraint) override;
   blink::WebLayerPositionConstraint positionConstraint() const override;
+  void setStickyPositionConstraint(
+      const blink::WebLayerStickyPositionConstraint& constraint) override;
+  blink::WebLayerStickyPositionConstraint stickyPositionConstraint()
+      const override;
   void setScrollClient(blink::WebLayerScrollClient* client) override;
   void setLayerClient(cc::LayerClient* client) override;
   const cc::Layer* ccLayer() const override;

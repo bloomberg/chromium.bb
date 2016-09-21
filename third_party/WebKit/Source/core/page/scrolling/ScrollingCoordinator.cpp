@@ -1037,8 +1037,6 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 
         if (frameView->hasBackgroundAttachmentFixedObjects())
             reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-        if (frameView->hasStickyPositionObjects())
-            reasons |= MainThreadScrollingReason::kHasStickyPositionObjects;
         FrameView::ScrollingReasons scrollingReasons = frameView->getScrollingReasons();
         const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
         const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==

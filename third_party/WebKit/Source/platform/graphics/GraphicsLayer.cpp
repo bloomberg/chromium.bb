@@ -1152,6 +1152,11 @@ void GraphicsLayer::setBackdropFilters(CompositorFilterOperations filters)
     platformLayer()->setBackgroundFilters(filters.releaseCcFilterOperations());
 }
 
+void GraphicsLayer::setStickyPositionConstraint(const WebLayerStickyPositionConstraint& stickyConstraint)
+{
+    m_layer->layer()->setStickyPositionConstraint(stickyConstraint);
+}
+
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)
 {
     if (m_imageLayer)

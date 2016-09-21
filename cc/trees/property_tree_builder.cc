@@ -81,6 +81,15 @@ static LayerPositionConstraint PositionConstraint(LayerImpl* layer) {
   return layer->test_properties()->position_constraint;
 }
 
+static LayerStickyPositionConstraint StickyPositionConstraint(Layer* layer) {
+  return layer->sticky_position_constraint();
+}
+
+static LayerStickyPositionConstraint StickyPositionConstraint(
+    LayerImpl* layer) {
+  return layer->test_properties()->sticky_position_constraint;
+}
+
 struct PreCalculateMetaInformationRecursiveData {
   size_t num_unclipped_descendants;
   int num_descendants_that_draw_content;
@@ -491,6 +500,7 @@ bool AddTransformNodeIfNeeded(
       layer == data_from_ancestor.overscroll_elasticity_layer;
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = PositionConstraint(layer).is_fixed_position();
+  const bool is_sticky = StickyPositionConstraint(layer).is_sticky;
 
   const bool has_significant_transform =
       !Transform(layer).IsIdentityOr2DTranslation();
@@ -525,7 +535,7 @@ bool AddTransformNodeIfNeeded(
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
                        has_proxied_transform_related_property ||
-                       scroll_child_has_different_target ||
+                       scroll_child_has_different_target || is_sticky ||
                        is_at_boundary_of_3d_rendering_context;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
@@ -691,6 +701,18 @@ bool AddTransformNodeIfNeeded(
 
   node->local = Transform(layer);
   node->update_pre_local_transform(TransformOrigin(layer));
+
+  if (StickyPositionConstraint(layer).is_sticky) {
+    StickyPositionNodeData* sticky_data =
+        data_for_children->property_trees->transform_tree.StickyPositionData(
+            node->id);
+    sticky_data->constraints = StickyPositionConstraint(layer);
+    sticky_data->scroll_ancestor = GetScrollParentId(data_from_ancestor, layer);
+    sticky_data->main_thread_offset =
+        layer->position().OffsetFromOrigin() -
+        sticky_data->constraints.scroll_container_relative_sticky_box_rect
+            .OffsetFromOrigin();
+  }
 
   node->needs_local_transform_update = true;
   data_from_ancestor.property_trees->transform_tree.UpdateTransforms(node->id);

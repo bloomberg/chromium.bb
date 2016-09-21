@@ -191,6 +191,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.position_constraint;
   }
 
+  void SetStickyPositionConstraint(
+      const LayerStickyPositionConstraint& constraint);
+  const LayerStickyPositionConstraint& sticky_position_constraint() const {
+    return inputs_.sticky_position_constraint;
+  }
+
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return inputs_.transform; }
 
@@ -674,6 +680,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     bool is_container_for_fixed_position_layers : 1;
     LayerPositionConstraint position_constraint;
+
+    LayerStickyPositionConstraint sticky_position_constraint;
 
     ElementId element_id;
 

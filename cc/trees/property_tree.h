@@ -14,6 +14,7 @@
 #include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
+#include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -31,6 +32,7 @@ namespace proto {
 class PropertyTree;
 class PropertyTrees;
 class ScrollNodeData;
+class StickyPositionNodeData;
 class TreeNode;
 }  // namespace proto
 
@@ -120,6 +122,20 @@ class CC_EXPORT PropertyTree {
 
   bool needs_update_;
   PropertyTrees* property_trees_;
+};
+
+struct StickyPositionNodeData {
+  int scroll_ancestor;
+  LayerStickyPositionConstraint constraints;
+
+  // This is the offset that blink has already applied to counteract the main
+  // thread scroll offset of the scroll ancestor. We need to account for this
+  // by computing the additional offset necessary to keep the element stuck.
+  gfx::Vector2dF main_thread_offset;
+
+  StickyPositionNodeData() : scroll_ancestor(-1) {}
+  void ToProtobuf(proto::StickyPositionNodeData* proto) const;
+  void FromProtobuf(const proto::StickyPositionNodeData& proto);
 };
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
@@ -255,6 +271,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return cached_data_;
   }
 
+  StickyPositionNodeData* StickyPositionData(int node_id);
+
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto,
                     std::unordered_map<int, int>* node_id_to_index_map);
@@ -303,6 +321,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
   std::vector<TransformCachedNodeData> cached_data_;
+  std::vector<StickyPositionNodeData> sticky_position_data_;
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
