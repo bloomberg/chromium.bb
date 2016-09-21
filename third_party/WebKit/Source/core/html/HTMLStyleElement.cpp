@@ -72,7 +72,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLStyleElement::finishParsingChildren()
 {
-    StyleElement::ProcessingResult result = StyleElement::finishParsingChildren(this);
+    StyleElement::ProcessingResult result = StyleElement::finishParsingChildren(*this);
     HTMLElement::finishParsingChildren();
     if (result == StyleElement::ProcessingFatalError)
         notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
@@ -81,26 +81,26 @@ void HTMLStyleElement::finishParsingChildren()
 Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    StyleElement::insertedInto(this, insertionPoint);
+    StyleElement::insertedInto(*this, insertionPoint);
     return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
 void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement::removedFrom(insertionPoint);
-    StyleElement::removedFrom(this, insertionPoint);
+    StyleElement::removedFrom(*this, insertionPoint);
 }
 
 void HTMLStyleElement::didNotifySubtreeInsertionsToDocument()
 {
-    if (StyleElement::processStyleSheet(document(), this) == StyleElement::ProcessingFatalError)
+    if (StyleElement::processStyleSheet(document(), *this) == StyleElement::ProcessingFatalError)
         notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 
 void HTMLStyleElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
-    if (StyleElement::childrenChanged(this) == StyleElement::ProcessingFatalError)
+    if (StyleElement::childrenChanged(*this) == StyleElement::ProcessingFatalError)
         notifyLoadedSheetAndAllCriticalSubresources(ErrorOccurredLoadingSubresource);
 }
 

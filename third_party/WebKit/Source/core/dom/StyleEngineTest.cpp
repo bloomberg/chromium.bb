@@ -77,12 +77,12 @@ TEST_F(StyleEngineTest, TextToSheetCache)
     TextPosition minPos = TextPosition::minimumPosition();
     StyleEngineContext context;
 
-    CSSStyleSheet* sheet1 = styleEngine().createSheet(element, sheetText, minPos, context);
+    CSSStyleSheet* sheet1 = styleEngine().createSheet(*element, sheetText, minPos, context);
 
     // Check that the first sheet is not using a cached StyleSheetContents.
     EXPECT_FALSE(sheet1->contents()->isUsedFromTextCache());
 
-    CSSStyleSheet* sheet2 = styleEngine().createSheet(element, sheetText, minPos, context);
+    CSSStyleSheet* sheet2 = styleEngine().createSheet(*element, sheetText, minPos, context);
 
     // Check that the second sheet uses the cached StyleSheetContents for the first.
     EXPECT_EQ(sheet1->contents(), sheet2->contents());
@@ -96,7 +96,7 @@ TEST_F(StyleEngineTest, TextToSheetCache)
     ThreadState::current()-> collectAllGarbage();
 
     element = HTMLStyleElement::create(document(), false);
-    sheet1 = styleEngine().createSheet(element, sheetText, minPos, context);
+    sheet1 = styleEngine().createSheet(*element, sheetText, minPos, context);
 
     // Check that we did not use a cached StyleSheetContents after the garbage collection.
     EXPECT_FALSE(sheet1->contents()->isUsedFromTextCache());

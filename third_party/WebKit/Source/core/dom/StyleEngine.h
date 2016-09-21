@@ -85,10 +85,10 @@ public:
     const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
     void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
-    void addStyleSheetCandidateNode(Node*);
-    void removeStyleSheetCandidateNode(Node*);
-    void removeStyleSheetCandidateNode(Node*, TreeScope&);
-    void modifiedStyleSheetCandidateNode(Node*);
+    void addStyleSheetCandidateNode(Node&);
+    void removeStyleSheetCandidateNode(Node&);
+    void removeStyleSheetCandidateNode(Node&, TreeScope&);
+    void modifiedStyleSheetCandidateNode(Node&);
     void watchedSelectorsChanged();
 
     void injectAuthorSheet(StyleSheetContents* authorSheet);
@@ -106,7 +106,7 @@ public:
     void setHttpDefaultStyle(const String&);
 
     void addPendingSheet(StyleEngineContext&);
-    void removePendingSheet(Node* styleSheetCandidateNode, const StyleEngineContext&);
+    void removePendingSheet(Node& styleSheetCandidateNode, const StyleEngineContext&);
 
     bool hasPendingScriptBlockingSheets() const { return m_pendingScriptBlockingStylesheets > 0; }
     bool hasPendingRenderBlockingSheets() const { return m_pendingRenderBlockingStylesheets > 0; }
@@ -164,7 +164,7 @@ public:
     bool shouldClearResolver() const;
     void resolverChanged(StyleResolverUpdateMode);
 
-    CSSStyleSheet* createSheet(Element*, const String& text, TextPosition startPosition, StyleEngineContext&);
+    CSSStyleSheet* createSheet(Element&, const String& text, TextPosition startPosition, StyleEngineContext&);
 
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
     void ensureFullscreenUAStyle();
@@ -216,7 +216,7 @@ private:
 
     void createResolver();
 
-    static CSSStyleSheet* parseSheet(Element*, const String& text, TextPosition startPosition);
+    CSSStyleSheet* parseSheet(Element&, const String& text, TextPosition startPosition);
 
     const DocumentStyleSheetCollection* documentStyleSheetCollection() const
     {

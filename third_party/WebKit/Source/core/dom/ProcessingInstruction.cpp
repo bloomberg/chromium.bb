@@ -185,7 +185,7 @@ bool ProcessingInstruction::sheetLoaded()
 {
     if (!isLoading()) {
         if (!DocumentXSLT::sheetLoaded(document(), this))
-            document().styleEngine().removePendingSheet(this, m_styleEngineContext);
+            document().styleEngine().removePendingSheet(*this, m_styleEngineContext);
         return true;
     }
     return false;
@@ -203,7 +203,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
 
     StyleSheetContents* newSheet = StyleSheetContents::create(href, parserContext);
 
-    CSSStyleSheet* cssSheet = CSSStyleSheet::create(newSheet, this);
+    CSSStyleSheet* cssSheet = CSSStyleSheet::create(newSheet, *this);
     cssSheet->setDisabled(m_alternate);
     cssSheet->setTitle(m_title);
     if (!m_alternate && !m_title.isEmpty())
@@ -257,7 +257,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
     String charset;
     bool isValid = checkStyleSheet(href, charset);
     if (!DocumentXSLT::processingInstructionInsertedIntoDocument(document(), this))
-        document().styleEngine().addStyleSheetCandidateNode(this);
+        document().styleEngine().addStyleSheetCandidateNode(*this);
     if (isValid)
         process(href, charset);
     return InsertionDone;
@@ -271,7 +271,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     // No need to remove XSLStyleSheet from StyleEngine.
     if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(), this))
-        document().styleEngine().removeStyleSheetCandidateNode(this);
+        document().styleEngine().removeStyleSheetCandidateNode(*this);
 
     StyleSheet* removedSheet = m_sheet;
     if (m_sheet) {
@@ -291,7 +291,7 @@ void ProcessingInstruction::clearSheet()
 {
     DCHECK(m_sheet);
     if (m_sheet->isLoading())
-        document().styleEngine().removePendingSheet(this, m_styleEngineContext);
+        document().styleEngine().removePendingSheet(*this, m_styleEngineContext);
     m_sheet.release()->clearOwnerNode();
 }
 

@@ -2979,7 +2979,7 @@ void Document::updateBaseURL()
     if (m_elemSheet) {
         // Element sheet is silly. It never contains anything.
         DCHECK(!m_elemSheet->contents()->ruleCount());
-        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
+        m_elemSheet = CSSStyleSheet::createInline(*this, m_baseURL);
     }
 
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
@@ -3094,7 +3094,7 @@ void Document::executeScriptsWaitingForResources()
 CSSStyleSheet& Document::elementSheet()
 {
     if (!m_elemSheet)
-        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
+        m_elemSheet = CSSStyleSheet::createInline(*this, m_baseURL);
     return *m_elemSheet;
 }
 

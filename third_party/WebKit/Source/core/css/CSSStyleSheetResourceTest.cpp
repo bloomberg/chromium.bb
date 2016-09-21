@@ -48,7 +48,7 @@ protected:
     {
         m_originalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
         m_page = DummyPageHolder::create();
-        document()->setURL(KURL(KURL(), "https://localhost/"));
+        document().setURL(KURL(KURL(), "https://localhost/"));
     }
 
     ~CSSStyleSheetResourceTest() override
@@ -56,7 +56,7 @@ protected:
         replaceMemoryCacheForTesting(m_originalMemoryCache.release());
     }
 
-    Document* document() { return &m_page->document(); }
+    Document& document() { return m_page->document(); }
 
     Persistent<MemoryCache> m_originalMemoryCache;
     std::unique_ptr<DummyPageHolder> m_page;
@@ -71,7 +71,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
 
         // We need to disable loading because we manually give a response to
         // the image resource.
-        document()->fetcher()->setAutoLoadImages(false);
+        document().fetcher()->setAutoLoadImages(false);
 
         CSSStyleSheetResource* cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
         memoryCache()->add(cssResource);
@@ -93,7 +93,8 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         contents->parserAppendRule(
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 
-        crossfade->loadSubimages(document());
+        // TODO(rune@opera.com): loadSubimages should take Document&.
+        crossfade->loadSubimages(&document());
         Resource* imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
         ASSERT_TRUE(imageResource);
         ResourceResponse imageResponse;

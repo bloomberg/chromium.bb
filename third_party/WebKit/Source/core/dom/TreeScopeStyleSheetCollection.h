@@ -46,8 +46,8 @@ class StyleRuleFontFace;
 
 class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
 public:
-    void addStyleSheetCandidateNode(Node*);
-    void removeStyleSheetCandidateNode(Node* node) { m_styleSheetCandidateNodes.remove(node); }
+    void addStyleSheetCandidateNode(Node&);
+    void removeStyleSheetCandidateNode(Node& node) { m_styleSheetCandidateNodes.remove(&node); }
     bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
 
     void clearMediaQueryRuleSetStyleSheets();

@@ -125,7 +125,7 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
 
 void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet)
 {
-    m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
+    m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, *m_document));
     markDocumentDirty();
     resolverChanged(AnalyzedStyleUpdate);
 }
@@ -136,7 +136,7 @@ CSSStyleSheet& StyleEngine::ensureInspectorStyleSheet()
         return *m_inspectorStyleSheet;
 
     StyleSheetContents* contents = StyleSheetContents::create(CSSParserContext(*m_document, nullptr));
-    m_inspectorStyleSheet = CSSStyleSheet::create(contents, m_document);
+    m_inspectorStyleSheet = CSSStyleSheet::create(contents, *m_document);
     markDocumentDirty();
     resolverChanged(AnalyzedStyleUpdate);
     return *m_inspectorStyleSheet;
@@ -152,11 +152,10 @@ void StyleEngine::addPendingSheet(StyleEngineContext &context)
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
-void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, const StyleEngineContext &context)
+void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode, const StyleEngineContext &context)
 {
-    DCHECK(styleSheetCandidateNode);
-    TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
-    if (styleSheetCandidateNode->isConnected())
+    TreeScope* treeScope = isStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode.treeScope() : m_document.get();
+    if (styleSheetCandidateNode.isConnected())
         markTreeScopeDirty(*treeScope);
 
     if (context.addedPendingSheetBeforeBody()) {
@@ -195,13 +194,13 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
     resolverChanged(updateMode);
 }
 
-void StyleEngine::addStyleSheetCandidateNode(Node* node)
+void StyleEngine::addStyleSheetCandidateNode(Node& node)
 {
-    if (!node->isConnected() || document().isDetached())
+    if (!node.isConnected() || document().isDetached())
         return;
 
-    DCHECK(!isXSLStyleSheet(*node));
-    TreeScope& treeScope = node->treeScope();
+    DCHECK(!isXSLStyleSheet(node));
+    TreeScope& treeScope = node.treeScope();
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     DCHECK(collection);
     collection->addStyleSheetCandidateNode(node);
@@ -211,15 +210,15 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node)
         m_activeTreeScopes.add(&treeScope);
 }
 
-void StyleEngine::removeStyleSheetCandidateNode(Node* node)
+void StyleEngine::removeStyleSheetCandidateNode(Node& node)
 {
     removeStyleSheetCandidateNode(node, *m_document);
 }
 
-void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope)
+void StyleEngine::removeStyleSheetCandidateNode(Node& node, TreeScope& treeScope)
 {
-    DCHECK(isStyleElement(*node) || treeScope == m_document);
-    DCHECK(!isXSLStyleSheet(*node));
+    DCHECK(isStyleElement(node) || treeScope == m_document);
+    DCHECK(!isXSLStyleSheet(node));
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     // After detaching document, collection could be null. In the case,
@@ -231,13 +230,13 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
     markTreeScopeDirty(treeScope);
 }
 
-void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
+void StyleEngine::modifiedStyleSheetCandidateNode(Node& node)
 {
-    if (!node->isConnected())
+    if (!node.isConnected())
         return;
 
-    TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
-    DCHECK(isStyleElement(*node) || treeScope == m_document);
+    TreeScope& treeScope = isStyleElement(node) ? node.treeScope() : *m_document;
+    DCHECK(isStyleElement(node) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
     resolverChanged(AnalyzedStyleUpdate);
 }
@@ -505,11 +504,12 @@ void StyleEngine::markDocumentDirty()
         document().importsController()->master()->styleEngine().markDocumentDirty();
 }
 
-CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, StyleEngineContext &context)
+CSSStyleSheet* StyleEngine::createSheet(Element& element, const String& text, TextPosition startPosition, StyleEngineContext &context)
 {
+    DCHECK(element.document() == document());
     CSSStyleSheet* styleSheet = nullptr;
 
-    e->document().styleEngine().addPendingSheet(context);
+    addPendingSheet(context);
 
     AtomicString textContent(text);
 
@@ -517,7 +517,7 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
     StyleSheetContents* contents = result.storedValue->value;
     if (result.isNewEntry || !contents || !contents->isCacheableForStyleElement()) {
         result.storedValue->value = nullptr;
-        styleSheet = StyleEngine::parseSheet(e, text, startPosition);
+        styleSheet = parseSheet(element, text, startPosition);
         if (styleSheet->contents()->isCacheableForStyleElement()) {
             result.storedValue->value = styleSheet->contents();
             m_sheetToTextCache.add(styleSheet->contents(), textContent);
@@ -527,21 +527,21 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
         DCHECK(contents->isCacheableForStyleElement());
         DCHECK(contents->hasSingleOwnerDocument());
         contents->setIsUsedFromTextCache();
-        styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
+        styleSheet = CSSStyleSheet::createInline(contents, element, startPosition);
     }
 
     DCHECK(styleSheet);
-    if (!e->isInShadowTree()) {
-        styleSheet->setTitle(e->title());
-        setPreferredStylesheetSetNameIfNotSet(e->title(), DontUpdateActiveSheets);
+    if (!element.isInShadowTree()) {
+        styleSheet->setTitle(element.title());
+        setPreferredStylesheetSetNameIfNotSet(element.title(), DontUpdateActiveSheets);
     }
     return styleSheet;
 }
 
-CSSStyleSheet* StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition)
+CSSStyleSheet* StyleEngine::parseSheet(Element& element, const String& text, TextPosition startPosition)
 {
     CSSStyleSheet* styleSheet = nullptr;
-    styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().characterSet());
+    styleSheet = CSSStyleSheet::createInline(element, KURL(), startPosition, document().characterSet());
     styleSheet->contents()->parseStringAtPosition(text, startPosition);
     return styleSheet;
 }

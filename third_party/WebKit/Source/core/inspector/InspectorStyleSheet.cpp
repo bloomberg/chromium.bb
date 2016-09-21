@@ -1365,7 +1365,7 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     if (toCSSImportRule(m_pageStyleSheet->ownerRule()))
         sourceDataSheet = CSSStyleSheet::create(styleSheet, toCSSImportRule(m_pageStyleSheet->ownerRule()));
     else
-        sourceDataSheet = CSSStyleSheet::create(styleSheet, m_pageStyleSheet->ownerNode());
+        sourceDataSheet = CSSStyleSheet::create(styleSheet, *m_pageStyleSheet->ownerNode());
 
     m_parsedFlatRules.clear();
     collectFlatRules(sourceDataSheet, &m_parsedFlatRules);

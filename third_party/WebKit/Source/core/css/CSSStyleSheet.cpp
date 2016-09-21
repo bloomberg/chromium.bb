@@ -69,17 +69,16 @@ private:
 };
 
 #if DCHECK_IS_ON()
-static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
+static bool isAcceptableCSSStyleSheetParent(const Node& parentNode)
 {
     // Only these nodes can be parents of StyleSheets, and they need to call
     // clearOwnerNode() when moved out of document. Note that destructor of
     // the nodes don't call clearOwnerNode() with Oilpan.
-    return !parentNode
-        || parentNode->isDocumentNode()
-        || isHTMLLinkElement(*parentNode)
-        || isHTMLStyleElement(*parentNode)
-        || isSVGStyleElement(*parentNode)
-        || parentNode->getNodeType() == Node::kProcessingInstructionNode;
+    return parentNode.isDocumentNode()
+        || isHTMLLinkElement(parentNode)
+        || isHTMLStyleElement(parentNode)
+        || isSVGStyleElement(parentNode)
+        || parentNode.getNodeType() == Node::kProcessingInstructionNode;
 }
 #endif
 
@@ -88,20 +87,20 @@ CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, CSSImportRule* o
     return new CSSStyleSheet(sheet, ownerRule);
 }
 
-CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, Node* ownerNode)
+CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet, Node& ownerNode)
 {
     return new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition());
 }
 
-CSSStyleSheet* CSSStyleSheet::createInline(StyleSheetContents* sheet, Node* ownerNode, const TextPosition& startPosition)
+CSSStyleSheet* CSSStyleSheet::createInline(StyleSheetContents* sheet, Node& ownerNode, const TextPosition& startPosition)
 {
     DCHECK(sheet);
     return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
 
-CSSStyleSheet* CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
+CSSStyleSheet* CSSStyleSheet::createInline(Node& ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
-    CSSParserContext parserContext(ownerNode->document(), nullptr, baseURL, encoding);
+    CSSParserContext parserContext(ownerNode.document(), nullptr, baseURL, encoding);
     StyleSheetContents* sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
     return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
@@ -118,11 +117,11 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, CSSImportRule* ownerR
     m_contents->registerClient(this);
 }
 
-CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
+CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, Node& ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
     : m_contents(contents)
     , m_isInlineStylesheet(isInlineStylesheet)
     , m_isDisabled(false)
-    , m_ownerNode(ownerNode)
+    , m_ownerNode(&ownerNode)
     , m_ownerRule(nullptr)
     , m_startPosition(startPosition)
     , m_loadCompleted(false)

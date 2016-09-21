@@ -49,10 +49,10 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CSSStyleSheet);
 public:
-    static CSSStyleSheet* create(StyleSheetContents*, CSSImportRule* ownerRule = 0);
-    static CSSStyleSheet* create(StyleSheetContents*, Node* ownerNode);
-    static CSSStyleSheet* createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
-    static CSSStyleSheet* createInline(StyleSheetContents*, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
+    static CSSStyleSheet* create(StyleSheetContents*, CSSImportRule* ownerRule = nullptr);
+    static CSSStyleSheet* create(StyleSheetContents*, Node& ownerNode);
+    static CSSStyleSheet* createInline(Node&, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
+    static CSSStyleSheet* createInline(StyleSheetContents*, Node& ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
     ~CSSStyleSheet() override;
 
@@ -123,7 +123,7 @@ public:
 
 private:
     CSSStyleSheet(StyleSheetContents*, CSSImportRule* ownerRule);
-    CSSStyleSheet(StyleSheetContents*, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
+    CSSStyleSheet(StyleSheetContents*, Node& ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
 
     bool isCSSStyleSheet() const override { return true; }
     String type() const override { return "text/css"; }

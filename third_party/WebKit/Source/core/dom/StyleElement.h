@@ -52,18 +52,18 @@ protected:
     bool sheetLoaded(Document&);
     void startLoadingDynamicSheet(Document&);
 
-    void insertedInto(Element*, ContainerNode* insertionPoint);
-    void removedFrom(Element*, ContainerNode* insertionPoint);
-    ProcessingResult processStyleSheet(Document&, Element*);
-    ProcessingResult childrenChanged(Element*);
-    ProcessingResult finishParsingChildren(Element*);
+    void insertedInto(const Element&, ContainerNode* insertionPoint);
+    void removedFrom(Element&, ContainerNode* insertionPoint);
+    ProcessingResult processStyleSheet(Document&, Element&);
+    ProcessingResult childrenChanged(Element&);
+    ProcessingResult finishParsingChildren(Element&);
 
     Member<CSSStyleSheet> m_sheet;
 
 private:
-    ProcessingResult createSheet(Element*, const String& text = String());
-    ProcessingResult process(Element*);
-    void clearSheet(Element* ownerElement = 0);
+    ProcessingResult createSheet(Element&, const String& text = String());
+    ProcessingResult process(Element&);
+    void clearSheet(Element& ownerElement);
 
     bool m_createdByParser : 1;
     bool m_loading : 1;

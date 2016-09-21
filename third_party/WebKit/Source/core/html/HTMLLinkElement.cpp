@@ -205,7 +205,7 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
         return InsertionDone;
     }
 
-    document().styleEngine().addStyleSheetCandidateNode(this);
+    document().styleEngine().addStyleSheetCandidateNode(*this);
 
     process();
 
@@ -229,7 +229,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
         DCHECK(!linkStyle() || !linkStyle()->hasSheet());
         return;
     }
-    document().styleEngine().removeStyleSheetCandidateNode(this);
+    document().styleEngine().removeStyleSheetCandidateNode(*this);
 
     StyleSheet* removedSheet = sheet();
 
@@ -459,7 +459,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
         if (m_sheet)
             clearSheet();
-        m_sheet = CSSStyleSheet::create(restoredSheet, m_owner);
+        m_sheet = CSSStyleSheet::create(restoredSheet, *m_owner);
         m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
         if (m_owner->isInDocumentTree())
             setSheetTitle(m_owner->title());
@@ -481,7 +481,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     if (m_sheet)
         clearSheet();
 
-    m_sheet = CSSStyleSheet::create(styleSheet, m_owner);
+    m_sheet = CSSStyleSheet::create(styleSheet, *m_owner);
     m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
     if (m_owner->isInDocumentTree())
         setSheetTitle(m_owner->title());
@@ -552,6 +552,7 @@ void LinkStyle::addPendingSheet(PendingSheetType type)
 
 void LinkStyle::removePendingSheet()
 {
+    DCHECK(m_owner);
     PendingSheetType type = m_pendingSheetType;
     m_pendingSheetType = None;
 
@@ -559,11 +560,11 @@ void LinkStyle::removePendingSheet()
         return;
     if (type == NonBlocking) {
         // Tell StyleEngine to re-compute styleSheets of this m_owner's treescope.
-        m_owner->document().styleEngine().modifiedStyleSheetCandidateNode(m_owner);
+        m_owner->document().styleEngine().modifiedStyleSheetCandidateNode(*m_owner);
         return;
     }
 
-    m_owner->document().styleEngine().removePendingSheet(m_owner, m_styleEngineContext);
+    m_owner->document().styleEngine().removePendingSheet(*m_owner, m_styleEngineContext);
 }
 
 void LinkStyle::setDisabledState(bool disabled)

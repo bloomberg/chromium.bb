@@ -44,12 +44,12 @@ TreeScopeStyleSheetCollection::TreeScopeStyleSheetCollection(TreeScope& treeScop
 {
 }
 
-void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node)
+void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node& node)
 {
-    if (!node->isConnected())
+    if (!node.isConnected())
         return;
 
-    m_styleSheetCandidateNodes.add(node);
+    m_styleSheetCandidateNodes.add(&node);
 }
 
 TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollection::compareStyleSheets(const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets, const HeapVector<Member<CSSStyleSheet>>& newStylesheets, HeapVector<Member<StyleSheetContents>>& addedSheets)
