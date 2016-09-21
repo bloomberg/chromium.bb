@@ -62,6 +62,9 @@ class Window {
   // immediately deleted.
   void Destroy();
 
+  // Returns true if this client created and owns this window.
+  bool WasCreatedByThisClient() const;
+
   WindowTreeClient* window_tree() { return client_; }
 
   // The local_id is provided for client code. The local_id is not set or

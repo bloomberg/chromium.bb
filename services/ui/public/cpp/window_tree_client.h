@@ -94,7 +94,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                mojom::OrderDirection direction);
 
   // Returns true if the specified window was created by this client.
-  bool OwnsWindow(Window* window) const;
+  bool WasCreatedByThisClient(const Window* window) const;
 
   void SetBounds(Window* window,
                  const gfx::Rect& old_bounds,
@@ -240,6 +240,11 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // if there is no InFlightChange matching |change|.
   // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
+
+  static Id server_id(const Window* window) { return window->server_id(); }
+
+  Window* BuildWindowTree(const mojo::Array<mojom::WindowDataPtr>& windows,
+                          Window* initial_parent);
 
   Window* NewWindowImpl(NewWindowType type,
                         const Window::SharedProperties* properties);

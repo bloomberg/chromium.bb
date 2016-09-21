@@ -147,18 +147,13 @@ class ScopedSetBoundsNotifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
-// Some operations are only permitted in the client that created the window.
-bool OwnsWindow(WindowTreeClient* client, Window* window) {
-  return !client || client->OwnsWindow(window);
-}
-
 bool IsClientRoot(Window* window) {
   return window->window_tree() &&
          window->window_tree()->GetRoots().count(window) > 0;
 }
 
-bool OwnsWindowOrIsRoot(Window* window) {
-  return OwnsWindow(window->window_tree(), window) || IsClientRoot(window);
+bool WasCreatedByThisClientOrIsRoot(Window* window) {
+  return window->WasCreatedByThisClient() || IsClientRoot(window);
 }
 
 void EmptyEmbedCallback(bool result) {}
@@ -169,14 +164,14 @@ void EmptyEmbedCallback(bool result) {}
 // Window, public:
 
 void Window::Destroy() {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
 
   if (client_)
     client_->DestroyWindow(this);
   while (!children_.empty()) {
     Window* child = children_.front();
-    if (!OwnsWindow(client_, child)) {
+    if (!child->WasCreatedByThisClient()) {
       WindowPrivate(child).ClearParent();
       children_.erase(children_.begin());
     } else {
@@ -188,8 +183,12 @@ void Window::Destroy() {
   LocalDestroy();
 }
 
+bool Window::WasCreatedByThisClient() const {
+  return !client_ || client_->WasCreatedByThisClient(this);
+}
+
 void Window::SetBounds(const gfx::Rect& bounds) {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
   if (bounds_ == bounds)
     return;
@@ -208,7 +207,7 @@ gfx::Rect Window::GetBoundsInRoot() const {
 void Window::SetClientArea(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
 
   if (client_)
@@ -218,7 +217,7 @@ void Window::SetClientArea(
 }
 
 void Window::SetHitTestMask(const gfx::Rect& mask) {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
 
   if (hit_test_mask_ && *hit_test_mask_ == mask)
@@ -230,7 +229,7 @@ void Window::SetHitTestMask(const gfx::Rect& mask) {
 }
 
 void Window::ClearHitTestMask() {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
 
   if (!hit_test_mask_)
@@ -587,7 +586,7 @@ Window::Window(WindowTreeClient* client, Id id)
 
 void Window::SetSharedPropertyInternal(const std::string& name,
                                        const std::vector<uint8_t>* value) {
-  if (!OwnsWindowOrIsRoot(this))
+  if (!WasCreatedByThisClientOrIsRoot(this))
     return;
 
   if (client_) {
@@ -686,7 +685,7 @@ void Window::LocalSetBounds(const gfx::Rect& old_bounds,
                             const gfx::Rect& new_bounds) {
   // If this client owns the window, then it should be the only one to change
   // the bounds.
-  DCHECK(!OwnsWindow(client_, this) || old_bounds == bounds_);
+  DCHECK(!WasCreatedByThisClient() || old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;
 }
@@ -845,7 +844,7 @@ void Window::NotifyWindowVisibilityChangedUp(Window* target) {
 }
 
 bool Window::PrepareForEmbed() {
-  if (!OwnsWindow(client_, this))
+  if (!WasCreatedByThisClient())
     return false;
 
   while (!children_.empty())

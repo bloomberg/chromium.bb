@@ -34,10 +34,6 @@ Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
 }
 
-Id server_id(Window* window) {
-  return WindowPrivate(window).server_id();
-}
-
 // Helper called to construct a local window object from transport data.
 Window* AddWindowToClient(WindowTreeClient* client,
                           Window* parent,
@@ -57,30 +53,6 @@ Window* AddWindowToClient(WindowTreeClient* client,
   if (parent)
     WindowPrivate(parent).LocalAddChild(window);
   return window;
-}
-
-Window* BuildWindowTree(WindowTreeClient* client,
-                        const mojo::Array<mojom::WindowDataPtr>& windows,
-                        Window* initial_parent) {
-  std::vector<Window*> parents;
-  Window* root = NULL;
-  Window* last_window = NULL;
-  if (initial_parent)
-    parents.push_back(initial_parent);
-  for (size_t i = 0; i < windows.size(); ++i) {
-    if (last_window && windows[i]->parent_id == server_id(last_window)) {
-      parents.push_back(last_window);
-    } else if (!parents.empty()) {
-      while (server_id(parents.back()) != windows[i]->parent_id)
-        parents.pop_back();
-    }
-    Window* window = AddWindowToClient(
-        client, !parents.empty() ? parents.back() : NULL, windows[i]);
-    if (!last_window)
-      root = window;
-    last_window = window;
-  }
-  return root;
 }
 
 struct WindowTreeClient::CurrentDragState {
@@ -126,7 +98,7 @@ WindowTreeClient::~WindowTreeClient() {
   WindowTracker tracker;
   while (!windows_.empty()) {
     IdToWindowMap::iterator it = windows_.begin();
-    if (OwnsWindow(it->second)) {
+    if (it->second->WasCreatedByThisClient()) {
       it->second->Destroy();
     } else {
       tracker.Add(it->second);
@@ -231,11 +203,11 @@ void WindowTreeClient::Reorder(Window* window,
                        direction);
 }
 
-bool WindowTreeClient::OwnsWindow(Window* window) const {
+bool WindowTreeClient::WasCreatedByThisClient(const Window* window) const {
   // Windows created via CreateTopLevelWindow() are not owned by us, but have
-  // our client id.
+  // our client id. const_cast is required by set.
   return HiWord(server_id(window)) == client_id_ &&
-         roots_.count(window) == 0;
+         roots_.count(const_cast<Window*>(window)) == 0;
 }
 
 void WindowTreeClient::SetBounds(Window* window,
@@ -489,6 +461,30 @@ bool WindowTreeClient::ApplyServerChangeToExistingInFlightChange(
 
   existing_change->SetRevertValueFrom(change);
   return true;
+}
+
+Window* WindowTreeClient::BuildWindowTree(
+    const mojo::Array<mojom::WindowDataPtr>& windows,
+    Window* initial_parent) {
+  std::vector<Window*> parents;
+  Window* root = nullptr;
+  Window* last_window = nullptr;
+  if (initial_parent)
+    parents.push_back(initial_parent);
+  for (size_t i = 0; i < windows.size(); ++i) {
+    if (last_window && windows[i]->parent_id == server_id(last_window)) {
+      parents.push_back(last_window);
+    } else if (!parents.empty()) {
+      while (server_id(parents.back()) != windows[i]->parent_id)
+        parents.pop_back();
+    }
+    Window* window = AddWindowToClient(
+        this, !parents.empty() ? parents.back() : nullptr, windows[i]);
+    if (!last_window)
+      root = window;
+    last_window = window;
+  }
+  return root;
 }
 
 Window* WindowTreeClient::NewWindowImpl(
@@ -929,7 +925,7 @@ void WindowTreeClient::OnWindowHierarchyChanged(
 
   const bool was_window_known = GetWindowByServerId(window_id) != nullptr;
 
-  BuildWindowTree(this, windows, initial_parent);
+  BuildWindowTree(windows, initial_parent);
 
   // If the window was not known, then BuildWindowTree() will have created it
   // and parented the window.
