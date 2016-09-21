@@ -55780,9 +55780,70 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Shutdown.browser_exit.time">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by the browser exit menu command.
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.browser_exit.time_per_process">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by the browser exit menu command per renderer
+    process.
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.end_session.time">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by an end session (user logs off, shuts down or
+    reboots without explicitly exiting).
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.end_session.time_per_process">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by an end session (user logs off, shuts down or
+    reboots without explicitly exiting) per renderer process.
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.renderers.slow">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    The number of renderer processes that couldn't be shutdown quickly due to
+    onbeforeunload or onunload listeners.
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.renderers.total">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    The number of renderer processes running when shutdown was called.
+  </summary>
+</histogram>
+
 <histogram name="Shutdown.ShutdownType" enum="ShutdownType">
   <owner>hashimoto@chromium.org</owner>
   <summary>The type of the last shutdown.</summary>
+</histogram>
+
+<histogram name="Shutdown.window_close.time" units="ms">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by the last browser window being closed.
+  </summary>
+</histogram>
+
+<histogram name="Shutdown.window_close.time_per_process">
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Time for shutdown initiated by the last browser window being closed per
+    renderer process.
+  </summary>
 </histogram>
 
 <histogram name="Signin" enum="SigninHelperFlow">
