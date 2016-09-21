@@ -74,12 +74,11 @@ void HistogramController::GetHistogramDataFromChildProcesses(
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     const ChildProcessData& data = iter.GetData();
-    int type = data.process_type;
-    if (type != PROCESS_TYPE_GPU &&
-        type != PROCESS_TYPE_PPAPI_PLUGIN &&
-        type != PROCESS_TYPE_PPAPI_BROKER) {
+
+    // Only get histograms from content process types; skip "embedder" process
+    // types.
+    if (data.process_type >= PROCESS_TYPE_CONTENT_END)
       continue;
-    }
 
     // In some cases, there may be no child process of the given type (for
     // example, the GPU process may not exist and there may instead just be a
