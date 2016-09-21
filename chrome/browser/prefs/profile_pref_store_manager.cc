@@ -134,9 +134,9 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       unprotected_pref_names, protected_pref_names,
       base::Bind(&RemoveValueSilently, unprotected_pref_store->AsWeakPtr()),
       base::Bind(&RemoveValueSilently, protected_pref_store->AsWeakPtr()),
-      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
+      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
                  unprotected_pref_store->AsWeakPtr()),
-      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
+      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteReply,
                  protected_pref_store->AsWeakPtr()),
       GetPrefHashStore(false), GetPrefHashStore(true),
       raw_unprotected_pref_hash_filter, raw_protected_pref_hash_filter);

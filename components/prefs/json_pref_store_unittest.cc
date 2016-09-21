@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -121,6 +122,9 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 }  // namespace
 
 class JsonPrefStoreTest : public testing::Test {
+ public:
+  JsonPrefStoreTest() = default;
+
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -136,6 +140,8 @@ class JsonPrefStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreTest);
 };
 
 // Test fallback behavior for a nonexistent file.
@@ -817,21 +823,22 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
 }
 
 class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
+ public:
+  JsonPrefStoreLossyWriteTest() = default;
+
  protected:
   void SetUp() override {
     JsonPrefStoreTest::SetUp();
     test_file_ = temp_dir_.GetPath().AppendASCII("test.json");
   }
 
-  // Creates a JsonPrefStore with the given |file_writer|.
   scoped_refptr<JsonPrefStore> CreatePrefStore() {
     return new JsonPrefStore(test_file_, message_loop_.task_runner(),
                              std::unique_ptr<PrefFilter>());
   }
 
   // Return the ImportantFileWriter for a given JsonPrefStore.
-  ImportantFileWriter* GetImportantFileWriter(
-      scoped_refptr<JsonPrefStore> pref_store) {
+  ImportantFileWriter* GetImportantFileWriter(JsonPrefStore* pref_store) {
     return &(pref_store->writer_);
   }
 
@@ -846,11 +853,13 @@ class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
 
  private:
   base::FilePath test_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreLossyWriteTest);
 };
 
 TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteBasic) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
-  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
   // Set a normal pref and check that it gets scheduled to be written.
   ASSERT_FALSE(file_writer->HasPendingWrite());
@@ -896,7 +905,7 @@ TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteBasic) {
 
 TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossyFirst) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
-  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
   // Set a lossy pref and check that it is not scheduled to be written.
   ASSERT_FALSE(file_writer->HasPendingWrite());
@@ -918,7 +927,7 @@ TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossyFirst) {
 
 TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossySecond) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
-  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
   // Set a normal pref and check that it is scheduled to be written.
   ASSERT_FALSE(file_writer->HasPendingWrite());
@@ -940,7 +949,7 @@ TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossySecond) {
 
 TEST_F(JsonPrefStoreLossyWriteTest, ScheduleLossyWrite) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
-  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
   // Set a lossy pref and check that it is not scheduled to be written.
   pref_store->SetValue("lossy", base::MakeUnique<base::StringValue>("lossy"),
@@ -956,6 +965,215 @@ TEST_F(JsonPrefStoreLossyWriteTest, ScheduleLossyWrite) {
   pref_store->CommitPendingWrite();
   ASSERT_FALSE(file_writer->HasPendingWrite());
   ASSERT_EQ("{\"lossy\":\"lossy\"}", GetTestFileContents());
+}
+
+class SuccessfulWriteReplyObserver {
+ public:
+  SuccessfulWriteReplyObserver() = default;
+
+  // Returns true if a successful write was observed via on_successful_write()
+  // and resets the observation state to false regardless.
+  bool GetAndResetObservationState() {
+    bool was_successful_write_observed = successful_write_reply_observed_;
+    successful_write_reply_observed_ = false;
+    return was_successful_write_observed;
+  }
+
+  // Register OnWrite() to be called on the next write of |json_pref_store|.
+  void ObserveNextWriteCallback(JsonPrefStore* json_pref_store);
+
+  void OnSuccessfulWrite() {
+    EXPECT_FALSE(successful_write_reply_observed_);
+    successful_write_reply_observed_ = true;
+  }
+
+ private:
+  bool successful_write_reply_observed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SuccessfulWriteReplyObserver);
+};
+
+void SuccessfulWriteReplyObserver::ObserveNextWriteCallback(
+    JsonPrefStore* json_pref_store) {
+  json_pref_store->RegisterOnNextSuccessfulWriteReply(
+      base::Bind(&SuccessfulWriteReplyObserver::OnSuccessfulWrite,
+                 base::Unretained(this)));
+}
+
+enum WriteCallbackObservationState {
+  NOT_CALLED,
+  CALLED_WITH_ERROR,
+  CALLED_WITH_SUCCESS,
+};
+
+class WriteCallbackObserver {
+ public:
+  WriteCallbackObserver() = default;
+
+  // Register OnWrite() to be called on the next write of |json_pref_store|.
+  void ObserveNextWriteCallback(JsonPrefStore* json_pref_store);
+
+  // Returns true if a write was observed via OnWrite()
+  // and resets the observation state to false regardless.
+  WriteCallbackObservationState GetAndResetObservationState();
+
+  void OnWrite(bool success) {
+    EXPECT_EQ(NOT_CALLED, observation_state_);
+    observation_state_ = success ? CALLED_WITH_SUCCESS : CALLED_WITH_ERROR;
+  }
+
+ private:
+  WriteCallbackObservationState observation_state_ = NOT_CALLED;
+
+  DISALLOW_COPY_AND_ASSIGN(WriteCallbackObserver);
+};
+
+void WriteCallbackObserver::ObserveNextWriteCallback(JsonPrefStore* writer) {
+  writer->RegisterOnNextWriteSynchronousCallback(
+      base::Bind(&WriteCallbackObserver::OnWrite, base::Unretained(this)));
+}
+
+WriteCallbackObservationState
+WriteCallbackObserver::GetAndResetObservationState() {
+  WriteCallbackObservationState state = observation_state_;
+  observation_state_ = NOT_CALLED;
+  return state;
+}
+
+class JsonPrefStoreCallbackTest : public JsonPrefStoreTest {
+ public:
+  JsonPrefStoreCallbackTest() = default;
+
+ protected:
+  void SetUp() override {
+    JsonPrefStoreTest::SetUp();
+    test_file_ = temp_dir_.path().AppendASCII("test.json");
+  }
+
+  scoped_refptr<JsonPrefStore> CreatePrefStore() {
+    return new JsonPrefStore(test_file_, message_loop_.task_runner(),
+                             std::unique_ptr<PrefFilter>());
+  }
+
+  // Return the ImportantFileWriter for a given JsonPrefStore.
+  ImportantFileWriter* GetImportantFileWriter(JsonPrefStore* pref_store) {
+    return &(pref_store->writer_);
+  }
+
+  void TriggerFakeWriteForCallback(JsonPrefStore* pref_store, bool success) {
+    JsonPrefStore::PostWriteCallback(
+        base::Bind(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
+                   pref_store->AsWeakPtr()),
+        base::Bind(&WriteCallbackObserver::OnWrite,
+                   base::Unretained(&write_callback_observer_)),
+        base::SequencedTaskRunnerHandle::Get(), success);
+  }
+
+  SuccessfulWriteReplyObserver successful_write_reply_observer_;
+  WriteCallbackObserver write_callback_observer_;
+
+ private:
+  base::FilePath test_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreCallbackTest);
+};
+
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallback) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
+
+  // Test RegisterOnNextWriteSynchronousCallback after
+  // RegisterOnNextSuccessfulWriteReply.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
+  file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+
+  // Test RegisterOnNextSuccessfulWriteReply after
+  // RegisterOnNextWriteSynchronousCallback.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
+  file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+
+  // Test RegisterOnNextSuccessfulWriteReply only.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_FALSE(write_callback_observer_.GetAndResetObservationState());
+
+  // Test RegisterOnNextWriteSynchronousCallback only.
+  write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
+  file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+}
+
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+
+  // Confirm that the observers are invoked.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  TriggerFakeWriteForCallback(pref_store.get(), true);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetObservationState());
+
+  // Confirm that the observation states were reset.
+  EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(NOT_CALLED, write_callback_observer_.GetAndResetObservationState());
+
+  // Confirm that re-installing the observers works for another write.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  TriggerFakeWriteForCallback(pref_store.get(), true);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetObservationState());
+
+  // Confirm that the successful observer is not invoked by an unsuccessful
+  // write, and that the synchronous observer is invoked.
+  successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
+  TriggerFakeWriteForCallback(pref_store.get(), false);
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(CALLED_WITH_ERROR,
+            write_callback_observer_.GetAndResetObservationState());
+
+  // Do a real write, and confirm that the successful observer was invoked after
+  // being set by |PostWriteCallback| by the last TriggerFakeWriteCallback.
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
+  file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(NOT_CALLED, write_callback_observer_.GetAndResetObservationState());
+}
+
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackDuringProfileDeath) {
+  // Create a JsonPrefStore and attach observers to it, then delete it by making
+  // it go out of scope to simulate profile switch or Chrome shutdown.
+  {
+    scoped_refptr<JsonPrefStore> soon_out_of_scope_pref_store =
+        CreatePrefStore();
+    ImportantFileWriter* file_writer =
+        GetImportantFileWriter(soon_out_of_scope_pref_store.get());
+    successful_write_reply_observer_.ObserveNextWriteCallback(
+        soon_out_of_scope_pref_store.get());
+    write_callback_observer_.ObserveNextWriteCallback(
+        soon_out_of_scope_pref_store.get());
+    file_writer->WriteNow(MakeUnique<std::string>("foo"));
+  }
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetObservationState());
 }
 
 }  // namespace base

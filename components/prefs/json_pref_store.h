@@ -30,6 +30,7 @@ class Clock;
 class DictionaryValue;
 class FilePath;
 class HistogramBase;
+class JsonPrefStoreCallbackTest;
 class JsonPrefStoreLossyWriteTest;
 class SequencedTaskRunner;
 class SequencedWorkerPool;
@@ -106,10 +107,18 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // cleanup that shouldn't otherwise alert observers.
   void RemoveValueSilently(const std::string& key, uint32_t flags);
 
-  // Registers |on_next_successful_write| to be called once, on the next
+  // Registers |on_next_successful_write_reply| to be called once, on the next
   // successful write event of |writer_|.
-  void RegisterOnNextSuccessfulWriteCallback(
-      const base::Closure& on_next_successful_write);
+  // |on_next_successful_write_reply| will be called on the thread from which
+  // this method is called and does not need to be thread safe.
+  void RegisterOnNextSuccessfulWriteReply(
+      const base::Closure& on_next_successful_write_reply);
+
+  // Registers |on_next_write_callback| to be called once synchronously, on the
+  // next write event of |writer_|.
+  // |on_next_write_callback| must be thread-safe.
+  void RegisterOnNextWriteSynchronousCallback(
+      const base::Callback<void(bool success)>& on_next_write_callback);
 
   void ClearMutableValues() override;
 
@@ -170,9 +179,23 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
                            WriteCountHistogramTestMultiplePeriods);
   FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
                            WriteCountHistogramTestPeriodWithGaps);
+  friend class base::JsonPrefStoreCallbackTest;
   friend class base::JsonPrefStoreLossyWriteTest;
 
   ~JsonPrefStore() override;
+
+  // If |write_success| is true, runs |on_next_successful_write_|.
+  // Otherwise, re-registers |on_next_successful_write_|.
+  void RunOrScheduleNextSuccessfulWriteCallback(bool write_success);
+
+  // Handles the result of a write with result |write_success|. Runs
+  // |on_next_write| callback on the current thread and posts
+  // |RunOrScheduleNextSuccessfulWriteCallback| on |reply_task_runner|.
+  static void PostWriteCallback(
+      const base::Callback<void(bool success)>& on_next_write_reply,
+      const base::Callback<void(bool success)>& on_next_write_callback,
+      scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
+      bool write_success);
 
   // This method is called after the JSON file has been read.  It then hands
   // |value| (or an empty dictionary in some read error cases) to the
@@ -222,6 +245,10 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   PrefReadError read_error_;
 
   std::set<std::string> keys_need_empty_value_;
+
+  bool has_pending_successful_write_reply_;
+  bool has_pending_write_callback_;
+  base::Closure on_next_successful_write_reply_;
 
   WriteCountHistogram write_count_histogram_;
 
