@@ -4622,7 +4622,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Bluetooth.Web.RequestDevice.OptionalServices.Services"
-    units="GATTServiceHash">
+    enum="GATTServiceHash">
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
