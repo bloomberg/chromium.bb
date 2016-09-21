@@ -833,8 +833,9 @@ ChannelIDService* MockClientSocket::GetChannelIDService() const {
   return NULL;
 }
 
-Error MockClientSocket::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                                    std::vector<uint8_t>* out) {
+Error MockClientSocket::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                 TokenBindingType tb_type,
+                                                 std::vector<uint8_t>* out) {
   NOTREACHED();
   return ERR_NOT_IMPLEMENTED;
 }
@@ -1229,9 +1230,9 @@ ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
   return data_->channel_id_service;
 }
 
-Error MockSSLClientSocket::GetSignedEKMForTokenBinding(
-    crypto::ECPrivateKey* key,
-    std::vector<uint8_t>* out) {
+Error MockSSLClientSocket::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                    TokenBindingType tb_type,
+                                                    std::vector<uint8_t>* out) {
   out->push_back('A');
   return OK;
 }

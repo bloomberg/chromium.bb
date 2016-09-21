@@ -415,10 +415,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Returns the protocol negotiated via ALPN for the underlying socket.
   NextProto GetNegotiatedProtocol() const;
 
-  // Signs the EKM value for Token Binding from the TLS layer using |*key| and
-  // puts the result in |*out|. Returns OK or ERR_FAILED.
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out);
+  // Generates the signature used in Token Binding using |*key| and for a Token
+  // Binding of type |tb_type|, putting the signature in |*out|. Returns a net
+  // error code of OK or ERR_FAILED.
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out);
 
   // Send a WINDOW_UPDATE frame for a stream. Called by a stream
   // whenever receive window size is increased.

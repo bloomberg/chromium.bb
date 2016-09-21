@@ -447,8 +447,9 @@ void WebSocketBasicHandshakeStream::PopulateNetErrorDetails(
   return;
 }
 
-Error WebSocketBasicHandshakeStream::GetSignedEKMForTokenBinding(
+Error WebSocketBasicHandshakeStream::GetTokenBindingSignature(
     crypto::ECPrivateKey* key,
+    TokenBindingType tb_type,
     std::vector<uint8_t>* out) {
   NOTREACHED();
   return ERR_NOT_IMPLEMENTED;

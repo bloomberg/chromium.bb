@@ -3421,7 +3421,7 @@ TEST_F(TokenBindingURLRequestTest, TokenBindingTest) {
     EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
                                   &token_binding_header));
     EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
         &token_binding_message));
     std::vector<TokenBinding> token_bindings;
     ASSERT_TRUE(
@@ -3432,8 +3432,9 @@ TEST_F(TokenBindingURLRequestTest, TokenBindingTest) {
     std::string ekm = d.data_received();
 
     EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
-                                   token_bindings[0].signature, ekm));
+    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
+                                            token_bindings[0].signature,
+                                            TokenBindingType::PROVIDED, ekm));
   }
 }
 
@@ -3464,7 +3465,7 @@ TEST_F(TokenBindingURLRequestTest, ForwardTokenBinding) {
     EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
                                   &token_binding_header));
     EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
         &token_binding_message));
     std::vector<TokenBinding> token_bindings;
     ASSERT_TRUE(
@@ -3475,11 +3476,13 @@ TEST_F(TokenBindingURLRequestTest, ForwardTokenBinding) {
     std::string ekm = d.data_received();
 
     EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
-                                   token_bindings[0].signature, ekm));
+    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
+                                            token_bindings[0].signature,
+                                            TokenBindingType::PROVIDED, ekm));
     EXPECT_EQ(TokenBindingType::REFERRED, token_bindings[1].type);
-    EXPECT_TRUE(VerifyEKMSignature(token_bindings[1].ec_point,
-                                   token_bindings[1].signature, ekm));
+    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[1].ec_point,
+                                            token_bindings[1].signature,
+                                            TokenBindingType::REFERRED, ekm));
   }
 }
 
@@ -3517,7 +3520,7 @@ TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
     EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
                                   &token_binding_header));
     EXPECT_TRUE(base::Base64UrlDecode(
-        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        token_binding_header, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
         &token_binding_message));
     std::vector<TokenBinding> token_bindings;
     ASSERT_TRUE(
@@ -3528,8 +3531,9 @@ TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
     std::string ekm = d.data_received();
 
     EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
-    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
-                                   token_bindings[0].signature, ekm));
+    EXPECT_TRUE(VerifyTokenBindingSignature(token_bindings[0].ec_point,
+                                            token_bindings[0].signature,
+                                            TokenBindingType::PROVIDED, ekm));
   }
 }
 

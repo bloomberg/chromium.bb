@@ -591,7 +591,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->UpdateCertificateTransparencyInfo(*ct_verify_result_);
 
   if (crypto_stream_->crypto_negotiated_params().token_binding_key_param ==
-      kP256) {
+      kTB10) {
     ssl_info->token_binding_negotiated = true;
     ssl_info->token_binding_key_param = TB_PARAM_ECDSAP256;
   }
@@ -601,6 +601,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
 
 Error QuicChromiumClientSession::GetTokenBindingSignature(
     crypto::ECPrivateKey* key,
+    TokenBindingType tb_type,
     std::vector<uint8_t>* out) {
   // The same key will be used across multiple requests to sign the same value,
   // so the signature is cached.
@@ -608,7 +609,7 @@ Error QuicChromiumClientSession::GetTokenBindingSignature(
   if (!key->ExportRawPublicKey(&raw_public_key))
     return ERR_FAILED;
   TokenBindingSignatureMap::iterator it =
-      token_binding_signatures_.Get(raw_public_key);
+      token_binding_signatures_.Get(std::make_pair(tb_type, raw_public_key));
   if (it != token_binding_signatures_.end()) {
     *out = it->second;
     return OK;
@@ -617,9 +618,9 @@ Error QuicChromiumClientSession::GetTokenBindingSignature(
   std::string key_material;
   if (!crypto_stream_->ExportTokenBindingKeyingMaterial(&key_material))
     return ERR_FAILED;
-  if (!SignTokenBindingEkm(key_material, key, out))
+  if (!CreateTokenBindingSignature(key_material, tb_type, key, out))
     return ERR_FAILED;
-  token_binding_signatures_.Put(raw_public_key, *out);
+  token_binding_signatures_.Put(std::make_pair(tb_type, raw_public_key), *out);
   return OK;
 }
 

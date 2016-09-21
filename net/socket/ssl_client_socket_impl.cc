@@ -78,9 +78,9 @@ const unsigned int kTbExtNum = 24;
 
 // Token Binding ProtocolVersions supported.
 const uint8_t kTbProtocolVersionMajor = 0;
-const uint8_t kTbProtocolVersionMinor = 8;
+const uint8_t kTbProtocolVersionMinor = 10;
 const uint8_t kTbMinProtocolVersionMajor = 0;
-const uint8_t kTbMinProtocolVersionMinor = 6;
+const uint8_t kTbMinProtocolVersionMinor = 10;
 
 bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
   switch (EVP_MD_type(md)) {
@@ -487,7 +487,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       channel_id_service_(context.channel_id_service),
       tb_was_negotiated_(false),
       tb_negotiated_param_(TB_PARAM_ECDSAP256),
-      tb_signed_ekm_map_(10),
+      tb_signature_map_(10),
       ssl_(NULL),
       transport_bio_(NULL),
       transport_(std::move(transport_socket)),
@@ -534,16 +534,16 @@ ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
   return channel_id_service_;
 }
 
-Error SSLClientSocketImpl::GetSignedEKMForTokenBinding(
-    crypto::ECPrivateKey* key,
-    std::vector<uint8_t>* out) {
+Error SSLClientSocketImpl::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                    TokenBindingType tb_type,
+                                                    std::vector<uint8_t>* out) {
   // The same key will be used across multiple requests to sign the same value,
   // so the signature is cached.
   std::string raw_public_key;
   if (!key->ExportRawPublicKey(&raw_public_key))
     return ERR_FAILED;
-  SignedEkmMap::iterator it = tb_signed_ekm_map_.Get(raw_public_key);
-  if (it != tb_signed_ekm_map_.end()) {
+  auto it = tb_signature_map_.Get(std::make_pair(tb_type, raw_public_key));
+  if (it != tb_signature_map_.end()) {
     *out = it->second;
     return OK;
   }
@@ -557,13 +557,13 @@ Error SSLClientSocketImpl::GetSignedEKMForTokenBinding(
     return ERR_FAILED;
   }
 
-  if (!SignTokenBindingEkm(
+  if (!CreateTokenBindingSignature(
           base::StringPiece(reinterpret_cast<char*>(tb_ekm_buf),
                             sizeof(tb_ekm_buf)),
-          key, out))
+          tb_type, key, out))
     return ERR_FAILED;
 
-  tb_signed_ekm_map_.Put(raw_public_key, *out);
+  tb_signature_map_.Put(std::make_pair(tb_type, raw_public_key), *out);
   return OK;
 }
 
@@ -1171,9 +1171,12 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   }
 
   // Check that if token binding was negotiated, then extended master secret
-  // must also be negotiated.
-  if (tb_was_negotiated_ && !SSL_get_extms_support(ssl_))
+  // and renegotiation indication must also be negotiated.
+  if (tb_was_negotiated_ &&
+      !(SSL_get_extms_support(ssl_) &&
+        SSL_get_secure_renegotiation_support(ssl_))) {
     return ERR_SSL_PROTOCOL_ERROR;
+  }
 
   const uint8_t* alpn_proto = NULL;
   unsigned alpn_len = 0;

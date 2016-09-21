@@ -111,9 +111,10 @@ bool HttpBasicStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return state_.connection()->socket()->GetPeerAddress(endpoint) == OK;
 }
 
-Error HttpBasicStream::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                                   std::vector<uint8_t>* out) {
-  return parser()->GetSignedEKMForTokenBinding(key, out);
+Error HttpBasicStream::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                TokenBindingType tb_type,
+                                                std::vector<uint8_t>* out) {
+  return parser()->GetTokenBindingSignature(key, tb_type, out);
 }
 
 void HttpBasicStream::Drain(HttpNetworkSession* session) {

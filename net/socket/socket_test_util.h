@@ -583,8 +583,9 @@ class MockClientSocket : public SSLClientSocket {
                            unsigned char* out,
                            unsigned int outlen) override;
   ChannelIDService* GetChannelIDService() const override;
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
   crypto::ECPrivateKey* GetChannelIDKey() const override;
 
  protected:
@@ -699,8 +700,9 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
   // This MockSocket does not implement the manual async IO feature.
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;

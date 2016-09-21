@@ -1936,15 +1936,16 @@ NextProto SpdySession::GetNegotiatedProtocol() const {
   return connection_->socket()->GetNegotiatedProtocol();
 }
 
-Error SpdySession::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                               std::vector<uint8_t>* out) {
+Error SpdySession::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                            TokenBindingType tb_type,
+                                            std::vector<uint8_t>* out) {
   if (!is_secure_) {
     NOTREACHED();
     return ERR_FAILED;
   }
   SSLClientSocket* ssl_socket =
       static_cast<SSLClientSocket*>(connection_->socket());
-  return ssl_socket->GetSignedEKMForTokenBinding(key, out);
+  return ssl_socket->GetTokenBindingSignature(key, tb_type, out);
 }
 
 void SpdySession::OnError(SpdyFramer::SpdyError error_code) {

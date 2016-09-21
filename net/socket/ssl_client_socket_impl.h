@@ -44,7 +44,9 @@ class CTVerifier;
 class SSLCertRequestInfo;
 class SSLInfo;
 
-using SignedEkmMap = base::MRUCache<std::string, std::vector<uint8_t>>;
+using TokenBindingSignatureMap =
+    base::MRUCache<std::pair<TokenBindingType, std::string>,
+                   std::vector<uint8_t>>;
 
 class SSLClientSocketImpl : public SSLClientSocket {
  public:
@@ -74,8 +76,9 @@ class SSLClientSocketImpl : public SSLClientSocket {
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   ChannelIDService* GetChannelIDService() const override;
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
   crypto::ECPrivateKey* GetChannelIDKey() const override;
 
   // SSLSocket implementation.
@@ -319,7 +322,7 @@ class SSLClientSocketImpl : public SSLClientSocket {
   ChannelIDService* channel_id_service_;
   bool tb_was_negotiated_;
   TokenBindingParam tb_negotiated_param_;
-  SignedEkmMap tb_signed_ekm_map_;
+  TokenBindingSignatureMap tb_signature_map_;
 
   // OpenSSL stuff
   SSL* ssl_;

@@ -78,8 +78,9 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
 
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
 
   void Drain(HttpNetworkSession* session) override;
 

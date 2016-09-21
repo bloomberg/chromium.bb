@@ -105,8 +105,9 @@ class FailingSSLClientSocket : public SSLClientSocket {
     return nullptr;
   }
 
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override {
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }

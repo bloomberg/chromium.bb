@@ -14193,8 +14193,9 @@ class FakeStream : public HttpStream,
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override {
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override {
     ADD_FAILURE();
     return ERR_NOT_IMPLEMENTED;
   }
@@ -14427,8 +14428,9 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out) override {
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override {
     ADD_FAILURE();
     return ERR_NOT_IMPLEMENTED;
   }

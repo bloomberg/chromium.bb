@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
+#include "net/ssl/token_binding.h"
 
 namespace net {
 
@@ -100,8 +101,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
 
-  Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                    std::vector<uint8_t>* out);
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out);
 
   // Encodes the given |payload| in the chunked format to |output|.
   // Returns the number of bytes written to |output|. |output_size| should

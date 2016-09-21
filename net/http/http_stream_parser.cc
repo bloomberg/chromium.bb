@@ -1165,15 +1165,16 @@ void HttpStreamParser::GetSSLCertRequestInfo(
   }
 }
 
-Error HttpStreamParser::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                                    std::vector<uint8_t>* out) {
+Error HttpStreamParser::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                 TokenBindingType tb_type,
+                                                 std::vector<uint8_t>* out) {
   if (!request_->url.SchemeIsCryptographic() || !connection_->socket()) {
     NOTREACHED();
     return ERR_FAILED;
   }
   SSLClientSocket* ssl_socket =
       static_cast<SSLClientSocket*>(connection_->socket());
-  return ssl_socket->GetSignedEKMForTokenBinding(key, out);
+  return ssl_socket->GetTokenBindingSignature(key, tb_type, out);
 }
 
 int HttpStreamParser::EncodeChunk(const base::StringPiece& payload,

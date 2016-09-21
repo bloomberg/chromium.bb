@@ -408,9 +408,10 @@ bool QuicHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return true;
 }
 
-Error QuicHttpStream::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
-                                                  std::vector<uint8_t>* out) {
-  return session_->GetTokenBindingSignature(key, out);
+Error QuicHttpStream::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                               TokenBindingType tb_type,
+                                               std::vector<uint8_t>* out) {
+  return session_->GetTokenBindingSignature(key, tb_type, out);
 }
 
 void QuicHttpStream::Drain(HttpNetworkSession* session) {

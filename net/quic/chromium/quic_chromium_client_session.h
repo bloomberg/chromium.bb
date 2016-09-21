@@ -48,7 +48,8 @@ class SSLInfo;
 class TransportSecurityState;
 
 using TokenBindingSignatureMap =
-    base::MRUCache<std::string, std::vector<uint8_t>>;
+    base::MRUCache<std::pair<TokenBindingType, std::string>,
+                   std::vector<uint8_t>>;
 
 namespace test {
 class QuicChromiumClientSessionPeer;
@@ -197,9 +198,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Gets the SSL connection information.
   bool GetSSLInfo(SSLInfo* ssl_info) const;
 
-  // Signs the exported keying material used for Token Binding using key |*key|
-  // and puts the signature in |*out|. Returns a net error code.
+  // Generates the signature used in Token Binding using key |*key| and for a
+  // Token Binding of type |tb_type|, putting the signature in |*out|. Returns a
+  // net error code.
   Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
                                  std::vector<uint8_t>* out);
 
   // Performs a crypto handshake with the server.

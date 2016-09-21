@@ -816,7 +816,7 @@ QuicStreamFactory::QuicStreamFactory(
         new ChannelIDSourceChromium(channel_id_service));
   }
   if (enable_token_binding && channel_id_service)
-    crypto_config_.tb_key_params.push_back(kP256);
+    crypto_config_.tb_key_params.push_back(kTB10);
   crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
