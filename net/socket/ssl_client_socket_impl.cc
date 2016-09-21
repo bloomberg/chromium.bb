@@ -946,8 +946,10 @@ int SSLClientSocketImpl::Init() {
 
   DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
   DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
-  SSL_set_min_version(ssl_, ssl_config_.version_min);
-  SSL_set_max_version(ssl_, ssl_config_.version_max);
+  if (!SSL_set_min_proto_version(ssl_, ssl_config_.version_min) ||
+      !SSL_set_max_proto_version(ssl_, ssl_config_.version_max)) {
+    return ERR_UNEXPECTED;
+  }
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.

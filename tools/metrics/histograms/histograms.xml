@@ -97183,9 +97183,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1283" label="ecdsa_secp384r1_sha384"/>
   <int value="1537" label="rsa_pkcs1_sha512"/>
   <int value="1539" label="ecdsa_secp521r1_sha512"/>
-  <int value="1792" label="rsa_pss_sha256"/>
-  <int value="1793" label="rsa_pss_sha384"/>
-  <int value="1794" label="rsa_pss_sha512"/>
+  <int value="1792" label="rsa_pss_sha256 (old)"/>
+  <int value="1793" label="rsa_pss_sha384 (old)"/>
+  <int value="1794" label="rsa_pss_sha512 (old)"/>
+  <int value="2052" label="rsa_pss_sha256"/>
+  <int value="2053" label="rsa_pss_sha384"/>
+  <int value="2054" label="rsa_pss_sha512"/>
 </enum>
 
 <enum name="StarsLaunchLocation" type="int">
