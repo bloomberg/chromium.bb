@@ -45,7 +45,8 @@ Polymer({
     },
 
     /**
-     * Controls which main pages are displayed via dom-ifs.
+     * Controls which main pages are displayed via dom-ifs, based on the current
+     * route and the Advanced toggle state.
      * @private {!MainPageVisibility}
      */
     showPages_: {
@@ -145,6 +146,27 @@ Polymer({
         !this.hasExpandedSection_;
   },
 
+  /**
+   * @return {boolean} Whether to show the basic page, taking into account both
+   *     routing and search state.
+   * @private
+   */
+  showBasicPage_: function() {
+    return this.showPages_.basic || (
+        this.inSearchMode_ && !this.hasExpandedSection_);
+  },
+
+  /**
+   * @return {boolean} Whether to show the advanced page, taking into account
+   *     both routing and search state.
+   * @private
+   */
+  showAdvancedPage_: function() {
+    return this.showPages_.advanced || (
+        this.inSearchMode_ && !this.hasExpandedSection_);
+  },
+
+  /** @param {!settings.Route} newRoute */
   currentRouteChanged: function(newRoute) {
     // When the route changes from a sub-page to the main page, immediately
     // update hasExpandedSection_ to unhide the other sections.
@@ -260,12 +282,10 @@ Polymer({
    * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
+    // Trigger rendering of the basic and advanced pages and search once ready.
     this.inSearchMode_ = true;
     this.ensureInDefaultSearchPage_();
     this.toolbarSpinnerActive = true;
-
-    // Trigger rendering of the basic and advanced pages and search once ready.
-    this.showPages_ = {about: false, basic: true, advanced: true};
 
     return new Promise(function(resolve, reject) {
       setTimeout(function() {
@@ -289,14 +309,6 @@ Polymer({
           this.inSearchMode_ = !request.isSame('');
           this.showNoResultsFound_ =
               this.inSearchMode_ && !request.didFindMatches();
-
-          if (!this.inSearchMode_) {
-            // Restore the "advanced" page visibility as it was before search
-            // was initiated.
-            this.showPages_ = {
-              about: false, basic: true, advanced: this.advancedToggleExpanded_,
-            };
-          }
         }.bind(this));
       }.bind(this), 0);
     }.bind(this));

@@ -145,6 +145,30 @@ cr.define('settings_main_page', function() {
         return assertPageVisibilityAfterSearch('', '');
       });
 
+      // Ensure that searching, then entering a subpage, then going back
+      // lands the user in a page where both basic and advanced sections are
+      // visible, because the page is still in search mode.
+      test('returning from subpage to search results', function() {
+        settings.navigateTo(settings.Route.BASIC);
+        Polymer.dom.flush();
+
+        searchManager.setMatchesFound(true);
+        return settingsMain.searchContents('Query1').then(function() {
+          // Simulate navigating into a subpage.
+          settings.navigateTo(settings.Route.SEARCH_ENGINES);
+          settingsMain.$$('settings-basic-page').fire('subpage-expand');
+          Polymer.dom.flush();
+
+          // Simulate clicking the left arrow to go back to the search results.
+          settingsMain.currentRouteChanged(settings.Route.BASIC);
+          Polymer.dom.flush();
+          assertEquals(
+              '', settingsMain.$$('settings-basic-page').style.display);
+          assertEquals(
+              '', settingsMain.$$('settings-advanced-page').style.display);
+        });
+      });
+
       test('can collapse advanced on advanced section route', function() {
         settings.navigateTo(settings.Route.PRIVACY);
         Polymer.dom.flush();

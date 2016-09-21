@@ -61,7 +61,8 @@
       <div>$i18n{searchNoResults}</div>
       <div>$i18nRaw{searchNoResultsHelp}</div>
     </div>
-    <template is="dom-if" if="[[showPages_.basic]]">
+    <template is="dom-if" if="[[showBasicPage_(
+        showPages_.basic, inSearchMode_, hasExpandedSection_)]]">
       <settings-basic-page route="BASIC" prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           on-subpage-expand="onSubpageExpand_">
@@ -80,7 +81,8 @@
           </paper-button>
         </div>
       </template>
-      <template is="dom-if" if="[[showPages_.advanced]]">
+      <template is="dom-if" if="[[showAdvancedPage_(
+          showPages_.advanced, inSearchMode_, hasExpandedSection_)]]">
         <settings-advanced-page route="ADVANCED" prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
             on-subpage-expand="onSubpageExpand_">
