@@ -82,6 +82,7 @@ static_library("metrics") {
     "//components/metrics/proto",
   ]
   deps = [
+    ":call_stack_profile_params",
     "//base",
     "//base:base_static",
     "//components/prefs",
@@ -233,9 +234,32 @@ if (!is_ios) {
   }
 }
 
+source_set("call_stack_profile_params") {
+  sources = [
+    "call_stack_profile_params.cc",
+    "call_stack_profile_params.h",
+  ]
+}
+
 source_set("call_stacks") {
+  sources = [
+    "call_stack_profile_collector.cc",
+    "call_stack_profile_collector.h",
+  ]
+  deps = [
+    ":metrics",
+    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+  ]
+}
+
+source_set("child_call_stacks") {
+  sources = [
+    "child_call_stack_profile_collector.cc",
+    "child_call_stack_profile_collector.h",
+  ]
   deps = [
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//services/shell/public/cpp",
   ]
 }
 
@@ -276,6 +300,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "call_stack_profile_metrics_provider_unittest.cc",
+    "child_call_stack_profile_collector_unittest.cc",
     "cloned_install_detector_unittest.cc",
     "daily_event_unittest.cc",
     "data_use_tracker_unittest.cc",
@@ -297,6 +322,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":call_stack_profile_params",
+    ":child_call_stacks",
     ":metrics",
     ":net",
     ":profiler",
@@ -306,7 +333,9 @@ source_set("unit_tests") {
     "//components/metrics/public/cpp:call_stack_unit_tests",
     "//components/prefs:test_support",
     "//components/variations",
+    "//mojo/public/cpp/bindings",
     "//net:test_support",
+    "//services/shell/public/cpp:sources",
     "//testing/gtest",
     "//third_party/zlib:compression_utils",
     "//ui/gfx/geometry",
@@ -322,8 +351,9 @@ source_set("unit_tests") {
   }
 
   # iOS is not supported by the profiler and the ios-simulator bot chokes on
-  # this test.
+  # these tests.
   if (is_ios) {
+    sources -= [ "child_call_stack_profile_collector_unittest.cc" ]
     deps -= [ "//components/metrics/public/cpp:call_stack_unit_tests" ]
   }
 }

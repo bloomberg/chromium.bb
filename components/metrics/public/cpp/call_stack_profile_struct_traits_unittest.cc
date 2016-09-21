@@ -54,6 +54,17 @@ class CallStackProfileCollectorTestImpl
     callback.Run(in);
   }
 
+  void BounceTrigger(metrics::CallStackProfileParams::Trigger in,
+                     const BounceTriggerCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceSampleOrderingSpec(
+      metrics::CallStackProfileParams::SampleOrderingSpec in,
+      const BounceSampleOrderingSpecCallback& callback) override {
+    callback.Run(in);
+  }
+
  private:
   mojo::Binding<CallStackProfileCollectorTest> binding_;
 
@@ -246,6 +257,43 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
     EXPECT_EQ(input.profile.profile_duration, output.profile_duration);
     EXPECT_EQ(input.profile.sampling_period, output.sampling_period);
   }
+}
+
+// Checks serialization/deserialization of the SampleOrderingSpec, including
+// validation.
+TEST_F(CallStackProfileStructTraitsTest, SampleOrderingSpec) {
+  using SampleOrderingSpec =
+      metrics::CallStackProfileParams::SampleOrderingSpec;
+
+  SampleOrderingSpec out;
+
+  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(SampleOrderingSpec::MAY_SHUFFLE,
+                                               &out));
+  EXPECT_EQ(SampleOrderingSpec::MAY_SHUFFLE, out);
+
+  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(
+      SampleOrderingSpec::PRESERVE_ORDER,
+      &out));
+  EXPECT_EQ(SampleOrderingSpec::PRESERVE_ORDER, out);
+}
+
+// Checks serialization/deserialization of the trigger, including validation.
+TEST_F(CallStackProfileStructTraitsTest, Trigger) {
+  using Trigger = metrics::CallStackProfileParams::Trigger;
+
+  Trigger out;
+
+  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::UNKNOWN, &out));
+  EXPECT_EQ(Trigger::UNKNOWN, out);
+
+  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::PROCESS_STARTUP, &out));
+  EXPECT_EQ(Trigger::PROCESS_STARTUP, out);
+
+  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::JANKY_TASK, &out));
+  EXPECT_EQ(Trigger::JANKY_TASK, out);
+
+  EXPECT_TRUE(proxy_->BounceTrigger(Trigger::THREAD_HUNG, &out));
+  EXPECT_EQ(Trigger::THREAD_HUNG, out);
 }
 
 }  // namespace metrics

@@ -955,9 +955,9 @@ void JankTimeBomb::Alarm(base::PlatformThreadId thread_id) {
       thread_id,
       GetJankTimeBombSamplingParams(),
       metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
-          metrics::CallStackProfileMetricsProvider::Params(
-              metrics::CallStackProfileMetricsProvider::JANKY_TASK,
-              true))));
+          metrics::CallStackProfileParams(
+              metrics::CallStackProfileParams::JANKY_TASK,
+              metrics::CallStackProfileParams::PRESERVE_ORDER))));
   // Use synchronous profiler. It will automatically stop collection when
   // destroyed.
   sampling_profiler_->Start();

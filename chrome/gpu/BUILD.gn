@@ -4,6 +4,7 @@
 
 static_library("gpu") {
   deps = [
+    "//components/metrics:child_call_stacks",
     "//content/public/common",
     "//content/public/gpu",
     "//gpu/command_buffer/service",

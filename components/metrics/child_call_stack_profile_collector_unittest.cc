@@ -1,0 +1,157 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/metrics/child_call_stack_profile_collector.h"
+
+#include <memory>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "components/metrics/call_stack_profile_params.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace metrics {
+
+namespace {
+
+
+}  // namespace
+
+class ChildCallStackProfileCollectorTest : public testing::Test {
+ protected:
+  class Receiver : public mojom::CallStackProfileCollector {
+   public:
+    using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
+
+    Receiver(mojom::CallStackProfileCollectorRequest request)
+        : binding_(this, std::move(request)) {}
+    ~Receiver() override {}
+
+    void Collect(const CallStackProfileParams& params,
+                 base::TimeTicks start_timestamp,
+                 const std::vector<CallStackProfile>& profiles) override {
+      this->profiles.push_back(ChildCallStackProfileCollector::ProfilesState(
+          params,
+          start_timestamp,
+          profiles));
+    }
+
+    std::vector<ChildCallStackProfileCollector::ProfilesState> profiles;
+
+   private:
+    mojo::Binding<mojom::CallStackProfileCollector> binding_;
+
+    DISALLOW_COPY_AND_ASSIGN(Receiver);
+  };
+
+  ChildCallStackProfileCollectorTest()
+      : receiver_impl_(new Receiver(GetProxy(&receiver_))) {}
+
+  void CollectProfiles(
+      const CallStackProfileParams& params,
+      const base::StackSamplingProfiler::CallStackProfiles& profiles) {
+    child_collector_.GetProfilerCallback(params).Run(profiles);
+  }
+
+  const std::vector<ChildCallStackProfileCollector::ProfilesState>&
+  profiles() const {
+    return child_collector_.profiles_;
+  }
+
+  base::MessageLoop loop_;
+  mojom::CallStackProfileCollectorPtr receiver_;
+  std::unique_ptr<Receiver> receiver_impl_;
+  ChildCallStackProfileCollector child_collector_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildCallStackProfileCollectorTest);
+};
+
+// Test the behavior when an interface is provided.
+TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
+  EXPECT_EQ(0u, profiles().size());
+
+  // Add profiles before providing the interface.
+  CollectProfiles(
+      CallStackProfileParams(CallStackProfileParams::JANKY_TASK,
+                             CallStackProfileParams::PRESERVE_ORDER),
+      { base::StackSamplingProfiler::CallStackProfile(),
+            base::StackSamplingProfiler::CallStackProfile() });
+  ASSERT_EQ(1u, profiles().size());
+  EXPECT_EQ(CallStackProfileParams::JANKY_TASK, profiles()[0].params.trigger);
+  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
+            profiles()[0].params.ordering_spec);
+  base::TimeTicks start_timestamp = profiles()[0].start_timestamp;
+  EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
+            base::TimeTicks::Now() - start_timestamp);
+  EXPECT_EQ(2u, profiles()[0].profiles.size());
+
+  // Set the interface. The profiles should be passed to it.
+  child_collector_.SetParentProfileCollector(std::move(receiver_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, profiles().size());
+  ASSERT_EQ(1u, receiver_impl_->profiles.size());
+  EXPECT_EQ(CallStackProfileParams::JANKY_TASK,
+            receiver_impl_->profiles[0].params.trigger);
+  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
+            receiver_impl_->profiles[0].params.ordering_spec);
+  EXPECT_EQ(start_timestamp, receiver_impl_->profiles[0].start_timestamp);
+  EXPECT_EQ(2u, receiver_impl_->profiles[0].profiles.size());
+
+  // Add profiles after providing the interface. They should also be passed to
+  // it.
+  receiver_impl_->profiles.clear();
+  CollectProfiles(
+      CallStackProfileParams(CallStackProfileParams::THREAD_HUNG,
+                             CallStackProfileParams::PRESERVE_ORDER),
+      { base::StackSamplingProfiler::CallStackProfile() });
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, profiles().size());
+  ASSERT_EQ(1u, receiver_impl_->profiles.size());
+  EXPECT_EQ(CallStackProfileParams::THREAD_HUNG,
+            receiver_impl_->profiles[0].params.trigger);
+  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
+            receiver_impl_->profiles[0].params.ordering_spec);
+  EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
+            (base::TimeTicks::Now() -
+             receiver_impl_->profiles[0].start_timestamp));
+  EXPECT_EQ(1u, receiver_impl_->profiles[0].profiles.size());
+}
+
+TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
+  EXPECT_EQ(0u, profiles().size());
+
+  // Add profiles before providing a null interface.
+  CollectProfiles(
+      CallStackProfileParams(CallStackProfileParams::JANKY_TASK,
+                             CallStackProfileParams::PRESERVE_ORDER),
+      { base::StackSamplingProfiler::CallStackProfile(),
+            base::StackSamplingProfiler::CallStackProfile() });
+  ASSERT_EQ(1u, profiles().size());
+  EXPECT_EQ(CallStackProfileParams::JANKY_TASK, profiles()[0].params.trigger);
+  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
+            profiles()[0].params.ordering_spec);
+  EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
+            base::TimeTicks::Now() - profiles()[0].start_timestamp);
+  EXPECT_EQ(2u, profiles()[0].profiles.size());
+
+  // Set the null interface. The profiles should be flushed.
+  child_collector_.SetParentProfileCollector(
+      mojom::CallStackProfileCollectorPtr());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, profiles().size());
+
+  // Add profiles after providing a null interface. They should also be flushed.
+  CollectProfiles(
+      CallStackProfileParams(CallStackProfileParams::THREAD_HUNG,
+                             CallStackProfileParams::PRESERVE_ORDER),
+      { base::StackSamplingProfiler::CallStackProfile() });
+  EXPECT_EQ(0u, profiles().size());
+}
+
+}  // namespace metrics

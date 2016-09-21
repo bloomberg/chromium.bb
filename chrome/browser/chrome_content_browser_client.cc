@@ -122,6 +122,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -2948,6 +2949,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
     shell::InterfaceRegistry* registry,
     content::GpuProcessHost* render_process_host) {
+  registry->AddInterface(
+      base::Bind(&metrics::CallStackProfileCollector::Create));
 }
 
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(

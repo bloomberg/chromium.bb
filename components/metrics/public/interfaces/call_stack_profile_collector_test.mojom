@@ -15,4 +15,10 @@ interface CallStackProfileCollectorTest {
 
   [Sync]
   BounceProfile(CallStackProfile in) => (CallStackProfile out);
+
+  [Sync]
+  BounceTrigger(Trigger in) => (Trigger out);
+
+  [Sync]
+  BounceSampleOrderingSpec(SampleOrderingSpec in) => (SampleOrderingSpec out);
 };

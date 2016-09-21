@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "chrome/common/variations/child_process_field_trial_syncer.h"
 #include "content/public/gpu/content_gpu_client.h"
 
@@ -27,6 +28,8 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
  private:
   std::unique_ptr<chrome_variations::ChildProcessFieldTrialSyncer>
       field_trial_syncer_;
+  // Used to profile process startup.
+  base::StackSamplingProfiler stack_sampling_profiler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentGpuClient);
 };

@@ -1314,6 +1314,7 @@ split_static_library("browser") {
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/keyed_service/content",
+    "//components/metrics:call_stacks",
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:profiler",

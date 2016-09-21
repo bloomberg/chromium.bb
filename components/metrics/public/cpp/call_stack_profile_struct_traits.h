@@ -133,6 +133,100 @@ struct StructTraits<metrics::mojom::CallStackProfileDataView,
   }
 };
 
+template <>
+struct EnumTraits<metrics::mojom::SampleOrderingSpec,
+                  metrics::CallStackProfileParams::SampleOrderingSpec> {
+
+  static metrics::mojom::SampleOrderingSpec ToMojom(
+      metrics::CallStackProfileParams::SampleOrderingSpec spec) {
+    switch (spec) {
+      case metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE:
+        return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
+      case metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER:
+        return metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER;
+    }
+    NOTREACHED();
+    return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
+  }
+
+  static bool FromMojom(
+      metrics::mojom::SampleOrderingSpec spec,
+      metrics::CallStackProfileParams::SampleOrderingSpec* out) {
+    switch (spec) {
+      case metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE:
+        *out = metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE;
+        return true;
+      case metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER:
+        *out =
+            metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
+struct EnumTraits<metrics::mojom::Trigger,
+                  metrics::CallStackProfileParams::Trigger> {
+  static metrics::mojom::Trigger ToMojom(
+      metrics::CallStackProfileParams::Trigger trigger) {
+    switch (trigger) {
+      case metrics::CallStackProfileParams::Trigger::UNKNOWN:
+        return metrics::mojom::Trigger::UNKNOWN;
+      case metrics::CallStackProfileParams::Trigger::PROCESS_STARTUP:
+        return metrics::mojom::Trigger::PROCESS_STARTUP;
+      case metrics::CallStackProfileParams::Trigger::JANKY_TASK:
+        return metrics::mojom::Trigger::JANKY_TASK;
+      case metrics::CallStackProfileParams::Trigger::THREAD_HUNG:
+        return metrics::mojom::Trigger::THREAD_HUNG;
+    }
+    NOTREACHED();
+    return metrics::mojom::Trigger::UNKNOWN;
+  }
+
+  static bool FromMojom(metrics::mojom::Trigger trigger,
+                        metrics::CallStackProfileParams::Trigger* out) {
+    switch (trigger) {
+      case metrics::mojom::Trigger::UNKNOWN:
+        *out = metrics::CallStackProfileParams::Trigger::UNKNOWN;
+        return true;
+      case metrics::mojom::Trigger::PROCESS_STARTUP:
+        *out = metrics::CallStackProfileParams::Trigger::PROCESS_STARTUP;
+        return true;
+      case metrics::mojom::Trigger::JANKY_TASK:
+        *out = metrics::CallStackProfileParams::Trigger::JANKY_TASK;
+        return true;
+      case metrics::mojom::Trigger::THREAD_HUNG:
+        *out = metrics::CallStackProfileParams::Trigger::THREAD_HUNG;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
+struct StructTraits<metrics::mojom::CallStackProfileParamsDataView,
+                    metrics::CallStackProfileParams> {
+  static metrics::CallStackProfileParams::Trigger trigger(
+      const metrics::CallStackProfileParams& params) {
+    return params.trigger;
+  }
+  static metrics::CallStackProfileParams::SampleOrderingSpec ordering_spec(
+      const metrics::CallStackProfileParams& params) {
+    return params.ordering_spec;
+  }
+
+  static bool Read(metrics::mojom::CallStackProfileParamsDataView data,
+                   metrics::CallStackProfileParams* out) {
+    metrics::CallStackProfileParams::Trigger trigger;
+    metrics::CallStackProfileParams::SampleOrderingSpec ordering_spec;
+    if (!data.ReadTrigger(&trigger) || !data.ReadOrderingSpec(&ordering_spec))
+      return false;
+    *out = metrics::CallStackProfileParams(trigger, ordering_spec);
+    return true;
+  }
+};
+
 }  // mojo
 
 #endif  // COMPONENTS_METRICS_CALL_STACK_PROFILE_STRUCT_TRAITS_H_

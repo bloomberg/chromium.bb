@@ -1,5 +1,6 @@
 include_rules = [
   "+components/arc/common",
+  "+components/metrics",
   "+content/public/gpu",
   "+media/video",
   "+media/base/video_frame.h",

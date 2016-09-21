@@ -9,6 +9,7 @@ include_rules = [
   "+components/version_info",
   "+content/public/test",
   "+mojo/public/cpp",
+  "+services/shell/public/cpp",
   "+third_party/zlib/google",
   "-net",
 ]

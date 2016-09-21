@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,8 +26,6 @@ using Profiles = StackSamplingProfiler::CallStackProfiles;
 using Sample = StackSamplingProfiler::Sample;
 
 namespace metrics {
-
-using Params = CallStackProfileMetricsProvider::Params;
 
 // This test fixture enables the field trial that
 // CallStackProfileMetricsProvider depends on to report profiles.
@@ -43,7 +42,8 @@ class CallStackProfileMetricsProviderTest : public testing::Test {
   ~CallStackProfileMetricsProviderTest() override {}
 
   // Utility function to append profiles to the metrics provider.
-  void AppendProfiles(const Params& params, const Profiles& profiles) {
+  void AppendProfiles(const CallStackProfileParams& params,
+                      const Profiles& profiles) {
     CallStackProfileMetricsProvider::GetProfilerCallback(params).Run(profiles);
   }
 
@@ -205,7 +205,8 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+      CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE),
       profiles);
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
@@ -313,7 +314,8 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+      CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE),
       std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
@@ -392,7 +394,8 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
-  AppendProfiles(Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, true),
+  AppendProfiles(CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                                        CallStackProfileParams::PRESERVE_ORDER),
                  std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
@@ -444,7 +447,8 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+      CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE),
       std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
@@ -481,7 +485,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
 
     provider.OnRecordingEnabled();
     AppendProfiles(
-        Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+        CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                               CallStackProfileParams::MAY_SHUFFLE),
         std::vector<Profile>(1, profile));
     ChromeUserMetricsExtension uma_proto;
     provider.ProvideGeneralMetrics(&uma_proto);
@@ -508,7 +513,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   profile.sampling_period = base::TimeDelta::FromMilliseconds(10);
 
   AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+      CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE),
       std::vector<Profile>(1, profile));
 
   CallStackProfileMetricsProvider provider;
@@ -532,7 +538,8 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
   AppendProfiles(
-      Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false),
+      CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::MAY_SHUFFLE),
       std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
@@ -555,7 +562,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   provider.OnRecordingEnabled();
   base::StackSamplingProfiler::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallback(
-          Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false));
+          CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                                 CallStackProfileParams::MAY_SHUFFLE));
 
   provider.OnRecordingDisabled();
   callback.Run(std::vector<Profile>(1, profile));
@@ -580,7 +588,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   provider.OnRecordingEnabled();
   base::StackSamplingProfiler::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallback(
-          Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false));
+          CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                                 CallStackProfileParams::MAY_SHUFFLE));
 
   provider.OnRecordingDisabled();
   provider.OnRecordingEnabled();
@@ -606,7 +615,8 @@ TEST_F(CallStackProfileMetricsProviderTest,
   provider.OnRecordingDisabled();
   base::StackSamplingProfiler::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallback(
-          Params(CallStackProfileMetricsProvider::PROCESS_STARTUP, false));
+          CallStackProfileParams(CallStackProfileParams::PROCESS_STARTUP,
+                                 CallStackProfileParams::MAY_SHUFFLE));
 
   provider.OnRecordingEnabled();
   callback.Run(std::vector<Profile>(1, profile));

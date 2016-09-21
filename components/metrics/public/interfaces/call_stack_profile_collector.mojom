@@ -33,8 +33,18 @@ enum Trigger {
   THREAD_HUNG,
 };
 
+enum SampleOrderingSpec {
+  MAY_SHUFFLE,
+  PRESERVE_ORDER,
+};
+
+struct CallStackProfileParams {
+  Trigger trigger;
+  SampleOrderingSpec ordering_spec;
+};
+
 interface CallStackProfileCollector {
-  Collect(Trigger trigger, bool preserve_sample_ordering,
+  Collect(CallStackProfileParams params,
           mojo.common.mojom.TimeTicks start_timestamp,
           array<CallStackProfile> profiles);
 };

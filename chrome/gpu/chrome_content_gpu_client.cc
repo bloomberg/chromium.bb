@@ -4,8 +4,14 @@
 
 #include "chrome/gpu/chrome_content_gpu_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
+#include "components/metrics/child_call_stack_profile_collector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -14,9 +20,9 @@
 #include "chrome/gpu/gpu_arc_video_service.h"
 #endif
 
-#if defined(OS_CHROMEOS)
 namespace {
 
+#if defined(OS_CHROMEOS)
 void DeprecatedCreateGpuArcVideoService(
     const gpu::GpuPreferences& gpu_preferences,
     ::arc::mojom::VideoAcceleratorServiceClientRequest client_request) {
@@ -32,11 +38,32 @@ void CreateGpuArcVideoService(
       base::MakeUnique<chromeos::arc::GpuArcVideoService>(gpu_preferences),
       std::move(request));
 }
-
-}  // namespace
 #endif
 
-ChromeContentGpuClient::ChromeContentGpuClient() {}
+// Returns appropriate parameters for stack sampling on startup.
+base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams() {
+  base::StackSamplingProfiler::SamplingParams params;
+  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
+  params.bursts = 1;
+  params.samples_per_burst = 300;
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+  return params;
+}
+
+base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
+    g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+ChromeContentGpuClient::ChromeContentGpuClient()
+    : stack_sampling_profiler_(
+        base::PlatformThread::CurrentId(),
+        GetStartupSamplingParams(),
+        g_call_stack_profile_collector.Get().GetProfilerCallback(
+            metrics::CallStackProfileParams(
+                metrics::CallStackProfileParams::PROCESS_STARTUP,
+                metrics::CallStackProfileParams::MAY_SHUFFLE))) {
+}
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
@@ -63,4 +90,8 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
 
 void ChromeContentGpuClient::ConsumeInterfacesFromBrowser(
     shell::InterfaceProvider* provider) {
+  metrics::mojom::CallStackProfileCollectorPtr browser_interface;
+  provider->GetInterface(&browser_interface);
+  g_call_stack_profile_collector.Get().SetParentProfileCollector(
+      std::move(browser_interface));
 }

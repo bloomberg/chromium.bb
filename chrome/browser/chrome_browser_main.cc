@@ -765,9 +765,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           base::PlatformThread::CurrentId(),
           sampling_profiler_config_.GetSamplingParams(),
           metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
-              metrics::CallStackProfileMetricsProvider::Params(
-                  metrics::CallStackProfileMetricsProvider::PROCESS_STARTUP,
-                  false))),
+              metrics::CallStackProfileParams(
+                  metrics::CallStackProfileParams::PROCESS_STARTUP,
+                  metrics::CallStackProfileParams::MAY_SHUFFLE))),
       profile_(NULL),
       run_message_loop_(true),
       local_state_(NULL) {
