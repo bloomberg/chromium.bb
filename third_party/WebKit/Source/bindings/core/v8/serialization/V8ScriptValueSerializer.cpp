@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ImageData.h"
+#include "bindings/core/v8/V8MessagePort.h"
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -64,6 +65,7 @@ void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionSt
 {
     if (!transferables)
         return;
+    m_transferables = transferables;
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Context> context = m_scriptState->context();
 
@@ -107,6 +109,20 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, Excepti
         writeUint32(imageData->height());
         writeUint32(pixels->length());
         writeRawBytes(pixels->data(), pixels->length());
+        return true;
+    }
+    if (wrapperTypeInfo == &V8MessagePort::wrapperTypeInfo) {
+        MessagePort* messagePort = wrappable->toImpl<MessagePort>();
+        size_t index = kNotFound;
+        if (m_transferables)
+            index = m_transferables->messagePorts.find(messagePort);
+        if (index == kNotFound) {
+            exceptionState.throwDOMException(DataCloneError, "A MessagePort could not be cloned because it was not transferred.");
+            return false;
+        }
+        DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
+        writeTag(MessagePortTag);
+        writeUint32(static_cast<uint32_t>(index));
         return true;
     }
     return false;

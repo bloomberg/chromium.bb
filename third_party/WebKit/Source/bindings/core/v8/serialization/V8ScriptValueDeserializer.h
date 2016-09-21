@@ -29,6 +29,9 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT V8ScriptValueDese
     WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
 public:
     V8ScriptValueDeserializer(RefPtr<ScriptState>, RefPtr<SerializedScriptValue>);
+
+    void setTransferredMessagePorts(const MessagePortArray* ports) { m_transferredMessagePorts = ports; }
+
     v8::Local<v8::Value> deserialize();
 
 protected:
@@ -57,6 +60,9 @@ private:
     RefPtr<ScriptState> m_scriptState;
     RefPtr<SerializedScriptValue> m_serializedScriptValue;
     v8::ValueDeserializer m_deserializer;
+
+    // Message ports which were transferred in.
+    const MessagePortArray* m_transferredMessagePorts = nullptr;
 
     // Set during deserialize after the header is read.
     uint32_t m_version = 0;

@@ -107,6 +107,9 @@ public:
     // A port gets neutered when it is transferred to a new owner via postMessage().
     bool isNeutered() const { return !m_entangledChannel; }
 
+    // For testing only: allows inspection of the entangled channel.
+    WebMessagePortChannel* entangledChannelForTesting() const { return m_entangledChannel.get(); }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

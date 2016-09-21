@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/dom/MessagePort.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -107,6 +108,14 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
             return nullptr;
         memcpy(pixelArray->data(), pixels, pixelLength);
         return imageData;
+    }
+    case MessagePortTag: {
+        uint32_t index = 0;
+        if (!readUint32(&index)
+            || !m_transferredMessagePorts
+            || index >= m_transferredMessagePorts->size())
+            return nullptr;
+        return (*m_transferredMessagePorts)[index].get();
     }
     default:
         break;

@@ -28,6 +28,7 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(Seriali
 {
     if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
         V8ScriptValueDeserializerForModules deserializer(ScriptState::current(isolate), value);
+        deserializer.setTransferredMessagePorts(messagePorts);
         return deserializer.deserialize();
     }
     // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.

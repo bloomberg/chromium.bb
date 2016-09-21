@@ -60,6 +60,7 @@ private:
     RefPtr<ScriptState> m_scriptState;
     RefPtr<SerializedScriptValue> m_serializedScriptValue;
     v8::ValueSerializer m_serializer;
+    const Transferables* m_transferables = nullptr;
     const ExceptionState* m_exceptionState = nullptr;
 #if DCHECK_IS_ON()
     bool m_serializeInvoked = false;

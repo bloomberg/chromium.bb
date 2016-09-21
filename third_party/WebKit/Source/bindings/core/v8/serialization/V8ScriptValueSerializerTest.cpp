@@ -10,11 +10,15 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ImageData.h"
+#include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
+#include "core/dom/MessagePort.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebMessagePortChannelClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -43,17 +47,31 @@ RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes)
     return SerializedScriptValue::create(String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
 }
 
-v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope)
+v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope, ExceptionState* overrideExceptionState = nullptr, Transferables* transferables = nullptr)
 {
     RefPtr<ScriptState> scriptState = scope.getScriptState();
-    ExceptionState& exceptionState = scope.getExceptionState();
+    ExceptionState& exceptionState = overrideExceptionState ? *overrideExceptionState : scope.getExceptionState();
+
+    // Extract message ports and disentangle them.
+    std::unique_ptr<MessagePortChannelArray> channels;
+    if (transferables) {
+        channels = MessagePort::disentanglePorts(scope.getExecutionContext(), transferables->messagePorts, exceptionState);
+        if (exceptionState.hadException())
+            return v8::Local<v8::Value>();
+    }
+
     RefPtr<SerializedScriptValue> serializedScriptValue =
-        V8ScriptValueSerializer(scriptState).serialize(value, nullptr, exceptionState);
+        V8ScriptValueSerializer(scriptState).serialize(value, transferables, exceptionState);
     DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
-    EXPECT_TRUE(serializedScriptValue);
     if (!serializedScriptValue)
         return v8::Local<v8::Value>();
-    return V8ScriptValueDeserializer(scriptState, serializedScriptValue).deserialize();
+
+    // If there are message ports, make new ones and entangle them.
+    MessagePortArray* transferredMessagePorts = MessagePort::entanglePorts(*scope.getExecutionContext(), std::move(channels));
+
+    V8ScriptValueDeserializer deserializer(scriptState, serializedScriptValue);
+    deserializer.setTransferredMessagePorts(transferredMessagePorts);
+    return deserializer.deserialize();
 }
 
 v8::Local<v8::Value> eval(const String& source, V8TestingScope& scope)
@@ -177,6 +195,117 @@ TEST(V8ScriptValueSerializerTest, DecodeImageData)
     EXPECT_EQ(8u, newImageData->data()->length());
     EXPECT_EQ(200, newImageData->data()->data()[0]);
 }
+
+class WebMessagePortChannelImpl final : public WebMessagePortChannel {
+public:
+    // WebMessagePortChannel
+    void setClient(WebMessagePortChannelClient* client) override {}
+    void destroy() override { delete this; }
+    void postMessage(const WebString&, WebMessagePortChannelArray*) { NOTIMPLEMENTED(); }
+    bool tryGetMessage(WebString*, WebMessagePortChannelArray&) { return false; }
+};
+
+MessagePort* makeMessagePort(ExecutionContext* executionContext, WebMessagePortChannel** unownedChannelOut = nullptr)
+{
+    auto* unownedChannel = new WebMessagePortChannelImpl();
+    MessagePort* port = MessagePort::create(*executionContext);
+    port->entangle(WebMessagePortChannelUniquePtr(unownedChannel));
+    EXPECT_TRUE(port->isEntangled());
+    EXPECT_EQ(unownedChannel, port->entangledChannelForTesting());
+    if (unownedChannelOut)
+        *unownedChannelOut = unownedChannel;
+    return port;
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripMessagePort)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+
+    WebMessagePortChannel* unownedChannel;
+    MessagePort* port = makeMessagePort(scope.getExecutionContext(), &unownedChannel);
+    v8::Local<v8::Value> wrapper = toV8(port, scope.getScriptState());
+    Transferables transferables;
+    transferables.messagePorts.append(port);
+
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope, nullptr, &transferables);
+    ASSERT_TRUE(V8MessagePort::hasInstance(result, scope.isolate()));
+    MessagePort* newPort = V8MessagePort::toImpl(result.As<v8::Object>());
+    EXPECT_FALSE(port->isEntangled());
+    EXPECT_TRUE(newPort->isEntangled());
+    EXPECT_EQ(unownedChannel, newPort->entangledChannelForTesting());
+}
+
+TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    ExceptionState exceptionState(scope.isolate(), ExceptionState::ExecutionContext, "Window", "postMessage");
+
+    MessagePort* port = MessagePort::create(*scope.getExecutionContext());
+    EXPECT_TRUE(port->isNeutered());
+    v8::Local<v8::Value> wrapper = toV8(port, scope.getScriptState());
+    Transferables transferables;
+    transferables.messagePorts.append(port);
+
+    roundTrip(wrapper, scope, &exceptionState, &transferables);
+    ASSERT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(), exceptionState));
+}
+
+TEST(V8ScriptValueSerializerTest, UntransferredMessagePortThrowsDataCloneError)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    ExceptionState exceptionState(scope.isolate(), ExceptionState::ExecutionContext, "Window", "postMessage");
+
+    WebMessagePortChannel* unownedChannel;
+    MessagePort* port = makeMessagePort(scope.getExecutionContext(), &unownedChannel);
+    v8::Local<v8::Value> wrapper = toV8(port, scope.getScriptState());
+    Transferables transferables;
+
+    roundTrip(wrapper, scope, &exceptionState, &transferables);
+    ASSERT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(), exceptionState));
+}
+
+TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    ScriptState* scriptState = scope.getScriptState();
+    RefPtr<SerializedScriptValue> input = serializedValue({
+        0xff, 0x09, 0x3f, 0x00, 0x4d, 0x01});
+    MessagePort* port1 = makeMessagePort(scope.getExecutionContext());
+    MessagePort* port2 = makeMessagePort(scope.getExecutionContext());
+    {
+        V8ScriptValueDeserializer deserializer(scriptState, input);
+        ASSERT_TRUE(deserializer.deserialize()->IsNull());
+    }
+    {
+        V8ScriptValueDeserializer deserializer(scriptState, input);
+        deserializer.setTransferredMessagePorts(new MessagePortArray);
+        ASSERT_TRUE(deserializer.deserialize()->IsNull());
+    }
+    {
+        MessagePortArray* ports = new MessagePortArray;
+        ports->append(port1);
+        V8ScriptValueDeserializer deserializer(scriptState, input);
+        deserializer.setTransferredMessagePorts(ports);
+        ASSERT_TRUE(deserializer.deserialize()->IsNull());
+    }
+    {
+        MessagePortArray* ports = new MessagePortArray;
+        ports->append(port1);
+        ports->append(port2);
+        V8ScriptValueDeserializer deserializer(scriptState, input);
+        deserializer.setTransferredMessagePorts(ports);
+        v8::Local<v8::Value> result = deserializer.deserialize();
+        ASSERT_TRUE(V8MessagePort::hasInstance(result, scope.isolate()));
+        EXPECT_EQ(port2, V8MessagePort::toImpl(result.As<v8::Object>()));
+    }
+}
+
+// Decode tests for backward compatibility are not required for message ports
+// because they cannot be persisted to disk.
 
 } // namespace
 } // namespace blink
