@@ -79,6 +79,8 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
 
+  blink::WebRTCCertificateGenerator* createRTCCertificateGenerator() override;
+
  private:
   MockWebBlobRegistryImpl blob_registry_;
   SimpleWebMimeRegistryImpl mime_registry_;

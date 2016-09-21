@@ -48,6 +48,7 @@ protected:
     void writeUint32(uint32_t value) { m_serializer.WriteUint32(value); }
     void writeUint64(uint64_t value) { m_serializer.WriteUint64(value); }
     void writeRawBytes(const void* data, size_t size) { m_serializer.WriteRawBytes(data, size); }
+    void writeUTF8String(const String&);
 
 private:
     void transfer(Transferables*, ExceptionState&);

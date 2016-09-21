@@ -10,6 +10,7 @@
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/AutoReset.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 
@@ -83,6 +84,16 @@ void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionSt
             NOTREACHED() << "Unknown type of array buffer in transfer list.";
         }
     }
+}
+
+void V8ScriptValueSerializer::writeUTF8String(const String& string)
+{
+    // TODO(jbroman): Ideally this method would take a WTF::StringView, but the
+    // StringUTF8Adaptor trick doesn't yet work with StringView.
+    StringUTF8Adaptor utf8(string);
+    DCHECK_LT(utf8.length(), std::numeric_limits<uint32_t>::max());
+    writeUint32(utf8.length());
+    writeRawBytes(utf8.data(), utf8.length());
 }
 
 bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, ExceptionState& exceptionState)

@@ -46,6 +46,7 @@ protected:
     bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
     bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
     bool readRawBytes(size_t size, const void** data) { return m_deserializer.ReadRawBytes(size, data); }
+    bool readUTF8String(String* stringOut);
 
 private:
     void transfer();

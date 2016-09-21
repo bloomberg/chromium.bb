@@ -80,6 +80,16 @@ void V8ScriptValueDeserializer::transfer()
     }
 }
 
+bool V8ScriptValueDeserializer::readUTF8String(String* string)
+{
+    uint32_t utf8Length = 0;
+    const void* utf8Data = nullptr;
+    if (!readUint32(&utf8Length) || !readRawBytes(utf8Length, &utf8Data))
+        return false;
+    *string = String::fromUTF8(reinterpret_cast<const LChar*>(utf8Data), utf8Length);
+    return true;
+}
+
 ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
 {
     switch (tag) {

@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebRTCCertificate.h"
 #include "third_party/webrtc/base/rtccertificate.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
@@ -17,7 +19,8 @@ namespace content {
 // Chromium's WebRTCCertificate implementation; wraps a rtc::scoped_refptr to an
 // rtc::RTCCertificate. This abstraction layer is necessary because blink does
 // not have direct access to WebRTC.
-class RTCCertificate : public blink::WebRTCCertificate {
+class CONTENT_EXPORT RTCCertificate
+    : public NON_EXPORTED_BASE(blink::WebRTCCertificate) {
  public:
   RTCCertificate(const rtc::scoped_refptr<rtc::RTCCertificate>& certificate);
   ~RTCCertificate() override;

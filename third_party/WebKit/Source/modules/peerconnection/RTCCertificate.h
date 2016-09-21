@@ -33,13 +33,14 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/GarbageCollected.h"
 #include "public/platform/WebRTCCertificate.h"
 #include <memory>
 
 namespace blink {
 
-class RTCCertificate final : public GarbageCollectedFinalized<RTCCertificate>, public ScriptWrappable {
+class MODULES_EXPORT RTCCertificate final : public GarbageCollectedFinalized<RTCCertificate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Takes ownership of the certificate.

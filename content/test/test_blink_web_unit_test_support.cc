@@ -46,6 +46,12 @@
 #include "gin/v8_initializer.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "content/renderer/media/rtc_certificate.h"
+#include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
+#include "third_party/webrtc/base/rtccertificate.h"
+#endif
+
 namespace {
 
 class DummyTaskRunner : public base::SingleThreadTaskRunner {
@@ -291,6 +297,46 @@ void TestBlinkWebUnitTestSupport::getPluginList(
     blink::WebPluginListBuilder* builder) {
   builder->addPlugin("pdf", "pdf", "pdf-files");
   builder->addMediaTypeToLastPlugin("application/pdf", "pdf");
+}
+
+#if defined(ENABLE_WEBRTC)
+namespace {
+
+class TestWebRTCCertificateGenerator
+    : public blink::WebRTCCertificateGenerator {
+  void generateCertificate(
+      const blink::WebRTCKeyParams& key_params,
+      std::unique_ptr<blink::WebRTCCertificateCallback> callback) override {
+    NOTIMPLEMENTED();
+  }
+  void generateCertificateWithExpiration(
+      const blink::WebRTCKeyParams& key_params,
+      uint64_t expires_ms,
+      std::unique_ptr<blink::WebRTCCertificateCallback> callback) override {
+    NOTIMPLEMENTED();
+  }
+  bool isSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override {
+    return false;
+  }
+  std::unique_ptr<blink::WebRTCCertificate> fromPEM(
+      blink::WebString pem_private_key,
+      blink::WebString pem_certificate) override {
+    return base::MakeUnique<RTCCertificate>(
+        rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
+            pem_private_key.utf8(), pem_certificate.utf8())));
+  }
+};
+
+}  // namespace
+#endif  // defined(ENABLE_WEBRTC)
+
+blink::WebRTCCertificateGenerator*
+TestBlinkWebUnitTestSupport::createRTCCertificateGenerator() {
+#if defined(ENABLE_WEBRTC)
+  return new TestWebRTCCertificateGenerator();
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace content

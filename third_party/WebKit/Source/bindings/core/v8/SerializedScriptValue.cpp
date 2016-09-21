@@ -42,8 +42,6 @@
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
-#include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
-#include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
@@ -64,12 +62,6 @@ namespace blink {
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exception)
 {
-    // TODO(jbroman): Move the V8-based structured clone invocation into
-    // SerializedScriptValueFactory.
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        V8ScriptValueSerializer serializer(ScriptState::current(isolate));
-        return serializer.serialize(value, transferables, exception);
-    }
     return SerializedScriptValueFactory::instance().create(isolate, value, transferables, blobInfo, exception);
 }
 
@@ -278,12 +270,6 @@ v8::Local<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messag
 
 v8::Local<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
 {
-    // TODO(jbroman): Move the V8-based structured clone invocation into
-    // SerializedScriptValueFactory.
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        V8ScriptValueDeserializer deserializer(ScriptState::current(isolate), this);
-        return deserializer.deserialize();
-    }
     return SerializedScriptValueFactory::instance().deserialize(this, isolate, messagePorts, blobInfo);
 }
 

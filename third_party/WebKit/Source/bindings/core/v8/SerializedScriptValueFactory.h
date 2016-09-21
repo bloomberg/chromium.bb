@@ -37,11 +37,10 @@ protected:
     // V8. When serialization is successful, |didThrow| is false.
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
 
-    v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
+    virtual v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
 
     // Following methods are expected to be called in SerializedScriptValueFactory{ForModules}.
     SerializedScriptValueFactory() { }
-    virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
 
 private:
     static SerializedScriptValueFactory& instance()

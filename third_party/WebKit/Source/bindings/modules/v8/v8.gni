@@ -7,6 +7,10 @@ import("custom/custom.gni")
 # Make the files absolute so they can be imported to anywhere.
 bindings_modules_v8_files =
     get_path_info([
+                    "serialization/V8ScriptValueDeserializerForModules.cpp",
+                    "serialization/V8ScriptValueDeserializerForModules.h",
+                    "serialization/V8ScriptValueSerializerForModules.cpp",
+                    "serialization/V8ScriptValueSerializerForModules.h",
                     "DictionaryHelperForModules.cpp",
                     "ModuleBindingsInitializer.cpp",
                     "ModuleBindingsInitializer.h",
@@ -26,4 +30,8 @@ bindings_modules_v8_files =
                   "abspath") + bindings_modules_v8_custom_files
 
 bindings_modules_v8_unittest_files =
-    get_path_info([ "V8BindingForModulesTest.cpp" ], "abspath")
+    get_path_info([
+                    "serialization/V8ScriptValueSerializerForModulesTest.cpp",
+                    "V8BindingForModulesTest.cpp",
+                  ],
+                  "abspath")
