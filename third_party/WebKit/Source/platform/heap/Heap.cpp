@@ -284,7 +284,7 @@ void ThreadHeap::detach(ThreadState* thread)
     // be the main thread for the mainThreadHeap and a per thread heap enabled
     // thread otherwise.
     if (isLastThread)
-        DCHECK(thread->perThreadHeapEnabled() || thread->isMainThread());
+        DCHECK(thread->threadHeapMode() == BlinkGC::PerThreadHeapMode || thread->isMainThread());
     if (thread->isMainThread())
         DCHECK_EQ(heapStats().allocatedSpace(), 0u);
     if (isLastThread)

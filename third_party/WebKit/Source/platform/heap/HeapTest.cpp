@@ -548,7 +548,7 @@ protected:
 
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         // Add a cross-thread persistent from this thread; the test object
         // verifies that it will have been cleared out after the threads
@@ -605,7 +605,7 @@ public:
 private:
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         int gcCount = 0;
         while (!done()) {
@@ -699,7 +699,7 @@ protected:
 
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         PersistentChain::create(100);
 
@@ -5032,7 +5032,7 @@ public:
 private:
     static void sleeperMainFunc()
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
         s_sleeperRunning = true;
 
         // Simulate a long running op that is not entering a safepoint.
@@ -5717,7 +5717,7 @@ private:
     {
         MutexLocker locker(workerThreadMutex());
 
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         {
             // Create a worker object that is not kept alive except the
@@ -5838,7 +5838,7 @@ private:
     {
         MutexLocker locker(workerThreadMutex());
 
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         {
             Persistent<WeakCollectionType> collection = allocateCollection();
@@ -5999,7 +5999,7 @@ private:
     static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
         DestructorLockingObject* dlo = DestructorLockingObject::create();
         ASSERT_UNUSED(dlo, dlo);
@@ -6691,7 +6691,7 @@ void workerThreadMainForCrossThreadWeakPersistentTest(DestructorLockingObject** 
 {
     // Step 2: Create an object and store the pointer.
     MutexLocker locker(workerThreadMutex());
-    ThreadState::attachCurrentThread(false);
+    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
     *object = DestructorLockingObject::create();
     wakeMainThread();
     parkWorkerThread();
@@ -6817,7 +6817,7 @@ private:
 
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
         EXPECT_EQ(42, threadSpecificIntWrapper().value());
         runWhileAttached();
         ThreadState::detachCurrentThread();

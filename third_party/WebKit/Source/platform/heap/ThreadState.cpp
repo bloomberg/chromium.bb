@@ -145,7 +145,7 @@ private:
     bool m_shouldResumeThreads;
 };
 
-ThreadState::ThreadState(bool perThreadHeapEnabled)
+ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
     : m_thread(currentThread())
     , m_persistentRegion(wrapUnique(new PersistentRegion()))
 #if OS(WIN) && COMPILER(MSVC)
@@ -162,7 +162,7 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     , m_accumulatedSweepingTime(0)
     , m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex)
     , m_currentArenaAges(0)
-    , m_perThreadHeapEnabled(perThreadHeapEnabled)
+    , m_threadHeapMode(threadHeapMode)
     , m_isTerminating(false)
     , m_gcMixinMarker(nullptr)
     , m_shouldFlushHeapDoesNotContainCache(false)
@@ -185,16 +185,21 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
-    if (m_perThreadHeapEnabled) {
+    switch (m_threadHeapMode) {
+    case BlinkGC::MainThreadHeapMode:
+        if (isMainThread()) {
+            s_mainThreadStackStart = reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
+            size_t underestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize();
+            if (underestimatedStackSize > sizeof(void*))
+                s_mainThreadUnderestimatedStackSize = underestimatedStackSize - sizeof(void*);
+            m_heap = new ThreadHeap();
+        } else {
+            m_heap = &ThreadState::mainThreadState()->heap();
+        }
+        break;
+    case BlinkGC::PerThreadHeapMode:
         m_heap = new ThreadHeap();
-    } else if (isMainThread()) {
-        s_mainThreadStackStart = reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
-        size_t underestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize();
-        if (underestimatedStackSize > sizeof(void*))
-            s_mainThreadUnderestimatedStackSize = underestimatedStackSize - sizeof(void*);
-        m_heap = new ThreadHeap();
-    } else {
-        m_heap = &ThreadState::mainThreadState()->heap();
+        break;
     }
     ASSERT(m_heap);
     m_heap->attach(this);
@@ -259,13 +264,13 @@ void ThreadState::attachMainThread()
 {
     RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
     s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
-    new (s_mainThreadStateStorage) ThreadState(false);
+    new (s_mainThreadStateStorage) ThreadState(BlinkGC::MainThreadHeapMode);
 }
 
-void ThreadState::attachCurrentThread(bool perThreadHeapEnabled)
+void ThreadState::attachCurrentThread(BlinkGC::ThreadHeapMode threadHeapMode)
 {
     RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
-    new ThreadState(perThreadHeapEnabled);
+    new ThreadState(threadHeapMode);
 }
 
 void ThreadState::cleanupPages()

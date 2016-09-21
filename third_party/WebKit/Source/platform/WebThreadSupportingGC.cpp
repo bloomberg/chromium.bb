@@ -12,19 +12,19 @@
 
 namespace blink {
 
-std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name, bool perThreadHeapEnabled)
+std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name, BlinkGC::ThreadHeapMode threadHeapMode)
 {
-    return wrapUnique(new WebThreadSupportingGC(name, nullptr, perThreadHeapEnabled));
+    return wrapUnique(new WebThreadSupportingGC(name, nullptr, threadHeapMode));
 }
 
-std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::createForThread(WebThread* thread, bool perThreadHeapEnabled)
+std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::createForThread(WebThread* thread, BlinkGC::ThreadHeapMode threadHeapMode)
 {
-    return wrapUnique(new WebThreadSupportingGC(nullptr, thread, perThreadHeapEnabled));
+    return wrapUnique(new WebThreadSupportingGC(nullptr, thread, threadHeapMode));
 }
 
-WebThreadSupportingGC::WebThreadSupportingGC(const char* name, WebThread* thread, bool perThreadHeapEnabled)
+WebThreadSupportingGC::WebThreadSupportingGC(const char* name, WebThread* thread, BlinkGC::ThreadHeapMode threadHeapMode)
     : m_thread(thread)
-    , m_perThreadHeapEnabled(perThreadHeapEnabled)
+    , m_threadHeapMode(threadHeapMode)
 {
 #if ENABLE(ASSERT)
     ASSERT(!name || !thread);
@@ -50,7 +50,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 
 void WebThreadSupportingGC::initialize()
 {
-    ThreadState::attachCurrentThread(m_perThreadHeapEnabled);
+    ThreadState::attachCurrentThread(m_threadHeapMode);
     m_gcTaskRunner = wrapUnique(new GCTaskRunner(m_thread));
 }
 
