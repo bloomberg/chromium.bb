@@ -1239,3 +1239,5 @@ crbug.com/492785 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-reconstruc
 
 crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash Timeout ]
 crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash ]
+
+crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
