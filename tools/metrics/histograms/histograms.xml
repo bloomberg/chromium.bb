@@ -86555,6 +86555,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
+  <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
@@ -86676,6 +86677,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
+  <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>

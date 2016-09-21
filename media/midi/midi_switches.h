@@ -7,6 +7,7 @@
 #ifndef MEDIA_MIDI_MIDI_SWITCHES_H_
 #define MEDIA_MIDI_MIDI_SWITCHES_H_
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "media/midi/midi_export.h"
 
@@ -16,10 +17,18 @@ namespace switches {
 MIDI_EXPORT extern const char kUseAndroidMidiApi[];
 #endif
 
+}  // namespace switches
+
+namespace media {
+namespace midi {
+namespace features {
+
 #if defined(OS_WIN)
-MIDI_EXPORT extern const char kUseWinrtMidiApi[];
+MIDI_EXPORT extern const base::Feature kMidiManagerWinrt;
 #endif
 
-}  // namespace switches
+}  // namespace features
+}  // namespace midi
+}  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_SWITCHES_H_
