@@ -105,6 +105,11 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
   // After |stream_| has been closed, this keeps track of the total number of
   // bytes sent over the network for |stream_| while it was open.
   int64_t closed_stream_sent_bytes_;
+  // True if |stream_| has LoadTimingInfo when it is closed.
+  bool closed_has_load_timing_info_;
+  // LoadTimingInfo populated when |stream_| is closed.
+  LoadTimingInfo closed_load_timing_info_;
+
   // This is the combined buffer of buffers passed in through SendvData.
   // Keep a reference here so it is alive until OnDataSent is invoked.
   scoped_refptr<IOBuffer> pending_combined_buffer_;

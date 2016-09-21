@@ -38,6 +38,7 @@ BidirectionalStreamSpdyImpl::BidirectionalStreamSpdyImpl(
       closed_stream_status_(ERR_FAILED),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
+      closed_has_load_timing_info_(false),
       weak_factory_(this) {}
 
 BidirectionalStreamSpdyImpl::~BidirectionalStreamSpdyImpl() {
@@ -178,8 +179,19 @@ int64_t BidirectionalStreamSpdyImpl::GetTotalSentBytes() const {
 
 bool BidirectionalStreamSpdyImpl::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  // TODO(xunjieli): Implement this crbug.com/648346
-  return true;
+  if (stream_closed_) {
+    if (!closed_has_load_timing_info_)
+      return false;
+    *load_timing_info = closed_load_timing_info_;
+    return true;
+  }
+
+  // If |stream_| isn't created or has ID 0, return false. This is to match
+  // the implementation in SpdyHttpStream.
+  if (!stream_ || stream_->stream_id() == 0)
+    return false;
+
+  return stream_->GetLoadTimingInfo(load_timing_info);
 }
 
 void BidirectionalStreamSpdyImpl::OnRequestHeadersSent() {
@@ -244,6 +256,8 @@ void BidirectionalStreamSpdyImpl::OnClose(int status) {
   closed_stream_status_ = status;
   closed_stream_received_bytes_ = stream_->raw_received_bytes();
   closed_stream_sent_bytes_ = stream_->raw_sent_bytes();
+  closed_has_load_timing_info_ =
+      stream_->GetLoadTimingInfo(&closed_load_timing_info_);
 
   if (status != OK) {
     NotifyError(status);
