@@ -60,7 +60,7 @@ sk_sp<SkTypeface> CreateSkTypeface(bool italic,
     // scalable font.
     typeface = sk_sp<SkTypeface>(SkTypeface::MakeFromName(
         kFallbackFontFamilyName, sk_style));
-    CHECK(typeface) << "Could not find any font: " << family << ", "
+    CHECK(typeface) << "Could not find any font: " << *family << ", "
                     << kFallbackFontFamilyName;
     *family = kFallbackFontFamilyName;
   }
