@@ -26,7 +26,6 @@ public:
     BytesConsumerForDataConsumerHandle(ExecutionContext*, std::unique_ptr<FetchDataConsumerHandle>);
     ~BytesConsumerForDataConsumerHandle() override;
 
-    Result read(char* buffer, size_t /* size */, size_t* readSize) override;
     Result beginRead(const char** buffer, size_t* available) override;
     PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override;
     PassRefPtr<EncodedFormData> drainAsFormData() override;

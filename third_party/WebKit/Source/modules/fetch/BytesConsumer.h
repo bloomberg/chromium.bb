@@ -74,17 +74,6 @@ public:
 
     virtual ~BytesConsumer() {}
 
-    // Reads data into |buffer| up to |size| bytes. The actual read size will
-    // be stored in |*readSize|. This function cannot be called when a two-phase
-    // read is in progress.
-    // Returns Ok when readable.
-    // Returns ShouldWait when it's waiting.
-    // Returns Done when closed.
-    // Returns Error when errored.
-    // |buffer| can be null if |size| is 0.
-    // |*readSize| will be set to 0 if not readable.
-    virtual Result read(char* buffer, size_t /* size */, size_t* readSize) WARN_UNUSED_RESULT;
-
     // Begins a two-phase read. On success, the function stores a buffer
     // that contains the read data of length |*available| into |*buffer|.
     // Returns Ok when readable.
@@ -106,7 +95,7 @@ public:
 
     // Drains the data as a BlobDataHandle.
     // When this function returns a non-null value, the returned blob handle
-    // contains bytes that would be read through read, beginRead and
+    // contains bytes that would be read through beginRead and
     // endRead functions without calling this function. In such a case, this
     // object becomes closed.
     // When this function returns null value, this function does nothing.
@@ -117,7 +106,7 @@ public:
 
     // Drains the data as an EncodedFormData.
     // When this function returns a non-null value, the returned form data
-    // contains bytes that would be read through read, beginRead and
+    // contains bytes that would be read through beginRead and
     // endRead functions without calling this function. In such a case, this
     // object becomes closed.
     // When this function returns null value, this function does nothing.

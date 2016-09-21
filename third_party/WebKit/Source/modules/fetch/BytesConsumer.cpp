@@ -313,22 +313,6 @@ private:
 
 } // namespace
 
-BytesConsumer::Result BytesConsumer::read(char* buffer, size_t size, size_t* readSize)
-{
-    *readSize = 0;
-    const char* src = nullptr;
-    size_t available;
-    Result r = beginRead(&src, &available);
-    if (r != Result::Ok)
-        return r;
-    *readSize = std::min(available, size);
-    memcpy(buffer, src, *readSize);
-    auto result = endRead(*readSize);
-    if (result != BytesConsumer::Result::Ok)
-        *readSize = 0;
-    return result;
-}
-
 void BytesConsumer::tee(ExecutionContext* executionContext, BytesConsumer* src, BytesConsumer** dest1, BytesConsumer** dest2)
 {
     RefPtr<BlobDataHandle> blobDataHandle = src->drainAsBlobDataHandle(BlobSizePolicy::AllowBlobWithInvalidSize);

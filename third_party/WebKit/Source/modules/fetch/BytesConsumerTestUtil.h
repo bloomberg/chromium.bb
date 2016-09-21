@@ -83,27 +83,6 @@ public:
         bool m_isCancelled = false;
     };
 
-    class Reader final : public GarbageCollectedFinalized<Reader>, public BytesConsumer::Client {
-        USING_GARBAGE_COLLECTED_MIXIN(Reader);
-    public:
-        // |consumer| must not have a client when called.
-        explicit Reader(BytesConsumer* /* consumer */);
-
-        void onStateChange() override;
-        std::pair<BytesConsumer::Result, Vector<char>> run();
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_consumer);
-            BytesConsumer::Client::trace(visitor);
-        }
-
-    private:
-        Member<BytesConsumer> m_consumer;
-        BytesConsumer::Result m_result = BytesConsumer::Result::ShouldWait;
-        Vector<char> m_data;
-    };
-
     class TwoPhaseReader final : public GarbageCollectedFinalized<TwoPhaseReader>, public BytesConsumer::Client {
         USING_GARBAGE_COLLECTED_MIXIN(TwoPhaseReader);
     public:

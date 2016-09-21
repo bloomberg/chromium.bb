@@ -149,47 +149,6 @@ DEFINE_TRACE(BytesConsumerTestUtil::ReplayingBytesConsumer)
     BytesConsumer::trace(visitor);
 }
 
-BytesConsumerTestUtil::Reader::Reader(BytesConsumer* consumer)
-    : m_consumer(consumer)
-{
-    m_consumer->setClient(this);
-}
-
-void BytesConsumerTestUtil::Reader::onStateChange()
-{
-    while (true) {
-        // We choose 3 here because of the following reasons.
-        //  - We want to split a string with multiple chunks, so we need to
-        //    choose a small number.
-        //  - An odd number is preferable to check an out-of-range error.
-        //  - With 1, every chunk consists of one byte it's too simple.
-        char buffer[3];
-        size_t read = 0;
-        switch (m_consumer->read(buffer, sizeof(buffer), &read)) {
-        case BytesConsumer::Result::Ok:
-            m_data.append(buffer, read);
-            break;
-        case BytesConsumer::Result::ShouldWait:
-            return;
-        case BytesConsumer::Result::Done:
-            m_result = BytesConsumer::Result::Done;
-            return;
-        case BytesConsumer::Result::Error:
-            m_result = BytesConsumer::Result::Error;
-            return;
-        }
-    }
-}
-
-std::pair<BytesConsumer::Result, Vector<char>> BytesConsumerTestUtil::Reader::run()
-{
-    onStateChange();
-    while (m_result != BytesConsumer::Result::Done && m_result != BytesConsumer::Result::Error)
-        testing::runPendingTasks();
-    testing::runPendingTasks();
-    return std::make_pair(m_result, std::move(m_data));
-}
-
 BytesConsumerTestUtil::TwoPhaseReader::TwoPhaseReader(BytesConsumer* consumer)
     : m_consumer(consumer)
 {
@@ -207,7 +166,7 @@ void BytesConsumerTestUtil::TwoPhaseReader::onStateChange()
             // We don't use |available| as-is to test cases where endRead
             // is called with a number smaller than |available|. We choose 3
             // because of the same reasons as Reader::onStateChange.
-            size_t read = std::max(static_cast<size_t>(3), available);
+            size_t read = std::min(static_cast<size_t>(3), available);
             m_data.append(buffer, read);
             if (m_consumer->endRead(read) != BytesConsumer::Result::Ok) {
                 m_result = BytesConsumer::Result::Error;

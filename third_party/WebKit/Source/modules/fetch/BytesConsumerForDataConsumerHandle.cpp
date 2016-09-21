@@ -25,34 +25,6 @@ BytesConsumerForDataConsumerHandle::~BytesConsumerForDataConsumerHandle()
 {
 }
 
-BytesConsumer::Result BytesConsumerForDataConsumerHandle::read(char* buffer, size_t size, size_t* readSize)
-{
-    DCHECK(!m_isInTwoPhaseRead);
-    *readSize = 0;
-    if (m_state == InternalState::Closed)
-        return Result::Done;
-    if (m_state == InternalState::Errored)
-        return Result::Error;
-
-    WebDataConsumerHandle::Result r = m_reader->read(buffer, size, WebDataConsumerHandle::FlagNone, readSize);
-    switch (r) {
-    case WebDataConsumerHandle::Ok:
-        return Result::Ok;
-    case WebDataConsumerHandle::ShouldWait:
-        return Result::ShouldWait;
-    case WebDataConsumerHandle::Done:
-        close();
-        return Result::Done;
-    case WebDataConsumerHandle::Busy:
-    case WebDataConsumerHandle::ResourceExhausted:
-    case WebDataConsumerHandle::UnexpectedError:
-        error();
-        return Result::Error;
-    }
-    NOTREACHED();
-    return Result::Error;
-}
-
 BytesConsumer::Result BytesConsumerForDataConsumerHandle::beginRead(const char** buffer, size_t* available)
 {
     DCHECK(!m_isInTwoPhaseRead);

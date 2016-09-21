@@ -101,8 +101,8 @@ TEST_F(BytesConsumerTeeTest, CreateDone)
     BytesConsumer* dest2 = nullptr;
     BytesConsumer::tee(document(), src, &dest1, &dest2);
 
-    auto result1 = (new BytesConsumerTestUtil::Reader(dest1))->run();
-    auto result2 = (new BytesConsumerTestUtil::Reader(dest2))->run();
+    auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->run();
+    auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
 
     EXPECT_EQ(Result::Done, result1.first);
     EXPECT_TRUE(result1.second.isEmpty());
@@ -116,37 +116,6 @@ TEST_F(BytesConsumerTeeTest, CreateDone)
     dest1->cancel();
     dest2->cancel();
     EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-    EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-    EXPECT_FALSE(src->isCancelled());
-}
-
-TEST_F(BytesConsumerTeeTest, Read)
-{
-    ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
-
-    src->add(Command(Command::Wait));
-    src->add(Command(Command::Data, "hello, "));
-    src->add(Command(Command::Wait));
-    src->add(Command(Command::Data, "world"));
-    src->add(Command(Command::Wait));
-    src->add(Command(Command::Wait));
-    src->add(Command(Command::Done));
-
-    BytesConsumer* dest1 = nullptr;
-    BytesConsumer* dest2 = nullptr;
-    BytesConsumer::tee(document(), src, &dest1, &dest2);
-
-    EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting, dest1->getPublicState());
-    EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting, dest2->getPublicState());
-
-    auto result1 = (new BytesConsumerTestUtil::Reader(dest1))->run();
-    auto result2 = (new BytesConsumerTestUtil::Reader(dest2))->run();
-
-    EXPECT_EQ(Result::Done, result1.first);
-    EXPECT_EQ("hello, world", toString(result1.second));
-    EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-    EXPECT_EQ(Result::Done, result2.first);
-    EXPECT_EQ("hello, world", toString(result2.second));
     EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
     EXPECT_FALSE(src->isCancelled());
 }
@@ -355,7 +324,7 @@ TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead)
 
     EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting, dest1->getPublicState());
     int numOnStateChangeCalled = client->numOnStateChangeCalled();
-    EXPECT_EQ(Result::Error, (new BytesConsumerTestUtil::Reader(dest2))->run().first);
+    EXPECT_EQ(Result::Error, (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run().first);
     EXPECT_EQ(BytesConsumer::PublicState::Errored, dest1->getPublicState());
     EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
     EXPECT_EQ('a', buffer[0]);
