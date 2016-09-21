@@ -149,7 +149,7 @@ class V4DatabaseTest : public PlatformTest {
     std::unique_ptr<ParsedServerResponse> parsed_server_response(
         new ParsedServerResponse);
     for (const auto& store_state_iter : store_state_map) {
-      UpdateListIdentifier identifier = store_state_iter.first;
+      ListIdentifier identifier = store_state_iter.first;
       ListUpdateResponse* lur = new ListUpdateResponse;
       lur->set_platform_type(identifier.platform_type);
       lur->set_threat_entry_type(identifier.threat_entry_type);
@@ -172,7 +172,7 @@ class V4DatabaseTest : public PlatformTest {
     EXPECT_EQ(expected_store_state_map_.size(), new_store_map->size());
     EXPECT_EQ(expected_store_state_map_.size(), new_store_state_map->size());
     for (const auto& expected_iter : expected_store_state_map_) {
-      const UpdateListIdentifier& identifier = expected_iter.first;
+      const ListIdentifier& identifier = expected_iter.first;
       const std::string& state = expected_iter.second;
       ASSERT_EQ(1u, new_store_map->count(identifier));
       ASSERT_EQ(1u, new_store_state_map->count(identifier));
@@ -201,15 +201,15 @@ class V4DatabaseTest : public PlatformTest {
   bool created_but_not_called_back_;
   bool created_and_called_back_;
   StoreIdAndFileNames store_id_file_names_;
-  std::vector<UpdateListIdentifier> expected_identifiers_;
+  std::vector<ListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
   bool expected_resets_successfully_;
   std::unique_ptr<FakeV4StoreFactory> factory_;
   DatabaseUpdatedCallback callback_db_updated_;
   NewDatabaseReadyCallback callback_db_ready_;
   StoreStateMap expected_store_state_map_;
-  base::hash_map<UpdateListIdentifier, V4Store*> old_stores_map_;
-  const UpdateListIdentifier linux_malware_id_, win_malware_id_;
+  base::hash_map<ListIdentifier, V4Store*> old_stores_map_;
+  const ListIdentifier linux_malware_id_, win_malware_id_;
 };
 
 // Test to set up the database with fake stores.
@@ -378,13 +378,13 @@ TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<UpdateListIdentifier> stores_to_look(
+  std::unordered_set<ListIdentifier> stores_to_look(
       {linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
   v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
                                           &store_and_hash_prefixes);
   EXPECT_EQ(2u, store_and_hash_prefixes.size());
-  std::unordered_set<UpdateListIdentifier> stores_found;
+  std::unordered_set<ListIdentifier> stores_found;
   for (const auto& it : store_and_hash_prefixes) {
     stores_found.insert(it.list_id);
   }
@@ -405,7 +405,7 @@ TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<UpdateListIdentifier> stores_to_look(
+  std::unordered_set<ListIdentifier> stores_to_look(
       {linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
   v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
@@ -433,7 +433,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
       v4_database_->store_map_->at(win_malware_id_).get());
   store->set_hash_prefix_matches(true);
 
-  std::unordered_set<UpdateListIdentifier> stores_to_look(
+  std::unordered_set<ListIdentifier> stores_to_look(
       {linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
   v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
@@ -459,7 +459,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<UpdateListIdentifier> stores_to_look({linux_malware_id_});
+  std::unordered_set<ListIdentifier> stores_to_look({linux_malware_id_});
   // Don't add win_malware_id_ to the stores_to_look.
   StoreAndHashPrefixes store_and_hash_prefixes;
   v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,

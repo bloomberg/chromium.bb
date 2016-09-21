@@ -100,8 +100,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool IsCsdWhitelistKillSwitchOn() override;
 
  protected:
-  std::unordered_set<UpdateListIdentifier> GetStoresForFullHashRequests()
-      override;
+  std::unordered_set<ListIdentifier> GetStoresForFullHashRequests() override;
 
  private:
   friend class V4LocalDatabaseManagerTest;

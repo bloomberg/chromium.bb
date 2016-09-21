@@ -142,7 +142,7 @@ class V4GetHashProtocolManagerFactoryImpl
   ~V4GetHashProtocolManagerFactoryImpl() override {}
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<ListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config) override {
     return base::WrapUnique(new V4GetHashProtocolManager(
         request_context_getter, stores_to_request, config));
@@ -184,7 +184,7 @@ FullHashCallbackInfo::~FullHashCallbackInfo() {}
 // ----------------------------------------------------------------
 
 FullHashInfo::FullHashInfo(const FullHash& full_hash,
-                           const UpdateListIdentifier& list_id,
+                           const ListIdentifier& list_id,
                            const base::Time& positive_expiry)
     : full_hash(full_hash),
       list_id(list_id),
@@ -211,7 +211,7 @@ V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
 // static
 std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+    const std::unordered_set<ListIdentifier>& stores_to_request,
     const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4GetHashProtocolManagerFactoryImpl();
@@ -229,7 +229,7 @@ void V4GetHashProtocolManager::RegisterFactory(
 
 V4GetHashProtocolManager::V4GetHashProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+    const std::unordered_set<ListIdentifier>& stores_to_request,
     const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
@@ -239,7 +239,7 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       url_fetcher_id_(0),
       clock_(new base::DefaultClock()) {
   DCHECK(!stores_to_request.empty());
-  for (const UpdateListIdentifier& store : stores_to_request) {
+  for (const ListIdentifier& store : stores_to_request) {
     platform_types_.insert(store.platform_type);
     threat_entry_types_.insert(store.threat_entry_type);
     threat_types_.insert(store.threat_type);
@@ -374,7 +374,7 @@ void V4GetHashProtocolManager::GetFullHashCachedResults(
     const FullHash& full_hash = it.first;
     const StoreAndHashPrefixes& matched = it.second;
     for (const StoreAndHashPrefix& matched_it : matched) {
-      const UpdateListIdentifier& list_id = matched_it.list_id;
+      const ListIdentifier& list_id = matched_it.list_id;
       const HashPrefix& prefix = matched_it.hash_prefix;
       auto prefix_entry = full_hash_cache_.find(prefix);
       if (prefix_entry != full_hash_cache_.end()) {
@@ -527,8 +527,8 @@ bool V4GetHashProtocolManager::ParseHashResponse(
       return false;
     }
 
-    UpdateListIdentifier list_id(
-        match.platform_type(), match.threat_entry_type(), match.threat_type());
+    ListIdentifier list_id(match.platform_type(), match.threat_entry_type(),
+                           match.threat_type());
     base::Time positive_expiry;
     if (match.has_cache_duration()) {
       // Seconds resolution is good enough so we ignore the nanos field.

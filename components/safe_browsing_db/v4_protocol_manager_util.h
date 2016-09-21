@@ -69,32 +69,32 @@ struct V4ProtocolConfig {
 // platform_type = WINDOWS,
 // threat_entry_type = EXECUTABLE,
 // threat_type = MALWARE
-struct UpdateListIdentifier {
+struct ListIdentifier {
  public:
   PlatformType platform_type;
   ThreatEntryType threat_entry_type;
   ThreatType threat_type;
 
-  UpdateListIdentifier(PlatformType, ThreatEntryType, ThreatType);
-  explicit UpdateListIdentifier(const ListUpdateResponse&);
+  ListIdentifier(PlatformType, ThreatEntryType, ThreatType);
+  explicit ListIdentifier(const ListUpdateResponse&);
 
-  bool operator==(const UpdateListIdentifier& other) const;
-  bool operator!=(const UpdateListIdentifier& other) const;
+  bool operator==(const ListIdentifier& other) const;
+  bool operator!=(const ListIdentifier& other) const;
   size_t hash() const;
 
  private:
-  UpdateListIdentifier();
+  ListIdentifier();
 };
 
-std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id);
+std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
-const UpdateListIdentifier GetChromeUrlApiId();
-const UpdateListIdentifier GetUrlMalwareId();
-const UpdateListIdentifier GetUrlSocEngId();
+const ListIdentifier GetChromeUrlApiId();
+const ListIdentifier GetUrlMalwareId();
+const ListIdentifier GetUrlSocEngId();
 
 // Represents the state of each store.
-typedef base::hash_map<UpdateListIdentifier, std::string> StoreStateMap;
+typedef base::hash_map<ListIdentifier, std::string> StoreStateMap;
 
 // Sever response, parsed in vector form.
 typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
@@ -103,10 +103,10 @@ typedef std::vector<std::unique_ptr<ListUpdateResponse>> ParsedServerResponse;
 // Holds the hash prefix and the store that it matched in.
 struct StoreAndHashPrefix {
  public:
-  UpdateListIdentifier list_id;
+  ListIdentifier list_id;
   HashPrefix hash_prefix;
 
-  explicit StoreAndHashPrefix(UpdateListIdentifier, HashPrefix);
+  explicit StoreAndHashPrefix(ListIdentifier, HashPrefix);
   ~StoreAndHashPrefix();
 
   bool operator==(const StoreAndHashPrefix& other) const;
@@ -281,8 +281,8 @@ struct hash<safe_browsing::ThreatType> {
 };
 
 template <>
-struct hash<safe_browsing::UpdateListIdentifier> {
-  std::size_t operator()(const safe_browsing::UpdateListIdentifier& id) const {
+struct hash<safe_browsing::ListIdentifier> {
+  std::size_t operator()(const safe_browsing::ListIdentifier& id) const {
     return id.hash();
   }
 };

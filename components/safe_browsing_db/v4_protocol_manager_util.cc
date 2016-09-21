@@ -61,7 +61,7 @@ std::string Escape(const std::string& url) {
 
 }  // namespace
 
-std::ostream& operator<<(std::ostream& os, const UpdateListIdentifier& id) {
+std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {
   os << "{hash: " << id.hash() << "; platform_type: " << id.platform_type
      << "; threat_entry_type: " << id.threat_entry_type
      << "; threat_type: " << id.threat_type << "}";
@@ -85,23 +85,23 @@ return LINUX_PLATFORM;
 #endif
 }
 
-const UpdateListIdentifier GetChromeUrlApiId() {
-  return UpdateListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
+const ListIdentifier GetChromeUrlApiId() {
+  return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
-const UpdateListIdentifier GetUrlMalwareId() {
-  return UpdateListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
+const ListIdentifier GetUrlMalwareId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }
 
-const UpdateListIdentifier GetUrlSocEngId() {
-  return UpdateListIdentifier(GetCurrentPlatformType(), URL,
-                              SOCIAL_ENGINEERING_PUBLIC);
+const ListIdentifier GetUrlSocEngId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL,
+                        SOCIAL_ENGINEERING_PUBLIC);
 }
 
 // The Safe Browsing V4 server URL prefix.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
-StoreAndHashPrefix::StoreAndHashPrefix(UpdateListIdentifier list_id,
+StoreAndHashPrefix::StoreAndHashPrefix(ListIdentifier list_id,
                                        HashPrefix hash_prefix)
     : list_id(list_id), hash_prefix(hash_prefix) {}
 
@@ -122,17 +122,17 @@ size_t StoreAndHashPrefix::hash() const {
   return base::HashInts(first, second);
 }
 
-bool UpdateListIdentifier::operator==(const UpdateListIdentifier& other) const {
+bool ListIdentifier::operator==(const ListIdentifier& other) const {
   return platform_type == other.platform_type &&
          threat_entry_type == other.threat_entry_type &&
          threat_type == other.threat_type;
 }
 
-bool UpdateListIdentifier::operator!=(const UpdateListIdentifier& other) const {
+bool ListIdentifier::operator!=(const ListIdentifier& other) const {
   return !operator==(other);
 }
 
-size_t UpdateListIdentifier::hash() const {
+size_t ListIdentifier::hash() const {
   std::size_t first = std::hash<unsigned int>()(platform_type);
   std::size_t second = std::hash<unsigned int>()(threat_entry_type);
   std::size_t third = std::hash<unsigned int>()(threat_type);
@@ -141,11 +141,11 @@ size_t UpdateListIdentifier::hash() const {
   return base::HashInts(interim, third);
 }
 
-UpdateListIdentifier::UpdateListIdentifier() {}
+ListIdentifier::ListIdentifier() {}
 
-UpdateListIdentifier::UpdateListIdentifier(PlatformType platform_type,
-                                           ThreatEntryType threat_entry_type,
-                                           ThreatType threat_type)
+ListIdentifier::ListIdentifier(PlatformType platform_type,
+                               ThreatEntryType threat_entry_type,
+                               ThreatType threat_type)
     : platform_type(platform_type),
       threat_entry_type(threat_entry_type),
       threat_type(threat_type) {
@@ -154,10 +154,10 @@ UpdateListIdentifier::UpdateListIdentifier(PlatformType platform_type,
   DCHECK(ThreatType_IsValid(threat_type));
 }
 
-UpdateListIdentifier::UpdateListIdentifier(const ListUpdateResponse& response)
-    : UpdateListIdentifier(response.platform_type(),
-                           response.threat_entry_type(),
-                           response.threat_type()) {}
+ListIdentifier::ListIdentifier(const ListUpdateResponse& response)
+    : ListIdentifier(response.platform_type(),
+                     response.threat_entry_type(),
+                     response.threat_type()) {}
 
 V4ProtocolConfig::V4ProtocolConfig() : disable_auto_update(false) {}
 

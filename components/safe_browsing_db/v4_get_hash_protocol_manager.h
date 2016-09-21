@@ -51,7 +51,7 @@ struct FullHashInfo {
   FullHash full_hash;
 
   // The list for which this full hash is applicable.
-  UpdateListIdentifier list_id;
+  ListIdentifier list_id;
 
   // The expiration time of the full hash for a particular store.
   base::Time positive_expiry;
@@ -60,7 +60,7 @@ struct FullHashInfo {
   ThreatMetadata metadata;
 
   FullHashInfo(const FullHash& full_hash,
-               const UpdateListIdentifier& list_id,
+               const ListIdentifier& list_id,
                const base::Time& positive_expiry);
   FullHashInfo(const FullHashInfo& other);
   ~FullHashInfo();
@@ -147,7 +147,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Create an instance of the safe browsing v4 protocol manager.
   static std::unique_ptr<V4GetHashProtocolManager> Create(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<ListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config);
 
   // Makes the passed |factory| the factory used to instantiate
@@ -187,7 +187,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // network requests using |request_context_getter|.
   V4GetHashProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<ListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config);
 
  private:
@@ -345,7 +345,7 @@ class V4GetHashProtocolManagerFactory {
   virtual ~V4GetHashProtocolManagerFactory() {}
   virtual std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<UpdateListIdentifier>& stores_to_request,
+      const std::unordered_set<ListIdentifier>& stores_to_request,
       const V4ProtocolConfig& config) = 0;
 
  private:

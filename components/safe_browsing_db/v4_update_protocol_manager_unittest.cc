@@ -85,14 +85,13 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
   void SetupStoreStates() {
     store_state_map_ = base::MakeUnique<StoreStateMap>();
 
-    UpdateListIdentifier win_url_malware(WINDOWS_PLATFORM, URL, MALWARE_THREAT);
+    ListIdentifier win_url_malware(WINDOWS_PLATFORM, URL, MALWARE_THREAT);
     store_state_map_->insert({win_url_malware, "initial_state_1"});
 
-    UpdateListIdentifier win_url_uws(WINDOWS_PLATFORM, URL, UNWANTED_SOFTWARE);
+    ListIdentifier win_url_uws(WINDOWS_PLATFORM, URL, UNWANTED_SOFTWARE);
     store_state_map_->insert({win_url_uws, "initial_state_2"});
 
-    UpdateListIdentifier win_exe_uws(WINDOWS_PLATFORM, EXECUTABLE,
-                                     UNWANTED_SOFTWARE);
+    ListIdentifier win_exe_uws(WINDOWS_PLATFORM, EXECUTABLE, UNWANTED_SOFTWARE);
     store_state_map_->insert({win_exe_uws, "initial_state_3"});
   }
 
@@ -306,8 +305,8 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   // and picked the one that leads to a '-' in the base64 url encoded request
   // output.
   store_state_map_->clear();
-  (*store_state_map_)[UpdateListIdentifier(LINUX_PLATFORM, URL,
-                                           MALWARE_THREAT)] = "h8xfYqY>:R";
+  (*store_state_map_)[ListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT)] =
+      "h8xfYqY>:R";
   std::unique_ptr<V4UpdateProtocolManager> pm(
       CreateProtocolManager(std::vector<ListUpdateResponse>({})));
   pm->store_state_map_ = std::move(store_state_map_);

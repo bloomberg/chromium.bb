@@ -52,10 +52,10 @@ struct KeyValue {
 
 struct ResponseInfo {
   FullHash full_hash;
-  UpdateListIdentifier list_id;
+  ListIdentifier list_id;
   std::vector<KeyValue> key_values;
 
-  explicit ResponseInfo(FullHash full_hash, UpdateListIdentifier list_id)
+  explicit ResponseInfo(FullHash full_hash, ListIdentifier list_id)
       : full_hash(full_hash), list_id(list_id){};
   explicit ResponseInfo(const ResponseInfo& other)
       : full_hash(other.full_hash),
@@ -80,7 +80,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    std::unordered_set<UpdateListIdentifier> stores_to_look(
+    std::unordered_set<ListIdentifier> stores_to_look(
         {GetUrlMalwareId(), GetChromeUrlApiId()});
     return V4GetHashProtocolManager::Create(NULL, stores_to_look, config);
   }
@@ -412,8 +412,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
     ASSERT_EQ(1ul, full_hash_infos.size());
     const FullHashInfo& fhi = full_hash_infos[0];
     EXPECT_EQ(full_hash, fhi.full_hash);
-    const UpdateListIdentifier list_id(CHROME_PLATFORM, URL,
-                                       SOCIAL_ENGINEERING_PUBLIC);
+    const ListIdentifier list_id(CHROME_PLATFORM, URL,
+                                 SOCIAL_ENGINEERING_PUBLIC);
     EXPECT_EQ(list_id, fhi.list_id);
     EXPECT_EQ(ThreatPatternType::SOCIAL_ENGINEERING_LANDING,
               fhi.metadata.threat_pattern_type);
@@ -445,8 +445,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
     ASSERT_EQ(1ul, full_hash_infos.size());
     const FullHashInfo& fhi = full_hash_infos[0];
     EXPECT_EQ(full_hash, fhi.full_hash);
-    const UpdateListIdentifier list_id(CHROME_PLATFORM, URL,
-                                       POTENTIALLY_HARMFUL_APPLICATION);
+    const ListIdentifier list_id(CHROME_PLATFORM, URL,
+                                 POTENTIALLY_HARMFUL_APPLICATION);
     EXPECT_EQ(list_id, fhi.list_id);
     EXPECT_EQ(ThreatPatternType::MALWARE_LANDING,
               fhi.metadata.threat_pattern_type);

@@ -106,7 +106,7 @@ void V4Database::ApplyUpdate(
       base::MessageLoop::current()->task_runner();
   for (std::unique_ptr<ListUpdateResponse>& response :
        *parsed_server_response) {
-    UpdateListIdentifier identifier(*response);
+    ListIdentifier identifier(*response);
     StoreMap::const_iterator iter = store_map_->find(identifier);
     if (iter != store_map_->end()) {
       const std::unique_ptr<V4Store>& old_store = iter->second;
@@ -132,7 +132,7 @@ void V4Database::ApplyUpdate(
   }
 }
 
-void V4Database::UpdatedStoreReady(UpdateListIdentifier identifier,
+void V4Database::UpdatedStoreReady(ListIdentifier identifier,
                                    std::unique_ptr<V4Store> new_store) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(pending_store_updates_);
@@ -169,11 +169,11 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
 
 void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
-    const std::unordered_set<UpdateListIdentifier>& stores_to_look,
+    const std::unordered_set<ListIdentifier>& stores_to_look,
     StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   matched_store_and_hash_prefixes->clear();
-  for (const UpdateListIdentifier& identifier : stores_to_look) {
+  for (const ListIdentifier& identifier : stores_to_look) {
     const auto& store_pair = store_map_->find(identifier);
     DCHECK(store_pair != store_map_->end());
     const std::unique_ptr<V4Store>& store = store_pair->second;
@@ -184,7 +184,7 @@ void V4Database::GetStoresMatchingFullHash(
   }
 }
 
-StoreIdAndFileName::StoreIdAndFileName(const UpdateListIdentifier& list_id,
+StoreIdAndFileName::StoreIdAndFileName(const ListIdentifier& list_id,
                                        const std::string& filename)
     : list_id(list_id), filename(filename) {
   DCHECK(!filename.empty());

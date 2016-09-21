@@ -35,7 +35,7 @@ StoreIdAndFileNames GetStoreIdAndFileNames() {
 }
 
 // Returns the SBThreatType corresponding to a given SafeBrowsing list.
-SBThreatType GetSBThreatTypeForList(const UpdateListIdentifier& list_id) {
+SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id) {
   if (list_id == GetChromeUrlApiId()) {
     return SB_THREAT_TYPE_API_ABUSE;
   } else if (list_id == GetUrlMalwareId()) {
@@ -50,7 +50,7 @@ SBThreatType GetSBThreatTypeForList(const UpdateListIdentifier& list_id) {
 
 // Returns the severity information about a given SafeBrowsing list. The lowest
 // value is 0, which represents the most severe list.
-ThreatSeverity GetThreatSeverity(const UpdateListIdentifier& list_id) {
+ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
   switch (list_id.threat_type) {
     case MALWARE_THREAT:
     case SOCIAL_ENGINEERING_PUBLIC:
@@ -197,10 +197,10 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
     std::unordered_set<FullHash> full_hashes;
     V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
 
-    std::unordered_set<UpdateListIdentifier> stores_to_look(
+    std::unordered_set<ListIdentifier> stores_to_look(
         {GetUrlMalwareId(), GetUrlSocEngId()});
     std::unordered_set<HashPrefix> matched_hash_prefixes;
-    std::unordered_set<UpdateListIdentifier> matched_stores;
+    std::unordered_set<ListIdentifier> matched_stores;
     StoreAndHashPrefixes matched_store_and_hash_prefixes;
     FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
     for (const auto& full_hash : full_hashes) {
@@ -404,9 +404,9 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
   }
 }
 
-std::unordered_set<UpdateListIdentifier>
+std::unordered_set<ListIdentifier>
 V4LocalDatabaseManager::GetStoresForFullHashRequests() {
-  std::unordered_set<UpdateListIdentifier> stores_for_full_hash;
+  std::unordered_set<ListIdentifier> stores_for_full_hash;
   for (auto it : store_id_file_names_) {
     stores_for_full_hash.insert(it.list_id);
   }

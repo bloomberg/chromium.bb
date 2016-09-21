@@ -72,7 +72,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
   }
 
   std::string GetStockV4GetHashResponse() {
-    UpdateListIdentifier list_id = GetChromeUrlApiId();
+    ListIdentifier list_id = GetChromeUrlApiId();
     FullHash full_hash = crypto::SHA256HashString("example.com/more");
 
     FindFullHashesResponse response;

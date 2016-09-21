@@ -27,7 +27,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
-struct UpdateListIdentifier;
+struct ListIdentifier;
 struct V4ProtocolConfig;
 class V4GetHashProtocolManager;
 
@@ -222,8 +222,7 @@ class SafeBrowsingDatabaseManager
   typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
 
   // Returns the lists that this DatabaseManager should get full hashes for.
-  virtual std::unordered_set<UpdateListIdentifier>
-  GetStoresForFullHashRequests();
+  virtual std::unordered_set<ListIdentifier> GetStoresForFullHashRequests();
 
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in

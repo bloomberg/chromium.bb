@@ -71,9 +71,9 @@ bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   return false;
 }
 
-std::unordered_set<UpdateListIdentifier>
+std::unordered_set<ListIdentifier>
 SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
-  return std::unordered_set<UpdateListIdentifier>({GetChromeUrlApiId()});
+  return std::unordered_set<ListIdentifier>({GetChromeUrlApiId()});
 }
 
 bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
