@@ -102,7 +102,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
-#include "components/web_resource/promo_resource_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
@@ -366,7 +365,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
   startup_metric_utils::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
-  web_resource::PromoResourceService::RegisterPrefs(registry);
 
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
@@ -695,8 +693,6 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-  // Added 05/2016.
-  web_resource::PromoResourceService::ClearLocalState(local_state);
 }
 
 // This method should be periodically pruned of year+ old migrations.
