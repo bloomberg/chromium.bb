@@ -101,6 +101,8 @@ void LayoutTable::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     // If border was changed, invalidate collapsed borders cache.
     if (!needsLayout() && oldStyle && oldStyle->border() != style()->border())
         invalidateCollapsedBorders();
+    if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *this, diff, *oldStyle))
+        markAllCellsWidthsDirtyAndOrNeedsLayout(MarkDirtyAndNeedsLayout);
 }
 
 static inline void resetSectionPointerIfNotBefore(LayoutTableSection*& ptr, LayoutObject* before)
@@ -699,6 +701,16 @@ void LayoutTable::subtractCaptionRect(LayoutRect& rect) const
             if (captionIsBefore)
                 rect.move(captionLogicalHeight, LayoutUnit());
         }
+    }
+}
+
+void LayoutTable::markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells whatToMark)
+{
+    for (LayoutObject* child = children()->firstChild(); child; child = child->nextSibling()) {
+        if (!child->isTableSection())
+            continue;
+        LayoutTableSection* section = toLayoutTableSection(child);
+        section->markAllCellsWidthsDirtyAndOrNeedsLayout(whatToMark);
     }
 }
 

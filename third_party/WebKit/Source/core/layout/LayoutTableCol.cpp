@@ -65,12 +65,7 @@ void LayoutTableCol::styleDidChange(StyleDifference diff, const ComputedStyle* o
         // (1) Only mark cells which are affected by this col, not every cell in the table.
         // (2) If only the col width changes and its border width doesn't, do the cells need to be marked as
         //     needing layout or just given dirty widths?
-        for (LayoutObject* child = table->children()->firstChild(); child; child = child->nextSibling()) {
-            if (!child->isTableSection())
-                continue;
-            LayoutTableSection* section = toLayoutTableSection(child);
-            section->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTableSection::MarkDirtyAndNeedsLayout);
-        }
+        table->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::MarkDirtyAndNeedsLayout);
     }
 }
 

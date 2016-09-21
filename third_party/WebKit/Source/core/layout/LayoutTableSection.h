@@ -115,8 +115,8 @@ public:
     void layoutRows();
     void computeOverflowFromCells();
     bool recalcChildOverflowAfterStyleChange();
-    enum WhatToMarkAllCells { MarkDirtyOnly, MarkDirtyAndNeedsLayout };
-    void markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells);
+
+    void markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
 
     LayoutTable* table() const { return toLayoutTable(parent()); }
 

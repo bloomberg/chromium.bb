@@ -66,7 +66,6 @@ crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
 
 crbug.com/613728 paint/invalidation/table/cached-69296.html [ Failure ]
-crbug.com/613728 paint/invalidation/table/cached-change-table-border-width.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]

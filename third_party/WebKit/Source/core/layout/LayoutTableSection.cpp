@@ -135,7 +135,7 @@ void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyl
         table->invalidateCollapsedBorders();
 
     if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff, *oldStyle))
-        markAllCellsWidthsDirtyAndOrNeedsLayout(MarkDirtyAndNeedsLayout);
+        markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::MarkDirtyAndNeedsLayout);
 }
 
 void LayoutTableSection::willBeRemovedFromTree()
@@ -1237,12 +1237,12 @@ bool LayoutTableSection::recalcChildOverflowAfterStyleChange()
     return childrenOverflowChanged;
 }
 
-void LayoutTableSection::markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells whatToMark)
+void LayoutTableSection::markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells whatToMark)
 {
     for (LayoutTableRow* row = firstRow(); row; row = row->nextRow()) {
         for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
             cell->setPreferredLogicalWidthsDirty();
-            if (whatToMark == MarkDirtyAndNeedsLayout)
+            if (whatToMark == LayoutTable::MarkDirtyAndNeedsLayout)
                 cell->setChildNeedsLayout();
         }
     }

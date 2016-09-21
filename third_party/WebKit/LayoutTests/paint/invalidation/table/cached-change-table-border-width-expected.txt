@@ -1,46 +1,42 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE id='tbl'",
-          "rect": [8, 8, 58, 54],
+          "rect": [8, 8, 60, 54],
           "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 8, 58, 54],
+          "rect": [8, 8, 60, 54],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 10, 54, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 54, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [9, 9, 54, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 54, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE id='tbl'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "location change"
     }
   ]
 }

@@ -398,6 +398,9 @@ public:
     // For simplicity, just conservatively assume foreground of all tables are not opaque.
     bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
 
+    enum WhatToMarkAllCells { MarkDirtyOnly, MarkDirtyAndNeedsLayout };
+    void markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells);
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void simplifiedNormalFlowLayout() override;

@@ -326,8 +326,7 @@ void TableLayoutAlgorithmFixed::willChangeTableLayout()
     // (see calcWidthArray above.) This optimization is preferred to always
     // computing the logical widths we never intended to use.
     m_table->recalcSectionsIfNeeded();
-    for (LayoutTableSection* section = m_table->topNonEmptySection(); section; section = m_table->sectionBelow(section))
-        section->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTableSection::MarkDirtyOnly);
+    m_table->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::MarkDirtyOnly);
 }
 
 } // namespace blink
