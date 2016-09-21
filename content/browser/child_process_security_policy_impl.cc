@@ -579,6 +579,14 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;
   }
 
+  // https://crbug.com/646278 Valid blob URLs should contain canonically
+  // serialized origins.
+  if (url.SchemeIsBlob() &&
+      !base::StartsWith(url.GetContent(), url::Origin(url).Serialize() + "/",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    return false;
+  }
+
   // If the process can commit the URL, it can request it.
   if (CanCommitURL(child_id, url))
     return true;
@@ -596,6 +604,14 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   // Of all the pseudo schemes, only about:blank is allowed to commit.
   if (IsPseudoScheme(url.scheme()))
     return base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL);
+
+  // https://crbug.com/646278 Valid blob URLs should contain canonically
+  // serialized origins.
+  if (url.SchemeIsBlob() &&
+      !base::StartsWith(url.GetContent(), url::Origin(url).Serialize() + "/",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    return false;
+  }
 
   // TODO(creis): Tighten this for Site Isolation, so that a URL from a site
   // that is isolated can only be committed in a process dedicated to that site.
