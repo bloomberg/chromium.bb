@@ -88,7 +88,7 @@ void MIDIAccess::setOnstatechange(EventListener* listener)
 
 bool MIDIAccess::hasPendingActivity() const
 {
-    return m_hasPendingActivity && !getExecutionContext()->activeDOMObjectsAreStopped();
+    return m_hasPendingActivity && getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped();
 }
 
 MIDIInputMap* MIDIAccess::inputs() const
