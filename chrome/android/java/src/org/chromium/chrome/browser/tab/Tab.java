@@ -1581,7 +1581,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             tabModelSelector.getModel(mIncognito).removeTab(this);
 
-            if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
+            updateWindowAndroid(null);
             attachTabContentManager(null);
         }
 
@@ -1603,9 +1603,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // TODO(yusufo): Share these calls with the construction related calls.
         // crbug.com/590281
 
-        // Update and propagate for the new WindowAndroid.
-        mWindowAndroid = activity.getWindowAndroid();
-        mContentViewCore.updateWindowAndroid(mWindowAndroid);
+        updateWindowAndroid(activity.getWindowAndroid());
 
         // Update for the controllers that need the Compositor from the new Activity.
         attachTabContentManager(activity.getTabContentManager());
@@ -1632,6 +1630,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         for (TabObserver observer : mObservers) {
             observer.onReparentingFinished(this);
         }
+    }
+
+    /**
+     * Update and propagate the new WindowAndroid.
+     * @param windowAndroid The WindowAndroid to propagate.
+     */
+    public void updateWindowAndroid(WindowAndroid windowAndroid) {
+        mWindowAndroid = windowAndroid;
+        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(mWindowAndroid);
     }
 
     /**

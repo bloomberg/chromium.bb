@@ -956,7 +956,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mUndoBarPopupController = new UndoBarController(this, mTabModelSelectorImpl,
                 getSnackbarManager());
 
-        mVrShellDelegate = new VrShellDelegate(this, mContentContainer);
+        mVrShellDelegate = new VrShellDelegate(this);
     }
 
     @Override
@@ -1601,5 +1601,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean isVrShellEnabled() {
         return mVrShellDelegate.isVrShellEnabled();
+    }
+
+    // TODO(mthiesse): Toggle toolbar overlay, popups, etc.
+    public void setUIVisibilityForVR(int visibility) {
+        mControlContainer.setVisibility(visibility);
+        getCompositorViewHolder().getSurfaceView().setVisibility(visibility);
+        getCompositorViewHolder().setVisibility(visibility);
     }
 }

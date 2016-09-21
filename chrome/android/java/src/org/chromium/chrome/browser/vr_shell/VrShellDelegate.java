@@ -12,9 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -30,15 +32,13 @@ public class VrShellDelegate {
     private boolean mVrShellEnabled;
 
     private Class<? extends VrShellInterface> mVrShellClass;
-    private VrShellInterface mVrShellView;
+    private VrShellInterface mVrShell;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
-    private ViewGroup mParentView;
     private String mVrExtra;
 
-    public VrShellDelegate(ChromeTabbedActivity activity, ViewGroup parentView) {
+    public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
-        mParentView = parentView;
 
         mVrShellClass = maybeFindVrShell();
         if (mVrShellClass != null) {
@@ -71,6 +71,12 @@ public class VrShellDelegate {
      */
     public boolean enterVRIfNecessary() {
         if (!mVrShellEnabled) return false;
+        Tab tab = mActivity.getActivityTab();
+        // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
+        // entered without any current tabs.
+        if (tab == null || tab.getContentViewCore() == null) {
+            return false;
+        }
         if (mInVr) return true;
         // VrShell must be initialized in Landscape mode due to a bug in the GVR library.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -80,8 +86,8 @@ public class VrShellDelegate {
         }
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShellView.onNativeLibraryReady();
-        mVrShellView.setVrModeEnabled(true);
+        mVrShell.onNativeLibraryReady(tab);
+        mVrShell.setVrModeEnabled(true);
         mInVr = true;
         return true;
     }
@@ -91,14 +97,14 @@ public class VrShellDelegate {
      */
     public void resumeVR() {
         setupVrModeWindowFlags();
-        mVrShellView.resume();
+        mVrShell.resume();
     }
 
     /**
      * Pauses VR Shell.
      */
     public void pauseVR() {
-        mVrShellView.pause();
+        mVrShell.pause();
     }
 
     /**
@@ -108,8 +114,8 @@ public class VrShellDelegate {
     public boolean exitVRIfNecessary() {
         if (!mInVr) return false;
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        mVrShellView.setVrModeEnabled(false);
-        mVrShellView.pause();
+        mVrShell.setVrModeEnabled(false);
+        mVrShell.pause();
         removeVrViews();
         clearVrModeWindowFlags();
         destroyVrShell();
@@ -121,7 +127,7 @@ public class VrShellDelegate {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             Constructor<?> vrShellConstructor = mVrShellClass.getConstructor(Activity.class);
-            mVrShellView = (VrShellInterface) vrShellConstructor.newInstance(mActivity);
+            mVrShell = (VrShellInterface) vrShellConstructor.newInstance(mActivity);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException e) {
             Log.e(TAG, "Unable to instantiate VrShell", e);
@@ -133,14 +139,18 @@ public class VrShellDelegate {
     }
 
     private void addVrViews() {
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT);
-        mParentView.addView(mVrShellView.getContainer(), mParentView.getChildCount(), params);
+        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+        LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        decor.addView(mVrShell.getContainer(), params);
+        mActivity.setUIVisibilityForVR(View.GONE);
     }
 
     private void removeVrViews() {
-        ((ViewGroup) mVrShellView.getContainer().getParent())
-                .removeView(mVrShellView.getContainer());
+        mActivity.setUIVisibilityForVR(View.VISIBLE);
+        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+        decor.removeView(mVrShell.getContainer());
     }
 
     private void setupVrModeWindowFlags() {
@@ -168,9 +178,9 @@ public class VrShellDelegate {
      * Clean up VrShell, and associated native objects.
      */
     public void destroyVrShell() {
-        if (mVrShellView != null) {
-            mVrShellView.teardown();
-            mVrShellView = null;
+        if (mVrShell != null) {
+            mVrShell.teardown();
+            mVrShell = null;
         }
     }
 

@@ -16,6 +16,8 @@ static_library("vr_shell") {
     "easing.h",
     "ui_elements.cc",
     "ui_elements.h",
+    "vr_compositor.cc",
+    "vr_compositor.h",
     "vr_gl_util.cc",
     "vr_gl_util.h",
     "vr_math.cc",

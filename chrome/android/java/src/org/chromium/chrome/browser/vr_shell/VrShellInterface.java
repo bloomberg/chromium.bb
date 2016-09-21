@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.vr_shell;
 
 import android.widget.FrameLayout;
 
+import org.chromium.chrome.browser.tab.Tab;
+
 /**
  * Abstracts away the VrShell class, which may or may not be present at runtime depending on
  * compile flags.
@@ -14,7 +16,7 @@ public interface VrShellInterface {
     /**
      * Performs native VrShell initialization.
      */
-    void onNativeLibraryReady();
+    void onNativeLibraryReady(Tab currentTab);
 
     /**
      * Pauses VrShell.

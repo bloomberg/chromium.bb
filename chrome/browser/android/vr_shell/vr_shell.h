@@ -16,16 +16,28 @@
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 
+namespace content {
+class ContentViewCore;
+}
+
+namespace ui {
+class WindowAndroid;
+}
 
 namespace vr_shell {
 
+class VrCompositor;
 class VrShellRenderer;
 
 
 class VrShell : public device::GvrDelegate {
  public:
-  VrShell(JNIEnv* env, jobject obj);
+  VrShell(JNIEnv* env, jobject obj,
+          content::ContentViewCore* content_view_core,
+          ui::WindowAndroid* content_window);
 
+  void UpdateCompositorLayers(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void GvrInit(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
@@ -44,6 +56,16 @@ class VrShell : public device::GvrDelegate {
   void UpdateWebVRTextureBounds(
       int eye, float left, float top, float width, float height) override;
   gvr::GvrApi* gvr_api() override;
+
+  void ContentSurfaceDestroyed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object);
+  void ContentSurfaceChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jint width,
+      jint height,
+      const base::android::JavaParamRef<jobject>& surface);
 
  private:
   virtual ~VrShell();
@@ -83,6 +105,9 @@ class VrShell : public device::GvrDelegate {
   gvr::Vec3f forward_vector_;
 
   gvr::Sizei render_size_;
+
+  std::unique_ptr<VrCompositor> content_compositor_view_;
+  content::ContentViewCore* content_cvc_;
 
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
