@@ -138,14 +138,6 @@ void OnUrlHandlerList(int render_process_host_id,
     return;
   }
 
-  if (handlers.size() == 1) {
-    // Special case. When ARC has only one activity for the |url|, silently
-    // launch the app to be consistent with Android's behavior. No UI needed
-    // in this case.
-    intent_helper->HandleUrl(url.spec(), handlers[0]->package_name);
-    return;
-  }
-
   // Otherwise, retrieve icons of the activities.
   std::vector<ActivityIconLoader::ActivityName> activities;
   for (const auto& handler : handlers) {
