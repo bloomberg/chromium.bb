@@ -206,7 +206,7 @@ def MultipleStringMatch(patterns, corpus):
     patterns: A list of strings.
     corpus: The text where to search for the strings.
 
-  Result:
+  Returns:
     A list of Booleans stating whether each pattern string was found in the
     corpus or not.
   """

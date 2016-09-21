@@ -129,7 +129,7 @@ class SignerPayloadsClientGoogleStorage(object):
     Args:
       keyset: name of the keyset contained in this instruction set.
 
-    Result:
+    Returns:
       URI for the given instruction set as a string.
     """
     return os.path.join(self.signing_base_dir,
@@ -157,7 +157,8 @@ class SignerPayloadsClientGoogleStorage(object):
     Args:
       hash_names: The list of input_names passed to the signer.
       keyset: Keyset name passed to the signer.
-    Result:
+
+    Returns:
       List of URIs expected back from the signer.
     """
     result = []

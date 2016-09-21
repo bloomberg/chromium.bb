@@ -225,9 +225,9 @@ class DocStringChecker(BaseChecker):
     invalid_sections = (
         # Handle common misnamings.
         'arg', 'argument', 'arguments',
-        'ret', 'rets', 'return',
+        'ret', 'rets', 'return', 'result', 'results',
         'yield', 'yeild', 'yeilds',
-        'raise', 'throw', 'throws',
+        'raise', 'riase', 'riases', 'throw', 'throws',
     )
     indent_len = self._docstring_indent(node)
 

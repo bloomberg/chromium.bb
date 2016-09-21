@@ -48,7 +48,7 @@ def SplitShebang(header):
     A tuple of strings (command, args) where the first string is the called
     and the second is the list of arguments as passed in the header.
 
-  Riases:
+  Raises:
     ValueError if the passed header is not a valid shebang line.
   """
   m = re.match(r'#!\s*(/[a-z/0-9\.-]+)\s*(.*)$', header)

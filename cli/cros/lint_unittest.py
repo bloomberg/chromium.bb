@@ -124,10 +124,10 @@ class DocStringCheckerTest(CheckerTestCase):
       """ok line
 
       cuddled end""",
-      """we want Args/Returns not Arguments/Return
+      """we want Args, not Arguments
 
       Arguments:
-      Return:
+        some: arg
       """,
       """section order is wrong here
 
