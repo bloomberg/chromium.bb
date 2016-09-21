@@ -363,8 +363,8 @@ public class ChromeLauncherActivity extends Activity
         // current URL and not the URL that it was triggered with.
         if (TextUtils.equals(
                 FeatureUtilities.getHerbFlavor(), ChromeSwitches.HERB_FLAVOR_ELDERBERRY)
-                && (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
-                        || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
+                && ((newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
+                        || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0)) {
             String uuid = UUID.randomUUID().toString();
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             newIntent.setFlags(
@@ -419,6 +419,15 @@ public class ChromeLauncherActivity extends Activity
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
         newIntent.setData(uri);
+
+        // If a CCT intent triggers First Run, then NEW_TASK will be automatically applied.  As
+        // part of that, it will inherit the EXCLUDE_FROM_RECENTS bit from ChromeLauncherActivity,
+        // so explicitly remove it to ensure the CCT does not get lost in recents.
+        if ((newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
+                || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
+            newIntent.setFlags(
+                    newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        }
         if (addHerbExtras) updateHerbIntent(context, newIntent, uri);
 
         return newIntent;
