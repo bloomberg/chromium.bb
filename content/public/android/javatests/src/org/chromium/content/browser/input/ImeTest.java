@@ -26,6 +26,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.parameter.Parameter;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -45,8 +47,25 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Integration tests for text input using cases based on fixed regressions.
+ * IME (input method editor) and text input tests. Note that we run each test case twice,
+ * once with ImeThread feature and once without it.
  */
+@ParameterizedTest.Set(tests = {
+        @ParameterizedTest(parameters = {
+                @Parameter(
+                        tag = CommandLineFlags.Parameter.PARAMETER_TAG,
+                        arguments = {
+                                @Parameter.Argument(
+                                        name = CommandLineFlags.Parameter.ADD_ARG,
+                                        stringArray = {"enable-features=ImeThread"})})}),
+        @ParameterizedTest(parameters = {
+                @Parameter(
+                        tag = CommandLineFlags.Parameter.PARAMETER_TAG,
+                        arguments = {
+                                @Parameter.Argument(
+                                        name = CommandLineFlags.Parameter.ADD_ARG,
+                                        stringArray = {"disable-features=ImeThread"})})})
+        })
 public class ImeTest extends ContentShellTestBase {
     protected ChromiumBaseInputConnection mConnection;
     private TestInputConnectionFactory mConnectionFactory;
@@ -129,6 +148,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testCompositionWithNullTextNotCrash() throws Throwable {
+        if (usingReplicaInputConnection()) return;
         commitText(null, 1);
         assertTextsAroundCursor("", null, "");
 
@@ -153,12 +173,13 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("he", null, "llo");
     }
 
-    // When newCursorPosition != 1, setComposingText doesn't work for ReplicaInputConnection
-    // because there is a bug in BaseInputConnection.
-    @CommandLineFlags.Add("enable-features=ImeThread")
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingTextForNewCursorPositions() throws Throwable {
+        // When newCursorPosition != 1, setComposingText doesn't work for ReplicaInputConnection
+        // because there is a bug in BaseInputConnection.
+        if (usingReplicaInputConnection()) return;
+
         // Cursor is on the right of composing text when newCursorPosition > 0.
         setComposingText("ab", 1);
         waitAndVerifyUpdateSelection(0, 2, 2, 0, 2);
@@ -202,13 +223,14 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(10, 8, 8, 2, 6);
     }
 
-    // When newCursorPosition != 1, commitText doesn't work for ReplicaInputConnection
-    // because there is a bug in BaseInputConnection.
-    @CommandLineFlags.Add("enable-features=ImeThread")
     @SmallTest
     @Feature({"TextInput", "Main"})
     @RetryOnFailure
     public void testCommitTextForNewCursorPositions() throws Throwable {
+        // When newCursorPosition != 1, commitText doesn't work for ReplicaInputConnection
+        // because there is a bug in BaseInputConnection.
+        if (usingReplicaInputConnection()) return;
+
         // Cursor is on the left of committing text.
         commitText("ab", 0);
         waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
@@ -735,14 +757,15 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("blablargblarg", null, "");
     }
 
-    // Chrome can crash after pasting long text into textarea, becasue there is an overflow bug in
-    // SpannableStringBuilder#replace(). This can be avoided by enabling ImeThread.
-    // crbug.com/606059
-    @CommandLineFlags.Add("enable-features=ImeThread")
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
     public void testPasteLongText() throws Exception {
+        // Chrome can crash after pasting long text into textarea, becasue there is an overflow bug
+        // in SpannableStringBuilder#replace(). This can be avoided by enabling ImeThread.
+        // crbug.com/606059
+        if (usingReplicaInputConnection()) return;
+
         int textLength = 25000;
         String text = new String(new char[textLength]).replace("\0", "a");
 
@@ -1396,7 +1419,8 @@ public class ImeTest extends ContentShellTestBase {
         final String code = "getEventLogs()";
         final String sanitizedExpectedLogs = "\"" + expectedLogs + "\"";
         if (usingReplicaInputConnection()) {
-            // When using replica input connection, JavaScript update will lands later.
+            // When using replica input connection, update from JavaScript will come at a later
+            // time.
             CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
@@ -1420,7 +1444,6 @@ public class ImeTest extends ContentShellTestBase {
     // https://crbug.com/604675
     @MediumTest
     @Feature({"TextInput"})
-    @CommandLineFlags.Add("enable-features=ImeThread")
     public void testAlertInKeyUpListenerDoesNotCrash() throws Exception {
         // Call 'alert()' when 'keyup' event occurs. Since we are in contentshell,
         // this does not actually pops up the alert window.
@@ -1438,7 +1461,6 @@ public class ImeTest extends ContentShellTestBase {
     // https://crbug.com/616334
     @SmallTest
     @Feature({"TextInput"})
-    @CommandLineFlags.Add("enable-features=ImeThread")
     @RetryOnFailure
     public void testCastToBaseInputConnection() throws Exception {
         commitText("a", 1);

@@ -21,6 +21,8 @@ import java.util.concurrent.Callable;
 
 /**
  * Integration tests for text input for Android L (or above) features.
+ * Note this inherits from ImeTest, so we run each test case twice, once with ImeThread feature and
+ * once without it.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
