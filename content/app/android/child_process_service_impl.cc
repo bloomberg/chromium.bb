@@ -13,8 +13,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
+#include "base/unguessable_token.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/content_descriptors.h"
+#include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
@@ -35,6 +37,7 @@ namespace {
 // we're in a renderer or gpu process.
 class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
                                   public gpu::SurfaceTexturePeer,
+                                  public gpu::ScopedSurfaceRequestConduit,
                                   public gpu::GpuSurfaceLookup {
  public:
   // |service impl| is the instance of
@@ -44,10 +47,12 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
       : service_impl_(service_impl) {
     SurfaceTexturePeer::InitInstance(this);
     gpu::GpuSurfaceLookup::InitInstance(this);
+    gpu::ScopedSurfaceRequestConduit::SetInstance(this);
   }
   ~SurfaceTextureManagerImpl() override {
     SurfaceTexturePeer::InitInstance(NULL);
     gpu::GpuSurfaceLookup::InitInstance(NULL);
+    gpu::ScopedSurfaceRequestConduit::SetInstance(nullptr);
   }
 
   // Overridden from SurfaceTextureManager:
@@ -95,6 +100,19 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
     content::Java_ChildProcessServiceImpl_establishSurfaceTexturePeer(
         env, service_impl_, pid, surface_texture->j_surface_texture(),
         primary_id, secondary_id);
+  }
+
+  // Overriden from ScopedSurfaceRequestConduit:
+  void ForwardSurfaceTextureForSurfaceRequest(
+      const base::UnguessableToken& request_token,
+      const gl::SurfaceTexture* surface_texture) override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+
+    content::
+        Java_ChildProcessServiceImpl_forwardSurfaceTextureForSurfaceRequest(
+            env, service_impl_, request_token.GetHighForSerialization(),
+            request_token.GetLowForSerialization(),
+            surface_texture->j_surface_texture());
   }
 
   // Overridden from GpuSurfaceLookup:

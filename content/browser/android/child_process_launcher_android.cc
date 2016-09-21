@@ -14,6 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/logging.h"
+#include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/file_descriptor_info_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -235,6 +236,26 @@ void EstablishSurfacePeer(JNIEnv* env,
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &SetSurfacePeer, jsurface, pid, primary_id, secondary_id));
+}
+
+void CompleteScopedSurfaceRequest(JNIEnv* env,
+                                  const JavaParamRef<jclass>& clazz,
+                                  jlong request_token_high,
+                                  jlong request_token_low,
+                                  const JavaParamRef<jobject>& surface) {
+  if (request_token_high == 0 && request_token_low == 0) {
+    DLOG(ERROR) << "Received invalid surface request token.";
+    return;
+  }
+
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ScopedJavaGlobalRef<jobject> jsurface;
+  jsurface.Reset(env, surface);
+  ScopedSurfaceRequestManager::GetInstance()->FulfillScopedSurfaceRequest(
+      base::UnguessableToken::Deserialize(request_token_high,
+                                          request_token_low),
+      gl::ScopedJavaSurface(jsurface));
 }
 
 void RegisterViewSurface(int surface_id, const JavaRef<jobject>& j_surface) {

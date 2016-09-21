@@ -1579,6 +1579,7 @@ test("content_unittests") {
       "../browser/android/java/gin_java_method_invocation_helper_unittest.cc",
       "../browser/android/java/java_type_unittest.cc",
       "../browser/android/java/jni_helper_unittest.cc",
+      "../browser/android/scoped_surface_request_manager_unittest.cc",
       "../browser/android/url_request_content_job_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",

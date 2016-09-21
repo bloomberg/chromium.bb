@@ -205,6 +205,8 @@ source_set("browser") {
     "android/interface_registry_android_impl.h",
     "android/java_interfaces_impl.cc",
     "android/java_interfaces_impl.h",
+    "android/scoped_surface_request_manager.cc",
+    "android/scoped_surface_request_manager.h",
     "android/url_request_content_job.cc",
     "android/url_request_content_job.h",
     "appcache/appcache.cc",

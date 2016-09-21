@@ -369,6 +369,27 @@ public class ChildProcessServiceImpl {
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private void forwardSurfaceTextureForSurfaceRequest(
+            long requestTokenHigh, long requestTokenLow, SurfaceTexture surfaceTexture) {
+        if (mCallback == null) {
+            Log.e(TAG, "No callback interface has been provided.");
+            return;
+        }
+
+        Surface surface = new Surface(surfaceTexture);
+
+        try {
+            mCallback.forwardSurfaceForSurfaceRequest(requestTokenHigh, requestTokenLow, surface);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Unable to call forwardSurfaceForSurfaceRequest: %s", e);
+            return;
+        } finally {
+            surface.release();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private Surface getViewSurface(int surfaceId) {
         if (mCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");

@@ -13,6 +13,9 @@ interface IChildProcessCallback {
   void establishSurfacePeer(
       int pid, in Surface surface, int primaryID, int secondaryID);
 
+  void forwardSurfaceForSurfaceRequest(
+      long requestTokenHigh, long requestTokenLow, in Surface surface);
+
   SurfaceWrapper getViewSurface(int surfaceId);
 
   void registerSurfaceTextureSurface(

@@ -107,6 +107,7 @@
 #include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/browser_surface_texture_manager.h"
+#include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
@@ -628,6 +629,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
       gpu::SurfaceTextureManager::SetInstance(
           gpu::InProcessSurfaceTextureManager::GetInstance());
+      gpu::ScopedSurfaceRequestConduit::SetInstance(
+          ScopedSurfaceRequestManager::GetInstance());
     } else {
       gpu::SurfaceTextureManager::SetInstance(
           BrowserSurfaceTextureManager::GetInstance());

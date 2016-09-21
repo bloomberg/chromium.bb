@@ -913,6 +913,19 @@ public class ChildProcessLauncher {
             }
 
             @Override
+            public void forwardSurfaceForSurfaceRequest(
+                    long requestTokenHigh, long requestTokenLow, Surface surface) {
+                // Do not allow a malicious renderer to connect to a producer. This is only used
+                // from stream textures managed by the GPU process.
+                if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
+                    Log.e(TAG, "Illegal callback for non-GPU process.");
+                    return;
+                }
+
+                nativeCompleteScopedSurfaceRequest(requestTokenHigh, requestTokenLow, surface);
+            }
+
+            @Override
             public SurfaceWrapper getViewSurface(int surfaceId) {
                 // Do not allow a malicious renderer to get to our view surface.
                 if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
@@ -1060,5 +1073,7 @@ public class ChildProcessLauncher {
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);
+    private static native void nativeCompleteScopedSurfaceRequest(
+            long requestTokenHigh, long requestTokenLow, Surface surface);
     private static native boolean nativeIsSingleProcess();
 }
