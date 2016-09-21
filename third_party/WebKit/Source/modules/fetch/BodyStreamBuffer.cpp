@@ -311,14 +311,17 @@ void BodyStreamBuffer::processData()
     while (m_streamNeedsMore) {
         const char* buffer = nullptr;
         size_t available = 0;
-
-        switch (m_consumer->beginRead(&buffer, &available)) {
+        auto result = m_consumer->beginRead(&buffer, &available);
+        if (result == BytesConsumer::Result::ShouldWait)
+            return;
+        DOMUint8Array* array = nullptr;
+        if (result == BytesConsumer::Result::Ok) {
+            array = DOMUint8Array::create(reinterpret_cast<const unsigned char*>(buffer), available);
+            result = m_consumer->endRead(available);
+        }
+        switch (result) {
         case BytesConsumer::Result::Ok: {
-            DOMUint8Array* array = DOMUint8Array::create(reinterpret_cast<const unsigned char*>(buffer), available);
-            if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
-                error();
-                return;
-            }
+            DCHECK(array);
             // Clear m_streamNeedsMore in order to detect a pull call.
             m_streamNeedsMore = false;
             controller()->enqueue(array);
@@ -330,6 +333,7 @@ void BodyStreamBuffer::processData()
             break;
         }
         case BytesConsumer::Result::ShouldWait:
+            NOTREACHED();
             return;
         case BytesConsumer::Result::Done:
             close();

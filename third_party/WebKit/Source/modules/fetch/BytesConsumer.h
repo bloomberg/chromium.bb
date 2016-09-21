@@ -91,6 +91,10 @@ public:
     virtual Result beginRead(const char** buffer, size_t* available) WARN_UNUSED_RESULT = 0;
 
     // Ends a two-phase read.
+    // This function can modify this BytesConsumer's state.
+    // Returns Ok when the consumer stays readable or waiting.
+    // Returns Done when it's closed.
+    // Returns Error when it's errored.
     virtual Result endRead(size_t readSize) WARN_UNUSED_RESULT = 0;
 
     // Drains the data as a BlobDataHandle.

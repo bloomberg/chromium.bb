@@ -48,23 +48,28 @@ public:
         while (true) {
             const char* buffer = nullptr;
             size_t available = 0;
-            switch (m_src->beginRead(&buffer, &available)) {
-            case Result::Ok: {
-                Chunk* chunk = new Chunk(buffer, available);
-                if (m_src->endRead(available) != Result::Ok) {
-                    clearAndNotify();
-                    return;
-                }
-                m_destination1->enqueue(chunk);
-                m_destination2->enqueue(chunk);
-                hasEnqueued = true;
-                break;
-            }
-            case Result::ShouldWait:
+            auto result = m_src->beginRead(&buffer, &available);
+            if (result == Result::ShouldWait) {
                 if (hasEnqueued && destination1WasEmpty)
                     m_destination1->notify();
                 if (hasEnqueued && destination2WasEmpty)
                     m_destination2->notify();
+                return;
+            }
+            Chunk* chunk = nullptr;
+            if (result == Result::Ok) {
+                chunk = new Chunk(buffer, available);
+                result = m_src->endRead(available);
+            }
+            switch (result) {
+            case Result::Ok:
+                DCHECK(chunk);
+                m_destination1->enqueue(chunk);
+                m_destination2->enqueue(chunk);
+                hasEnqueued = true;
+                break;
+            case Result::ShouldWait:
+                NOTREACHED();
                 return;
             case Result::Done:
                 if (destination1WasEmpty)

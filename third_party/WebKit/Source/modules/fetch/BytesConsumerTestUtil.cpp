@@ -161,26 +161,20 @@ void BytesConsumerTestUtil::TwoPhaseReader::onStateChange()
     while (true) {
         const char* buffer = nullptr;
         size_t available = 0;
-        switch (m_consumer->beginRead(&buffer, &available)) {
-        case BytesConsumer::Result::Ok: {
+        auto result = m_consumer->beginRead(&buffer, &available);
+        if (result == BytesConsumer::Result::ShouldWait)
+            return;
+        if (result == BytesConsumer::Result::Ok) {
             // We don't use |available| as-is to test cases where endRead
             // is called with a number smaller than |available|. We choose 3
             // because of the same reasons as Reader::onStateChange.
             size_t read = std::min(static_cast<size_t>(3), available);
             m_data.append(buffer, read);
-            if (m_consumer->endRead(read) != BytesConsumer::Result::Ok) {
-                m_result = BytesConsumer::Result::Error;
-                return;
-            }
-            break;
+            result = m_consumer->endRead(read);
         }
-        case BytesConsumer::Result::ShouldWait:
-            return;
-        case BytesConsumer::Result::Done:
-            m_result = BytesConsumer::Result::Done;
-            return;
-        case BytesConsumer::Result::Error:
-            m_result = BytesConsumer::Result::Error;
+        DCHECK_NE(result, BytesConsumer::Result::ShouldWait);
+        if (result != BytesConsumer::Result::Ok) {
+            m_result = result;
             return;
         }
     }

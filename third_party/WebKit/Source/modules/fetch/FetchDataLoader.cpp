@@ -60,15 +60,18 @@ public:
         while (true) {
             const char* buffer;
             size_t available;
-            switch (m_consumer->beginRead(&buffer, &available)) {
-            case BytesConsumer::Result::Ok:
+            auto result = m_consumer->beginRead(&buffer, &available);
+            if (result == BytesConsumer::Result::ShouldWait)
+                return;
+            if (result == BytesConsumer::Result::Ok) {
                 m_blobData->appendBytes(buffer, available);
-                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
-                    m_client->didFetchDataLoadFailed();
-                    return;
-                }
+                result = m_consumer->endRead(available);
+            }
+            switch (result) {
+            case BytesConsumer::Result::Ok:
                 break;
             case BytesConsumer::Result::ShouldWait:
+                NOTREACHED();
                 return;
             case BytesConsumer::Result::Done: {
                 auto size = m_blobData->length();
@@ -123,8 +126,10 @@ public:
         while (true) {
             const char* buffer;
             size_t available;
-            switch (m_consumer->beginRead(&buffer, &available)) {
-            case BytesConsumer::Result::Ok:
+            auto result = m_consumer->beginRead(&buffer, &available);
+            if (result == BytesConsumer::Result::ShouldWait)
+                return;
+            if (result == BytesConsumer::Result::Ok) {
                 if (available > 0) {
                     unsigned bytesAppended = m_rawData->append(buffer, available);
                     if (!bytesAppended) {
@@ -136,12 +141,13 @@ public:
                     }
                     DCHECK_EQ(bytesAppended, available);
                 }
-                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
-                    m_client->didFetchDataLoadFailed();
-                    return;
-                }
+                result = m_consumer->endRead(available);
+            }
+            switch (result) {
+            case BytesConsumer::Result::Ok:
                 break;
             case BytesConsumer::Result::ShouldWait:
+                NOTREACHED();
                 return;
             case BytesConsumer::Result::Done:
                 m_client->didFetchDataLoadedArrayBuffer(DOMArrayBuffer::create(m_rawData->toArrayBuffer()));
@@ -188,16 +194,19 @@ public:
         while (true) {
             const char* buffer;
             size_t available;
-            switch (m_consumer->beginRead(&buffer, &available)) {
-            case BytesConsumer::Result::Ok:
+            auto result = m_consumer->beginRead(&buffer, &available);
+            if (result == BytesConsumer::Result::ShouldWait)
+                return;
+            if (result == BytesConsumer::Result::Ok) {
                 if (available > 0)
                     m_builder.append(m_decoder->decode(buffer, available));
-                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
-                    m_client->didFetchDataLoadFailed();
-                    return;
-                }
+                result = m_consumer->endRead(available);
+            }
+            switch (result) {
+            case BytesConsumer::Result::Ok:
                 break;
             case BytesConsumer::Result::ShouldWait:
+                NOTREACHED();
                 return;
             case BytesConsumer::Result::Done:
                 m_builder.append(m_decoder->flush());
@@ -255,19 +264,22 @@ public:
         while (true) {
             const char* buffer;
             size_t available;
-            switch (m_consumer->beginRead(&buffer, &available)) {
-            case BytesConsumer::Result::Ok:
-                m_outStream->addData(buffer, available);
-                if (m_consumer->endRead(available) != BytesConsumer::Result::Ok) {
-                    m_outStream->abort();
-                    m_client->didFetchDataLoadFailed();
-                    return;
-                }
-                needToFlush = true;
-                break;
-            case BytesConsumer::Result::ShouldWait:
+            auto result = m_consumer->beginRead(&buffer, &available);
+            if (result == BytesConsumer::Result::ShouldWait) {
                 if (needToFlush)
                     m_outStream->flush();
+                return;
+            }
+            if (result == BytesConsumer::Result::Ok) {
+                m_outStream->addData(buffer, available);
+                needToFlush = true;
+                result = m_consumer->endRead(available);
+            }
+            switch (result) {
+            case BytesConsumer::Result::Ok:
+                break;
+            case BytesConsumer::Result::ShouldWait:
+                NOTREACHED();
                 return;
             case BytesConsumer::Result::Done:
                 if (needToFlush)
