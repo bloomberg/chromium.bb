@@ -456,6 +456,9 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                       const gfx::Point& position,
                       uint32_t effect_bitmask,
                       const OnCompleteDropCallback& callback) override;
+  void OnPerformDragDropCompleted(uint32_t window,
+                                  bool success,
+                                  uint32_t action_taken) override;
   void OnDragDropDone() override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(uint32_t window_id) override;

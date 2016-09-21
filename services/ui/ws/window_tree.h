@@ -484,7 +484,7 @@ class WindowTree : public mojom::WindowTree,
       const ServerWindow* window) const override;
 
   // DragSource:
-  void OnDragCompleted(bool success) override;
+  void OnDragCompleted(bool success, uint32_t action_taken) override;
   ServerWindow* GetWindowById(const WindowId& id) override;
   DragTargetConnection* GetDragTargetForWindow(
       const ServerWindow* window) override;

@@ -381,6 +381,10 @@ void TestWindowTreeClient::OnCompleteDrop(
     uint32_t effect_bitmask,
     const OnCompleteDropCallback& callback) {}
 
+void TestWindowTreeClient::OnPerformDragDropCompleted(uint32_t window,
+                                                      bool success,
+                                                      uint32_t action_taken) {}
+
 void TestWindowTreeClient::OnDragDropDone() {}
 
 void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {

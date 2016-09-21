@@ -87,8 +87,11 @@ struct WindowTreeClient::CurrentDragState {
   // The current change id of the current drag an drop ipc.
   uint32_t change_id;
 
+  // The effect to return when we send our finish signal.
+  uint32_t completed_action;
+
   // Callback executed when a drag initiated by PerformDragDrop() is completed.
-  base::Callback<void(bool)> on_finished;
+  base::Callback<void(bool, uint32_t)> on_finished;
 };
 
 WindowTreeClient::WindowTreeClient(
@@ -647,7 +650,7 @@ void WindowTreeClient::PerformDragDrop(
     int drag_operation,
     const gfx::Point& cursor_location,
     const SkBitmap& bitmap,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool, uint32_t)>& callback) {
   DCHECK(!current_drag_state_);
 
   // TODO(erg): Pass |cursor_location| and |bitmap| in PerformDragDrop() when
@@ -662,8 +665,8 @@ void WindowTreeClient::PerformDragDrop(
 
   uint32_t current_drag_change = ScheduleInFlightChange(
       base::MakeUnique<InFlightDragChange>(window, ChangeType::DRAG_LOOP));
-  current_drag_state_.reset(
-      new CurrentDragState{current_drag_change, callback});
+  current_drag_state_.reset(new CurrentDragState{
+      current_drag_change, ui::mojom::kDropEffectNone, callback});
 
   tree_->PerformDragDrop(
       current_drag_change, window->server_id(), drag_pointer,
@@ -1166,6 +1169,15 @@ void WindowTreeClient::OnCompleteDrop(Id window_id,
   callback.Run(ret);
 }
 
+void WindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
+                                                  bool success,
+                                                  uint32_t action_taken) {
+  if (current_drag_state_ && change_id == current_drag_state_->change_id) {
+    current_drag_state_->completed_action = action_taken;
+    OnChangeCompleted(change_id, success);
+  }
+}
+
 void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   std::unique_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
@@ -1192,7 +1204,8 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   if (current_drag_state_ && change_id == current_drag_state_->change_id) {
     OnDragDropDone();
 
-    current_drag_state_->on_finished.Run(success);
+    current_drag_state_->on_finished.Run(success,
+                                         current_drag_state_->completed_action);
     current_drag_state_.reset();
   }
 }

@@ -57,7 +57,7 @@ DragController::~DragController() {
 }
 
 void DragController::Cancel() {
-  MessageDragCompleted(false);
+  MessageDragCompleted(false, ui::mojom::kDropEffectNone);
   // |this| may be deleted now.
 }
 
@@ -117,7 +117,7 @@ bool DragController::DispatchPointerEvent(const ui::PointerEvent& event,
     } else {
       // The pointer was released over no window or a window that doesn't
       // accept drags.
-      MessageDragCompleted(false);
+      MessageDragCompleted(false, ui::mojom::kDropEffectNone);
     }
   }
 
@@ -129,12 +129,12 @@ void DragController::OnWillDestroyDragTargetConnection(
   called_on_drag_mime_types_.erase(connection);
 }
 
-void DragController::MessageDragCompleted(bool success) {
+void DragController::MessageDragCompleted(bool success, uint32_t action_taken) {
   for (DragTargetConnection* connection : called_on_drag_mime_types_)
     connection->PerformOnDragDropDone();
   called_on_drag_mime_types_.clear();
 
-  source_->OnDragCompleted(success);
+  source_->OnDragCompleted(success, action_taken);
   // |this| may be deleted now.
 }
 
@@ -255,18 +255,18 @@ void DragController::OnDragStatusCompleted(const WindowId& id,
   // should use this data to change the cursor.
 }
 
-void DragController::OnDragDropCompleted(const WindowId& id, uint32_t bitmask) {
+void DragController::OnDragDropCompleted(const WindowId& id, uint32_t action) {
   ServerWindow* window = source_->GetWindowById(id);
   if (!window) {
     // The window has been deleted after we sent the drop message. It's really
     // hard to recover from this so just signal to the source that our drag
     // failed.
-    MessageDragCompleted(false);
+    MessageDragCompleted(false, ui::mojom::kDropEffectNone);
     return;
   }
 
   OnRespondToOperation(window);
-  MessageDragCompleted(bitmask != 0u);
+  MessageDragCompleted(action != 0u, action);
 }
 
 void DragController::OnWindowDestroying(ServerWindow* window) {
@@ -282,7 +282,7 @@ void DragController::OnWindowDestroying(ServerWindow* window) {
   if (source_window_ == window) {
     source_window_ = nullptr;
     // Our source window is being deleted, fail the drag.
-    MessageDragCompleted(false);
+    MessageDragCompleted(false, ui::mojom::kDropEffectNone);
   }
 }
 

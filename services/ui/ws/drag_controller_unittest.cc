@@ -179,6 +179,10 @@ class DragControllerTest : public testing::Test, public DragSource {
   }
 
   DragController* drag_operation() const { return drag_operation_.get(); }
+
+  const base::Optional<uint32_t>& drag_completed_action() {
+    return drag_completed_action_;
+  }
   const base::Optional<bool>& drag_completed_value() {
     return drag_completed_value_;
   }
@@ -207,7 +211,8 @@ class DragControllerTest : public testing::Test, public DragSource {
   }
 
   // Overridden from DragControllerSource:
-  void OnDragCompleted(bool success) override {
+  void OnDragCompleted(bool success, uint32_t action_taken) override {
+    drag_completed_action_ = action_taken;
     drag_completed_value_ = success;
   }
 
@@ -236,6 +241,7 @@ class DragControllerTest : public testing::Test, public DragSource {
 
   std::unique_ptr<DragController> drag_operation_;
 
+  base::Optional<uint32_t> drag_completed_action_;
   base::Optional<bool> drag_completed_value_;
 };
 
@@ -261,7 +267,35 @@ TEST_F(DragControllerTest, SimpleDragDrop) {
   EXPECT_EQ(QueuedType::DROP, window->queue_response_type());
   window->Respond(true);
 
+  EXPECT_EQ(ui::mojom::kDropEffectMove,
+            drag_completed_action().value_or(ui::mojom::kDropEffectNone));
   EXPECT_TRUE(drag_completed_value().value_or(false));
+}
+
+TEST_F(DragControllerTest, FailsOnWindowSayingNo) {
+  std::unique_ptr<DragTestWindow> window = BuildWindow();
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data;
+  StartDragOperation(std::move(mime_data), window.get(),
+                     ui::mojom::kDropEffectMove);
+
+  DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(1, 1));
+  EXPECT_EQ(QueuedType::ENTER, window->queue_response_type());
+  window->Respond(true);
+
+  DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(2, 2));
+  EXPECT_EQ(QueuedType::OVER, window->queue_response_type());
+  window->Respond(true);
+
+  DispatchDrag(window.get(), true, 0, gfx::Point(2, 2));
+  EXPECT_EQ(QueuedType::DROP, window->queue_response_type());
+
+  // Unlike SimpleDragDrop, respond with kDropEffectNone, which should make the
+  // drag fail.
+  window->Respond(false);
+
+  EXPECT_EQ(ui::mojom::kDropEffectNone,
+            drag_completed_action().value_or(ui::mojom::kDropEffectCopy));
+  EXPECT_FALSE(drag_completed_value().value_or(true));
 }
 
 TEST_F(DragControllerTest, OnlyDeliverMimeDataOnce) {

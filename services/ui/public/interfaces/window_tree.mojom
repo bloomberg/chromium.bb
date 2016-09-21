@@ -450,10 +450,14 @@ interface WindowTreeClient {
   OnCompleteDrop(uint32 window,
                  uint32 key_state,
                  gfx.mojom.Point position,
-                 uint32 effect_bitmask) => (uint32 effect_taken);
+                 uint32 effect_bitmask) => (uint32 action_taken);
 
-  // Called after OnDragDrop completes for every connection which received an
-  // OnDragDropStart() message. This signals that a client can forget the
+  // Called on the client that requested PerformDragDrop() to return which drag
+  // action was completed. This is called instead of OnChangeCompleted().
+  OnPerformDragDropCompleted(uint32 window, bool success, uint32 action_taken);
+
+  // Called after OnCompleteDrop completes for every connection which received
+  // an OnDragDropStart() message. This signals that a client can forget the
   // |drag_data| passed in via the first message.
   OnDragDropDone();
 

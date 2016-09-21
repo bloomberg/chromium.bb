@@ -231,14 +231,17 @@ class Window {
   // to a better place.
   void RequestClose();
 
-  // Starts an inter-process drag and drop operation.
+  // Starts an inter-process drag and drop operation. When this finishes, will
+  // return the tuple [success, action_taken] to |callback|, where action_taken
+  // is one of the ui::mojom::kDropEffect constants in
+  // window_tree_constants.mojom.
   void PerformDragDrop(
       int drag_pointer,
       const std::map<std::string, std::vector<uint8_t>>& drag_data,
       int drag_operation,
       const gfx::Point& cursor_location,
       const SkBitmap& bitmap,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<void(bool, uint32_t)>& callback);
 
   // Tells the window manager to take control of moving the window. Returns
   // true if the move wasn't canceled.

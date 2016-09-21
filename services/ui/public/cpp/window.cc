@@ -487,7 +487,7 @@ void Window::PerformDragDrop(
     int drag_operation,
     const gfx::Point& cursor_location,
     const SkBitmap& bitmap,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool, uint32_t)>& callback) {
   client_->PerformDragDrop(this, drag_pointer, drag_data, drag_operation,
                            cursor_location, bitmap, callback);
 }

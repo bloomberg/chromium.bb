@@ -399,6 +399,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                       const OnCompleteDropCallback& callback) override {
     NOTIMPLEMENTED();
   }
+
+  void OnPerformDragDropCompleted(uint32_t window,
+                                  bool success,
+                                  uint32_t action_taken) override {
+    NOTIMPLEMENTED();
+  }
+
   void OnDragDropDone() override { NOTIMPLEMENTED(); }
 
   void OnChangeCompleted(uint32_t change_id, bool success) override {

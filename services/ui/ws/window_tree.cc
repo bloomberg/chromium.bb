@@ -1778,7 +1778,7 @@ bool WindowTree::IsWindowRootOfAnotherTreeForAccessPolicy(
   return tree && tree != this;
 }
 
-void WindowTree::OnDragCompleted(bool success) {
+void WindowTree::OnDragCompleted(bool success, uint32_t action_taken) {
   DCHECK(window_server_->in_drag_loop());
 
   if (window_server_->GetCurrentDragLoopInitiator() != this)
@@ -1794,7 +1794,7 @@ void WindowTree::OnDragCompleted(bool success) {
   WindowManagerState* wms = display_root->window_manager_state();
   wms->EndDragDrop();
 
-  client()->OnChangeCompleted(change_id, success);
+  client()->OnPerformDragDropCompleted(change_id, success, action_taken);
 }
 
 ServerWindow* WindowTree::GetWindowById(const WindowId& id) {

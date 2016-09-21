@@ -52,7 +52,7 @@ class DragController : public ServerWindowObserver {
 
   // Notifies all windows we messaged that the drag is finished, and then tell
   // |source| the result.
-  void MessageDragCompleted(bool success);
+  void MessageDragCompleted(bool success, uint32_t action_taken);
 
   // Returns the number of events on |window|. A value of 1 means that there's
   // a single event outstanding that we're waiting for a response from the
@@ -77,7 +77,7 @@ class DragController : public ServerWindowObserver {
 
   // Callback methods.
   void OnDragStatusCompleted(const WindowId& id, uint32_t bitmask);
-  void OnDragDropCompleted(const WindowId& id, uint32_t bitmask);
+  void OnDragDropCompleted(const WindowId& id, uint32_t action);
 
   // ServerWindowObserver:
   void OnWindowDestroying(ServerWindow* window) override;

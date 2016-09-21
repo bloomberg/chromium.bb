@@ -20,8 +20,9 @@ class DragSource {
 
   // Called when a drag operation is completed. |success| is true when a target
   // window signaled the successful completion of the drag, false in all other
-  // cases where a drag was aborted at any step in the process.
-  virtual void OnDragCompleted(bool success) = 0;
+  // cases where a drag was aborted at any step in the process. |action_taken|
+  // is one of the kDropEffect constants in window_tree_constants.mojom.
+  virtual void OnDragCompleted(bool success, uint32_t action_taken) = 0;
 
   virtual ServerWindow* GetWindowById(const WindowId& id) = 0;
 
