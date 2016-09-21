@@ -64,8 +64,10 @@ CGFloat kUIPickerFontSize = 26;
 }
 
 - (void)loadView {
-  self.pickerView = [[UIPickerView alloc] initWithFrame:CGRectZero];
-  self.navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
+  self.pickerView =
+      [[[UIPickerView alloc] initWithFrame:CGRectZero] autorelease];
+  self.navigationBar =
+      [[[UINavigationBar alloc] initWithFrame:CGRectZero] autorelease];
   self.pickerView.translatesAutoresizingMaskIntoConstraints = NO;
   self.navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
   UIStackView* stackView = [[[UIStackView alloc]
