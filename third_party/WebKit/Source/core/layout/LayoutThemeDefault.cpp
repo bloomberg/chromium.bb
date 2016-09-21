@@ -234,8 +234,9 @@ void LayoutThemeDefault::adjustInnerSpinButtonStyle(ComputedStyle& style) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
-    style.setWidth(Length(size.width(), Fixed));
-    style.setMinWidth(Length(size.width(), Fixed));
+    float zoomLevel = style.effectiveZoom();
+    style.setWidth(Length(size.width() * zoomLevel, Fixed));
+    style.setMinWidth(Length(size.width() * zoomLevel, Fixed));
 }
 
 bool LayoutThemeDefault::shouldOpenPickerWithF4Key() const

@@ -253,6 +253,18 @@ crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 
+crbug.com/640256 [ Linux Win ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Win ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Win ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
+
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
