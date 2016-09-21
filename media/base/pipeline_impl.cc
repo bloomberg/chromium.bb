@@ -363,9 +363,6 @@ void PipelineImpl::RendererWrapper::Suspend() {
     DCHECK(shared_state_.suspend_timestamp != kNoTimestamp);
   }
 
-  // Abort any reads the renderer may be blocked on.
-  demuxer_->AbortPendingReads();
-
   // Queue the asynchronous actions required to stop playback.
   SerialRunner::Queue fns;
 
@@ -801,6 +798,9 @@ void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
     shared_state_.statistics.audio_memory_usage = 0;
     shared_state_.statistics.video_memory_usage = 0;
   }
+
+  // Abort any reads the renderer may have kicked off.
+  demuxer_->AbortPendingReads();
 
   SetState(kSuspended);
   main_task_runner_->PostTask(
