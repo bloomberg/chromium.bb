@@ -354,10 +354,6 @@ deps_os = {
 
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
-
-    # class-dump utility to generate header files for undocumented SDKs
-    'src/third_party/class-dump/src':
-     Var('chromium_git') + '/external/github.com/nygard/class-dump.git' + '@' + '978d177ca6f0d2e5e34acf3e8dadc63e3140ebbc',
   },
   'mac': {
     'src/third_party/google_toolbox_for_mac/src':

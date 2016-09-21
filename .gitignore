@@ -321,7 +321,6 @@ vs-chromium-project.txt
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
 /third_party/chromite
-/third_party/class-dump/src
 /third_party/cld_2/src
 /third_party/cld_3/src
 /third_party/colorama/src
