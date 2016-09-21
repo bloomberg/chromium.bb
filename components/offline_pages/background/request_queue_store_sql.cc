@@ -60,7 +60,7 @@ bool CreateSchema(sql::Connection* db) {
 
 // Create a save page request from a SQL result.  Expects complete rows with
 // all columns present.  Columns are in order they are defined in select query
-// in |RequestQueueStore::RequestSync| method.
+// in |GetOneRequest| method.
 std::unique_ptr<SavePageRequest> MakeSavePageRequest(
     const sql::Statement& statement) {
   const int64_t id = statement.ColumnInt64(0);
@@ -262,37 +262,9 @@ bool InitDatabase(sql::Connection* db, const base::FilePath& path) {
   return CreateSchema(db);
 }
 
-}  // anonymous namespace
-
-RequestQueueStoreSQL::RequestQueueStoreSQL(
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const base::FilePath& path)
-    : background_task_runner_(std::move(background_task_runner)),
-      db_file_path_(path.AppendASCII("RequestQueue.db")),
-      weak_ptr_factory_(this) {
-  OpenConnection();
-}
-
-RequestQueueStoreSQL::~RequestQueueStoreSQL() {
-  if (db_.get())
-    background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
-}
-
-// static
-void RequestQueueStoreSQL::OpenConnectionSync(
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const base::FilePath& path,
-    const base::Callback<void(bool)>& callback) {
-  bool success = InitDatabase(db, path);
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
-}
-
-// static
-void RequestQueueStoreSQL::GetRequestsSync(
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const GetRequestsCallback& callback) {
+void GetRequestsSync(sql::Connection* db,
+                     scoped_refptr<base::SingleThreadTaskRunner> runner,
+                     const RequestQueueStore::GetRequestsCallback& callback) {
   const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
@@ -309,23 +281,19 @@ void RequestQueueStoreSQL::GetRequestsSync(
                                          base::Passed(&requests)));
 }
 
-// static
-void RequestQueueStoreSQL::AddOrUpdateRequestSync(
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const SavePageRequest& request,
-    const UpdateCallback& callback) {
+void AddOrUpdateRequestSync(sql::Connection* db,
+                            scoped_refptr<base::SingleThreadTaskRunner> runner,
+                            const SavePageRequest& request,
+                            const RequestQueueStore::UpdateCallback& callback) {
   // TODO(fgorski): add UMA metrics here.
   RequestQueueStore::UpdateStatus status = InsertOrReplace(db, request);
   runner->PostTask(FROM_HERE, base::Bind(callback, status));
 }
 
-// static
-void RequestQueueStoreSQL::RemoveRequestsSync(
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const std::vector<int64_t>& request_ids,
-    const RemoveCallback& callback) {
+void RemoveRequestsSync(sql::Connection* db,
+                        scoped_refptr<base::SingleThreadTaskRunner> runner,
+                        const std::vector<int64_t>& request_ids,
+                        const RequestQueueStore::RemoveCallback& callback) {
   RequestQueue::UpdateMultipleRequestResults results;
   std::vector<std::unique_ptr<SavePageRequest>> requests;
   // TODO(fgorski): add UMA metrics here.
@@ -334,13 +302,12 @@ void RequestQueueStoreSQL::RemoveRequestsSync(
                    base::Bind(callback, results, base::Passed(&requests)));
 }
 
-// static
-void RequestQueueStoreSQL::ChangeRequestsStateSync(
+void ChangeRequestsStateSync(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const UpdateMultipleRequestsCallback& callback) {
+    const RequestQueue::UpdateMultipleRequestsCallback& callback) {
   RequestQueue::UpdateMultipleRequestResults results;
   std::vector<std::unique_ptr<SavePageRequest>> requests;
   // TODO(fgorski): add UMA metrics here.
@@ -350,18 +317,40 @@ void RequestQueueStoreSQL::ChangeRequestsStateSync(
                    base::Bind(callback, results, base::Passed(&requests)));
 }
 
-// static
-void RequestQueueStoreSQL::ResetSync(
-    sql::Connection* db,
-    const base::FilePath& db_file_path,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const ResetCallback& callback) {
+void OpenConnectionSync(sql::Connection* db,
+                        scoped_refptr<base::SingleThreadTaskRunner> runner,
+                        const base::FilePath& path,
+                        const base::Callback<void(bool)>& callback) {
+  bool success = InitDatabase(db, path);
+  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+
+void ResetSync(sql::Connection* db,
+               const base::FilePath& db_file_path,
+               scoped_refptr<base::SingleThreadTaskRunner> runner,
+               const RequestQueueStore::ResetCallback& callback) {
   // This method deletes the content of the whole store and reinitializes it.
   bool success = db->Raze();
   db->Close();
   if (success)
     success = InitDatabase(db, db_file_path);
   runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+
+}  // anonymous namespace
+
+RequestQueueStoreSQL::RequestQueueStoreSQL(
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+    const base::FilePath& path)
+    : background_task_runner_(std::move(background_task_runner)),
+      db_file_path_(path.AppendASCII("RequestQueue.db")),
+      weak_ptr_factory_(this) {
+  OpenConnection();
+}
+
+RequestQueueStoreSQL::~RequestQueueStoreSQL() {
+  if (db_.get())
+    background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
 bool RequestQueueStoreSQL::CheckDb(const base::Closure& callback) {
@@ -383,7 +372,7 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
     return;
 
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RequestQueueStoreSQL::GetRequestsSync, db_.get(),
+      FROM_HERE, base::Bind(&GetRequestsSync, db_.get(),
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
@@ -395,7 +384,7 @@ void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
 
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RequestQueueStoreSQL::AddOrUpdateRequestSync, db_.get(),
+      base::Bind(&AddOrUpdateRequestSync, db_.get(),
                  base::ThreadTaskRunnerHandle::Get(), request, callback));
 }
 
@@ -418,7 +407,7 @@ void RequestQueueStoreSQL::RemoveRequests(
 
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RequestQueueStoreSQL::RemoveRequestsSync, db_.get(),
+      base::Bind(&RemoveRequestsSync, db_.get(),
                  base::ThreadTaskRunnerHandle::Get(), request_ids, callback));
 }
 
@@ -433,9 +422,9 @@ void RequestQueueStoreSQL::ChangeRequestsState(
   }
 
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RequestQueueStoreSQL::ChangeRequestsStateSync,
-                            db_.get(), base::ThreadTaskRunnerHandle::Get(),
-                            request_ids, new_state, callback));
+      FROM_HERE, base::Bind(&ChangeRequestsStateSync, db_.get(),
+                            base::ThreadTaskRunnerHandle::Get(), request_ids,
+                            new_state, callback));
 }
 
 void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {
@@ -445,7 +434,7 @@ void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {
 
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RequestQueueStoreSQL::ResetSync, db_.get(), db_file_path_,
+      base::Bind(&ResetSync, db_.get(), db_file_path_,
                  base::ThreadTaskRunnerHandle::Get(),
                  base::Bind(&RequestQueueStoreSQL::OnResetDone,
                             weak_ptr_factory_.GetWeakPtr(), callback)));
@@ -456,7 +445,7 @@ void RequestQueueStoreSQL::OpenConnection() {
   db_.reset(new sql::Connection());
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RequestQueueStoreSQL::OpenConnectionSync, db_.get(),
+      base::Bind(&OpenConnectionSync, db_.get(),
                  base::ThreadTaskRunnerHandle::Get(), db_file_path_,
                  base::Bind(&RequestQueueStoreSQL::OnOpenConnectionDone,
                             weak_ptr_factory_.GetWeakPtr())));

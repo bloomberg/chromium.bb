@@ -45,44 +45,10 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   void Reset(const ResetCallback& callback) override;
 
  private:
-  // Synchronous implementations, these are run on the background thread
-  // and actually do the work to access SQL.  The implementations above
-  // simply dispatch to the corresponding *Sync method on the background thread.
-  // 'runner' is where to run the callback.
-  static void GetRequestsSync(
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const GetRequestsCallback& callback);
-  static void AddOrUpdateRequestSync(
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const SavePageRequest& offline_page,
-      const UpdateCallback& callback);
-  static void RemoveRequestsSync(
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const std::vector<int64_t>& request_ids,
-      const RemoveCallback& callback);
-  static void ChangeRequestsStateSync(
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const std::vector<int64_t>& request_ids,
-      const SavePageRequest::RequestState new_state,
-      const UpdateMultipleRequestsCallback& callback);
-  static void ResetSync(sql::Connection* db,
-                        const base::FilePath& db_file_path,
-                        scoped_refptr<base::SingleThreadTaskRunner> runner,
-                        const ResetCallback& callback);
-
   // Helper functions to return immediately if no database is found.
   bool CheckDb(const base::Closure& callback);
 
   // Used to initialize DB connection.
-  static void OpenConnectionSync(
-      sql::Connection* db,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      const base::FilePath& path,
-      const base::Callback<void(bool)>& callback);
   void OpenConnection();
   void OnOpenConnectionDone(bool success);
 
