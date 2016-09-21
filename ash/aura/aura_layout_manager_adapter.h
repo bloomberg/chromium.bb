@@ -20,9 +20,13 @@ class WmLayoutManager;
 // with an aura::Window.
 class ASH_EXPORT AuraLayoutManagerAdapter : public aura::LayoutManager {
  public:
-  explicit AuraLayoutManagerAdapter(
-      std::unique_ptr<WmLayoutManager> wm_layout_manager);
+  AuraLayoutManagerAdapter(aura::Window* window,
+                           std::unique_ptr<WmLayoutManager> wm_layout_manager);
   ~AuraLayoutManagerAdapter() override;
+
+  // Returns the AuraLayoutManagerAdapter installed on |window|, or null if
+  // an AuraLayoutManagerAdapter is not installed on |window|.
+  static AuraLayoutManagerAdapter* Get(aura::Window* window);
 
   WmLayoutManager* wm_layout_manager() { return wm_layout_manager_.get(); }
 
@@ -37,6 +41,7 @@ class ASH_EXPORT AuraLayoutManagerAdapter : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override;
 
  private:
+  aura::Window* window_;
   std::unique_ptr<WmLayoutManager> wm_layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraLayoutManagerAdapter);

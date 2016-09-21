@@ -656,9 +656,9 @@ void RootWindowController::InitLayoutManagers() {
   docked_layout_manager_ = new DockedWindowLayoutManager(docked_container);
   docked_container->SetLayoutManager(base::WrapUnique(docked_layout_manager_));
 
-  // Installs SnapLayoutManager to containers who set the
-  // |kSnapsChildrenToPhysicalPixelBoundary| property.
-  wm::InstallSnapLayoutManagerToContainers(root_window);
+  // Installs WmSnapLayoutManager on appropriate containers.
+  wm::WmSnapToPixelLayoutManager::InstallOnContainers(
+      WmWindowAura::Get(root_window));
 
   // Create Panel layout manager
   aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);

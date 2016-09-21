@@ -19,6 +19,10 @@ class ASH_EXPORT WmSnapToPixelLayoutManager : public WmLayoutManager {
   WmSnapToPixelLayoutManager();
   ~WmSnapToPixelLayoutManager() override;
 
+  // Sets WmSnapToPixelLayoutManager as the LayoutManager on the appropriate
+  // descendants of |window|.
+  static void InstallOnContainers(WmWindow* window);
+
  protected:
   // Overridden from aura::LayoutManager:
   void OnWindowResized() override;

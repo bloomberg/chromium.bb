@@ -62,9 +62,6 @@ void SnapWindowToPixelBoundary(aura::Window* window);
 ASH_EXPORT void SetSnapsChildrenToPhysicalPixelBoundary(
     aura::Window* container);
 
-// Traverse the |container| tree and installs SnapToPixelLayoutManager.
-void InstallSnapLayoutManagerToContainers(aura::Window* container);
-
 }  // namespace wm
 }  // namespace ash
 

@@ -389,15 +389,18 @@ std::vector<WmWindow*> WmWindowAura::GetTransientChildren() {
 
 void WmWindowAura::SetLayoutManager(
     std::unique_ptr<WmLayoutManager> layout_manager) {
+  // See ~AuraLayoutManagerAdapter for why SetLayoutManager(nullptr) is called.
+  window_->SetLayoutManager(nullptr);
+  if (!layout_manager)
+    return;
+
   // |window_| takes ownership of AuraLayoutManagerAdapter.
   window_->SetLayoutManager(
-      layout_manager ? new AuraLayoutManagerAdapter(std::move(layout_manager))
-                     : nullptr);
+      new AuraLayoutManagerAdapter(window_, std::move(layout_manager)));
 }
 
 WmLayoutManager* WmWindowAura::GetLayoutManager() {
-  AuraLayoutManagerAdapter* adapter =
-      static_cast<AuraLayoutManagerAdapter*>(window_->layout_manager());
+  AuraLayoutManagerAdapter* adapter = AuraLayoutManagerAdapter::Get(window_);
   return adapter ? adapter->wm_layout_manager() : nullptr;
 }
 
