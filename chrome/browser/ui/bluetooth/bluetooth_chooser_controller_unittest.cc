@@ -88,6 +88,8 @@ TEST_F(BluetoothChooserControllerTest, AddDevice) {
   EXPECT_EQ(base::ASCIIToUTF16("a"),
             bluetooth_chooser_controller_.GetOption(0));
   EXPECT_EQ(-1, bluetooth_chooser_controller_.GetSignalStrengthLevel(0));
+  EXPECT_TRUE(bluetooth_chooser_controller_.IsConnected(0));
+  EXPECT_TRUE(bluetooth_chooser_controller_.IsPaired(0));
   testing::Mock::VerifyAndClearExpectations(&mock_bluetooth_chooser_view_);
 
   EXPECT_CALL(mock_bluetooth_chooser_view_, OnOptionAdded(1)).Times(1);
@@ -241,6 +243,36 @@ TEST_F(BluetoothChooserControllerTest, UpdateDeviceSignalStrengthLevel) {
       true /* is_gatt_connected */, true /* is_paired */,
       -1 /* signal_strength_level */);
   EXPECT_EQ(1, bluetooth_chooser_controller_.GetSignalStrengthLevel(0));
+}
+
+TEST_F(BluetoothChooserControllerTest, UpdateConnectedStatus) {
+  bluetooth_chooser_controller_.AddOrUpdateDevice(
+      "id_a", false /* should_update_name */, base::ASCIIToUTF16("a"),
+      false /* is_gatt_connected */, false /* is_paired */,
+      1 /* signal_strength_level */);
+  EXPECT_FALSE(bluetooth_chooser_controller_.IsConnected(0));
+
+  EXPECT_CALL(mock_bluetooth_chooser_view_, OnOptionUpdated(0)).Times(1);
+  bluetooth_chooser_controller_.AddOrUpdateDevice(
+      "id_a", false /* should_update_name */, base::ASCIIToUTF16("a"),
+      true /* is_gatt_connected */, false /* is_paired */,
+      -1 /* signal_strength_level */);
+  EXPECT_TRUE(bluetooth_chooser_controller_.IsConnected(0));
+}
+
+TEST_F(BluetoothChooserControllerTest, UpdatePairedStatus) {
+  bluetooth_chooser_controller_.AddOrUpdateDevice(
+      "id_a", false /* should_update_name */, base::ASCIIToUTF16("a"),
+      true /* is_gatt_connected */, false /* is_paired */,
+      -1 /* signal_strength_level */);
+  EXPECT_FALSE(bluetooth_chooser_controller_.IsPaired(0));
+
+  EXPECT_CALL(mock_bluetooth_chooser_view_, OnOptionUpdated(0)).Times(1);
+  bluetooth_chooser_controller_.AddOrUpdateDevice(
+      "id_a", false /* should_update_name */, base::ASCIIToUTF16("a"),
+      true /* is_gatt_connected */, true /* is_paired */,
+      -1 /* signal_strength_level */);
+  EXPECT_TRUE(bluetooth_chooser_controller_.IsPaired(0));
 }
 
 TEST_F(BluetoothChooserControllerWithDevicesAddedTest,
