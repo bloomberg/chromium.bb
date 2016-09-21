@@ -67,7 +67,24 @@
     <!-- SECTION: SPIR-V Opcodes and Enumerants -->
     <!-- Reserve new ranges for vendors in contiguous blocks of 64
          preceding the "Future use" block below, and modify that block
-         accordingly. -->
+         accordingly.
+
+         Each vendor determines the use of values in their own ranges.
+         Vendors are not required to disclose those uses.  If the use of a
+         value is included in an extension that is adopted by a Khronos
+         extension or specification, then that value's use may be permanently
+         fixed as if originally reserved in a Khronos range.
+
+         The SPIR Working Group strongly recommends:
+         - Each value is used for only one purpose.
+         - All values in a range should be used before allocating a new range.
+           For example, to avoid unused gaps in ranges, it is customary for
+           several extensions to use values from the same range.
+
+         The Id type "enum" is a synonym for "opcode".
+
+         Note that SPIR-V restricts opcode values to 16 bits.
+         -->
 
     <!-- Reserved opcode & enumerant blocks -->
     <ids type="opcode" start="0" end="4095" vendor="Khronos" comment="Reserved opcodes, not available to vendors - see the SPIR-V Specification"/>
@@ -86,6 +103,6 @@
 
     <!-- Example new block: <ids type="opcode" start="5504" end="5504+64n-1" vendor="Add vendor" comment="Contact TBD"/> -->
 
-    <ids type="opcode" start="5504" end="1000000" comment="Opcode range reservable for future use by vendors"/>
+    <ids type="opcode" start="5504" end="4294967295" comment="Opcode range reservable for future use by vendors"/>
 
 </registry>
