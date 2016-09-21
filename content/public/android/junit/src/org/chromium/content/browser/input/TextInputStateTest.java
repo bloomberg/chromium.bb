@@ -20,7 +20,7 @@ public class TextInputStateTest {
     @Feature({"TextInput"})
     public void testEmptySelection() {
         TextInputState state =
-                new TextInputState("hello", new Range(3, 3), new Range(-1, -1), false, true);
+                new TextInputState("hello", new Range(3, 3), new Range(-1, -1), false, true, false);
         assertEquals("lo", state.getTextAfterSelection(3));
         assertEquals("lo", state.getTextAfterSelection(2));
         assertEquals("", state.getTextAfterSelection(0));
@@ -34,7 +34,7 @@ public class TextInputStateTest {
     @Feature({"TextInput"})
     public void testNonEmptySelection() {
         TextInputState state =
-                new TextInputState("hello", new Range(3, 4), new Range(3, 4), false, true);
+                new TextInputState("hello", new Range(3, 4), new Range(3, 4), false, true, false);
         assertEquals("hel", state.getTextBeforeSelection(4));
         assertEquals("hel", state.getTextBeforeSelection(3));
         assertEquals("", state.getTextBeforeSelection(0));

@@ -337,7 +337,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int composition_start,
                         int composition_end,
                         bool show_ime_if_needed,
-                        bool is_non_ime_change);
+                        bool is_non_ime_change,
+                        bool in_batch_edit_mode);
   void SetTitle(const base::string16& title);
   void OnBackgroundColorChanged(SkColor color);
 

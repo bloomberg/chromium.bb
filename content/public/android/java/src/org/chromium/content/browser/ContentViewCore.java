@@ -2317,7 +2317,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
             int textInputFlags, String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded,
-            boolean isNonImeChange) {
+            boolean isNonImeChange, boolean inBatchEditMode) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
             boolean focusedNodeEditable = (textInputType != TextInputType.NONE);
@@ -2328,7 +2328,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             mImeAdapter.updateKeyboardVisibility(
                     textInputType, textInputFlags, showImeIfNeeded);
             mImeAdapter.updateState(text, selectionStart, selectionEnd, compositionStart,
-                    compositionEnd, isNonImeChange);
+                    compositionEnd, isNonImeChange, inBatchEditMode);
 
             if (mActionMode != null) {
                 final boolean actionModeConfigurationChanged =

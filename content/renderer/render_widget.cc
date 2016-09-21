@@ -234,6 +234,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       is_fullscreen_granted_(false),
       display_mode_(blink::WebDisplayModeUndefined),
       ime_event_guard_(nullptr),
+      ime_in_batch_edit_(false),
       closing_(false),
       host_closing_(false),
       is_swapped_out_(swapped_out),
@@ -516,6 +517,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
                         OnRequestTextInputStateUpdate)
+    IPC_MESSAGE_HANDLER(InputMsg_ImeBatchEdit,
+                        OnImeBatchEdit)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_HandleCompositorProto, OnHandleCompositorProto)
@@ -981,6 +984,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
 #if defined(OS_ANDROID)
     params.is_non_ime_change =
         (change_source == ChangeSource::FROM_NON_IME) || text_field_is_dirty_;
+    params.batch_edit = ime_in_batch_edit_;
     if (params.is_non_ime_change)
       OnImeEventSentForAck(new_info);
     text_field_is_dirty_ = false;
@@ -1611,6 +1615,19 @@ void RenderWidget::OnImeEventAck() {
 }
 
 void RenderWidget::OnRequestTextInputStateUpdate() {
+  DCHECK(!ime_event_guard_);
+  UpdateSelectionBounds();
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);
+}
+
+void RenderWidget::OnImeBatchEdit(bool begin) {
+  if (begin) {
+    ime_in_batch_edit_ = true;
+    return;
+  }
+  if (!ime_in_batch_edit_)
+    return;
+  ime_in_batch_edit_ = false;
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
   UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);

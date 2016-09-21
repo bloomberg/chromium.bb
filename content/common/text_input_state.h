@@ -57,6 +57,9 @@ struct CONTENT_EXPORT TextInputState {
   // Whether this change is originated from non-IME (e.g., Javascript,
   // Autofill).
   bool is_non_ime_change;
+
+  // Whether we are in a batch edit.
+  bool batch_edit;
 };
 
 }  // namespace content

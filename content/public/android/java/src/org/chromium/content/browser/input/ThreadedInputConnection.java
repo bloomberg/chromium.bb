@@ -42,7 +42,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     private static final boolean DEBUG_LOGS = false;
 
     private static final TextInputState UNBLOCKER = new TextInputState(
-            "", new Range(0, 0), new Range(-1, -1), false, false /* notFromIme */) {
+            "", new Range(0, 0), new Range(-1, -1), false, false /* notFromIme */, false) {
 
         @Override
         public boolean shouldUnblock() {
@@ -75,6 +75,22 @@ public class ThreadedInputConnection extends BaseInputConnection
         }
     };
 
+    private final Runnable mBeginBatchEdit = new Runnable() {
+        @Override
+        public void run() {
+            boolean result = mImeAdapter.beginBatchEdit();
+            if (!result) unblockOnUiThread();
+        }
+    };
+
+    private final Runnable mEndBatchEdit = new Runnable() {
+        @Override
+        public void run() {
+            boolean result = mImeAdapter.endBatchEdit();
+            if (!result) unblockOnUiThread();
+        }
+    };
+
     private final Runnable mNotifyUserActionRunnable = new Runnable() {
         @Override
         public void run() {
@@ -98,6 +114,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     private final BlockingQueue<TextInputState> mQueue = new LinkedBlockingQueue<>();
     private int mPendingAccent;
     private TextInputState mCachedTextInputState;
+    private boolean mLastInBatchEditMode;
 
     ThreadedInputConnection(View view, ImeAdapter imeAdapter, Handler handler) {
         super(view, true);
@@ -105,28 +122,34 @@ public class ThreadedInputConnection extends BaseInputConnection
         ImeUtils.checkOnUiThread();
         mImeAdapter = imeAdapter;
         mHandler = handler;
+        mImeAdapter.endBatchEdit();
     }
 
     void resetOnUiThread() {
         ImeUtils.checkOnUiThread();
         mNumNestedBatchEdits = 0;
         mPendingAccent = 0;
+        mImeAdapter.endBatchEdit();
     }
 
     @Override
-    public void updateStateOnUiThread(final String text, final int selectionStart,
-            final int selectionEnd, final int compositionStart, final int compositionEnd,
-            boolean singleLine, final boolean isNonImeChange) {
+    public void updateStateOnUiThread(String text, int selectionStart,
+            int selectionEnd, int compositionStart, int compositionEnd,
+            boolean singleLine, boolean isNonImeChange, boolean inBatchEditMode) {
         ImeUtils.checkOnUiThread();
 
         mCachedTextInputState =
                 new TextInputState(text, new Range(selectionStart, selectionEnd),
-                        new Range(compositionStart, compositionEnd), singleLine, !isNonImeChange);
+                        new Range(compositionStart, compositionEnd), singleLine, !isNonImeChange,
+                        inBatchEditMode);
         if (DEBUG_LOGS) Log.w(TAG, "updateState: %s", mCachedTextInputState);
 
         addToQueueOnUiThread(mCachedTextInputState);
-        if (isNonImeChange) {
+        // If state update is caused by explicitly requesting the state update,
+        // or batch edit just finished, then we may need to update state to IMM.
+        if (isNonImeChange || (mLastInBatchEditMode && !inBatchEditMode)) {
             mHandler.post(mProcessPendingInputStatesRunnable);
+            mLastInBatchEditMode = inBatchEditMode;
         }
     }
 
@@ -199,7 +222,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     private void updateSelection(TextInputState textInputState) {
         if (textInputState == null) return;
         assertOnImeThread();
-        if (mNumNestedBatchEdits != 0) return;
+        if (textInputState.inBatchEditMode()) return;
         Range selection = textInputState.selection();
         Range composition = textInputState.composition();
         mImeAdapter.updateSelection(
@@ -386,8 +409,10 @@ public class ThreadedInputConnection extends BaseInputConnection
     @Override
     public boolean beginBatchEdit() {
         if (DEBUG_LOGS) Log.w(TAG, "beginBatchEdit [%b]", (mNumNestedBatchEdits == 0));
-        assertOnImeThread();
         mNumNestedBatchEdits++;
+        if (mNumNestedBatchEdits == 1) {
+            ThreadUtils.postOnUiThread(mBeginBatchEdit);
+        }
         return true;
     }
 
@@ -396,12 +421,11 @@ public class ThreadedInputConnection extends BaseInputConnection
      */
     @Override
     public boolean endBatchEdit() {
-        assertOnImeThread();
         if (mNumNestedBatchEdits == 0) return false;
         --mNumNestedBatchEdits;
         if (DEBUG_LOGS) Log.w(TAG, "endBatchEdit [%b]", (mNumNestedBatchEdits == 0));
         if (mNumNestedBatchEdits == 0) {
-            updateSelection(requestAndWaitForTextInputState());
+            ThreadUtils.postOnUiThread(mEndBatchEdit);
         }
         return mNumNestedBatchEdits != 0;
     }
