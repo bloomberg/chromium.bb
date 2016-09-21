@@ -41807,174 +41807,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Platform.MeminfoActive">
+<histogram name="Platform.Mem" units="%">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
+  <owner>semenzato@chromium.org</owner>
+  <owner>bccheng@chromium.org</owner>
   <summary>
-    Chrome OS size of active memory as % of total memory (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoActiveAnon">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS active anonymous memory (data segments) as % of total memory
-    (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoActiveFile">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS active file-backed memory (executables, ...) as % of total memory
-    (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoAnonPages">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of anonymous memory as % of total memory (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoBuffers">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of buffer cache as % of total memory (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoCached">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS: size of file-backed memory minus swap and buffer cache, as % of
-    total memory (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoInactive">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of inactive memory as % of total memory (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoInactiveAnon">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS inactive anonymous memory (data segments) as % of total memory
-    (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoInactiveFile">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS inactive file-backed memory as % of total memory (snapshotted
+    Various memory usage % of total memory on Chrome OS devices (snapshotted
     every 30s).
   </summary>
 </histogram>
 
-<histogram name="Platform.MeminfoMapped">
+<histogram name="Platform.Meminfo" units="KB">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of mapped memory as % of total memory (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoMemFree">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of free memory as % of total memory (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoMemFreeDerived">
+  <owner>semenzato@chromium.org</owner>
   <owner>bccheng@chromium.org</owner>
   <summary>
-    Chrome OS size of free+buffers+cached memory in Kbytes (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoMemUsedDerived">
-  <owner>bccheng@chromium.org</owner>
-  <summary>
-    Chrome OS size of &quot;Total - FreeDerived&quot; memory in Kbytes
-    (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoShmem">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of shared memory in Kbytes (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoSlab">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS size of slab memory in Kbytes (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoSwapUsed" units="KB">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS amount of swapped-out memory in Kbytes (snapshotted every 30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoSwapUsedPercent" units="%">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS amount of swapped-out memory as % of total RAM (snapshotted every
-    30s).
-  </summary>
-</histogram>
-
-<histogram name="Platform.MeminfoUnevictable">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kouhei@chromium.org</owner>
-  <owner>sonnyrao@chromium.org</owner>
-  <summary>
-    Chrome OS unevictable memory (ramfs, SHM_LOCKED, mlocked) in Kbytes
-    (snapshotted every 30s).
+    Various memory usage amount on Chrome OS devices (snapshotted every 30s).
   </summary>
 </histogram>
 
@@ -105073,6 +104925,38 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PhysicalWeb.State.LocationPermission"/>
   <affected-histogram name="PhysicalWeb.State.LocationServices"/>
   <affected-histogram name="PhysicalWeb.State.Preference"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PlatformMeminfoPercentage" separator="">
+  <suffix name="infoActive" label="Active memory."/>
+  <suffix name="infoActiveAnon"
+      label="Active anonymous memory (data segments)."/>
+  <suffix name="infoActiveFile"
+      label="Active file-backed memory (executables, ...)."/>
+  <suffix name="infoAnonPages" label="Anonymous memory (executables, ...)."/>
+  <suffix name="infoBuffers" label="Buffer cache (executables, ...)."/>
+  <suffix name="infoCached"
+      label="size of file-backed memory minus swap and buffer cache."/>
+  <suffix name="infoInactive" label="Inactive memory."/>
+  <suffix name="infoInactiveAnon"
+      label="Inactive anonymous memory (data segments)."/>
+  <suffix name="infoInactiveFile" label="Inactive file-backed memory."/>
+  <suffix name="infoMapped" label="Mapped memory."/>
+  <suffix name="infoMemFree" label="Free memory."/>
+  <suffix name="infoSwapUsedPercent" label="Used swap memory."/>
+  <affected-histogram name="Platform.Mem"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PlatformMeminfoSize" separator="">
+  <suffix name="MemFreeDerived" label="Size derived from free+buffers+cached."/>
+  <suffix name="MemTotal" label="Size of total installed memory."/>
+  <suffix name="MemUsedDerived"
+      label="Size of &quot;Total - FreeDerived&quot; memory."/>
+  <suffix name="Shmem" label="Size of shared memory."/>
+  <suffix name="Slab" label="Size of slab memory."/>
+  <suffix name="SwapUsed" label="Size of used swap memory."/>
+  <suffix name="Unevictable" label="Size of unevictable memory."/>
+  <affected-histogram name="Platform.Meminfo"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PNaClTranslatorTypes" separator=".">
