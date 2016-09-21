@@ -160,13 +160,8 @@ void ServiceWorkerGlobalScope::setRegistration(std::unique_ptr<WebServiceWorkerR
 bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsResolved& options)
 {
     if (m_didEvaluateScript) {
-        if (eventType == EventTypeNames::install) {
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'install' event must be added on the initial evaluation of worker script.");
-            addConsoleMessage(consoleMessage);
-        } else if (eventType == EventTypeNames::activate) {
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'activate' event must be added on the initial evaluation of worker script.");
-            addConsoleMessage(consoleMessage);
-        }
+        String message = String::format("Event handler of '%s' event must be added on the initial evaluation of worker script.", eventType.utf8().data());
+        addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
     }
     return WorkerGlobalScope::addEventListenerInternal(eventType, listener, options);
 }
