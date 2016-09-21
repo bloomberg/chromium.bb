@@ -405,17 +405,22 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
   // For other mouse events and touchpad events, the pointer type is mouse.
   // For all other tablet events, the pointer type will be just pen.
   NSEventSubtype subtype = [event subtype];
-  if (subtype == NSTabletPointEventSubtype ||
-      subtype == NSTabletProximityEventSubtype) {
-    result.pointerType = blink::WebPointerProperties::PointerType::Pen;
-  } else {
+  if (subtype != NSTabletPointEventSubtype &&
+      subtype != NSTabletProximityEventSubtype) {
     result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+    return result;
   }
+
+  // Set stylus properties for events with a subtype of
+  // NSTabletPointEventSubtype.
+  result.pointerType = blink::WebPointerProperties::PointerType::Pen;
   result.id = [event deviceID];
-  result.force = [event pressure];
-  NSPoint tilt = [event tilt];
-  result.tiltX = lround(tilt.x * 90);
-  result.tiltY = lround(tilt.y * 90);
+  if (subtype == NSTabletPointEventSubtype) {
+    result.force = [event pressure];
+    NSPoint tilt = [event tilt];
+    result.tiltX = lround(tilt.x * 90);
+    result.tiltY = lround(tilt.y * 90);
+  }
   return result;
 }
 
