@@ -7,6 +7,7 @@ package org.chromium.content.browser.input;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -572,9 +573,14 @@ public class ThreadedInputConnection extends BaseInputConnection
      */
     @Override
     public int getCursorCapsMode(int reqModes) {
-        if (DEBUG_LOGS) Log.w(TAG, "getCursorCapsMode [%x]", reqModes);
-        // TODO(changwan): implement this.
-        return 0;
+        TextInputState textInputState = requestAndWaitForTextInputState();
+        int result = 0;
+        if (textInputState != null) {
+            result = TextUtils.getCapsMode(
+                    textInputState.text(), textInputState.selection().start(), reqModes);
+        }
+        if (DEBUG_LOGS) Log.w(TAG, "getCursorCapsMode [%x]: %x", reqModes, result);
+        return result;
     }
 
     /**

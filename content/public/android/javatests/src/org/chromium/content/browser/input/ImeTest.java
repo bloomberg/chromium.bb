@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -1368,6 +1369,23 @@ public class ImeTest extends ContentShellTestBase {
         waitForEventLogs("keydown(229),input,keyup(229),selectionchange,selectionchange");
     }
 
+    @MediumTest
+    @Feature({"TextInput"})
+    @RetryOnFailure
+    public void testGetCursorCapsMode() throws Throwable {
+        commitText("Hello World", 1);
+        waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
+        assertEquals(0,
+                getCursorCapsMode(InputType.TYPE_TEXT_FLAG_CAP_WORDS));
+        setSelection(6, 6);
+        waitAndVerifyUpdateSelection(1, 6, 6, -1, -1);
+        assertEquals(InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                getCursorCapsMode(InputType.TYPE_TEXT_FLAG_CAP_WORDS));
+        commitText("\n", 1);
+        assertEquals(InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                getCursorCapsMode(InputType.TYPE_TEXT_FLAG_CAP_WORDS));
+    }
+
     private void clearEventLogs() throws Exception {
         final String code = "clearEventLogs()";
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
@@ -1767,6 +1785,16 @@ public class ImeTest extends ContentShellTestBase {
             @Override
             public CharSequence call() {
                 return connection.getTextAfterCursor(length, flags);
+            }
+        });
+    }
+
+    private int getCursorCapsMode(final int reqModes) throws Throwable {
+        final ChromiumBaseInputConnection connection = mConnection;
+        return runBlockingOnImeThread(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return connection.getCursorCapsMode(reqModes);
             }
         });
     }
