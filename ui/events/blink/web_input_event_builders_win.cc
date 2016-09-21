@@ -303,8 +303,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
       wheel_delta = -wheel_delta;  // Windows is <- -/+ ->, WebKit <- +/- ->.
     }
   }
-  if (key_state & MK_SHIFT)
-    horizontal_scroll = true;
 
   // Set modifiers based on key state.
   result.modifiers =

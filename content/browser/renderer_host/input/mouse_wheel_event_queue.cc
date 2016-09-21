@@ -99,10 +99,21 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     scroll_update.type = WebInputEvent::GestureScrollUpdate;
     scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
     scroll_update.resendingPluginId = -1;
-    scroll_update.data.scrollUpdate.deltaX =
-        event_sent_for_gesture_ack_->event.deltaX;
-    scroll_update.data.scrollUpdate.deltaY =
-        event_sent_for_gesture_ack_->event.deltaY;
+
+    // Swap X & Y if Shift is down and when there is no horizontal movement.
+    if ((event_sent_for_gesture_ack_->event.modifiers &
+         WebInputEvent::ShiftKey) != 0 &&
+        event_sent_for_gesture_ack_->event.deltaX == 0) {
+      scroll_update.data.scrollUpdate.deltaX =
+          event_sent_for_gesture_ack_->event.deltaY;
+      scroll_update.data.scrollUpdate.deltaY =
+          event_sent_for_gesture_ack_->event.deltaX;
+    } else {
+      scroll_update.data.scrollUpdate.deltaX =
+          event_sent_for_gesture_ack_->event.deltaX;
+      scroll_update.data.scrollUpdate.deltaY =
+          event_sent_for_gesture_ack_->event.deltaY;
+    }
     // Only OSX populates the phase and momentumPhase; so
     // |inertialPhase| will be UnknownMomentumPhase on all other platforms.
     if (event_sent_for_gesture_ack_->event.momentumPhase !=

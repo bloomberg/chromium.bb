@@ -501,34 +501,6 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
     EXPECT_EQ(321, webkit_event.y);
     EXPECT_EQ(321, webkit_event.windowY);
   }
-  {
-    // Mouse wheel with shift and no x offset.
-    base::TimeTicks timestamp = EventTimeForNow();
-    MouseWheelEvent ui_event(
-        gfx::Vector2d(0, -MouseWheelEvent::kWheelDelta * 2),
-        gfx::Point(123, 321), gfx::Point(123, 321), timestamp, EF_SHIFT_DOWN,
-        0);
-    blink::WebMouseWheelEvent webkit_event = MakeWebMouseWheelEvent(
-        ui_event, base::Bind(&GetScreenLocationFromEvent));
-    EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
-              webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::Button::NoButton, webkit_event.button);
-    EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
-    EXPECT_FLOAT_EQ(ui_event.y_offset() / MouseWheelEvent::kWheelDelta,
-                    webkit_event.wheelTicksX);
-    EXPECT_FLOAT_EQ(0, webkit_event.wheelTicksY);
-    EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
-              webkit_event.pointerType);
-    EXPECT_EQ(0, webkit_event.tiltX);
-    EXPECT_EQ(0, webkit_event.tiltY);
-    EXPECT_TRUE(std::isnan(webkit_event.force));
-    EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
-    EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
-  }
 }
 
 TEST(WebInputEventTest, KeyEvent) {

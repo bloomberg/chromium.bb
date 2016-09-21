@@ -136,19 +136,10 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
   webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
   webkit_event.hasPreciseScrollingDeltas = true;
 
-  float offset_ordinal_x = 0.f;
-  float offset_ordinal_y = 0.f;
-  if ((event.flags() & EF_SHIFT_DOWN) != 0 && event.x_offset() == 0) {
-    webkit_event.deltaX = event.y_offset();
-    webkit_event.deltaY = 0;
-    offset_ordinal_x = event.y_offset_ordinal();
-    offset_ordinal_y = event.x_offset_ordinal();
-  } else {
-    webkit_event.deltaX = event.x_offset();
-    webkit_event.deltaY = event.y_offset();
-    offset_ordinal_x = event.x_offset_ordinal();
-    offset_ordinal_y = event.y_offset_ordinal();
-  }
+  float offset_ordinal_x = event.x_offset_ordinal();
+  float offset_ordinal_y = event.y_offset_ordinal();
+  webkit_event.deltaX = event.x_offset();
+  webkit_event.deltaY = event.y_offset();
 
   if (offset_ordinal_x != 0.f && webkit_event.deltaX != 0.f)
     webkit_event.accelerationRatioX = offset_ordinal_x / webkit_event.deltaX;
@@ -437,13 +428,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
 
-  if ((event.flags() & EF_SHIFT_DOWN) != 0 && event.x_offset() == 0) {
-    webkit_event.deltaX = event.y_offset();
-    webkit_event.deltaY = 0;
-  } else {
-    webkit_event.deltaX = event.x_offset();
-    webkit_event.deltaY = event.y_offset();
-  }
+  webkit_event.deltaX = event.x_offset();
+  webkit_event.deltaY = event.y_offset();
 
   webkit_event.wheelTicksX = webkit_event.deltaX / MouseWheelEvent::kWheelDelta;
   webkit_event.wheelTicksY = webkit_event.deltaY / MouseWheelEvent::kWheelDelta;
