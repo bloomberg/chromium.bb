@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/locales.gni")
+import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 
 # Generates a rule to repack a set of resources, substituting a given string
@@ -75,70 +76,6 @@ template("chrome_repack_percent") {
   }
 }
 
-# Paramters:
-# output_dir:
-#
-template("chrome_paks") {
-  chrome_repack_percent("${target_name}_100_percent") {
-    percent = "100"
-    forward_variables_from(invoker,
-                           [
-                             "copy_data_to_bundle",
-                             "deps",
-                             "output_dir",
-                             "repack_whitelist",
-                             "visibility",
-                           ])
-  }
-
-  if (invoker.enable_hidpi) {
-    chrome_repack_percent("${target_name}_200_percent") {
-      percent = "200"
-      forward_variables_from(invoker,
-                             [
-                               "copy_data_to_bundle",
-                               "deps",
-                               "output_dir",
-                               "repack_whitelist",
-                               "visibility",
-                             ])
-    }
-  }
-
-  chrome_repack_locales("${target_name}_locales") {
-    forward_variables_from(invoker,
-                           [
-                             "copy_data_to_bundle",
-                             "deps",
-                             "repack_whitelist",
-                             "visibility",
-                           ])
-
-    input_locales = locales
-    output_dir = "${invoker.output_dir}/locales"
-
-    if (is_mac) {
-      output_locales = locales_as_mac_outputs
-    } else {
-      output_locales = locales
-    }
-  }
-
-  group(target_name) {
-    forward_variables_from(invoker, [ "deps" ])
-    public_deps = [
-      ":${target_name}_100_percent",
-      ":${target_name}_locales",
-    ]
-    if (invoker.enable_hidpi) {
-      public_deps += [ ":${target_name}_200_percent" ]
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps += invoker.public_deps
-    }
-  }
-}
-
 template("chrome_extra_paks") {
   repack(target_name) {
     forward_variables_from(invoker,
@@ -183,11 +120,11 @@ template("chrome_extra_paks") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(invoker.additional_paks)) {
+      sources += invoker.additional_paks
+    }
 
-    if (is_android) {
-      sources += [ "$root_gen_dir/android_webview/aw_resources.pak" ]
-      deps += [ "//android_webview:generate_aw_resources" ]
-    } else {  # Non-Android.
+    if (!is_android) {
       # New paks should be added here by default.
       sources += [
         "$root_gen_dir/blink/devtools_resources.pak",
@@ -216,6 +153,100 @@ template("chrome_extra_paks") {
         "$root_gen_dir/extensions/extensions_resources.pak",
       ]
       deps += [ "//extensions:extensions_resources" ]
+    }
+  }
+}
+
+# Defines repack() targets used by Chrome. Specifically:
+# * chrome_100_percent.pak
+# * chrome_200_percent.pak (optionally)
+# * resources.pak
+# * locale .pak files
+#
+# Paramters:
+#   output_dir [required]: Directory to output .pak files. Locale .pak files
+#       will always be place in $output_dir/locales
+#   additional_extra_paks: List of extra .pak sources for resources.pak.
+#   copy_data_to_bundle:
+#   deps:
+#   output_dir:
+#   public_deps:
+#   repack_whitelist:
+#   visibility:
+#     Normal meanings.
+#
+template("chrome_paks") {
+  chrome_repack_percent("${target_name}_100_percent") {
+    percent = "100"
+    forward_variables_from(invoker,
+                           [
+                             "copy_data_to_bundle",
+                             "deps",
+                             "output_dir",
+                             "repack_whitelist",
+                             "visibility",
+                           ])
+  }
+
+  if (enable_hidpi) {
+    chrome_repack_percent("${target_name}_200_percent") {
+      percent = "200"
+      forward_variables_from(invoker,
+                             [
+                               "copy_data_to_bundle",
+                               "deps",
+                               "output_dir",
+                               "repack_whitelist",
+                               "visibility",
+                             ])
+    }
+  }
+
+  chrome_extra_paks("${target_name}_extra") {
+    forward_variables_from(invoker,
+                           [
+                             "copy_data_to_bundle",
+                             "deps",
+                             "output_dir",
+                             "repack_whitelist",
+                             "visibility",
+                           ])
+    if (defined(invoker.additional_extra_paks)) {
+      additional_paks = invoker.additional_extra_paks
+    }
+  }
+
+  chrome_repack_locales("${target_name}_locales") {
+    forward_variables_from(invoker,
+                           [
+                             "copy_data_to_bundle",
+                             "deps",
+                             "repack_whitelist",
+                             "visibility",
+                           ])
+
+    input_locales = locales
+    output_dir = "${invoker.output_dir}/locales"
+
+    if (is_mac) {
+      output_locales = locales_as_mac_outputs
+    } else {
+      output_locales = locales
+    }
+  }
+
+  group(target_name) {
+    forward_variables_from(invoker, [ "deps" ])
+    public_deps = [
+      ":${target_name}_100_percent",
+      ":${target_name}_extra",
+      ":${target_name}_locales",
+    ]
+    if (enable_hidpi) {
+      public_deps += [ ":${target_name}_200_percent" ]
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps += invoker.public_deps
     }
   }
 }

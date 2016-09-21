@@ -533,7 +533,6 @@ test("chromevox_tests") {
     "//base:i18n",
     "//base/test:test_support",
     "//chrome:browser_tests_pak",
-    "//chrome:packed_extra_resources",
     "//chrome:packed_resources",
     "//chrome:resources",
     "//chrome:strings",

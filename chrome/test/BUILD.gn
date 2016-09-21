@@ -454,14 +454,11 @@ if (!is_android) {
         "$root_out_dir/chrome_200_percent.pak",
         "$root_out_dir/locales/en-US.pak",
         "$root_out_dir/locales/fr.pak",
+        "$root_out_dir/resources.pak",
       ]
     }
     if (is_linux) {
       data += [ "$root_out_dir/libppapi_tests.so" ]
-    }
-
-    if (!is_mac) {
-      data_deps += [ "//chrome:packed_extra_resources" ]
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -470,7 +467,6 @@ if (!is_android) {
     deps = [
       ":test_support",
       ":test_support_ui",
-      "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -1559,8 +1555,8 @@ test("browser_tests") {
       "../browser/interstitials/security_interstitial_page_test_utils.h",
       "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
       "../browser/lifetime/browser_close_manager_browsertest.cc",
-      "../browser/loadtimes_extension_bindings_browsertest.cc",
       "../browser/loader/chrome_resource_dispatcher_host_delegate_browsertest.cc",
+      "../browser/loadtimes_extension_bindings_browsertest.cc",
       "../browser/locale_tests_browsertest.cc",
       "../browser/media/defer_background_media_browsertest.cc",
       "../browser/media/encrypted_media_browsertest.cc",
@@ -1855,7 +1851,6 @@ test("browser_tests") {
       "//base:i18n",
       "//base/test:test_support",
       "//chrome:browser_tests_pak",
-      "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -1957,8 +1952,10 @@ test("browser_tests") {
     ]
 
     if (!is_mac) {
-      data += [ "$root_out_dir/locales/" ]
-      data_deps += [ "//chrome:packed_extra_resources" ]
+      data += [
+        "$root_out_dir/locales/",
+        "$root_out_dir/resources.pak",
+      ]
     }
 
     if (!enable_one_click_signin) {
@@ -2418,8 +2415,8 @@ test("browser_tests") {
       }
     }
     if (is_mac) {
-      # Other platforms only need {packed_extra_resources,packed_resources},
-      # and can build this target standalone much faster.
+      # Other platforms only need .pak files, and can build this target
+      # standalone much faster.
       deps += [
         "//chrome",
         "//chrome/common:app_mode_app_support",
@@ -2723,6 +2720,7 @@ if (!is_android) {
         "$root_out_dir/chrome_100_percent.pak",
         "$root_out_dir/chrome_200_percent.pak",
         "$root_out_dir/locales/en-US.pak",
+        "$root_out_dir/resources.pak",
       ]
     }
 
@@ -2734,7 +2732,6 @@ if (!is_android) {
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
-      "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -2754,10 +2751,6 @@ if (!is_android) {
     data_deps = [
       "//third_party/mesa:osmesa",
     ]
-
-    if (!is_mac) {
-      data_deps += [ "//chrome:packed_extra_resources" ]
-    }
 
     if (is_mac) {
       # Dictionary sync is disabled on Mac.
@@ -3364,6 +3357,7 @@ test("unit_tests") {
     data += [
       "$root_out_dir/chrome_100_percent.pak",
       "$root_out_dir/locales/en-US.pak",
+      "$root_out_dir/resources.pak",
     ]
   }
   if (is_linux || is_win) {
@@ -3451,8 +3445,6 @@ test("unit_tests") {
   if (is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
     data += [ "$root_out_dir/Chromium Framework.framework/" ]
-  } else {
-    data_deps += [ "//chrome:packed_extra_resources" ]
   }
 
   if (is_android) {
@@ -4580,7 +4572,6 @@ test("unit_tests") {
   }
   if (!is_mac && !is_ios) {
     deps += [
-      "//chrome:packed_extra_resources",
       "//chrome:packed_resources",
       "//chrome/tools/convert_dict:lib",
       "//third_party/hunspell",

@@ -7,11 +7,13 @@ import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
 import("//build_overrides/v8.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//tools/resources/generate_resource_whitelist.gni")
 import("channel.gni")
 import("java_sources.gni")
 
@@ -27,6 +29,11 @@ chrome_sync_shell_android_manifest =
 chrome_sync_shell_jinja_variables =
     default_chrome_public_jinja_variables +
     [ "manifest_package=org.chromium.chrome.sync_shell" ]
+
+if (enable_resource_whitelist_generation) {
+  monochrome_resource_whitelist =
+      "$target_gen_dir/monochrome_resource_whitelist.txt"
+}
 
 jinja_template("chrome_public_android_manifest") {
   input = "java/AndroidManifest.xml"
@@ -486,7 +493,23 @@ android_resources("chrome_public_apk_resources") {
   ]
 }
 
-android_assets("chrome_public_apk_assets") {
+# TODO(agrieve): Delete once downstream no longer references this target.
+java_group("chrome_public_apk_assets") {
+  deps = [
+    ":chrome_public_non_pak_assets",
+    ":chrome_public_pak_assets",
+  ]
+}
+
+java_group("chrome_public_non_pak_assets") {
+  deps = [
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
+    "//third_party/icu:icu_assets",
+    "//v8:v8_external_startup_data_assets",
+  ]
+}
+
+android_assets("chrome_public_pak_assets") {
   sources = [
     "$root_out_dir/chrome_100_percent.pak",
     "$root_out_dir/resources.pak",
@@ -494,7 +517,6 @@ android_assets("chrome_public_apk_assets") {
   disable_compression = true
 
   deps = [
-    "//chrome:packed_extra_resources",
     "//chrome:packed_resources",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
     "//third_party/icu:icu_assets",
@@ -537,6 +559,48 @@ shared_library("chrome") {
   }
 
   public_configs = extra_chrome_shared_library_configs
+}
+
+if (enable_resource_whitelist_generation) {
+  generate_resource_whitelist("monochrome_resource_whitelist") {
+    deps = [
+      ":monochrome",
+    ]
+    input = "$root_out_dir/libmonochrome$shlib_extension.whitelist"
+    output = monochrome_resource_whitelist
+  }
+}
+
+chrome_paks("monochrome_paks") {
+  output_dir = "$target_gen_dir/$target_name"
+
+  additional_extra_paks = [ "$root_gen_dir/android_webview/aw_resources.pak" ]
+  deps = [
+    "//android_webview:generate_aw_resources",
+  ]
+
+  if (enable_resource_whitelist_generation) {
+    repack_whitelist = monochrome_resource_whitelist
+    deps += [ ":monochrome_resource_whitelist" ]
+  }
+}
+
+java_group("monochrome_assets") {
+  deps = [
+    ":monochrome_pak_assets",
+    "//android_webview:monochrome_webview_assets",
+  ]
+}
+
+android_assets("monochrome_pak_assets") {
+  sources = [
+    "$target_gen_dir/monochrome_paks/chrome_100_percent.pak",
+    "$target_gen_dir/monochrome_paks/resources.pak",
+  ]
+  deps = [
+    ":monochrome_paks",
+  ]
+  disable_compression = true
 }
 
 #
