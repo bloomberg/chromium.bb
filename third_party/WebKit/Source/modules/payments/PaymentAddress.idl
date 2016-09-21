@@ -7,6 +7,7 @@
 [
     RuntimeEnabled=PaymentRequest,
 ] interface PaymentAddress {
+    serializer = {attribute};
     readonly attribute DOMString country;
     readonly attribute FrozenArray<DOMString> addressLine;
     readonly attribute DOMString region;

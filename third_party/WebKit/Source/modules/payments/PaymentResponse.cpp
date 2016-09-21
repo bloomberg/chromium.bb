@@ -4,7 +4,9 @@
 
 #include "modules/payments/PaymentResponse.h"
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/JSONValuesForV8.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "wtf/Assertions.h"
@@ -25,6 +27,35 @@ PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response, Paym
 
 PaymentResponse::~PaymentResponse()
 {
+}
+
+ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const
+{
+    V8ObjectBuilder result(scriptState);
+    result.addString("methodName", methodName());
+    result.add("details", details(scriptState, ASSERT_NO_EXCEPTION));
+
+    if (shippingAddress())
+        result.add("shippingAddress", shippingAddress()->toJSONForBinding(scriptState));
+    else
+        result.addNull("shippingAddress");
+
+    if (shippingOption().isNull())
+        result.addNull("shippingOption");
+    else
+        result.addString("shippingOption", shippingOption());
+
+    if (payerEmail().isNull())
+        result.addNull("payerEmail");
+    else
+        result.addString("payerEmail", payerEmail());
+
+    if (payerPhone().isNull())
+        result.addNull("payerPhone");
+    else
+        result.addString("payerPhone", payerPhone());
+
+    return result.scriptValue();
 }
 
 ScriptValue PaymentResponse::details(ScriptState* scriptState, ExceptionState& exceptionState) const

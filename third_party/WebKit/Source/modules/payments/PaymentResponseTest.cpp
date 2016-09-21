@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,6 +109,41 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure)
     EXPECT_CALL(*completeCallback, complete(scope.getScriptState(), PaymentCompleter::Fail));
 
     output.complete(scope.getScriptState(), "fail");
+}
+
+TEST(PaymentResponseTest, JSONSerializerTest)
+{
+    V8TestingScope scope;
+    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
+    input->method_name = "foo";
+    input->stringified_details = "{\"transactionId\": 123}";
+    input->shipping_option = "standardShippingOption";
+    input->payer_email = "abc@gmail.com";
+    input->payer_phone = "0123";
+    input->shipping_address = mojom::blink::PaymentAddress::New();
+    input->shipping_address->country = "US";
+    input->shipping_address->language_code = "en";
+    input->shipping_address->script_code = "Latn";
+    input->shipping_address->address_line = mojo::WTFArray<WTF::String>::New(3);
+    input->shipping_address->address_line[0] = "340 Main St";
+    input->shipping_address->address_line[1] = "BIN1";
+    input->shipping_address->address_line[2] = "First floor";
+
+    PaymentResponse output(std::move(input), new MockPaymentCompleter);
+    ScriptValue jsonObject = output.toJSONForBinding(scope.getScriptState());
+    EXPECT_TRUE(jsonObject.isObject());
+
+    String jsonString = v8StringToWebCoreString<String>(
+        v8::JSON::Stringify(scope.context(),
+        jsonObject.v8Value().As<v8::Object>()).ToLocalChecked(),
+        DoNotExternalize);
+    String expected = "{\"methodName\":\"foo\",\"details\":{\"transactionId\":123},"
+        "\"shippingAddress\":{\"country\":\"US\",\"addressLine\":[\"340 Main St\","
+        "\"BIN1\",\"First floor\"],\"region\":\"\",\"city\":\"\",\"dependentLocality\":"
+        "\"\",\"postalCode\":\"\",\"sortingCode\":\"\",\"languageCode\":\"en-Latn\","
+        "\"organization\":\"\",\"recipient\":\"\",\"phone\":\"\"},\"shippingOption\":"
+        "\"standardShippingOption\",\"payerEmail\":\"abc@gmail.com\",\"payerPhone\":\"0123\"}";
+    EXPECT_EQ(expected, jsonString);
 }
 
 } // namespace

@@ -30,6 +30,8 @@ public:
     PaymentResponse(mojom::blink::PaymentResponsePtr, PaymentCompleter*);
     virtual ~PaymentResponse();
 
+    ScriptValue toJSONForBinding(ScriptState*) const;
+
     const String& methodName() const { return m_methodName; }
     ScriptValue details(ScriptState*, ExceptionState&) const;
     PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }

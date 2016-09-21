@@ -5,6 +5,7 @@
 #ifndef PaymentAddress_h
 #define PaymentAddress_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -22,6 +23,8 @@ class MODULES_EXPORT PaymentAddress final : public GarbageCollectedFinalized<Pay
 public:
     explicit PaymentAddress(mojom::blink::PaymentAddressPtr);
     virtual ~PaymentAddress();
+
+    ScriptValue toJSONForBinding(ScriptState*) const;
 
     const String& country() const { return m_country; }
     const Vector<String>& addressLine() const { return m_addressLine; }

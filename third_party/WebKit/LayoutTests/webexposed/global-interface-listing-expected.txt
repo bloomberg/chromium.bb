@@ -4356,6 +4356,7 @@ interface PaymentAddress
     getter region
     getter sortingCode
     method constructor
+    method toJSON
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter onshippingaddresschange
@@ -4381,6 +4382,7 @@ interface PaymentResponse
     getter shippingOption
     method complete
     method constructor
+    method toJSON
 interface Performance : EventTarget
     attribute @@toStringTag
     getter memory

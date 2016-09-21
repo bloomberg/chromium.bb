@@ -4,6 +4,7 @@
 
 #include "modules/payments/PaymentAddress.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -32,5 +33,22 @@ PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
 }
 
 PaymentAddress::~PaymentAddress() {}
+
+ScriptValue PaymentAddress::toJSONForBinding(ScriptState* scriptState) const
+{
+    V8ObjectBuilder result(scriptState);
+    result.addString("country", country());
+    result.add("addressLine", addressLine());
+    result.addString("region", region());
+    result.addString("city", city());
+    result.addString("dependentLocality", dependentLocality());
+    result.addString("postalCode", postalCode());
+    result.addString("sortingCode", sortingCode());
+    result.addString("languageCode", languageCode());
+    result.addString("organization", organization());
+    result.addString("recipient", recipient());
+    result.addString("phone", phone());
+    return result.scriptValue();
+}
 
 } // namespace blink
