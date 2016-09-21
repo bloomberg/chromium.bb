@@ -584,6 +584,10 @@ void RenderWidgetHostViewGuest::GestureEventAck(
     guest_->ResendEventToEmbedder(event);
 }
 
+bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {
+  return true;
+}
+
 void RenderWidgetHostViewGuest::OnHandleInputEvent(
     RenderWidgetHostImpl* embedder,
     int browser_plugin_instance_id,

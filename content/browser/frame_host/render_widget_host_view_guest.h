@@ -126,6 +126,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
+  bool IsRenderWidgetHostViewGuest() override;
+
  protected:
   friend class RenderWidgetHostView;
 

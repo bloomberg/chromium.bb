@@ -192,6 +192,14 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
                              &transformed_point);
   }
 
+  // RenderWidgetHostViewGuest does not properly handle direct routing of mouse
+  // events, so they have to go by the double-hop forwarding path through
+  // the embedding renderer and then BrowserPluginGuest.
+  if (target && target->IsRenderWidgetHostViewGuest()) {
+    root_view->ProcessMouseEvent(*event, latency);
+    return;
+  }
+
   if (event->type == blink::WebInputEvent::MouseDown)
     mouse_capture_target_.target = target;
 

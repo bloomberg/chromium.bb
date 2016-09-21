@@ -453,6 +453,10 @@ gfx::Point RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
   return point;
 }
 
+bool RenderWidgetHostViewBase::IsRenderWidgetHostViewGuest() {
+  return false;
+}
+
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
 // TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.

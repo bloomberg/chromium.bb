@@ -268,6 +268,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const gfx::Point& point,
       RenderWidgetHostViewBase* target_view);
 
+  // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
+  // RenderWidgetHostViewGuests that is needed for special treatment during
+  // input event routing. It can be removed either when RWHVGuests properly
+  // support direct mouse event routing, or when RWHVGuest is removed
+  // entirely, which comes first.
+  virtual bool IsRenderWidgetHostViewGuest();
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
