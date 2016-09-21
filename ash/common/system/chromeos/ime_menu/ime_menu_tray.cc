@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -16,6 +17,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -29,10 +31,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
 using chromeos::input_method::InputMethodManager;
@@ -45,10 +49,12 @@ namespace {
 // TODO(tdanderson): Move this to tray_constants.
 const int kButtonInsideBorderSpacing = 4;
 
-// Returns the max height of ImeListView.
-int GetImeListViewMaxHeight() {
-  const int max_items = 7;
-  return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) * max_items;
+// Returns the height range of ImeListView.
+gfx::Range GetImeListViewRange() {
+  const int max_items = 5;
+  const int min_items = 2;
+  const int tray_item_height = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+  return gfx::Range(tray_item_height * min_items, tray_item_height * max_items);
 }
 
 // Shows language and input settings page.
@@ -89,6 +95,43 @@ TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
   }
   return button;
 }
+
+// The view that contains IME menu title in the material design.
+class ImeTitleView : public views::View {
+ public:
+  ImeTitleView() {
+    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0,
+                                            kMenuSeparatorVerticalPadding, 0);
+    SetLayoutManager(box_layout);
+
+    views::Label* title_label =
+        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
+    const int title_padding =
+        kMenuSeparatorVerticalPadding + (kMenuButtonSize - kMenuIconSize) / 2;
+    title_label->SetBorder(
+        views::Border::CreateEmptyBorder(0, title_padding, 0, 0));
+    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    TrayPopupItemStyle style(GetNativeTheme(),
+                             TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(title_label);
+    AddChildView(title_label);
+    box_layout->SetFlexForView(title_label, 1);
+  }
+
+  ~ImeTitleView() override {}
+
+  // views::View:
+  gfx::Size GetPreferredSize() const override {
+    int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+    return gfx::Size(size, size);
+  }
+  int GetHeightForWidth(int width) const override {
+    return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImeTitleView);
+};
 
 // The view that contains buttons shown on the bottom of IME menu.
 class ImeButtonsView : public views::View,
@@ -260,12 +303,33 @@ void ImeMenuTray::ShowImeMenuBubble() {
   bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
   bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
+  // In the material design, we will add a title item with a separator on the
+  // top of the IME menu.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    ImeTitleView* title_view = new ImeTitleView();
+    bubble_view->AddChildView(title_view);
+    views::Separator* separator =
+        new views::Separator(views::Separator::HORIZONTAL);
+    separator->SetColor(kBorderLightColor);
+    separator->SetPreferredSize(kSeparatorWidth);
+    separator->SetBorder(views::Border::CreateEmptyBorder(
+        0, 0, kMenuSeparatorVerticalPadding, 0));
+    bubble_view->AddChildView(separator);
+  }
+
   // Adds IME list to the bubble.
   ime_list_view_ =
       new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
-  if (ime_list_view_->scroll_content()->height() > GetImeListViewMaxHeight()) {
+
+  uint32_t current_height = ime_list_view_->scroll_content()->height();
+  const gfx::Range height_range = GetImeListViewRange();
+  if (current_height > height_range.end()) {
     ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(kTrayPopupMaxWidth, GetImeListViewMaxHeight()));
+        gfx::Size(kTrayPopupMaxWidth, height_range.end()));
+  } else if (MaterialDesignController::IsSystemTrayMenuMaterial() &&
+             current_height < height_range.start()) {
+    ime_list_view_->scroller()->SetFixedSize(
+        gfx::Size(kTrayPopupMaxWidth, height_range.start()));
   }
   bubble_view->AddChildView(ime_list_view_);
 

@@ -85,6 +85,7 @@ const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;
 const int kMenuButtonSize = 48;
+const int kMenuSeparatorVerticalPadding = 4;
 
 const int kHitRegionPadding = 4;
 const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);

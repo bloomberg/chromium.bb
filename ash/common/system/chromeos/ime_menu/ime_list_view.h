@@ -31,7 +31,6 @@ class ImeListView : public TrayDetailsView {
                       bool show_keyboard_toggle,
                       SingleImeBehavior single_ime_behavior);
 
- protected:
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
 
@@ -44,6 +43,11 @@ class ImeListView : public TrayDetailsView {
 
   // Appends the IME listed to the scrollable area of the detailed view.
   void AppendIMEProperties(const IMEPropertyInfoList& property_list);
+
+  // Appends the IMEs and properties to the scrollable area  in the material
+  // design IME menu.
+  void AppendImeListAndProperties(const IMEInfoList& list,
+                                  const IMEPropertyInfoList& property_list);
 
   // Appends the on-screen keyboard status to the last area of the detailed
   // view.
