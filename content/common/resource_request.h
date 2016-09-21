@@ -34,14 +34,15 @@ struct CONTENT_EXPORT ResourceRequest {
   // The request method: GET, POST, etc.
   std::string method;
 
-  // The requested URL.
+  // The absolute requested URL encoded in ASCII per the rules of RFC-2396.
   GURL url;
 
-  // Usually the URL of the document in the top-level window, which may be
-  // checked by the third-party cookie blocking policy. Leaving it empty may
-  // lead to undesired cookie blocking. Third-party cookie blocking can be
-  // bypassed by setting first_party_for_cookies = url, but this should ideally
-  // only be done if there really is no way to determine the correct value.
+  // URL representing the first-party origin for the request, which may be
+  // checked by the third-party cookie blocking policy. This is usually the URL
+  // of the document in the top-level window. Leaving it empty may lead to
+  // undesired cookie blocking. Third-party cookie blocking can be bypassed by
+  // setting first_party_for_cookies = url, but this should ideally only be
+  // done if there really is no way to determine the correct value.
   GURL first_party_for_cookies;
 
   // The origin of the context which initiated the request, which will be used
@@ -54,11 +55,16 @@ struct CONTENT_EXPORT ResourceRequest {
   // The referrer policy to use.
   blink::WebReferrerPolicy referrer_policy = blink::WebReferrerPolicyAlways;
 
-  // The frame's visiblity state.
-  blink::WebPageVisibilityState visiblity_state =
+  // The frame's visibility state.
+  blink::WebPageVisibilityState visibility_state =
       blink::WebPageVisibilityStateVisible;
 
   // Additional HTTP request headers.
+  //
+  // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
+  // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using
+  // the standard MIME header encoding rules.  The headers parameter can also
+  // be null if no extra request headers need to be set.
   std::string headers;
 
   // net::URLRequest load flags (0 by default).
@@ -72,7 +78,7 @@ struct CONTENT_EXPORT ResourceRequest {
   // object).
   ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
 
-  // The priority of this request.
+  // The priority of this request determined by Blink.
   net::RequestPriority priority = net::IDLE;
 
   // Used by plugin->browser requests to get the correct net::URLRequestContext.
@@ -116,18 +122,23 @@ struct CONTENT_EXPORT ResourceRequest {
   // Optional resource request body (may be null).
   scoped_refptr<ResourceRequestBodyImpl> request_body;
 
+  // If true, then the response body will be downloaded to a file and the path
+  // to that file will be provided in ResponseInfo::download_file_path.
   bool download_to_file = false;
 
   // True if the request was user initiated.
   bool has_user_gesture = false;
 
+  // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
+  //
   // True if load timing data should be collected for request.
   bool enable_load_timing = false;
 
   // True if upload progress should be available for request.
   bool enable_upload_progress = false;
 
-  // True if login prompts for this request should be supressed.
+  // True if login prompts for this request should be supressed. Cached
+  // credentials or default credentials may still be used for authentication.
   bool do_not_prompt_for_login = false;
 
   // The routing id of the RenderFrame.

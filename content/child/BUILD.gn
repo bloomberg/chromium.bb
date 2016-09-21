@@ -138,8 +138,6 @@ target(link_target_type, "child") {
     "quota_message_filter.h",
     "request_extra_data.cc",
     "request_extra_data.h",
-    "request_info.cc",
-    "request_info.h",
     "resource_dispatcher.cc",
     "resource_dispatcher.h",
     "resource_scheduling_filter.cc",

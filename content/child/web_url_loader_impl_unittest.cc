@@ -20,7 +20,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/child/request_extra_data.h"
-#include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/sync_load_response.h"
 #include "content/public/child/fixed_received_data.h"
@@ -67,24 +66,27 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
   // TestDispatcher implementation:
 
-  void StartSync(const RequestInfo& request_info,
-                 ResourceRequestBodyImpl* request_body,
+  void StartSync(std::unique_ptr<ResourceRequest> request,
+                 int routing_id,
                  SyncLoadResponse* response,
                  blink::WebURLRequest::LoadingIPCType ipc_type,
                  mojom::URLLoaderFactory* url_loader_factory) override {
     *response = sync_load_response_;
   }
 
-  int StartAsync(const RequestInfo& request_info,
-                 ResourceRequestBodyImpl* request_body,
-                 std::unique_ptr<RequestPeer> peer,
-                 blink::WebURLRequest::LoadingIPCType ipc_type,
-                 mojom::URLLoaderFactory* url_loader_factory) override {
+  int StartAsync(
+      std::unique_ptr<ResourceRequest> request,
+      int routing_id,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      const GURL& frame_origin,
+      std::unique_ptr<RequestPeer> peer,
+      blink::WebURLRequest::LoadingIPCType ipc_type,
+      mojom::URLLoaderFactory* url_loader_factory) override {
     EXPECT_FALSE(peer_);
     EXPECT_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
     peer_ = std::move(peer);
-    url_ = request_info.url;
-    stream_url_ = request_info.resource_body_stream_url;
+    url_ = request->url;
+    stream_url_ = request->resource_body_stream_url;
     return 1;
   }
 
@@ -639,7 +641,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
 
   client()->loader()->loadAsynchronously(request, client());
 
-  // The stream url should have been added to the RequestInfo.
+  // The stream url should have been added to the ResourceRequest.
   ASSERT_TRUE(peer());
   EXPECT_EQ(kNavigationURL, dispatcher()->url());
   EXPECT_EQ(kStreamURL, dispatcher()->stream_url());

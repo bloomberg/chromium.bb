@@ -19,6 +19,8 @@
 
 namespace content {
 
+struct ResourceRequest;
+
 // Can be used by callers to store extra data on every ResourceRequest
 // which will be incorporated into the ResourceHostMsg_RequestResource message
 // sent by ResourceDispatcher.
@@ -145,6 +147,8 @@ class CONTENT_EXPORT RequestExtraData
   void set_download_to_network_cache_only(bool download_to_cache) {
     download_to_network_cache_only_ = download_to_cache;
   }
+
+  void CopyToResourceRequest(ResourceRequest* request) const;
 
  private:
   blink::WebPageVisibilityState visibility_state_;

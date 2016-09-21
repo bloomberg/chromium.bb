@@ -1465,7 +1465,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       allow_download, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
       do_not_prompt_for_login, request_data.referrer_policy,
-      request_data.visiblity_state, resource_context, filter_->GetWeakPtr(),
+      request_data.visibility_state, resource_context, filter_->GetWeakPtr(),
       report_raw_headers, !is_sync_load,
       IsUsingLoFi(request_data.lofi_state, delegate_, *new_request,
                   resource_context,

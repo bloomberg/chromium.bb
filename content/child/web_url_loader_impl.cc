@@ -26,13 +26,13 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
-#include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/shared_memory_data_consumer_handle.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/security_style_util.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -521,53 +521,53 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // TODO(horo): Check credentials flag is unset when credentials mode is omit.
   //             Check credentials flag is set when credentials mode is include.
 
-  RequestInfo request_info;
-  request_info.method = method;
-  request_info.url = url;
-  request_info.first_party_for_cookies = request.firstPartyForCookies();
-  request_info.request_initiator = request.requestorOrigin();
+  std::unique_ptr<ResourceRequest> resource_request(new ResourceRequest);
+
+  resource_request->method = method;
+  resource_request->url = url;
+  resource_request->first_party_for_cookies = request.firstPartyForCookies();
+  resource_request->request_initiator = request.requestorOrigin();
+  resource_request->referrer = referrer_url;
+
   referrer_policy_ = request.referrerPolicy();
-  request_info.referrer = Referrer(referrer_url, referrer_policy_);
-  request_info.headers = GetWebURLRequestHeaders(request);
-  request_info.load_flags = GetLoadFlagsForWebURLRequest(request);
-  request_info.enable_load_timing = true;
-  request_info.enable_upload_progress = request.reportUploadProgress();
+  resource_request->referrer_policy = referrer_policy_;
+
+  resource_request->headers = GetWebURLRequestHeaders(request);
+  resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
+  // origin_pid only needs to be non-zero if the request originates outside
+  // the render process, so we can use requestorProcessID even for requests
+  // from in-process plugins.
+  resource_request->origin_pid = request.requestorProcessID();
+  resource_request->resource_type = WebURLRequestToResourceType(request);
+  resource_request->priority =
+      ConvertWebKitPriorityToNetPriority(request.getPriority());
+  resource_request->appcache_host_id = request.appCacheHostID();
+  resource_request->should_reset_appcache = request.shouldResetAppCache();
+  resource_request->skip_service_worker =
+      GetSkipServiceWorkerForWebURLRequest(request);
+  resource_request->fetch_request_mode =
+      GetFetchRequestModeForWebURLRequest(request);
+  resource_request->fetch_credentials_mode =
+      GetFetchCredentialsModeForWebURLRequest(request);
+  resource_request->fetch_redirect_mode =
+      GetFetchRedirectModeForWebURLRequest(request);
+  resource_request->fetch_request_context_type =
+      GetRequestContextTypeForWebURLRequest(request);
+  resource_request->fetch_frame_type =
+      GetRequestContextFrameTypeForWebURLRequest(request);
+  resource_request->request_body =
+      GetRequestBodyForWebURLRequest(request).get();
+  resource_request->download_to_file = request.downloadToFile();
+  resource_request->has_user_gesture = request.hasUserGesture();
+  resource_request->enable_load_timing = true;
+  resource_request->enable_upload_progress = request.reportUploadProgress();
   if (request.getRequestContext() ==
           WebURLRequest::RequestContextXMLHttpRequest &&
       (url.has_username() || url.has_password())) {
-    request_info.do_not_prompt_for_login = true;
+    resource_request->do_not_prompt_for_login = true;
   }
-  // requestor_pid only needs to be non-zero if the request originates outside
-  // the render process, so we can use requestorProcessID even for requests
-  // from in-process plugins.
-  request_info.requestor_pid = request.requestorProcessID();
-  request_info.request_type = WebURLRequestToResourceType(request);
-  request_info.priority =
-      ConvertWebKitPriorityToNetPriority(request.getPriority());
-  request_info.appcache_host_id = request.appCacheHostID();
-  request_info.routing_id = request.requestorID();
-  request_info.download_to_file = request.downloadToFile();
-  request_info.has_user_gesture = request.hasUserGesture();
-  request_info.skip_service_worker =
-      GetSkipServiceWorkerForWebURLRequest(request);
-  request_info.should_reset_appcache = request.shouldResetAppCache();
-  request_info.fetch_request_mode =
-      GetFetchRequestModeForWebURLRequest(request);
-  request_info.fetch_credentials_mode =
-      GetFetchCredentialsModeForWebURLRequest(request);
-  request_info.fetch_redirect_mode =
-      GetFetchRedirectModeForWebURLRequest(request);
-  request_info.fetch_request_context_type =
-      GetRequestContextTypeForWebURLRequest(request);
-  request_info.fetch_frame_type =
-      GetRequestContextFrameTypeForWebURLRequest(request);
-  request_info.extra_data = request.getExtraData();
-  request_info.report_raw_headers = request.reportRawHeaders();
-  request_info.loading_task_runner = task_runner_;
-  request_info.lofi_state = static_cast<LoFiState>(request.getLoFiState());
-
-  scoped_refptr<ResourceRequestBodyImpl> request_body =
-      GetRequestBodyForWebURLRequest(request).get();
+  resource_request->report_raw_headers = request.reportRawHeaders();
+  resource_request->lofi_state = static_cast<LoFiState>(request.getLoFiState());
 
   // PlzNavigate: during navigation, the renderer should request a stream which
   // contains the body of the response. The network request has already been
@@ -576,13 +576,21 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::FrameTypeNone, request.getFrameType());
-    request_info.resource_body_stream_url = stream_override_->stream_url;
+    resource_request->resource_body_stream_url = stream_override_->stream_url;
   }
+
+  const RequestExtraData empty_extra_data;
+  const RequestExtraData* extra_data;
+  if (request.getExtraData())
+    extra_data = static_cast<RequestExtraData*>(request.getExtraData());
+  else
+    extra_data = &empty_extra_data;
+  extra_data->CopyToResourceRequest(resource_request.get());
 
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
     resource_dispatcher_->StartSync(
-        request_info, request_body.get(), sync_load_response,
+        std::move(resource_request), request.requestorID(), sync_load_response,
         request.getLoadingIPCType(), url_loader_factory_);
     return;
   }
@@ -590,7 +598,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
-      request_info, request_body.get(),
+      std::move(resource_request), request.requestorID(), task_runner_,
+      extra_data->frame_origin(),
       base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
       request.getLoadingIPCType(), url_loader_factory_);
 

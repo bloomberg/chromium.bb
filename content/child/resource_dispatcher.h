@@ -72,8 +72,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // use this if you really need it!  There is also no way for the caller to
   // interrupt this method. Errors are reported via the status field of the
   // response parameter.
-  virtual void StartSync(const RequestInfo& request_info,
-                         ResourceRequestBodyImpl* request_body,
+  //
+  // |routing_id| is used to associated the bridge with a frame's network
+  // context.
+  virtual void StartSync(std::unique_ptr<ResourceRequest> request,
+                         int routing_id,
                          SyncLoadResponse* response,
                          blink::WebURLRequest::LoadingIPCType ipc_type,
                          mojom::URLLoaderFactory* url_loader_factory);
@@ -82,11 +85,20 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // the peer's methods will be called asynchronously to report various events.
   // Returns the request id. |url_loader_factory| must be non-null if and only
   // if |ipc_type| is LoadingIPCType::Mojo.
-  virtual int StartAsync(const RequestInfo& request_info,
-                         ResourceRequestBodyImpl* request_body,
-                         std::unique_ptr<RequestPeer> peer,
-                         blink::WebURLRequest::LoadingIPCType ipc_type,
-                         mojom::URLLoaderFactory* url_loader_factory);
+  //
+  // |routing_id| is used to associated the bridge with a frame's network
+  // context.
+  //
+  // You can pass an optional argument |loading_task_runner| to specify task
+  // queue to execute loading tasks on.
+  virtual int StartAsync(
+      std::unique_ptr<ResourceRequest> request,
+      int routing_id,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      const GURL& frame_origin,
+      std::unique_ptr<RequestPeer> peer,
+      blink::WebURLRequest::LoadingIPCType ipc_type,
+      mojom::URLLoaderFactory* url_loader_factory);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.

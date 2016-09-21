@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/child/request_extra_data.h"
-#include "content/child/request_info.h"
 #include "content/child/resource_scheduling_filter.h"
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
@@ -116,6 +115,19 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
+
+void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
+  if ((request.referrer_policy == blink::WebReferrerPolicyDefault ||
+       request.referrer_policy ==
+           blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
+      request.referrer.SchemeIsCryptographic() &&
+      !request.url.SchemeIsCryptographic()) {
+    LOG(FATAL) << "Trying to send secure referrer for insecure request "
+               << "without an appropriate referrer policy.\n"
+               << "URL = " << request.url << "\n"
+               << "Referrer = " << request.referrer;
+  }
+}
 
 }  // namespace
 
@@ -590,19 +602,19 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
 }
 
 void ResourceDispatcher::StartSync(
-    const RequestInfo& request_info,
-    ResourceRequestBodyImpl* request_body,
+    std::unique_ptr<ResourceRequest> request,
+    int routing_id,
     SyncLoadResponse* response,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory) {
-  std::unique_ptr<ResourceRequest> request =
-      CreateRequest(request_info, request_body, NULL);
+  CheckSchemeForReferrerPolicy(*request);
+
   // TODO(yhirano): Use url_loader_factory otherwise.
   DCHECK_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
 
   SyncLoadResult result;
   IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
-      request_info.routing_id, MakeRequestID(), *request, &result);
+      routing_id, MakeRequestID(), *request, &result);
 
   // NOTE: This may pump events (see RenderThread::Send).
   if (!message_sender_->Send(msg)) {
@@ -627,24 +639,24 @@ void ResourceDispatcher::StartSync(
 }
 
 int ResourceDispatcher::StartAsync(
-    const RequestInfo& request_info,
-    ResourceRequestBodyImpl* request_body,
+    std::unique_ptr<ResourceRequest> request,
+    int routing_id,
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+    const GURL& frame_origin,
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory) {
-  GURL frame_origin;
-  std::unique_ptr<ResourceRequest> request =
-      CreateRequest(request_info, request_body, &frame_origin);
+  CheckSchemeForReferrerPolicy(*request);
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = base::MakeUnique<PendingRequestInfo>(
       std::move(peer), request->resource_type, request->origin_pid,
-      frame_origin, request->url, request_info.download_to_file);
+      frame_origin, request->url, request->download_to_file);
 
-  if (resource_scheduling_filter_.get() && request_info.loading_task_runner) {
-    resource_scheduling_filter_->SetRequestIdTaskRunner(
-        request_id, request_info.loading_task_runner);
+  if (resource_scheduling_filter_.get() && loading_task_runner) {
+    resource_scheduling_filter_->SetRequestIdTaskRunner(request_id,
+                                                        loading_task_runner);
   }
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
@@ -657,8 +669,8 @@ int ResourceDispatcher::StartAsync(
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {
-    message_sender_->Send(new ResourceHostMsg_RequestResource(
-        request_info.routing_id, request_id, *request));
+    message_sender_->Send(
+        new ResourceHostMsg_RequestResource(routing_id, request_id, *request));
   }
 
   return request_id;
@@ -797,84 +809,6 @@ void ResourceDispatcher::ReleaseResourcesInMessageQueue(MessageQueue* queue) {
     queue->pop_front();
     delete message;
   }
-}
-
-std::unique_ptr<ResourceRequest> ResourceDispatcher::CreateRequest(
-    const RequestInfo& request_info,
-    ResourceRequestBodyImpl* request_body,
-    GURL* frame_origin) {
-  std::unique_ptr<ResourceRequest> request(new ResourceRequest);
-  request->method = request_info.method;
-  request->url = request_info.url;
-  request->first_party_for_cookies = request_info.first_party_for_cookies;
-  request->request_initiator = request_info.request_initiator;
-  request->referrer = request_info.referrer.url;
-  request->referrer_policy = request_info.referrer.policy;
-  request->headers = request_info.headers;
-  request->load_flags = request_info.load_flags;
-  request->origin_pid = request_info.requestor_pid;
-  request->resource_type = request_info.request_type;
-  request->priority = request_info.priority;
-  request->request_context = request_info.request_context;
-  request->appcache_host_id = request_info.appcache_host_id;
-  request->download_to_file = request_info.download_to_file;
-  request->has_user_gesture = request_info.has_user_gesture;
-  request->skip_service_worker = request_info.skip_service_worker;
-  request->should_reset_appcache = request_info.should_reset_appcache;
-  request->fetch_request_mode = request_info.fetch_request_mode;
-  request->fetch_credentials_mode = request_info.fetch_credentials_mode;
-  request->fetch_redirect_mode = request_info.fetch_redirect_mode;
-  request->fetch_request_context_type = request_info.fetch_request_context_type;
-  request->fetch_frame_type = request_info.fetch_frame_type;
-  request->enable_load_timing = request_info.enable_load_timing;
-  request->enable_upload_progress = request_info.enable_upload_progress;
-  request->do_not_prompt_for_login = request_info.do_not_prompt_for_login;
-  request->report_raw_headers = request_info.report_raw_headers;
-  request->lofi_state = request_info.lofi_state;
-
-  if ((request_info.referrer.policy == blink::WebReferrerPolicyDefault ||
-       request_info.referrer.policy ==
-           blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
-      request_info.referrer.url.SchemeIsCryptographic() &&
-      !request_info.url.SchemeIsCryptographic()) {
-    LOG(FATAL) << "Trying to send secure referrer for insecure request "
-               << "without an appropriate referrer policy.\n"
-               << "URL = " << request_info.url << "\n"
-               << "Referrer = " << request_info.referrer.url;
-  }
-
-  const RequestExtraData kEmptyData;
-  const RequestExtraData* extra_data;
-  if (request_info.extra_data)
-    extra_data = static_cast<RequestExtraData*>(request_info.extra_data);
-  else
-    extra_data = &kEmptyData;
-  request->visiblity_state = extra_data->visibility_state();
-  request->render_frame_id = extra_data->render_frame_id();
-  request->is_main_frame = extra_data->is_main_frame();
-  request->parent_is_main_frame = extra_data->parent_is_main_frame();
-  request->parent_render_frame_id = extra_data->parent_render_frame_id();
-  request->allow_download = extra_data->allow_download();
-  request->transition_type = extra_data->transition_type();
-  request->should_replace_current_entry =
-      extra_data->should_replace_current_entry();
-  request->transferred_request_child_id =
-      extra_data->transferred_request_child_id();
-  request->transferred_request_request_id =
-      extra_data->transferred_request_request_id();
-  request->service_worker_provider_id =
-      extra_data->service_worker_provider_id();
-  request->originated_from_service_worker =
-      extra_data->originated_from_service_worker();
-  request->request_body = request_body;
-  request->resource_body_stream_url = request_info.resource_body_stream_url;
-  request->initiated_in_secure_context =
-      extra_data->initiated_in_secure_context();
-  request->download_to_network_cache_only =
-      extra_data->download_to_network_cache_only();
-  if (frame_origin)
-    *frame_origin = extra_data->frame_origin();
-  return request;
 }
 
 void ResourceDispatcher::SetResourceSchedulingFilter(
