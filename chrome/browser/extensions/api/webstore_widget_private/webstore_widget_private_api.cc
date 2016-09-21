@@ -105,10 +105,7 @@ void WebstoreWidgetPrivateInstallWebstoreItemFunction::OnInstallComplete(
     bool success,
     const std::string& error,
     extensions::webstore_install::Result result) {
-  if (!success)
-    SetError(error);
-
-  SendResponse(success);
+  Respond(success ? NoArguments() : Error(error));
 }
 
 }  // namespace api

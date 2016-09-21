@@ -397,15 +397,9 @@ class ExtensionFunction
   // Helper method for ExtensionFunctionDeleteTraits. Deletes this object.
   virtual void Destruct() const = 0;
 
-  // Do not call this function directly, return the appropriate ResponseAction
-  // from Run() instead. If using RespondLater then call Respond().
-  //
-  // Call with true to indicate success, false to indicate failure, in which
-  // case please set |error_|.
-  virtual void SendResponse(bool success) = 0;
-
-  // Common implementation for SendResponse.
-  void SendResponseImpl(bool success);
+  // Called after the response is sent, allowing the function to perform any
+  // additional work or cleanup.
+  virtual void OnResponded() {}
 
   // Return true if the argument to this function at |index| was provided and
   // is non-null.
@@ -442,8 +436,9 @@ class ExtensionFunction
   // The arguments to the API. Only non-null if argument were specified.
   std::unique_ptr<base::ListValue> args_;
 
-  // The results of the API. This should be populated by the derived class
-  // before SendResponse() is called.
+  // The results of the API. This should be populated through the Respond()/
+  // RespondNow() methods. In legacy implementations, this is set directly, and
+  // should be set before calling SendResponse().
   std::unique_ptr<base::ListValue> results_;
 
   // Any detailed error from the API. This should be populated by the derived
@@ -475,12 +470,14 @@ class ExtensionFunction
   bool did_respond_;
 
  private:
+  // Call with true to indicate success, false to indicate failure. If this
+  // failed, |error_| should be set.
+  void SendResponseImpl(bool success);
+
   base::ElapsedTimer timer_;
 
   // The response type of the function, if the response has been sent.
   std::unique_ptr<ResponseType> response_type_;
-
-  void OnRespondingLater(ResponseValue response);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
@@ -544,7 +541,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   ~UIThreadExtensionFunction() override;
 
-  void SendResponse(bool success) override;
+  void OnResponded() override;
 
   // Sets the Blob UUIDs whose ownership is being transferred to the renderer.
   void SetTransferredBlobUUIDs(const std::vector<std::string>& blob_uuids);
@@ -618,8 +615,6 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   void Destruct() const override;
 
-  void SendResponse(bool success) override;
-
  private:
   base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_;
   int routing_id_;
@@ -647,6 +642,10 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
 
   // ValidationFailure override to match RunAsync().
   static bool ValidationFailure(AsyncExtensionFunction* function);
+
+  // Responds with success/failure. |results_| or |error_| should be set
+  // accordingly.
+  void SendResponse(bool success);
 
  private:
   // If you're hitting a compile error here due to "final" - great! You're

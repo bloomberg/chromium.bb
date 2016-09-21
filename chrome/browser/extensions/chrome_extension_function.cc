@@ -42,6 +42,10 @@ ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
   return chrome_details_.GetAssociatedWebContents();
 }
 
+void ChromeUIThreadExtensionFunction::SendResponse(bool success) {
+  Respond(success ? ArgumentList(std::move(results_)) : Error(error_));
+}
+
 ChromeUIThreadExtensionFunction::~ChromeUIThreadExtensionFunction() {
 }
 

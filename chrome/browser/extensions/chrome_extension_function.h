@@ -58,6 +58,10 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
   // contents then defaults to the foremost one.
   content::WebContents* GetAssociatedWebContents() override;
 
+  // Responds with success/failure. |results_| or |error_| should be set
+  // accordingly.
+  void SendResponse(bool success);
+
  protected:
   ~ChromeUIThreadExtensionFunction() override;
 

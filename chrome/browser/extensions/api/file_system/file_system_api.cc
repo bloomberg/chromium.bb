@@ -1330,13 +1330,11 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 
   switch (result) {
     case ConsentProvider::CONSENT_REJECTED:
-      SetError(kSecurityError);
-      SendResponse(false);
+      Respond(Error(kSecurityError));
       return;
 
     case ConsentProvider::CONSENT_IMPOSSIBLE:
-      SetError(kConsentImpossible);
-      SendResponse(false);
+      Respond(Error(kConsentImpossible));
       return;
 
     case ConsentProvider::CONSENT_GRANTED:
@@ -1344,8 +1342,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
   }
 
   if (!volume.get()) {
-    SetError(kVolumeNotFoundError);
-    SendResponse(false);
+    Respond(Error(kVolumeNotFoundError));
     return;
   }
 
@@ -1360,8 +1357,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 
   base::FilePath virtual_path;
   if (!backend->GetVirtualPath(volume->mount_path(), &virtual_path)) {
-    SetError(kSecurityError);
-    SendResponse(false);
+    Respond(Error(kSecurityError));
     return;
   }
 
@@ -1384,8 +1380,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
           std::string() /* file_system_id */, original_url.path(),
           &register_name);
   if (file_system_id.empty()) {
-    SetError(kSecurityError);
-    SendResponse(false);
+    Respond(Error(kSecurityError));
     return;
   }
 
@@ -1420,8 +1415,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
   dict->SetString("file_system_id", file_system_id);
   dict->SetString("file_system_path", register_name);
 
-  SetResult(std::move(dict));
-  SendResponse(true);
+  Respond(OneArgument(std::move(dict)));
 }
 
 FileSystemGetVolumeListFunction::FileSystemGetVolumeListFunction()

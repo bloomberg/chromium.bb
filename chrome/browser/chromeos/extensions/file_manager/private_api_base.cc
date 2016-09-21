@@ -25,10 +25,12 @@ LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
 LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() {
 }
 
-void LoggedAsyncExtensionFunction::SendResponse(bool success) {
+void LoggedAsyncExtensionFunction::OnResponded() {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger) {
     int64_t elapsed = (base::Time::Now() - start_time_).InMilliseconds();
+    DCHECK(response_type());
+    bool success = *response_type() == SUCCEEDED;
     if (log_on_completion_) {
       logger->Log(logging::LOG_INFO, "%s[%d] %s. (elapsed time: %sms)", name(),
                   request_id(), success ? "succeeded" : "failed",
@@ -39,7 +41,7 @@ void LoggedAsyncExtensionFunction::SendResponse(bool success) {
                   name(), request_id(), base::Int64ToString(elapsed).c_str());
     }
   }
-  ChromeAsyncExtensionFunction::SendResponse(success);
+  ChromeAsyncExtensionFunction::OnResponded();
 }
 
 }  // namespace extensions

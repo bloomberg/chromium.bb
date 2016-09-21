@@ -70,7 +70,6 @@ class MockFunction : public ExtensionFunction {
   void SetError(const std::string& error) override {}
   void Destruct() const override { delete this; }
   ResponseAction Run() override { return RespondLater(); }
-  void SendResponse(bool) override {}
 
  protected:
   ~MockFunction() override {}

@@ -223,8 +223,7 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
     const scoped_refptr<base::RefCountedMemory>& data,
     std::unique_ptr<content::BlobHandle> blob) {
   if (!blob) {
-    SetError("Unable to create the blob.");
-    SendResponse(false);
+    Respond(Error("Unable to create the blob."));
     return;
   }
 
@@ -241,9 +240,8 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
           render_frame_host()->GetProcess());
   holder->HoldBlobReference(std::move(blob));
 
-  results_ = internal_api::GetPrintData::Results::Create(info);
   SetTransferredBlobUUIDs(uuids);
-  SendResponse(true);
+  Respond(ArgumentList(internal_api::GetPrintData::Results::Create(info)));
 }
 
 PrinterProviderInternalReportUsbPrinterInfoFunction::

@@ -301,7 +301,7 @@ bool ExtensionFunction::HasPermission() {
 
 void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {
   error_ = violation_error;
-  SendResponse(false);
+  SendResponseImpl(false);
 }
 
 void ExtensionFunction::SetArgs(const base::ListValue* args) {
@@ -407,7 +407,8 @@ ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
 ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
     ResponseValue result) {
   return ResponseAction(new RespondNowAction(
-      std::move(result), base::Bind(&ExtensionFunction::SendResponse, this)));
+      std::move(result),
+      base::Bind(&ExtensionFunction::SendResponseImpl, this)));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
@@ -421,7 +422,7 @@ ExtensionFunction::ResponseAction ExtensionFunction::ValidationFailure(
 }
 
 void ExtensionFunction::Respond(ResponseValue result) {
-  SendResponse(result->Apply());
+  SendResponseImpl(result->Apply());
 }
 
 bool ExtensionFunction::PreRunValidation(std::string* error) {
@@ -448,6 +449,8 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
 
 void ExtensionFunction::SendResponseImpl(bool success) {
   DCHECK(!response_callback_.is_null());
+  DCHECK(!did_respond_) << name_;
+  did_respond_ = true;
 
   ResponseType response = success ? SUCCEEDED : FAILED;
   if (bad_message_) {
@@ -462,10 +465,8 @@ void ExtensionFunction::SendResponseImpl(bool success) {
 
   response_callback_.Run(response, *results_, GetError(), histogram_value());
   LogUma(success, timer_.Elapsed(), histogram_value_);
-}
 
-void ExtensionFunction::OnRespondingLater(ResponseValue value) {
-  SendResponse(value->Apply());
+  OnResponded();
 }
 
 UIThreadExtensionFunction::UIThreadExtensionFunction()
@@ -548,11 +549,7 @@ content::WebContents* UIThreadExtensionFunction::GetSenderWebContents() {
       content::WebContents::FromRenderFrameHost(render_frame_host_) : nullptr;
 }
 
-void UIThreadExtensionFunction::SendResponse(bool success) {
-  DCHECK(!did_respond_) << name_;
-  did_respond_ = true;
-  SendResponseImpl(success);
-
+void UIThreadExtensionFunction::OnResponded() {
   if (!transferred_blob_uuids_.empty()) {
     render_frame_host_->Send(
         new ExtensionMsg_TransferBlobs(transferred_blob_uuids_));
@@ -590,12 +587,6 @@ void IOThreadExtensionFunction::Destruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-void IOThreadExtensionFunction::SendResponse(bool success) {
-  DCHECK(!did_respond_) << name_;
-  did_respond_ = true;
-  SendResponseImpl(success);
-}
-
 AsyncExtensionFunction::AsyncExtensionFunction() {
 }
 
@@ -618,4 +609,8 @@ ExtensionFunction::ResponseAction AsyncExtensionFunction::Run() {
 bool AsyncExtensionFunction::ValidationFailure(
     AsyncExtensionFunction* function) {
   return false;
+}
+
+void AsyncExtensionFunction::SendResponse(bool success) {
+  Respond(success ? ArgumentList(std::move(results_)) : Error(error_));
 }
