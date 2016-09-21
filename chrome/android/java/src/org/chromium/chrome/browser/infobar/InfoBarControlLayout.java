@@ -381,6 +381,34 @@ public final class InfoBarControlLayout extends ViewGroup {
     }
 
     /**
+     * Creates and adds a full-width control with two lines of additional text describing what
+     * an InfoBar is for. The first line has a left aligned icon at the start of the line.
+     * @param iconResourceId The id for the first line icon.
+     * @param message1 The message following the icon.
+     * @param message2 The second line message.
+     */
+    public View addTwoLineDescription(int iconResourceId,
+            CharSequence message1, CharSequence message2) {
+        ControlLayoutParams params = new ControlLayoutParams();
+        params.mMustBeFullWidth = true;
+
+        View descriptionView = LayoutInflater.from(getContext()).inflate(
+                R.layout.infobar_control_two_line_description, this, false);
+        addView(descriptionView, params);
+
+        TextView topLine = (TextView) descriptionView.findViewById(R.id.description_top_line);
+        topLine.setText(message1);
+        topLine.setMovementMethod(LinkMovementMethod.getInstance());
+        topLine.setCompoundDrawablesWithIntrinsicBounds(iconResourceId, 0, 0, 0);
+
+        TextView bottomLine = (TextView) descriptionView.findViewById(R.id.description_bottom_line);
+        bottomLine.setText(message2);
+        bottomLine.setMovementMethod(LinkMovementMethod.getInstance());
+
+        return descriptionView;
+    }
+
+    /**
      * Creates and adds a control that shows a review rating score.
      *
      * @param rating Fractional rating out of 5 stars.

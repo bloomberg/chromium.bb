@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/description_top_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/infobar_control_margin_between_rows"
+        android:drawablePadding="@dimen/infobar_control_margin_between_items"
+        android:textSize="@dimen/infobar_descriptive_text_size"
+        android:textColor="@color/infobar_descriptive_text_color"
+        android:textColorLink="@color/infobar_accent_blue" />
+    <TextView
+        android:id="@+id/description_bottom_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/infobar_descriptive_text_size"
+        android:textColor="@color/infobar_descriptive_text_color"
+        android:textColorLink="@color/infobar_accent_blue" />
+</LinearLayout>

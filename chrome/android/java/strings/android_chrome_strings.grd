@@ -2604,11 +2604,11 @@ You can control the Physical Web in Chrome Settings.
         <ph name="ITEM_NAME">%1$s<ex>item_name</ex></ph> (<ph name="ITEM_ID">%2$s<ex>item id</ex></ph>)
       </message>
 
-      <message name="IDS_INSTANT_APPS_INFO_BAR_LABEL" desc="The title of the infobar that asks the user if they want to use an Instant App. It's the name of the app followed by the word 'Instant', e.g. ExampleApp - Instant.">
-        <ph name="APP_NAME">%1$s<ex>ExampleApp</ex></ph> - <ph name="STYLE_BEGIN">&lt;style&gt;</ph>Instant<ph name="STYLE_END">&lt;/style&gt;</ph>
+      <message name="IDS_INSTANT_APPS_INFO_BAR_LABEL" desc="A sub-heading describing the item as an Instant App">
+        Instant app
       </message>
       <message name="IDS_INSTANT_APPS_OPEN_IN_APP" desc="Button label for the user action that will open an Instant App. [CHAR LIMIT=20]">
-        Open in app
+        Open app
       </message>
     </messages>
   </release>

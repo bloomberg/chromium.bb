@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -13,8 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.chrome.browser.widget.DualControlLayout;
-import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 /**
  * Infobar that asks the user whether they want to use an instant app for a particular website.
@@ -35,14 +31,10 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
         int launchButtonColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
                 R.color.app_banner_install_button_bg);
 
-        String title =
-                getContext().getString(R.string.instant_apps_info_bar_label, mData.getAppName());
-        SpannableString result = SpanApplier.applySpans(title, new SpanInfo("<style>", "</style>",
-                new ForegroundColorSpan(launchButtonColor)));
-
         layout.setIsUsingBigIcon();
-        layout.setMessage(result);
-        layout.getMessageLayout().addDescription(mData.getHostname());
+        layout.setMessage(mData.getAppName());
+        layout.getMessageLayout().addTwoLineDescription(R.drawable.instant_badge,
+                getContext().getString(R.string.instant_apps_info_bar_label), mData.getHostname());
         layout.getPrimaryButton().setText(R.string.instant_apps_open_in_app);
         layout.getPrimaryButton().setButtonColor(launchButtonColor);
     }
