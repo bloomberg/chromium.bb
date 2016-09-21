@@ -39,32 +39,6 @@ You can also just use the current released version of ccache (3.1.8 or 3.1.9)
 and disable the chromium style plugin with `clang_use_chrome_plugins=0` in your
 `GYP_DEFINES`.
 
-## Use with GYP
-
-We have to set two environment variables (`CC` and `CXX`) before calling
-`gclient runhooks` or `build/gyp_chromium`, given you are currently in the
-`chromium/src` directory:
-
-```shell
-export CC="ccache clang -Qunused-arguments"
-export CXX="ccache clang++ -Qunused-arguments"
-```
-
-Then run:
-
-```shell
-GYP_GENERATORS="ninja" ./build/gyp_chromium
-```
-
-or
-
-```shell
-GYP_GENERATORS="ninja" gclient runhooks
-```
-
-(Instead of relying on the clang/clang++ for building chromium in your `$PATH`,
-you can also use the absolute path here.)
-
 ## Use with GN
 
 You just need to set the use\_ccache variable. Do so like the following:

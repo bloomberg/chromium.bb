@@ -77,12 +77,6 @@ http://androidmuscle.com/how-to-enable-usb-debugging-developer-options-on-nexus-
 
 Rebuild `content_shell_apk` with profiling enabled.
 
-With GYP (deprecated):
-
-    export GYP_DEFINES="$GYP_DEFINES profiling=1"
-    build/gyp_chromium
-    ninja -C out/Release content_shell_apk
-
 With GN:
 
     gn args out/Profiling
@@ -197,8 +191,6 @@ Run the following:
 
 1.  If you don’t see chromium/webkit symbols, make sure that you built/pushed
     Release, and that the symlink you created to the .so is valid!
-1.  If you have symbols, but your callstacks are nonsense, make sure you ran
-    `build/gyp_chromium` after setting `profiling=1`, and rebuilt.
 
 ## Add symbols for the kernel
 
