@@ -39,21 +39,24 @@ DistillerViewer::~DistillerViewer() {}
 void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {
   DomDistillerRequestViewBase::OnArticleReady(article_proto);
+  if (article_proto->pages_size() > 0) {
+    std::vector<ImageInfo> images;
+    for (int i = 0; i < article_proto->pages(0).image_size(); i++) {
+      auto image = article_proto->pages(0).image(i);
+      images.push_back(ImageInfo{GURL(image.url()), image.data()});
+    }
 
-  std::vector<ImageInfo> images;
-  for (int i = 0; i < article_proto->pages(0).image_size(); i++) {
-    auto image = article_proto->pages(0).image(i);
-    images.push_back({GURL(image.url()), image.data()});
+    const std::string html = viewer::GetUnsafeArticleTemplateHtml(
+        url_.spec(), distilled_page_prefs_->GetTheme(),
+        distilled_page_prefs_->GetFontFamily());
+
+    std::string html_and_script(html);
+    html_and_script +=
+        "<script> distiller_on_ios = true; " + js_buffer_ + "</script>";
+    callback_.Run(url_, html_and_script, images, article_proto->title());
+  } else {
+    callback_.Run(url_, std::string(), {}, std::string());
   }
-
-  const std::string html = viewer::GetUnsafeArticleTemplateHtml(
-      url_.spec(), distilled_page_prefs_->GetTheme(),
-      distilled_page_prefs_->GetFontFamily());
-
-  std::string html_and_script(html);
-  html_and_script +=
-      "<script> distiller_on_ios = true; " + js_buffer_ + "</script>";
-  callback_.Run(url_, html_and_script, images);
 }
 
 void DistillerViewer::SendJavaScript(const std::string& buffer) {

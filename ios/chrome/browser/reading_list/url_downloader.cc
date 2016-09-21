@@ -19,10 +19,6 @@
 
 namespace {
 char const kOfflineDirectory[] = "Offline";
-
-// TODO(crbug.com/629771): Handle errors & retrying of failed saves, including
-// distillation failure.
-
 }  // namespace
 
 // URLDownloader
@@ -31,7 +27,7 @@ URLDownloader::URLDownloader(
     dom_distiller::DomDistillerService* distiller_service,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
-    const SuccessCompletion& download_completion,
+    const DownloadCompletion& download_completion,
     const SuccessCompletion& delete_completion)
     : distiller_service_(distiller_service),
       pref_service_(prefs),
@@ -70,12 +66,38 @@ void URLDownloader::DownloadOfflineURL(const GURL& url) {
   }
 }
 
-void URLDownloader::DownloadCompletionHandler(const GURL& url, bool success) {
+void URLDownloader::DownloadCompletionHandler(const GURL& url,
+                                              const std::string& title,
+                                              SuccessState success) {
   DCHECK(working_);
-  download_completion_.Run(url, success);
-  distiller_.reset();
-  working_ = false;
-  HandleNextTask();
+
+  auto post_delete = base::Bind(
+      [](URLDownloader* _this, const GURL& url, const std::string& title,
+         SuccessState success) {
+        _this->download_completion_.Run(
+            url, success,
+            GURL(std::string(url::kFileScheme) + url::kStandardSchemeSeparator +
+                 _this->OfflineURLPagePath(url).value()),
+            title);
+        _this->distiller_.reset();
+        _this->working_ = false;
+        _this->HandleNextTask();
+      },
+      base::Unretained(this), url, title, success);
+
+  // If downloading failed, clean up any partial download.
+  if (success == ERROR_RETRY || success == ERROR_PERMANENT) {
+    task_tracker_.PostTaskAndReply(
+        web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
+        FROM_HERE, base::Bind(
+                       [](const base::FilePath& offline_directory_path) {
+                         base::DeleteFile(offline_directory_path, true);
+                       },
+                       OfflineURLDirectoryPath(url)),
+        post_delete);
+  } else {
+    post_delete.Run();
+  }
 }
 
 void URLDownloader::DeleteCompletionHandler(const GURL& url, bool success) {
@@ -109,9 +131,9 @@ void URLDownloader::HandleNextTask() {
   }
 }
 
-void URLDownloader::DownloadURL(GURL url, bool offlineURLExists) {
-  if (offlineURLExists) {
-    DownloadCompletionHandler(url, false);
+void URLDownloader::DownloadURL(GURL url, bool offline_url_exists) {
+  if (offline_url_exists) {
+    DownloadCompletionHandler(url, std::string(), DOWNLOAD_EXISTS);
     return;
   }
 
@@ -121,29 +143,37 @@ void URLDownloader::DownloadURL(GURL url, bool offlineURLExists) {
 }
 
 void URLDownloader::DistillerCallback(
-    const GURL& pageURL,
+    const GURL& page_url,
     const std::string& html,
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
-        images) {
-  std::vector<dom_distiller::DistillerViewer::ImageInfo> imagesBlock = images;
-  std::string blockHTML = html;
+        images,
+    const std::string& title) {
+  std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
+  std::string block_html = html;
+  if (html.empty()) {
+    // TODO identify retry from permanent errors
+    DownloadCompletionHandler(page_url, std::string(), ERROR_PERMANENT);
+    return;
+  }
   task_tracker_.PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
       FROM_HERE,
       base::Bind(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
-                 pageURL, imagesBlock, blockHTML),
+                 page_url, images_block, block_html),
       base::Bind(&URLDownloader::DownloadCompletionHandler,
-                 base::Unretained(this), pageURL));
+                 base::Unretained(this), page_url, title));
 }
 
-bool URLDownloader::SaveDistilledHTML(
+URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const GURL& url,
     std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
     std::string html) {
   if (CreateOfflineURLDirectory(url)) {
-    return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url);
+    return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url)
+               ? DOWNLOAD_SUCCESS
+               : ERROR_PERMANENT;
   }
-  return false;
+  return ERROR_PERMANENT;
 }
 
 base::FilePath URLDownloader::OfflineDirectoryPath() {
@@ -167,40 +197,44 @@ bool URLDownloader::CreateOfflineURLDirectory(const GURL& url) {
   return true;
 }
 
-std::string URLDownloader::SaveImage(const GURL& url,
-                                     const GURL& imageURL,
-                                     const std::string& data) {
-  base::FilePath path =
-      OfflineURLDirectoryPath(url).Append(base::MD5String(imageURL.spec()));
+bool URLDownloader::SaveImage(const GURL& url,
+                              const GURL& image_url,
+                              const std::string& data,
+                              base::FilePath& path) {
+  path = OfflineURLDirectoryPath(url).Append(base::MD5String(image_url.spec()));
   if (!base::PathExists(path)) {
-    base::WriteFile(path, data.c_str(), data.length());
+    return base::WriteFile(path, data.c_str(), data.length()) > 0;
   }
-  return path.AsUTF8Unsafe();
+  return true;
 }
 
-// TODO(crbug.com/625621) DomDistiller doesn't correctly handle srcset
-// attributes in img tags.
 std::string URLDownloader::SaveAndReplaceImagesInHTML(
     const GURL& url,
     const std::string& html,
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images) {
-  std::string mutableHTML = html;
+  std::string mutable_html = html;
   for (size_t i = 0; i < images.size(); i++) {
-    const std::string& localImagePath =
-        SaveImage(url, images[i].url, images[i].data);
-    const std::string& imageURL = images[i].url.spec();
-    size_t imageURLSize = imageURL.size();
-    size_t pos = mutableHTML.find(imageURL, 0);
+    base::FilePath local_image_path;
+    if (!SaveImage(url, images[i].url, images[i].data, local_image_path)) {
+      return std::string();
+    }
+    const std::string& image_url = images[i].url.spec();
+    size_t image_url_size = image_url.size();
+    size_t pos = mutable_html.find(image_url, 0);
     while (pos != std::string::npos) {
-      mutableHTML.replace(pos, imageURLSize, localImagePath);
-      pos = mutableHTML.find(imageURL, pos + imageURLSize);
+      mutable_html.replace(pos, image_url_size,
+                           local_image_path.AsUTF8Unsafe());
+      pos = mutable_html.find(image_url, pos + image_url_size);
     }
   }
-  return mutableHTML;
+  return mutable_html;
 }
 
 bool URLDownloader::SaveHTMLForURL(std::string html, const GURL& url) {
+  if (html.empty()) {
+    return false;
+  }
   base::FilePath path = OfflineURLPagePath(url);
-  return base::WriteFile(path, html.c_str(), html.length()) < 0;
+  return base::WriteFile(path, html.c_str(), html.length()) > 0;
 }

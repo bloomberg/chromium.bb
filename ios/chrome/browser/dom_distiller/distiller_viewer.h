@@ -23,15 +23,16 @@ class DistilledPagePrefs;
 // contains.
 class DistillerViewerInterface : public DomDistillerRequestViewBase {
  public:
-  typedef struct {
+  struct ImageInfo {
     // The url of the image.
     GURL url;
     // The image data as a string.
     std::string data;
-  } ImageInfo;
-  typedef base::Callback<void(const GURL&,
-                              const std::string&,
-                              const std::vector<ImageInfo>& images)>
+  };
+  typedef base::Callback<void(const GURL& url,
+                              const std::string& html,
+                              const std::vector<ImageInfo>& images,
+                              const std::string& title)>
       DistillationFinishedCallback;
 
   DistillerViewerInterface(dom_distiller::DomDistillerService* distillerService,

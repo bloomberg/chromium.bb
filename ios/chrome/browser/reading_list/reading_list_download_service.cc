@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
-#include "ios/chrome/browser/reading_list/url_downloader.h"
 
 ReadingListDownloadService::ReadingListDownloadService(
     ReadingListModel* reading_list_model,
@@ -87,7 +86,11 @@ void ReadingListDownloadService::DownloadAllEntries() {
 
 void ReadingListDownloadService::DownloadEntry(const ReadingListEntry& entry) {
   DCHECK(reading_list_model_->loaded());
-  url_downloader_->DownloadOfflineURL(entry.URL());
+  if (entry.DistilledState() != ReadingListEntry::ERROR) {
+    reading_list_model_->SetEntryDistilledState(entry.URL(),
+                                                ReadingListEntry::PROCESSING);
+    url_downloader_->DownloadOfflineURL(entry.URL());
+  }
 }
 
 void ReadingListDownloadService::RemoveDownloadedEntry(
@@ -96,10 +99,24 @@ void ReadingListDownloadService::RemoveDownloadedEntry(
   url_downloader_->RemoveOfflineURL(entry.URL());
 }
 
-void ReadingListDownloadService::OnDownloadEnd(const GURL& url, bool success) {
-  // TODO(crbug.com/616747) update entry with offline info
+void ReadingListDownloadService::OnDownloadEnd(
+    const GURL& url,
+    URLDownloader::SuccessState success,
+    const GURL& distilled_url,
+    const std::string& title) {
+  DCHECK(reading_list_model_->loaded());
+  if ((success == URLDownloader::DOWNLOAD_SUCCESS ||
+       success == URLDownloader::DOWNLOAD_EXISTS) &&
+      distilled_url.is_valid()) {
+    reading_list_model_->SetEntryDistilledURL(url, distilled_url);
+  } else if (success == URLDownloader::ERROR_RETRY) {
+    reading_list_model_->SetEntryDistilledState(url,
+                                                ReadingListEntry::WILL_RETRY);
+  } else if (success == URLDownloader::ERROR_PERMANENT) {
+    reading_list_model_->SetEntryDistilledState(url, ReadingListEntry::ERROR);
+  }
 }
 
 void ReadingListDownloadService::OnDeleteEnd(const GURL& url, bool success) {
-  // TODO(crbug.com/616747) update entry with offline info
+  // Nothing to update as this is only called when deleting reading list entries
 }

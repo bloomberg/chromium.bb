@@ -31,16 +31,33 @@ class URLDownloader {
   friend class MockURLDownloader;
 
  public:
-  // A completion callback that takes a GURL and a bool indicating
-  // success and returns void.
+  // And enum indicating different download outcomes.
+  enum SuccessState {
+    DOWNLOAD_SUCCESS,
+    DOWNLOAD_EXISTS,
+    ERROR_RETRY,
+    ERROR_PERMANENT
+  };
+
+  // A completion callback that takes a GURL and a bool indicating the
+  // outcome and returns void.
   using SuccessCompletion = base::Callback<void(const GURL&, bool)>;
 
+  // A download completion callback that takes, in order, the GURL that was
+  // downloaded, a SuccessState indicating the outcome of the download, the
+  // offline GURL for the download, and the title of the url, and returns void.
+  // The offline GURL and title should not be used in case of failure.
+  using DownloadCompletion = base::Callback<
+      void(const GURL&, SuccessState, const GURL&, const std::string&)>;
+
   // Create a URL downloader with completion callbacks for downloads and
-  // deletions.
+  // deletions. The completion callbacks will be called with the original url
+  // and a boolean indicating success. For downloads, if distillation was
+  // successful, it will also include the distilled url and extracted title.
   URLDownloader(dom_distiller::DomDistillerService* distiller_service,
                 PrefService* prefs,
                 base::FilePath chrome_profile_path,
-                const SuccessCompletion& download_completion,
+                const DownloadCompletion& download_completion,
                 const SuccessCompletion& delete_completion);
   virtual ~URLDownloader();
 
@@ -60,7 +77,9 @@ class URLDownloader {
   void HandleNextTask();
   // Callback for completed (or failed) download, handles calling
   // downloadCompletion and starting the next task.
-  void DownloadCompletionHandler(const GURL& url, bool success);
+  void DownloadCompletionHandler(const GURL& url,
+                                 const std::string& title,
+                                 SuccessState success);
   // Callback for completed (or failed) deletion, handles calling
   // deleteCompletion and starting the next task.
   void DeleteCompletionHandler(const GURL& url, bool success);
@@ -75,10 +94,11 @@ class URLDownloader {
   // the directory already exists.
   bool CreateOfflineURLDirectory(const GURL& url);
   // Saves the |data| for image at |imageURL| to disk, for main URL |url|;
-  // returns path of saved file.
-  std::string SaveImage(const GURL& url,
-                        const GURL& imageURL,
-                        const std::string& data);
+  // puts path of saved file in |path| and returns whether save was successful.
+  bool SaveImage(const GURL& url,
+                 const GURL& imageURL,
+                 const std::string& data,
+                 base::FilePath& path);
   // Saves images in |images| array to disk and replaces references in |html| to
   // local path. Returns updated html.
   std::string SaveAndReplaceImagesInHTML(
@@ -91,7 +111,7 @@ class URLDownloader {
   // Downloads |url|, depending on |offlineURLExists| state.
   virtual void DownloadURL(GURL url, bool offlineURLExists);
   // Saves distilled html to disk, including saving images and main file.
-  bool SaveDistilledHTML(
+  SuccessState SaveDistilledHTML(
       const GURL& url,
       std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
       std::string html);
@@ -100,11 +120,12 @@ class URLDownloader {
       const GURL& pageURL,
       const std::string& html,
       const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
-          images);
+          images,
+      const std::string& title);
 
   dom_distiller::DomDistillerService* distiller_service_;
   PrefService* pref_service_;
-  const SuccessCompletion download_completion_;
+  const DownloadCompletion download_completion_;
   const SuccessCompletion delete_completion_;
   std::deque<Task> tasks_;
   bool working_;

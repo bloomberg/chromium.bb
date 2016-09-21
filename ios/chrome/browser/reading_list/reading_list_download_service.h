@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
+#include "ios/chrome/browser/reading_list/url_downloader.h"
 
 class GURL;
 class PrefService;
-class URLDownloader;
 class ReadingListModel;
 namespace base {
 class FilePath;
@@ -63,7 +63,10 @@ class ReadingListDownloadService : public KeyedService,
   // only be called after reading list model is loaded.
   void RemoveDownloadedEntry(const ReadingListEntry& entry);
   // Callback for entry download.
-  void OnDownloadEnd(const GURL& url, bool success);
+  void OnDownloadEnd(const GURL& url,
+                     URLDownloader::SuccessState success,
+                     const GURL& distilled_url,
+                     const std::string& title);
 
   // Callback for entry deletion.
   void OnDeleteEnd(const GURL& url, bool success);
