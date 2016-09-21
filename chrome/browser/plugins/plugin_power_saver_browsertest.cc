@@ -610,7 +610,9 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_OriginWhitelisting) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_large");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOriginObscured) {
+// Flaky on almost all platforms: crbug.com/648827.
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
+                       DISABLED_LargeCrossOriginObscured) {
   LoadHTML(
       "<div id='container' "
       "    style='width: 100px; height: 400px; overflow: hidden;'>"
