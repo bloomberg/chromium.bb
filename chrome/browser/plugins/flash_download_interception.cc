@@ -24,7 +24,7 @@ using content::NavigationThrottle;
 
 namespace {
 
-const char kFlashDownloadURL[] = "get.adobe.com/flashplayer";
+const char kFlashDownloadURL[] = "get.adobe.com/flash";
 
 bool ShouldInterceptNavigation(
     content::WebContents* source,

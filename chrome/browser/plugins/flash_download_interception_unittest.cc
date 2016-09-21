@@ -19,130 +19,86 @@ using content::NavigationThrottle;
 
 class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
  public:
-  FlashDownloadInterceptionTest() {}
-
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    flash_navigation_handle_ =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("https://get.adobe.com/flashplayer"), main_rfh());
+  HostContentSettingsMap* host_content_settings_map() {
+    return HostContentSettingsMapFactory::GetForProfile(profile());
   }
-
-  void TearDown() override {
-    flash_navigation_handle_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
-
- protected:
-  std::unique_ptr<NavigationHandle> flash_navigation_handle_;
 };
 
 TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
 
-  flash_navigation_handle_->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  std::unique_ptr<NavigationThrottle> throttle =
-      FlashDownloadInterception::MaybeCreateThrottleFor(
-          flash_navigation_handle_.get());
-  EXPECT_EQ(nullptr, throttle);
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 }
 
 TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
-  std::unique_ptr<NavigationThrottle> throttle;
-  std::unique_ptr<NavigationHandle> flash_slash_navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("https://get.adobe.com/flashplayer/"), main_rfh());
-  std::unique_ptr<NavigationHandle> example_navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("https://www.example.com"), main_rfh());
-  std::unique_ptr<NavigationHandle> flash_http_navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("http://get.adobe.com/flashplayer"), main_rfh());
-  std::unique_ptr<NavigationHandle> example_flash_navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(
-            GURL("http://example.com/get.adobe.com/flashplayer"), main_rfh());
-
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
-  flash_navigation_handle_->CallWillStartRequestForTesting(
-      true, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      flash_navigation_handle_.get());
-  EXPECT_EQ(nullptr, throttle);
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 
-  flash_navigation_handle_->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      flash_navigation_handle_.get());
+  // HTTP and path variant.
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(), GURL("http://get.adobe.com/flash"),
+      true));
+
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(), GURL("https://www.example.com"),
+      true));
+
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("http://example.com/get.adobe.com/flashplayer"), true));
+}
+
+TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
+  std::unique_ptr<NavigationHandle> handle =
+      NavigationHandle::CreateNavigationHandleForTesting(
+          GURL("https://get.adobe.com/flashplayer"), main_rfh());
+
+  handle->CallWillStartRequestForTesting(true, content::Referrer(), true,
+                                         ui::PAGE_TRANSITION_LINK, false);
+  std::unique_ptr<NavigationThrottle> throttle =
+      FlashDownloadInterception::MaybeCreateThrottleFor(handle.get());
   EXPECT_NE(nullptr, throttle);
   ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
             throttle->WillStartRequest());
-
-  flash_slash_navigation_handle->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      flash_slash_navigation_handle.get());
-  EXPECT_NE(nullptr, throttle);
-  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            throttle->WillStartRequest());
-
-  example_navigation_handle->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      example_navigation_handle.get());
-  EXPECT_EQ(nullptr, throttle);
-
-  flash_http_navigation_handle->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      flash_http_navigation_handle.get());
-  EXPECT_NE(nullptr, throttle);
-  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            throttle->WillStartRequest());
-
-  example_flash_navigation_handle->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      example_flash_navigation_handle.get());
-  EXPECT_EQ(nullptr, throttle);
 }
 
 TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
-  flash_navigation_handle_->CallWillStartRequestForTesting(
-      true, content::Referrer(), true, ui::PAGE_TRANSITION_LINK, false);
-
   // Default Setting (which is DETECT)
-  std::unique_ptr<NavigationThrottle> throttle =
-      FlashDownloadInterception::MaybeCreateThrottleFor(
-          flash_navigation_handle_.get());
-  EXPECT_NE(nullptr, throttle);
-  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            throttle->WillStartRequest());
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 
   // ALLOW and BLOCK Settings
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(nullptr, FlashDownloadInterception::MaybeCreateThrottleFor(
-                         flash_navigation_handle_.get()));
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(nullptr, FlashDownloadInterception::MaybeCreateThrottleFor(
-                         flash_navigation_handle_.get()));
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 
   // Explicit DETECT
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-  throttle = FlashDownloadInterception::MaybeCreateThrottleFor(
-      flash_navigation_handle_.get());
-  EXPECT_NE(nullptr, throttle);
-  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            throttle->WillStartRequest());
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL(),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 }
