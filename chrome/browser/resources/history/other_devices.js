@@ -286,6 +286,8 @@ Device.prototype.createSessionContents_ = function(maxNumTabs) {
         // turns.
         function makeClickHandler(sessionTag, windowId, tabId) {
           return function(e) {
+            if (e.button > 1)
+              return; // Ignore buttons other than left and middle.
             recordUmaEvent_(HISTOGRAM_EVENT.LINK_CLICKED);
             chrome.send('openForeignSession', [sessionTag, windowId, tabId,
                 e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);

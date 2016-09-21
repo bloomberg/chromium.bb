@@ -648,6 +648,7 @@ function queryRequiredElement(selectors, opt_context) {
 
 [ 'click', 'auxclick' ].forEach(function(eventName) {
   document.addEventListener(eventName, function(e) {
+    if (e.button > 1) return;
     if (e.defaultPrevented) return;
     var eventPath = e.path;
     var anchor = null;

@@ -160,6 +160,8 @@ cr.define('ntp', function() {
    * @param {Event} e The click/auxclick event.
    */
   function onChromeWebStoreButtonClick(e) {
+    if (e.button > 1)
+      return; // Ignore buttons other than left and middle.
     chrome.send('recordAppLaunchByURL',
                 [encodeURIComponent(this.href),
                  ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);

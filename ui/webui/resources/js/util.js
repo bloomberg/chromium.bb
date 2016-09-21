@@ -214,6 +214,8 @@ function queryRequiredElement(selectors, opt_context) {
 // call into the browser to do the navigation.
 ['click', 'auxclick'].forEach(function(eventName) {
   document.addEventListener(eventName, function(e) {
+    if (e.button > 1)
+      return; // Ignore buttons other than left and middle.
     if (e.defaultPrevented)
       return;
 
