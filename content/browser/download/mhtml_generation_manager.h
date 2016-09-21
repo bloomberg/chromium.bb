@@ -77,9 +77,9 @@ class MHTMLGenerationManager {
   void OnFileClosed(int job_id, JobStatus job_status, int64_t file_size);
 
   // Creates and registers a new job.
-  int NewJob(WebContents* web_contents,
-             const MHTMLGenerationParams& params,
-             const GenerateMHTMLCallback& callback);
+  Job* NewJob(WebContents* web_contents,
+              const MHTMLGenerationParams& params,
+              const GenerateMHTMLCallback& callback);
 
   // Finds job by id.  Returns nullptr if no job with a given id was found.
   Job* FindJob(int job_id);

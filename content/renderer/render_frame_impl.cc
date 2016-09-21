@@ -30,7 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
@@ -5175,6 +5175,7 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
 
 void RenderFrameImpl::OnSerializeAsMHTML(
     const FrameMsg_SerializeAsMHTML_Params& params) {
+  TRACE_EVENT0("page-serialization", "RenderFrameImpl::OnSerializeAsMHTML");
   // Unpack IPC payload.
   base::File file = IPC::PlatformFileForTransitToFile(params.destination_file);
   const WebString mhtml_boundary =
@@ -5190,9 +5191,11 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
+    TRACE_EVENT0("page-serialization",
+                 "RenderFrameImpl::OnSerializeAsMHTML header");
     // |data| can be empty if the main frame should be skipped.  If the main
-    // frame is
-    // skipped, then the whole archive is bad, so bail to the error condition.
+    // frame is skipped, then the whole archive is bad, so bail to the error
+    // condition.
     WebData data = WebFrameSerializer::generateMHTMLHeader(
         mhtml_boundary, GetWebFrame(), &delegate);
     if (data.isEmpty() ||
@@ -5205,11 +5208,15 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   // skipping the whole parts generation step is not an error - it simply
   // results in an omitted resource in the final file.
   if (success) {
+    TRACE_EVENT0("page-serialization",
+                 "RenderFrameImpl::OnSerializeAsMHTML parts serialization");
     // |data| can be empty if the frame should be skipped, but this is OK.
     data = WebFrameSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
                                                   &delegate);
     // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
     //                 the message loop to process other events.
+    TRACE_EVENT0("page-serialization",
+                 "RenderFrameImpl::OnSerializeAsMHTML parts file writing");
     if (!data.isEmpty() &&
         file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
@@ -5218,6 +5225,8 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML footer if needed.
   if (success && params.is_last_frame) {
+    TRACE_EVENT0("page-serialization",
+                 "RenderFrameImpl::OnSerializeAsMHTML footer");
     data = WebFrameSerializer::generateMHTMLFooter(mhtml_boundary);
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;

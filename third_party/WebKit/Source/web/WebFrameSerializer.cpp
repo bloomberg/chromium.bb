@@ -45,6 +45,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/network/ResourceRequest.h"
@@ -180,6 +181,7 @@ bool frameShouldBeSerializedAsMHTML(WebLocalFrame* frame, WebFrameSerializerCach
 WebData WebFrameSerializer::generateMHTMLHeader(
     const WebString& boundary, WebLocalFrame* frame, MHTMLPartsGenerationDelegate* delegate)
 {
+    TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLHeader");
     DCHECK(frame);
     DCHECK(delegate);
 
@@ -201,6 +203,7 @@ WebData WebFrameSerializer::generateMHTMLHeader(
 WebData WebFrameSerializer::generateMHTMLParts(
     const WebString& boundary, WebLocalFrame* webFrame, MHTMLPartsGenerationDelegate* webDelegate)
 {
+    TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLParts");
     DCHECK(webFrame);
     DCHECK(webDelegate);
 
@@ -215,9 +218,12 @@ WebData WebFrameSerializer::generateMHTMLParts(
 
     // Serialize.
     Vector<SerializedResource> resources;
+    TRACE_EVENT_BEGIN0("page-serialization", "WebFrameSerializer::generateMHTMLParts serializing");
     MHTMLFrameSerializerDelegate coreDelegate(*webDelegate);
     FrameSerializer serializer(resources, coreDelegate);
     serializer.serializeFrame(*frame);
+    TRACE_EVENT_END1("page-serialization", "WebFrameSerializer::generateMHTMLParts serializing",
+        "resource count", static_cast<unsigned long long>(resources.size()));
 
     // Get Content-ID for the frame being serialized.
     String frameContentID = webDelegate->getContentID(webFrame);
@@ -226,6 +232,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
     RefPtr<SharedBuffer> output = SharedBuffer::create();
     bool isFirstResource = true;
     for (const SerializedResource& resource : resources) {
+        TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLParts encoding");
         // Frame is the 1st resource (see FrameSerializer::serializeFrame doc
         // comment). Frames get a Content-ID header.
         String contentID = isFirstResource ? frameContentID : String();
@@ -240,6 +247,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
 
 WebData WebFrameSerializer::generateMHTMLFooter(const WebString& boundary)
 {
+    TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLFooter");
     RefPtr<SharedBuffer> buffer = SharedBuffer::create();
     MHTMLArchive::generateMHTMLFooter(boundary, *buffer);
     return buffer.release();

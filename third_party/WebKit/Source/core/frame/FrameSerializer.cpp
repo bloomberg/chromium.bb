@@ -60,6 +60,7 @@
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleImage.h"
 #include "platform/SerializedResource.h"
+#include "platform/TraceEvent.h"
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -248,6 +249,7 @@ FrameSerializer::FrameSerializer(
 
 void FrameSerializer::serializeFrame(const LocalFrame& frame)
 {
+    TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame");
     ASSERT(frame.document());
     Document& document = *frame.document();
     KURL url = document.url();
@@ -259,12 +261,14 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame)
         return;
     }
 
+    TRACE_EVENT_BEGIN0("page-serialization", "FrameSerializer::serializeFrame HTML");
     HeapVector<Member<Node>> serializedNodes;
     SerializerMarkupAccumulator accumulator(m_delegate, document, serializedNodes);
     String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
 
     CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
+    TRACE_EVENT_END0("page-serialization", "FrameSerializer::serializeFrame HTML");
 
     for (Node* node: serializedNodes) {
         ASSERT(node);
@@ -306,6 +310,8 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame)
 
 void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KURL& url)
 {
+    TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
+        "type", "CSS", "url", url.elidedString().utf8().data());
     StringBuilder cssText;
     cssText.append("@charset \"");
     cssText.append(styleSheet.contents()->charset().lower());
@@ -406,6 +412,8 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
     if (!image || !image->hasImage() || image->errorOccurred() || !shouldAddURL(url))
         return;
 
+    TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
+        "type", "image", "url", url.elidedString().utf8().data());
     RefPtr<const SharedBuffer> data = image->getImage()->data();
     addToResources(*image, data, url);
 }
