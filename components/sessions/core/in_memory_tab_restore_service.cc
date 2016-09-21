@@ -81,6 +81,10 @@ void InMemoryTabRestoreService::DeleteLastSession() {
   // See comment above.
 }
 
+bool InMemoryTabRestoreService::IsRestoring() const {
+  return helper_.IsRestoring();
+}
+
 void InMemoryTabRestoreService::Shutdown() {
 }
 

@@ -13,6 +13,10 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -715,4 +719,36 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreOnStartup) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
   EXPECT_EQ(url1_,
             browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
+}
+
+// Check that TabRestoreService and SessionService do not try to restore the
+// same thing.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       RestoreFirstBrowserWhenSessionServiceEnabled) {
+  // Do not exit from test when last browser is closed.
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::SESSION_RESTORE,
+                             KeepAliveRestartOption::DISABLED);
+
+  // Enable session service.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  Profile* profile = browser()->profile();
+  SessionStartupPref::SetStartupPref(profile, pref);
+
+  // Add tabs and close browser.
+  AddSomeTabs(browser(), 3);
+  // 1st tab is about:blank added by InProcessBrowserTest.
+  EXPECT_EQ(4, browser()->tab_strip_model()->count());
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser());
+  observer.Wait();
+
+  SessionRestoreTestHelper helper;
+  // Restore browser (this is what Cmd-Shift-T does on Mac).
+  chrome::OpenWindowWithRestoredTabs(profile);
+  if (SessionRestore::IsRestoring(profile))
+    helper.Wait();
+  Browser* browser = GetBrowser(0);
+  EXPECT_EQ(4, browser->tab_strip_model()->count());
 }

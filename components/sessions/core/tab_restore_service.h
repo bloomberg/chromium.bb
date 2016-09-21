@@ -182,6 +182,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
   // Deletes the last session.
   virtual void DeleteLastSession() = 0;
+
+  // Returns true if we're in the process of restoring some entries.
+  virtual bool IsRestoring() const = 0;
 };
 
 // A class that is used to associate platform-specific data with

@@ -260,6 +260,10 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
   return live_tabs;
 }
 
+bool TabRestoreServiceHelper::IsRestoring() const {
+  return restoring_;
+}
+
 void TabRestoreServiceHelper::NotifyTabsChanged() {
   FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
                     TabRestoreServiceChanged(tab_restore_service_));

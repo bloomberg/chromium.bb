@@ -82,6 +82,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper {
   std::vector<LiveTab*> RestoreEntryById(LiveTabContext* context,
                                          SessionID::id_type id,
                                          WindowOpenDisposition disposition);
+  bool IsRestoring() const;
 
   // Notifies observers the tabs have changed.
   void NotifyTabsChanged();

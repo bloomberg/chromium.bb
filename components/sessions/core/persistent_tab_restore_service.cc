@@ -950,6 +950,10 @@ void PersistentTabRestoreService::DeleteLastSession() {
   return delegate_->DeleteLastSession();
 }
 
+bool PersistentTabRestoreService::IsRestoring() const {
+  return helper_.IsRestoring();
+}
+
 void PersistentTabRestoreService::Shutdown() {
   return delegate_->Shutdown();
 }

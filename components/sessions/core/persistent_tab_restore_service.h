@@ -46,6 +46,7 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   void LoadTabsFromLastSession() override;
   bool IsLoaded() const override;
   void DeleteLastSession() override;
+  bool IsRestoring() const override;
   void Shutdown() override;
 
  private:
