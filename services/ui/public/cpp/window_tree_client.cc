@@ -670,6 +670,11 @@ void WindowTreeClient::PerformDragDrop(
       drag_operation);
 }
 
+void WindowTreeClient::CancelDragDrop(Window* window) {
+  // Server will clean up drag and fail the in-flight change.
+  tree_->CancelDragDrop(window->server_id());
+}
+
 void WindowTreeClient::PerformWindowMove(
     Window* window,
     ui::mojom::MoveLoopSource source,

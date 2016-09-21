@@ -288,6 +288,10 @@ interface WindowTree {
                   int32 drag_pointer,
                   map<string, array<uint8>> drag_data,
                   uint32 drag_operation);
+
+  // Called by the client to cancel any in progress drag drop operation. This
+  // will result in a change completed for the underlying change.
+  CancelDragDrop(uint32 window_id);
 };
 
 // Changes to windows are not sent to the connection that originated the

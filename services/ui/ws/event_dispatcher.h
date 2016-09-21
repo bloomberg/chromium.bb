@@ -86,6 +86,7 @@ class EventDispatcher : public ServerWindowObserver {
       int32_t drag_pointer,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
       uint32_t drag_operations);
+  void CancelDragDrop();
   void EndDragDrop();
 
   void OnWillDestroyDragTargetConnection(DragTargetConnection* connection);

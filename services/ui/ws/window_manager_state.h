@@ -71,6 +71,7 @@ class WindowManagerState : public EventDispatcherDelegate,
       int32_t drag_pointer,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
       uint32_t drag_operation);
+  void CancelDragDrop();
   void EndDragDrop();
 
   void AddSystemModalWindow(ServerWindow* window);

@@ -1546,6 +1546,33 @@ void WindowTree::PerformDragDrop(
                                std::move(drag_data), drag_operation);
 }
 
+void WindowTree::CancelDragDrop(Id window_id) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  if (!window) {
+    DVLOG(1) << "CancelDragDrop failed (no window)";
+    return;
+  }
+
+  if (window != window_server_->GetCurrentDragLoopWindow()) {
+    DVLOG(1) << "CancelDragDrop failed (not the drag loop window)";
+    return;
+  }
+
+  if (window_server_->GetCurrentDragLoopInitiator() != this) {
+    DVLOG(1) << "CancelDragDrop failed (not the drag initiator)";
+    return;
+  }
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root) {
+    DVLOG(1) << "CancelDragDrop failed (no such window manager display root)";
+    return;
+  }
+
+  WindowManagerState* wms = display_root->window_manager_state();
+  wms->CancelDragDrop();
+}
+
 void WindowTree::PerformWindowMove(uint32_t change_id,
                                    Id window_id,
                                    ui::mojom::MoveLoopSource source,
@@ -1595,18 +1622,26 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
 void WindowTree::CancelWindowMove(Id window_id) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   bool success = window && access_policy_->CanInitiateMoveLoop(window);
-  if (!success)
+  if (!success) {
+    DVLOG(1) << "CancelWindowMove failed (no window / access denied)";
     return;
+  }
 
-  if (window != window_server_->GetCurrentMoveLoopWindow())
+  if (window != window_server_->GetCurrentMoveLoopWindow()) {
+    DVLOG(1) << "CancelWindowMove failed (not the move loop window)";
     return;
+  }
 
-  if (window_server_->GetCurrentMoveLoopInitiator() != this)
+  if (window_server_->GetCurrentMoveLoopInitiator() != this) {
+    DVLOG(1) << "CancelWindowMove failed (not the move loop initiator)";
     return;
+  }
 
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
-  if (!display_root)
+  if (!display_root) {
+    DVLOG(1) << "CancelWindowMove failed (no such window manager display root)";
     return;
+  }
 
   WindowManagerState* wms = display_root->window_manager_state();
   wms->window_tree()->window_manager_internal_->WmCancelMoveLoop(

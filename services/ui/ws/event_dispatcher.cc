@@ -176,6 +176,11 @@ void EventDispatcher::SetDragDropSourceWindow(
       std::move(mime_data), drag_operations);
 }
 
+void EventDispatcher::CancelDragDrop() {
+  if (drag_controller_)
+    drag_controller_->Cancel();
+}
+
 void EventDispatcher::EndDragDrop() {
   drag_controller_.reset();
 }

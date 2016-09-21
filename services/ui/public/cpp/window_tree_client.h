@@ -185,6 +185,10 @@ class WindowTreeClient : public mojom::WindowTreeClient,
       const SkBitmap& bitmap,
       const base::Callback<void(bool, uint32_t)>& callback);
 
+  // Cancels a in progress drag drop. (If no drag is in progress, does
+  // nothing.)
+  void CancelDragDrop(Window* window);
+
   // Performs a window move. |callback| will be asynchronously called with the
   // whether the move loop completed successfully.
   void PerformWindowMove(Window* window,

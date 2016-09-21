@@ -491,6 +491,10 @@ void Window::PerformDragDrop(
                            cursor_location, bitmap, callback);
 }
 
+void Window::CancelDragDrop() {
+  client_->CancelDragDrop(this);
+}
+
 void Window::PerformWindowMove(mojom::MoveLoopSource source,
                                const gfx::Point& cursor_location,
                                const base::Callback<void(bool)>& callback) {

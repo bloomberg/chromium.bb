@@ -170,6 +170,10 @@ void WindowManagerState::SetDragDropSourceWindow(
       std::move(drag_data), drag_operation);
 }
 
+void WindowManagerState::CancelDragDrop() {
+  event_dispatcher_.CancelDragDrop();
+}
+
 void WindowManagerState::EndDragDrop() {
   event_dispatcher_.EndDragDrop();
 }

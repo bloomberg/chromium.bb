@@ -246,6 +246,9 @@ class Window {
       const SkBitmap& bitmap,
       const base::Callback<void(bool, uint32_t)>& callback);
 
+  // Cancels the in progress drag started with PerformDragDrop().
+  void CancelDragDrop();
+
   // Tells the window manager to take control of moving the window. Returns
   // true if the move wasn't canceled.
   void PerformWindowMove(mojom::MoveLoopSource source,
