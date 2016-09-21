@@ -113,15 +113,16 @@ class OzonePlatformGbm
   // shell::InterfaceFactory<mojom::ozone::Cursor> implementation.
   void Create(const shell::Identity& remote_identity,
               ozone::mojom::DeviceCursorRequest request) override {
-    DCHECK(drm_thread_);
-    drm_thread_->AddBinding(std::move(request));
+    DCHECK(drm_thread_proxy_);
+    drm_thread_proxy_->AddBinding(std::move(request));
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
     if (using_mojo_ || single_process_) {
-      DCHECK(drm_thread_) << "drm_thread_ should exist (and be running) here.";
+      DCHECK(drm_thread_proxy_)
+          << "drm_thread_proxy_ should exist (and be running) here.";
       adapter = mus_thread_proxy_.get();
     }
 
@@ -227,10 +228,10 @@ class OzonePlatformGbm
 
     // NOTE: Can't start the thread here since this is called before sandbox
     // initialization in multi-process Chrome. In mus, we start the DRM thread.
-    drm_thread_.reset(new DrmThreadProxy());
-    drm_thread_->BindThreadIntoMessagingProxy(itmp);
+    drm_thread_proxy_.reset(new DrmThreadProxy());
+    drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
 
-    surface_factory_.reset(new GbmSurfaceFactory(drm_thread_.get()));
+    surface_factory_.reset(new GbmSurfaceFactory(drm_thread_proxy_.get()));
     if (using_mojo_ || single_process_) {
       mus_thread_proxy_->StartDrmThread();
     }
@@ -241,8 +242,7 @@ class OzonePlatformGbm
   bool single_process_;
 
   // Objects in the GPU process.
-  // TODO(rjk): rename drm_thread_ to drm_thread_proxy_;
-  std::unique_ptr<DrmThreadProxy> drm_thread_;
+  std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
   std::unique_ptr<GlApiLoader> gl_api_loader_;
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
   scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
