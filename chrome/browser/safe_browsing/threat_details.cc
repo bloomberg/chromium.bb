@@ -8,10 +8,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <unordered_set>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
@@ -38,6 +40,24 @@ ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
 
 namespace {
 
+typedef std::unordered_set<std::string> StringSet;
+// A set of HTTPS headers that are allowed to be collected. Contains both
+// request and response headers. All entries in this list should be lower-case
+// to support case-insensitive comparison.
+struct WhitelistedHttpsHeadersTraits :
+    base::DefaultLazyInstanceTraits<StringSet> {
+  static StringSet* New(void* instance) {
+    StringSet* headers = base::DefaultLazyInstanceTraits<StringSet>::New(
+        instance);
+    headers->insert({"google-creative-id", "google-lineitem-id", "referer",
+        "content-type", "content-length", "date", "server", "cache-control",
+        "pragma", "expires"});
+    return headers;
+  }
+};
+base::LazyInstance<StringSet, WhitelistedHttpsHeadersTraits>
+    g_https_headers_whitelist = LAZY_INSTANCE_INITIALIZER;
+
 // Helper function that converts SBThreatType to
 // ClientSafeBrowsingReportRequest::ReportType.
 ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
@@ -58,6 +78,47 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
                    << threat_type;
       return ClientSafeBrowsingReportRequest::UNKNOWN;
   }
+}
+
+// Clears the specified HTTPS resource of any sensitive data, only retaining
+// data that is whitelisted for collection.
+void ClearHttpsResource(ClientSafeBrowsingReportRequest::Resource* resource) {
+  // Make a copy of the original resource to retain all data.
+  ClientSafeBrowsingReportRequest::Resource orig_resource(*resource);
+
+  // Clear the request headers and copy over any whitelisted ones.
+  resource->clear_request();
+  for (int i = 0; i < orig_resource.request().headers_size(); ++i) {
+    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header = orig_resource
+        .mutable_request()->mutable_headers(i);
+    if (g_https_headers_whitelist.Get().count(
+        base::ToLowerASCII(orig_header->name())) > 0) {
+      resource->mutable_request()->add_headers()->Swap(orig_header);
+    }
+  }
+  // Also copy some other request fields.
+  resource->mutable_request()->mutable_bodydigest()->swap(
+      *orig_resource.mutable_request()->mutable_bodydigest());
+  resource->mutable_request()->set_bodylength(
+      orig_resource.request().bodylength());
+
+  // ...repeat for response headers.
+  resource->clear_response();
+  for (int i = 0; i < orig_resource.response().headers_size(); ++i) {
+    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header = orig_resource
+        .mutable_response()->mutable_headers(i);
+    if (g_https_headers_whitelist.Get().count(
+        base::ToLowerASCII(orig_header->name())) > 0) {
+      resource->mutable_response()->add_headers()->Swap(orig_header);
+    }
+  }
+  // Also copy some other response fields.
+  resource->mutable_response()->mutable_bodydigest()->swap(
+      *orig_resource.mutable_response()->mutable_bodydigest());
+  resource->mutable_response()->set_bodylength(
+      orig_resource.response().bodylength());
+  resource->mutable_response()->mutable_remote_ip()->swap(
+      *orig_resource.mutable_response()->mutable_remote_ip());
 }
 
 }  // namespace
@@ -334,11 +395,10 @@ void ThreatDetails::OnCacheCollectionReady() {
     pb_resource->CopyFrom(*(it->second));
     const GURL url(pb_resource->url());
     if (url.SchemeIs("https")) {
-      // Don't report headers of HTTPS requests since they may contain private
-      // cookies.  We still retain the full URL.
+      // Sanitize the HTTPS resource by clearing out private data (like cookie
+      // headers).
       DVLOG(1) << "Clearing out HTTPS resource: " << pb_resource->url();
-      pb_resource->clear_request();
-      pb_resource->clear_response();
+      ClearHttpsResource(pb_resource);
       // Keep id, parent_id, child_ids, and tag_name.
     }
   }
