@@ -37,6 +37,7 @@ DEFAULT_PARAMS = {
     'revision_mapping': {},
     'apply_issue_email_file': None,
     'apply_issue_key_file': None,
+    'apply_issue_oauth2_file': None,
     'shallow': False,
     'refs': [],
     'git_cache_dir': '',
