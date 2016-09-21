@@ -347,8 +347,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_Manual) {
   EXPECT_TRUE(observer.handlers().empty());
 }
 
+// Flaky on linux chromeos bots: crbug.com/648826.
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#define MAYBE_TestCancelAuth_OnNavigation DISABLED_TestCancelAuth_OnNavigation
+#else
+#define MAYBE_TestCancelAuth_OnNavigation TestCancelAuth_OnNavigation
+#endif
 // Test login prompt cancellation on navigation to a new page.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnNavigation) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       MAYBE_TestCancelAuth_OnNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
   const GURL kNoAuthURL = embedded_test_server()->GetURL(kNoAuthPage1);
