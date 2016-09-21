@@ -16,6 +16,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.MetricsTestUtil.TestExecutor;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -27,8 +28,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -125,24 +124,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Wait for request completion callback.
         void blockForCallbackToComplete() {
             mCallbackCompletionBlock.block();
-        }
-    }
-
-    static class TestExecutor implements Executor {
-        private final LinkedList<Runnable> mTaskQueue = new LinkedList<Runnable>();
-
-        @Override
-        public void execute(Runnable task) {
-            mTaskQueue.add(task);
-        }
-
-        public void runAllTasks() {
-            try {
-                while (mTaskQueue.size() > 0) {
-                    mTaskQueue.remove().run();
-                }
-            } catch (NoSuchElementException e) {
-            }
         }
     }
 

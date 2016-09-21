@@ -9,15 +9,15 @@ import static org.chromium.base.CollectionUtil.newHashSet;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.MetricsTestUtil.TestExecutor;
+import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.chromium.net.impl.CronetMetrics;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 
 /**
@@ -39,25 +39,6 @@ public class RequestFinishedInfoTest extends CronetTestBase {
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         super.tearDown();
-    }
-
-    static class TestExecutor implements Executor {
-        private final LinkedList<Runnable> mTaskQueue = new LinkedList<Runnable>();
-
-        @Override
-        public void execute(Runnable task) {
-            mTaskQueue.add(task);
-        }
-
-        public void runAllTasks() {
-            try {
-                while (mTaskQueue.size() > 0) {
-                    mTaskQueue.remove().run();
-                }
-            } catch (NoSuchElementException e) {
-                throw new RuntimeException("Task was removed during iteration", e);
-            }
-        }
     }
 
     static class DirectExecutor implements Executor {
@@ -84,21 +65,6 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         }
     }
 
-    private static class TestRequestFinishedListener extends RequestFinishedInfo.Listener {
-        private RequestFinishedInfo mRequestInfo;
-
-        public TestRequestFinishedListener(Executor executor) {
-            super(executor);
-        }
-
-        @Override
-        public void onRequestFinished(RequestFinishedInfo requestInfo) {
-            assertNull("onRequestFinished called repeatedly", mRequestInfo);
-            assertNotNull(requestInfo);
-            mRequestInfo = requestInfo;
-        }
-    }
-
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
@@ -118,7 +84,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         callback.blockForDone();
         testExecutor.runAllTasks();
 
-        RequestFinishedInfo requestInfo = requestFinishedListener.mRequestInfo;
+        RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
         assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
         assertEquals(mUrl, requestInfo.getUrl());
         assertNotNull(requestInfo.getResponseInfo());
@@ -150,7 +116,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 .start();
         callback.blockForDone();
 
-        RequestFinishedInfo requestInfo = requestFinishedListener.mRequestInfo;
+        RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
         assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
         assertEquals(mUrl, requestInfo.getUrl());
         assertNotNull(requestInfo.getResponseInfo());
@@ -184,8 +150,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         callback.blockForDone();
         testExecutor.joinAll();
 
-        RequestFinishedInfo firstRequestInfo = firstListener.mRequestInfo;
-        RequestFinishedInfo secondRequestInfo = secondListener.mRequestInfo;
+        RequestFinishedInfo firstRequestInfo = firstListener.getRequestInfo();
+        RequestFinishedInfo secondRequestInfo = secondListener.getRequestInfo();
         assertNotNull("First RequestFinishedInfo.Listener must be called", firstRequestInfo);
         assertNotNull("Second RequestFinishedInfo.Listener must be called", secondRequestInfo);
         assertEquals(mUrl, firstRequestInfo.getUrl());
@@ -227,7 +193,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertTrue(callback.mOnErrorCalled);
         testExecutor.runAllTasks();
 
-        RequestFinishedInfo requestInfo = requestFinishedListener.mRequestInfo;
+        RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
         assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
         assertEquals(connectionRefusedUrl, requestInfo.getUrl());
         assertTrue(requestInfo.getAnnotations().isEmpty());
@@ -258,7 +224,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         testExecutor.runAllTasks();
 
         assertNull("RequestFinishedInfo.Listener must not be called",
-                requestFinishedListener.mRequestInfo);
+                requestFinishedListener.getRequestInfo());
         mTestFramework.mCronetEngine.shutdown();
     }
 
