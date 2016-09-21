@@ -406,6 +406,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Verifies the format of the billing address suggestions when adding a new credit card. */
     @MediumTest
+    @Feature({"Payments"})
     @RetryOnFailure
     public void testNewCardBillingAddressFormat()
             throws InterruptedException, ExecutionException, TimeoutException {
