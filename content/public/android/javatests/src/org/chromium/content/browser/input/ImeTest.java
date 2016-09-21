@@ -158,6 +158,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @RetryOnFailure
     public void testDeleteSurroundingTextWithZeroValue() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
@@ -685,6 +686,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testImeStaysOnLongPressingDifferentNonEmptyInputs() throws Exception {
         DOMUtils.focusNode(mWebContents, "input_text");
         assertWaitForKeyboardStatus(true);

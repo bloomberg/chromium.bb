@@ -45,6 +45,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
+    @RetryOnFailure
     public void testEntriesCreated() {
         ActivityAssigner assigner = ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE);
 

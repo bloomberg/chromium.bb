@@ -197,6 +197,7 @@ public class AwZoomTest extends AwTestBase {
     // even if supportZoom is turned off.
     @SmallTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testMagnificationWithZoomSupportOff() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setSupportZoom(false);
         runMagnificationTest();

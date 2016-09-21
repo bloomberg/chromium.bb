@@ -65,6 +65,7 @@ public class SigninHelperTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testSimpleAccountRename() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("A", "B");

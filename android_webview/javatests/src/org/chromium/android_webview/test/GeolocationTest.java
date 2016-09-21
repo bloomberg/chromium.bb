@@ -13,6 +13,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.device.geolocation.LocationProviderFactory;
 import org.chromium.device.geolocation.MockLocationProvider;
 
@@ -171,6 +172,7 @@ public class GeolocationTest extends AwTestBase {
      */
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testWatchPosition() throws Throwable {
         initAwContents(new GrantPermisionAwContentClient());
         loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,

@@ -137,6 +137,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
     /** Quickly pressing on [X] and then "add address" should not crash. */
     @MediumTest
     @Feature({"Payments"})
+    @RetryOnFailure
     public void testQuickCloseAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);

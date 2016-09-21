@@ -2258,6 +2258,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @RetryOnFailure
     public void testLongPressMultipleSwipeOnlyLoadsContentOnce()
             throws InterruptedException, TimeoutException {
         // Simulate a long press and make sure no Content is created.

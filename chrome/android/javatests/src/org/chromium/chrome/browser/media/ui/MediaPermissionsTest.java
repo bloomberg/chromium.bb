@@ -157,6 +157,7 @@ public class MediaPermissionsTest extends ChromeActivityTestCaseBase<ChromeActiv
     @MediumTest
     @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
     @Feature({"MediaPermissions"})
+    @RetryOnFailure
     public void testCameraPersistenceOn() throws Exception {
         testMediaPermissionsPlumbing("Camera count:", "initiate_getCamera()", 1, true, false);
     }

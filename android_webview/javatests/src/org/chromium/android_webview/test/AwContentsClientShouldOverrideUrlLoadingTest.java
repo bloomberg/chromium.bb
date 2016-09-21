@@ -787,6 +787,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
+    @RetryOnFailure
     public void testCalledOnJavaScriptLocationDelayedReplaceRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();

@@ -262,6 +262,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddUrlTwiceWorks() throws Exception {
         // Add and remove an old URL twice and add new URL twice before removing.
         // This should cover several issues involved with updating the cache queue.
@@ -425,6 +426,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testSerializationWorksWithGarbageCollection() throws Exception {
         addPwsResult1();
         addPwsResult2();
