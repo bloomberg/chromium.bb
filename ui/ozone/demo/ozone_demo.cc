@@ -217,6 +217,8 @@ std::unique_ptr<ui::Renderer> RendererFactory::CreateRenderer(
       scoped_refptr<gl::GLSurface> surface = CreateGLSurface(widget);
       if (!surface)
         LOG(FATAL) << "Failed to create GL surface";
+      if (!surface->SupportsAsyncSwap())
+        LOG(FATAL) << "GL surface must support SwapBuffersAsync";
       if (surface->IsSurfaceless())
         return base::MakeUnique<ui::SurfacelessGlRenderer>(widget, surface,
                                                            size);
