@@ -62,10 +62,6 @@ namespace subresource_filter {
 class RulesetDealer;
 }
 
-namespace visitedlink {
-class VisitedLinkSlave;
-}
-
 namespace web_cache {
 class WebCacheImpl;
 }
@@ -240,7 +236,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if defined(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
-  std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   std::unique_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   std::unique_ptr<subresource_filter::RulesetDealer>
       subresource_filter_ruleset_dealer_;

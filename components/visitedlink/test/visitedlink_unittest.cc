@@ -10,20 +10,22 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/mock_timer.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
-#include "components/visitedlink/common/visitedlink_messages.h"
+#include "components/visitedlink/common/visitedlink.mojom.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -33,6 +35,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -115,13 +118,11 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
         completely_reset_count_(0),
         add_count_(0) {}
 
-  void NewTable(base::SharedMemory* table) override {
-    if (table) {
+  void NewTable(mojo::SharedBufferHandle table) override {
+    if (table.is_valid()) {
       for (std::vector<VisitedLinkSlave>::size_type i = 0;
            i < g_slaves.size(); i++) {
-        base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-        table->ShareToProcess(base::GetCurrentProcessHandle(), &new_handle);
-        g_slaves[i]->OnUpdateVisitedLinks(new_handle);
+        g_slaves[i]->UpdateVisitedLinks(table.Clone());
       }
     }
   }
@@ -201,10 +202,7 @@ class VisitedLinkTest : public testing::Test {
 
     // Create a slave database.
     VisitedLinkSlave slave;
-    base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-    master_->shared_memory()->ShareToProcess(
-        base::GetCurrentProcessHandle(), &new_handle);
-    slave.OnUpdateVisitedLinks(new_handle);
+    slave.UpdateVisitedLinks(master_->shared_memory().Clone());
     g_slaves.push_back(&slave);
 
     bool found;
@@ -332,10 +330,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
 
   {
     VisitedLinkSlave slave;
-    base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-    master_->shared_memory()->ShareToProcess(
-        base::GetCurrentProcessHandle(), &new_handle);
-    slave.OnUpdateVisitedLinks(new_handle);
+    slave.UpdateVisitedLinks(master_->shared_memory().Clone());
     g_slaves.push_back(&slave);
 
     // Add the test URLs.
@@ -379,10 +374,7 @@ TEST_F(VisitedLinkTest, Resizing) {
 
   // ...and a slave
   VisitedLinkSlave slave;
-  base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-  master_->shared_memory()->ShareToProcess(
-      base::GetCurrentProcessHandle(), &new_handle);
-  slave.OnUpdateVisitedLinks(new_handle);
+  slave.UpdateVisitedLinks(master_->shared_memory().Clone());
   g_slaves.push_back(&slave);
 
   int32_t used_count = master_->GetUsedCount();
@@ -527,30 +519,56 @@ TEST_F(VisitedLinkTest, Listener) {
   EXPECT_EQ(1, listener->completely_reset_count());
 }
 
-class VisitCountingContext : public content::TestBrowserContext {
+class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
  public:
   VisitCountingContext()
       : add_count_(0),
         add_event_count_(0),
         reset_event_count_(0),
         completely_reset_event_count_(0),
-        new_table_count_(0) {}
+        new_table_count_(0),
+        binding_(this) {}
 
-  void CountAddEvent(int by) {
-    add_count_ += by;
-    add_event_count_++;
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(mojo::MakeRequest<mojom::VisitedLinkNotificationSink>(
+        std::move(handle)));
   }
 
-  void CountResetEvent() {
-    reset_event_count_++;
+  void WaitForUpdate() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
-  void CountCompletelyResetEvent() {
-    completely_reset_event_count_++;
+  void WaitForNoUpdate() { binding_.FlushForTesting(); }
+
+  mojo::Binding<mojom::VisitedLinkNotificationSink>& binding() {
+    return binding_;
   }
 
-  void CountNewTable() {
+  void NotifyUpdate() {
+    if (!quit_closure_.is_null())
+      base::ResetAndReturn(&quit_closure_).Run();
+  }
+
+  void UpdateVisitedLinks(
+      mojo::ScopedSharedBufferHandle table_handle) override {
     new_table_count_++;
+    NotifyUpdate();
+  }
+
+  void AddVisitedLinks(const std::vector<uint64_t>& link_hashes) override {
+    add_count_ += link_hashes.size();
+    add_event_count_++;
+    NotifyUpdate();
+  }
+
+  void ResetVisitedLinks(bool invalidate_cached_hashes) override {
+    if (invalidate_cached_hashes)
+      completely_reset_event_count_++;
+    else
+      reset_event_count_++;
+    NotifyUpdate();
   }
 
   int add_count() const { return add_count_; }
@@ -567,14 +585,23 @@ class VisitCountingContext : public content::TestBrowserContext {
   int reset_event_count_;
   int completely_reset_event_count_;
   int new_table_count_;
+
+  base::Closure quit_closure_;
+  mojo::Binding<mojom::VisitedLinkNotificationSink> binding_;
 };
 
 // Stub out as little as possible, borrowing from RenderProcessHost.
 class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
  public:
   explicit VisitRelayingRenderProcessHost(
-      content::BrowserContext* browser_context)
-          : MockRenderProcessHost(browser_context), widgets_(0) {
+      content::BrowserContext* browser_context,
+      VisitCountingContext* context)
+      : MockRenderProcessHost(browser_context), widgets_(0) {
+    SetRemoteInterfaces(base::MakeUnique<shell::InterfaceProvider>());
+    shell::InterfaceProvider::TestApi test_api(GetRemoteInterfaces());
+    test_api.SetBinderForName(
+        mojom::VisitedLinkNotificationSink::Name_,
+        base::Bind(&VisitCountingContext::Bind, base::Unretained(context)));
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<RenderProcessHost>(this),
@@ -591,32 +618,6 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
   void WidgetHidden() override { widgets_--; }
   int VisibleWidgetCount() const override { return widgets_; }
 
-  bool Send(IPC::Message* msg) override {
-    VisitCountingContext* counting_context =
-        static_cast<VisitCountingContext*>(
-            GetBrowserContext());
-
-    if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
-      base::PickleIterator iter(*msg);
-      std::vector<uint64_t> fingerprints;
-      CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
-      counting_context->CountAddEvent(fingerprints.size());
-    } else if (msg->type() == ChromeViewMsg_VisitedLink_Reset::ID) {
-      base::PickleIterator iter(*msg);
-      bool invalidate_hashes;
-      CHECK(IPC::ReadParam(msg, &iter, &invalidate_hashes));
-      if (invalidate_hashes)
-        counting_context->CountCompletelyResetEvent();
-      else
-        counting_context->CountResetEvent();
-    } else if (msg->type() == ChromeViewMsg_VisitedLink_NewTable::ID) {
-      counting_context->CountNewTable();
-    }
-
-    delete msg;
-    return true;
-  }
-
  private:
   int widgets_;
 
@@ -626,15 +627,17 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
 class VisitedLinkRenderProcessHostFactory
     : public content::RenderProcessHostFactory {
  public:
-  VisitedLinkRenderProcessHostFactory()
-      : content::RenderProcessHostFactory() {}
+  VisitedLinkRenderProcessHostFactory() : context_(new VisitCountingContext) {}
   content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) const override {
-    return new VisitRelayingRenderProcessHost(browser_context);
+    return new VisitRelayingRenderProcessHost(browser_context, context_.get());
   }
 
+  VisitCountingContext* context() { return context_.get(); }
+
  private:
+  std::unique_ptr<VisitCountingContext> context_;
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
 
@@ -656,47 +659,36 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
   }
 
   content::BrowserContext* CreateBrowserContext() override {
-    VisitCountingContext* context = new VisitCountingContext();
+    content::BrowserContext* context = new content::TestBrowserContext();
     CreateVisitedLinkMaster(context);
     return context;
   }
 
-  VisitCountingContext* context() {
-    return static_cast<VisitCountingContext*>(browser_context());
-  }
+  VisitCountingContext* context() { return vc_rph_factory_.context(); }
 
   VisitedLinkMaster* master() const {
     return master_.get();
   }
 
-  void WaitForCoalescence() {
-    // Let the timer fire.
-    //
-    // TODO(ajwong): This is horrid! What is the right synchronization method?
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(110));
-    run_loop.Run();
-  }
-
  protected:
   void CreateVisitedLinkMaster(content::BrowserContext* browser_context) {
+    timer_.reset(new base::MockTimer(false, false));
     master_.reset(new VisitedLinkMaster(browser_context, &delegate_, true));
+    static_cast<VisitedLinkEventListener*>(master_->GetListener())
+        ->SetCoalesceTimerForTest(timer_.get());
     master_->Init();
   }
 
   VisitedLinkRenderProcessHostFactory vc_rph_factory_;
 
   TestVisitedLinkDelegate delegate_;
+  std::unique_ptr<base::MockTimer> timer_;
   std::unique_ptr<VisitedLinkMaster> master_;
 };
 
 TEST_F(VisitedLinkEventsTest, Coalescence) {
   // Waiting complete rebuild the table.
   content::RunAllBlockingPoolTasksUntilIdle();
-
-  WaitForCoalescence();
 
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
@@ -708,13 +700,10 @@ TEST_F(VisitedLinkEventsTest, Coalescence) {
   master()->AddURL(GURL("http://chromium.org/"));
   // Just for kicks, add a duplicate URL. This shouldn't increase the resulting
   master()->AddURL(GURL("http://acidtests.org/"));
+  ASSERT_TRUE(timer_->IsRunning());
+  timer_->Fire();
 
-  // Make sure that coalescing actually occurs. There should be no links or
-  // events received by the renderer.
-  EXPECT_EQ(0, context()->add_count());
-  EXPECT_EQ(0, context()->add_event_count());
-
-  WaitForCoalescence();
+  context()->WaitForUpdate();
 
   // We now should have 3 entries added in 1 event.
   EXPECT_EQ(3, context()->add_count());
@@ -725,7 +714,9 @@ TEST_F(VisitedLinkEventsTest, Coalescence) {
   master()->AddURL(GURL("http://webkit.org/"));
   master()->AddURL(GURL("http://acid3.acidtests.org/"));
 
-  WaitForCoalescence();
+  ASSERT_TRUE(timer_->IsRunning());
+  timer_->Fire();
+  context()->WaitForUpdate();
 
   // We should have 6 entries added in 2 events.
   EXPECT_EQ(6, context()->add_count());
@@ -733,8 +724,8 @@ TEST_F(VisitedLinkEventsTest, Coalescence) {
 
   // Test whether duplicate entries produce add events.
   master()->AddURL(GURL("http://acidtests.org/"));
-
-  WaitForCoalescence();
+  EXPECT_FALSE(timer_->IsRunning());
+  context()->WaitForNoUpdate();
 
   // We should have no change in results.
   EXPECT_EQ(6, context()->add_count());
@@ -742,9 +733,10 @@ TEST_F(VisitedLinkEventsTest, Coalescence) {
 
   // Ensure that the coalescing does not resume after resetting.
   master()->AddURL(GURL("http://build.chromium.org/"));
+  EXPECT_TRUE(timer_->IsRunning());
   master()->DeleteAllURLs();
-
-  WaitForCoalescence();
+  EXPECT_FALSE(timer_->IsRunning());
+  context()->WaitForNoUpdate();
 
   // We should have no change in results except for one new reset event.
   EXPECT_EQ(6, context()->add_count());
@@ -759,8 +751,6 @@ TEST_F(VisitedLinkEventsTest, Basics) {
   // Waiting complete rebuild the table.
   content::RunAllBlockingPoolTasksUntilIdle();
 
-  WaitForCoalescence();
-
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
 
@@ -768,8 +758,9 @@ TEST_F(VisitedLinkEventsTest, Basics) {
   master()->AddURL(GURL("http://acidtests.org/"));
   master()->AddURL(GURL("http://google.com/"));
   master()->AddURL(GURL("http://chromium.org/"));
-
-  WaitForCoalescence();
+  ASSERT_TRUE(timer_->IsRunning());
+  timer_->Fire();
+  context()->WaitForUpdate();
 
   // We now should have 1 add event.
   EXPECT_EQ(1, context()->add_event_count());
@@ -777,7 +768,8 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 
   master()->DeleteAllURLs();
 
-  WaitForCoalescence();
+  EXPECT_FALSE(timer_->IsRunning());
+  context()->WaitForNoUpdate();
 
   // We should have no change in add results, plus one new reset event.
   EXPECT_EQ(1, context()->add_event_count());
@@ -791,8 +783,6 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   // Waiting complete rebuild the table.
   content::RunAllBlockingPoolTasksUntilIdle();
 
-  WaitForCoalescence();
-
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
 
@@ -803,8 +793,9 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   master()->AddURL(GURL("http://acidtests.org/"));
   master()->AddURL(GURL("http://google.com/"));
   master()->AddURL(GURL("http://chromium.org/"));
-
-  WaitForCoalescence();
+  ASSERT_TRUE(timer_->IsRunning());
+  timer_->Fire();
+  context()->WaitForNoUpdate();
 
   // We shouldn't have any events.
   EXPECT_EQ(0, context()->add_event_count());
@@ -812,6 +803,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
 
   // Simulate the tab becoming active.
   RenderViewHostTester::For(rvh())->SimulateWasShown();
+  context()->WaitForUpdate();
 
   // We should now have 3 add events, still no reset events.
   EXPECT_EQ(1, context()->add_event_count());
@@ -824,7 +816,9 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   for (int i = 0; i < 100; i++)
     master()->AddURL(TestURL(i));
 
-  WaitForCoalescence();
+  ASSERT_TRUE(timer_->IsRunning());
+  timer_->Fire();
+  context()->WaitForNoUpdate();
 
   // Again, no change in events until tab is active.
   EXPECT_EQ(1, context()->add_event_count());
@@ -832,6 +826,8 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
 
   // Activate the tab.
   RenderViewHostTester::For(rvh())->SimulateWasShown();
+  EXPECT_FALSE(timer_->IsRunning());
+  context()->WaitForUpdate();
 
   // We should have only one more reset event.
   EXPECT_EQ(1, context()->add_event_count());
@@ -841,22 +837,22 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
 // Tests that VisitedLink ignores renderer process creation notification for a
 // different context.
 TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
-  VisitCountingContext different_context;
-  VisitRelayingRenderProcessHost different_process_host(&different_context);
+  content::TestBrowserContext different_context;
+  VisitCountingContext counting_context;
+  VisitRelayingRenderProcessHost different_process_host(&different_context,
+                                                        &counting_context);
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CREATED,
       content::Source<content::RenderProcessHost>(&different_process_host),
       content::NotificationService::NoDetails());
-  WaitForCoalescence();
-
-  EXPECT_EQ(0, different_context.new_table_count());
+  EXPECT_FALSE(counting_context.binding().is_bound());
 }
 
 class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {
  public:
   content::BrowserContext* CreateBrowserContext() override {
-    VisitCountingContext* context = new VisitCountingContext();
+    content::BrowserContext* context = new content::TestBrowserContext();
     CreateVisitedLinkFile(context);
     CreateVisitedLinkMaster(context);
     return context;
@@ -882,7 +878,7 @@ TEST_F(VisitedLinkCompletelyResetEventTest, LoadTable) {
   // Waiting complete loading the table.
   content::RunAllBlockingPoolTasksUntilIdle();
 
-  WaitForCoalescence();
+  context()->binding().FlushForTesting();
 
   // After load table expect completely reset event.
   EXPECT_EQ(1, context()->completely_reset_event_count());

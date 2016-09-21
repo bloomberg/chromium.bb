@@ -362,7 +362,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->AddObserver(spellcheck_.get());
   }
 #endif
-  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());
 #if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
@@ -378,7 +377,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif
-  thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
   thread->AddObserver(subresource_filter_ruleset_dealer_.get());
   thread->AddObserver(SearchBouncer::GetInstance());
@@ -1163,11 +1161,12 @@ bool ChromeContentRendererClient::IsPrefetchOnly(
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(
     const char* canonical_url, size_t length) {
-  return visited_link_slave_->ComputeURLFingerprint(canonical_url, length);
+  return chrome_observer_->visited_link_slave()->ComputeURLFingerprint(
+      canonical_url, length);
 }
 
 bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
-  return visited_link_slave_->IsVisited(link_hash);
+  return chrome_observer_->visited_link_slave()->IsVisited(link_hash);
 }
 
 blink::WebPrescientNetworking*

@@ -6,17 +6,13 @@
 #define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/timer/timer.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-
-namespace base {
-class SharedMemory;
-}
 
 namespace content {
 class BrowserContext;
@@ -32,13 +28,16 @@ class VisitedLinkUpdater;
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                                  public content::NotificationObserver {
  public:
-  VisitedLinkEventListener(VisitedLinkMaster* master,
-                           content::BrowserContext* browser_context);
+  explicit VisitedLinkEventListener(content::BrowserContext* browser_context);
   ~VisitedLinkEventListener() override;
 
-  void NewTable(base::SharedMemory* table_memory) override;
+  void NewTable(mojo::SharedBufferHandle table) override;
   void Add(VisitedLinkMaster::Fingerprint fingerprint) override;
   void Reset(bool invalidate_hashes) override;
+
+  // Sets a custom timer to use for coalescing events for testing.
+  // |coalesce_timer_override| must outlive this.
+  void SetCoalesceTimerForTest(base::Timer* coalesce_timer_override);
 
  private:
   void CommitVisitedLinks();
@@ -48,16 +47,22 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  base::OneShotTimer coalesce_timer_;
+  // The default Timer to use for coalescing events. This should not be used
+  // directly to allow overriding it in tests. Instead, |coalesce_timer_|
+  // should be used.
+  base::OneShotTimer default_coalesce_timer_;
+  // A pointer to either |default_coalesce_timer_| or to an override set using
+  // SetCoalesceTimerForTest(). This does not own the timer.
+  base::Timer* coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;
 
   content::NotificationRegistrar registrar_;
 
   // Map between renderer child ids and their VisitedLinkUpdater.
-  typedef std::map<int, linked_ptr<VisitedLinkUpdater> > Updaters;
+  typedef std::map<int, std::unique_ptr<VisitedLinkUpdater>> Updaters;
   Updaters updaters_;
 
-  VisitedLinkMaster* master_;
+  mojo::ScopedSharedBufferHandle shared_memory_;
 
   // Used to filter RENDERER_PROCESS_CREATED notifications to renderers that
   // belong to this BrowserContext.

@@ -37,6 +37,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
+#include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -231,7 +232,9 @@ void CreateResourceUsageReporter(
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : field_trial_syncer_(this), weak_factory_(this) {
+    : field_trial_syncer_(this),
+      visited_link_slave_(new visitedlink::VisitedLinkSlave),
+      weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -261,6 +264,9 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
+
+  thread->GetInterfaceRegistry()->AddInterface(
+      visited_link_slave_->GetBindCallback());
 }
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
@@ -277,6 +283,10 @@ bool ChromeRenderThreadObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
+  visited_link_slave_.reset();
 }
 
 void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(

@@ -18,11 +18,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/visitedlink/common/visitedlink_common.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -58,7 +58,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 
     // Called when link coloring database has been created or replaced. The
     // argument is the new table handle.
-    virtual void NewTable(base::SharedMemory*) = 0;
+    virtual void NewTable(mojo::SharedBufferHandle table) = 0;
 
     // Called when new link has been added. The argument is the fingerprint
     // (hash) of the link.
@@ -105,7 +105,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // object won't work.
   bool Init();
 
-  base::SharedMemory* shared_memory() { return shared_memory_; }
+  const mojo::SharedBufferHandle& shared_memory() {
+    return shared_memory_.get();
+  }
 
   // Adds a URL to the table.
   void AddURL(const GURL& url);
@@ -320,11 +322,10 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // Structure is filled with 0s and shared header with salt. The result of
   // allocation is saved into |shared_memory| and |hash_table| points to the
   // beginning of Fingerprint table in |shared_memory|.
-  static bool CreateApartURLTable(
-      int32_t num_entries,
-      const uint8_t salt[LINK_SALT_LENGTH],
-      std::unique_ptr<base::SharedMemory>* shared_memory,
-      VisitedLinkCommon::Fingerprint** hash_table);
+  static bool CreateApartURLTable(int32_t num_entries,
+                                  const uint8_t salt[LINK_SALT_LENGTH],
+                                  mojo::ScopedSharedBufferHandle* shared_memory,
+                                  mojo::ScopedSharedBufferMapping* hash_table);
 
   // A wrapper for CreateURLTable, this will allocate a new table, initialized
   // to empty. The caller is responsible for saving the shared memory pointer
@@ -390,6 +391,11 @@ class VisitedLinkMaster : public VisitedLinkCommon {
     return hash - 1;
   }
 
+  // Returns a pointer to the start of the hash table, given the mapping
+  // containing the hash table.
+  static Fingerprint* GetHashTableFromMapping(
+      const mojo::ScopedSharedBufferMapping& hash_table_mapping);
+
   // Reference to the browser context that this object belongs to
   // (it knows the path to where the data is stored)
   content::BrowserContext* browser_context_;
@@ -435,7 +441,12 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   bool persist_to_disk_;
 
   // Shared memory consists of a SharedHeader followed by the table.
-  base::SharedMemory *shared_memory_;
+  mojo::ScopedSharedBufferHandle shared_memory_;
+
+  // A mapping of the table including the SharedHeader.
+  // GetHashTableFromMapping() can be used to obtain a pointer to the hash table
+  // contained in this mapping.
+  mojo::ScopedSharedBufferMapping hash_table_mapping_;
 
   // When we generate new tables, we increment the serial number of the
   // shared memory object.

@@ -482,9 +482,9 @@ if (!is_ios) {
     deps = [
       "//base",
       "//base/test:test_support",
-      "//base/test:test_support_perf",
       "//components/visitedlink/browser",
       "//content/test:test_support",
+      "//mojo/edk/test:run_all_perftests",
       "//testing/gtest",
       "//testing/perf",
       "//url",

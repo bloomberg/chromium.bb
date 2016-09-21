@@ -40,6 +40,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -71,7 +72,8 @@ void AwContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(aw_render_thread_observer_.get());
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
-  thread->AddObserver(visited_link_slave_.get());
+  thread->GetInterfaceRegistry()->AddInterface(
+      visited_link_slave_->GetBindCallback());
 
   blink::WebString content_scheme(base::ASCIIToUTF16(url::kContentScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);

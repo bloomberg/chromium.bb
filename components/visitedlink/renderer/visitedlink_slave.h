@@ -7,33 +7,41 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/weak_ptr.h"
+#include "components/visitedlink/common/visitedlink.mojom.h"
 #include "components/visitedlink/common/visitedlink_common.h"
-#include "content/public/renderer/render_thread_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace visitedlink {
 
 // Reads the link coloring database provided by the master. There can be any
 // number of slaves reading the same database.
 class VisitedLinkSlave : public VisitedLinkCommon,
-                         public content::RenderThreadObserver {
+                         public mojom::VisitedLinkNotificationSink {
  public:
   VisitedLinkSlave();
   ~VisitedLinkSlave() override;
 
-  // RenderThreadObserver implementation.
-  bool OnControlMessageReceived(const IPC::Message& message) override;
+  base::Callback<void(mojom::VisitedLinkNotificationSinkRequest)>
+  GetBindCallback();
 
-  // Message handlers.
-  void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
-  void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
-  void OnResetVisitedLinks(bool invalidate_hashes);
+  // mojom::VisitedLinkNotificationSink overrides.
+  void UpdateVisitedLinks(mojo::ScopedSharedBufferHandle table) override;
+  void AddVisitedLinks(
+      const std::vector<VisitedLinkSlave::Fingerprint>& fingerprints) override;
+  void ResetVisitedLinks(bool invalidate_hashes) override;
 
  private:
   void FreeTable();
 
-  // shared memory consists of a SharedHeader followed by the table
-  base::SharedMemory* shared_memory_;
+  void Bind(mojom::VisitedLinkNotificationSinkRequest request);
+
+  mojo::ScopedSharedBufferMapping table_mapping_;
+
+  mojo::Binding<mojom::VisitedLinkNotificationSink> binding_;
+
+  base::WeakPtrFactory<VisitedLinkSlave> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkSlave);
 };

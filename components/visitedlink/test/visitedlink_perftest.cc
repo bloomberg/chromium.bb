@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_log.h"
 #include "base/test/perf_time_logger.h"
@@ -41,7 +40,7 @@ GURL TestURL(const char* prefix, int i) {
 class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
  public:
   DummyVisitedLinkEventListener() {}
-  void NewTable(base::SharedMemory* table) override {}
+  void NewTable(mojo::SharedBufferHandle) override {}
   void Add(VisitedLinkCommon::Fingerprint) override {}
   void Reset(bool invalidate_hashes) override {}
 };

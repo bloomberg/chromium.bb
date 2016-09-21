@@ -17,6 +17,7 @@
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/metrics/metrics_service.h"

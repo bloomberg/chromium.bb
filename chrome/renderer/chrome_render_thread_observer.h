@@ -27,6 +27,10 @@ namespace content {
 class ResourceDispatcherDelegate;
 }
 
+namespace visitedlink {
+class VisitedLinkSlave;
+}
+
 // This class filters the incoming control messages (i.e. ones not destined for
 // a RenderView) for Chrome specific messages that the content layer doesn't
 // happen.  If a few messages are related, they should probably have their own
@@ -43,6 +47,10 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   // |ChromeRenderThreadObserver|.
   const RendererContentSettingRules* content_setting_rules() const;
 
+  visitedlink::VisitedLinkSlave* visited_link_slave() {
+    return visited_link_slave_.get();
+  }
+
  private:
   // Initializes field trial state change observation and notifies the browser
   // of any field trials that might have already been activated.
@@ -50,6 +58,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
+  void OnRenderProcessShutdown() override;
 
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
@@ -67,6 +76,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
   chrome_variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
+
+  std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
 
   base::WeakPtrFactory<ChromeRenderThreadObserver> weak_factory_;
 
