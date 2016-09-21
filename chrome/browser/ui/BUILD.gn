@@ -3388,7 +3388,9 @@ static_library("test_support") {
       "views/find_bar_host_unittest_util_views.cc",
       "views/toolbar/browser_action_test_util_views.cc",
     ]
-    deps += [ "//ui/aura" ]
+    if (!is_mac) {
+      deps += [ "//ui/aura" ]
+    }
   } else {
     sources += [
       "cocoa/extensions/browser_action_test_util_mac.mm",
