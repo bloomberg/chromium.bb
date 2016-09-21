@@ -88,25 +88,8 @@ bool PlatformHasOpusSupport() {
 }
 
 bool IsUnifiedMediaPipelineEnabled() {
-  // TODO(dalecurtis): This experiment is temporary and should be removed once
-  // we have enough data to support the primacy of the unified media pipeline;
-  // see http://crbug.com/533190 for details.
-  //
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("UnifiedMediaPipelineTrial");
-  const bool disabled_via_cli =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableUnifiedMediaPipeline);
-  // TODO(watk, dalecurtis): AVDA has bugs on API level 16 and 17 so it's
-  // disabled for now. http://crbug.com/597467
-  const bool api_level_supported =
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 18;
-
-  return !disabled_via_cli && api_level_supported &&
-         !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::SENSITIVE);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableUnifiedMediaPipeline);
 }
 
 bool ArePlatformDecodersAvailable() {
