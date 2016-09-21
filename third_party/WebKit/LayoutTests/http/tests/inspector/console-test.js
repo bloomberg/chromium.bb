@@ -343,6 +343,18 @@ InspectorTest.checkConsoleMessagesDontHaveParameters = function()
     }
 }
 
+InspectorTest.waitUntilConsoleEditorLoaded = function()
+{
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    var editor = WebInspector.ConsoleView.instance()._prompt._editor;
+    if (editor)
+        fulfill();
+    else
+        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_editorSetForTest", _ => fulfill())
+    return promise;
+}
+
 InspectorTest.waitUntilMessageReceived = function(callback)
 {
     InspectorTest.addSniffer(InspectorTest.consoleModel, "addMessage", callback, false);

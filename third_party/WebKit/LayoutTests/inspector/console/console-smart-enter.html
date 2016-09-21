@@ -1,0 +1,90 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function test()
+{
+    var prompt = WebInspector.ConsoleView.instance()._prompt;
+    InspectorTest.waitUntilConsoleEditorLoaded().then(step1);
+
+    function step1()
+    {
+        sequential([
+            () => pressEnterAfter("window"),
+            () => pressEnterAfter("window."),
+            () => pressEnterAfter("if (1 === 2)"),
+            () => pressEnterAfter("if (1 === 2) {"),
+            () => pressEnterAfter("if (1 === 2) {}"),
+            () => pressEnterAfter("[1,2,"),
+            () => pressEnterAfter("[1,2,3]"),
+            () => pressEnterAfter("{abc:"),
+            () => pressEnterAfter("{abc:123}"),
+            () => pressEnterAfter(
+`function incomplete() {
+    if (1)
+        5;`),
+            () => pressEnterAfter(
+`function bad() {
+    if (1)
+}`),
+            () => pressEnterAfter(
+`function good() {
+    if (1) {
+        5;
+    }
+}`),
+            () => pressEnterAfter("1,"),
+            () => pressEnterAfter("label:"),
+            () => pressEnterAfter("for (var i = 0; i < 100; i++)"),
+            () => pressEnterAfter("for (var i = 0; i < 100; i++) i"),
+            () => pressEnterAfter("var templateStr = `"),
+            () => pressEnterAfter("var templateStr = `str`"),
+            () => pressEnterAfter("var doubleQ = \""),
+            () => pressEnterAfter("var singleQ = '"),
+            () => pressEnterAfter("var singleQ = 'str'")
+        ]).then(InspectorTest.completeTest);
+    }
+
+    function sequential(tests)
+    {
+        var promise = Promise.resolve();
+        for (var i = 0; i < tests.length; i++)
+            promise = promise.then(tests[i]);
+        return promise;
+    }
+
+    function pressEnterAfter(text)
+    {
+        var fulfill;
+        var ended = false;
+        var promise = new Promise(x => fulfill = x);
+        InspectorTest.addConsoleViewSniffer(enterProcessed);
+        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "newlineAndIndent", enterProcessed);
+
+        prompt.setText(text);
+        prompt.moveCaretToEndOfPrompt();
+        prompt.element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+        return promise;
+
+        function enterProcessed()
+        {
+            if (ended)
+                return;
+            ended = true;
+            InspectorTest.addResult("Text Before Enter:");
+            InspectorTest.addResult(text.replace(/ /g, "."));
+            InspectorTest.addResult("Text After Enter:");
+            InspectorTest.addResult(prompt.text().replace(/ /g, ".") || "<empty>");
+            InspectorTest.addResult("");
+            fulfill();
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the console enters a newline instead of running a command if the command is incomplete.</p>
+</body>
+</html>
