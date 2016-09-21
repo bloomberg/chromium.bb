@@ -423,19 +423,31 @@ cr.define('bmm', function() {
 
       var labelEl = this.ownerDocument.createElement('div');
       labelEl.className = 'label';
-      labelEl.textContent = bookmarkNode.title;
+      var labelImgWrapper = this.ownerDocument.createElement('div');
+      labelImgWrapper.className = 'label-img-wrapper';
+      var labelImg = this.ownerDocument.createElement('div');
+      var labelText = this.ownerDocument.createElement('div');
+      labelText.className = 'label-text';
+      labelText.textContent = bookmarkNode.title;
 
       var urlEl = this.ownerDocument.createElement('div');
       urlEl.className = 'url';
 
       if (bmm.isFolder(bookmarkNode)) {
         this.className = 'folder';
+        // TODO(pkasting): Condense folder icon resources together.
+        labelImg.style.content = cr.icon.getImage(
+            cr.isMac ?
+                'chrome://theme/IDR_BOOKMARK_BAR_FOLDER' :
+                'chrome://theme/IDR_FOLDER_CLOSED');
       } else {
-        labelEl.style.backgroundImage = cr.icon.getFavicon(bookmarkNode.url);
-        labelEl.style.backgroundSize = '16px';
+        labelImg.style.content = cr.icon.getFavicon(bookmarkNode.url);
         urlEl.textContent = bookmarkNode.url;
       }
 
+      labelImgWrapper.appendChild(labelImg);
+      labelEl.appendChild(labelImgWrapper);
+      labelEl.appendChild(labelText);
       this.appendChild(labelEl);
       this.appendChild(urlEl);
 

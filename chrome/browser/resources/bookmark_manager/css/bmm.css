@@ -48,42 +48,32 @@ list > * > * {
 }
 
 list .label {
-  color: black;
+  -webkit-padding-start: 0;
+  align-items: center;
+  display: flex;
+}
+
+list .label-img-wrapper {
   display: inline-block; /* Makes the image start-align in RTL. */
+  width: 20px;
 }
 
-html[dir=rtl] list .label {
-  background-position: 100% 50%;
-}
-
-<if expr="is_macosx">
-list > .folder > .label,
-.tree-label,
-.tree-row[may-have-children] > .tree-label,
-.tree-item[expanded] > .tree-row > .tree-label {
-  background-image: -webkit-image-set(
-      url(../../../../app/theme/default_100_percent/mac/bookmark_bar_folder.png) 1x,
-      url(../../../../app/theme/default_200_percent/mac/bookmark_bar_folder.png) 2x);
+<if expr="not is_macosx and not is_ios">
+html[dir=rtl] list > .folder .label-img-wrapper > * {
+  transform: scaleX(-1);
 }
 </if>
 
-<if expr="not is_macosx">
-list > .folder > .label {
-  background-image: -webkit-image-set(
-      url(../../../../../ui/resources/default_100_percent/common/folder_closed.png) 1x,
-      url(../../../../../ui/resources/default_200_percent/common/folder_closed.png) 2x);
+list .label-text {
+  color: black;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-html[dir=rtl] list > .folder > .label {
-  background-image: -webkit-image-set(
-      url(../../../../../ui/resources/default_100_percent/common/folder_closed_rtl.png) 1x,
-      url(../../../../../ui/resources/default_200_percent/common/folder_closed_rtl.png) 2x);
-}
-</if>
 
 /* We need to ensure that even empty labels take up space, or the row could be
  * the wrong height. */
-list .label:empty::after {
+list .label-text:empty::after {
   content: ' ';
   white-space: pre;
 }
@@ -277,6 +267,18 @@ list [editing] input {
 .tree-row .expand-icon {
   top: 2px;
 }
+
+/* TODO(pkasting): Convert the tree widget to use the same resources as the
+ * list, and remove this block. */
+<if expr="is_macosx">
+.tree-label,
+.tree-row[may-have-children] > .tree-label,
+.tree-item[expanded] > .tree-row > .tree-label {
+  background-image: -webkit-image-set(
+      url(../../../../app/theme/default_100_percent/mac/bookmark_bar_folder.png) 1x,
+      url(../../../../app/theme/default_200_percent/mac/bookmark_bar_folder.png) 2x);
+}
+</if>
 
 .splitter {
   border-left: 5px solid rgb(235, 239, 249);
