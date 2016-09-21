@@ -48,11 +48,11 @@ public class PopupTouchHandleDrawable extends View {
     // The native side of this object.
     private final long mNativeDrawable;
 
-    // The position of the handle relative to the parent view.
-    private int mPositionX;
-    private int mPositionY;
+    // The position of the handle relative to the parent view in DIP.
+    private float mOriginXDip;
+    private float mOriginYDip;
 
-    // The position of the parent relative to the application's root view.
+    // The position of the parent view relative to the application's root view in pixels.
     private int mParentPositionX;
     private int mParentPositionY;
 
@@ -100,7 +100,7 @@ public class PopupTouchHandleDrawable extends View {
     private final ObserverList<PopupTouchHandleDrawable> mDrawableObserverList;
 
     private PopupTouchHandleDrawable(ObserverList<PopupTouchHandleDrawable> drawableObserverList,
-            ContentViewCore contentViewCore, double dipScale) {
+            ContentViewCore contentViewCore) {
         super(contentViewCore.getContainerView().getContext());
         mDrawableObserverList = drawableObserverList;
         mDrawableObserverList.addObserver(this);
@@ -163,14 +163,13 @@ public class PopupTouchHandleDrawable extends View {
             }
         };
         mContentViewCore.addGestureStateListener(mGestureStateListener);
-        mNativeDrawable = nativeInit(contentViewCore, (float) dipScale,
-                HandleViewResources.getHandleHorizontalPaddingRatio());
+        mNativeDrawable = nativeInit(HandleViewResources.getHandleHorizontalPaddingRatio());
     }
 
     public static PopupTouchHandleDrawable create(
             ObserverList<PopupTouchHandleDrawable> drawableObserverList,
-            ContentViewCore contentViewCore, double dipScale) {
-        return new PopupTouchHandleDrawable(drawableObserverList, contentViewCore, dipScale);
+            ContentViewCore contentViewCore) {
+        return new PopupTouchHandleDrawable(drawableObserverList, contentViewCore);
     }
 
     public long getNativeDrawable() {
@@ -258,11 +257,13 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private int getContainerPositionX() {
-        return mParentPositionX + mPositionX;
+        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
+        return mParentPositionX + (int) (mOriginXDip * deviceScale);
     }
 
     private int getContainerPositionY() {
-        return mParentPositionY + mPositionY;
+        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
+        return mParentPositionY + (int) (mOriginYDip * deviceScale);
     }
 
     private void updatePosition() {
@@ -479,10 +480,10 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private void setOrigin(float originX, float originY) {
-        if (mPositionX == originX && mPositionY == originY) return;
-        mPositionX = (int) originX;
-        mPositionY = (int) originY;
+    private void setOrigin(float originXDip, float originYDip) {
+        if (mOriginXDip == originXDip && mOriginYDip == originYDip) return;
+        mOriginXDip = originXDip;
+        mOriginYDip = originYDip;
         if (getVisibility() == VISIBLE) scheduleInvalidate();
     }
 
@@ -494,25 +495,27 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private int getPositionX() {
-        return mPositionX;
+    private float getOriginXDip() {
+        return mOriginXDip;
     }
 
     @CalledByNative
-    private int getPositionY() {
-        return mPositionY;
+    private float getOriginYDip() {
+        return mOriginYDip;
     }
 
     @CalledByNative
-    private int getVisibleWidth() {
+    private float getVisibleWidthDip() {
         if (mDrawable == null) return 0;
-        return mDrawable.getIntrinsicWidth();
+        if (mContentViewCore == null) return 0;
+        return mDrawable.getIntrinsicWidth() / mContentViewCore.getDeviceScaleFactor();
     }
 
     @CalledByNative
-    private int getVisibleHeight() {
+    private float getVisibleHeightDip() {
         if (mDrawable == null) return 0;
-        return mDrawable.getIntrinsicHeight();
+        if (mContentViewCore == null) return 0;
+        return mDrawable.getIntrinsicHeight() / mContentViewCore.getDeviceScaleFactor();
     }
 
     public void onContainerViewChanged(ViewGroup newContainerView) {
@@ -525,6 +528,5 @@ public class PopupTouchHandleDrawable extends View {
         }
     }
 
-    private native long nativeInit(ContentViewCore contentViewCore, float dipScale,
-            float horizontalPaddingRatio);
+    private native long nativeInit(float horizontalPaddingRatio);
 }

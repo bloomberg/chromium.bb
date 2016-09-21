@@ -18,8 +18,9 @@ namespace android_webview {
 // Touch handle drawable backed by an Android PopupWindow.
 class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
-  PopupTouchHandleDrawable(JNIEnv* env, jobject obj, float dpi_scale,
-      float horizontal_padding_ratio);
+  PopupTouchHandleDrawable(JNIEnv* env,
+                           jobject obj,
+                           float horizontal_padding_ratio);
   ~PopupTouchHandleDrawable() override;
 
   static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
@@ -38,7 +39,6 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
 
   JavaObjectWeakGlobalRef java_ref_;
 
-  const float dip_scale_;
   const float drawable_horizontal_padding_ratio_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTouchHandleDrawable);

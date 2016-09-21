@@ -2683,8 +2683,8 @@ public class AwContents implements SmartClipProvider,
 
     @CalledByNative
     private long onCreateTouchHandle() {
-        PopupTouchHandleDrawable drawable = PopupTouchHandleDrawable.create(
-                mTouchHandleDrawables, mContentViewCore, mContentViewCore.getDeviceScaleFactor());
+        PopupTouchHandleDrawable drawable =
+                PopupTouchHandleDrawable.create(mTouchHandleDrawables, mContentViewCore);
         return drawable.getNativeDrawable();
     }
 

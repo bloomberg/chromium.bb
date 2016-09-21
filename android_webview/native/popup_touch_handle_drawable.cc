@@ -14,10 +14,8 @@ namespace android_webview {
 PopupTouchHandleDrawable::PopupTouchHandleDrawable(
     JNIEnv* env,
     jobject obj,
-    float dip_scale,
     float horizontal_padding_ratio)
     : java_ref_(env, obj)
-    , dip_scale_(dip_scale)
     , drawable_horizontal_padding_ratio_(horizontal_padding_ratio) {
   DCHECK(!java_ref_.is_empty());
 }
@@ -61,9 +59,7 @@ void PopupTouchHandleDrawable::SetOrigin(const gfx::PointF& origin) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null()) {
-    const gfx::PointF origin_pix = gfx::ScalePoint(origin, dip_scale_);
-    Java_PopupTouchHandleDrawable_setOrigin(env, obj, origin_pix.x(),
-                                            origin_pix.y());
+    Java_PopupTouchHandleDrawable_setOrigin(env, obj, origin.x(), origin.y());
   }
 }
 
@@ -80,12 +76,11 @@ gfx::RectF PopupTouchHandleDrawable::GetVisibleBounds() const {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return gfx::RectF();
-  gfx::RectF unscaled_rect(
-      Java_PopupTouchHandleDrawable_getPositionX(env, obj),
-      Java_PopupTouchHandleDrawable_getPositionY(env, obj),
-      Java_PopupTouchHandleDrawable_getVisibleWidth(env, obj),
-      Java_PopupTouchHandleDrawable_getVisibleHeight(env, obj));
-  return gfx::ScaleRect(unscaled_rect, 1.f / dip_scale_);
+  return gfx::RectF(
+      Java_PopupTouchHandleDrawable_getOriginXDip(env, obj),
+      Java_PopupTouchHandleDrawable_getOriginYDip(env, obj),
+      Java_PopupTouchHandleDrawable_getVisibleWidthDip(env, obj),
+      Java_PopupTouchHandleDrawable_getVisibleHeightDip(env, obj));
 }
 
 float PopupTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
@@ -94,13 +89,9 @@ float PopupTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
-                  const JavaParamRef<jobject>& content_view_core,
-                  const jfloat dip_scale,
                   const jfloat horizontal_padding_ratio) {
-  DCHECK(content_view_core.obj());
   return reinterpret_cast<intptr_t>(
-      new PopupTouchHandleDrawable(env, obj, dip_scale,
-          horizontal_padding_ratio));
+      new PopupTouchHandleDrawable(env, obj, horizontal_padding_ratio));
 }
 
 }  // namespace content
