@@ -471,7 +471,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED:
       RecordAction(UserMetricsAction("StatusArea_Network_JoinOther"));
       break;
-    case UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED:
+    case UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED:
       RecordAction(UserMetricsAction("StatusArea_Network_Settings"));
     case UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED:
       RecordAction(UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
@@ -510,7 +510,7 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED:
       RecordAction(UserMetricsAction("StatusArea_VPN_Disconnect"));
       break;
-    case UMA_STATUS_AREA_VPN_SETTINGS_OPENED:
+    case UMA_STATUS_AREA_VPN_SETTINGS_CLICKED:
       RecordAction(UserMetricsAction("StatusArea_VPN_Settings"));
       break;
     case UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:

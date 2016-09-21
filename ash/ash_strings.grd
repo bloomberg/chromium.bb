@@ -182,9 +182,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED_BUBBLE" desc="The message shown on a bubble when a braille display is connected">
 Braille display connected.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The accessible text for a settings button.">
-        Settings
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_BUBBLE" desc="The message shown on a bubble when spoken feedback is enabled">
 ChromeVox (spoken feedback) is enabled.
 Press Ctrl+Alt+Z to disable.

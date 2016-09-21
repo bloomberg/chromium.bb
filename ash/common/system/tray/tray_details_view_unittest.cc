@@ -54,7 +54,7 @@ class TestDetailsView : public TrayDetailsView {
                                   IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
                                   IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
                                   IDS_ASH_STATUS_TRAY_BLUETOOTH);
-    title_row()->AddViewToRowNonMd(tray_popup_header_button_, true);
+    title_row()->AddButton(tray_popup_header_button_);
   }
 
  private:

@@ -65,9 +65,7 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       title_row_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
-      scroll_border_(nullptr),
-      back_button_(nullptr),
-      settings_button_(nullptr) {
+      scroll_border_(nullptr) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
@@ -75,27 +73,16 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
 TrayDetailsView::~TrayDetailsView() {}
 
 void TrayDetailsView::OnViewClicked(views::View* sender) {
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial() &&
-      sender == title_row_->content()) {
+  if (sender == title_row_->content())
     TransitionToDefaultView();
-    return;
-  }
-
-  HandleViewClicked(sender);
+  else
+    HandleViewClicked(sender);
 }
 
 void TrayDetailsView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    if (sender == back_button_) {
-      TransitionToDefaultView();
-      return;
-    } else if (sender == settings_button_) {
-      ShowSettings();
-      return;
-    }
-  }
-
+  // TODO(tdanderson): Handle presses for material design buttons common to all
+  // detailed views here (back and Settings). See crbug.com/642136.
   HandleButtonPressed(sender, event);
 }
 
@@ -105,17 +92,8 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
       MaterialDesignController::IsSystemTrayMenuMaterial() ? 0 : child_count();
   title_row_ = new SpecialPopupRow();
   title_row_->SetTextLabel(string_id, this);
-
   AddChildViewAt(title_row_, child_view_position);
-
   CreateExtraTitleRowButtons();
-
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    back_button_ = title_row_->AddBackButton(this);
-    settings_button_ = title_row_->AddSettingsButton(this);
-  }
-
-  Layout();
 }
 
 void TrayDetailsView::CreateScrollableList() {
@@ -146,8 +124,6 @@ void TrayDetailsView::Reset() {
   title_row_ = nullptr;
   scroller_ = nullptr;
   scroll_content_ = nullptr;
-  back_button_ = nullptr;
-  settings_button_ = nullptr;
 }
 
 void TrayDetailsView::HandleViewClicked(views::View* view) {}
@@ -156,13 +132,6 @@ void TrayDetailsView::HandleButtonPressed(views::Button* sender,
                                           const ui::Event& event) {}
 
 void TrayDetailsView::CreateExtraTitleRowButtons() {}
-
-void TrayDetailsView::ShowSettings() {
-  // TODO(tdanderson): Store login status as a member in TrayDetailsView
-  // instead of its derived classes. Use this to perform an early return
-  // if launching WebUI settings is not permitted, and provide a default
-  // implementation to ShowSettings().
-}
 
 void TrayDetailsView::TransitionToDefaultView() {
   // Cache pointer to owner in this function scope. TrayDetailsView will be

@@ -242,6 +242,9 @@
     Set wallpaper...
   </message>
 
+  <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
+    Settings
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
     SMS
   </message>

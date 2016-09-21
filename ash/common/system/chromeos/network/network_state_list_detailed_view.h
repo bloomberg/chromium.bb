@@ -62,7 +62,6 @@ class NetworkStateListDetailedView
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;
   void CreateExtraTitleRowButtons() override;
-  void ShowSettings() override;
 
   // Create UI components.
   void CreateHeaderEntry();
