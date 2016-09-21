@@ -102,8 +102,13 @@ bool ImageFrame::setSizeAndColorProfile(int newWidth, int newHeight, const ICCPr
     ASSERT(!width() && !height());
 
     sk_sp<SkColorSpace> colorSpace;
-    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled() && !newIccProfile.isEmpty())
-        colorSpace = SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+        if (newIccProfile.isEmpty())
+            colorSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+        else
+            colorSpace = SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
+        DCHECK(colorSpace);
+    }
 
     m_bitmap.setInfo(SkImageInfo::MakeN32(newWidth, newHeight,
         m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType, colorSpace));
