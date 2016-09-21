@@ -108,7 +108,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   enum DeferredStage {
     DEFERRED_NONE,
     DEFERRED_START,
-    DEFERRED_NETWORK_START,
     DEFERRED_REDIRECT,
     DEFERRED_READ,
     DEFERRED_RESPONSE_COMPLETE,

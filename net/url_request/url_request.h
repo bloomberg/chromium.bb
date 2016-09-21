@@ -584,10 +584,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // response to an OnReceivedRedirect call.
   void FollowDeferredRedirect();
 
-  // This method must be called to resume network communications that were
-  // deferred in response to an OnBeforeNetworkStart call.
-  void ResumeNetworkStart();
-
   // One of the following two methods should be called in response to an
   // OnAuthRequired() callback (and only then).
   // SetAuth will reissue the request with the given credentials.

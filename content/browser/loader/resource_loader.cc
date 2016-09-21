@@ -446,9 +446,6 @@ void ResourceLoader::Resume() {
     case DEFERRED_START:
       StartRequestInternal();
       break;
-    case DEFERRED_NETWORK_START:
-      request_->ResumeNetworkStart();
-      break;
     case DEFERRED_REDIRECT:
       request_->FollowDeferredRedirect();
       break;

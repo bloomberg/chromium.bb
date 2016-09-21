@@ -818,13 +818,6 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
   }
 }
 
-void URLRequest::ResumeNetworkStart() {
-  DCHECK(job_.get());
-
-  OnCallToDelegateComplete();
-  job_->ResumeNetworkStart();
-}
-
 void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
   // Change status if there was an error.
   if (status.status() != URLRequestStatus::SUCCESS)

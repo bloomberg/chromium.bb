@@ -318,12 +318,6 @@ void URLRequestJob::FollowDeferredRedirect() {
   FollowRedirect(redirect_info);
 }
 
-void URLRequestJob::ResumeNetworkStart() {
-  // This should only be called for HTTP Jobs, and implemented in the derived
-  // class.
-  NOTREACHED();
-}
-
 bool URLRequestJob::GetMimeType(std::string* mime_type) const {
   return false;
 }

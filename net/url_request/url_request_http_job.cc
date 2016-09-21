@@ -1327,11 +1327,6 @@ void URLRequestHttpJob::ContinueDespiteLastError() {
                             weak_factory_.GetWeakPtr(), rv));
 }
 
-void URLRequestHttpJob::ResumeNetworkStart() {
-  DCHECK(transaction_.get());
-  transaction_->ResumeNetworkStart();
-}
-
 bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. Although this violates the HTTP spec we want to
