@@ -104631,8 +104631,96 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstBackground"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PageLoadMetricsAbortClients" separator="."
+<histogram_suffixes name="PageLoadMetricsCacheInfo" separator=".">
+  <suffix name="NoStore" label="Main resource had cache-control: no-store"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.NavigationToParseStart.LoadType.ForwardBackNavigation"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsCssScanner" separator="."
     ordering="prefix">
+  <suffix name="Clients.CssScanner"
+      label="Metrics from pages scanned by the preload scanner for @import
+             CSS rules"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsDataReductionProxy"
+    separator="." ordering="prefix">
+  <suffix name="Clients.DataReductionProxy"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy."/>
+  <suffix name="Clients.DataReductionProxy.LoFiOn"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy with session in LoFi enabled or control
+             field trial, and when the connection was slow."/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstPaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstTextPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsDocWrite" separator="."
+    ordering="prefix">
+  <suffix name="Clients.DocWrite.Block"
+      label="PageLoadMetrics from a page that has synchronous, cross-origin
+             document.written scripts that could be blocked if the
+             document.write script blocking feature is enabled."/>
+  <suffix name="Clients.DocWrite.Evaluator"
+      label="PageLoadMetrics from a page that could have been evaluated by
+             the DocumentWriteEvaluator"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecution"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
+  <affected-histogram name="PageLoad.Timing2.ParseDuration"/>
+  <affected-histogram name="PageLoad.Timing2.ParseStartToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsFromGoogleSearch" separator="."
+    ordering="prefix">
+  <suffix name="Clients.FromGoogleSearch"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search"/>
+  <suffix name="Clients.FromGWS"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search">
+    <obsolete>
+      Deprecated in favor of Clients.FromGoogleSearch.
+    </obsolete>
+  </suffix>
   <suffix name="Clients.FromGWS2"
       label="PageLoadMetrics that are a result of a navigation from a Google
              web search">
@@ -104640,9 +104728,6 @@ To add a new entry, add it with any value and run test to compute valid value.
       Deprecated in favor of Clients.FromGoogleSearch.
     </obsolete>
   </suffix>
-  <suffix name="Clients.FromGoogleSearch"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search"/>
   <affected-histogram
       name="PageLoad.AbortTiming.Close.AfterCommit.BeforePaint"/>
   <affected-histogram
@@ -104667,68 +104752,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.AbortTiming.Stop.BeforeCommit"/>
   <affected-histogram
       name="PageLoad.AbortTiming.UnknownNavigation.BeforeCommit"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="PageLoadMetricsCacheInfo" separator=".">
-  <suffix name="NoStore" label="Main resource had cache-control: no-store"/>
-  <affected-histogram
-      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
-  <affected-histogram
-      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.NavigationToParseStart.LoadType.ForwardBackNavigation"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="PageLoadMetricsClients" separator="."
-    ordering="prefix">
-  <suffix name="Clients.CssScanner"
-      label="Metrics from pages scanned by the preload scanner for @import
-             CSS rules"/>
-  <suffix name="Clients.DataReductionProxy"
-      label="PageLoadMetrics that are a result of a navigation through the
-             data reduction proxy."/>
-  <suffix name="Clients.DataReductionProxy.LoFiOn"
-      label="PageLoadMetrics that are a result of a navigation through the
-             data reduction proxy with session in LoFi enabled or control
-             field trial, and when the connection was slow."/>
-  <suffix name="Clients.DocWrite.Block"
-      label="PageLoadMetrics from a page that has synchronous, cross-origin
-             document.written scripts that could be blocked if the
-             document.write script blocking feature is enabled."/>
-  <suffix name="Clients.DocWrite.Evaluator"
-      label="PageLoadMetrics from a page that could have been evaluated by
-             the DocumentWriteEvaluator"/>
-  <suffix name="Clients.FromGoogleSearch"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search"/>
-  <suffix name="Clients.Previews.OfflinePages"
-      label="PageLoadMetrics that are a result of a navigation that shows
-             users an offline page preview. Offline page previews are shown
-             when a user's effective connection type is prohibitively slow."/>
-  <suffix name="Clients.ServiceWorker"
-      label="PageLoadMetrics from a page that is controlled by a Service
-             Worker"/>
-  <suffix name="Clients.FromGWS"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search">
-    <obsolete>
-      Deprecated in favor of Clients.FromGoogleSearch.
-    </obsolete>
-  </suffix>
-  <suffix name="Clients.FromGWS2"
-      label="PageLoadMetrics that are a result of a navigation from a Google
-             web search">
-    <obsolete>
-      Deprecated in favor of Clients.FromGoogleSearch.
-    </obsolete>
-  </suffix>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
-  <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
-  <affected-histogram
-      name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint"/>
@@ -104737,42 +104764,64 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecution"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.ParseBlockedOnScriptExecutionFromDocumentWrite"/>
-  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
-  <affected-histogram
-      name="PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired"/>
-  <affected-histogram name="PageLoad.Timing2.DOMLoadingToFirstContentfulPaint"/>
-  <affected-histogram
-      name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstImagePaint"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
-  <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
-  <affected-histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad"/>
-  <affected-histogram
-      name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
-  <affected-histogram
-      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
-  <affected-histogram
-      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
-  <affected-histogram name="PageLoad.Timing2.ParseDuration"/>
-  <affected-histogram name="PageLoad.Timing2.ParseStartToFirstContentfulPaint"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PageLoadMetricsClients.Reload" separator="."
+<histogram_suffixes name="PageLoadMetricsClientsOfflinePages" separator="."
+    ordering="prefix">
+  <suffix name="Clients.Previews.OfflinePages"
+      label="PageLoadMetrics that are a result of a navigation that shows
+             users an offline page preview. Offline page previews are shown
+             when a user's effective connection type is prohibitively slow."/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsReload" separator="."
     ordering="prefix">
   <suffix name="Clients.Reload"
       label="PageLoadMetrics from a page that is reloaded"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsServiceWorker" separator="."
+    ordering="prefix">
+  <suffix name="Clients.ServiceWorker"
+      label="PageLoadMetrics from a page that is controlled by a Service
+             Worker"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint">
+    <obsolete>
+      Deprecated in favor of PaintTiming equivalent.
+    </obsolete>
+  </affected-histogram>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsServiceWorkerSpecialApps"
+    separator=".">
+  <suffix name="inbox" label="Custom histogram for Inbox"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsLoadType" separator=".">
@@ -106145,18 +106194,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ServiceWorkerCache.Scheduler.OperationDuration"/>
   <affected-histogram name="ServiceWorkerCache.Scheduler.QueueDuration"/>
   <affected-histogram name="ServiceWorkerCache.Scheduler.QueueLength"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ServiceWorkerSpecialApps" separator=".">
-  <suffix name="inbox" label="Custom histogram for Inbox"/>
-  <affected-histogram
-      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
-  <affected-histogram
-      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired"/>
-  <affected-histogram
-      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
-  <affected-histogram
-      name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorkerSpecialAppsForEventDispatchingDelay"
