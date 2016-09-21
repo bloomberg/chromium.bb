@@ -128,8 +128,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
-    self.Flaky('conformance/glsl/bugs/nested-sequence-operator.html',
-        ['win', 'nvidia'], bug=1517) # ANGLE bug.
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
