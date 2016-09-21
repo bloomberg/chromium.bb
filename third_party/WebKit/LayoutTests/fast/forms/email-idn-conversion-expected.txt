@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 50: The specified value "xn--t8j.com" is not a valid email address.
-CONSOLE WARNING: line 53: The specified value "foo@ma\u00F1ana.com" is not a valid email address.
 Tests ascii-unicode conversion of IDN email addresses on input type=email.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

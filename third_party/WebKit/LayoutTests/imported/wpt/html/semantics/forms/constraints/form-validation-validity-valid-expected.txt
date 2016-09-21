@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 290: The specified value "a" is not a valid email address.
-CONSOLE WARNING: line 283: The specified value "abc" is not a valid email address.
 This is a testharness.js-based test.
 FAIL [INPUT in TEXT status] validity.valid must be false if validity.tooLong is true assert_false: The validity.valid should be false. expected false got true
 PASS [INPUT in TEXT status] validity.valid must be false if validity.patternMismatch is true 

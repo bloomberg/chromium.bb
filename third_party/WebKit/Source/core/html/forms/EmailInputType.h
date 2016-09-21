@@ -51,7 +51,6 @@ private:
     bool typeMismatchFor(const String&) const override;
     bool typeMismatch() const override;
     String typeMismatchText() const override;
-    void warnIfValueIsInvalid(const String&) const override;
     bool supportsSelectionAPI() const override;
     String sanitizeValue(const String&) const override;
     String convertFromVisibleValue(const String&) const override;

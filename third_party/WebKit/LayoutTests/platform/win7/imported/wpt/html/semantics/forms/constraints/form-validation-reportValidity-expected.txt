@@ -20,11 +20,8 @@ ValidationMessageClient: main-message=Please enter a URL. sub-message=
 ValidationMessageClient: main-message=Please enter a URL. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-CONSOLE WARNING: line 290: The specified value "a" is not a valid email address.
-CONSOLE WARNING: line 290: The specified value "a" is not a valid email address.
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
-CONSOLE WARNING: line 283: The specified value "abc" is not a valid email address.
 ValidationMessageClient: main-message=Please include an '@' in the email address. 'abc' is missing an '@'. sub-message=
 ValidationMessageClient: main-message=Please include an '@' in the email address. 'abc' is missing an '@'. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=

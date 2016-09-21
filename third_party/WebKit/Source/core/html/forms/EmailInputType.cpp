@@ -248,13 +248,6 @@ String EmailInputType::typeMismatchText() const
     return locale().queryString(WebLocalizedString::ValidationTypeMismatchForEmail);
 }
 
-void EmailInputType::warnIfValueIsInvalid(const String& value) const
-{
-    String invalidAddress = findInvalidAddress(value);
-    if (invalidAddress.isNull())
-        return;
-    addWarningToConsole("The specified value %s is not a valid email address.", invalidAddress);
-}
 
 bool EmailInputType::supportsSelectionAPI() const
 {

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 44: The specified value "something" is not a valid email address.
 CONSOLE ERROR: line 84: Pattern attribute value )foo( is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /)foo(/: Unmatched ')'
 CONSOLE ERROR: line 84: Pattern attribute value )foo( is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /)foo(/: Unmatched ')'
 CONSOLE ERROR: line 84: Pattern attribute value )foo( is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /)foo(/: Unmatched ')'
