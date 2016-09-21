@@ -28,10 +28,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_switches.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/metrics/first_web_contents_profiler.h"
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID) && defined(__arm__)
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
@@ -366,10 +362,6 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
   display::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
-
-#if !defined(OS_ANDROID)
-  FirstWebContentsProfiler::Start();
-#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(

@@ -13,27 +13,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
-
-// static
-void FirstWebContentsProfiler::Start() {
-  for (auto* browser : *BrowserList::GetInstance()) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    if (web_contents) {
-      // FirstWebContentsProfiler owns itself and is also bound to
-      // |web_contents|'s lifetime by observing WebContentsDestroyed().
-      new FirstWebContentsProfiler(web_contents);
-      return;
-    }
-  }
-}
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents)

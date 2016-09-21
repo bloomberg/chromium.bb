@@ -55,6 +55,10 @@
 #include "extensions/common/extension_set.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/metrics/first_web_contents_profiler.h"
+#endif  // !defined(OS_ANDROID)
+
 using content::GlobalRequestID;
 using content::NavigationController;
 using content::WebContents;
@@ -370,6 +374,14 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   extensions::TabHelper::FromWebContents(target_contents)->
       SetExtensionAppById(params.extension_app_id);
 #endif
+
+#if !defined(OS_ANDROID)
+  static bool first_web_contents_profiled = false;
+  if (!first_web_contents_profiled) {
+    first_web_contents_profiled = true;
+    new FirstWebContentsProfiler(target_contents);
+  }
+#endif  // !defined(OS_ANDROID)
   return target_contents;
 }
 

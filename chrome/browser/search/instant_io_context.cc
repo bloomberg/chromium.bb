@@ -88,8 +88,10 @@ bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
 
   int process_id = -1;
   int render_frame_id = -1;
-  if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id) &&
-      instant_io_context->IsInstantProcess(process_id))
+  info->GetAssociatedRenderFrame(&process_id, &render_frame_id);
+  // For PlzNavigate, the process_id for the navigation request will be -1. If
+  // so, allow this request since it's not going to another renderer.
+  if (process_id == -1 || instant_io_context->IsInstantProcess(process_id))
     return true;
   return false;
 }
