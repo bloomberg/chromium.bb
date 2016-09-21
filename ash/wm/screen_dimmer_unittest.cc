@@ -120,5 +120,27 @@ TEST_F(ScreenDimmerTest, DimAtBottom) {
   EXPECT_EQ(*dim_iter, *root_window->children().begin());
 }
 
+// See description above TEST_F for details.
+class ScreenDimmerShellDestructionTest : public AshTestBase {
+ public:
+  ScreenDimmerShellDestructionTest() {}
+  ~ScreenDimmerShellDestructionTest() override {}
+
+  void TearDown() override {
+    ScreenDimmer screen_dimmer(ScreenDimmer::Container::ROOT);
+    AshTestBase::TearDown();
+    // ScreenDimmer is destroyed *after* the shell.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenDimmerShellDestructionTest);
+};
+
+// This test verifies ScreenDimmer can be destroyed after the shell. The
+// interesting part of this test is in TearDown(), which creates a ScreenDimmer
+// that is deleted after WmShell.
+TEST_F(ScreenDimmerShellDestructionTest, DontCrashIfScreenDimmerOutlivesShell) {
+}
+
 }  // namespace test
 }  // namespace ash

@@ -32,7 +32,9 @@ ScreenDimmer::ScreenDimmer(Container container)
 }
 
 ScreenDimmer::~ScreenDimmer() {
-  WmShell::Get()->RemoveShellObserver(this);
+  // Usage in chrome results in ScreenDimmer outliving the shell.
+  if (WmShell::HasInstance())
+    WmShell::Get()->RemoveShellObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {
