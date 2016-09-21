@@ -105,7 +105,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   class Observer {
    public:
     virtual void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) = 0;
-    virtual void OnPopularURLsAvailable(const PopularSitesVector& sites) = 0;
+    virtual void OnPopularURLsAvailable(const PopularSitesVector& sites) {}
 
    protected:
     virtual ~Observer() {}
