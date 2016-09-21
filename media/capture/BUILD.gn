@@ -133,7 +133,11 @@ component("capture") {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
-  if (is_linux || is_chromeos) {
+  if (is_linux || is_chromeos || is_win) {
+    sources += [
+      "video/blob_utils.cc",
+      "video/blob_utils.h",
+    ]
     deps += [ "//third_party/libyuv" ]
   }
 }

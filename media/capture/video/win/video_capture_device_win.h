@@ -75,6 +75,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
       const VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
  private:
   enum InternalState {
@@ -114,6 +115,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   VideoCaptureFormat capture_format_;
 
   base::TimeTicks first_ref_time_;
+
+  std::queue<TakePhotoCallback> take_photo_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

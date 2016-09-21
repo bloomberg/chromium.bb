@@ -52,7 +52,7 @@
 #elif defined(OS_WIN)
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
-#define MAYBE_TakePhoto DISABLED_TakePhoto
+#define MAYBE_TakePhoto TakePhoto
 #elif defined(OS_ANDROID)
 #define MAYBE_AllocateBadSize AllocateBadSize
 #define MAYBE_CaptureMjpeg CaptureMjpeg
@@ -535,7 +535,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   EXPECT_CALL(*video_capture_client_, OnError(_, _)).Times(0);
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_size.SetSize(320, 240);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, std::move(video_capture_client_));

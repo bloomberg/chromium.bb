@@ -16,6 +16,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
 #include "media/base/timestamp_constants.h"
+#include "media/capture/video/blob_utils.h"
 
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
@@ -450,6 +451,15 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
   state_ = kIdle;
 }
 
+void VideoCaptureDeviceWin::TakePhoto(TakePhotoCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // DirectShow has other means of capturing still pictures, e.g. connecting a
+  // SampleGrabber filter to a PIN_CATEGORY_STILL of |capture_filter_|. This
+  // way, however, is not widespread and proves too cumbersome, so we just grab
+  // the next captured frame instead.
+  take_photo_callbacks_.push(std::move(callback));
+}
+
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
@@ -464,6 +474,15 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 
   client_->OnIncomingCapturedData(buffer, length, capture_format_, 0,
                                   base::TimeTicks::Now(), timestamp);
+
+  while (!take_photo_callbacks_.empty()) {
+    TakePhotoCallback cb = std::move(take_photo_callbacks_.front());
+    take_photo_callbacks_.pop();
+
+    mojom::BlobPtr blob = Blobify(buffer, length, capture_format_);
+    if (blob)
+      cb.Run(std::move(blob));
+  }
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

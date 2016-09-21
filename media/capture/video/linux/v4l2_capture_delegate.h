@@ -63,16 +63,13 @@ class V4L2CaptureDelegate final
   friend class base::RefCountedThreadSafe<V4L2CaptureDelegate>;
   ~V4L2CaptureDelegate();
 
+  class BufferTracker;
+
   // VIDIOC_QUERYBUFs a buffer from V4L2, creates a BufferTracker for it and
   // enqueues it (VIDIOC_QBUF) back into V4L2.
   bool MapAndQueueBuffer(int index);
 
   void DoCapture();
-
-  class BufferTracker;
-  mojom::BlobPtr GetPhotoBlob(
-      const scoped_refptr<BufferTracker>& buffer_tracker,
-      const uint32_t bytesused);
 
   void SetErrorState(const tracked_objects::Location& from_here,
                      const std::string& reason);
