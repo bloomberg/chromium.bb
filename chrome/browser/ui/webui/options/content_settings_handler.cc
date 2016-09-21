@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/features.h"
@@ -373,7 +374,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"allowException", IDS_EXCEPTIONS_ALLOW_BUTTON},
     {"blockException", IDS_EXCEPTIONS_BLOCK_BUTTON},
     {"sessionException", IDS_EXCEPTIONS_SESSION_ONLY_BUTTON},
-    {"detectException", IDS_EXCEPTIONS_DETECT_IMPORTANT_CONTENT_BUTTON},
     {"askException", IDS_EXCEPTIONS_ASK_BUTTON},
     {"otrExceptionsExplanation", IDS_EXCEPTIONS_OTR_LABEL},
     {"addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS},
@@ -409,12 +409,10 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"javascriptAllow", IDS_JS_ALLOW_RADIO},
     {"javascriptBlock", IDS_JS_DONOTALLOW_RADIO},
     // Plugins filter.
-    {"pluginsTabLabel", IDS_PLUGIN_TAB_LABEL},
-    {"pluginsHeader", IDS_PLUGIN_HEADER},
-    {"pluginsAllow", IDS_PLUGIN_ALLOW_RADIO},
-    {"pluginsBlock", IDS_PLUGIN_BLOCK_RADIO},
-    {"pluginsDetectImportantContent", IDS_PLUGIN_DETECT_RECOMMENDED_RADIO},
-    {"manageIndividualPlugins", IDS_PLUGIN_MANAGE_INDIVIDUAL},
+    {"pluginsTabLabel", IDS_FLASH_TAB_LABEL},
+    {"pluginsHeader", IDS_FLASH_HEADER},
+    {"pluginsAllow", IDS_FLASH_ALLOW_RADIO},
+    {"pluginsBlock", IDS_FLASH_BLOCK_RADIO},
     // Pop-ups filter.
     {"popupsTabLabel", IDS_POPUP_TAB_LABEL},
     {"popupsHeader", IDS_POPUP_HEADER},
@@ -511,6 +509,20 @@ void ContentSettingsHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
+  // TODO(tommycli): When the HTML5 By Default feature flag is on, we want to
+  // display strings that begin with "Ask...", even though the setting remains
+  // DETECT. Once this feature is finalized, then we migrate the setting to ASK.
+  bool is_hbd = base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
+  static OptionsStringResource flash_strings[] = {
+      {"pluginsDetectImportantContent",
+       is_hbd ? IDS_FLASH_ASK_RECOMMENDED_RADIO
+              : IDS_FLASH_DETECT_RECOMMENDED_RADIO},
+      {"detectException",
+       is_hbd ? IDS_EXCEPTIONS_ASK_BUTTON
+              : IDS_EXCEPTIONS_DETECT_IMPORTANT_CONTENT_BUTTON},
+  };
+  RegisterStrings(localized_strings, flash_strings, arraysize(flash_strings));
+
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   const base::Value* default_pref = prefs->GetDefaultPrefValue(
       content_settings::WebsiteSettingsRegistry::GetInstance()
@@ -533,8 +545,7 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_IMAGES_TAB_LABEL);
   RegisterTitle(localized_strings, "javascript",
                 IDS_JAVASCRIPT_TAB_LABEL);
-  RegisterTitle(localized_strings, "plugins",
-                IDS_PLUGIN_TAB_LABEL);
+  RegisterTitle(localized_strings, "plugins", IDS_FLASH_TAB_LABEL);
   RegisterTitle(localized_strings, "popups",
                 IDS_POPUP_TAB_LABEL);
   RegisterTitle(localized_strings, "location",

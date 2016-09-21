@@ -66,12 +66,6 @@ select.exception-setting {
   margin-top: 4px;
 }
 
-#disable-plugins-container {
-  /* Same as .checkbox and .radio padding. Using padding instead of margin
-   * to ensure minimum height for tap target. */
-  padding: 7px 0;
-}
-
 #group-indicator {
   margin-left: 5px;
 }

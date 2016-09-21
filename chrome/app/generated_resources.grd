@@ -8135,23 +8135,23 @@ I don't think this site should be blocked!
           {NUM_POPUPS,plural,=1{A pop-up is blocked} other{# pop-ups are blocked}}
         </message>
       </if>
-      <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plugins tab on Content Settings dialog">
-        Plugins
+      <message name="IDS_FLASH_TAB_LABEL" desc="Label for Flash tab on Content Settings dialog">
+        Flash
       </message>
-      <message name="IDS_PLUGIN_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
-        Plugin exceptions
+      <message name="IDS_FLASH_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
+        Flash exceptions
       </message>
-      <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
-        Run all plugin content
+      <message name="IDS_FLASH_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
+        Allow sites to run Flash
       </message>
-      <message name="IDS_PLUGIN_DETECT_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only. This is the behavior Chrome recommends.">
-        Detect and run important plugin content (recommended)
+      <message name="IDS_FLASH_DETECT_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only. This is the behavior Chrome recommends.">
+        Detect and run important Flash content (recommended)
       </message>
-      <message name="IDS_PLUGIN_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plugins on a context menu activation.">
-        Let me choose when to run plugin content
+      <message name="IDS_FLASH_ASK_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for asking first before running Flash. This is the behavior Chrome recommends.">
+        Ask first before allowing sites to run Flash (recommended)
       </message>
-      <message name="IDS_PLUGIN_MANAGE_INDIVIDUAL" desc="Link to manage individual plugins">
-        Manage individual plugins...
+      <message name="IDS_FLASH_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plugins on a context menu activation.">
+        Block sites from running Flash
       </message>
       <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
         JavaScript
