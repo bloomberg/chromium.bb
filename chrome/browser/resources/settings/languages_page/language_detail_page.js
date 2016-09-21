@@ -171,7 +171,7 @@ Polymer({
    */
   onRestartTap_: function() {
 <if expr="chromeos">
-    settings.LifetimeBrowserProxyImpl.getInstance().logOutAndRestart();
+    settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
 </if>
 <if expr="not chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().restart();

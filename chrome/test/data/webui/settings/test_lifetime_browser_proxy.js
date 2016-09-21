@@ -13,7 +13,7 @@ cr.define('settings', function() {
   var TestLifetimeBrowserProxy = function() {
     var methodNames = ['restart', 'relaunch'];
     if (cr.isChromeOS)
-      methodNames.push('logOutAndRestart', 'factoryReset');
+      methodNames.push('signOutAndRestart', 'factoryReset');
 
     settings.TestBrowserProxy.call(this, methodNames);
   };
@@ -34,8 +34,8 @@ cr.define('settings', function() {
 
   if (cr.isChromeOS) {
     /** @override */
-    TestLifetimeBrowserProxy.prototype.logOutAndRestart = function() {
-      this.methodCalled('logOutAndRestart');
+    TestLifetimeBrowserProxy.prototype.signOutAndRestart = function() {
+      this.methodCalled('signOutAndRestart');
     };
 
     /** @override */
