@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/icons.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
@@ -169,11 +170,19 @@
       }
     </style>
     <div id="toolbar-container">
-      <cr-toolbar id="main-toolbar" page-name="$i18n{title}"
-          clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}"
-          hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]"
-          show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}"
-          on-search-changed="onSearchChanged_">
+      <cr-toolbar id="main-toolbar"
+          page-name="$i18n{title}"
+          clear-label="$i18n{clearSearch}"
+          search-prompt="$i18n{searchPrompt}"
+          hidden$="[[itemsSelected_]]"
+          spinner-active="[[spinnerActive]]"
+          show-menu="[[hasDrawer]]"
+          show-menu-promo="[[showMenuPromo_]]"
+          menu-label="$i18n{historyMenuButton}"
+          menu-promo="$i18n{menuPromo}"
+          close-menu-promo="$i18n{closeMenuPromo}"
+          on-search-changed="onSearchChanged_"
+          on-cr-menu-promo-shown="onMenuPromoShown_">
         <div class="more-actions">
           <template is="dom-if" if="[[showSyncNotice]]">
             <button is="paper-icon-button-light" id="info-button"

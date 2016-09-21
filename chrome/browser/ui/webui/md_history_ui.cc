@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/md_history_ui.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +23,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -33,8 +36,6 @@
 namespace {
 
 content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
@@ -44,6 +45,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("clearBrowsingData",
                              IDS_CLEAR_BROWSING_DATA_TITLE);
   source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
+  source->AddLocalizedString("closeMenuPromo", IDS_MD_HISTORY_CLOSE_MENU_PROMO);
   source->AddLocalizedString("collapseSessionButton",
                              IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION);
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
@@ -69,6 +71,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  source->AddLocalizedString("menuPromo", IDS_MD_HISTORY_MENU_PROMO);
   source->AddLocalizedString("moreActionsButton",
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
@@ -105,9 +108,13 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
           l10n_util::GetStringUTF16(
               IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_HISTORY)));
 
+  PrefService* prefs = profile->GetPrefs();
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
+
+  source->AddBoolean("showMenuPromo",
+      !prefs->GetBoolean(prefs::kMdHistoryMenuPromoShown));
 
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHistoryEnableGroupByDomain) || profile->IsSupervised();
@@ -201,7 +208,11 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
 
-  content::WebUIDataSource::Add(profile, CreateMdHistoryUIHTMLSource(profile));
+  data_source_ = CreateMdHistoryUIHTMLSource(profile);
+  content::WebUIDataSource::Add(profile, data_source_);
+
+  web_ui->RegisterMessageCallback("menuPromoShown",
+      base::Bind(&MdHistoryUI::HandleMenuPromoShown, base::Unretained(this)));
 }
 
 MdHistoryUI::~MdHistoryUI() {}
@@ -230,4 +241,16 @@ base::RefCountedMemory* MdHistoryUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_HISTORY_FAVICON, scale_factor);
+}
+
+void MdHistoryUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kMdHistoryMenuPromoShown, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+void MdHistoryUI::HandleMenuPromoShown(const base::ListValue* args) {
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kMdHistoryMenuPromoShown, true);
+  data_source_->AddBoolean("showMenuPromo", false);
 }
