@@ -32,6 +32,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -175,6 +176,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
+#include "base/android/build_info.h"
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/disambiguation_popup_helper.h"
@@ -1114,7 +1116,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMediaPlaybackRequiresUserGesture(
       prefs.user_gesture_required_for_media_playback);
   settings->setDefaultVideoPosterURL(
-        base::ASCIIToUTF16(prefs.default_video_poster_url.spec()));
+      base::ASCIIToUTF16(prefs.default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(
       prefs.support_deprecated_target_density_dpi);
   settings->setUseLegacyBackgroundSizeShorthandBehavior(
@@ -1142,8 +1144,17 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<WebSettings::ProgressBarCompletion>(
           prefs.progress_bar_completion));
   settings->setPreferHiddenVolumeControls(true);
+
+  // Force preload=none and disable autoplay on older or low end Android
+  // platforms because their media pipelines are not stable enough to handle
+  // concurrent elements. See http://crbug.com/612909, http://crbug.com/622826.
+  const bool is_low_end_device =
+      base::android::BuildInfo::GetInstance()->sdk_int() <=
+          base::android::SDK_VERSION_JELLY_BEAN_MR2 ||
+      base::SysInfo::IsLowEndDevice();
+  settings->setForcePreloadNoneForMediaElements(is_low_end_device);
   WebRuntimeFeatures::enableAutoplayMutedVideos(
-      prefs.autoplay_muted_videos_enabled);
+      prefs.autoplay_muted_videos_enabled && !is_low_end_device);
 #endif
 
   settings->setAutoplayExperimentMode(

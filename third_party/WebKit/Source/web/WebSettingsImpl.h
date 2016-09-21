@@ -97,6 +97,7 @@ public:
     void setExperimentalWebGLEnabled(bool) override;
     void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
+    void setForcePreloadNoneForMediaElements(bool) override;
     void setForceZeroLayoutHeight(bool) override;
     void setFullscreenSupported(bool) override;
     void setHistoryEntryRequiresUserGesture(bool) override;

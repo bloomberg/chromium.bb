@@ -2003,7 +2003,7 @@ WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
     // Force preload to none for cellular connections or when data saver is explicitly set.
     if (networkStateNotifier().isCellularConnectionType()
-        || (document().settings() && document().settings()->dataSaverEnabled())) {
+        || (document().settings() && (document().settings()->dataSaverEnabled() || document().settings()->forcePreloadNoneForMediaElements()))) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadForcedNone);
         return WebMediaPlayer::PreloadNone;
     }
