@@ -16,6 +16,7 @@ import com.google.android.gms.gcm.Task;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.components.precache.MockDeviceState;
@@ -247,8 +248,11 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         verifyLockCounts(1, 1);
     }
 
+    /*
     @SmallTest
     @Feature({"Precache"})
+    */
+    @DisabledTest(message = "crbug.com/648952")
     public void testTimeoutDoesNotCancelIfNotPrecaching() {
         assertFalse(mPrecacheController.isPrecaching());
 
