@@ -211,7 +211,7 @@ bool Body::isBodyLocked()
 
 bool Body::hasPendingActivity() const
 {
-    if (getExecutionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return false;
     if (!bodyBuffer())
         return false;
