@@ -843,6 +843,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 - (NSString*)uniqueID {
   CFUUIDRef uuidRef = CFUUIDCreate(NULL);
   CFStringRef uuidStringRef = CFUUIDCreateString(NULL, uuidRef);
+  CFRelease(uuidRef);
+
   NSString* uuid =
       [NSString stringWithString:base::mac::ObjCCastStrict<NSString>(
                                      CFBridgingRelease(uuidStringRef))];
