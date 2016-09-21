@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -33,7 +34,8 @@ class InterfaceEndpointController;
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
 // It should only be accessed and destructed on the creating thread.
-class InterfaceEndpointClient : public MessageReceiverWithResponder {
+class InterfaceEndpointClient : public MessageReceiverWithResponder,
+                                public base::MessageLoop::DestructionObserver {
  public:
   // |receiver| is okay to be null. If it is not null, it must outlive this
   // object.
@@ -144,6 +146,10 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   };
 
   bool HandleValidatedMessage(Message* message);
+  void StopObservingIfNecessary();
+
+  // base::MessageLoop::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override;
 
   ScopedInterfaceEndpointHandle handle_;
   std::unique_ptr<AssociatedGroup> associated_group_;
@@ -166,6 +172,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   internal::ControlMessageProxy control_message_proxy_;
   internal::ControlMessageHandler control_message_handler_;
+
+  bool observing_message_loop_destruction_ = true;
 
   base::ThreadChecker thread_checker_;
 
