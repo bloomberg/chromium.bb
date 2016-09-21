@@ -317,7 +317,7 @@ class MultibufferDataSourceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReceiveData(int size) {
+  void ReceiveDataLow(int size) {
     EXPECT_TRUE(url_loader());
     if (!url_loader())
       return;
@@ -325,6 +325,10 @@ class MultibufferDataSourceTest : public testing::Test {
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
     data_provider()->didReceiveData(url_loader(), data.get(), size, size, size);
+  }
+
+  void ReceiveData(int size) {
+    ReceiveDataLow(size);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1255,6 +1259,36 @@ TEST_F(MultibufferDataSourceTest,
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReceiveData(kDataSize);
+
+  EXPECT_FALSE(active_loader_allownull());
+}
+
+// This test tries to trigger an edge case where the read callback
+// never happens because the reader is deleted before that happens.
+TEST_F(MultibufferDataSourceTest,
+       ExternalResource_Response206_CancelAfterDefer2) {
+  set_preload(MultibufferDataSource::METADATA);
+  InitializeWith206Response();
+
+  EXPECT_EQ(MultibufferDataSource::METADATA, preload());
+  EXPECT_FALSE(is_local_source());
+
+  EXPECT_TRUE(data_source_->range_supported());
+  CheckReadThenDefer();
+
+  ReadAt(kDataSize);
+
+  data_source_->OnBufferingHaveEnough(false);
+  ASSERT_TRUE(active_loader());
+
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize + 2000));
+
+  ReceiveDataLow(2000);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2 + 2000));
+  ReceiveDataLow(kDataSize);
+
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(active_loader_allownull());
 }
