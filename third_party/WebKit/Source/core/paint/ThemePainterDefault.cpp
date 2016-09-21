@@ -42,6 +42,7 @@ namespace blink {
 namespace {
 
 const unsigned defaultButtonBackgroundColor = 0xffdddddd;
+const unsigned dropdownMenuListArrowPadding = 3;
 
 bool useMockTheme()
 {
@@ -262,11 +263,13 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
     if (useMockTheme()) {
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
-        int spacingTop = (box.borderTop() + box.paddingTop()).toInt();
-        int spacingBottom = (box.borderBottom() + box.paddingBottom()).toInt();
-        int spacingRight = (box.borderRight() + box.paddingRight()).toInt();
-        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 10 - spacingRight;
-        extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
+        int extraPadding = dropdownMenuListArrowPadding * box.styleRef().effectiveZoom();
+        // The width available for the arrow is based on the padding provided
+        // in the child LayoutBox.
+        int arrowBoxWidth = ((box.styleRef().direction() == RTL) ? box.firstChildBox()->paddingLeft() : box.firstChildBox()->paddingRight()).toInt();
+        int arrowSize = std::min(arrowBoxWidth, rect.height()) - 2 * extraPadding;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + extraPadding + (arrowSize / 2) : right - (arrowSize / 2) - extraPadding;
+        extraParams.menuList.arrowSize = arrowSize;
     } else {
         const int arrowSize = 6;
         const int arrowPadding = 6;

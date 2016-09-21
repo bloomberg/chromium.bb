@@ -482,24 +482,26 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       }
 
       // clip the drop-down arrow to be inside the select box
-      if (extraParams->menuList.arrowX - 4 > irect.fLeft)
-        irect.fLeft = extraParams->menuList.arrowX - 4;
-      if (extraParams->menuList.arrowX + 12 < irect.fRight)
-        irect.fRight = extraParams->menuList.arrowX + 12;
+      irect.fLeft =
+          std::max(irect.fLeft, extraParams->menuList.arrowX -
+                                    (extraParams->menuList.arrowSize + 1) / 2);
+      irect.fRight =
+          std::min(irect.fLeft + extraParams->menuList.arrowSize, irect.fRight);
 
       irect.fTop = extraParams->menuList.arrowY -
                    (extraParams->menuList.arrowSize) / 2;
-      irect.fBottom = extraParams->menuList.arrowY +
-                      (extraParams->menuList.arrowSize - 1) / 2;
+      irect.fBottom = irect.fTop + (extraParams->menuList.arrowSize);
+
       halfWidth = irect.width() / 2;
       quarterWidth = irect.width() / 4;
 
       if (state == WebThemeEngine::StateFocused)  // FIXME: draw differenty?
         state = WebThemeEngine::StateNormal;
       box(canvas, irect, bgColors(state));
-      triangle(canvas, irect.fLeft + quarterWidth, irect.fTop,
-               irect.fRight - quarterWidth, irect.fTop, irect.fLeft + halfWidth,
-               irect.fBottom, edgeColor);
+      triangle(canvas, irect.fLeft + quarterWidth, irect.fTop + quarterWidth,
+               irect.fRight - quarterWidth, irect.fTop + quarterWidth,
+               irect.fLeft + halfWidth, irect.fBottom - quarterWidth,
+               edgeColor);
 
       break;
 
