@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "components/security_state/security_state_model_client.h"
+#include "components/security_state/switches.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -19,18 +21,22 @@ namespace security_state {
 
 namespace {
 
-const char kUrl[] = "https://foo.test";
+const char kHttpsUrl[] = "https://foo.test";
+const char kHttpUrl[] = "http://foo.test";
 
 class TestSecurityStateModelClient : public SecurityStateModelClient {
  public:
   TestSecurityStateModelClient()
-      : initial_security_level_(SecurityStateModel::SECURE),
+      : url_(kHttpsUrl),
+        initial_security_level_(SecurityStateModel::SECURE),
         connection_status_(net::SSL_CONNECTION_VERSION_TLS1_2
                            << net::SSL_CONNECTION_VERSION_SHIFT),
         cert_status_(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT),
         displayed_mixed_content_(false),
         ran_mixed_content_(false),
-        fails_malware_check_(false) {
+        fails_malware_check_(false),
+        displayed_password_field_on_http_(false),
+        displayed_credit_card_field_on_http_(false) {
     cert_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "sha1_2016.pem");
   }
@@ -58,12 +64,22 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
       SecurityStateModel::SecurityLevel security_level) {
     initial_security_level_ = security_level;
   }
+  void set_displayed_password_field_on_http(
+      bool displayed_password_field_on_http) {
+    displayed_password_field_on_http_ = displayed_password_field_on_http;
+  }
+  void set_displayed_credit_card_field_on_http(
+      bool displayed_credit_card_field_on_http) {
+    displayed_credit_card_field_on_http_ = displayed_credit_card_field_on_http;
+  }
+
+  void UseHttpUrl() { url_ = GURL(kHttpUrl); }
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
       SecurityStateModel::VisibleSecurityState* state) override {
     state->connection_info_initialized = true;
-    state->url = GURL(kUrl);
+    state->url = url_;
     state->initial_security_level = initial_security_level_;
     state->cert_status = cert_status_;
     state->connection_status = connection_status_;
@@ -71,6 +87,9 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
     state->displayed_mixed_content = displayed_mixed_content_;
     state->ran_mixed_content = ran_mixed_content_;
     state->fails_malware_check = fails_malware_check_;
+    state->displayed_password_field_on_http = displayed_password_field_on_http_;
+    state->displayed_credit_card_field_on_http =
+        displayed_credit_card_field_on_http_;
   }
 
   bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) override {
@@ -80,11 +99,12 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
 
   bool UsedPolicyInstalledCertificate() override { return false; }
 
-  // Always returns true because all unit tests in this file test
-  // scenarios in which the origin is secure.
-  bool IsOriginSecure(const GURL& url) override { return true; }
+  bool IsOriginSecure(const GURL& url) override {
+    return url_ == GURL(kHttpsUrl);
+  }
 
  private:
+  GURL url_;
   SecurityStateModel::SecurityLevel initial_security_level_;
   scoped_refptr<net::X509Certificate> cert_;
   int connection_status_;
@@ -92,6 +112,8 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   bool displayed_mixed_content_;
   bool ran_mixed_content_;
   bool fails_malware_check_;
+  bool displayed_password_field_on_http_;
+  bool displayed_credit_card_field_on_http_;
 };
 
 // Tests that SHA1-signed certificates expiring in 2016 downgrade the
@@ -226,6 +248,58 @@ TEST(SecurityStateModelTest, MalwareWithoutCOnnectionState) {
       model.GetSecurityInfo();
   EXPECT_TRUE(security_info.fails_malware_check);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+}
+
+// Tests that password fields cause the security level to be downgraded
+// to HTTP_SHOW_WARNING when the command-line switch is set.
+TEST(SecurityStateModelTest, PasswordFieldWarning) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kMarkNonSecureAs,
+      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure);
+  TestSecurityStateModelClient client;
+  client.UseHttpUrl();
+  client.set_initial_security_level(SecurityStateModel::NONE);
+  SecurityStateModel model;
+  model.SetClient(&client);
+  client.set_displayed_password_field_on_http(true);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
+  EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+}
+
+// Tests that credit card fields cause the security level to be downgraded
+// to HTTP_SHOW_WARNING when the command-line switch is set.
+TEST(SecurityStateModelTest, CreditCardFieldWarning) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kMarkNonSecureAs,
+      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure);
+  TestSecurityStateModelClient client;
+  client.UseHttpUrl();
+  client.set_initial_security_level(SecurityStateModel::NONE);
+  SecurityStateModel model;
+  model.SetClient(&client);
+  client.set_displayed_credit_card_field_on_http(true);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
+  EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
+            security_info.security_level);
+}
+
+// Tests that neither password nor credit fields cause the security
+// level to be downgraded to HTTP_SHOW_WARNING when the command-line switch
+// is NOT set.
+TEST(SecurityStateModelTest, HttpWarningNotSetWithoutSwitch) {
+  TestSecurityStateModelClient client;
+  client.UseHttpUrl();
+  client.set_initial_security_level(SecurityStateModel::NONE);
+  SecurityStateModel model;
+  model.SetClient(&client);
+  client.set_displayed_password_field_on_http(true);
+  client.set_displayed_credit_card_field_on_http(true);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model.GetSecurityInfo();
+  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
 }
 
 }  // namespace

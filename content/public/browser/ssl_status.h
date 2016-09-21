@@ -41,6 +41,18 @@ struct CONTENT_EXPORT SSLStatus {
     // HTTPS page containing "executed" HTTPS resources (i.e. script)
     // loaded with certificate errors.
     RAN_CONTENT_WITH_CERT_ERRORS = 1 << 3,
+
+    // HTTP page containing a password input. Embedders may use this to
+    // adjust UI on nonsecure pages that collect sensitive data.
+    // TODO: integrate password detection to set this flag.
+    // https://crbug.com/647560
+    DISPLAYED_PASSWORD_FIELD_ON_HTTP = 1 << 4,
+
+    // HTTP page containing a credit card input. Embedders may use this to
+    // adjust UI on nonsecure pages that collect sensitive data.
+    // TODO: integrate credit card detection to set this flag.
+    // https://crbug.com/647560
+    DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP = 1 << 5,
   };
 
   SSLStatus();

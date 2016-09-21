@@ -867,6 +867,55 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
+// Tests that the NavigationEntry's flags for nonsecure password/credit
+// card inputs are reflected in the VisibleSecurityState.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       VisibleSecurityStateNonsecureFormInputs) {
+  ASSERT_TRUE(https_server_.Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(model_client);
+
+  // First, test that if the flags aren't set on the NavigationEntry,
+  // then they also aren't set on the VisibleSecurityState.
+  content::SSLStatus& ssl_status =
+      contents->GetController().GetVisibleEntry()->GetSSL();
+  ASSERT_FALSE(ssl_status.content_status &
+               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  ASSERT_FALSE(ssl_status.content_status &
+               content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  SecurityStateModel::VisibleSecurityState
+      visible_security_state_no_sensitive_inputs;
+  model_client->GetVisibleSecurityState(
+      &visible_security_state_no_sensitive_inputs);
+  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
+                   .displayed_password_field_on_http);
+  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
+                   .displayed_credit_card_field_on_http);
+
+  // Now, set the flags on the NavigationEntry and test that they are
+  // reflected in the VisibleSecurityState.
+  ssl_status.content_status |=
+      content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
+  ssl_status.content_status |=
+      content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
+  SecurityStateModel::VisibleSecurityState
+      visible_security_state_sensitive_inputs;
+  model_client->GetVisibleSecurityState(
+      &visible_security_state_sensitive_inputs);
+  EXPECT_TRUE(
+      visible_security_state_sensitive_inputs.displayed_password_field_on_http);
+  EXPECT_TRUE(visible_security_state_sensitive_inputs
+                  .displayed_credit_card_field_on_http);
+}
+
 // Tests that the SecurityStateModel for a WebContents is up to date
 // when the WebContents is inserted into a Browser's TabStripModel.
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {

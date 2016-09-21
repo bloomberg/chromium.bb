@@ -391,6 +391,12 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
          content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
   state->ran_content_with_cert_errors =
       !!(ssl.content_status & content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS);
+  state->displayed_password_field_on_http =
+      !!(ssl.content_status &
+         content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  state->displayed_credit_card_field_on_http =
+      !!(ssl.content_status &
+         content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
 
   CheckSafeBrowsingStatus(entry, web_contents_, state);
 }

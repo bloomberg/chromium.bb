@@ -177,6 +177,10 @@ class SecurityStateModel {
     bool ran_content_with_cert_errors;
     // True if PKP was bypassed due to a local trust anchor.
     bool pkp_bypassed;
+    // True if the page was an HTTP page that displayed a password field.
+    bool displayed_password_field_on_http;
+    // True if the page was an HTTP page that displayed a credit card field.
+    bool displayed_credit_card_field_on_http;
   };
 
   // These security levels describe the treatment given to pages that

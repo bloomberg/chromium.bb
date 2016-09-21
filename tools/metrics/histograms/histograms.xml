@@ -58083,8 +58083,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SSL.MarkHttpAsStatus" enum="MarkHttpAsStatus">
+  <owner>estark@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Reports whether the user has selected to mark HTTP origins with an
+    experimental UI treatment (such as showing a warning on HTTP pages that
+    collect sensitive information). This histogram is recorded whenever the
+    security level (the overall security state of a page, roughly corresponding
+    to the lock icon) is computed for an HTTP page.
+  </summary>
+</histogram>
+
 <histogram name="SSL.MarkNonSecureAsStatus" enum="MarkNonSecureAsStatus">
   <owner>palmer@chromium.org</owner>
+  <obsolete>
+    Deprecated 09/2016 and replaced with SSL.MarkHttpAsStatus.
+  </obsolete>
   <summary>
     Reports whether the user has selected to mark non-secure origins as Neutral
     (the status quo), Dubious, or Non-Secure.
@@ -87889,6 +87904,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="137" label="Yank"/>
   <int value="138" label="YankAndSelect"/>
   <int value="139" label="AlignCenter"/>
+</enum>
+
+<enum name="MarkHttpAsStatus" type="int">
+  <int value="0" label="Neutral"/>
+  <int value="1" label="Non-Secure"/>
+  <int value="2" label="Neutral with a verbose warning"/>
 </enum>
 
 <enum name="MarkNonSecureAsStatus" type="int">

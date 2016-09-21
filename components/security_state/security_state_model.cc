@@ -18,35 +18,68 @@ namespace security_state {
 
 namespace {
 
-SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
+// Do not change or reorder this enum, and add new values at the end. It is used
+// in the MarkHttpAs histogram.
+enum MarkHttpStatus { NEUTRAL, NON_SECURE, HTTP_SHOW_WARNING, LAST_STATUS };
+
+// If |switch_or_field_trial_group| corresponds to a valid
+// MarkNonSecureAs group, sets |*level| and |*histogram_status| to the
+// appropriate values and returns true. Otherwise, returns false.
+bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
+    std::string switch_or_field_trial_group,
+    bool displayed_sensitive_input_on_http,
+    SecurityStateModel::SecurityLevel* level,
+    MarkHttpStatus* histogram_status) {
+  if (switch_or_field_trial_group == switches::kMarkNonSecureAsNeutral) {
+    *level = SecurityStateModel::NONE;
+    *histogram_status = NEUTRAL;
+    return true;
+  }
+
+  if (switch_or_field_trial_group == switches::kMarkNonSecureAsNonSecure) {
+    *level = SecurityStateModel::SECURITY_ERROR;
+    *histogram_status = NON_SECURE;
+    return true;
+  }
+
+  if (switch_or_field_trial_group ==
+      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure) {
+    if (displayed_sensitive_input_on_http) {
+      *level = SecurityStateModel::HTTP_SHOW_WARNING;
+      *histogram_status = HTTP_SHOW_WARNING;
+    } else {
+      *level = SecurityStateModel::NONE;
+      *histogram_status = NEUTRAL;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
+    bool displayed_sensitive_input_on_http) {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
   std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
 
-  // Do not change this enum. It is used in the histogram.
-  enum MarkNonSecureStatus { NEUTRAL, DUBIOUS, NON_SECURE, LAST_STATUS };
-  const char kEnumeration[] = "MarkNonSecureAs";
+  const char kEnumeration[] = "MarkHttpAs";
 
   SecurityStateModel::SecurityLevel level = SecurityStateModel::NONE;
-  MarkNonSecureStatus status;
+  MarkHttpStatus status;
 
-  if (choice == switches::kMarkNonSecureAsNeutral) {
-    status = NEUTRAL;
-    level = SecurityStateModel::NONE;
-  } else if (choice == switches::kMarkNonSecureAsNonSecure) {
-    status = NON_SECURE;
-    level = SecurityStateModel::SECURITY_ERROR;
-  } else if (group == switches::kMarkNonSecureAsNeutral ||
-             group == switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure) {
-    status = NEUTRAL;
-    level = SecurityStateModel::NONE;
-  } else if (group == switches::kMarkNonSecureAsNonSecure) {
-    status = NON_SECURE;
-    level = SecurityStateModel::SECURITY_ERROR;
-  } else {
-    status = NEUTRAL;
-    level = SecurityStateModel::NONE;
+  // If the command-line switch is set, then it takes precedence over
+  // the field trial group.
+  if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
+          choice, displayed_sensitive_input_on_http, &level, &status)) {
+    if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
+            group, displayed_sensitive_input_on_http, &level, &status)) {
+      // If neither the command-line switch nor field trial group is set, then
+      // nonsecure defaults to neutral.
+      status = NEUTRAL;
+      level = SecurityStateModel::NONE;
+    }
   }
 
   UMA_HISTOGRAM_ENUMERATION(kEnumeration, status, LAST_STATUS);
@@ -102,8 +135,11 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
   switch (visible_security_state.initial_security_level) {
     case SecurityStateModel::NONE:
     case SecurityStateModel::HTTP_SHOW_WARNING: {
-      if (!client->IsOriginSecure(url) && url.IsStandard())
-        return GetSecurityLevelForNonSecureFieldTrial();
+      if (!client->IsOriginSecure(url) && url.IsStandard()) {
+        return GetSecurityLevelForNonSecureFieldTrial(
+            visible_security_state.displayed_password_field_on_http ||
+            visible_security_state.displayed_credit_card_field_on_http);
+      }
       return SecurityStateModel::NONE;
     }
 
@@ -299,7 +335,9 @@ SecurityStateModel::VisibleSecurityState::VisibleSecurityState()
       ran_mixed_content(false),
       displayed_content_with_cert_errors(false),
       ran_content_with_cert_errors(false),
-      pkp_bypassed(false) {}
+      pkp_bypassed(false),
+      displayed_password_field_on_http(false),
+      displayed_credit_card_field_on_http(false) {}
 
 SecurityStateModel::VisibleSecurityState::~VisibleSecurityState() {}
 
@@ -319,7 +357,11 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
           displayed_content_with_cert_errors ==
               other.displayed_content_with_cert_errors &&
           ran_content_with_cert_errors == other.ran_content_with_cert_errors &&
-          pkp_bypassed == other.pkp_bypassed);
+          pkp_bypassed == other.pkp_bypassed &&
+          displayed_password_field_on_http ==
+              other.displayed_password_field_on_http &&
+          displayed_credit_card_field_on_http ==
+              other.displayed_credit_card_field_on_http);
 }
 
 }  // namespace security_state
