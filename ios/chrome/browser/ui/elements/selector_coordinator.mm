@@ -40,9 +40,9 @@
 }
 
 - (void)start {
-  self.selectorPickerViewController =
-      [[SelectorPickerViewController alloc] initWithOptions:self.options
-                                                    default:self.defaultOption];
+  self.selectorPickerViewController = [[[SelectorPickerViewController alloc]
+      initWithOptions:self.options
+              default:self.defaultOption] autorelease];
   self.selectorPickerViewController.delegate = self;
 
   self.selectorPickerViewController.modalTransitionStyle =
