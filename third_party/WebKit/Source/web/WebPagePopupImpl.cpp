@@ -276,13 +276,16 @@ bool WebPagePopupImpl::initializePage()
     m_chromeClient = PagePopupChromeClient::create(this);
     pageClients.chromeClient = m_chromeClient.get();
 
+    Settings& mainSettings = m_webView->page()->settings();
     m_page = Page::create(pageClients);
     m_page->settings().setScriptEnabled(true);
     m_page->settings().setAllowScriptsToCloseWindows(true);
-    m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
+    m_page->settings().setDeviceSupportsTouch(mainSettings.deviceSupportsTouch());
+    m_page->settings().setMinimumFontSize(mainSettings.minimumFontSize());
+    m_page->settings().setMinimumLogicalFontSize(mainSettings.minimumLogicalFontSize());
     // FIXME: Should we support enabling a11y while a popup is shown?
-    m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());
-    m_page->settings().setScrollAnimatorEnabled(m_webView->page()->settings().scrollAnimatorEnabled());
+    m_page->settings().setAccessibilityEnabled(mainSettings.accessibilityEnabled());
+    m_page->settings().setScrollAnimatorEnabled(mainSettings.scrollAnimatorEnabled());
 
     provideContextFeaturesTo(*m_page, wrapUnique(new PagePopupFeaturesClient()));
     DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
