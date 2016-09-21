@@ -75,14 +75,15 @@ Polymer({
    * Clears all data stored for the current origin.
    */
   onClearStorage_: function() {
-    this.$.usageApi.clearUsage(this.site.origin, this.storageType_);
+    this.$.usageApi.clearUsage(
+        this.toUrl(this.site.origin).href, this.storageType_);
   },
 
   /**
    * Called when usage has been deleted for an origin.
    */
   onUsageDeleted: function(event) {
-    if (event.detail.origin == this.site.origin) {
+    if (event.detail.origin == this.toUrl(this.site.origin).href) {
       this.storedData_ = '';
       this.navigateBackIfNoData_();
     }

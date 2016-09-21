@@ -301,8 +301,8 @@ void SiteSettingsHandler::HandleClearUsage(
   CHECK_EQ(2U, args->GetSize());
   std::string origin;
   CHECK(args->GetString(0, &origin));
-  std::string type;
-  CHECK(args->GetString(1, &type));
+  double storage_type;
+  CHECK(args->GetDouble(1, &storage_type));
 
   GURL url(origin);
   if (url.is_valid()) {
@@ -313,8 +313,7 @@ void SiteSettingsHandler::HandleClearUsage(
         = new StorageInfoFetcher(profile_);
     storage_info_fetcher->ClearStorage(
         url.host(),
-        static_cast<storage::StorageType>(static_cast<int>(
-            site_settings::ContentSettingsTypeFromGroupName(type))),
+        static_cast<storage::StorageType>(static_cast<int>(storage_type)),
         base::Bind(&SiteSettingsHandler::OnUsageInfoCleared,
             base::Unretained(this)));
 
