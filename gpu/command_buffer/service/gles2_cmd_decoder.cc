@@ -7709,8 +7709,6 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   bool encode_srgb_only =
       (draw_buffers_has_srgb && !read_buffer_has_srgb) &&
       ((mask & GL_COLOR_BUFFER_BIT) != 0);
-  // TODO(yunchao) Need to revisit here if the read buffer is a multi-sampled
-  // renderbuffer.
   if (!enable_srgb ||
       read_buffer_samples > 0 ||
       !feature_info_->feature_flags().desktop_srgb_support ||
