@@ -186,49 +186,6 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   p->Remove(kRendererID);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, BlobSchemeTest) {
-  ChildProcessSecurityPolicyImpl* p =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  p->Add(kRendererID);
-
-  EXPECT_TRUE(
-      p->CanRequestURL(kRendererID, GURL("blob:http://localhost/some-guid")));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("blob:null/some-guid")));
-  EXPECT_TRUE(
-      p->CanRequestURL(kRendererID, GURL("blob:http://localhost/some-guid")));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("blob:NulL/some-guid")));
-  EXPECT_FALSE(p->CanRequestURL(
-      kRendererID, GURL("blob:http://username@localhost/some-guid")));
-  EXPECT_FALSE(p->CanRequestURL(
-      kRendererID, GURL("blob:http://username     @localhost/some-guid")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("blob:blob:some-guid")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("blob:some-guid")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID,
-                                GURL("blob:filesystem:http://localhost/path")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID,
-                                GURL("filesystem:blob:http://localhost/guid")));
-
-  EXPECT_TRUE(
-      p->CanCommitURL(kRendererID, GURL("blob:http://localhost/some-guid")));
-  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("blob:null/some-guid")));
-  EXPECT_TRUE(
-      p->CanCommitURL(kRendererID, GURL("blob:http://localhost/some-guid")));
-  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("blob:NulL/some-guid")));
-  EXPECT_FALSE(p->CanCommitURL(
-      kRendererID, GURL("blob:http://username@localhost/some-guid")));
-  EXPECT_FALSE(p->CanCommitURL(
-      kRendererID, GURL("blob:http://username     @localhost/some-guid")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("blob:blob:some-guid")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("blob:some-guid")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID,
-                               GURL("blob:filesystem:http://localhost/path")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID,
-                               GURL("filesystem:blob:http://localhost/guid")));
-
-  p->Remove(kRendererID);
-}
-
 TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
