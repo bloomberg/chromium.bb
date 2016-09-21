@@ -71,11 +71,6 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   scoped_refptr<ResourceResponse> deferred_response_;
 
   bool cancelled_by_resource_throttle_;
-
-  // True if currently calling into a throttle, false otherwise.  False when
-  // waiting on a throttle that has delayed the request.
-  // TODO(mmenke):  Remove once https://crbug.com/640545 is resolved.
-  bool currently_calling_throttle_;
 };
 
 }  // namespace content
