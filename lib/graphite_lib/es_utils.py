@@ -59,7 +59,6 @@ range_eq_query = {
 
 To send a query once it is created, call execute_query() to send it to the
 intended elasticsearch server.
-
 """
 
 from __future__ import print_function

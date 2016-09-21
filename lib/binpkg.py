@@ -43,7 +43,7 @@ class PackageIndex(object):
        of key/value pairs. Packages are either terminated by a blank line or
        by the end of the file. Every package has a CPV entry, which serves as
        a unique identifier for the package.
-   """
+  """
 
   def __init__(self):
     """Constructor."""

@@ -34,8 +34,8 @@ class DocStringChecker(BaseChecker):
 
   See our style guide for more info:
   http://dev.chromium.org/chromium-os/python-style-guidelines#TOC-Describing-arguments-in-docstrings
-
   """
+
   # TODO: See about merging with the pep257 project:
   # https://github.com/GreenSteam/pep257
 
@@ -57,6 +57,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP013(object): pass
   class _MessageCP014(object): pass
   class _MessageCP015(object): pass
+  class _MessageCP016(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'doc_string_checker'
@@ -97,6 +98,9 @@ class DocStringChecker(BaseChecker):
                 ('docstring-second-line-blank'), _MessageCP014),
       'C9015': ('Section indentation is incorrect: %s' % MSG_ARGS,
                 ('docstring-section-indent'), _MessageCP015),
+      'C9016': ('Closing triple quotes should be indented with %(want_indent)s '
+                'spaces, not %(curr_indent)s',
+                ('docstring-trailing-quotes'), _MessageCP016),
   }
   options = ()
 
@@ -108,7 +112,6 @@ class DocStringChecker(BaseChecker):
     if node.doc:
       lines = node.doc.split('\n')
       self._check_common(node, lines)
-      self._check_last_line_function(node, lines)
       self._check_section_lines(node, lines)
       self._check_all_args_in_doc(node, lines)
       self._check_func_signature(node)
@@ -132,6 +135,14 @@ class DocStringChecker(BaseChecker):
       self._check_common(node)
     else:
       self.add_message('C9002', node=node, line=node.fromlineno)
+
+  @staticmethod
+  def _docstring_indent(node):
+    """How much a |node|'s docstring should be indented"""
+    if node.display_type() == 'Module':
+      return 0
+    else:
+      return node.col_offset + 2
 
   def _check_common(self, node, lines=None):
     """Common checks we enforce on all docstrings"""
@@ -189,16 +200,19 @@ class DocStringChecker(BaseChecker):
   def _check_last_line(self, node, lines):
     """Make sure last line is all by itself"""
     if len(lines) > 1:
+      indent = self._docstring_indent(node)
+
       if lines[-1].strip() != '':
         self.add_message('C9005', node=node, line=node.fromlineno)
-
-  def _check_last_line_function(self, node, lines):
-    """Make sure last line is indented"""
-    if len(lines) > 1:
-      # The -1 line holds the """ itself and that should be indented.
-      if lines[-1] == '':
-        margs = {'offset': len(lines) - 1, 'line': lines[-1]}
-        self.add_message('C9005', node=node, line=node.fromlineno, args=margs)
+      elif lines[-1] != ' ' * indent:
+        # The -1 line holds the """ itself and that should be indented.
+        margs = {
+            'offset': len(lines) - 1,
+            'line': lines[-1],
+            'want_indent': indent,
+            'curr_indent': len(lines[-1]),
+        }
+        self.add_message('C9016', node=node, line=node.fromlineno, args=margs)
 
       # The last line should not be blank.
       if lines[-2] == '':
@@ -256,11 +270,7 @@ class DocStringChecker(BaseChecker):
       self.add_message('C9008', node=node, line=node.fromlineno)
 
     # Check the indentation level on all the sections.
-    # The -1 line holds the trailing """ itself and that should be indented to
-    # the correct number of spaces.  All checks below are relative to this.  If
-    # it is off, then these checks might report weird errors, but that's ok as
-    # ultimately the docstring is still wrong :).
-    indent_len = len(lines[-1])
+    indent_len = self._docstring_indent(node)
     for lineno in lineno_sections:
       # First the section header (e.g. Args:).
       lineno += 1

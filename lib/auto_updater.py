@@ -62,7 +62,6 @@ ChromiumOSUpdater adds:
 
   ----Verify----
   * Post-check stateful/rootfs update/whole update.
-
 """
 
 from __future__ import print_function

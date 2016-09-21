@@ -6,8 +6,8 @@
 
 CIPD is the Chrome Infra Package Deployer, a simple method of resolving a
 package/version into a GStorage link and installing them.
-
 """
+
 from __future__ import print_function
 
 import hashlib

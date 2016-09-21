@@ -151,8 +151,8 @@ class FakePatch(partial_mock.PartialMock):
   FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior of
   `GerritDependencies`, `PaladinDependencies` and `Fetch` depends on the patch
   id.
-
   """
+
   TARGET = 'chromite.lib.patch.GitRepoPatch'
   ATTRS = ('GerritDependencies', 'PaladinDependencies', 'Fetch')
 

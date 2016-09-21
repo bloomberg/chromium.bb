@@ -23,7 +23,8 @@ class TestNode(object):
   Arg = collections.namedtuple('Arg', ('name',))
 
   def __init__(self, doc='', fromlineno=0, path='foo.py', args=(), vararg='',
-               kwarg='', names=None, lineno=0, name='module'):
+               kwarg='', names=None, lineno=0, name='module',
+               display_type='Module', col_offset=None):
     if names is None:
       names = [('name', None)]
     self.doc = doc
@@ -35,9 +36,14 @@ class TestNode(object):
                           vararg=vararg, kwarg=kwarg)
     self.names = names
     self.name = name
+    self._display_type = display_type
+    self.col_offset = col_offset
 
   def argnames(self):
     return self.args
+
+  def display_type(self):
+    return self._display_type
 
 
 class CheckerTestCase(cros_test_lib.TestCase):
@@ -155,6 +161,10 @@ class DocStringCheckerTest(CheckerTestCase):
         Args:
           some: day
       """,
+      """the final indentation is incorrect
+
+      Blah.
+       """,
   )
 
   # The current linter isn't good enough yet to detect these.
@@ -174,7 +184,7 @@ class DocStringCheckerTest(CheckerTestCase):
     """Allow known good docstrings"""
     for dc in self.GOOD_FUNC_DOCSTRINGS:
       self.results = []
-      node = TestNode(doc=dc)
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
       self.checker.visit_function(node)
       self.assertEqual(self.results, [],
                        msg='docstring was not accepted:\n"""%s"""' % dc)
@@ -183,7 +193,7 @@ class DocStringCheckerTest(CheckerTestCase):
     """Reject known bad docstrings"""
     for dc in self.BAD_FUNC_DOCSTRINGS:
       self.results = []
-      node = TestNode(doc=dc)
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
       self.checker.visit_function(node)
       self.assertNotEqual(self.results, [],
                           msg='docstring was not rejected:\n"""%s"""' % dc)

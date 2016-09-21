@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script for VM Management.
-
-"""
+"""Script for VM Management."""
 
 from __future__ import print_function
 
