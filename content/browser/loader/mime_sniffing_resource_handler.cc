@@ -68,7 +68,8 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
     ResourceDispatcherHostImpl* host,
     PluginService* plugin_service,
     InterceptingResourceHandler* intercepting_handler,
-    net::URLRequest* request)
+    net::URLRequest* request,
+    RequestContextType request_context_type)
     : LayeredResourceHandler(request, std::move(next_handler)),
       state_(STATE_STARTING),
       host_(host),
@@ -80,6 +81,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       read_buffer_size_(0),
       bytes_read_(0),
       intercepting_handler_(intercepting_handler),
+      request_context_type_(request_context_type),
       weak_ptr_factory_(this) {
 }
 
@@ -142,7 +144,6 @@ bool MimeSniffingResourceHandler::OnResponseStarted(ResourceResponse* response,
   response_ = response;
 
   state_ = STATE_BUFFERING;
-
   // A 304 response should not contain a Content-Type header (RFC 7232 section
   // 4.1). The following code may incorrectly attempt to add a Content-Type to
   // the response, and so must be skipped for 304 responses.
@@ -326,6 +327,11 @@ bool MimeSniffingResourceHandler::ReplayReadCompleted(bool* defer) {
 }
 
 bool MimeSniffingResourceHandler::ShouldSniffContent() {
+  if (request_context_type_ == REQUEST_CONTEXT_TYPE_FETCH) {
+    // MIME sniffing should be disabled for a request initiated by fetch().
+    return false;
+  }
+
   const std::string& mime_type = response_->head.mime_type;
 
   std::string content_type_options;

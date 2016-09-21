@@ -1691,11 +1691,12 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 #endif
 
   // Insert a buffered event handler to sniff the mime type.
-  // Note: all ResourceHandler following the MimeSniffingResourceHandler should
-  // expect OnWillRead to be called *before* OnResponseStarted as part of the
-  // mime sniffing process.
+  // Note: all ResourceHandler following the MimeSniffingResourceHandler
+  // should expect OnWillRead to be called *before* OnResponseStarted as
+  // part of the mime sniffing process.
   handler.reset(new MimeSniffingResourceHandler(
-      std::move(handler), this, plugin_service, intercepting_handler, request));
+      std::move(handler), this, plugin_service, intercepting_handler, request,
+      fetch_request_context_type));
 
   // Add the pre mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(

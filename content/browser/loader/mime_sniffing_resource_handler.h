@@ -13,6 +13,7 @@
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/common/request_context_type.h"
 
 namespace net {
 class URLRequest;
@@ -44,7 +45,8 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
                               ResourceDispatcherHostImpl* host,
                               PluginService* plugin_service,
                               InterceptingResourceHandler* intercepting_handler,
-                              net::URLRequest* request);
+                              net::URLRequest* request,
+                              RequestContextType request_context_type);
   ~MimeSniffingResourceHandler() override;
 
  private:
@@ -164,6 +166,8 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   // The InterceptingResourceHandler that will perform ResourceHandler swap if
   // needed.
   InterceptingResourceHandler* intercepting_handler_;
+
+  RequestContextType request_context_type_;
 
   base::WeakPtrFactory<MimeSniffingResourceHandler> weak_ptr_factory_;
 

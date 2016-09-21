@@ -342,7 +342,8 @@ MimeSniffingResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
       new MimeSniffingResourceHandler(
           std::unique_ptr<ResourceHandler>(
               new TestResourceHandler(false, false, false, false, false)),
-          nullptr, nullptr, nullptr, request));
+          nullptr, nullptr, nullptr, request,
+          REQUEST_CONTEXT_TYPE_UNSPECIFIED));
 
   bool defer = false;
   mime_sniffing_handler->OnWillStart(request->url(), &defer);
@@ -383,7 +384,8 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
   std::unique_ptr<ResourceHandler> mime_handler(new MimeSniffingResourceHandler(
       std::unique_ptr<ResourceHandler>(
           new TestResourceHandler(false, false, false, false, false)),
-      &host, &plugin_service, intercepting_handler.get(), request.get()));
+      &host, &plugin_service, intercepting_handler.get(), request.get(),
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
 
   TestResourceController resource_controller;
   mime_handler->SetController(&resource_controller);
@@ -437,9 +439,10 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
           defer_read_completed));
   TestResourceHandler* test_handler = scoped_test_handler.get();
   std::unique_ptr<MimeSniffingResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(
-          std::move(scoped_test_handler), &host, &plugin_service,
-          intercepting_handler.get(), request.get()));
+      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
+                                      &plugin_service,
+                                      intercepting_handler.get(), request.get(),
+                                      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
 
   TestResourceController resource_controller;
   mime_sniffing_handler->SetController(&resource_controller);
@@ -598,9 +601,10 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
           defer_read_completed));
   TestResourceHandler* test_handler = scoped_test_handler.get();
   std::unique_ptr<MimeSniffingResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(
-          std::move(scoped_test_handler), &host, &plugin_service,
-          intercepting_handler.get(), request.get()));
+      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
+                                      &plugin_service,
+                                      intercepting_handler.get(), request.get(),
+                                      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
 
   TestResourceController resource_controller;
   mime_sniffing_handler->SetController(&resource_controller);
@@ -989,7 +993,7 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
           new TestResourceHandler(true, false, true, true, false)),
       &host, &plugin_service,
       static_cast<InterceptingResourceHandler*>(intercepting_handler.get()),
-      request.get()));
+      request.get(), REQUEST_CONTEXT_TYPE_UNSPECIFIED));
 
   TestResourceController resource_controller;
   mime_handler->SetController(&resource_controller);
@@ -1007,6 +1011,60 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
   EXPECT_FALSE(defer);
   EXPECT_FALSE(host.new_resource_handler());
 
+  content::RunAllPendingInMessageLoop();
+}
+
+TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,  // context
+                                          0,        // render_process_id
+                                          0,        // render_view_id
+                                          0,        // render_frame_id
+                                          true,     // is_main_frame
+                                          false,    // parent_is_main_frame
+                                          false,    // allow_download
+                                          true,     // is_async
+                                          false);   // is_using_lofi
+
+  TestResourceDispatcherHost host(false);
+
+  TestFakePluginService plugin_service(false, false);
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(nullptr, nullptr));
+
+  std::unique_ptr<TestResourceHandler> scoped_test_handler(
+      new TestResourceHandler(false,    // response_started
+                              false,    // defer_response_started
+                              true,     // will_read,
+                              true,     // read_completed,
+                              false));  // defer_read_completed
+  std::unique_ptr<ResourceHandler> mime_sniffing_handler(
+      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
+                                      &plugin_service,
+                                      intercepting_handler.get(), request.get(),
+                                      REQUEST_CONTEXT_TYPE_FETCH));
+
+  TestResourceController resource_controller;
+  mime_sniffing_handler->SetController(&resource_controller);
+
+  bool defer = false;
+  mime_sniffing_handler->OnWillStart(GURL(), &defer);
+  ASSERT_FALSE(defer);
+
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  response->head.mime_type = "text/plain";
+
+  // |mime_sniffing_handler->OnResponseStarted| should return false because
+  // mime sniffing is disabled and the wrapped resource handler returns false
+  // on OnResponseStarted.
+  EXPECT_FALSE(
+      mime_sniffing_handler->OnResponseStarted(response.get(), &defer));
+
+  // Process all messages to ensure proper test teardown.
   content::RunAllPendingInMessageLoop();
 }
 
