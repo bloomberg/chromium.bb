@@ -45,11 +45,11 @@ public class DownloadTest extends DownloadTestBase {
     private static final String FILENAME_TEXT = "superbo.txt";
     private static final String FILENAME_TEXT_1 = "superbo (1).txt";
     private static final String FILENAME_TEXT_2 = "superbo (2).txt";
-    private static final String FILENAME_APK = "test.apk";
+    private static final String FILENAME_SWF = "test.swf";
     private static final String FILENAME_GZIP = "test.gzip";
 
     private static final String[] TEST_FILES = new String[] {
-        FILENAME_WALLPAPER, FILENAME_TEXT, FILENAME_TEXT_1, FILENAME_TEXT_2, FILENAME_APK,
+        FILENAME_WALLPAPER, FILENAME_TEXT, FILENAME_TEXT_1, FILENAME_TEXT_2, FILENAME_SWF,
         FILENAME_GZIP
     };
 
@@ -81,13 +81,10 @@ public class DownloadTest extends DownloadTestBase {
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
-        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
-        int callCount = callbackHelper.getCallCount();
+        int callCount = getChromeDownloadCallCount();
         singleClickView(currentView);
-        callbackHelper.waitForCallback(callCount);
-
-        assertEquals(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + FILENAME_GZIP),
-                callbackHelper.getDownloadInfo().getUrl());
+        assertTrue(waitForChromeDownloadToFinish(callCount));
+        assertTrue(hasDownload(FILENAME_GZIP, null));
     }
 
     @MediumTest
@@ -99,13 +96,10 @@ public class DownloadTest extends DownloadTestBase {
         View currentView = getActivity().getActivityTab().getView();
         singleClickView(currentView);
         assertPollForInfoBarSize(1);
-
-        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
-        int callCount = callbackHelper.getCallCount();
         assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
-        callbackHelper.waitForCallback(callCount);
-        assertEquals(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + FILENAME_APK),
-                callbackHelper.getDownloadInfo().getUrl());
+        int callCount = getChromeDownloadCallCount();
+        assertTrue(waitForChromeDownloadToFinish(callCount));
+        assertTrue(hasDownload(FILENAME_SWF, null));
     }
 
     @MediumTest
@@ -162,13 +156,11 @@ public class DownloadTest extends DownloadTestBase {
         View currentView = getActivity().getActivityTab().getView();
         TouchCommon.longPressView(currentView);
 
-        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
-        int callCount = callbackHelper.getCallCount();
+        int callCount = getChromeDownloadCallCount();
         getInstrumentation().invokeContextMenuAction(getActivity(),
                 R.id.contextmenu_open_in_new_tab, 0);
-        callbackHelper.waitForCallback(callCount);
-        assertEquals(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + FILENAME_GZIP),
-                callbackHelper.getDownloadInfo().getUrl());
+        assertTrue(waitForChromeDownloadToFinish(callCount));
+        assertTrue(hasDownload(FILENAME_GZIP, null));
 
         CriteriaHelper.pollUiThread(
                 Criteria.equals(initialTabCount, new Callable<Integer>() {
@@ -413,12 +405,10 @@ public class DownloadTest extends DownloadTestBase {
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
-        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
-        int callCount = callbackHelper.getCallCount();
+        int callCount = getChromeDownloadCallCount();
         singleClickView(currentView);
-        callbackHelper.waitForCallback(callCount);
-        assertEquals(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + FILENAME_WALLPAPER),
-                callbackHelper.getDownloadInfo().getUrl());
+        assertTrue(waitForChromeDownloadToFinish(callCount));
+        assertTrue(hasDownload(FILENAME_WALLPAPER, null));
     }
 
     private void waitForFocus() {

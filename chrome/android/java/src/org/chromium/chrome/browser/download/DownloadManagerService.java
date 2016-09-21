@@ -34,7 +34,6 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -779,6 +778,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * content will be saved to the public directory on external storage. Otherwise, the
      * download will be saved in the app directory and user will not get any notifications
      * after download completion.
+     * This will be used by OMA downloads as we need Android DownloadManager to encrypt the content.
      * TODO(qinmin): move this to DownloadManagerDelegate.
      *
      * @param info Download information about the download.
@@ -1063,17 +1063,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param context Application context
      */
     protected static void openDownloadsPage(Context context) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYSTEM_DOWNLOAD_MANAGER)) {
-            // Try to open Download Home.
-            Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-            if (lastActivity instanceof ChromeActivity) {
-                int state = ApplicationStatus.getStateForActivity(lastActivity);
-                if (state >= ActivityState.CREATED && state <= ActivityState.RESUMED) {
-                    ChromeActivity chromeActivity = (ChromeActivity) lastActivity;
-                    DownloadUtils.showDownloadManager(
-                            lastActivity, chromeActivity.getActivityTab());
-                    return;
-                }
+        // Try to open Download Home.
+        Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (lastActivity instanceof ChromeActivity) {
+            int state = ApplicationStatus.getStateForActivity(lastActivity);
+            if (state >= ActivityState.CREATED && state <= ActivityState.RESUMED) {
+                ChromeActivity chromeActivity = (ChromeActivity) lastActivity;
+                DownloadUtils.showDownloadManager(
+                        lastActivity, chromeActivity.getActivityTab());
+                return;
             }
         }
 

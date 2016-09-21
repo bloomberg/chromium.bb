@@ -5906,12 +5906,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_READ_IT_LATER_IN_MENU_DESCRIPTION" desc="Description for the flag to show read it later in menu.">
           Allow "read it later" to show in the menu, and users can select it to save the tab to Chrome in background.
         </message>
-        <message name="IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_NAME" desc="Title for the flag to use system download manager.">
-          Use system download manager when applicable.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_DESCRIPTION" desc="Description for the flag to use system download manager.">
-          Allow downloads to be handled by the system download manager when applicable.
-        </message>
         <message name="IDS_FLAGS_MEDIA_DOCUMENT_DOWNLOAD_BUTTON_NAME" desc="Title for the flag to enable the download button on MediaDocument.">
           Download button when opening a page with media url.
         </message>

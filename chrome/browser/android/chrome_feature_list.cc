@@ -51,7 +51,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kScanCardsInWebPayments,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
-    &kSystemDownloadManager,
     &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,
@@ -100,9 +99,6 @@ const base::Feature kSpecialLocaleFeature{"SpecialLocale",
 
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSystemDownloadManager{"SystemDownloadManager",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabReparenting {
   "TabReparenting", base::FEATURE_ENABLED_BY_DEFAULT

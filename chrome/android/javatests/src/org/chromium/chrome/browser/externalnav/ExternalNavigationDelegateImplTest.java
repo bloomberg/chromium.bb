@@ -9,7 +9,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -104,7 +103,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     }
 
     @SmallTest
-    @CommandLineFlags.Add({"disable-features=SystemDownloadManager"})
     @RetryOnFailure
     public void testIsDownload_noSystemDownloadManager() throws Exception {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
@@ -119,15 +117,6 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
                 delegate.isPdfDownload("http://somesampleurldne.com/image.jpg"));
         assertFalse("URL is a text file can be viewed in Chrome",
                 delegate.isPdfDownload("http://somesampleurldne.com/copy.txt"));
-    }
-
-    @SmallTest
-    @CommandLineFlags.Add({"enable-features=SystemDownloadManager"})
-    public void testIsDownload_withSystemDownloadManager() throws Exception {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                getActivity().getActivityTab());
-        assertFalse("isDownload should return false with SystemDownloadManager enabled",
-                delegate.isPdfDownload("http://somesampeleurldne.com/file.pdf"));
     }
 
     @Override

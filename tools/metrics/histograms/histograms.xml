@@ -25449,6 +25449,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="MobileDownload.InterceptFailureReason"
     enum="MobileDownloadInterceptFailureReason">
+  <obsolete>
+    Deprecated 09/2016 in Issue 647755 with all downloads going through Chrome.
+  </obsolete>
   <owner>qinmin@chromium.org</owner>
   <summary>
     Android: Records the reason that Chrome fails to intercept a download and

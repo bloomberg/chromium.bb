@@ -3033,8 +3033,6 @@ split_static_library("browser") {
       "android/instantapps/instant_apps_infobar_delegate.h",
       "android/intent_helper.cc",
       "android/intent_helper.h",
-      "android/intercept_download_resource_throttle.cc",
-      "android/intercept_download_resource_throttle.h",
       "android/java_exception_reporter.cc",
       "android/java_exception_reporter.h",
       "android/large_icon_bridge.cc",

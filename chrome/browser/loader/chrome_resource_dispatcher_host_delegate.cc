@@ -99,10 +99,6 @@
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/intercept_download_resource_throttle.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -510,11 +506,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, info->GetWebContentsGetterForRequest(),
         request->url(), request->method()));
-#if BUILDFLAG(ANDROID_JAVA_UI)
-    throttles->push_back(
-        new chrome::InterceptDownloadResourceThrottle(
-            request, info->GetWebContentsGetterForRequest(), must_download));
-#endif
   }
 
   // If this isn't a new request, we've seen this before and added the standard
