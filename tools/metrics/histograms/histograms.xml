@@ -10988,6 +10988,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Downloads extension API function calls.</summary>
 </histogram>
 
+<histogram name="Download.AttachmentServices.Duration" units="ms">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Time taken to invoke IAttachmentExecute::Save() excluding the time taken to
+    instantiate CLSID_AttachmentServices.
+  </summary>
+</histogram>
+
+<histogram name="Download.AttachmentServices.Result"
+    enum="AttachmentServicesResult">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Result of invoking (or attempting to invoke) Windows Attachment Services API
+    via IAttachmentExecute::Save().
+  </summary>
+</histogram>
+
 <histogram name="Download.BandwidthDiskBytesPerSecond">
   <owner>asanka@chromium.org</owner>
   <summary>
@@ -70636,6 +70653,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
 </enum>
 
+<enum name="AttachmentServicesResult" type="int">
+  <int value="0" label="Succeeded with MOTW"/>
+  <int value="1" label="Succeeded without MOTW"/>
+  <int value="2" label="Succeeded but file was missing"/>
+  <int value="3" label="Failed to instantiate CLSID_AttachmentServices"/>
+  <int value="4" label="Failed while invoking IAE setter"/>
+  <int value="5" label="Blocked (file exists)"/>
+  <int value="6" label="Blocked (file missing)"/>
+  <int value="7" label="Virus infected (file exists)"/>
+  <int value="8" label="Virus infected (file missing)"/>
+  <int value="9" label="Access denied (file exists)"/>
+  <int value="10" label="Access denied (file missing)"/>
+  <int value="11" label="Other error (file exists)"/>
+  <int value="12" label="Other error (file missing)"/>
+</enum>
+
 <enum name="AudioCodec" type="int">
   <int value="0" label="kUnknownAudioCodec"/>
   <int value="1" label="kCodecAAC"/>
@@ -75853,7 +75886,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="Calls to AppendDataToFile (Count) (Obsolete 8/2013)"/>
   <int value="12" label="Interrupted at End of Download"/>
   <int value="13" label="Attempt to Append to Detached File"/>
-  <int value="14" label="File Missing After Successful Scan"/>
+  <int value="14" label="File Missing After Successful Scan (Obsolete 6/2016)"/>
   <int value="15" label="Supports ranges and strong ETag (Obsolete 11/2013)"/>
   <int value="16" label="No WebContents at interruption"/>
   <int value="17" label="Supports ranges and strong validation"/>

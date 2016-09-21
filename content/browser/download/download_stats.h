@@ -70,9 +70,9 @@ enum DownloadCountTypes {
   // progress.
   APPEND_TO_DETACHED_FILE_COUNT,
 
-  // Counts the number of instances where the downloaded file is missing after a
-  // successful invocation of ScanAndSaveDownloadedFile().
-  FILE_MISSING_AFTER_SUCCESSFUL_SCAN_COUNT,
+  // (Deprecated) Counts the number of instances where the downloaded file is
+  // missing after a successful invocation of ScanAndSaveDownloadedFile().
+  DOWNLOAD_COUNT_UNUSED_14,
 
   // (Deprecated) Count of downloads with a strong ETag and specified
   // 'Accept-Ranges: bytes'.

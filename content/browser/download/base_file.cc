@@ -18,6 +18,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/quarantine.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "crypto/secure_hash.h"
@@ -192,16 +193,6 @@ std::unique_ptr<crypto::SecureHash> BaseFile::Finish() {
   Close();
   return std::move(secure_hash_);
 }
-
-// OS_WIN, OS_MACOSX and OS_LINUX have specialized implementations.
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
-    const std::string& client_guid,
-    const GURL& source_url,
-    const GURL& referrer_url) {
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
-}
-#endif
 
 std::string BaseFile::DebugString() const {
   return base::StringPrintf(
@@ -383,5 +374,62 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
       base::Bind(&FileInterruptedNetLogCallback, operation, os_error, reason));
   return reason;
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(!detached_);
+  DCHECK(!full_path_.empty());
+
+  bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  QuarantineFileResult result =
+      QuarantineFile(full_path_, source_url, referrer_url, client_guid);
+  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  switch (result) {
+    case QuarantineFileResult::OK:
+      return DOWNLOAD_INTERRUPT_REASON_NONE;
+    case QuarantineFileResult::VIRUS_INFECTED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
+    case QuarantineFileResult::SECURITY_CHECK_FAILED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
+    case QuarantineFileResult::BLOCKED_BY_POLICY:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
+    case QuarantineFileResult::ACCESS_DENIED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
+
+    case QuarantineFileResult::FILE_MISSING:
+      // Don't have a good interrupt reason here. This return code means that
+      // the file at |full_path_| went missing before QuarantineFile got to look
+      // at it. Not expected to happen, but we've seen instances where a file
+      // goes missing immediately after BaseFile closes the handle.
+      //
+      // Intentionally using a different error message than
+      // SECURITY_CHECK_FAILED in order to distinguish the two.
+      return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+
+    case QuarantineFileResult::ANNOTATION_FAILED:
+      // This means that the mark-of-the-web couldn't be applied. The file is
+      // already on the file system under its final target name.
+      //
+      // Causes of failed annotations typically aren't transient. E.g. the
+      // target file system may not support extended attributes or alternate
+      // streams. We are going to allow these downloads to progress on the
+      // assumption that failures to apply MOTW can't reliably be introduced
+      // remotely.
+      return DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
+  return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+}
+#else  // !OS_WIN && !OS_MACOSX && !OS_LINUX
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url) {
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+#endif
 
 }  // namespace content

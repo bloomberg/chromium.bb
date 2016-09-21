@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/file_metadata_mac.h"
+#include "content/browser/download/quarantine.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <Foundation/Foundation.h>
@@ -13,9 +13,12 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/threading/thread_restrictions.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
 
 // As of Mac OS X 10.4 ("Tiger"), files can be tagged with metadata describing
 // various attributes.  Metadata is integrated with the system's Spotlight
@@ -36,8 +39,10 @@ namespace content {
 // There is no documented API to set metadata on a file directly as of the
 // 10.5 SDK.  The MDSetItemAttribute function does exist to perform this task,
 // but it's undocumented.
-void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
+bool AddOriginMetadataToFile(const base::FilePath& file,
+                             const GURL& source,
                              const GURL& referrer) {
+  base::ThreadRestrictions::AssertIOAllowed();
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup
   // at runtime instead of declaring it ourselves and linking against what's
@@ -57,24 +62,23 @@ void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
     CFBundleRef metadata_bundle =
         CFBundleGetBundleWithIdentifier(CFSTR("com.apple.Metadata"));
     if (!metadata_bundle)
-      return;
+      return false;
 
-    md_item_set_attribute_func = (MDItemSetAttribute_type)
-        CFBundleGetFunctionPointerForName(metadata_bundle,
-                                          CFSTR("MDItemSetAttribute"));
+    md_item_set_attribute_func =
+        (MDItemSetAttribute_type)CFBundleGetFunctionPointerForName(
+            metadata_bundle, CFSTR("MDItemSetAttribute"));
   }
   if (!md_item_set_attribute_func)
-    return;
+    return false;
 
-  NSString* file_path =
-      [NSString stringWithUTF8String:file.value().c_str()];
+  NSString* file_path = [NSString stringWithUTF8String:file.value().c_str()];
   if (!file_path)
-    return;
+    return false;
 
   base::ScopedCFTypeRef<MDItemRef> md_item(
       MDItemCreate(NULL, base::mac::NSToCFCast(file_path)));
   if (!md_item)
-    return;
+    return false;
 
   // We won't put any more than 2 items into the attribute.
   NSMutableArray* list = [NSMutableArray arrayWithCapacity:2];
@@ -91,24 +95,31 @@ void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
 
   md_item_set_attribute_func(md_item, kMDItemWhereFroms,
                              base::mac::NSToCFCast(list));
+  return true;
 }
+
+// Adds quarantine metadata to the file, assuming it has already been
+// quarantined by the OS.
+// |source| should be the source URL for the download, and |referrer| should be
+// the URL the user initiated the download from.
 
 // The OS will automatically quarantine files due to the
 // LSFileQuarantineEnabled entry in our Info.plist, but it knows relatively
 // little about the files. We add more information about the download to
 // improve the UI shown by the OS when the users tries to open the file.
-void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
+bool AddQuarantineMetadataToFile(const base::FilePath& file,
+                                 const GURL& source,
                                  const GURL& referrer) {
+  base::ThreadRestrictions::AssertIOAllowed();
   FSRef file_ref;
   if (!base::mac::FSRefFromPath(file.value(), &file_ref))
-    return;
+    return false;
 
   NSMutableDictionary* quarantine_properties = nil;
   CFTypeRef quarantine_properties_base = NULL;
   if (LSCopyItemAttribute(&file_ref, kLSRolesAll, kLSItemQuarantineProperties,
-                            &quarantine_properties_base) == noErr) {
-    if (CFGetTypeID(quarantine_properties_base) ==
-        CFDictionaryGetTypeID()) {
+                          &quarantine_properties_base) == noErr) {
+    if (CFGetTypeID(quarantine_properties_base) == CFDictionaryGetTypeID()) {
       // Quarantine properties will already exist if LSFileQuarantineEnabled
       // is on and the file doesn't match an exclusion.
       quarantine_properties =
@@ -125,7 +136,7 @@ void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
     // (e.g., because the user has set up exclusions for certain file types).
     // We don't want to add any metadata, because that will cause the file to
     // be quarantined against the user's wishes.
-    return;
+    return true;
   }
 
   // kLSQuarantineAgentNameKey, kLSQuarantineAgentBundleIdentifierKey, and
@@ -134,8 +145,8 @@ void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
 
   if (![quarantine_properties valueForKey:(NSString*)kLSQuarantineTypeKey]) {
     CFStringRef type = source.SchemeIsHTTPOrHTTPS()
-                       ? kLSQuarantineTypeWebDownload
-                       : kLSQuarantineTypeOtherDownload;
+                           ? kLSQuarantineTypeWebDownload
+                           : kLSQuarantineTypeOtherDownload;
     [quarantine_properties setValue:(NSString*)type
                              forKey:(NSString*)kLSQuarantineTypeKey];
   }
@@ -157,13 +168,30 @@ void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
                              forKey:(NSString*)kLSQuarantineDataURLKey];
   }
 
-  OSStatus os_error = LSSetItemAttribute(&file_ref, kLSRolesAll,
-                                         kLSItemQuarantineProperties,
-                                         quarantine_properties);
+  OSStatus os_error =
+      LSSetItemAttribute(&file_ref, kLSRolesAll, kLSItemQuarantineProperties,
+                         quarantine_properties);
   if (os_error != noErr) {
     OSSTATUS_LOG(WARNING, os_error)
         << "Unable to set quarantine attributes on file " << file.value();
+    return false;
   }
+  return true;
+}
+
+}  // namespace
+
+QuarantineFileResult QuarantineFile(const base::FilePath& file,
+                                    const GURL& source_url,
+                                    const GURL& referrer_url,
+                                    const std::string& client_guid) {
+  bool quarantine_succeeded =
+      AddQuarantineMetadataToFile(file, source_url, referrer_url);
+  bool origin_succeeded =
+      AddOriginMetadataToFile(file, source_url, referrer_url);
+  return quarantine_succeeded && origin_succeeded
+             ? QuarantineFileResult::OK
+             : QuarantineFileResult::ANNOTATION_FAILED;
 }
 
 }  // namespace content

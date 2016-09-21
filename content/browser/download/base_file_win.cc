@@ -18,7 +18,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/safe_util_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/log/net_log_event_type.h"
 
@@ -288,35 +287,6 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
       base::File::OSErrorToFileError(code));
 }
 
-// Maps a return code from ScanAndSaveDownloadedFile() to a
-// DownloadInterruptReason. The return code in |result| is usually from the
-// final IAttachmentExecute::Save() call.
-DownloadInterruptReason MapScanAndSaveErrorCodeToInterruptReason(
-    HRESULT result) {
-  if (SUCCEEDED(result))
-    return DOWNLOAD_INTERRUPT_REASON_NONE;
-
-  switch (result) {
-    case INET_E_SECURITY_PROBLEM:       // 0x800c000e
-      // This is returned if the download was blocked due to security
-      // restrictions. E.g. if the source URL was in the Restricted Sites zone
-      // and downloads are blocked on that zone, then the download would be
-      // deleted and this error code is returned.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
-
-    case E_FAIL:                        // 0x80004005
-      // Returned if an anti-virus product reports an infection in the
-      // downloaded file during IAE::Save().
-      return DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
-
-    default:
-      // Any other error that occurs during IAttachmentExecute::Save() likely
-      // indicates a problem with the security check, but not necessarily the
-      // download. See http://crbug.com/153212.
-      return DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
-  }
-}
-
 } // namespace
 
 // Renames a file using the SHFileOperation API to ensure that the target file
@@ -351,50 +321,6 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   if (interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE)
     return LogInterruptReason("SHFileOperation", result, interrupt_reason);
   return interrupt_reason;
-}
-
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
-    const std::string& client_guid,
-    const GURL& source_url,
-    const GURL& referrer_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  DCHECK(!detached_);
-
-  bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
-  DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
-  std::string braces_guid = "{" + client_guid + "}";
-  GUID guid = GUID_NULL;
-  if (base::IsValidGUID(client_guid)) {
-    HRESULT hr = CLSIDFromString(
-        base::UTF8ToUTF16(braces_guid).c_str(), &guid);
-    if (FAILED(hr))
-      guid = GUID_NULL;
-  }
-
-  HRESULT hr = AVScanFile(full_path_, source_url.spec(), guid);
-
-  // If the download file is missing after the call, then treat this as an
-  // interrupted download.
-  //
-  // If the ScanAndSaveDownloadedFile() call failed, but the downloaded file is
-  // still around, then don't interrupt the download. Attachment Execution
-  // Services deletes the submitted file if the downloaded file is blocked by
-  // policy or if it was found to be infected.
-  //
-  // If the file is still there, then the error could be due to AES not being
-  // available or some other error during the AES invocation. In either case,
-  // we don't surface the error to the user.
-  if (!base::PathExists(full_path_)) {
-    DCHECK(FAILED(hr));
-    result = MapScanAndSaveErrorCodeToInterruptReason(hr);
-    if (result == DOWNLOAD_INTERRUPT_REASON_NONE) {
-      RecordDownloadCount(FILE_MISSING_AFTER_SUCCESSFUL_SCAN_COUNT);
-      result = DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
-    }
-    LogInterruptReason("ScanAndSaveDownloadedFile", hr, result);
-  }
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
-  return result;
 }
 
 }  // namespace content

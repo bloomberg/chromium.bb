@@ -16,7 +16,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "content/browser/download/file_metadata_linux.h"
+#include "content/browser/download/quarantine.h"
+#include "content/browser/download/quarantine_constants_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -27,36 +28,28 @@ using std::istringstream;
 using std::string;
 using std::vector;
 
-class FileMetadataLinuxTest : public testing::Test {
+class QuarantineLinuxTest : public testing::Test {
  public:
-  FileMetadataLinuxTest()
+  QuarantineLinuxTest()
       : source_url_("http://www.source.com"),
         referrer_url_("http://www.referrer.com"),
         is_xattr_supported_(false) {}
 
-  const base::FilePath& test_file() const {
-    return test_file_;
-  }
+  const base::FilePath& test_file() const { return test_file_; }
 
-  const GURL& source_url() const {
-    return source_url_;
-  }
+  const GURL& source_url() const { return source_url_; }
 
-  const GURL& referrer_url() const {
-    return referrer_url_;
-  }
+  const GURL& referrer_url() const { return referrer_url_; }
 
-  bool is_xattr_supported() const {
-    return is_xattr_supported_;
-  }
+  bool is_xattr_supported() const { return is_xattr_supported_; }
 
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_file_));
-    int result = setxattr(test_file_.value().c_str(),
-                          "user.test", "test", 4, 0);
+    int result =
+        setxattr(test_file_.value().c_str(), "user.test", "test", 4, 0);
     is_xattr_supported_ = (!result) || (errno != ENOTSUP);
     if (!is_xattr_supported_) {
       DVLOG(0) << "Test will be skipped because extended attributes are not "
@@ -66,8 +59,8 @@ class FileMetadataLinuxTest : public testing::Test {
 
   void CheckExtendedAttributeValue(const string attr_name,
                                    const string expected_value) const {
-    ssize_t len = getxattr(test_file().value().c_str(), attr_name.c_str(),
-                           NULL, 0);
+    ssize_t len =
+        getxattr(test_file().value().c_str(), attr_name.c_str(), NULL, 0);
     if (len <= static_cast<ssize_t>(0)) {
       FAIL() << "Attribute '" << attr_name << "' does not exist";
     }
@@ -81,12 +74,13 @@ class FileMetadataLinuxTest : public testing::Test {
 
   void GetExtendedAttributeNames(vector<string>* attr_names) const {
     ssize_t len = listxattr(test_file().value().c_str(), NULL, 0);
-    if (len <= static_cast<ssize_t>(0)) return;
+    if (len <= static_cast<ssize_t>(0))
+      return;
     char* buffer = new char[len];
     len = listxattr(test_file().value().c_str(), buffer, len);
-    *attr_names = base::SplitString(string(buffer, len), std::string(1, '\0'),
-                                    base::TRIM_WHITESPACE,
-                                    base::SPLIT_WANT_ALL);
+    *attr_names =
+        base::SplitString(string(buffer, len), std::string(1, '\0'),
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     delete[] buffer;
   }
 
@@ -95,15 +89,18 @@ class FileMetadataLinuxTest : public testing::Test {
     GetExtendedAttributeNames(&attr_names);
 
     // Check if the attributes are set on the file
-    vector<string>::const_iterator pos = find(attr_names.begin(),
-        attr_names.end(), kSourceURLAttrName);
+    vector<string>::const_iterator pos =
+        find(attr_names.begin(), attr_names.end(), kSourceURLExtendedAttrName);
     EXPECT_NE(pos, attr_names.end());
-    pos = find(attr_names.begin(), attr_names.end(), kReferrerURLAttrName);
+    pos = find(attr_names.begin(), attr_names.end(),
+               kReferrerURLExtendedAttrName);
     EXPECT_NE(pos, attr_names.end());
 
     // Check if the attribute values are set correctly
-    CheckExtendedAttributeValue(kSourceURLAttrName, source_url().spec());
-    CheckExtendedAttributeValue(kReferrerURLAttrName, referrer_url().spec());
+    CheckExtendedAttributeValue(kSourceURLExtendedAttrName,
+                                source_url().spec());
+    CheckExtendedAttributeValue(kReferrerURLExtendedAttrName,
+                                referrer_url().spec());
   }
 
  private:
@@ -114,52 +111,69 @@ class FileMetadataLinuxTest : public testing::Test {
   bool is_xattr_supported_;
 };
 
-TEST_F(FileMetadataLinuxTest, CheckMetadataSetCorrectly) {
-  if (!is_xattr_supported()) return;
-  AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
+TEST_F(QuarantineLinuxTest, CheckMetadataSetCorrectly) {
+  if (!is_xattr_supported())
+    return;
+  EXPECT_EQ(
+      QuarantineFileResult::OK,
+      QuarantineFile(test_file(), source_url(), referrer_url(), std::string()));
   VerifyAttributesAreSetCorrectly();
 }
 
-TEST_F(FileMetadataLinuxTest, SetMetadataMultipleTimes) {
-  if (!is_xattr_supported()) return;
+TEST_F(QuarantineLinuxTest, SetMetadataMultipleTimes) {
+  if (!is_xattr_supported())
+    return;
   GURL dummy_url("http://www.dummy.com");
-  AddOriginMetadataToFile(test_file(), dummy_url, dummy_url);
-  AddOriginMetadataToFile(test_file(), source_url(), referrer_url());
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file(), dummy_url, dummy_url, std::string()));
+  EXPECT_EQ(
+      QuarantineFileResult::OK,
+      QuarantineFile(test_file(), source_url(), referrer_url(), std::string()));
   VerifyAttributesAreSetCorrectly();
 }
 
-TEST_F(FileMetadataLinuxTest, InvalidSourceURLTest) {
-  if (!is_xattr_supported()) return;
+TEST_F(QuarantineLinuxTest, InvalidSourceURLTest) {
+  if (!is_xattr_supported())
+    return;
   GURL invalid_url;
   vector<string> attr_names;
-  AddOriginMetadataToFile(test_file(), invalid_url, referrer_url());
+  EXPECT_EQ(
+      QuarantineFileResult::ANNOTATION_FAILED,
+      QuarantineFile(test_file(), invalid_url, referrer_url(), std::string()));
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      kSourceURLAttrName));
-  CheckExtendedAttributeValue(kReferrerURLAttrName, referrer_url().spec());
+                                   kSourceURLExtendedAttrName));
+  CheckExtendedAttributeValue(kReferrerURLExtendedAttrName,
+                              referrer_url().spec());
 }
 
-TEST_F(FileMetadataLinuxTest, InvalidReferrerURLTest) {
-  if (!is_xattr_supported()) return;
+TEST_F(QuarantineLinuxTest, InvalidReferrerURLTest) {
+  if (!is_xattr_supported())
+    return;
   GURL invalid_url;
   vector<string> attr_names;
-  AddOriginMetadataToFile(test_file(), source_url(), invalid_url);
+  EXPECT_EQ(
+      QuarantineFileResult::OK,
+      QuarantineFile(test_file(), source_url(), invalid_url, std::string()));
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      kReferrerURLAttrName));
-  CheckExtendedAttributeValue(kSourceURLAttrName, source_url().spec());
+                                   kReferrerURLExtendedAttrName));
+  CheckExtendedAttributeValue(kSourceURLExtendedAttrName, source_url().spec());
 }
 
-TEST_F(FileMetadataLinuxTest, InvalidURLsTest) {
-  if (!is_xattr_supported()) return;
+TEST_F(QuarantineLinuxTest, InvalidURLsTest) {
+  if (!is_xattr_supported())
+    return;
   GURL invalid_url;
   vector<string> attr_names;
-  AddOriginMetadataToFile(test_file(), invalid_url, invalid_url);
+  EXPECT_EQ(
+      QuarantineFileResult::ANNOTATION_FAILED,
+      QuarantineFile(test_file(), invalid_url, invalid_url, std::string()));
   GetExtendedAttributeNames(&attr_names);
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      kSourceURLAttrName));
+                                   kSourceURLExtendedAttrName));
   EXPECT_EQ(attr_names.end(), find(attr_names.begin(), attr_names.end(),
-      kReferrerURLAttrName));
+                                   kReferrerURLExtendedAttrName));
 }
 
 }  // namespace
