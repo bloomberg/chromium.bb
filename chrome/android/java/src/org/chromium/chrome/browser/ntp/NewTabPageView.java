@@ -296,7 +296,7 @@ public class NewTabPageView extends FrameLayout
      * @param snippetsBridge The optional bridge, that can be used to interact with the snippets.
      */
     public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo,
-            SnippetsBridge snippetsBridge) {
+            SnippetsBridge snippetsBridge, int scrollPosition) {
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -352,6 +352,7 @@ public class NewTabPageView extends FrameLayout
             mNewTabPageAdapter =
                     new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
+            mRecyclerView.scrollToPosition(scrollPosition);
 
             // Set up swipe-to-dismiss
             ItemTouchHelper helper =
@@ -1177,5 +1178,12 @@ public class NewTabPageView extends FrameLayout
         } else {
             return mScrollView.getScrollY();
         }
+    }
+
+    /**
+     * @return The adapter position the user has scrolled to.
+     */
+    public int getScrollPosition() {
+        return mRecyclerView.getScrollPosition();
     }
 }
