@@ -116,14 +116,6 @@ void TrayItemMore::GetAccessibleState(ui::AXViewState* state) {
     state->name = accessible_name_;
 }
 
-void TrayItemMore::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  ActionableView::ViewHierarchyChanged(details);
-
-  if (details.is_add && details.child == this)
-    UpdateStyle();
-}
-
 void TrayItemMore::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   ActionableView::OnNativeThemeChanged(theme);
   UpdateStyle();

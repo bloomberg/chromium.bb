@@ -42,8 +42,6 @@ class TrayItemMore : public ActionableView {
   // Overridden from views::View.
   void Layout() override;
   void GetAccessibleState(ui::AXViewState* state) override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   SystemTrayItem* owner_;
