@@ -50,8 +50,10 @@ class SnippetsInternalsMessageHandler
   void HandleClearCachedSuggestions(const base::ListValue* args);
   void HandleClearDismissedSuggestions(const base::ListValue* args);
   void HandleToggleDismissedSuggestions(const base::ListValue* args);
+  void ClearClassification(const base::ListValue* args);
 
   void SendAllContent();
+  void SendClassification();
   void SendHosts();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);

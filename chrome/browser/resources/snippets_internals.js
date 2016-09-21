@@ -28,6 +28,11 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
+    $('clear-classification').addEventListener('click', function(event) {
+      chrome.send('clearClassification');
+      event.preventDefault();
+    });
+
     window.addEventListener('focus', refreshContent);
     window.setInterval(refreshContent, 1000);
 
@@ -109,6 +114,14 @@ cr.define('chrome.SnippetsInternals', function() {
     }
   }
 
+  function receiveClassification(
+      userClass, timeToOpenNTP, timeToShow, timeToUse) {
+    receiveProperty('user-class', userClass);
+    receiveProperty('avg-time-to-open-ntp', timeToOpenNTP);
+    receiveProperty('avg-time-to-show', timeToShow);
+    receiveProperty('avg-time-to-use', timeToUse);
+  }
+
   function downloadJson(json) {
     // Redirect the browser to download data in |json| as a file "snippets.json"
     // (Setting Content-Disposition: attachment via a data: URL is not possible;
@@ -159,6 +172,7 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveHosts: receiveHosts,
     receiveContentSuggestions: receiveContentSuggestions,
     receiveJson: receiveJson,
+    receiveClassification: receiveClassification,
   };
 });
 

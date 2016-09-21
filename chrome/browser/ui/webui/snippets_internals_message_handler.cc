@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -32,6 +33,7 @@ using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::KnownCategories;
+using ntp_snippets::UserClassifier;
 
 namespace {
 
@@ -73,7 +75,7 @@ std::string GetCategoryStatusName(CategoryStatus status) {
   return std::string();
 }
 
-} // namespace
+}  // namespace
 
 SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler()
     : content_suggestions_service_observer_(this),
@@ -118,6 +120,12 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
       "toggleDismissedSuggestions",
       base::Bind(
           &SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions,
+          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "clearClassification",
+      base::Bind(
+          &SnippetsInternalsMessageHandler::ClearClassification,
           base::Unretained(this)));
 }
 
@@ -245,6 +253,14 @@ void SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions(
   }
 }
 
+void SnippetsInternalsMessageHandler::ClearClassification(
+    const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+  content_suggestions_service_->user_classifier()
+      ->ClearClassificationForDebugging();
+  SendClassification();
+}
+
 void SnippetsInternalsMessageHandler::SendAllContent() {
   SendHosts();
 
@@ -263,6 +279,8 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendBoolean("flag-physical-web-page-suggestions",
               base::FeatureList::IsEnabled(
                   ntp_snippets::kPhysicalWebPageSuggestionsFeature));
+
+  SendClassification();
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",
@@ -290,6 +308,22 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
           ntp_snippets_service_->snippets_fetcher()->last_json()));
 
   SendContentSuggestions();
+}
+
+void SnippetsInternalsMessageHandler::SendClassification() {
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveClassification",
+      base::StringValue(content_suggestions_service_->user_classifier()
+                            ->GetUserClassDescriptionForDebugging()),
+      base::FundamentalValue(
+          content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
+              UserClassifier::Metric::NTP_OPENED)),
+      base::FundamentalValue(
+          content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
+              UserClassifier::Metric::SUGGESTIONS_SHOWN)),
+      base::FundamentalValue(
+          content_suggestions_service_->user_classifier()->GetEstimatedAvgTime(
+              UserClassifier::Metric::SUGGESTIONS_USED)));
 }
 
 void SnippetsInternalsMessageHandler::SendHosts() {

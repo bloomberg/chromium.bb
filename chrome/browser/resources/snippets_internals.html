@@ -48,13 +48,34 @@ found in the LICENSE file.
     </table>
   </div>
 
+  <div>
+    <h2>UserClassifier</h2>
+    <table class="section-details">
+      <tr>
+        <td class="name">User class
+        <td id="user-class" class="value">
+      <tr>
+        <td class="name">Estimated average time to open NTP
+        <td id="avg-time-to-open-ntp" class="value">
+      <tr>
+        <td class="name">Estimated average time to show suggestions
+        <td id="avg-time-to-show" class="value">
+      <tr>
+        <td class="name">Estimated average time to use suggestions
+        <td id="avg-time-to-use" class="value">
+    </table>
+    <button id="clear-classification" type="button">
+      Clear my classification
+    </button>
+  </div>
+
   <div id="snippets">
     <h2>NTPSnippetsService</h2>
     <div class="forms">
-      <input id="submit-download" type="submit" value="Add snippets">
-      <span id="hosts-restrict">from hosts <span class="detail">(specify at 
+      <button id="submit-download" type="button">Add snippets</button>
+      <span id="hosts-restrict">from hosts <span class="detail">(specify at
           least one host)</span>:
-        <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk" 
+        <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk"
             rows="5" autocapitalize="none"></textarea>
       </span>
       <span id="hosts-status" class="detail"></span>
@@ -66,7 +87,7 @@ found in the LICENSE file.
     <a id="last-json-button">Show the last JSON &gt;&gt;</a>
     <div id="last-json-container" class="hidden">
       <div id="last-json-text"></div>
-      <input id="last-json-dump" type="submit" value="Dump the last JSON">
+      <button id="last-json-dump" type="button">Dump the last JSON</button>
     </div>
   </div>
 
@@ -82,7 +103,7 @@ found in the LICENSE file.
   <div id="content-suggestions">
     <h2>Content suggestions by category
       <span class="detail">(click for details)</span>
-      <input id="submit-dump" type="submit" value="Dump the list">
+      <button id="submit-dump" type="button">Dump the list</button>
     </h2>
     <div jsselect="list" style="display:none">
       <h3>
@@ -91,15 +112,18 @@ found in the LICENSE file.
           (<span jscontent="status"></span>)
         </span>
 
-        <input jsvalues="category-id:categoryId" type="submit"
-            class="submit-clear-cached-suggestions"
-            value="Clear cached suggestions">
-        <input jsvalues="category-id:categoryId" type="submit"
-            class="toggle-dismissed-suggestions"
-            value="Show dismissed suggestions">
-        <input jsvalues="category-id:categoryId" type="submit"
-            class="submit-clear-dismissed-suggestions"
-            value="Clear dismissed suggestions">
+        <button jsvalues="category-id:categoryId" type="button"
+            class="submit-clear-cached-suggestions">
+          Clear cached suggestions
+        </button>
+        <button jsvalues="category-id:categoryId" type="button"
+            class="toggle-dismissed-suggestions">
+          Show dismissed suggestions
+        </button>
+        <button jsvalues="category-id:categoryId" type="button"
+            class="submit-clear-dismissed-suggestions">
+          Clear dismissed suggestions
+        </button>
       </h3>
 
       <table class="section-details">

@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_USER_CLASSIFIER_H_
 #define COMPONENTS_NTP_SNIPPETS_USER_CLASSIFIER_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/time/time.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -14,10 +17,38 @@ namespace ntp_snippets {
 
 // Collects data about user usage patterns of content suggestions, computes
 // long-term user metrics locally using pref, and reports the metrics to UMA.
-// TODO(jkrcal): Add classification of users based on the metrics and getters
-// for the classification as well as for the metrics.
+// Based on these lon-term user metrics, it classifies the user in a UserClass.
 class UserClassifier {
  public:
+  // Enumeration listing user classes
+  enum class UserClass {
+    RARE_NTP_USER,
+    ACTIVE_NTP_USER,
+    ACTIVE_SUGGESTIONS_CONSUMER,
+  };
+
+  // For estimating the average length of the intervals between two successive
+  // events, we keep a simple frequency model, a single value that we call
+  // "metric" below.
+  // We track exponentially-discounted rate of the given event per hour where
+  // the continuous utility function between two successive events (e.g. opening
+  // a NTP) at times t1 < t2 is 1 / (t2-t1), i.e. intuitively the rate of this
+  // event in this time interval.
+  // See https://en.wikipedia.org/wiki/Exponential_discounting for more details.
+  // We keep track of the following events.
+  // NOTE: if you add any element, add it also in the static arrays in .cc and
+  // create another histogram.
+  enum class Metric {
+    NTP_OPENED,  // When the user opens a new NTP - this indicates potential
+                 // use of content suggestions.
+    SUGGESTIONS_SHOWN,  // When the content suggestions are shown to the user -
+                        // in the current implementation when the user scrolls
+                        // below the fold.
+    SUGGESTIONS_USED,   // When the user clicks on some suggestions or on some
+                        // "More" button.
+    COUNT               // Keep this as the last element.
+  };
+
   // The provided |pref_service| may be nullptr in unit-tests.
   explicit UserClassifier(PrefService* pref_service);
   ~UserClassifier();
@@ -25,33 +56,42 @@ class UserClassifier {
   // Registers profile prefs for all metrics. Called from browser_prefs.cc.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // When the user opens a new NTP - this indicates potential use of content
-  // suggestions.
-  void OnNTPOpened();
+  // Informs the UserClassifier about a new event for |metric|. The
+  // classification is based on these calls.
+  void OnEvent(Metric metric);
 
-  // When the content suggestions are shown to the user - in the current
-  // implementation when the user scrolls below the fold.
-  void OnSuggestionsShown();
+  // Get the estimate average length of the interval between two successive
+  // events of the given type.
+  double GetEstimatedAvgTime(Metric metric) const;
 
-  // When the user clicks on some suggestions or on some "More" button.
-  void OnSuggestionsUsed();
+  // Return the classification of the current user.
+  UserClass GetUserClass() const;
+  std::string GetUserClassDescriptionForDebugging() const;
+
+  // Resets the classification (emulates a fresh upgrade / install).
+  void ClearClassificationForDebugging();
 
  private:
-  // The event has happened, recompute and store the metric accordingly.
-  void UpdateMetricOnEvent(const char* metric_pref_name,
-                           const char* last_time_pref_name);
+  // The event has happened, recompute the metric accordingly. Then store and
+  // return the new value.
+  double UpdateMetricOnEvent(Metric metric);
+  // No event has happened but we need to get up-to-date metric, recompute and
+  // return the new value. This function does not store the recomputed metric.
+  double GetUpToDateMetricValue(Metric metric) const;
 
-  // Compute the number of hours between two events for the given metric value
-  // assuming the events were equally distributed.
-  double GetEstimateHoursBetweenEvents(const char* metric_pref_name);
+  // Returns the number of hours since the last event of the same type.
+  // If there is no last event of that type, assume it happened just now and
+  // return 0.
+  double GetHoursSinceLastTime(Metric metric) const;
+  bool HasLastTime(Metric metric) const;
+  void SetLastTimeToNow(Metric metric);
 
-  // Returns the number of hours since the last event of the same type or
-  // DBL_MAX if there is no last event of that type.
-  double GetHoursSinceLastTime(const char* last_time_pref_name);
-  void SetLastTimeToNow(const char* last_time_pref_name);
+  double GetMetricValue(Metric metric) const;
+  void SetMetricValue(Metric metric, double metric_value);
+  void ClearMetricValue(Metric metric);
 
   PrefService* pref_service_;
-  double const discount_rate_per_hour_;
+  const double discount_rate_per_hour_;
 
   DISALLOW_COPY_AND_ASSIGN(UserClassifier);
 };
