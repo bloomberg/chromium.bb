@@ -3323,7 +3323,7 @@ class WebContentsAccessibilityEventWatcher
   size_t count_;
 };
 
-IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, TouchAccessibility) {
+IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
   LoadAppWithGuest("web_view/touch_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
   content::EnableAccessibilityForWebContents(web_contents);
