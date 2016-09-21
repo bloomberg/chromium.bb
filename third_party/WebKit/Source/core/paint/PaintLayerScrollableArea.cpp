@@ -421,7 +421,7 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
 
     // Clear the scroll anchor, unless it is the reason for this scroll.
     if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
-        scrollAnchor().clear();
+        scrollAnchor()->clear();
 }
 
 IntPoint PaintLayerScrollableArea::scrollPosition() const

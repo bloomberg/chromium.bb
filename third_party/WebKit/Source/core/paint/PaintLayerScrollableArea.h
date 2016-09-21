@@ -408,7 +408,7 @@ public:
 
     Widget* getWidget() override;
     bool shouldPerformScrollAnchoring() const override;
-    ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
+    ScrollAnchor* scrollAnchor() override { return &m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
 
     LayoutBox* layoutBox() const override { return &box(); }

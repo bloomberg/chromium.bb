@@ -36,6 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/TextAutosizer.h"
@@ -265,7 +266,7 @@ double VisualViewport::pageScale()
 void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 {
     if (didSetScaleOrLocation(scale, location))
-        clearScrollAnchor();
+        notifyRootFrameViewport();
 }
 
 bool VisualViewport::didSetScaleOrLocation(float scale, const FloatPoint& location)
@@ -312,15 +313,6 @@ bool VisualViewport::didSetScaleOrLocation(float scale, const FloatPoint& locati
     clampToBoundaries();
 
     return true;
-}
-
-void VisualViewport::clearScrollAnchor()
-{
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled()) {
-        LocalFrame* frame = mainFrame();
-        if (frame && frame->view())
-            frame->view()->clearScrollAnchor();
-    }
 }
 
 bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
@@ -633,7 +625,7 @@ IntSize VisualViewport::contentsSize() const
 void VisualViewport::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
     if (didSetScaleOrLocation(m_scale, toFloatPoint(offset)) && scrollType != AnchoringScroll)
-        clearScrollAnchor();
+        notifyRootFrameViewport();
 }
 
 GraphicsLayer* VisualViewport::layerForContainer() const
@@ -812,6 +804,20 @@ CompositorAnimationTimeline* VisualViewport::compositorAnimationTimeline() const
 {
     ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
     return c ? c->compositorAnimationTimeline() : nullptr;
+}
+
+void VisualViewport::notifyRootFrameViewport() const
+{
+    if (!mainFrame() || !mainFrame()->view())
+        return;
+
+    RootFrameViewport* rootFrameViewport =
+        mainFrame()->view()->getRootFrameViewport();
+
+    if (!rootFrameViewport)
+        return;
+
+    rootFrameViewport->didUpdateVisualViewport();
 }
 
 String VisualViewport::debugName(const GraphicsLayer* graphicsLayer) const

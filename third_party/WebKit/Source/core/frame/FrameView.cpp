@@ -184,6 +184,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_crossOriginForThrottling(false)
     , m_subtreeThrottled(false)
     , m_currentUpdateLifecyclePhasesTargetState(DocumentLifecycle::Uninitialized)
+    , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
     , m_allowsLayoutInvalidationAfterLayoutClean(true)
@@ -842,14 +843,6 @@ void FrameView::performPreLayoutTasks()
         ScrollableArea* layoutViewport = layoutViewportScrollableArea();
         DCHECK(layoutViewport);
         m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
-    }
-
-    if (!m_scrollAnchor.hasScroller()) {
-        ScrollableArea* scroller = m_viewportScrollableArea;
-        if (!scroller)
-            scroller = this;
-
-        m_scrollAnchor.setScroller(scroller);
     }
 
     if (shouldPerformScrollAnchoring())

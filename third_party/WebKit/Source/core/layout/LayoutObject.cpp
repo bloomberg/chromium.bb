@@ -2452,11 +2452,12 @@ static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferen
     // Walk up the layer tree to clear any scroll anchors that reference us.
     while (layer) {
         if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
-            ScrollAnchor& anchor = scrollableArea->scrollAnchor();
-            if (anchor.refersTo(layoutObject)) {
+            ScrollAnchor* anchor = scrollableArea->scrollAnchor();
+            DCHECK(anchor);
+            if (anchor->refersTo(layoutObject)) {
                 found = true;
                 if (behavior == Clear)
-                    anchor.notifyRemoved(layoutObject);
+                    anchor->notifyRemoved(layoutObject);
                 else
                     return true;
             }
@@ -2464,11 +2465,12 @@ static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferen
         layer = layer->parent();
     }
     if (FrameView* view = layoutObject->frameView()) {
-        ScrollAnchor& anchor = view->scrollAnchor();
-        if (anchor.refersTo(layoutObject)) {
+        ScrollAnchor* anchor = view->scrollAnchor();
+        DCHECK(anchor);
+        if (anchor->refersTo(layoutObject)) {
             found = true;
             if (behavior == Clear)
-                anchor.notifyRemoved(layoutObject);
+                anchor->notifyRemoved(layoutObject);
         }
     }
     return found;

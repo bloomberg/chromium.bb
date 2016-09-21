@@ -45,6 +45,9 @@ public:
 
     void restoreToAnchor(const DoublePoint&);
 
+    // Callback whenever the visual viewport changes scroll position or scale.
+    void didUpdateVisualViewport();
+
     // ScrollableArea Implementation
     bool isRootFrameViewport() const override { return true; }
     void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;

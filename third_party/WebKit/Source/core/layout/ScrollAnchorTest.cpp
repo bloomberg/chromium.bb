@@ -44,10 +44,8 @@ protected:
 
     ScrollAnchor& scrollAnchor(ScrollableArea* scroller)
     {
-        if (scroller->isFrameView())
-            return toFrameView(scroller)->scrollAnchor();
-        ASSERT(scroller->isPaintLayerScrollableArea());
-        return toPaintLayerScrollableArea(scroller)->scrollAnchor();
+        ASSERT(scroller->isFrameView() || scroller->isPaintLayerScrollableArea());
+        return *(scroller->scrollAnchor());
     }
 
     void setHeight(Element* element, int height)
@@ -795,6 +793,63 @@ TEST_F(ScrollAnchorTest, OptOutScrollingDiv)
     EXPECT_EQ(250, viewport->scrollPosition().y());
     EXPECT_EQ(document().getElementById("outerAnchor")->layoutObject(),
         scrollAnchor(viewport).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, NonDefaultRootScroller)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    ::-webkit-scrollbar {"
+        "      width: 0px; height: 0px;"
+        "    }"
+        "    body, html {"
+        "      margin: 0px; width: 100%; height: 100%;"
+        "    }"
+        "    #rootscroller {"
+        "      overflow: scroll; width: 100%; height: 100%;"
+        "    }"
+        "    .spacer {"
+        "      height: 600px; width: 100px;"
+        "    }"
+        "    #target {"
+        "      height: 100px; width: 100px; background-color: red;"
+        "    }"
+        "</style>"
+        "<div id='rootscroller'>"
+        "    <div id='firstChild' class='spacer'></div>"
+        "    <div id='target'></div>"
+        "    <div class='spacer'></div>"
+        "</div>"
+        "<div class='spacer'></div>");
+
+    Element* rootScrollerElement = document().getElementById("rootscroller");
+
+    NonThrowableExceptionState nonThrow;
+    document().setRootScroller(rootScrollerElement, nonThrow);
+    document().view()->updateAllLifecyclePhases();
+
+    ScrollableArea* scroller = scrollerForElement(rootScrollerElement);
+
+    // By making the #rootScroller DIV the rootScroller, it should become the
+    // layout viewport on the RootFrameViewport.
+    ASSERT_EQ(
+        scroller,
+        &document().view()->getRootFrameViewport()->layoutViewport());
+
+    // The #rootScroller DIV's anchor should have the RootFrameViewport set as
+    // the scroller, rather than the FrameView's anchor.
+
+    rootScrollerElement->setScrollTop(600);
+
+    setHeight(document().getElementById("firstChild"), 1000);
+
+    // Scroll anchoring should be applied to #rootScroller.
+    EXPECT_EQ(1000, scroller->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("target")->layoutObject(),
+        scrollAnchor(scroller).anchorObject());
+    // Scroll anchoring should not apply within main frame.
+    EXPECT_EQ(0, layoutViewport()->scrollPosition().y());
+    EXPECT_EQ(nullptr, scrollAnchor(layoutViewport()).anchorObject());
 }
 
 class ScrollAnchorCornerTest : public ScrollAnchorTest {

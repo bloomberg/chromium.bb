@@ -48,6 +48,7 @@ class LayoutBox;
 class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
+class ScrollAnchor;
 class ScrollAnimatorBase;
 class CompositorAnimationTimeline;
 class Widget;
@@ -287,6 +288,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     virtual void clearScrollAnimators();
+
+    virtual ScrollAnchor* scrollAnchor() { return nullptr; }
 
 protected:
     ScrollableArea();

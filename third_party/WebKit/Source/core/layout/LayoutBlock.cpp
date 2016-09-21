@@ -366,12 +366,14 @@ void LayoutBlock::updateAfterLayout()
 
 void LayoutBlock::layout()
 {
+    DCHECK(!getScrollableArea() || getScrollableArea()->scrollAnchor());
+
     LayoutAnalyzer::Scope analyzer(*this);
 
     bool needsScrollAnchoring = hasOverflowClip()
         && getScrollableArea()->shouldPerformScrollAnchoring();
     if (needsScrollAnchoring)
-        getScrollableArea()->scrollAnchor().save();
+        getScrollableArea()->scrollAnchor()->save();
 
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
     // layoutBlock().
@@ -388,7 +390,7 @@ void LayoutBlock::layout()
     // Restoring during the intermediate layout may clamp the scroller to the wrong bounds.
     bool clampingDelayed = PaintLayerScrollableArea::DelayScrollPositionClampScope::clampingIsDelayed();
     if (needsScrollAnchoring && !clampingDelayed)
-        getScrollableArea()->scrollAnchor().restore();
+        getScrollableArea()->scrollAnchor()->restore();
 
     m_heightAvailableToChildrenChanged = false;
 }

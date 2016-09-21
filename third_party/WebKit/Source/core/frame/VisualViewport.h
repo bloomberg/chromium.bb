@@ -229,8 +229,6 @@ private:
 
     bool didSetScaleOrLocation(float scale, const FloatPoint& location);
 
-    void clearScrollAnchor();
-
     bool visualViewportSuppliesScrollbars() const;
 
     void updateStyleAndLayoutIgnorePendingStylesheets();
@@ -246,6 +244,8 @@ private:
 
     void setupScrollbar(WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
+
+    void notifyRootFrameViewport() const;
 
     LocalFrame* mainFrame() const;
 

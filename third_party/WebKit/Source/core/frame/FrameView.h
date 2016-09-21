@@ -625,7 +625,7 @@ public:
     // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
     FloatSize viewportSizeForViewportUnits() const;
 
-    ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
+    ScrollAnchor* scrollAnchor() override { return &m_scrollAnchor; }
     void clearScrollAnchor();
     bool shouldPerformScrollAnchoring() const override;
 

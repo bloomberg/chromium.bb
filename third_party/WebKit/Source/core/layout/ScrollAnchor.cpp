@@ -36,10 +36,11 @@ ScrollAnchor::~ScrollAnchor()
 
 void ScrollAnchor::setScroller(ScrollableArea* scroller)
 {
-    DCHECK(!m_scroller);
+    DCHECK(m_scroller != scroller);
     DCHECK(scroller);
     DCHECK(scroller->isRootFrameViewport() || scroller->isFrameView() || scroller->isPaintLayerScrollableArea());
     m_scroller = scroller;
+    clear();
 }
 
 // TODO(pilgrim) replace all instances of scrollerLayoutBox with scrollerLayoutBoxItem
@@ -99,14 +100,19 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject, const Scrolla
         // Only LayoutBox and LayoutText are supported.
         ASSERT_NOT_REACHED();
     }
+    LayoutBox* scrollerBox = scrollerLayoutBox(scroller);
+
     LayoutRect relativeBounds = LayoutRect(layoutObject->localToAncestorQuad(
-        FloatRect(localBounds), scrollerLayoutBox(scroller)).boundingBox());
-    // When the scroller is the FrameView, localToAncestorQuad returns document coords,
-    // so we must subtract scroll offset to get viewport coords. We discard the fractional
-    // part of the scroll offset so that the rounding in restore() matches the snapping of
-    // the anchor node to the pixel grid of the layer it paints into. For non-FrameView
-    // scrollers, we rely on the flooring behavior of LayoutBox::scrolledContentOffset.
-    if (scroller->isFrameView() || scroller->isRootFrameViewport())
+        FloatRect(localBounds), scrollerBox).boundingBox());
+    // When root layer scrolling is off, the LayoutView will have no scroll
+    // offset (since scrolling is handled by the FrameView) so
+    // localToAncestorQuad returns document coords, so we must subtract scroll
+    // offset to get viewport coords. We discard the fractional part of the
+    // scroll offset so that the rounding in restore() matches the snapping of
+    // the anchor node to the pixel grid of the layer it paints into. For
+    // non-FrameView scrollers, we rely on the flooring behavior of
+    // LayoutBox::scrolledContentOffset.
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() && scrollerBox->isLayoutView())
         relativeBounds.moveBy(-flooredIntPoint(scroller->scrollPositionDouble()));
     return relativeBounds;
 }

@@ -6,6 +6,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/layout/ScrollAlignment.h"
+#include "core/layout/ScrollAnchor.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -14,13 +15,19 @@ namespace blink {
 
 RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
     : m_visualViewport(visualViewport)
-    , m_layoutViewport(layoutViewport)
 {
+    setLayoutViewport(layoutViewport);
 }
 
 void RootFrameViewport::setLayoutViewport(ScrollableArea& newLayoutViewport)
 {
+    if (m_layoutViewport && m_layoutViewport->scrollAnchor())
+        m_layoutViewport->scrollAnchor()->setScroller(m_layoutViewport.get());
+
     m_layoutViewport = &newLayoutViewport;
+
+    if (m_layoutViewport->scrollAnchor())
+        m_layoutViewport->scrollAnchor()->setScroller(this);
 }
 
 ScrollableArea& RootFrameViewport::layoutViewport() const
@@ -79,6 +86,14 @@ void RootFrameViewport::restoreToAnchor(const DoublePoint& targetPosition)
     delta = targetPosition - scrollPositionDouble();
     visualViewport().setScrollPosition(
         visualViewport().scrollPositionDouble() + delta, ProgrammaticScroll);
+}
+
+void RootFrameViewport::didUpdateVisualViewport()
+{
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled()) {
+        if (ScrollAnchor* anchor = layoutViewport().scrollAnchor())
+            anchor->clear();
+    }
 }
 
 LayoutBox* RootFrameViewport::layoutBox() const
