@@ -10,6 +10,13 @@
 namespace vr_shell {
 namespace easing {
 
+enum EasingType {
+  LINEAR = 0,
+  CUBICBEZIER,
+  EASEIN,
+  EASEOUT
+};
+
 // Abstract base class for custom interpolators, mapping linear input between
 // 0 and 1 to custom values between those two points.
 class Easing {

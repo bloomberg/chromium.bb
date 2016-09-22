@@ -105,7 +105,6 @@ void ContentRectangle::Animate(int64_t time) {
         case Animation::SIZE:
           animation.from.push_back(size.x);
           animation.from.push_back(size.y);
-          animation.from.push_back(size.z);
           break;
         case Animation::SCALE:
           animation.from.push_back(scale.x);
@@ -125,7 +124,7 @@ void ContentRectangle::Animate(int64_t time) {
           break;
       }
     }
-    DCHECK_EQ(animation.from.size(), animation.to.size());
+    CHECK_EQ(animation.from.size(), animation.to.size());
 
     std::vector<float> values(animation.from.size());
     for (std::size_t i = 0; i < animation.from.size(); ++i) {
@@ -141,33 +140,32 @@ void ContentRectangle::Animate(int64_t time) {
     }
     switch (animation.property) {
       case Animation::COPYRECT:
-        DCHECK_EQ(animation.from.size(), 4u);
+        CHECK_EQ(animation.from.size(), 4u);
         copy_rect.x = values[0];
         copy_rect.y = values[1];
         copy_rect.width = values[2];
         copy_rect.height = values[3];
         break;
       case Animation::SIZE:
-        DCHECK_EQ(animation.from.size(), 3u);
+        CHECK_EQ(animation.from.size(), 2u);
         size.x = values[0];
         size.y = values[1];
-        size.z = values[2];
         break;
       case Animation::SCALE:
-        DCHECK_EQ(animation.from.size(), 3u);
+        CHECK_EQ(animation.from.size(), 3u);
         scale.x = values[0];
         scale.y = values[1];
         scale.z = values[2];
         break;
       case Animation::ROTATION:
-        DCHECK_EQ(animation.from.size(), 4u);
+        CHECK_EQ(animation.from.size(), 4u);
         rotation.x = values[0];
         rotation.y = values[1];
         rotation.z = values[2];
         rotation.angle = values[3];
         break;
       case Animation::TRANSLATION:
-        DCHECK_EQ(animation.from.size(), 3u);
+        CHECK_EQ(animation.from.size(), 3u);
         translation.x = values[0];
         translation.y = values[1];
         translation.z = values[2];

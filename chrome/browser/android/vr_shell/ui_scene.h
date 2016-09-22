@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 
@@ -15,34 +16,53 @@ namespace vr_shell {
 
 class UiScene {
  public:
+  enum Command {
+    ADD_ELEMENT,
+    UPDATE_ELEMENT,
+    REMOVE_ELEMENT,
+    ADD_ANIMATION,
+    REMOVE_ANIMATION,
+  };
+
   UiScene();
   virtual ~UiScene();
 
   void AddUiElement(std::unique_ptr<ContentRectangle>& element);
-  void RemoveUiElement(int id);
 
-  // Add an animation to the scene, on element |id|.
-  void AddAnimation(int id, std::unique_ptr<Animation>& animation);
+  // Add a UI element according to a dictionary passed from the UI HTML.
+  void AddUiElementFromDict(const base::DictionaryValue& dict);
 
-  // Remove an animation from element |id|, of type |property|.
-  void RemoveAnimation(int id, Animation::Property property);
+  // Update an existing element with new properties.
+  void UpdateUiElementFromDict(const base::DictionaryValue& dict);
+
+  void RemoveUiElement(int element_id);
+
+  // Add an animation to the scene, on element |element_id|.
+  void AddAnimation(int element_id, std::unique_ptr<Animation>& animation);
+
+  // Add an animation according to a dictionary passed from the UI HTML.
+  void AddAnimationFromDict(const base::DictionaryValue& dict, int64_t time);
+
+  // Remove |animation_id| from element |element_id|.
+  void RemoveAnimation(int element_id, int animation_id);
 
   // Update the positions of all elements in the scene, according to active
   // animations, desired screen tilt and time.  The units of time are
   // arbitrary, but must match the unit used in animations.
   void UpdateTransforms(float screen_tilt, int64_t time);
 
+  // Handle a batch of commands passed from the UI HTML.
+  void HandleCommands(const base::ListValue& commands, int64_t time);
+
   const std::vector<std::unique_ptr<ContentRectangle>>& GetUiElements() const;
 
-  ContentRectangle* GetElementById(int id);
+  ContentRectangle* GetUiElementById(int element_id);
 
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
                                 ReversibleTransform* transform);
-  void ApplyAnchoring(const ContentRectangle& parent, XAnchoring x_anchoring,
-                      YAnchoring y_anchoring, ReversibleTransform* transform);
-  void RemoveAnimationType(ContentRectangle *element,
-                           Animation::Property property);
+  void ApplyDictToElement(const base::DictionaryValue& dict,
+                          ContentRectangle *element);
   std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);

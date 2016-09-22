@@ -26,11 +26,13 @@ void addElement(UiScene *scene, int id) {
   scene->AddUiElement(element);
 }
 
-void addAnimation(UiScene *scene, int id, Animation::Property property) {
+void addAnimation(UiScene *scene, int element_id, int animation_id,
+                  Animation::Property property) {
   std::unique_ptr<Animation> animation(new Animation(
-      0, property, std::unique_ptr<easing::Easing>(new easing::Linear()),
+      animation_id, property,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
       {}, {1, 1, 1, 1}, 0, 1));
-  scene->AddAnimation(id, animation);
+  scene->AddAnimation(element_id, animation);
 }
 
 }  // namespace
@@ -44,16 +46,16 @@ TEST(UiScene, AddRemoveElements) {
   addElement(&scene, 99);
   EXPECT_EQ(scene.GetUiElements().size(), 2u);
 
-  EXPECT_NE(scene.GetElementById(0), nullptr);
-  EXPECT_NE(scene.GetElementById(99), nullptr);
-  EXPECT_EQ(scene.GetElementById(1), nullptr);
+  EXPECT_NE(scene.GetUiElementById(0), nullptr);
+  EXPECT_NE(scene.GetUiElementById(99), nullptr);
+  EXPECT_EQ(scene.GetUiElementById(1), nullptr);
 
   scene.RemoveUiElement(0);
   EXPECT_EQ(scene.GetUiElements().size(), 1u);
-  EXPECT_EQ(scene.GetElementById(0), nullptr);
+  EXPECT_EQ(scene.GetUiElementById(0), nullptr);
   scene.RemoveUiElement(99);
   EXPECT_EQ(scene.GetUiElements().size(), 0u);
-  EXPECT_EQ(scene.GetElementById(99), nullptr);
+  EXPECT_EQ(scene.GetUiElementById(99), nullptr);
 
   scene.RemoveUiElement(0);
   scene.RemoveUiElement(99);
@@ -63,24 +65,23 @@ TEST(UiScene, AddRemoveElements) {
 TEST(UiScene, AddRemoveAnimations) {
   UiScene scene;
   addElement(&scene, 0);
-  auto *element = scene.GetElementById(0);
+  auto *element = scene.GetUiElementById(0);
 
   EXPECT_EQ(element->animations.size(), 0u);
-  addAnimation(&scene, 0, Animation::Property::SIZE);
+  addAnimation(&scene, 0, 0, Animation::Property::SIZE);
   EXPECT_EQ(element->animations.size(), 1u);
   EXPECT_EQ(element->animations[0]->property, Animation::Property::SIZE);
-  addAnimation(&scene, 0, Animation::Property::SCALE);
+  addAnimation(&scene, 0, 1, Animation::Property::SCALE);
   EXPECT_EQ(element->animations.size(), 2u);
   EXPECT_EQ(element->animations[1]->property, Animation::Property::SCALE);
 
-  scene.RemoveAnimation(0, Animation::Property::SIZE);
+  scene.RemoveAnimation(0, 0);
   EXPECT_EQ(element->animations.size(), 1u);
   EXPECT_EQ(element->animations[0]->property, Animation::Property::SCALE);
-  scene.RemoveAnimation(0, Animation::Property::SCALE);
+  scene.RemoveAnimation(0, 1);
   EXPECT_EQ(element->animations.size(), 0u);
 
-  scene.RemoveAnimation(0, Animation::Property::SIZE);
-  scene.RemoveAnimation(0, Animation::Property::SCALE);
+  scene.RemoveAnimation(0, 0);
   EXPECT_EQ(element->animations.size(), 0u);
 }
 
@@ -109,7 +110,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->rotation = {0, 0, 1, M_PI / 2};
   element->translation = {3, 0, 0};
   scene.AddUiElement(element);
-  const ContentRectangle* child = scene.GetElementById(1);
+  const ContentRectangle* child = scene.GetUiElementById(1);
 
   const gvr::Vec3f origin({0,0,0});
   const gvr::Vec3f point({1,0,0});
@@ -157,7 +158,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   scene.AddUiElement(element);
 
   scene.UpdateTransforms(0, 0);
-  const ContentRectangle* child = scene.GetElementById(1);
+  const ContentRectangle* child = scene.GetUiElementById(1);
   EXPECT_NEAR(child->GetCenter().x, GetParam().expected_x, TOLERANCE);
   EXPECT_NEAR(child->GetCenter().y, GetParam().expected_y, TOLERANCE);
   scene.RemoveUiElement(1);
@@ -174,5 +175,138 @@ const std::vector<AnchoringTestCase> anchoring_test_cases = {
 
 INSTANTIATE_TEST_CASE_P(AnchoringTestCases, AnchoringTest,
                         ::testing::ValuesIn(anchoring_test_cases));
+
+TEST(UiScene, AddUiElementFromDictionary) {
+  UiScene scene;
+  addElement(&scene, 11);
+
+  base::DictionaryValue dict;
+
+  dict.SetInteger("id", 10);
+  dict.SetInteger("parentId", 11);
+  dict.SetBoolean("visible", false);
+
+  std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
+  copy_rect->SetInteger("x", 100);
+  copy_rect->SetInteger("y", 101);
+  copy_rect->SetInteger("width", 102);
+  copy_rect->SetInteger("height", 103);
+  dict.Set("copyRect", std::move(copy_rect));
+
+  std::unique_ptr<base::DictionaryValue> size(new base::DictionaryValue);
+  size->SetDouble("x", 200);
+  size->SetDouble("y", 201);
+  dict.Set("size", std::move(size));
+
+  std::unique_ptr<base::DictionaryValue> scale(new base::DictionaryValue);
+  scale->SetDouble("x", 300);
+  scale->SetDouble("y", 301);
+  scale->SetDouble("z", 302);
+  dict.Set("scale", std::move(scale));
+
+  std::unique_ptr<base::DictionaryValue> rotation(new base::DictionaryValue);
+  rotation->SetDouble("x", 400);
+  rotation->SetDouble("y", 401);
+  rotation->SetDouble("z", 402);
+  rotation->SetDouble("a", 403);
+  dict.Set("rotation", std::move(rotation));
+
+  std::unique_ptr<base::DictionaryValue> translation(new base::DictionaryValue);
+  translation->SetDouble("x", 500);
+  translation->SetDouble("y", 501);
+  translation->SetDouble("z", 502);
+  dict.Set("translation", std::move(translation));
+
+  dict.SetInteger("xAnchoring", XAnchoring::XLEFT);
+  dict.SetInteger("yAnchoring", YAnchoring::YTOP);
+
+  scene.AddUiElementFromDict(dict);
+  const auto *element = scene.GetUiElementById(10);
+  EXPECT_NE(element, nullptr);
+
+  EXPECT_EQ(element->id, 10);
+  EXPECT_EQ(element->parent_id, 11);
+  EXPECT_EQ(element->visible, false);
+
+  EXPECT_EQ(element->copy_rect.x, 100);
+  EXPECT_EQ(element->copy_rect.y, 101);
+  EXPECT_EQ(element->copy_rect.width, 102);
+  EXPECT_EQ(element->copy_rect.height, 103);
+
+  EXPECT_FLOAT_EQ(element->size.x, 200);
+  EXPECT_FLOAT_EQ(element->size.y, 201);
+  EXPECT_FLOAT_EQ(element->size.z, 1);
+
+  EXPECT_FLOAT_EQ(element->scale.x, 300);
+  EXPECT_FLOAT_EQ(element->scale.y, 301);
+  EXPECT_FLOAT_EQ(element->scale.z, 302);
+
+  EXPECT_FLOAT_EQ(element->rotation.x, 400);
+  EXPECT_FLOAT_EQ(element->rotation.y, 401);
+  EXPECT_FLOAT_EQ(element->rotation.z, 402);
+  EXPECT_FLOAT_EQ(element->rotation.angle, 403);
+
+  EXPECT_FLOAT_EQ(element->translation.x, 500);
+  EXPECT_FLOAT_EQ(element->translation.y, 501);
+  EXPECT_FLOAT_EQ(element->translation.z, 502);
+
+  EXPECT_EQ(element->x_anchoring, XAnchoring::XLEFT);
+  EXPECT_EQ(element->y_anchoring, YAnchoring::YTOP);
+}
+
+TEST(UiScene, AddAnimationFromDictionary) {
+  UiScene scene;
+  addElement(&scene, 0);
+
+  base::DictionaryValue dict;
+
+  dict.SetInteger("id", 10);
+  dict.SetInteger("meshId", 0);
+  dict.SetDouble("startInMillis", 12345);
+  dict.SetDouble("durationMillis", 54321);
+  dict.SetInteger("property", Animation::Property::ROTATION);
+
+  std::unique_ptr<base::DictionaryValue> easing(new base::DictionaryValue);
+  easing->SetInteger("type", vr_shell::easing::EasingType::CUBICBEZIER);
+  easing->SetInteger("p1x", 101);
+  easing->SetInteger("p1y", 101);
+  easing->SetInteger("p2x", 101);
+  easing->SetInteger("p2y", 101);
+  dict.Set("easing", std::move(easing));
+
+  std::unique_ptr<base::DictionaryValue> to(new base::DictionaryValue);
+  to->SetInteger("x", 200);
+  to->SetInteger("y", 201);
+  to->SetInteger("z", 202);
+  to->SetInteger("a", 203);
+  dict.Set("to", std::move(to));
+
+  std::unique_ptr<base::DictionaryValue> from(new base::DictionaryValue);
+  from->SetInteger("x", 300);
+  from->SetInteger("y", 301);
+  from->SetInteger("z", 302);
+  from->SetInteger("a", 303);
+  dict.Set("from", std::move(from));
+
+  scene.AddAnimationFromDict(dict, 10000000);
+  const auto *element = scene.GetUiElementById(0);
+  const auto *animation = element->animations[0].get();
+  EXPECT_NE(animation, nullptr);
+
+  EXPECT_EQ(animation->id, 10);
+
+  EXPECT_FLOAT_EQ(animation->to[0], 200);
+  EXPECT_FLOAT_EQ(animation->to[1], 201);
+  EXPECT_FLOAT_EQ(animation->to[2], 202);
+  EXPECT_FLOAT_EQ(animation->to[3], 203);
+
+  EXPECT_FLOAT_EQ(animation->from[0], 300);
+  EXPECT_FLOAT_EQ(animation->from[1], 301);
+  EXPECT_FLOAT_EQ(animation->from[2], 302);
+  EXPECT_FLOAT_EQ(animation->from[3], 303);
+
+  EXPECT_EQ(animation->start, 22345000);
+  EXPECT_EQ(animation->duration, 54321000);
+}
 
 }  // namespace vr_shell

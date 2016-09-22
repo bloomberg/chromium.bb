@@ -86,7 +86,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   rect->size = {screen_width, screen_height, 1.0f};
   scene_.AddUiElement(rect);
 
-  desktop_plane_ = scene_.GetElementById(kBrowserUiElementId);
+  desktop_plane_ = scene_.GetUiElementById(kBrowserUiElementId);
 
   content_cvc_->GetWebContents()->GetRenderWidgetHostView()
       ->GetRenderWidgetHost()->WasResized();

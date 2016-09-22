@@ -45,16 +45,16 @@ TEST(UiElements, AnimateCopyRect) {
 
 TEST(UiElements, AnimateSize) {
   ContentRectangle rect;
-  rect.size = {10, 100, 1000};
+  rect.size = {10, 100};
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::SIZE,
       std::unique_ptr<easing::Easing>(new easing::Linear()),
-      {}, {20, 200, 2000}, 50000, 10000));
+      {}, {20, 200}, 50000, 10000));
   rect.animations.emplace_back(std::move(animation));
   rect.Animate(50000);
-  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({10, 100, 1000}));
+  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({10, 100}));
   rect.Animate(60000);
-  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({20, 200, 2000}));
+  EXPECT_VEC3F_EQ(rect.size, gvr::Vec3f({20, 200}));
 }
 
 TEST(UiElements, AnimateTranslation) {
