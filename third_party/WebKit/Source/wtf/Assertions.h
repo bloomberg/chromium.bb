@@ -156,14 +156,11 @@ private:
 // Macro is enabled in both debug and release mode.
 // To test for unknown errors and verify assumptions, use ASSERT instead, to
 // avoid impacting performance in release builds.
-//
-// Signals are ignored by the crash reporter on OS X so we must do better.
 #ifndef CRASH
 #if COMPILER(MSVC)
 #define CRASH() (__debugbreak(), IMMEDIATE_CRASH())
 #else
-#define CRASH() \
-    (WTFReportBacktrace(), (*(int*)0xfbadbeef = 0), IMMEDIATE_CRASH())
+#define CRASH() (WTFReportBacktrace(), IMMEDIATE_CRASH())
 #endif
 #endif
 
