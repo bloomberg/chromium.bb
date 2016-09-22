@@ -38,13 +38,8 @@ struct NTPTile {
   base::FilePath whitelist_icon_path;
 
   NTPTile();
+  NTPTile(const NTPTile&);
   ~NTPTile();
-
-  NTPTile(NTPTile&&);
-  NTPTile& operator=(NTPTile&&);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NTPTile);
 };
 
 using NTPTilesVector = std::vector<NTPTile>;

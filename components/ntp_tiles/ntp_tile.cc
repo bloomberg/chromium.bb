@@ -8,10 +8,8 @@ namespace ntp_tiles {
 
 NTPTile::NTPTile() : source(NTPTileSource::TOP_SITES) {}
 
+NTPTile::NTPTile(const NTPTile&) = default;
+
 NTPTile::~NTPTile() {}
-
-NTPTile::NTPTile(NTPTile&&) = default;
-
-NTPTile& NTPTile::operator=(NTPTile&&) = default;
 
 }  // namespace ntp_tiles
