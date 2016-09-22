@@ -13,7 +13,7 @@
         "blink::mojom::BudgetService",
         "blink::mojom::MimeRegistry",
         "blink::mojom::NotificationService",
-        "blink::mojom::OffscreenCanvasFrameReceiver",
+        "blink::mojom::OffscreenCanvasCompositorFrameSinkProvider",
         "blink::mojom::OffscreenCanvasSurface",
         "blink::mojom::PermissionService",
         "blink::mojom::WebSocket",
