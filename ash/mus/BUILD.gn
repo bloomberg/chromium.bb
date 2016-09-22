@@ -95,6 +95,7 @@ source_set("lib") {
     "//components/wallpaper",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
+    "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
   ]
