@@ -396,6 +396,7 @@ bool NavigatorImpl::NavigateToEntry(
           entry.ConstructRequestNavigationParams(
               frame_entry, is_same_document_history_load,
               is_history_navigation_in_new_child,
+              entry.HasSubtreeHistoryItems(frame_tree_node),
               frame_tree_node->has_committed_real_load(),
               controller_->GetPendingEntryIndex() == -1,
               controller_->GetIndexOfEntry(&entry),

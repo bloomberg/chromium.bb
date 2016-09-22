@@ -3642,6 +3642,78 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Verify that we can finish loading a page on restore if the PageState is
+// missing subframes.  See https://crbug.com/638088.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RestoreViaPartialPageState) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/inject_into_blank_iframe.html"));
+  GURL blank_url(url::kAboutBlankURL);
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // Create a NavigationEntry to restore, as if it had been loaded before.  The
+  // page has an about:blank iframe and injects content into it, but the
+  // PageState lacks any subframe history items.  This may happen during a
+  // restore of a bad session or if the page has changed since the last visit.
+  // Chrome should be robust to this and should be able to load the frame from
+  // its default URL.
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationControllerImpl::CreateNavigationEntry(
+              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+              std::string(), controller.GetBrowserContext()));
+  restored_entry->SetPageID(0);
+  restored_entry->SetPageState(PageState::CreateFromURL(main_url));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+
+  // Restore the new entry in a new tab and verify the iframe loads and has
+  // content injected into it.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  controller.Restore(entries.size() - 1,
+                     RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(shell()->web_contents());
+    controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* new_entry = controller.GetLastCommittedEntry();
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // The entry should have a FrameNavigationEntry for the blank subframe.
+    EXPECT_EQ(main_url, new_entry->root_node()->frame_entry->url());
+    ASSERT_EQ(1U, new_entry->root_node()->children.size());
+    EXPECT_EQ(blank_url,
+              new_entry->root_node()->children[0]->frame_entry->url());
+  } else {
+    EXPECT_EQ(0U, new_entry->root_node()->children.size());
+  }
+
+  // Verify that the parent was able to script the iframe.
+  std::string expected_text("Injected text");
+  {
+    std::string value;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->child_at(0),
+        "domAutomationController.send(document.body.innerHTML)", &value));
+    EXPECT_EQ(expected_text, value);
+  }
+}
+
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we
 // can match subframe FrameNavigationEntries to newly created frames after
 // back/forward and restore.

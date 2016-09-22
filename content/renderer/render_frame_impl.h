@@ -1094,6 +1094,17 @@ class CONTENT_EXPORT RenderFrameImpl
   // didCreateDataSource().
   std::unique_ptr<NavigationParams> pending_navigation_params_;
 
+  // Keeps track of whether the browser process has any history items that need
+  // to be used for subframes of this frame (in the case of a history
+  // navigation).  If not, the renderer can skip sending an IPC to the browser
+  // and directly load any initial URLs for children itself.  This state is
+  // cleared during didStopLoading, since it is not needed after the first load
+  // completes and is never used after the initial navigation.  It is inherited
+  // by subframes.
+  // TODO(creis): Switch this to a data structure of unique names and
+  // corresponding same-process PageStates in https://crbug.com/639842.
+  bool browser_has_subtree_history_items_;
+
   // Stores the current history item for this frame, so that updates to it can
   // be reported to the browser process via SendUpdateState.
   blink::WebHistoryItem current_history_item_;

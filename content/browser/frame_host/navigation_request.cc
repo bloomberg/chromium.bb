@@ -137,6 +137,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       entry.ConstructRequestNavigationParams(
           frame_entry, is_same_document_history_load,
           is_history_navigation_in_new_child,
+          entry.HasSubtreeHistoryItems(frame_tree_node),
           frame_tree_node->has_committed_real_load(),
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
@@ -169,6 +170,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       0,                       // nav_entry_id
       false,                   // is_same_document_history_load
       false,                   // is_history_navigation_in_new_child
+      false,                   // has_subtree_history_items
       frame_tree_node->has_committed_real_load(),
       false,                   // intended_as_new_entry
       -1,                      // pending_history_list_offset

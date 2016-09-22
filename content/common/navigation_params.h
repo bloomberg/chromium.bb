@@ -228,6 +228,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int nav_entry_id,
                           bool is_same_document_history_load,
                           bool is_history_navigation_in_new_child,
+                          bool has_subtree_history_items,
                           bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
@@ -277,6 +278,14 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // which case the browser process is instructing the renderer process to load
   // a URL from a session history item.  Defaults to false.
   bool is_history_navigation_in_new_child;
+
+  // If this is a history navigation, this indicates whether the browser process
+  // is aware of any subframe history items for the given frame.  If not, the
+  // renderer does not need to check with the browser if any subframes are
+  // created during the navigation.
+  // TODO(creis): Expand this to a data structure of unique names and
+  // corresponding PageStates in https://crbug.com/639842.
+  bool has_subtree_history_items;
 
   // Whether the frame being navigated has already committed a real page, which
   // affects how new navigations are classified in the renderer process.
