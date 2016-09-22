@@ -3214,6 +3214,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for hardware-backed keys.">
           hardware-backed
         </message>
+        <message name="IDS_CERT_MANAGER_EXTENSION_PROVIDED_FORMAT" desc="Format used for showing extension provided certificates.">
+          <ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph> (extension provided)
+        </message>
       </if>
 
       <if expr="chromeos">

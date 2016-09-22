@@ -9,8 +9,12 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/common/net/x509_certificate_model.h"
@@ -50,18 +54,42 @@ using content::BrowserThread;
 //                  |
 //               callback
 
+namespace {
+
+std::string GetCertificateOrg(net::X509Certificate* cert) {
+    std::string org;
+    if (!cert->subject().organization_names.empty())
+      org = cert->subject().organization_names[0];
+    if (org.empty())
+      org = cert->subject().GetDisplayName();
+
+    return org;
+}
+
+}  // namespace
+
 // static
 void CertificateManagerModel::Create(
     content::BrowserContext* browser_context,
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::unique_ptr<chromeos::CertificateProvider> extension_certificate_provider;
+#if defined(OS_CHROMEOS)
+  chromeos::CertificateProviderService* service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context);
+  extension_certificate_provider = service->CreateCertificateProvider();
+#endif
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&CertificateManagerModel::GetCertDBOnIOThread,
                  browser_context->GetResourceContext(),
                  observer,
+                 base::Passed(&extension_certificate_provider),
                  callback));
 }
 
@@ -69,11 +97,16 @@ CertificateManagerModel::CertificateManagerModel(
     net::NSSCertDatabase* nss_cert_database,
     bool is_user_db_available,
     bool is_tpm_available,
-    Observer* observer)
+    Observer* observer,
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider)
     : cert_db_(nss_cert_database),
       is_user_db_available_(is_user_db_available),
       is_tpm_available_(is_tpm_available),
-      observer_(observer) {
+      observer_(observer),
+      extension_certificate_provider_(std::move(
+                                          extension_certificate_provider)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -92,6 +125,12 @@ void CertificateManagerModel::Refresh() {
       NULL, // TODO(mattm): supply parent window.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
                  base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  extension_certificate_provider_->GetCertificates(base::Bind(
+      &CertificateManagerModel::RefreshExtensionCertificates,
+      weak_ptr_factory_.GetWeakPtr()));
+#endif
 }
 
 void CertificateManagerModel::RefreshSlotsUnlocked() {
@@ -99,7 +138,14 @@ void CertificateManagerModel::RefreshSlotsUnlocked() {
   // TODO(tbarzic): Use async |ListCerts|.
   cert_db_->ListCertsSync(&cert_list_);
   observer_->CertificatesRefreshed();
-  DVLOG(1) << "refresh finished";
+  DVLOG(1) << "refresh finished for platform provided certificates";
+}
+
+void CertificateManagerModel::RefreshExtensionCertificates(
+    const net::CertificateList& new_certs) {
+  extension_cert_list_ = new_certs;
+  observer_->CertificatesRefreshed();
+  DVLOG(1) << "refresh finished for extension provided certificates";
 }
 
 void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
@@ -113,13 +159,16 @@ void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
     if (type != filter_type)
       continue;
 
-    std::string org;
-    if (!cert->subject().organization_names.empty())
-      org = cert->subject().organization_names[0];
-    if (org.empty())
-      org = cert->subject().GetDisplayName();
-
+    std::string org = GetCertificateOrg(cert);
     (*map)[org].push_back(cert);
+  }
+
+  // Display extension provided certificates under the "Your Certificates" tab.
+  if (filter_type == net::USER_CERT) {
+    for (const auto& cert : extension_cert_list_) {
+      std::string org = GetCertificateOrg(cert.get());
+      (*map)[org].push_back(cert);
+    }
   }
 }
 
@@ -132,8 +181,13 @@ base::string16 CertificateManagerModel::GetColumnText(
       rv = base::UTF8ToUTF16(
           x509_certificate_model::GetCertNameOrNickname(cert.os_cert_handle()));
 
-      // TODO(xiyuan): Put this into a column when we have js tree-table.
-      if (IsHardwareBacked(&cert)) {
+      // Mark extension provided certificates.
+      if (base::ContainsValue(extension_cert_list_, &cert)) {
+        rv = l10n_util::GetStringFUTF16(
+            IDS_CERT_MANAGER_EXTENSION_PROVIDED_FORMAT,
+            rv);
+      } else if (IsHardwareBacked(&cert)) {
+        // TODO(xiyuan): Put this into a column when we have js tree-table.
         rv = l10n_util::GetStringFUTF16(
             IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT,
             rv,
@@ -222,17 +276,22 @@ void CertificateManagerModel::DidGetCertDBOnUIThread(
     bool is_user_db_available,
     bool is_tpm_available,
     CertificateManagerModel::Observer* observer,
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider,
     const CreationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<CertificateManagerModel> model(new CertificateManagerModel(
-      cert_db, is_user_db_available, is_tpm_available, observer));
+      cert_db, is_user_db_available, is_tpm_available, observer,
+      std::move(extension_certificate_provider)));
   callback.Run(std::move(model));
 }
 
 // static
 void CertificateManagerModel::DidGetCertDBOnIOThread(
     CertificateManagerModel::Observer* observer,
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider,
     const CreationCallback& callback,
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -250,6 +309,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
                  is_user_db_available,
                  is_tpm_available,
                  observer,
+                 base::Passed(&extension_certificate_provider),
                  callback));
 }
 
@@ -257,13 +317,22 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
 void CertificateManagerModel::GetCertDBOnIOThread(
     content::ResourceContext* context,
     CertificateManagerModel::Observer* observer,
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider,
     const CreationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto did_get_cert_db_callback = base::Bind(
+      &CertificateManagerModel::DidGetCertDBOnIOThread, observer,
+      base::Passed(&extension_certificate_provider), callback);
+
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
-      context,
-      base::Bind(&CertificateManagerModel::DidGetCertDBOnIOThread,
-                 observer,
-                 callback));
+      context, did_get_cert_db_callback);
+
+  // The callback is run here instead of the actual function call because of
+  // extension_certificate_provider ownership semantics, ie. ownership can only
+  // be released once. The callback will only be run once (either inside the
+  // function above or here).
   if (cert_db)
-    DidGetCertDBOnIOThread(observer, callback, cert_db);
+    did_get_cert_db_callback.Run(cert_db);
 }

@@ -12,8 +12,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "net/cert/nss_cert_database.h"
+
+namespace chromeos {
+class CertificateProvider;
+}  // namespace chromeos
 
 namespace content {
 class BrowserContext;
@@ -129,10 +134,13 @@ class CertificateManagerModel {
   bool IsHardwareBacked(const net::X509Certificate* cert) const;
 
  private:
-  CertificateManagerModel(net::NSSCertDatabase* nss_cert_database,
-                          bool is_user_db_available,
-                          bool is_tpm_available,
-                          Observer* observer);
+  CertificateManagerModel(
+      net::NSSCertDatabase* nss_cert_database,
+      bool is_user_db_available,
+      bool is_tpm_available,
+      Observer* observer,
+      std::unique_ptr<chromeos::CertificateProvider>
+          extension_certificate_provider);
 
   // Methods used during initialization, see the comment at the top of the .cc
   // file for details.
@@ -141,21 +149,32 @@ class CertificateManagerModel {
       bool is_user_db_available,
       bool is_tpm_available,
       CertificateManagerModel::Observer* observer,
+      std::unique_ptr<chromeos::CertificateProvider>
+          extension_certificate_provider,
       const CreationCallback& callback);
   static void DidGetCertDBOnIOThread(
       CertificateManagerModel::Observer* observer,
+      std::unique_ptr<chromeos::CertificateProvider>
+          extension_certificate_provider,
       const CreationCallback& callback,
       net::NSSCertDatabase* cert_db);
-  static void GetCertDBOnIOThread(content::ResourceContext* context,
-                                  CertificateManagerModel::Observer* observer,
-                                  const CreationCallback& callback);
+  static void GetCertDBOnIOThread(
+      content::ResourceContext* context,
+      CertificateManagerModel::Observer* observer,
+      std::unique_ptr<chromeos::CertificateProvider>
+          extension_certificate_provider,
+      const CreationCallback& callback);
 
   // Callback used by Refresh() for when the cert slots have been unlocked.
   // This method does the actual refreshing.
   void RefreshSlotsUnlocked();
 
+  // Callback used to refresh extension provided certificates. Refreshes UI.
+  void RefreshExtensionCertificates(const net::CertificateList& new_certs);
+
   net::NSSCertDatabase* cert_db_;
   net::CertificateList cert_list_;
+  net::CertificateList extension_cert_list_;
   // Whether the certificate database has a public slot associated with the
   // profile. If not set, importing certificates is not allowed with this model.
   bool is_user_db_available_;
@@ -163,6 +182,12 @@ class CertificateManagerModel {
 
   // The observer to notify when certificate list is refreshed.
   Observer* observer_;
+
+  // Certificate provider used to fetch extension provided certificates.
+  std::unique_ptr<chromeos::CertificateProvider>
+      extension_certificate_provider_;
+
+  base::WeakPtrFactory<CertificateManagerModel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerModel);
 };
