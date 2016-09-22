@@ -64,6 +64,7 @@
 #include "modules/webgl/WebGLBuffer.h"
 #include "modules/webgl/WebGLCompressedTextureASTC.h"
 #include "modules/webgl/WebGLCompressedTextureATC.h"
+#include "modules/webgl/WebGLCompressedTextureES30.h"
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"

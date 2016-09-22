@@ -91,6 +91,7 @@ class WebGLActiveInfo;
 class WebGLBuffer;
 class WebGLCompressedTextureASTC;
 class WebGLCompressedTextureATC;
+class WebGLCompressedTextureES30;
 class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
 class WebGLCompressedTextureS3TC;
@@ -431,6 +432,7 @@ protected:
     friend class WebGLDebugShaders;
     friend class WebGLCompressedTextureASTC;
     friend class WebGLCompressedTextureATC;
+    friend class WebGLCompressedTextureES30;
     friend class WebGLCompressedTextureETC1;
     friend class WebGLCompressedTexturePVRTC;
     friend class WebGLCompressedTextureS3TC;

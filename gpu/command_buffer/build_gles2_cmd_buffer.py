@@ -811,16 +811,6 @@ _NAMED_TYPE_INFO = {
     'valid': [
     ],
     'valid_es3': [
-      'GL_COMPRESSED_R11_EAC',
-      'GL_COMPRESSED_SIGNED_R11_EAC',
-      'GL_COMPRESSED_RG11_EAC',
-      'GL_COMPRESSED_SIGNED_RG11_EAC',
-      'GL_COMPRESSED_RGB8_ETC2',
-      'GL_COMPRESSED_SRGB8_ETC2',
-      'GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2',
-      'GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2',
-      'GL_COMPRESSED_RGBA8_ETC2_EAC',
-      'GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC',
     ],
   },
   'GLState': {
@@ -2121,16 +2111,6 @@ _NAMED_TYPE_INFO = {
       'GL_DEPTH_COMPONENT32F',
       'GL_DEPTH24_STENCIL8',
       'GL_DEPTH32F_STENCIL8',
-      'GL_COMPRESSED_R11_EAC',
-      'GL_COMPRESSED_SIGNED_R11_EAC',
-      'GL_COMPRESSED_RG11_EAC',
-      'GL_COMPRESSED_SIGNED_RG11_EAC',
-      'GL_COMPRESSED_RGB8_ETC2',
-      'GL_COMPRESSED_SRGB8_ETC2',
-      'GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2',
-      'GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2',
-      'GL_COMPRESSED_RGBA8_ETC2_EAC',
-      'GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC',
     ],
     'deprecated_es3': [
       'GL_ALPHA8_EXT',
@@ -2307,6 +2287,19 @@ _NAMED_TYPE_INFO = {
     ],
   },
 }
+
+_ES30_COMPRESSED_TEXTURE_FORMATS = [
+  'GL_COMPRESSED_R11_EAC',
+  'GL_COMPRESSED_SIGNED_R11_EAC',
+  'GL_COMPRESSED_RG11_EAC',
+  'GL_COMPRESSED_SIGNED_RG11_EAC',
+  'GL_COMPRESSED_RGB8_ETC2',
+  'GL_COMPRESSED_SRGB8_ETC2',
+  'GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+  'GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+  'GL_COMPRESSED_RGBA8_ETC2_EAC',
+  'GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC',
+]
 
 # This table specifies the different pepper interfaces that are supported for
 # GL commands. 'dev' is true if it's a dev interface.
@@ -10939,6 +10932,18 @@ extern const NameToFunc g_gles2_function_table[] = {
           f.write(code % {
             'name': ToUnderscore(name),
           })
+      f.write("UpdateES30CompressedTextureFormats();");
+      f.write("}\n\n");
+
+      f.write("void Validators::UpdateES30CompressedTextureFormats() {\n")
+      for name in ['CompressedTextureFormat', 'TextureInternalFormatStorage']:
+        for fmt in _ES30_COMPRESSED_TEXTURE_FORMATS:
+          code = """  %(name)s.AddValue(%(format)s);
+"""
+          f.write(code % {
+            'name': ToUnderscore(name),
+            'format': fmt,
+          })
       f.write("}\n\n");
     self.generated_cpp_filenames.append(filename)
 
@@ -11001,6 +11006,12 @@ const size_t GLES2Util::enum_to_string_table_len_ =
             for es3_enum in _NAMED_TYPE_INFO[enum]['valid_es3']:
               if not es3_enum in valid_list:
                 valid_list.append(es3_enum)
+          if enum in [
+              'CompressedTextureFormat',
+              'TextureInternalFormatStorage',
+            ]:
+            for es3_enum in _ES30_COMPRESSED_TEXTURE_FORMATS:
+              valid_list.append(es3_enum)
           assert len(valid_list) == len(set(valid_list))
           if len(valid_list) > 0:
             f.write("  static const EnumToString string_table[] = {\n")

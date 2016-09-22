@@ -26,6 +26,7 @@ enum WebGLExtensionName {
     OESVertexArrayObjectName,
     WebGLCompressedTextureASTCName,
     WebGLCompressedTextureATCName,
+    WebGLCompressedTextureES30Name,
     WebGLCompressedTextureETC1Name,
     WebGLCompressedTexturePVRTCName,
     WebGLCompressedTextureS3TCName,

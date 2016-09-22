@@ -449,6 +449,54 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_compression_s3tc_srgbGL) {
       GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT));
 }
 
+TEST_P(FeatureInfoTest, InitializeCHROMIUM_compressed_texture_es3_0) {
+  SetupInitExpectationsWithGLVersion("", "",
+                                     "OpenGL ES 3.0");
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_compressed_texture_es3_0"));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_R11_EAC));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SIGNED_R11_EAC));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGB8_ETC2));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB8_ETC2));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RG11_EAC));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SIGNED_RG11_EAC));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_RGBA8_ETC2_EAC));
+  EXPECT_TRUE(info_->validators()->compressed_texture_format.IsValid(
+      GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC));
+
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_R11_EAC));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_SIGNED_R11_EAC));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_RGB8_ETC2));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_SRGB8_ETC2));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_RG11_EAC));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_SIGNED_RG11_EAC));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_RGBA8_ETC2_EAC));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC));
+}
+
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {
   SetupInitExpectationsWithGLVersion("GL_EXT_texture_format_BGRA8888", "",
                                      "OpenGL ES 2.0");

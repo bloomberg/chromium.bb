@@ -88,6 +88,7 @@ private:
     Member<WebGLDrawBuffers> m_webglDrawBuffers;
     Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
     Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    Member<WebGLCompressedTextureES30> m_webglCompressedTextureES30;
     Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
