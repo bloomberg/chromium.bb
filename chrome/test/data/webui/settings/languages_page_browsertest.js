@@ -235,7 +235,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         var languageMenu = assert(languagesPage.$$('cr-shared-menu'));
         assertTrue(languageMenu.menuOpen);
         var removeMenuItem = assert(languageMenu.querySelector(
-            '.dropdown-item:last-of-type'));
+            '.dropdown-item:last-child'));
         assertFalse(removeMenuItem.disabled);
         MockInteractions.tap(removeMenuItem);
         assertFalse(languageMenu.menuOpen);
@@ -245,20 +245,6 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           assertFalse(languageHelper.isLanguageEnabled(newLanguage.code));
         });
       });
-    });
-
-    test('language detail', function() {
-      var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
-          'paper-icon-button');
-      MockInteractions.tap(languageOptionsDropdownTrigger);
-      var languageDetailMenuItem = languagesPage.root.querySelectorAll(
-          'cr-shared-menu .dropdown-item')[2];
-      MockInteractions.tap(languageDetailMenuItem);
-
-      var languageDetailPage =
-          languagesPage.$$('settings-language-detail-page');
-      assertTrue(!!languageDetailPage);
-      assertEquals('en-US', languageDetailPage.detail.language.code);
     });
 
     test('manage input methods', function() {

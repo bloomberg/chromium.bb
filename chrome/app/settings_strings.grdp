@@ -1320,17 +1320,11 @@
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE" desc="Label for the menu item to remove a language from the list of enabled languages.">
     Remove
   </message>
-  <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_LANGUAGE_DETAIL" desc="Label for the menu item which opens a sub-page that displays details for a language.">
-    Language settings
-  </message>
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD" desc="Button under the list of enabled languages which opens a dialog that lets the user enable additional languages.">
     Add languages
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not pages in this language should be translated by default.">
     Offer to translate pages in this language
-  </message>
-  <message name="IDS_SETTINGS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE" desc="The string displayed in the details for a language when the language cannot be translated from.">
-    This language cannot be translated
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the current input method in the header for the collapsible list of enabled input methods (keyboard layouts and input method editors).">

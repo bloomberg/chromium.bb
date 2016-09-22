@@ -537,16 +537,6 @@
                    file="languages_page/manage_input_methods_page.js"
                    type="chrome_html" />
       </if>
-      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_HTML"
-                 file="languages_page/language_detail_page.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_JS"
-                 file="languages_page/language_detail_page.js"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
       <if expr="not is_macosx">
         <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_HTML"
                    file="languages_page/edit_dictionary_page.html"

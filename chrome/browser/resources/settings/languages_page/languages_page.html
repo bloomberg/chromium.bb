@@ -4,33 +4,48 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="/icons.html">
+<link rel="import" href="/languages_page/add_languages_dialog.html">
+<link rel="import" href="/languages_page/languages.html">
+<link rel="import" href="/lifetime_browser_proxy.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
-<link rel="import" href="add_languages_dialog.html">
-<link rel="import" href="language_detail_page.html">
-<link rel="import" href="languages.html">
 
 <if expr="not is_macosx">
 <link rel="import" href="edit_dictionary_page.html">
 </if>
 
 <if expr="chromeos">
-<link rel="import" href="manage_input_methods_page.html">
+<link rel="import" href="chrome://resources/html/chromeos/ui_account_tweaks.html">
+<link rel="import" href="/languages_page/manage_input_methods_page.html">
 </if>
 
 <dom-module id="settings-languages-page">
   <template>
     <style include="settings-shared">
-      .list-button {
-        @apply(--settings-actionable);
+      #languagesCollapse .list-item.selected {
+        min-height: var(--settings-row-two-line-min-height);
+      }
+
+      .explain-selected {
+        color: var(--google-green-700);
+        font-weight: initial;
+        margin-top: 4px;
+      }
+
+      paper-checkbox.dropdown-item {
+        --checkbox-margin-start: 0;
+        /* Allow for the ripple height. */
+        min-height: var(--paper-checkbox-ink-size);
       }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
@@ -61,23 +76,26 @@
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
                   item.language.code, prefs.intl.app_locale.value,
-                  item.language.supportsUI)]]"
-                  on-tap="onLanguageTap_">
-<if expr="not chromeos and not is_win">
-                <div class="start" title="[[item.language.nativeDisplayName]]">
-                  [[item.language.displayName]]
-                </div>
-</if>
+                  item.language.supportsUI)]]">
+                <div class="start">
+                  <div title="[[item.language.nativeDisplayName]]">
+                    [[item.language.displayName]]
+                  </div>
 <if expr="chromeos or is_win">
-                <div title="[[item.language.nativeDisplayName]]">
-                  [[item.language.displayName]]
-                </div>
-                <div class="middle">
-                  <iron-icon icon="settings:done"
-                      hidden$="[[!isProspectiveUILanguage_(
+                  <div class="explain-selected"
+                      hidden="[[!isProspectiveUILanguage_(
                           item.language.code, prefs.intl.app_locale.value)]]">
-                  </iron-icon>
+                    $i18n{isDisplayedInThisLanguage}
+                  </div>
+</if>
                 </div>
+<if expr="chromeos or is_win">
+                <template is="dom-if" if="[[isRestartRequired_(
+                        item.language.code, prefs.intl.app_locale.value)]]">
+                  <paper-button on-tap="onRestartTap_">
+                    $i18n{restart}
+                  </paper-button>
+                </template>
 </if>
                 <paper-icon-button id="more-[[item.language.code]]"
                     icon="cr:more-vert" on-tap="toggleMenu_">
@@ -112,13 +130,13 @@
                 <div>[[item.displayName]]</div>
                 <div class="middle">
                   <iron-icon icon="settings:done"
-                      hidden$="[[!isCurrentInputMethod_(
+                      hidden="[[!isCurrentInputMethod_(
                           item.id, languages.inputMethods.currentId)]]">
                   </iron-icon>
                 </div>
                 <paper-icon-button icon="cr:settings"
                     on-tap="onInputMethodOptionsTap_"
-                    hidden$="[[!item.hasOptionsPage]]">
+                    hidden="[[!item.hasOptionsPage]]">
                 </paper-icon-button>
               </div>
             </template>
@@ -165,8 +183,27 @@
           </div>
         </iron-collapse>
 </if>
-        <template is="dom-if" id="menuTemplate">
+        <template is="cr-lazy-render" id="menu">
           <cr-shared-menu>
+<if expr="chromeos or is_win">
+            <paper-checkbox id="uiLanguageItem" class="dropdown-item"
+                checked="[[isProspectiveUILanguage_(
+                    detailLanguage_.language.code,
+                    prefs.intl.app_locale.value)]]"
+                on-change="onUILanguageChange_"
+                disabled="[[disableUILanguageCheckbox_(
+                    detailLanguage_, prefs.intl.app_locale.value)]]">
+                $i18n{displayInThisLanguage}
+            </paper-checkbox>
+</if>
+            <paper-checkbox class="dropdown-item"
+                checked="[[detailLanguage_.translateEnabled]]"
+                on-change="onTranslateCheckboxChange_"
+                hidden="[[!prefs.translate.enabled.value]]"
+                disabled="[[disableTranslateCheckbox_(
+                    detailLanguage_.language, languages.translateTarget)]]">
+              $i18n{offerToTranslateInThisLanguage}
+            </paper-checkbox>
             <button class="dropdown-item" role="menuitem"
                 on-tap="onMoveUpTap_"
                 hidden="[[isFirstLanguage_(
@@ -180,25 +217,13 @@
               $i18n{moveDown}
             </button>
             <button class="dropdown-item" role="menuitem"
-                on-tap="onShowLanguageDetailTap_">
-              $i18n{languageDetail}
-            </button>
-            <button class="dropdown-item" role="menuitem"
                 on-tap="onRemoveLanguageTap_"
-                disabled="[[!detailLanguage_.removable]]">
+                hidden="[[!detailLanguage_.removable]]">
               $i18n{removeLanguage}
             </button>
           </cr-shared-menu>
         </template>
       </neon-animatable>
-      <template is="dom-if" route-path="/languages/edit" no-search>
-        <settings-subpage page-title="[[detailLanguage_.language.displayName]]">
-          <settings-language-detail-page id="languageDetailPage"
-              languages="{{languages}}" prefs="{{prefs}}"
-              detail="[[detailLanguage_]]" language-helper="[[languageHelper]]">
-          </settings-language-detail-page>
-        </settings-subpage>
-      </template>
 <if expr="chromeos">
       <template is="dom-if" route-path="/inputMethods">
         <settings-subpage
