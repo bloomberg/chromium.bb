@@ -778,10 +778,6 @@ void RenderWidget::DidCommitCompositorFrame() {
                     DidCommitCompositorFrame());
   FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
                     DidCommitCompositorFrame());
-#if defined(VIDEO_HOLE)
-  FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
-                    DidCommitCompositorFrame());
-#endif  // defined(VIDEO_HOLE)
   input_handler_->FlushPendingInputEventAck();
 }
 
@@ -2134,16 +2130,6 @@ void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
 void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
 }
-
-#if defined(VIDEO_HOLE)
-void RenderWidget::RegisterVideoHoleFrame(RenderFrameImpl* frame) {
-  video_hole_frames_.AddObserver(frame);
-}
-
-void RenderWidget::UnregisterVideoHoleFrame(RenderFrameImpl* frame) {
-  video_hole_frames_.RemoveObserver(frame);
-}
-#endif  // defined(VIDEO_HOLE)
 
 void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
   QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id),

@@ -71,7 +71,6 @@ void CastWindowAndroid::Initialize() {
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   prefs->use_video_overlay_for_embedded_encrypted_video = true;
-  prefs->use_view_overlay_for_all_video = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 

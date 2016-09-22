@@ -30,7 +30,6 @@ source_set("browser_sources") {
     "android/content_view_core.h",
     "android/content_view_layer_renderer.h",
     "android/devtools_auth.h",
-    "android/external_video_surface_container.h",
     "android/interface_provider_android.h",
     "android/interface_registry_android.h",
     "android/java_interfaces.h",

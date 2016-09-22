@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -290,11 +289,6 @@ void BrowserMediaPlayerManager::DidExitFullscreen(bool release_media_player) {
   if (!player)
     return;
 
-#if defined(VIDEO_HOLE)
-  if (external_video_surface_container_)
-    external_video_surface_container_->OnFrameInfoUpdated();
-#endif  // defined(VIDEO_HOLE)
-
   if (release_media_player)
     ReleaseFullscreenPlayer(player);
   else
@@ -434,98 +428,12 @@ bool BrowserMediaPlayerManager::RequestPlay(int player_id,
                     media::DurationToMediaContentType(duration));
 }
 
-#if defined(VIDEO_HOLE)
-void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
-                                                           jobject surface) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player) {
-    player->SetVideoSurface(
-        gl::ScopedJavaSurface::AcquireExternalSurface(surface));
-  }
-}
-
-void BrowserMediaPlayerManager::DetachExternalVideoSurface(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->SetVideoSurface(gl::ScopedJavaSurface());
-}
-
-void BrowserMediaPlayerManager::OnFrameInfoUpdated() {
-  if (fullscreen_player_id_ != kInvalidMediaPlayerId)
-    return;
-
-  if (external_video_surface_container_)
-    external_video_surface_container_->OnFrameInfoUpdated();
-}
-
-void BrowserMediaPlayerManager::OnNotifyExternalSurface(
-    int player_id, bool is_request, const gfx::RectF& rect) {
-  if (!web_contents_)
-    return;
-
-  if (is_request) {
-    OnRequestExternalSurface(player_id, rect);
-  }
-  if (external_video_surface_container_) {
-    external_video_surface_container_->OnExternalVideoSurfacePositionChanged(
-        player_id, rect);
-  }
-}
-
-void BrowserMediaPlayerManager::ReleasePlayerOfExternalVideoSurfaceIfNeeded(
-    int future_player) {
-  int current_player = ExternalVideoSurfaceContainer::kInvalidPlayerId;
-
-  if (external_video_surface_container_)
-    current_player = external_video_surface_container_->GetCurrentPlayerId();
-
-  if (current_player == ExternalVideoSurfaceContainer::kInvalidPlayerId)
-    return;
-
-  if (current_player != future_player)
-    OnMediaInterrupted(current_player);
-}
-
-void BrowserMediaPlayerManager::OnRequestExternalSurface(
-    int player_id, const gfx::RectF& rect) {
-  if (!external_video_surface_container_) {
-    ContentBrowserClient* client = GetContentClient()->browser();
-    external_video_surface_container_.reset(
-        client->OverrideCreateExternalVideoSurfaceContainer(web_contents_));
-  }
-  // It's safe to use base::Unretained(this), because the callbacks will not
-  // be called after running ReleaseExternalVideoSurface().
-  if (external_video_surface_container_) {
-    // In case we're stealing the external surface from another player.
-    ReleasePlayerOfExternalVideoSurfaceIfNeeded(player_id);
-    external_video_surface_container_->RequestExternalVideoSurface(
-        player_id,
-        base::Bind(&BrowserMediaPlayerManager::AttachExternalVideoSurface,
-                   base::Unretained(this)),
-        base::Bind(&BrowserMediaPlayerManager::DetachExternalVideoSurface,
-                   base::Unretained(this)));
-  }
-}
-
-void BrowserMediaPlayerManager::ReleaseExternalSurface(int player_id) {
-  if (external_video_surface_container_)
-    external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
-}
-#endif  // defined(VIDEO_HOLE)
-
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
 #if defined(USE_AURA)
   // TODO(crbug.com/548024)
   NOTIMPLEMENTED();
 #else
   DCHECK_EQ(fullscreen_player_id_, kInvalidMediaPlayerId);
-#if defined(VIDEO_HOLE)
-  // If this fullscreen player is started when another player
-  // uses the external surface, release that other player.
-  ReleasePlayerOfExternalVideoSurfaceIfNeeded(player_id);
-  if (external_video_surface_container_)
-    external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
-#endif  // defined(VIDEO_HOLE)
   if (video_view_) {
     fullscreen_player_id_ = player_id;
     video_view_->OpenVideo();
@@ -660,9 +568,6 @@ void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
-#if defined(VIDEO_HOLE)
-      ReleaseExternalSurface(player_id);
-#endif
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
       break;
@@ -688,9 +593,6 @@ BrowserMediaPlayerManager::SwapPlayer(int player_id,
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
       previous_player = *it;
-#if defined(VIDEO_HOLE)
-      ReleaseExternalSurface(player_id);
-#endif
       MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
           ->DisconnectMediaSession(render_frame_host_,
                                    player_id_to_delegate_id_map_[player_id]);
@@ -763,9 +665,6 @@ void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(
 
 void BrowserMediaPlayerManager::ReleasePlayer(MediaPlayerAndroid* player) {
   player->Release();
-#if defined(VIDEO_HOLE)
-  ReleaseExternalSurface(player->player_id());
-#endif
 }
 
 void BrowserMediaPlayerManager::OnPlaybackPermissionGranted(

@@ -43,12 +43,6 @@ class CC_EXPORT VideoFrameExternalResources {
     RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
 
-#if defined(VIDEO_HOLE)
-    // TODO(danakj): Implement this with a solid color layer instead of a video
-    // frame and video layer.
-    HOLE,
-#endif  // defined(VIDEO_HOLE)
-
     // TODO(danakj): Remove this and abstract TextureMailbox into
     // "ExternalResource" that can hold a hardware or software backing.
     SOFTWARE_RESOURCE

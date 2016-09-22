@@ -220,15 +220,6 @@ class WebMediaPlayerAndroid
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
 
-#if defined(VIDEO_HOLE)
-  // Calculate the boundary rectangle of the media player (i.e. location and
-  // size of the video frame).
-  // Returns true if the geometry has been changed since the last call.
-  bool UpdateBoundaryRectangle() override;
-
-  const gfx::RectF GetBoundaryRectangle() override;
-#endif  // defined(VIDEO_HOLE)
-
   void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
@@ -444,10 +435,6 @@ class WebMediaPlayerAndroid
   // blocked.
   ScopedStreamTextureProxy stream_texture_proxy_;
 
-  // Whether media player needs external surface.
-  // Only used for the VIDEO_HOLE logic.
-  bool needs_external_surface_;
-
   // Whether the player is in fullscreen.
   bool is_fullscreen_;
 
@@ -458,16 +445,6 @@ class WebMediaPlayerAndroid
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
   std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
-
-#if defined(VIDEO_HOLE)
-  // A rectangle represents the geometry of video frame, when computed last
-  // time.
-  gfx::RectF last_computed_rect_;
-
-  // Whether to use the video overlay for all embedded video.
-  // True only for testing.
-  bool force_use_overlay_embedded_video_;
-#endif  // defined(VIDEO_HOLE)
 
   MediaPlayerHostMsg_Initialize_Type player_type_;
 

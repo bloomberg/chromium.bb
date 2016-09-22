@@ -111,15 +111,6 @@ void MediaWebContentsObserverAndroid::DisconnectMediaSession(
       MediaPlayerId(render_frame_host, delegate_id));
 }
 
-#if defined(VIDEO_HOLE)
-void MediaWebContentsObserverAndroid::OnFrameInfoUpdated() {
-  for (auto it = media_player_managers_.begin();
-       it != media_player_managers_.end(); ++it) {
-    it->second->OnFrameInfoUpdated();
-  }
-}
-#endif  // defined(VIDEO_HOLE)
-
 void MediaWebContentsObserverAndroid::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   MediaWebContentsObserver::RenderFrameDeleted(render_frame_host);
@@ -201,11 +192,6 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
         MediaPlayerHostMsg_RequestRemotePlaybackControl,
         GetMediaPlayerManager(render_frame_host),
         BrowserMediaPlayerManager::OnRequestRemotePlaybackControl)
-#if defined(VIDEO_HOLE)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_NotifyExternalSurface,
-                        GetMediaPlayerManager(render_frame_host),
-                        BrowserMediaPlayerManager::OnNotifyExternalSurface)
-#endif  // defined(VIDEO_HOLE)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

@@ -172,7 +172,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
                                   ? params.compositor_task_runner()
                                   : base::ThreadTaskRunnerHandle::Get()),
       stream_texture_factory_(factory),
-      needs_external_surface_(false),
       is_fullscreen_(false),
       video_frame_provider_client_(nullptr),
       player_type_(MEDIA_PLAYER_TYPE_URL),
@@ -198,18 +197,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
-#if defined(VIDEO_HOLE)
-  const RendererPreferences& prefs = RenderFrameImpl::FromRoutingID(frame_id)
-                                         ->render_view()
-                                         ->renderer_preferences();
-  force_use_overlay_embedded_video_ = prefs.use_view_overlay_for_all_video;
-  if (force_use_overlay_embedded_video_ ||
-    player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
-    // Defer stream texture creation until we are sure it's necessary.
-    needs_establish_peer_ = false;
-    current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
-  }
-#endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
   interpolator_.SetUpperBound(base::TimeDelta());
 
@@ -387,16 +374,6 @@ void WebMediaPlayerAndroid::play() {
     }
   }
   is_play_pending_ = false;
-
-  // For HLS streams, some devices cannot detect the video size unless a surface
-  // texture is bind to it. See http://crbug.com/400145.
-#if defined(VIDEO_HOLE)
-  if ((hasVideo() || IsHLSStream()) && needs_external_surface_ &&
-      !is_fullscreen_) {
-    DCHECK(!needs_establish_peer_);
-    player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-  }
-#endif  // defined(VIDEO_HOLE)
 
   TryCreateStreamTextureProxyIfNeeded();
   // There is no need to establish the surface texture peer for fullscreen
@@ -696,10 +673,6 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Don't allow clients to copy an encrypted video frame.
-  if (needs_external_surface_)
-    return false;
-
   scoped_refptr<VideoFrame> video_frame;
   {
     base::AutoLock auto_lock(current_frame_lock_);
@@ -924,21 +897,6 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   if (natural_size_.width == width && natural_size_.height == height)
     return;
 
-#if defined(VIDEO_HOLE)
-  // Use H/W surface for encrypted video.
-  // TODO(qinmin): Change this so that only EME needs the H/W surface
-  if (force_use_overlay_embedded_video_ ||
-      (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted() &&
-       player_manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo())) {
-    needs_external_surface_ = true;
-    if (!paused() && !is_fullscreen_)
-      player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-  } else if (!stream_texture_proxy_) {
-    // Do deferred stream texture creation finally.
-    SetNeedsEstablishPeer(true);
-    TryCreateStreamTextureProxyIfNeeded();
-  }
-#endif  // defined(VIDEO_HOLE)
   natural_size_.width = width;
   natural_size_.height = height;
 
@@ -1027,9 +985,7 @@ void WebMediaPlayerAndroid::OnCancelledRemotePlaybackRequest() {
 }
 
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
-  // |needs_external_surface_| is always false on non-TV devices.
-  if (!needs_external_surface_)
-    SetNeedsEstablishPeer(true);
+  SetNeedsEstablishPeer(true);
   // We had the fullscreen surface connected to Android MediaPlayer,
   // so reconnect our surface texture for embedded playback.
   if (!paused() && needs_establish_peer_) {
@@ -1038,10 +994,6 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     suppress_deleting_texture_ = true;
   }
 
-#if defined(VIDEO_HOLE)
-  if (!paused() && needs_external_surface_)
-    player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
-#endif  // defined(VIDEO_HOLE)
   is_fullscreen_ = false;
   ReallocateVideoFrame();
   client_->repaint();
@@ -1106,19 +1058,13 @@ void WebMediaPlayerAndroid::UpdateReadyState(
 }
 
 void WebMediaPlayerAndroid::OnPlayerReleased() {
-  // |needs_external_surface_| is always false on non-TV devices.
-  if (!needs_external_surface_)
-    needs_establish_peer_ = true;
+  needs_establish_peer_ = true;
 
   if (is_playing_)
     OnMediaPlayerPause();
 
   if (delegate_)
     delegate_->PlayerGone(delegate_id_);
-
-#if defined(VIDEO_HOLE)
-  last_computed_rect_ = gfx::RectF();
-#endif  // defined(VIDEO_HOLE)
 }
 
 void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
@@ -1143,8 +1089,7 @@ void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
       break;
   }
   player_manager_->SuspendAndReleaseResources(player_id_);
-  if (!needs_external_surface_)
-    SetNeedsEstablishPeer(true);
+  SetNeedsEstablishPeer(true);
 }
 
 void WebMediaPlayerAndroid::InitializePlayer(
@@ -1206,23 +1151,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (is_fullscreen_) return;
-  if (needs_external_surface_) {
-    // VideoFrame::CreateHoleFrame is only defined under VIDEO_HOLE.
-#if defined(VIDEO_HOLE)
-    if (!natural_size_.isEmpty()) {
-      // Now we finally know that "stream texture" and "video frame" won't
-      // be needed. EME uses "external surface" and "video hole" instead.
-      RemoveSurfaceTextureAndProxy();
-      scoped_refptr<VideoFrame> new_frame =
-          VideoFrame::CreateHoleFrame(natural_size_);
-      SetCurrentFrameInternal(new_frame);
-      // Force the client to grab the hole frame.
-      client_->repaint();
-    }
-#else
-    NOTIMPLEMENTED() << "Hole punching not supported without VIDEO_HOLE flag";
-#endif  // defined(VIDEO_HOLE)
-  } else if (!is_remote_ && texture_id_) {
+  if (!is_remote_ && texture_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     GLuint texture_target = kGLTextureExternalOES;
     GLuint texture_id_ref = gl->CreateAndConsumeTextureCHROMIUM(
@@ -1317,9 +1246,8 @@ void WebMediaPlayerAndroid::RemoveSurfaceTextureAndProxy() {
     stream_id_ = 0;
   }
   stream_texture_proxy_.reset();
-  needs_establish_peer_ = !needs_external_surface_ && !is_remote_ &&
-                          !is_fullscreen_ &&
-                          (hasVideo() || IsHLSStream());
+  needs_establish_peer_ =
+      !is_remote_ && !is_fullscreen_ && (hasVideo() || IsHLSStream());
 }
 
 void WebMediaPlayerAndroid::UpdateStreamTextureProxyCallback(
@@ -1426,33 +1354,6 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
     }
   }
 }
-
-#if defined(VIDEO_HOLE)
-bool WebMediaPlayerAndroid::UpdateBoundaryRectangle() {
-  if (!video_weblayer_)
-    return false;
-
-  // Compute the geometry of video frame layer.
-  cc::Layer* layer = video_weblayer_->layer();
-  gfx::RectF rect(gfx::SizeF(layer->bounds()));
-  while (layer) {
-    rect.Offset(layer->position().OffsetFromOrigin());
-    layer = layer->parent();
-  }
-
-  // Return false when the geometry hasn't been changed from the last time.
-  if (last_computed_rect_ == rect)
-    return false;
-
-  // Store the changed geometry information when it is actually changed.
-  last_computed_rect_ = rect;
-  return true;
-}
-
-const gfx::RectF WebMediaPlayerAndroid::GetBoundaryRectangle() {
-  return last_computed_rect_;
-}
-#endif
 
 void WebMediaPlayerAndroid::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm,

@@ -1208,16 +1208,6 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.bottom_controls_shown_ratio,
       is_mobile_optimized,
       frame_metadata.selection.start);
-#if defined(VIDEO_HOLE)
-  if (host_) {
-    WebContents* web_contents =
-        WebContents::FromRenderViewHost(RenderViewHostImpl::From(host_));
-    if (web_contents) {
-      MediaWebContentsObserverAndroid::FromWebContents(web_contents)
-          ->OnFrameInfoUpdated();
-    }
-  }
-#endif  // defined(VIDEO_HOLE)
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {

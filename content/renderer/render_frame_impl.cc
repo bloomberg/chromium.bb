@@ -1060,9 +1060,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
 #endif
-#if defined(VIDEO_HOLE)
-      contains_media_player_(false),
-#endif
       devtools_agent_(nullptr),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
@@ -1131,11 +1128,6 @@ RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
-
-#if defined(VIDEO_HOLE)
-  if (contains_media_player_)
-    render_view_->UnregisterVideoHoleFrame(this);
-#endif
 
   // Unregister from InputHandlerManager. render_thread may be NULL in tests.
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -2635,12 +2627,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
     WebMediaSession* media_session) {
-#if defined(VIDEO_HOLE)
-  if (!contains_media_player_) {
-    render_view_->RegisterVideoHoleFrame(this);
-    contains_media_player_ = true;
-  }
-#endif  // defined(VIDEO_HOLE)
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.isNull())

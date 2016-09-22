@@ -66,8 +66,6 @@ per-file error_page_strings.grdp=file://components/error_page/OWNERS
 
 per-file exo.gypi=file://components/exo/OWNERS
 
-per-file external_video_surface.gypi=file://components/external_video_surface/OWNERS
-
 per-file favicon.gypi=file://components/favicon/OWNERS
 per-file favicon_base.gypi=file://components/favicon_base/OWNERS
 

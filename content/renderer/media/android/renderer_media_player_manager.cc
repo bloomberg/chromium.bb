@@ -285,47 +285,4 @@ void RendererMediaPlayerManager::OnDestruct() {
   delete this;
 }
 
-#if defined(VIDEO_HOLE)
-void RendererMediaPlayerManager::RequestExternalSurface(
-    int player_id,
-    const gfx::RectF& geometry) {
-  Send(new MediaPlayerHostMsg_NotifyExternalSurface(
-      routing_id(), player_id, true, geometry));
-}
-
-void RendererMediaPlayerManager::DidCommitCompositorFrame() {
-  std::map<int, gfx::RectF> geometry_change;
-  RetrieveGeometryChanges(&geometry_change);
-  for (std::map<int, gfx::RectF>::iterator it = geometry_change.begin();
-       it != geometry_change.end();
-       ++it) {
-    Send(new MediaPlayerHostMsg_NotifyExternalSurface(
-        routing_id(), it->first, false, it->second));
-  }
-}
-
-void RendererMediaPlayerManager::RetrieveGeometryChanges(
-    std::map<int, gfx::RectF>* changes) {
-  DCHECK(changes->empty());
-  for (std::map<int, media::RendererMediaPlayerInterface*>::iterator player_it =
-           media_players_.begin();
-       player_it != media_players_.end();
-       ++player_it) {
-    media::RendererMediaPlayerInterface* player = player_it->second;
-
-    if (player && player->hasVideo()) {
-      if (player->UpdateBoundaryRectangle())
-        (*changes)[player_it->first] = player->GetBoundaryRectangle();
-    }
-  }
-}
-
-bool
-RendererMediaPlayerManager::ShouldUseVideoOverlayForEmbeddedEncryptedVideo() {
-  const RendererPreferences& prefs = static_cast<RenderFrameImpl*>(
-      render_frame())->render_view()->renderer_preferences();
-  return prefs.use_video_overlay_for_embedded_encrypted_video;
-}
-#endif  // defined(VIDEO_HOLE)
-
 }  // namespace content

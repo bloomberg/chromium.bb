@@ -419,19 +419,9 @@ bool ContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
 }
 #endif  // defined(OS_WIN)
 
-#if defined(VIDEO_HOLE)
-ExternalVideoSurfaceContainer*
-ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
-    WebContents* web_contents) {
-  NOTREACHED() << "Hole-punching is not supported. See crbug.com/469348.";
-  return nullptr;
-}
-#endif
-
 std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
   return nullptr;
 }
-
 
 }  // namespace content

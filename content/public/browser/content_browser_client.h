@@ -786,13 +786,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsWin32kLockdownEnabledForMimeType(
       const std::string& mime_type) const;
 #endif
-
-#if defined(VIDEO_HOLE)
-  // Allows an embedder to provide its own ExternalVideoSurfaceContainer
-  // implementation.  Return nullptr to disable external surface video.
-  virtual ExternalVideoSurfaceContainer*
-  OverrideCreateExternalVideoSurfaceContainer(WebContents* web_contents);
-#endif
 };
 
 }  // namespace content

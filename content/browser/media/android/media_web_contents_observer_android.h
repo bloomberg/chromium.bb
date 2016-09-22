@@ -71,10 +71,6 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   void DisconnectMediaSession(RenderFrameHost* render_frame_host,
                               int delegate_id);
 
-#if defined(VIDEO_HOLE)
-  void OnFrameInfoUpdated();
-#endif  // defined(VIDEO_HOLE)
-
   // MediaWebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,

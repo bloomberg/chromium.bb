@@ -342,16 +342,6 @@ bool WebMediaPlayerCast::paused() const {
   return paused_;
 }
 
-#if defined(VIDEO_HOLE)
-bool WebMediaPlayerCast::UpdateBoundaryRectangle() {
-  return false;
-}
-
-const gfx::RectF WebMediaPlayerCast::GetBoundaryRectangle() {
-  return gfx::RectF();
-}
-#endif  // defined(VIDEO_HOLE)
-
 void WebMediaPlayerCast::SetDeviceScaleFactor(float scale_factor) {
   device_scale_factor_ = scale_factor;
 }

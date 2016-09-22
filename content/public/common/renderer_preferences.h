@@ -136,10 +136,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // encrypted video.  Currently only used by Android.
   bool use_video_overlay_for_embedded_encrypted_video;
 
-  // Use video-overlay (hole-punching) should be used for all video, not just
-  // encrypted video.  Currently only used by Android.
-  bool use_view_overlay_for_all_video;
-
   // Country iso of the mobile network for content detection purpose.
   std::string network_contry_iso;
 

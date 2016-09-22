@@ -91,29 +91,12 @@ class RendererMediaPlayerManager :
   // TODO(xhwang): Update this when we implement setCdm(0).
   void SetCdm(int player_id, int cdm_id);
 
-#if defined(VIDEO_HOLE)
-  // Requests an external surface for out-of-band compositing.
-  void RequestExternalSurface(int player_id, const gfx::RectF& geometry);
-
-  // RenderFrameObserver overrides.
-  void DidCommitCompositorFrame() override;
-
-  // Returns true if a media player should use video-overlay for the embedded
-  // encrypted video.
-  bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo();
-#endif  // defined(VIDEO_HOLE)
-
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(media::RendererMediaPlayerInterface* player) override;
   void UnregisterMediaPlayer(int player_id) override;
 
   // Gets the pointer to WebMediaPlayerAndroid given the |player_id|.
   media::RendererMediaPlayerInterface* GetMediaPlayer(int player_id);
-
-#if defined(VIDEO_HOLE)
-  // Gets the list of media players with video geometry changes.
-  void RetrieveGeometryChanges(std::map<int, gfx::RectF>* changes);
-#endif  // defined(VIDEO_HOLE)
 
  private:
   // RenderFrameObserver implementation.

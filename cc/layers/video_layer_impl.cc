@@ -21,10 +21,6 @@
 #include "media/base/video_frame.h"
 #include "ui/gfx/color_space.h"
 
-#if defined(VIDEO_HOLE)
-#include "cc/quads/solid_color_draw_quad.h"
-#endif  // defined(VIDEO_HOLE)
-
 namespace cc {
 
 // static
@@ -328,31 +324,6 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       ValidateQuadResources(stream_video_quad);
       break;
     }
-#if defined(VIDEO_HOLE)
-    // This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
-    // maintained by the general compositor team. Please contact the following
-    // people instead:
-    //
-    // wonsik@chromium.org
-    // lcwu@chromium.org
-    case VideoFrameExternalResources::HOLE: {
-      DCHECK_EQ(frame_resources_.size(), 0u);
-      SolidColorDrawQuad* solid_color_draw_quad =
-          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-
-      // Create a solid color quad with transparent black and force no
-      // blending / no anti-aliasing.
-      gfx::Rect opaque_rect = quad_rect;
-      solid_color_draw_quad->SetAll(shared_quad_state,
-                                    quad_rect,
-                                    opaque_rect,
-                                    visible_quad_rect,
-                                    false,
-                                    SK_ColorTRANSPARENT,
-                                    true);
-      break;
-    }
-#endif  // defined(VIDEO_HOLE)
     case VideoFrameExternalResources::NONE:
       NOTIMPLEMENTED();
       break;

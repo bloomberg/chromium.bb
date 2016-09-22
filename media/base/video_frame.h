@@ -68,14 +68,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     // meaningful name and handle it appropriately in all cases.
     STORAGE_DMABUFS = 5,  // Each plane is stored into a DmaBuf.
 #endif
-#if defined(VIDEO_HOLE)
-    // Indicates protected media that needs to be directly rendered to hw. It
-    // is, in principle, platform independent, see http://crbug.com/323157 and
-    // https://groups.google.com/a/google.com/d/topic/chrome-gpu/eIM1RwarUmk/discussion
-    STORAGE_HOLE = 6,
-#endif
-    STORAGE_GPU_MEMORY_BUFFERS = 7,
-    STORAGE_MOJO_SHARED_BUFFER = 8,
+    STORAGE_GPU_MEMORY_BUFFERS = 6,
+    STORAGE_MOJO_SHARED_BUFFER = 7,
     STORAGE_LAST = STORAGE_MOJO_SHARED_BUFFER,
   };
 
@@ -272,11 +266,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // equivalent of RGBA(0,0,0,0).
   static scoped_refptr<VideoFrame> CreateTransparentFrame(
       const gfx::Size& size);
-
-#if defined(VIDEO_HOLE)
-  // Allocates a hole frame.
-  static scoped_refptr<VideoFrame> CreateHoleFrame(const gfx::Size& size);
-#endif  // defined(VIDEO_HOLE)
 
   static size_t NumPlanes(VideoPixelFormat format);
 

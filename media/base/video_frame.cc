@@ -57,10 +57,6 @@ static std::string StorageTypeToString(
     case VideoFrame::STORAGE_DMABUFS:
       return "DMABUFS";
 #endif
-#if defined(VIDEO_HOLE)
-    case VideoFrame::STORAGE_HOLE:
-      return "HOLE";
-#endif
     case VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
       return "GPU_MEMORY_BUFFERS";
     case VideoFrame::STORAGE_MOJO_SHARED_BUFFER:
@@ -502,28 +498,6 @@ scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
   FillYUVA(frame.get(), kBlackY, kBlackUV, kBlackUV, kTransparentA);
   return frame;
 }
-
-#if defined(VIDEO_HOLE)
-// This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
-// maintained by the general compositor team. Please contact
-// wonsik@chromium.org .
-
-// static
-scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
-    const gfx::Size& size) {
-  const VideoPixelFormat format = PIXEL_FORMAT_UNKNOWN;
-  const StorageType storage = STORAGE_HOLE;
-  const gfx::Rect visible_rect = gfx::Rect(size);
-  if (!IsValidConfig(format, storage, size, visible_rect, size)) {
-    LOG(DFATAL) << __func__ << " Invalid config."
-                << ConfigToString(format, storage, size, visible_rect, size);
-    return nullptr;
-  }
-  scoped_refptr<VideoFrame> frame(new VideoFrame(
-      format, storage, size, gfx::Rect(size), size, base::TimeDelta()));
-  return frame;
-}
-#endif  // defined(VIDEO_HOLE)
 
 // static
 size_t VideoFrame::NumPlanes(VideoPixelFormat format) {

@@ -1188,12 +1188,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Media resource cache, lazily initialized.
   linked_ptr<media::UrlIndex> url_index_;
 
-#if defined(VIDEO_HOLE)
-  // Whether or not this RenderFrameImpl contains a media player. Used to
-  // register as an observer for video-hole-specific events.
-  bool contains_media_player_;
-#endif
-
   // The devtools agent for this frame; only created for main frame and
   // local roots.
   DevToolsAgent* devtools_agent_;

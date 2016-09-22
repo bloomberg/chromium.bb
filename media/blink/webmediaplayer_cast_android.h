@@ -91,15 +91,6 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
 
-#if defined(VIDEO_HOLE)
-  // Calculate the boundary rectangle of the media player (i.e. location and
-  // size of the video frame).
-  // Returns true if the geometry has been changed since the last call.
-  bool UpdateBoundaryRectangle() override;
-
-  const gfx::RectF GetBoundaryRectangle() override;
-#endif
-
   void OnWaitingForDecryptionKey() override;
 
   bool paused() const override;

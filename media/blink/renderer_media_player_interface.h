@@ -67,15 +67,6 @@ class RendererMediaPlayerInterface {
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
   virtual void SuspendAndReleaseResources() = 0;
-
-#if defined(VIDEO_HOLE)
-  // Calculate the boundary rectangle of the media player (i.e. location and
-  // size of the video frame).
-  // Returns true if the geometry has been changed since the last call.
-  virtual bool UpdateBoundaryRectangle() = 0;
-
-  virtual const gfx::RectF GetBoundaryRectangle() = 0;
-#endif
 };
 
 class RendererMediaPlayerManagerInterface {
