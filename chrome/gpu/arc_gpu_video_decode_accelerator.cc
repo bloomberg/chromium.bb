@@ -299,8 +299,8 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
         handle.native_pixmap_handle.fds.emplace_back(
             base::FileDescriptor(info.handle.release(), true));
         for (const auto& plane : info.planes) {
-          handle.native_pixmap_handle.planes.emplace_back(
-              plane.stride, plane.offset, 0);
+          handle.native_pixmap_handle.planes.emplace_back(plane.stride,
+                                                          plane.offset, 0, 0);
         }
 #endif
         vda_->ImportBufferForPicture(index, handle);

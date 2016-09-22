@@ -58,42 +58,46 @@ void PrimeSyncEnd(int dmabuf_fd) {
 
 // static
 std::unique_ptr<ClientNativePixmap> ClientNativePixmapDmaBuf::ImportFromDmabuf(
-    int dmabuf_fd,
-    const gfx::Size& size,
-    int stride) {
-  DCHECK_GE(dmabuf_fd, 0);
-  base::CheckedNumeric<size_t> map_size = stride;
-  map_size *= size.height();
-  if (!map_size.IsValid())
-    return nullptr;
-  return base::WrapUnique(new ClientNativePixmapDmaBuf(dmabuf_fd, size, stride,
-                                                       map_size.ValueOrDie()));
+    const gfx::NativePixmapHandle& handle,
+    const gfx::Size& size) {
+  return base::WrapUnique(new ClientNativePixmapDmaBuf(handle, size));
 }
 
-ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(int dmabuf_fd,
-                                                   const gfx::Size& size,
-                                                   int stride,
-                                                   size_t map_size)
-    : dmabuf_fd_(dmabuf_fd), map_size_(map_size), size_(size), stride_(stride) {
+ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
+    const gfx::NativePixmapHandle& handle,
+    const gfx::Size& size)
+    : pixmap_handle_(handle), size_(size), data_{0} {
   TRACE_EVENT0("drm", "ClientNativePixmapDmaBuf");
-  data_ = mmap(nullptr, map_size_, (PROT_READ | PROT_WRITE), MAP_SHARED,
-               dmabuf_fd, 0);
+  // TODO(dcastagna): support multiple fds.
+  DCHECK_EQ(1u, handle.fds.size());
+  DCHECK_GE(handle.fds.front().fd, 0);
+  dmabuf_fd_.reset(handle.fds.front().fd);
+
+  DCHECK_GE(handle.planes.back().size, 0u);
+  size_t map_size = handle.planes.back().offset + handle.planes.back().size;
+  data_ = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
+               dmabuf_fd_.get(), 0);
   if (data_ == MAP_FAILED) {
     PLOG(ERROR) << "Failed mmap().";
-    base::TerminateBecauseOutOfMemory(map_size_);
+    base::TerminateBecauseOutOfMemory(map_size);
   }
 }
 
 ClientNativePixmapDmaBuf::~ClientNativePixmapDmaBuf() {
   TRACE_EVENT0("drm", "~ClientNativePixmapDmaBuf");
-  int ret = munmap(data_, map_size_);
+  size_t map_size =
+      pixmap_handle_.planes.back().offset + pixmap_handle_.planes.back().size;
+  int ret = munmap(data_, map_size);
   DCHECK(!ret);
 }
 
-void* ClientNativePixmapDmaBuf::Map() {
+bool ClientNativePixmapDmaBuf::Map() {
   TRACE_EVENT0("drm", "DmaBuf:Map");
-  PrimeSyncStart(dmabuf_fd_.get());
-  return data_;
+  if (data_ != nullptr) {
+    PrimeSyncStart(dmabuf_fd_.get());
+    return true;
+  }
+  return false;
 }
 
 void ClientNativePixmapDmaBuf::Unmap() {
@@ -101,8 +105,15 @@ void ClientNativePixmapDmaBuf::Unmap() {
   PrimeSyncEnd(dmabuf_fd_.get());
 }
 
-void ClientNativePixmapDmaBuf::GetStride(int* stride) const {
-  *stride = stride_;
+void* ClientNativePixmapDmaBuf::GetMemoryAddress(size_t plane) const {
+  DCHECK_LT(plane, pixmap_handle_.planes.size());
+  uint8_t* address = reinterpret_cast<uint8_t*>(data_);
+  return address + pixmap_handle_.planes[plane].offset;
+}
+
+int ClientNativePixmapDmaBuf::GetStride(size_t plane) const {
+  DCHECK_LT(plane, pixmap_handle_.planes.size());
+  return pixmap_handle_.planes[plane].stride;
 }
 
 }  // namespace ui

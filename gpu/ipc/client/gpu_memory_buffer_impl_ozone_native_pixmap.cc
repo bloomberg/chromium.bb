@@ -35,8 +35,7 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     : GpuMemoryBufferImpl(id, size, format, callback),
       pixmap_(std::move(pixmap)),
       planes_(planes),
-      fd_(std::move(fd)),
-      data_(nullptr) {}
+      fd_(std::move(fd)) {}
 
 GpuMemoryBufferImplOzoneNativePixmap::~GpuMemoryBufferImplOzoneNativePixmap() {}
 
@@ -101,33 +100,24 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
 
 bool GpuMemoryBufferImplOzoneNativePixmap::Map() {
   DCHECK(!mapped_);
-  DCHECK(!data_);
-  data_ = pixmap_->Map();
-  if (!data_)
-    return false;
-  mapped_ = true;
+  mapped_ = pixmap_->Map();
   return mapped_;
 }
 
 void* GpuMemoryBufferImplOzoneNativePixmap::memory(size_t plane) {
   DCHECK(mapped_);
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  return data_;
+  return pixmap_->GetMemoryAddress(plane);
 }
 
 void GpuMemoryBufferImplOzoneNativePixmap::Unmap() {
   DCHECK(mapped_);
-  DCHECK(data_);
   pixmap_->Unmap();
   mapped_ = false;
-  data_ = nullptr;
 }
 
 int GpuMemoryBufferImplOzoneNativePixmap::stride(size_t plane) const {
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  int stride;
-  pixmap_->GetStride(&stride);
-  return stride;
+  return pixmap_->GetStride(plane);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()

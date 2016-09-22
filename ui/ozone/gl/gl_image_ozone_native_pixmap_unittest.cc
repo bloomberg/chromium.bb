@@ -38,11 +38,16 @@ class GLImageOzoneNativePixmapTestDelegate {
     if (usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE) {
       auto client_pixmap = client_pixmap_factory_->ImportFromHandle(
           pixmap->ExportHandle(), size, usage);
-      void* data = client_pixmap->Map();
-      EXPECT_TRUE(data);
-      GLImageTestSupport::SetBufferDataToColor(
-          size.width(), size.height(), pixmap->GetDmaBufPitch(0), 0,
-          pixmap->GetBufferFormat(), color, static_cast<uint8_t*>(data));
+      bool mapped = client_pixmap->Map();
+      EXPECT_TRUE(mapped);
+
+      for (size_t plane = 0; plane < NumberOfPlanesForBufferFormat(format);
+           ++plane) {
+        void* data = client_pixmap->GetMemoryAddress(plane);
+        GLImageTestSupport::SetBufferDataToColor(
+            size.width(), size.height(), pixmap->GetDmaBufPitch(plane), plane,
+            pixmap->GetBufferFormat(), color, static_cast<uint8_t*>(data));
+      }
       client_pixmap->Unmap();
     }
 
