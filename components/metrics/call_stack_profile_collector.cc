@@ -11,21 +11,28 @@
 
 namespace metrics {
 
-CallStackProfileCollector::CallStackProfileCollector() {}
+CallStackProfileCollector::CallStackProfileCollector(
+    CallStackProfileParams::Process expected_process)
+    : expected_process_(expected_process) {}
 
 CallStackProfileCollector::~CallStackProfileCollector() {}
 
 // static
 void CallStackProfileCollector::Create(
+    CallStackProfileParams::Process expected_process,
     mojom::CallStackProfileCollectorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<CallStackProfileCollector>(),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<CallStackProfileCollector>(expected_process),
+      std::move(request));
 }
 
 void CallStackProfileCollector::Collect(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
     const std::vector<CallStackProfile>& profiles) {
+  if (params.process != expected_process_)
+    return;
+
   CallStackProfileMetricsProvider::ReceiveCompletedProfiles(params,
                                                             start_timestamp,
                                                             profiles);

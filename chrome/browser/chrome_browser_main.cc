@@ -766,6 +766,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           sampling_profiler_config_.GetSamplingParams(),
           metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
               metrics::CallStackProfileParams(
+                  metrics::CallStackProfileParams::BROWSER_PROCESS,
+                  metrics::CallStackProfileParams::UI_THREAD,
                   metrics::CallStackProfileParams::PROCESS_STARTUP,
                   metrics::CallStackProfileParams::MAY_SHUFFLE))),
       profile_(NULL),

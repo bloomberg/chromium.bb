@@ -61,6 +61,8 @@ ChromeContentGpuClient::ChromeContentGpuClient()
         GetStartupSamplingParams(),
         g_call_stack_profile_collector.Get().GetProfilerCallback(
             metrics::CallStackProfileParams(
+                metrics::CallStackProfileParams::GPU_PROCESS,
+                metrics::CallStackProfileParams::GPU_MAIN_THREAD,
                 metrics::CallStackProfileParams::PROCESS_STARTUP,
                 metrics::CallStackProfileParams::MAY_SHUFFLE))) {
 }

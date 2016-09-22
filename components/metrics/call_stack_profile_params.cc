@@ -7,13 +7,16 @@
 namespace metrics {
 
 CallStackProfileParams::CallStackProfileParams()
-    : CallStackProfileParams(UNKNOWN) {}
+    : CallStackProfileParams(UNKNOWN_PROCESS, UNKNOWN_THREAD, UNKNOWN) {}
 
-CallStackProfileParams::CallStackProfileParams(Trigger trigger)
-    : CallStackProfileParams(trigger, MAY_SHUFFLE) {}
+CallStackProfileParams::CallStackProfileParams(Process process, Thread thread,
+                                               Trigger trigger)
+    : CallStackProfileParams(process, thread, trigger, MAY_SHUFFLE) {}
 
-CallStackProfileParams::CallStackProfileParams(Trigger trigger,
+CallStackProfileParams::CallStackProfileParams(Process process, Thread thread,
+                                               Trigger trigger,
                                                SampleOrderingSpec ordering_spec)
-    : trigger(trigger), ordering_spec(ordering_spec) {}
+    : process(process), thread(thread), trigger(trigger),
+      ordering_spec(ordering_spec) {}
 
 }  // namespace metrics

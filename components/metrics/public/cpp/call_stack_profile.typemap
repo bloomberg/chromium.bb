@@ -19,6 +19,8 @@ type_mappings = [
   "metrics.mojom.CallStackFrame=base::StackSamplingProfiler::Frame",
   "metrics.mojom.CallStackProfile=base::StackSamplingProfiler::CallStackProfile",
   "metrics.mojom.CallStackProfileParams=metrics::CallStackProfileParams",
+  "metrics.mojom.Process=metrics::CallStackProfileParams::Process",
   "metrics.mojom.SampleOrderingSpec=metrics::CallStackProfileParams::SampleOrderingSpec",
+  "metrics.mojom.Thread=metrics::CallStackProfileParams::Thread",
   "metrics.mojom.Trigger=metrics::CallStackProfileParams::Trigger",
 ]

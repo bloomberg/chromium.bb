@@ -134,31 +134,138 @@ struct StructTraits<metrics::mojom::CallStackProfileDataView,
 };
 
 template <>
-struct EnumTraits<metrics::mojom::SampleOrderingSpec,
-                  metrics::CallStackProfileParams::SampleOrderingSpec> {
-
-  static metrics::mojom::SampleOrderingSpec ToMojom(
-      metrics::CallStackProfileParams::SampleOrderingSpec spec) {
-    switch (spec) {
-      case metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE:
-        return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
-      case metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER:
-        return metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER;
+struct EnumTraits<metrics::mojom::Process,
+                  metrics::CallStackProfileParams::Process> {
+  static metrics::mojom::Process ToMojom(
+      metrics::CallStackProfileParams::Process process) {
+    switch (process) {
+      case metrics::CallStackProfileParams::Process::UNKNOWN_PROCESS:
+        return metrics::mojom::Process::UNKNOWN_PROCESS;
+      case metrics::CallStackProfileParams::Process::BROWSER_PROCESS:
+        return metrics::mojom::Process::BROWSER_PROCESS;
+      case metrics::CallStackProfileParams::Process::RENDERER_PROCESS:
+        return metrics::mojom::Process::RENDERER_PROCESS;
+      case metrics::CallStackProfileParams::Process::GPU_PROCESS:
+        return metrics::mojom::Process::GPU_PROCESS;
+      case metrics::CallStackProfileParams::Process::UTILITY_PROCESS:
+        return metrics::mojom::Process::UTILITY_PROCESS;
+      case metrics::CallStackProfileParams::Process::ZYGOTE_PROCESS:
+        return metrics::mojom::Process::ZYGOTE_PROCESS;
+      case metrics::CallStackProfileParams::Process::SANDBOX_HELPER_PROCESS:
+        return metrics::mojom::Process::SANDBOX_HELPER_PROCESS;
+      case metrics::CallStackProfileParams::Process::PPAPI_PLUGIN_PROCESS:
+        return metrics::mojom::Process::PPAPI_PLUGIN_PROCESS;
+      case metrics::CallStackProfileParams::Process::PPAPI_BROKER_PROCESS:
+        return metrics::mojom::Process::PPAPI_BROKER_PROCESS;
     }
     NOTREACHED();
-    return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
+    return metrics::mojom::Process::UNKNOWN_PROCESS;
   }
 
-  static bool FromMojom(
-      metrics::mojom::SampleOrderingSpec spec,
-      metrics::CallStackProfileParams::SampleOrderingSpec* out) {
-    switch (spec) {
-      case metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE:
-        *out = metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE;
+  static bool FromMojom(metrics::mojom::Process process,
+                        metrics::CallStackProfileParams::Process* out) {
+    switch (process) {
+      case metrics::mojom::Process::UNKNOWN_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::UNKNOWN_PROCESS;
         return true;
-      case metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER:
+      case metrics::mojom::Process::BROWSER_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::BROWSER_PROCESS;
+        return true;
+      case metrics::mojom::Process::RENDERER_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::RENDERER_PROCESS;
+        return true;
+      case metrics::mojom::Process::GPU_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::GPU_PROCESS;
+        return true;
+      case metrics::mojom::Process::UTILITY_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::UTILITY_PROCESS;
+        return true;
+      case metrics::mojom::Process::ZYGOTE_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::ZYGOTE_PROCESS;
+        return true;
+      case metrics::mojom::Process::SANDBOX_HELPER_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::SANDBOX_HELPER_PROCESS;
+        return true;
+      case metrics::mojom::Process::PPAPI_PLUGIN_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::PPAPI_PLUGIN_PROCESS;
+        return true;
+      case metrics::mojom::Process::PPAPI_BROKER_PROCESS:
+        *out = metrics::CallStackProfileParams::Process::PPAPI_BROKER_PROCESS;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
+struct EnumTraits<metrics::mojom::Thread,
+                  metrics::CallStackProfileParams::Thread> {
+  static metrics::mojom::Thread ToMojom(
+      metrics::CallStackProfileParams::Thread thread) {
+    switch (thread) {
+      case metrics::CallStackProfileParams::Thread::UNKNOWN_THREAD:
+        return metrics::mojom::Thread::UNKNOWN_THREAD;
+      case metrics::CallStackProfileParams::Thread::UI_THREAD:
+        return metrics::mojom::Thread::UI_THREAD;
+      case metrics::CallStackProfileParams::Thread::FILE_THREAD:
+        return metrics::mojom::Thread::FILE_THREAD;
+      case metrics::CallStackProfileParams::Thread::FILE_USER_BLOCKING_THREAD:
+        return metrics::mojom::Thread::FILE_USER_BLOCKING_THREAD;
+      case metrics::CallStackProfileParams::Thread::PROCESS_LAUNCHER_THREAD:
+        return metrics::mojom::Thread::PROCESS_LAUNCHER_THREAD;
+      case metrics::CallStackProfileParams::Thread::CACHE_THREAD:
+        return metrics::mojom::Thread::CACHE_THREAD;
+      case metrics::CallStackProfileParams::Thread::IO_THREAD:
+        return metrics::mojom::Thread::IO_THREAD;
+      case metrics::CallStackProfileParams::Thread::DB_THREAD:
+        return metrics::mojom::Thread::DB_THREAD;
+      case metrics::CallStackProfileParams::Thread::GPU_MAIN_THREAD:
+        return metrics::mojom::Thread::GPU_MAIN_THREAD;
+      case metrics::CallStackProfileParams::Thread::RENDER_THREAD:
+        return metrics::mojom::Thread::RENDER_THREAD;
+      case metrics::CallStackProfileParams::Thread::UTILITY_THREAD:
+        return metrics::mojom::Thread::UTILITY_THREAD;
+    }
+    NOTREACHED();
+    return metrics::mojom::Thread::UNKNOWN_THREAD;
+  }
+
+  static bool FromMojom(metrics::mojom::Thread thread,
+                        metrics::CallStackProfileParams::Thread* out) {
+    switch (thread) {
+      case metrics::mojom::Thread::UNKNOWN_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::UNKNOWN_THREAD;
+        return true;
+      case metrics::mojom::Thread::UI_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::UI_THREAD;
+        return true;
+      case metrics::mojom::Thread::FILE_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::FILE_THREAD;
+        return true;
+      case metrics::mojom::Thread::FILE_USER_BLOCKING_THREAD:
         *out =
-            metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER;
+            metrics::CallStackProfileParams::Thread::FILE_USER_BLOCKING_THREAD;
+        return true;
+      case metrics::mojom::Thread::PROCESS_LAUNCHER_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::PROCESS_LAUNCHER_THREAD;
+        return true;
+      case metrics::mojom::Thread::CACHE_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::CACHE_THREAD;
+        return true;
+      case metrics::mojom::Thread::IO_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::IO_THREAD;
+        return true;
+      case metrics::mojom::Thread::DB_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::DB_THREAD;
+        return true;
+      case metrics::mojom::Thread::GPU_MAIN_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::GPU_MAIN_THREAD;
+        return true;
+      case metrics::mojom::Thread::RENDER_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::RENDER_THREAD;
+        return true;
+      case metrics::mojom::Thread::UTILITY_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::UTILITY_THREAD;
         return true;
     }
     return false;
@@ -207,6 +314,14 @@ struct EnumTraits<metrics::mojom::Trigger,
 template <>
 struct StructTraits<metrics::mojom::CallStackProfileParamsDataView,
                     metrics::CallStackProfileParams> {
+  static metrics::CallStackProfileParams::Process process(
+      const metrics::CallStackProfileParams& params) {
+    return params.process;
+  }
+  static metrics::CallStackProfileParams::Thread thread(
+      const metrics::CallStackProfileParams& params) {
+    return params.thread;
+  }
   static metrics::CallStackProfileParams::Trigger trigger(
       const metrics::CallStackProfileParams& params) {
     return params.trigger;
@@ -218,12 +333,49 @@ struct StructTraits<metrics::mojom::CallStackProfileParamsDataView,
 
   static bool Read(metrics::mojom::CallStackProfileParamsDataView data,
                    metrics::CallStackProfileParams* out) {
+    metrics::CallStackProfileParams::Process process;
+    metrics::CallStackProfileParams::Thread thread;
     metrics::CallStackProfileParams::Trigger trigger;
     metrics::CallStackProfileParams::SampleOrderingSpec ordering_spec;
-    if (!data.ReadTrigger(&trigger) || !data.ReadOrderingSpec(&ordering_spec))
+    if (!data.ReadProcess(&process) || !data.ReadThread(&thread) ||
+        !data.ReadTrigger(&trigger) || !data.ReadOrderingSpec(&ordering_spec)) {
       return false;
-    *out = metrics::CallStackProfileParams(trigger, ordering_spec);
+    }
+    *out = metrics::CallStackProfileParams(process, thread, trigger,
+                                           ordering_spec);
     return true;
+  }
+};
+
+template <>
+struct EnumTraits<metrics::mojom::SampleOrderingSpec,
+                  metrics::CallStackProfileParams::SampleOrderingSpec> {
+
+  static metrics::mojom::SampleOrderingSpec ToMojom(
+      metrics::CallStackProfileParams::SampleOrderingSpec spec) {
+    switch (spec) {
+      case metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE:
+        return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
+      case metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER:
+        return metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER;
+    }
+    NOTREACHED();
+    return metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE;
+  }
+
+  static bool FromMojom(
+      metrics::mojom::SampleOrderingSpec spec,
+      metrics::CallStackProfileParams::SampleOrderingSpec* out) {
+    switch (spec) {
+      case metrics::mojom::SampleOrderingSpec::MAY_SHUFFLE:
+        *out = metrics::CallStackProfileParams::SampleOrderingSpec::MAY_SHUFFLE;
+        return true;
+      case metrics::mojom::SampleOrderingSpec::PRESERVE_ORDER:
+        *out =
+            metrics::CallStackProfileParams::SampleOrderingSpec::PRESERVE_ORDER;
+        return true;
+    }
+    return false;
   }
 };
 

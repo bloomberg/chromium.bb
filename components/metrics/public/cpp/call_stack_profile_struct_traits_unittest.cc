@@ -54,14 +54,30 @@ class CallStackProfileCollectorTestImpl
     callback.Run(in);
   }
 
-  void BounceTrigger(metrics::CallStackProfileParams::Trigger in,
+  void BounceTrigger(CallStackProfileParams::Trigger in,
                      const BounceTriggerCallback& callback) override {
     callback.Run(in);
   }
 
+  void BounceProcess(CallStackProfileParams::Process in,
+                     const BounceProcessCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceThread(CallStackProfileParams::Thread in,
+                    const BounceThreadCallback& callback) override {
+    callback.Run(in);
+  }
+
   void BounceSampleOrderingSpec(
-      metrics::CallStackProfileParams::SampleOrderingSpec in,
+      CallStackProfileParams::SampleOrderingSpec in,
       const BounceSampleOrderingSpecCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceCallStackProfileParams(
+      const CallStackProfileParams& in,
+      const BounceCallStackProfileParamsCallback& callback) override {
     callback.Run(in);
   }
 
@@ -259,27 +275,80 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
   }
 }
 
-// Checks serialization/deserialization of the SampleOrderingSpec, including
-// validation.
-TEST_F(CallStackProfileStructTraitsTest, SampleOrderingSpec) {
-  using SampleOrderingSpec =
-      metrics::CallStackProfileParams::SampleOrderingSpec;
+// Checks serialization/deserialization of the process, including validation.
+TEST_F(CallStackProfileStructTraitsTest, Process) {
+  using Process = CallStackProfileParams::Process;
 
-  SampleOrderingSpec out;
+  Process out;
 
-  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(SampleOrderingSpec::MAY_SHUFFLE,
-                                               &out));
-  EXPECT_EQ(SampleOrderingSpec::MAY_SHUFFLE, out);
+  EXPECT_TRUE(proxy_->BounceProcess(Process::UNKNOWN_PROCESS, &out));
+  EXPECT_EQ(Process::UNKNOWN_PROCESS, out);
 
-  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(
-      SampleOrderingSpec::PRESERVE_ORDER,
-      &out));
-  EXPECT_EQ(SampleOrderingSpec::PRESERVE_ORDER, out);
+  EXPECT_TRUE(proxy_->BounceProcess(Process::BROWSER_PROCESS, &out));
+  EXPECT_EQ(Process::BROWSER_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::RENDERER_PROCESS, &out));
+  EXPECT_EQ(Process::RENDERER_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::GPU_PROCESS, &out));
+  EXPECT_EQ(Process::GPU_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::UTILITY_PROCESS, &out));
+  EXPECT_EQ(Process::UTILITY_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::ZYGOTE_PROCESS, &out));
+  EXPECT_EQ(Process::ZYGOTE_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::SANDBOX_HELPER_PROCESS, &out));
+  EXPECT_EQ(Process::SANDBOX_HELPER_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::PPAPI_PLUGIN_PROCESS, &out));
+  EXPECT_EQ(Process::PPAPI_PLUGIN_PROCESS, out);
+
+  EXPECT_TRUE(proxy_->BounceProcess(Process::PPAPI_BROKER_PROCESS, &out));
+  EXPECT_EQ(Process::PPAPI_BROKER_PROCESS, out);
+}
+
+// Checks serialization/deserialization of the thread, including validation.
+TEST_F(CallStackProfileStructTraitsTest, Thread) {
+  using Thread = CallStackProfileParams::Thread;
+
+  Thread out;
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::UI_THREAD, &out));
+  EXPECT_EQ(Thread::UI_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::FILE_THREAD, &out));
+  EXPECT_EQ(Thread::FILE_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::FILE_USER_BLOCKING_THREAD, &out));
+  EXPECT_EQ(Thread::FILE_USER_BLOCKING_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::PROCESS_LAUNCHER_THREAD, &out));
+  EXPECT_EQ(Thread::PROCESS_LAUNCHER_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::CACHE_THREAD, &out));
+  EXPECT_EQ(Thread::CACHE_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::IO_THREAD, &out));
+  EXPECT_EQ(Thread::IO_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::DB_THREAD, &out));
+  EXPECT_EQ(Thread::DB_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::GPU_MAIN_THREAD, &out));
+  EXPECT_EQ(Thread::GPU_MAIN_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::RENDER_THREAD, &out));
+  EXPECT_EQ(Thread::RENDER_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::UTILITY_THREAD, &out));
+  EXPECT_EQ(Thread::UTILITY_THREAD, out);
 }
 
 // Checks serialization/deserialization of the trigger, including validation.
 TEST_F(CallStackProfileStructTraitsTest, Trigger) {
-  using Trigger = metrics::CallStackProfileParams::Trigger;
+  using Trigger = CallStackProfileParams::Trigger;
 
   Trigger out;
 
@@ -294,6 +363,40 @@ TEST_F(CallStackProfileStructTraitsTest, Trigger) {
 
   EXPECT_TRUE(proxy_->BounceTrigger(Trigger::THREAD_HUNG, &out));
   EXPECT_EQ(Trigger::THREAD_HUNG, out);
+}
+
+// Checks serialization/deserialization of the SampleOrderingSpec, including
+// validation.
+TEST_F(CallStackProfileStructTraitsTest, SampleOrderingSpec) {
+  using SampleOrderingSpec = CallStackProfileParams::SampleOrderingSpec;
+
+  SampleOrderingSpec out;
+
+  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(SampleOrderingSpec::MAY_SHUFFLE,
+                                               &out));
+  EXPECT_EQ(SampleOrderingSpec::MAY_SHUFFLE, out);
+
+  EXPECT_TRUE(proxy_->BounceSampleOrderingSpec(
+      SampleOrderingSpec::PRESERVE_ORDER,
+      &out));
+  EXPECT_EQ(SampleOrderingSpec::PRESERVE_ORDER, out);
+}
+
+// Checks serialization/deserialization of the CallStackProfileParams.
+TEST_F(CallStackProfileStructTraitsTest, CallStackProfileParams) {
+  CallStackProfileParams out;
+
+  EXPECT_TRUE(proxy_->BounceCallStackProfileParams(
+      CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
+                             CallStackProfileParams::UI_THREAD,
+                             CallStackProfileParams::PROCESS_STARTUP,
+                             CallStackProfileParams::PRESERVE_ORDER),
+      &out));
+
+  EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS, out.process);
+  EXPECT_EQ(CallStackProfileParams::UI_THREAD, out.thread);
+  EXPECT_EQ(CallStackProfileParams::PROCESS_STARTUP, out.trigger);
+  EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER, out.ordering_spec);
 }
 
 }  // namespace metrics

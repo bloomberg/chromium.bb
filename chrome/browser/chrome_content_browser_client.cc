@@ -2955,7 +2955,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
     shell::InterfaceRegistry* registry,
     content::GpuProcessHost* render_process_host) {
   registry->AddInterface(
-      base::Bind(&metrics::CallStackProfileCollector::Create));
+      base::Bind(&metrics::CallStackProfileCollector::Create,
+                 metrics::CallStackProfileParams::GPU_PROCESS));
 }
 
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(

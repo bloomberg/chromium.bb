@@ -17,8 +17,17 @@ interface CallStackProfileCollectorTest {
   BounceProfile(CallStackProfile in) => (CallStackProfile out);
 
   [Sync]
+  BounceProcess(Process in) => (Process out);
+
+  [Sync]
+  BounceThread(Thread in) => (Thread out);
+
+  [Sync]
   BounceTrigger(Trigger in) => (Trigger out);
 
   [Sync]
   BounceSampleOrderingSpec(SampleOrderingSpec in) => (SampleOrderingSpec out);
+
+  [Sync]
+  BounceCallStackProfileParams(CallStackProfileParams in) => (CallStackProfileParams out);
 };

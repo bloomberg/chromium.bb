@@ -35,6 +35,20 @@
 
 using content::BrowserThread;
 
+namespace {
+
+base::StackSamplingProfiler::SamplingParams GetJankTimeBombSamplingParams() {
+  base::StackSamplingProfiler::SamplingParams params;
+  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
+  params.bursts = 1;
+  // 5 seconds at 10Hz.
+  params.samples_per_burst = 50;
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+  return params;
+}
+
+}  // namespace
+
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
@@ -915,20 +929,11 @@ void StartupTimeBomb::DisarmStartupTimeBomb() {
     g_startup_timebomb_->Disarm();
 }
 
-base::StackSamplingProfiler::SamplingParams GetJankTimeBombSamplingParams() {
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.bursts = 1;
-  // 5 seconds at 10Hz.
-  params.samples_per_burst = 50;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  return params;
-}
-
 // JankTimeBomb methods and members.
 //
-JankTimeBomb::JankTimeBomb(base::TimeDelta duration)
-    : weak_ptr_factory_(this) {
+JankTimeBomb::JankTimeBomb(base::TimeDelta duration,
+                           metrics::CallStackProfileParams::Thread thread)
+    : thread_(thread), weak_ptr_factory_(this) {
   if (IsEnabled()) {
     WatchDogThread::PostDelayedTask(
         FROM_HERE,
@@ -956,6 +961,8 @@ void JankTimeBomb::Alarm(base::PlatformThreadId thread_id) {
       GetJankTimeBombSamplingParams(),
       metrics::CallStackProfileMetricsProvider::GetProfilerCallback(
           metrics::CallStackProfileParams(
+              metrics::CallStackProfileParams::BROWSER_PROCESS,
+              thread_,
               metrics::CallStackProfileParams::JANKY_TASK,
               metrics::CallStackProfileParams::PRESERVE_ORDER))));
   // Use synchronous profiler. It will automatically stop collection when

@@ -751,7 +751,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
 class TestingJankTimeBomb : public JankTimeBomb {
  public:
   explicit TestingJankTimeBomb(base::TimeDelta duration)
-      : JankTimeBomb(duration),
+      : JankTimeBomb(duration, metrics::CallStackProfileParams::UI_THREAD),
         thread_id_(base::PlatformThread::CurrentId()),
         alarm_invoked_(false) {
   }

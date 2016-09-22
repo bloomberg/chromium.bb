@@ -26,6 +26,35 @@ struct CallStackProfile {
   mojo.common.mojom.TimeDelta sampling_period;
 };
 
+enum Process {
+  UNKNOWN_PROCESS,
+  BROWSER_PROCESS,
+  RENDERER_PROCESS,
+  GPU_PROCESS,
+  UTILITY_PROCESS,
+  ZYGOTE_PROCESS,
+  SANDBOX_HELPER_PROCESS,
+  PPAPI_PLUGIN_PROCESS,
+  PPAPI_BROKER_PROCESS,
+};
+
+enum Thread {
+  UNKNOWN_THREAD,
+
+  UI_THREAD,
+  FILE_THREAD,
+  FILE_USER_BLOCKING_THREAD,
+  PROCESS_LAUNCHER_THREAD,
+  CACHE_THREAD,
+  IO_THREAD,
+  DB_THREAD,
+
+  GPU_MAIN_THREAD,
+
+  RENDER_THREAD,
+  UTILITY_THREAD,
+};
+
 enum Trigger {
   UNKNOWN,
   PROCESS_STARTUP,
@@ -39,6 +68,8 @@ enum SampleOrderingSpec {
 };
 
 struct CallStackProfileParams {
+  Process process;
+  Thread thread;
   Trigger trigger;
   SampleOrderingSpec ordering_spec;
 };

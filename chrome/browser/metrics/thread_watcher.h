@@ -62,6 +62,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/watchdog.h"
 #include "base/time/time.h"
+#include "components/metrics/call_stack_profile_params.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -646,8 +647,10 @@ class JankTimeBomb {
  public:
   // This is instantiated when the jank needs to be detected in a method. Posts
   // an Alarm callback task on WatchDogThread with |duration| as the delay. This
-  // can be called on any thread.
-  explicit JankTimeBomb(base::TimeDelta duration);
+  // can be called on any thread, but the thread's identity should be provided
+  // in |thread|.
+  JankTimeBomb(base::TimeDelta duration,
+               metrics::CallStackProfileParams::Thread thread);
   virtual ~JankTimeBomb();
 
   // Returns true if JankTimeBomb is enabled.
@@ -659,6 +662,9 @@ class JankTimeBomb {
   virtual void Alarm(base::PlatformThreadId thread_id);
 
  private:
+  // The thread that instantiated this object.
+  const metrics::CallStackProfileParams::Thread thread_;
+
   // A profiler that periodically samples stack traces. Used to sample jank
   // behavior.
   std::unique_ptr<base::StackSamplingProfiler> sampling_profiler_;
