@@ -1,0 +1,42 @@
+<html>
+<head>
+
+<style>
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow: hidden;
+}
+
+#near {
+    position: absolute;
+    left: 200px;
+    top: 200px;
+    width: 100px;
+    height: 100px;
+    background-color: red;
+}
+
+#far {
+    position: absolute;
+    left: 200px;
+    top: 9000px;
+    width: 100px;
+    height: 100px;
+    background-color: green;
+}
+</style>
+
+</head>
+<body>
+<p>
+Tests that resetting an earlier forced viewport restores the viewport back to original area.
+</p>
+<div id="near"></div>
+<div id="far"></div>
+</body>
+</html>

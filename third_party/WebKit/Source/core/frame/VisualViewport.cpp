@@ -300,7 +300,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale, const FloatPoint& locati
 
         enqueueScrollEvent();
 
-        mainFrame()->loader().client()->didChangeScrollOffset();
+        mainFrame()->view()->didChangeScrollOffset();
         valuesChanged = true;
     }
 

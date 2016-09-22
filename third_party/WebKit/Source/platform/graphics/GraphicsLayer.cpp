@@ -950,6 +950,11 @@ void GraphicsLayer::setRenderingContext(int context)
         m_contentsLayer->setRenderingContext(m_renderingContext3d);
 }
 
+bool GraphicsLayer::masksToBounds() const
+{
+    return m_layer->layer()->masksToBounds();
+}
+
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)
 {
     m_layer->layer()->setMasksToBounds(masksToBounds);

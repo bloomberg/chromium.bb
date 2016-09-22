@@ -103,16 +103,14 @@ TEST_F(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect)
     PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     ASSERT_TRUE(paintLayer->compositedLayerMapping());
-    // recomputeInterestRect computes the interest rect; computeInterestRect applies the extra setting to paint everything.
-    EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
+    // Clipping is disabled in recomputeInterestRect.
+    EXPECT_RECT_EQ(IntRect(0, 0, 200, 10000), recomputeInterestRect(paintLayer->graphicsLayerBacking()));
     EXPECT_RECT_EQ(IntRect(0, 0, 200, 10000), computeInterestRect(paintLayer->compositedLayerMapping(), paintLayer->graphicsLayerBacking(), IntRect()));
 }
 
 TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument)
 {
     setBodyInnerHTML("<style>html,body { margin: 0px } html { -webkit-writing-mode: vertical-rl}</style> <div id='target' style='width: 10000px; height: 200px;'></div>");
-
-    document().settings()->setMainFrameClipsContent(false);
 
     document().view()->updateAllLifecyclePhases();
     document().view()->setScrollPosition(DoublePoint(-5000, 0), ProgrammaticScroll);

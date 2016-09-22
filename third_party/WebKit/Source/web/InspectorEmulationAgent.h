@@ -28,6 +28,8 @@ public:
     ~InspectorEmulationAgent() override;
 
     // protocol::Dispatcher::EmulationCommandHandler implementation.
+    void forceViewport(ErrorString*, double in_x, double in_y, double in_scale) override;
+    void resetViewport(ErrorString*) override;
     void resetPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double in_pageScaleFactor) override;
     void setScriptExecutionDisabled(ErrorString*, bool in_value) override;

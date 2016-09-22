@@ -88,6 +88,13 @@ void WebLayerTreeViewImplForTesting::setViewportSize(const WebSize& deviceViewpo
     m_layerTreeHost->GetLayerTree()->SetViewportSize(gfxSize);
 }
 
+WebSize WebLayerTreeViewImplForTesting::getViewportSize() const
+{
+    return WebSize(
+        m_layerTreeHost->GetLayerTree()->device_viewport_size().width(),
+        m_layerTreeHost->GetLayerTree()->device_viewport_size().height());
+}
+
 void WebLayerTreeViewImplForTesting::setDeviceScaleFactor(float deviceScaleFactor)
 {
     m_layerTreeHost->GetLayerTree()->SetDeviceScaleFactor(deviceScaleFactor);

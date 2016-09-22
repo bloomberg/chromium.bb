@@ -114,6 +114,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void detachCompositorAnimationTimeline(
       cc::AnimationTimeline* compositor_timeline) override;
   void setViewportSize(const blink::WebSize& device_viewport_size) override;
+  blink::WebSize getViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
   void setDeviceScaleFactor(float device_scale) override;

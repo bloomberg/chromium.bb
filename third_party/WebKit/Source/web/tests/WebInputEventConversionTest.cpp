@@ -43,10 +43,12 @@
 #include "core/frame/VisualViewport.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
@@ -512,7 +514,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     webViewImpl->updateAllLifecyclePhases();
 
     webViewImpl->setPageScaleFactor(2);
-    webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
+    webViewImpl->mainFrameImpl()->setInputEventsTransformForEmulation(IntSize(10, 20), 1.5);
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 

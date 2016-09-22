@@ -66,7 +66,9 @@ public:
 
     // View properties ---------------------------------------------------
 
+    // Viewport size is given in physical pixels.
     virtual void setViewportSize(const WebSize& deviceViewportSize) { }
+    virtual WebSize getViewportSize() const { return WebSize(); }
 
     virtual void setDeviceScaleFactor(float) { }
 

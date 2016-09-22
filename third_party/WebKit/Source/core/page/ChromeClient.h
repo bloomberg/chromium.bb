@@ -39,6 +39,7 @@
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
+#include "wtf/Optional.h"
 #include "wtf/Vector.h"
 #include <memory>
 
@@ -165,11 +166,15 @@ public:
     // End methods used by HostWindow.
     virtual Cursor lastSetCursorForTesting() const = 0;
 
+    // Returns a custom visible content rect if a viewport override is active.
+    virtual WTF::Optional<IntRect> visibleContentRectForPainting() const { return WTF::nullopt; }
+
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
     virtual void pageScaleFactorChanged() const { }
     virtual float clampPageScaleFactorToLimits(float scale) const { return scale; }
+    virtual void mainFrameScrollOffsetChanged() const { }
     virtual void layoutUpdated(LocalFrame*) const { }
 
     void mouseDidMoveOverElement(const HitTestResult&);

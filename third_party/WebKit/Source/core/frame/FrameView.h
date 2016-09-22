@@ -191,6 +191,7 @@ public:
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
     void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
+    void didChangeScrollOffset();
 
     void didUpdateElasticOverscroll();
 
@@ -444,6 +445,11 @@ public:
     // rectangle, but an optional boolean argument allows them to be included.
     IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntSize visibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+
+    // Clips the provided rect to the visible content area. For this purpose, we
+    // also query the chrome client for any active overrides to the visible area
+    // (e.g. DevTool's viewport override).
+    void clipPaintRect(FloatRect*) const;
 
     // Functions for getting/setting the size of the document contained inside the FrameView (as an IntSize or as individual width and height
     // values).

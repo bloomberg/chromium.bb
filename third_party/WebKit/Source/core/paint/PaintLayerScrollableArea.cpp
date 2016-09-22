@@ -413,7 +413,7 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
     // Inform the FrameLoader of the new scroll position, so it can be restored when navigating back.
     if (layer()->isRootLayer()) {
         frameView->frame().loader().saveScrollState();
-        frame->loader().client()->didChangeScrollOffset();
+        frameView->didChangeScrollOffset();
     }
 
     // All scrolls clear the fragment anchor.

@@ -109,6 +109,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
@@ -419,7 +420,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client, WebPageVisibilityState visibilit
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
     , m_compositorDeviceScaleFactorOverride(0)
-    , m_rootLayerScale(1)
     , m_suppressNextKeypressEvent(false)
     , m_imeAcceptEvents(true)
     , m_operationsAllowed(WebDragOperationNone)
@@ -3839,15 +3839,17 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
         updateLayerTreeDeviceScaleFactor();
 }
 
-void WebViewImpl::setRootLayerTransform(const WebSize& rootLayerOffset, float rootLayerScale)
+void WebViewImpl::setRootLayerTransform(const TransformationMatrix& transform)
 {
-    if (m_rootLayerScale == rootLayerScale && m_rootLayerOffset == rootLayerOffset)
+    if (transform == m_rootLayerTransform)
         return;
-    m_rootLayerScale = rootLayerScale;
-    m_rootLayerOffset = rootLayerOffset;
-    if (mainFrameImpl())
-        mainFrameImpl()->setInputEventsTransformForEmulation(m_rootLayerOffset, m_rootLayerScale);
+    m_rootLayerTransform = transform;
     updateRootLayerTransform();
+}
+
+TransformationMatrix WebViewImpl::getRootLayerTransformForTesting() const
+{
+    return m_rootLayerTransform;
 }
 
 void WebViewImpl::enableDeviceEmulation(const WebDeviceEmulationParams& params)
@@ -4085,6 +4087,12 @@ void WebViewImpl::pageScaleFactorChanged()
     pageScaleConstraintsSet().setNeedsReset(false);
     updateLayerTreeViewport();
     m_client->pageScaleFactorChanged();
+    m_devToolsEmulator->mainFrameScrollOrScaleChanged();
+}
+
+void WebViewImpl::mainFrameScrollOffsetChanged()
+{
+    m_devToolsEmulator->mainFrameScrollOrScaleChanged();
 }
 
 bool WebViewImpl::useExternalPopupMenus()
@@ -4435,12 +4443,8 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor()
 
 void WebViewImpl::updateRootLayerTransform()
 {
-    if (m_visualViewportContainerLayer) {
-        TransformationMatrix transform;
-        transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
-        transform = transform.scale(m_rootLayerScale);
-        m_visualViewportContainerLayer->setTransform(transform);
-    }
+    if (m_visualViewportContainerLayer)
+        m_visualViewportContainerLayer->setTransform(m_rootLayerTransform);
 }
 
 bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& targetedEvent)

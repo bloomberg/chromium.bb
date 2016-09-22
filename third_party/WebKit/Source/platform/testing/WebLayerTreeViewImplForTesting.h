@@ -43,6 +43,7 @@ public:
     virtual void setViewportSize(const blink::WebSize& unusedDeprecated,
         const blink::WebSize& deviceViewportSize);
     void setViewportSize(const blink::WebSize&) override;
+    WebSize getViewportSize() const override;
     void setDeviceScaleFactor(float) override;
     void setBackgroundColor(blink::WebColor) override;
     void setHasTransparentBackground(bool) override;

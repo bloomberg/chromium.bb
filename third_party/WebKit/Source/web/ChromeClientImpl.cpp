@@ -103,6 +103,7 @@
 #include "web/ColorChooserPopupUIController.h"
 #include "web/ColorChooserUIController.h"
 #include "web/DateTimeChooserImpl.h"
+#include "web/DevToolsEmulator.h"
 #include "web/ExternalDateTimeChooser.h"
 #include "web/ExternalPopupMenu.h"
 #include "web/IndexedDBClientImpl.h"
@@ -116,6 +117,7 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
+#include "wtf/Optional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
@@ -604,6 +606,11 @@ WebScreenInfo ChromeClientImpl::screenInfo() const
     return m_webView->client() ? m_webView->client()->screenInfo() : WebScreenInfo();
 }
 
+WTF::Optional<IntRect> ChromeClientImpl::visibleContentRectForPainting() const
+{
+    return m_webView->devToolsEmulator()->visibleContentRectForPainting();
+}
+
 void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& size) const
 {
     m_webView->didChangeContentsSize();
@@ -615,6 +622,11 @@ void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& siz
 void ChromeClientImpl::pageScaleFactorChanged() const
 {
     m_webView->pageScaleFactorChanged();
+}
+
+void ChromeClientImpl::mainFrameScrollOffsetChanged() const
+{
+    m_webView->mainFrameScrollOffsetChanged();
 }
 
 float ChromeClientImpl::clampPageScaleFactorToLimits(float scale) const

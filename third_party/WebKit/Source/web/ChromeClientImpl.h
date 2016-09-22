@@ -104,9 +104,11 @@ public:
     IntRect viewportToScreen(const IntRect&, const Widget*) const override;
     float windowToViewportScalar(const float) const override;
     WebScreenInfo screenInfo() const override;
+    WTF::Optional<IntRect> visibleContentRectForPainting() const override;
     void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
     void pageScaleFactorChanged() const override;
     float clampPageScaleFactorToLimits(float scale) const override;
+    void mainFrameScrollOffsetChanged() const override;
     void layoutUpdated(LocalFrame*) const override;
     void showMouseOverURL(const HitTestResult&) override;
     void setToolTip(const String& tooltipText, TextDirection) override;

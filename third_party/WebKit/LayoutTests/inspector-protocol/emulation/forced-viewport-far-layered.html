@@ -1,0 +1,60 @@
+<html>
+<head>
+
+<script src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+
+<style>
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow: hidden;
+}
+
+#near {
+    position: absolute;
+    left: 200px;
+    top: 200px;
+    width: 100px;
+    height: 100px;
+    background-color: red;
+}
+
+#far {
+    position: absolute;
+    left: 200px;
+    top: 9000px;
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    transform: translateZ(0px); /* force separate layer */
+}
+</style>
+
+<script>
+function test()
+{
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.dumpAsTextWithPixelResults();"} );
+
+    InspectorTest.sendCommand("Emulation.forceViewport", { "x": 200, "y": 9000, "scale": 2.0 }, overrideActive);
+
+    function overrideActive(msg)
+    {
+        // Complete the test without closing the inspector, so that the override stays active for the picture.
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.notifyDone();"} );
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that a forced viewport repositions and scales an element on a separate layer that lies outside the normal painting area.
+</p>
+<div id="near"></div>
+<div id="far"></div>
+</body>
+</html>

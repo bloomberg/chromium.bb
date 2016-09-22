@@ -57,16 +57,20 @@
 #include "core/timing/PerformanceCompositeTiming.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebDragOperation.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebMockClipboard.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -91,6 +95,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "web/DevToolsEmulator.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
@@ -3615,6 +3620,106 @@ TEST_F(WebViewTest, NestedLoadDeferrals)
     }
 
     EXPECT_FALSE(webView->page()->defersLoading());
+}
+
+TEST_F(WebViewTest, ForceAndResetViewport)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
+    webViewImpl->resize(WebSize(100, 150));
+    webViewImpl->layerTreeView()->setViewportSize(WebSize(100, 150));
+    VisualViewport* visualViewport = &webViewImpl->page()->frameHost().visualViewport();
+    DevToolsEmulator* devToolsEmulator = webViewImpl->devToolsEmulator();
+
+    TransformationMatrix expectedMatrix;
+    expectedMatrix.makeIdentity();
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    EXPECT_FALSE(devToolsEmulator->visibleContentRectForPainting());
+    EXPECT_TRUE(visualViewport->containerLayer()->masksToBounds());
+
+    // Override applies transform, sets visibleContentRect, and disables
+    // visual viewport clipping.
+    devToolsEmulator->forceViewport(WebFloatPoint(50, 55), 2.f);
+    expectedMatrix.makeIdentity().scale(2.f).translate(-50, -55);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    EXPECT_EQ(IntRect(50, 55, 50, 75), *devToolsEmulator->visibleContentRectForPainting());
+    EXPECT_FALSE(visualViewport->containerLayer()->masksToBounds());
+
+    // Setting new override discards previous one.
+    devToolsEmulator->forceViewport(WebFloatPoint(5.4f, 10.5f), 1.5f);
+    expectedMatrix.makeIdentity().scale(1.5f).translate(-5.4f, -10.5f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    EXPECT_EQ(IntRect(5, 10, 68, 101), *devToolsEmulator->visibleContentRectForPainting());
+    EXPECT_FALSE(visualViewport->containerLayer()->masksToBounds());
+
+    // Clearing override restores original transform, visibleContentRect and
+    // visual viewport clipping.
+    devToolsEmulator->resetViewport();
+    expectedMatrix.makeIdentity();
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    EXPECT_FALSE(devToolsEmulator->visibleContentRectForPainting());
+    EXPECT_TRUE(visualViewport->containerLayer()->masksToBounds());
+}
+
+TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
+    webViewImpl->resize(WebSize(100, 150));
+
+    TransformationMatrix expectedMatrix;
+    expectedMatrix.makeIdentity();
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+
+    WebDeviceEmulationParams emulationParams;
+    emulationParams.offset = WebFloatPoint(50, 50);
+    emulationParams.scale = 2.f;
+    webViewImpl->enableDeviceEmulation(emulationParams);
+    expectedMatrix.makeIdentity().translate(50, 50).scale(2.f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+
+    // Device metrics offset and scale are applied before viewport override.
+    webViewImpl->devToolsEmulator()->forceViewport(WebFloatPoint(5, 10), 1.5f);
+    expectedMatrix.makeIdentity().scale(1.5f).translate(-5, -10).translate(50, 50).scale(2.f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+}
+
+TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
+    webViewImpl->resize(WebSize(100, 150));
+    webViewImpl->layerTreeView()->setViewportSize(WebSize(100, 150));
+    FrameView* frameView = webViewImpl->mainFrameImpl()->frame()->view();
+    DevToolsEmulator* devToolsEmulator = webViewImpl->devToolsEmulator();
+
+    TransformationMatrix expectedMatrix;
+    expectedMatrix.makeIdentity();
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+
+    // Initial transform takes current page scale and scroll position into
+    // account.
+    webViewImpl->setPageScaleFactor(1.5f);
+    frameView->setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll, ScrollBehaviorInstant);
+    devToolsEmulator->forceViewport(WebFloatPoint(50, 55), 2.f);
+    expectedMatrix.makeIdentity().scale(2.f).translate(-50, -55).translate(100, 150).scale(1. / 1.5f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    // Page scroll and scale are irrelevant for visibleContentRect.
+    EXPECT_EQ(IntRect(50, 55, 50, 75), *devToolsEmulator->visibleContentRectForPainting());
+
+    // Transform adapts to scroll changes.
+    frameView->setScrollPosition(DoublePoint(50, 55), ProgrammaticScroll, ScrollBehaviorInstant);
+    expectedMatrix.makeIdentity().scale(2.f).translate(-50, -55).translate(50, 55).scale(1. / 1.5f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    // visibleContentRect doesn't change.
+    EXPECT_EQ(IntRect(50, 55, 50, 75), *devToolsEmulator->visibleContentRectForPainting());
+
+    // Transform adapts to page scale changes.
+    webViewImpl->setPageScaleFactor(2.f);
+    expectedMatrix.makeIdentity().scale(2.f).translate(-50, -55).translate(50, 55).scale(1. / 2.f);
+    EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+    // visibleContentRect doesn't change.
+    EXPECT_EQ(IntRect(50, 55, 50, 75), *devToolsEmulator->visibleContentRectForPainting());
 }
 
 } // namespace blink

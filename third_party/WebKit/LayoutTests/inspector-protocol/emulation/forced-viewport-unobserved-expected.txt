@@ -1,0 +1,7 @@
+Tests that a forced viewport does not change metrics that are observable by the page.
+
+innerWidth = 800
+innerHeight = 600
+scrollLeft = 0
+scrollTop = 0
+

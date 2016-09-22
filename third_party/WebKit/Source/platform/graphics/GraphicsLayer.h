@@ -143,6 +143,8 @@ public:
     void setTransform(const TransformationMatrix&);
     void setShouldFlattenTransform(bool);
     void setRenderingContext(int id);
+
+    bool masksToBounds() const;
     void setMasksToBounds(bool);
 
     bool drawsContent() const { return m_drawsContent; }

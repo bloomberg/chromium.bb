@@ -11,6 +11,10 @@
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/IntSize.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -219,7 +223,7 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
         disableMobileEmulation();
 
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(params.deviceScaleFactor);
-    m_webViewImpl->setRootLayerTransform(WebSize(params.offset.x, params.offset.y), params.scale);
+    updateRootLayerTransform();
     // TODO(dgozman): mainFrameImpl() is null when it's remote. Figure out how
     // we end up with enabling emulation in this case.
     if (m_webViewImpl->mainFrameImpl()) {
@@ -238,8 +242,8 @@ void DevToolsEmulator::disableDeviceEmulation()
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(m_embedderDeviceScaleAdjustment);
     disableMobileEmulation();
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);
-    m_webViewImpl->setRootLayerTransform(WebSize(0.f, 0.f), 1.f);
     m_webViewImpl->setPageScaleFactor(1.f);
+    updateRootLayerTransform();
     // mainFrameImpl() could be null during cleanup or remote <-> local swap.
     if (m_webViewImpl->mainFrameImpl()) {
         if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document())
@@ -317,6 +321,119 @@ void DevToolsEmulator::disableMobileEmulation()
     // mainFrameImpl() could be null during cleanup or remote <-> local swap.
     if (m_webViewImpl->mainFrameImpl())
         m_webViewImpl->mainFrameImpl()->frameView()->layout();
+}
+
+float DevToolsEmulator::compositorDeviceScaleFactor() const
+{
+    if (m_deviceMetricsEnabled)
+        return m_emulationParams.deviceScaleFactor;
+    return m_webViewImpl->page()->deviceScaleFactor();
+}
+
+void DevToolsEmulator::forceViewport(const WebFloatPoint& position, float scale)
+{
+    GraphicsLayer* containerLayer = m_webViewImpl->page()->frameHost().visualViewport().containerLayer();
+    if (!m_viewportOverride) {
+        m_viewportOverride = ViewportOverride();
+
+        // Disable clipping on the visual viewport layer, to ensure the whole area is painted.
+        if (containerLayer) {
+            m_viewportOverride->originalVisualViewportMasking = containerLayer->masksToBounds();
+            containerLayer->setMasksToBounds(false);
+        }
+    }
+
+    m_viewportOverride->position = position;
+    m_viewportOverride->scale = scale;
+
+    // Move the correct (scaled) content area to show in the top left of the
+    // CompositorFrame via the root transform.
+    updateRootLayerTransform();
+}
+
+void DevToolsEmulator::resetViewport()
+{
+    if (!m_viewportOverride)
+        return;
+
+    bool originalMasking = m_viewportOverride->originalVisualViewportMasking;
+    m_viewportOverride = WTF::nullopt;
+
+    GraphicsLayer* containerLayer = m_webViewImpl->page()->frameHost().visualViewport().containerLayer();
+    if (containerLayer)
+        containerLayer->setMasksToBounds(originalMasking);
+    updateRootLayerTransform();
+}
+
+void DevToolsEmulator::mainFrameScrollOrScaleChanged()
+{
+    // Viewport override has to take current page scale and scroll offset into
+    // account. Update the transform if override is active.
+    if (m_viewportOverride)
+        updateRootLayerTransform();
+}
+
+void DevToolsEmulator::applyDeviceEmulationTransform(TransformationMatrix* transform)
+{
+    if (m_deviceMetricsEnabled) {
+        WebSize offset(m_emulationParams.offset.x, m_emulationParams.offset.y);
+        // Scale first, so that translation is unaffected.
+        transform->translate(offset.width, offset.height);
+        transform->scale(m_emulationParams.scale);
+        if (m_webViewImpl->mainFrameImpl())
+            m_webViewImpl->mainFrameImpl()->setInputEventsTransformForEmulation(offset, m_emulationParams.scale);
+    } else {
+        if (m_webViewImpl->mainFrameImpl())
+            m_webViewImpl->mainFrameImpl()->setInputEventsTransformForEmulation(WebSize(0, 0), 1.0);
+    }
+}
+
+void DevToolsEmulator::applyViewportOverride(TransformationMatrix* transform)
+{
+    if (!m_viewportOverride)
+        return;
+
+    // Transform operations follow in reverse application.
+    // Last, scale positioned area according to override.
+    transform->scale(m_viewportOverride->scale);
+
+    // Translate while taking into account current scroll offset.
+    WebSize scrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
+    WebFloatPoint visualOffset = m_webViewImpl->visualViewportOffset();
+    float scrollX = scrollOffset.width + visualOffset.x;
+    float scrollY = scrollOffset.height + visualOffset.y;
+    transform->translate(
+        -m_viewportOverride->position.x + scrollX,
+        -m_viewportOverride->position.y + scrollY);
+
+    // First, reverse page scale, so we don't have to take it into account for
+    // calculation of the translation.
+    transform->scale(1. / m_webViewImpl->pageScaleFactor());
+}
+
+void DevToolsEmulator::updateRootLayerTransform()
+{
+    TransformationMatrix transform;
+
+    // Apply device emulation transform first, so that it is affected by the
+    // viewport override.
+    applyViewportOverride(&transform);
+    applyDeviceEmulationTransform(&transform);
+    m_webViewImpl->setRootLayerTransform(transform);
+}
+
+WTF::Optional<IntRect> DevToolsEmulator::visibleContentRectForPainting() const
+{
+    if (!m_viewportOverride)
+        return WTF::nullopt;
+    FloatSize viewportSize(m_webViewImpl->layerTreeView()->getViewportSize());
+    viewportSize.scale(1. / compositorDeviceScaleFactor());
+    viewportSize.scale(1. / m_viewportOverride->scale);
+    return enclosingIntRect(FloatRect(
+        m_viewportOverride->position.x,
+        m_viewportOverride->position.y,
+        viewportSize.width(),
+        viewportSize.height()));
 }
 
 void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)

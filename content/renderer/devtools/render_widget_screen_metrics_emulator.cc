@@ -68,7 +68,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
         2);
   } else {
     scale_ = emulation_params_.scale;
-    offset_.SetPoint(emulation_params_.offset.x, emulation_params_.offset.y);
+    offset_.SetPoint(0, 0);
     if (!emulation_params_.viewSize.width &&
         !emulation_params_.viewSize.height && scale_) {
       applied_widget_rect_.set_size(

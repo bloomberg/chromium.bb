@@ -221,9 +221,6 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   params.viewSize = blink::WebSize(width, height);
   params.fitToView = fit_window;
   params.scale = optional_scale ? *optional_scale : 1;
-  params.offset = blink::WebFloatPoint(
-      optional_offset_x ? *optional_offset_x : 0.f,
-      optional_offset_y ? *optional_offset_y : 0.f);
   params.screenOrientationType = orientationType;
   params.screenOrientationAngle = orientationAngle;
 

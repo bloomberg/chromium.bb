@@ -298,7 +298,8 @@ public:
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
     void setCompositorDeviceScaleFactorOverride(float);
-    void setRootLayerTransform(const WebSize& offset, float scale);
+    void setRootLayerTransform(const TransformationMatrix&);
+    TransformationMatrix getRootLayerTransformForTesting() const;
 
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
@@ -380,6 +381,7 @@ public:
 
     void didChangeContentsSize();
     void pageScaleFactorChanged();
+    void mainFrameScrollOffsetChanged();
 
     // Returns true if popup menus should be rendered by the browser, false if
     // they should be rendered by WebKit (which is the default).
@@ -673,8 +675,7 @@ private:
     bool m_ignoreInputEvents;
 
     float m_compositorDeviceScaleFactorOverride;
-    WebSize m_rootLayerOffset;
-    float m_rootLayerScale;
+    TransformationMatrix m_rootLayerTransform;
 
     // Webkit expects keyPress events to be suppressed if the associated keyDown
     // event was handled. Safari implements this behavior by peeking out the

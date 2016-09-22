@@ -3443,6 +3443,18 @@ IntSize FrameView::contentsSize() const
     return m_contentsSize;
 }
 
+void FrameView::clipPaintRect(FloatRect* paintRect) const
+{
+    // Paint the whole rect if "mainFrameClipsContent" is false, meaning that
+    // WebPreferences::record_whole_document is true.
+    if (!m_frame->settings()->mainFrameClipsContent())
+        return;
+
+    paintRect->intersect(
+        page()->chromeClient().visibleContentRectForPainting().value_or(
+            visibleContentRect()));
+}
+
 IntPoint FrameView::minimumScrollPosition() const
 {
     return IntPoint(-scrollOrigin().x(), -scrollOrigin().y());
@@ -3521,7 +3533,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
         cache->handleScrollPositionChanged(this);
 
     frame().loader().saveScrollState();
-    frame().loader().client()->didChangeScrollOffset();
+    didChangeScrollOffset();
 
     if (scrollType == CompositorScroll && m_frame->isMainFrame()) {
         if (DocumentLoader* documentLoader = m_frame->loader().documentLoader())
@@ -3530,6 +3542,13 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
 
     if (scrollType != AnchoringScroll)
         clearScrollAnchor();
+}
+
+void FrameView::didChangeScrollOffset()
+{
+    frame().loader().client()->didChangeScrollOffset();
+    if (frame().isMainFrame())
+        frame().host()->chromeClient().mainFrameScrollOffsetChanged();
 }
 
 void FrameView::clearScrollAnchor()

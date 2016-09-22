@@ -2353,6 +2353,8 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     scrollbar->paint(context, CullRect(transformedClip));
 }
 
+// TODO(eseckler): Make recording distance configurable, e.g. for use in
+// headless, where we would like to record an exact area (distance = 0).
 static const int kPixelDistanceToRecord = 4000;
 
 IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graphicsLayer) const
@@ -2382,21 +2384,22 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     FloatRect graphicsLayerBoundsInObjectSpace(graphicsLayerBounds);
     graphicsLayerBoundsInObjectSpace.move(offsetFromAnchorLayoutObject);
 
-    // Now map the bounds to its visible content rect in screen space, including applying clips along the way.
-    LayoutRect visibleContentRect(graphicsLayerBoundsInObjectSpace);
+    // Now map the bounds to its visible content rect in root view space, including applying clips along the way.
+    LayoutRect graphicsLayerBoundsInRootViewSpace(graphicsLayerBoundsInObjectSpace);
     LayoutView* rootView = anchorLayoutObject->view();
     while (!rootView->frame()->ownerLayoutItem().isNull())
         rootView = LayoutAPIShim::layoutObjectFrom(rootView->frame()->ownerLayoutItem())->view();
-    anchorLayoutObject->mapToVisualRectInAncestorSpace(rootView, visibleContentRect);
-    visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
+    anchorLayoutObject->mapToVisualRectInAncestorSpace(rootView, graphicsLayerBoundsInRootViewSpace);
+    FloatRect visibleContentRect(graphicsLayerBoundsInRootViewSpace);
+    rootView->frameView()->clipPaintRect(&visibleContentRect);
 
     IntRect enclosingGraphicsLayerBounds(enclosingIntRect(graphicsLayerBounds));
 
-    // Map the visible content rect from screen space to local graphics layer space.
+    // Map the visible content rect from root view space to local graphics layer space.
     IntRect localInterestRect;
     // If the visible content rect is empty, then it makes no sense to map it back since there is nothing to map.
     if (!visibleContentRect.isEmpty()) {
-        localInterestRect = anchorLayoutObject->absoluteToLocalQuad(FloatRect(visibleContentRect), UseTransforms | TraverseDocumentBoundaries).enclosingBoundingBox();
+        localInterestRect = anchorLayoutObject->absoluteToLocalQuad(visibleContentRect, UseTransforms | TraverseDocumentBoundaries).enclosingBoundingBox();
         localInterestRect.move(-offsetFromAnchorLayoutObject);
         // TODO(chrishtr): the code below is a heuristic, instead we should detect and return whether the mapping failed.
         // In some cases, absoluteToLocalQuad can fail to map back to the local space, due to passing through
@@ -2451,10 +2454,7 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
     if (!needsRepaint(*graphicsLayer) && previousInterestRect == wholeLayerRect)
         return previousInterestRect;
 
-    // Paint the whole layer if "mainFrameClipsContent" is false, meaning that WebPreferences::record_whole_document is true.
-    bool shouldPaintWholePage = !m_owningLayer.layoutObject()->document().settings()->mainFrameClipsContent();
-    if (shouldPaintWholePage
-        || (graphicsLayer != m_graphicsLayer.get() && graphicsLayer != m_squashingLayer.get() && graphicsLayer != m_scrollingContentsLayer.get()))
+    if (graphicsLayer != m_graphicsLayer.get() && graphicsLayer != m_squashingLayer.get() && graphicsLayer != m_scrollingContentsLayer.get())
         return wholeLayerRect;
 
     IntRect newInterestRect = recomputeInterestRect(graphicsLayer);
