@@ -12,7 +12,7 @@ visibility = [ "//third_party/WebKit/*" ]
 # arguments --------------------------------------------------------------------
 
 declare_args() {
-  # Set to true to enable the clang plugin that checks the usage of the Blink
+  # Set to true to enable the clang plugin that checks the usage of the  Blink
   # garbage-collection infrastructure during compilation.
   blink_gc_plugin = true
 

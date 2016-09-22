@@ -6,7 +6,29 @@
   "capabilities": {
     // Remove this once http://crbug.com/632818 is fixed.
     "provided": {
-      "all_interfaces": [ "*" ]
+      "all_interfaces": [ "*" ],
+      "web": [
+        "blink::mojom::BackgroundSyncService",
+        "blink::mojom::BroadcastChannelProvider",
+        "blink::mojom::BudgetService",
+        "blink::mojom::MimeRegistry",
+        "blink::mojom::NotificationService",
+        "blink::mojom::OffscreenCanvasFrameReceiver",
+        "blink::mojom::OffscreenCanvasSurface",
+        "blink::mojom::PermissionService",
+        "blink::mojom::WebSocket",
+        "content::mojom::LayoutTestBluetoothFakeAdapterSetter",
+        "content::mojom::MemoryCoordinatorHandle",
+        "content::mojom::StoragePartitionService",
+        "content::mojom::URLLoaderFactory",
+        "device::BatteryMonitor",
+        "device::mojom::LightSensor",
+        "device::mojom::MotionSensor",
+        "device::mojom::OrientationSensor",
+        "device::mojom::TimeZoneMonitor",
+        "media::mojom::ImageCapture",
+        "memory_coordinator::mojom::MemoryCoordinatorHandle"
+      ]
     },
     "required": {
       "*": { "classes": [ "app" ] },
@@ -15,7 +37,7 @@
       // processes.
       "exe:content_gpu": { "classes": [ "all_interfaces" ] },
       "exe:content_plugin": { "classes": [ "all_interfaces" ] },
-      "exe:content_renderer": { "classes": [ "all_interfaces" ] },
+      "exe:content_renderer": { "classes": [ "browser" ] },
       "exe:content_utility": { "classes": [ "all_interfaces" ] },
 
       "mojo:shell": {

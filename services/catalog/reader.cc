@@ -178,25 +178,24 @@ void Reader::CreateEntryForName(
     const std::string& mojo_name,
     EntryCache* cache,
     const CreateEntryForNameCallback& entry_created_callback) {
-  std::string manifest_contents;
-  if (manifest_provider_ &&
-      manifest_provider_->GetApplicationManifest(mojo_name,
-                                                 &manifest_contents)) {
+  if (manifest_provider_) {
     std::unique_ptr<base::Value> manifest_root =
-        base::JSONReader::Read(manifest_contents);
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE,
-        base::Bind(&ProcessManifest, base::Passed(&manifest_root),
-                   system_package_dir_),
-        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
-                   entry_created_callback));
-  } else {
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE,
-        base::Bind(&ReadManifest, system_package_dir_, mojo_name),
-        base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
-                   entry_created_callback));
+        manifest_provider_->GetManifest(mojo_name);
+    if (manifest_root) {
+      base::PostTaskAndReplyWithResult(
+          file_task_runner_.get(), FROM_HERE,
+          base::Bind(&ProcessManifest, base::Passed(&manifest_root),
+                     system_package_dir_),
+          base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
+                     entry_created_callback));
+      return;
+    }
   }
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::Bind(&ReadManifest, system_package_dir_, mojo_name),
+      base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
+                  entry_created_callback));
 }
 
 Reader::Reader(ManifestProvider* manifest_provider)

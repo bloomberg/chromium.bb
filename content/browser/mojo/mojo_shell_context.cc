@@ -9,12 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/mojo/constants.h"
+#include "content/browser/mojo/merge_dictionary.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/mojo_shell_connection.h"
+#include "content/public/common/service_names.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
@@ -108,36 +110,21 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
   BuiltinManifestProvider() {}
   ~BuiltinManifestProvider() override {}
 
-  void AddManifests(std::unique_ptr<
-      ContentBrowserClient::MojoApplicationManifestMap> manifests) {
-    DCHECK(!manifests_);
-    manifests_ = std::move(manifests);
-  }
-
-  void AddManifestResource(const std::string& name, int resource_id) {
-    std::string contents = GetContentClient()->GetDataResource(
-        resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-    DCHECK(!contents.empty());
-
-    DCHECK(manifests_);
-    auto result = manifests_->insert(std::make_pair(name, contents));
+  void AddManifestValue(const std::string& name,
+                        std::unique_ptr<base::Value> manifest_contents) {
+    auto result = manifests_.insert(
+        std::make_pair(name, std::move(manifest_contents)));
     DCHECK(result.second) << "Duplicate manifest entry: " << name;
   }
 
  private:
   // catalog::ManifestProvider:
-  bool GetApplicationManifest(const base::StringPiece& name,
-                              std::string* manifest_contents) override {
-    auto manifest_it = manifests_->find(name.as_string());
-    if (manifest_it != manifests_->end()) {
-      *manifest_contents = manifest_it->second;
-      DCHECK(!manifest_contents->empty());
-      return true;
-    }
-    return false;
+  std::unique_ptr<base::Value> GetManifest(const std::string& name) override {
+    auto it = manifests_.find(name);
+    return it != manifests_.end() ? it->second->CreateDeepCopy() : nullptr;
   }
 
-  std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests_;
+  std::map<std::string, std::unique_ptr<base::Value>> manifests_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
@@ -214,30 +201,42 @@ MojoShellContext::MojoShellContext() {
     mojo::edk::SetParentPipeHandleFromCommandLine();
     request = shell::GetServiceRequestFromCommandLine();
   } else {
-    // Allow the embedder to register additional Mojo application manifests
-    // beyond the default ones below.
-    std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests(
-        new ContentBrowserClient::MojoApplicationManifestMap);
-    GetContentClient()->browser()->RegisterMojoApplicationManifests(
-        manifests.get());
     std::unique_ptr<BuiltinManifestProvider> manifest_provider =
         base::MakeUnique<BuiltinManifestProvider>();
-    manifest_provider->AddManifests(std::move(manifests));
-    manifest_provider->AddManifestResource(kBrowserMojoApplicationName,
-                                           IDR_MOJO_CONTENT_BROWSER_MANIFEST);
-    manifest_provider->AddManifestResource(kGpuMojoApplicationName,
-                                           IDR_MOJO_CONTENT_GPU_MANIFEST);
-    manifest_provider->AddManifestResource(kPluginMojoApplicationName,
-                                           IDR_MOJO_CONTENT_PLUGIN_MANIFEST);
-    manifest_provider->AddManifestResource(kRendererMojoApplicationName,
-                                           IDR_MOJO_CONTENT_RENDERER_MANIFEST);
-    manifest_provider->AddManifestResource(kUtilityMojoApplicationName,
-                                           IDR_MOJO_CONTENT_UTILITY_MANIFEST);
-    manifest_provider->AddManifestResource("mojo:catalog",
-                                           IDR_MOJO_CATALOG_MANIFEST);
-    manifest_provider->AddManifestResource(file::kFileServiceName,
-                                           IDR_MOJO_FILE_MANIFEST);
 
+    static const struct ManifestInfo {
+      const char* name;
+      int resource_id;
+    } kManifests[] = {
+      { kBrowserMojoApplicationName, IDR_MOJO_CONTENT_BROWSER_MANIFEST },
+      { kGpuMojoApplicationName, IDR_MOJO_CONTENT_GPU_MANIFEST },
+      { kPluginMojoApplicationName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
+      { kRendererMojoApplicationName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
+      { kUtilityMojoApplicationName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
+      { "mojo:catalog", IDR_MOJO_CATALOG_MANIFEST },
+      { file::kFileServiceName, IDR_MOJO_FILE_MANIFEST }
+    };
+
+    for (size_t i = 0; i < arraysize(kManifests); ++i) {
+      std::string contents = GetContentClient()->GetDataResource(
+          kManifests[i].resource_id,
+          ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
+      DCHECK(!contents.empty());
+      std::unique_ptr<base::Value> manifest_value =
+          base::JSONReader::Read(contents);
+      std::unique_ptr<base::Value> overlay_value =
+          GetContentClient()->browser()->GetServiceManifestOverlay(
+              kManifests[i].name);
+      if (overlay_value) {
+        base::DictionaryValue* manifest_dictionary = nullptr;
+        CHECK(manifest_value->GetAsDictionary(&manifest_dictionary));
+        base::DictionaryValue* overlay_dictionary = nullptr;
+        CHECK(overlay_value->GetAsDictionary(&overlay_dictionary));
+        MergeDictionary(manifest_dictionary, overlay_dictionary);
+      }
+      manifest_provider->AddManifestValue(kManifests[i].name,
+                                          std::move(manifest_value));
+    }
     in_process_context_ = new InProcessServiceManagerContext;
     request = in_process_context_->Start(std::move(manifest_provider));
   }
