@@ -32,7 +32,6 @@ struct MainThreadScrollingReason {
 
   // Transient scrolling reasons. These are computed for each scroll begin.
   enum : uint32_t { kNonFastScrollableRegion = 1 << 5 };
-  enum : uint32_t { kEventHandlers = 1 << 6 };
   enum : uint32_t { kFailedHitTest = 1 << 7 };
   enum : uint32_t { kNoScrollingLayer = 1 << 8 };
   enum : uint32_t { kNotScrollable = 1 << 9 };
@@ -58,9 +57,9 @@ struct MainThreadScrollingReason {
   // compositor.
   static bool CompositorCanSetScrollReasons(uint32_t reasons) {
     uint32_t reasons_set_by_compositor =
-        kNonFastScrollableRegion | kEventHandlers | kFailedHitTest |
-        kNoScrollingLayer | kNotScrollable | kContinuingMainThreadScroll |
-        kNonInvertibleTransform | kPageBasedScrolling;
+        kNonFastScrollableRegion | kFailedHitTest | kNoScrollingLayer |
+        kNotScrollable | kContinuingMainThreadScroll | kNonInvertibleTransform |
+        kPageBasedScrolling;
     return (reasons & reasons_set_by_compositor) == reasons;
   }
 
@@ -99,8 +98,6 @@ struct MainThreadScrollingReason {
     // Transient scrolling reasons.
     if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)
       tracedValue->AppendString("Non fast scrollable region");
-    if (reasons & MainThreadScrollingReason::kEventHandlers)
-      tracedValue->AppendString("Event handlers");
     if (reasons & MainThreadScrollingReason::kFailedHitTest)
       tracedValue->AppendString("Failed hit test");
     if (reasons & MainThreadScrollingReason::kNoScrollingLayer)

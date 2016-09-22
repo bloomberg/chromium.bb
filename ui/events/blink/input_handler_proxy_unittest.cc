@@ -289,7 +289,7 @@ const cc::InputHandler::ScrollStatus kImplThreadScrollState(
 
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
     cc::InputHandler::SCROLL_ON_MAIN_THREAD,
-    cc::MainThreadScrollingReason::kEventHandlers);
+    cc::MainThreadScrollingReason::kNotScrollingOnMain);
 
 const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
     cc::InputHandler::SCROLL_IGNORED,

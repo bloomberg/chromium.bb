@@ -1210,7 +1210,7 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     layer_tree()->inner_viewport_scroll_layer()->AddMainThreadScrollingReasons(
-        MainThreadScrollingReason::kEventHandlers);
+        MainThreadScrollingReason::kNonFastScrollableRegion);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -1228,7 +1228,7 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
         impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::TOUCHSCREEN,
                         scroll_tree, inner_scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
+    EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
     status = impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::TOUCHSCREEN,
