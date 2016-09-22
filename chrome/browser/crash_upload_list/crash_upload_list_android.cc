@@ -6,10 +6,14 @@
 
 #include <utility>
 
+#include "base/android/context_utils.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/task_runner.h"
+#include "jni/MinidumpUploadService_jni.h"
 #include "ui/base/text/bytes_formatting.h"
 
 CrashUploadListAndroid::CrashUploadListAndroid(
@@ -28,17 +32,37 @@ void CrashUploadListAndroid::LoadUploadList(
   LoadUnsuccessfulUploadList(uploads);
 }
 
+void CrashUploadListAndroid::RequestSingleCrashUpload(
+    const std::string& local_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const base::android::JavaRef<jobject>& context =
+      base::android::GetApplicationContext();
+  base::android::ScopedJavaLocalRef<jstring> j_local_id =
+      base::android::ConvertUTF8ToJavaString(env, local_id);
+  Java_MinidumpUploadService_tryUploadCrashDumpWithLocalId(env, context,
+                                                           j_local_id);
+}
+
 void CrashUploadListAndroid::LoadUnsuccessfulUploadList(
     std::vector<UploadInfo>* uploads) {
-  const char unsuccessful_uploads[] = ".dmp";
+  const char pending_uploads[] = ".dmp";
   const char skipped_uploads[] = ".skipped";
+  const char manually_forced_uploads[] = ".forced";
 
   base::FileEnumerator files(upload_log_path().DirName(), false,
                              base::FileEnumerator::FILES);
   for (base::FilePath file = files.Next(); !file.empty(); file = files.Next()) {
-    if (file.value().find(unsuccessful_uploads) == std::string::npos &&
-        file.value().find(skipped_uploads) == std::string::npos)
+    UploadList::UploadInfo::State upload_state;
+    if (file.value().find(manually_forced_uploads) != std::string::npos) {
+      upload_state = UploadList::UploadInfo::State::Pending_UserRequested;
+    } else if (file.value().find(pending_uploads) != std::string::npos) {
+      upload_state = UploadList::UploadInfo::State::Pending;
+    } else if (file.value().find(skipped_uploads) != std::string::npos) {
+      upload_state = UploadList::UploadInfo::State::NotUploaded;
+    } else {
+      // The |file| is something other than a minidump file, e.g. a logcat file.
       continue;
+    }
 
     base::File::Info info;
     if (!base::GetFileInfo(file, &info))
@@ -62,8 +86,7 @@ void CrashUploadListAndroid::LoadUnsuccessfulUploadList(
       continue;
 
     id = id.substr(pos + 1);
-    UploadList::UploadInfo upload(id, info.creation_time,
-                                  UploadList::UploadInfo::State::NotUploaded,
+    UploadList::UploadInfo upload(id, info.creation_time, upload_state,
                                   ui::FormatBytes(file_size));
     uploads->push_back(upload);
   }

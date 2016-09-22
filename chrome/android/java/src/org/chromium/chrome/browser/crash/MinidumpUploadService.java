@@ -13,7 +13,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -25,7 +24,6 @@ import java.io.IOException;
 /**
  * Service that is responsible for uploading crash minidumps to the Google crash server.
  */
-@JNINamespace("crash")
 public class MinidumpUploadService extends IntentService {
     private static final String TAG = "MinidmpUploadService";
     // Intent actions
@@ -38,11 +36,16 @@ public class MinidumpUploadService extends IntentService {
     @VisibleForTesting
     static final String ACTION_UPLOAD = "com.google.android.apps.chrome.crash.ACTION_UPLOAD";
 
+    @VisibleForTesting
+    static final String ACTION_FORCE_UPLOAD =
+            "com.google.android.apps.chrome.crash.ACTION_FORCE_UPLOAD";
+
     // Intent bundle keys
     @VisibleForTesting
     static final String FILE_TO_UPLOAD_KEY = "minidump_file";
     static final String UPLOAD_LOG_KEY = "upload_log";
     static final String FINISHED_LOGCAT_EXTRACTION_KEY = "upload_extraction_completed";
+    static final String LOCAL_CRASH_ID_KEY = "local_id";
 
     /**
      * The number of times we will try to upload a crash.
@@ -104,6 +107,8 @@ public class MinidumpUploadService extends IntentService {
             handleFindAndUploadAllCrashes();
         } else if (ACTION_UPLOAD.equals(intent.getAction())) {
             handleUploadCrash(intent);
+        } else if (ACTION_FORCE_UPLOAD.equals(intent.getAction())) {
+            handleForceUploadCrash(intent);
         } else {
             Log.w(TAG, "Got unknown action from intent: " + intent.getAction());
         }
@@ -355,10 +360,24 @@ public class MinidumpUploadService extends IntentService {
      *
      * This method is safe to call from the UI thread.
      *
+     * @param context the context to use for the intent.
      * @param localId The local ID of the crash report.
      */
     @CalledByNative
-    public void tryUploadCrashDumpWithLocalId(String localId) {
+    public static void tryUploadCrashDumpWithLocalId(Context context, String localId) {
+        Intent intent = new Intent(context, MinidumpUploadService.class);
+        intent.setAction(ACTION_FORCE_UPLOAD);
+        intent.putExtra(LOCAL_CRASH_ID_KEY, localId);
+        context.startService(intent);
+    }
+
+    private void handleForceUploadCrash(Intent intent) {
+        String localId = intent.getStringExtra(LOCAL_CRASH_ID_KEY);
+        if (localId == null || localId.isEmpty()) {
+            Log.w(TAG, "Cannot force crash upload since local crash id is absent.");
+            return;
+        }
+
         Context context = getApplicationContext();
         CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
         File minidumpFile = fileManager.getCrashFileWithLocalId(localId);

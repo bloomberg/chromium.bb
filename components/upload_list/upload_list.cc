@@ -156,15 +156,13 @@ void UploadList::GetUploads(size_t max_count,
 
 void UploadList::RequestSingleCrashUploadAsync(const std::string& local_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-#if defined(OS_WIN) || defined(OS_MACOSX)
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UploadList::RequestSingleCrashUpload, this, local_id));
-#endif
 }
 
 void UploadList::RequestSingleCrashUpload(const std::string& local_id) {
-  // Manual uploads for not uploaded crash reports are not available for non
-  // crashpad systems.
+  // Manual uploads for not-yet uploaded crash reports are only available for
+  // Crashpad systems and for Android.
   NOTREACHED();
 }

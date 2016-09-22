@@ -3743,6 +3743,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",
       "../android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchTabHelper.java",
       "../android/java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",
+      "../android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadService.java",
       "../android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java",
       "../android/java/src/org/chromium/chrome/browser/datausage/DataUseTabUIManager.java",
       "../android/java/src/org/chromium/chrome/browser/datausage/ExternalDataUseObserver.java",

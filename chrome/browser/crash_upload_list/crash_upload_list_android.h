@@ -26,6 +26,7 @@ class CrashUploadListAndroid : public CrashUploadList {
 
   // Called on a blocking pool thread.
   void LoadUploadList(std::vector<UploadInfo>* uploads) override;
+  void RequestSingleCrashUpload(const std::string& local_id) override;
 
  private:
   void LoadUnsuccessfulUploadList(std::vector<UploadInfo>* uploads);
