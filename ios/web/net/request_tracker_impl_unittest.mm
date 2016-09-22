@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/cert_policy.h"
 #include "ios/web/public/certificate_policy_cache.h"
@@ -205,7 +206,7 @@ class RequestTrackerTest : public PlatformTest {
         return [receiver_ error];
       if (base::Time::Now() > maxDate)
         return @"Time is up, too slow to go";
-      loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
     }
     return nil;

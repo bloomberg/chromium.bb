@@ -7,6 +7,8 @@
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "testing/platform_test.h"
@@ -41,13 +43,14 @@ class MemoryWarningHelperTest : public PlatformTest {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
     memory_pressure_level_ = memory_pressure_level;
-    message_loop_.QuitWhenIdle();
+    run_loop_.QuitWhenIdle();
   }
 
-  base::MessageLoop& message_loop() { return message_loop_; }
+  void RunMessageLoop() { run_loop_.Run(); }
 
  private:
   base::MessageLoop message_loop_;
+  base::RunLoop run_loop_;
   base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
   base::scoped_nsobject<MemoryWarningHelper> memory_helper_;
@@ -73,7 +76,7 @@ TEST_F(MemoryWarningHelperTest, VerifyForegroundMemoryWarningCountReset) {
 // callback (i.e. MainControllerTest::OnMemoryPressure) is invoked.
 TEST_F(MemoryWarningHelperTest, VerifyApplicationDidReceiveMemoryWarning) {
   [GetMemoryHelper() handleMemoryPressure];
-  message_loop().Run();
+  RunMessageLoop();
   EXPECT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             GetMemoryPressureLevel());
 }
