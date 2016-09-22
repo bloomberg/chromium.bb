@@ -230,6 +230,10 @@ FAIL WHEELEVENT should be an alias for WheelEvent. Failed to execute 'createEven
 FAIL createEvent('WHEELEVENT') should be initialized correctly. Cannot read property 'type' of undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "WheelEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for unrecognized arguments 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AnimationPlaybackEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationPlaybackEvents" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AnimationPlayerEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AnimationPlayerEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ApplicationCacheErrorEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ApplicationCacheErrorEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AudioProcessingEvent" 

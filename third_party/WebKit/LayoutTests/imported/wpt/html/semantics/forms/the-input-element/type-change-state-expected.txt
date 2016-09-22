@@ -1,39 +1,46 @@
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "HH:mm", "HH:mm:ss" or "HH:mm:ss.SSS" where HH is 00-23, mm is 00-59, ss is 00-59, and SSS is 000-999.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " is not a valid number. The value must match to the following regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "#rrggbb" where rr, gg, bb are two-digit hexadecimal numbers.
+CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format, "yyyy-MM-dd".
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-MM" where yyyy is year in four or more digits, and MM is 01-12.
 CONSOLE WARNING: line 51: The specified value "  foo\rbar  " does not conform to the required format.  The format is "yyyy-Www" where yyyy is year in four or more digits, and ww is 01-53.
@@ -47,7 +54,7 @@ PASS change state from hidden to tel
 PASS change state from hidden to url 
 PASS change state from hidden to email 
 PASS change state from hidden to password 
-FAIL change state from hidden to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from hidden to datetime-local 
 PASS change state from hidden to date 
 PASS change state from hidden to month 
 PASS change state from hidden to week 
@@ -68,7 +75,7 @@ PASS change state from text to tel
 PASS change state from text to url 
 PASS change state from text to email 
 PASS change state from text to password 
-FAIL change state from text to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from text to datetime-local 
 PASS change state from text to date 
 PASS change state from text to month 
 PASS change state from text to week 
@@ -89,7 +96,7 @@ PASS change state from search to tel
 PASS change state from search to url 
 PASS change state from search to email 
 PASS change state from search to password 
-FAIL change state from search to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from search to datetime-local 
 PASS change state from search to date 
 PASS change state from search to month 
 PASS change state from search to week 
@@ -110,7 +117,7 @@ PASS change state from tel to search
 PASS change state from tel to url 
 PASS change state from tel to email 
 PASS change state from tel to password 
-FAIL change state from tel to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from tel to datetime-local 
 PASS change state from tel to date 
 PASS change state from tel to month 
 PASS change state from tel to week 
@@ -131,7 +138,7 @@ FAIL change state from url to search assert_equals: input.value should be   foob
 FAIL change state from url to tel assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "foobar"
 PASS change state from url to email 
 FAIL change state from url to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "foobar"
-FAIL change state from url to datetime assert_equals: input.value should be  after change of state expected "" but got "foobar"
+PASS change state from url to datetime-local 
 PASS change state from url to date 
 PASS change state from url to month 
 PASS change state from url to week 
@@ -152,7 +159,7 @@ FAIL change state from email to search assert_equals: input.value should be   fo
 FAIL change state from email to tel assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "foobar"
 PASS change state from email to url 
 FAIL change state from email to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "foobar"
-FAIL change state from email to datetime assert_equals: input.value should be  after change of state expected "" but got "foobar"
+PASS change state from email to datetime-local 
 PASS change state from email to date 
 PASS change state from email to month 
 PASS change state from email to week 
@@ -173,7 +180,7 @@ PASS change state from password to search
 PASS change state from password to tel 
 PASS change state from password to url 
 PASS change state from password to email 
-FAIL change state from password to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from password to datetime-local 
 PASS change state from password to date 
 PASS change state from password to month 
 PASS change state from password to week 
@@ -188,27 +195,27 @@ FAIL change state from password to submit assert_equals: input.value should be '
 FAIL change state from password to image assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
 FAIL change state from password to reset assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
 FAIL change state from password to button assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-FAIL change state from datetime to hidden assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-PASS change state from datetime to text 
-PASS change state from datetime to search 
-PASS change state from datetime to tel 
-PASS change state from datetime to url 
-PASS change state from datetime to email 
-PASS change state from datetime to password 
-PASS change state from datetime to date 
-PASS change state from datetime to month 
-PASS change state from datetime to week 
-PASS change state from datetime to time 
-PASS change state from datetime to number 
-PASS change state from datetime to range 
-PASS change state from datetime to color 
-FAIL change state from datetime to checkbox assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-FAIL change state from datetime to radio assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-PASS change state from datetime to file 
-FAIL change state from datetime to submit assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-FAIL change state from datetime to image assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-FAIL change state from datetime to reset assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
-FAIL change state from datetime to button assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got "  foobar  "
+FAIL change state from datetime-local to hidden assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+FAIL change state from datetime-local to text assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
+FAIL change state from datetime-local to search assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
+FAIL change state from datetime-local to tel assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
+FAIL change state from datetime-local to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
+FAIL change state from datetime-local to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
+FAIL change state from datetime-local to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
+PASS change state from datetime-local to date 
+PASS change state from datetime-local to month 
+PASS change state from datetime-local to week 
+PASS change state from datetime-local to time 
+PASS change state from datetime-local to number 
+PASS change state from datetime-local to range 
+PASS change state from datetime-local to color 
+FAIL change state from datetime-local to checkbox assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+FAIL change state from datetime-local to radio assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+PASS change state from datetime-local to file 
+FAIL change state from datetime-local to submit assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+FAIL change state from datetime-local to image assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+FAIL change state from datetime-local to reset assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
+FAIL change state from datetime-local to button assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
 FAIL change state from date to hidden assert_equals: input.value should be '  foo\rbar  ' after change of state expected "  foo\rbar  " but got ""
 FAIL change state from date to text assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
 FAIL change state from date to search assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
@@ -216,7 +223,7 @@ FAIL change state from date to tel assert_equals: input.value should be   foobar
 FAIL change state from date to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from date to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from date to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
-PASS change state from date to datetime 
+PASS change state from date to datetime-local 
 PASS change state from date to month 
 PASS change state from date to week 
 PASS change state from date to time 
@@ -237,7 +244,7 @@ FAIL change state from month to tel assert_equals: input.value should be   fooba
 FAIL change state from month to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from month to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from month to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
-PASS change state from month to datetime 
+PASS change state from month to datetime-local 
 PASS change state from month to date 
 PASS change state from month to week 
 PASS change state from month to time 
@@ -258,7 +265,7 @@ FAIL change state from week to tel assert_equals: input.value should be   foobar
 FAIL change state from week to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from week to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from week to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
-PASS change state from week to datetime 
+PASS change state from week to datetime-local 
 PASS change state from week to date 
 PASS change state from week to month 
 PASS change state from week to time 
@@ -279,7 +286,7 @@ FAIL change state from time to tel assert_equals: input.value should be   foobar
 FAIL change state from time to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from time to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from time to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
-PASS change state from time to datetime 
+PASS change state from time to datetime-local 
 PASS change state from time to date 
 PASS change state from time to month 
 PASS change state from time to week 
@@ -300,7 +307,7 @@ FAIL change state from number to tel assert_equals: input.value should be   foob
 FAIL change state from number to url assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from number to email assert_equals: input.value should be foobar after change of state expected "foobar" but got ""
 FAIL change state from number to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got ""
-PASS change state from number to datetime 
+PASS change state from number to datetime-local 
 PASS change state from number to date 
 PASS change state from number to month 
 PASS change state from number to week 
@@ -321,7 +328,7 @@ FAIL change state from range to tel assert_equals: input.value should be   fooba
 FAIL change state from range to url assert_equals: input.value should be foobar after change of state expected "foobar" but got "50"
 FAIL change state from range to email assert_equals: input.value should be foobar after change of state expected "foobar" but got "50"
 FAIL change state from range to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "50"
-FAIL change state from range to datetime assert_equals: input.value should be  after change of state expected "" but got "50"
+PASS change state from range to datetime-local 
 PASS change state from range to date 
 PASS change state from range to month 
 PASS change state from range to week 
@@ -342,7 +349,7 @@ FAIL change state from color to tel assert_equals: input.value should be   fooba
 FAIL change state from color to url assert_equals: input.value should be foobar after change of state expected "foobar" but got "#000000"
 FAIL change state from color to email assert_equals: input.value should be foobar after change of state expected "foobar" but got "#000000"
 FAIL change state from color to password assert_equals: input.value should be   foobar   after change of state expected "  foobar  " but got "#000000"
-FAIL change state from color to datetime assert_equals: input.value should be  after change of state expected "" but got "#000000"
+PASS change state from color to datetime-local 
 PASS change state from color to date 
 PASS change state from color to month 
 PASS change state from color to week 
@@ -363,7 +370,7 @@ PASS change state from checkbox to tel
 PASS change state from checkbox to url 
 PASS change state from checkbox to email 
 PASS change state from checkbox to password 
-FAIL change state from checkbox to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from checkbox to datetime-local 
 PASS change state from checkbox to date 
 PASS change state from checkbox to month 
 PASS change state from checkbox to week 
@@ -384,7 +391,7 @@ PASS change state from radio to tel
 PASS change state from radio to url 
 PASS change state from radio to email 
 PASS change state from radio to password 
-FAIL change state from radio to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from radio to datetime-local 
 PASS change state from radio to date 
 PASS change state from radio to month 
 PASS change state from radio to week 
@@ -405,7 +412,7 @@ PASS change state from file to tel
 PASS change state from file to url 
 PASS change state from file to email 
 PASS change state from file to password 
-PASS change state from file to datetime 
+PASS change state from file to datetime-local 
 PASS change state from file to date 
 PASS change state from file to month 
 PASS change state from file to week 
@@ -426,7 +433,7 @@ PASS change state from submit to tel
 PASS change state from submit to url 
 PASS change state from submit to email 
 PASS change state from submit to password 
-FAIL change state from submit to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from submit to datetime-local 
 PASS change state from submit to date 
 PASS change state from submit to month 
 PASS change state from submit to week 
@@ -447,7 +454,7 @@ PASS change state from image to tel
 PASS change state from image to url 
 PASS change state from image to email 
 PASS change state from image to password 
-FAIL change state from image to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from image to datetime-local 
 PASS change state from image to date 
 PASS change state from image to month 
 PASS change state from image to week 
@@ -468,7 +475,7 @@ PASS change state from reset to tel
 PASS change state from reset to url 
 PASS change state from reset to email 
 PASS change state from reset to password 
-FAIL change state from reset to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from reset to datetime-local 
 PASS change state from reset to date 
 PASS change state from reset to month 
 PASS change state from reset to week 
@@ -489,7 +496,7 @@ PASS change state from button to tel
 PASS change state from button to url 
 PASS change state from button to email 
 PASS change state from button to password 
-FAIL change state from button to datetime assert_equals: input.value should be  after change of state expected "" but got "  foobar  "
+PASS change state from button to datetime-local 
 PASS change state from button to date 
 PASS change state from button to month 
 PASS change state from button to week 
