@@ -50,13 +50,13 @@ public:
     bool setEdgeMode(EdgeModeType);
     bool setPreserveAlpha(bool);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
         const IntPoint&, EdgeModeType, bool, const Vector<float>&);
+
+    FloatRect mapEffect(const FloatRect&) const final;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 

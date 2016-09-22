@@ -76,33 +76,15 @@ IntSize FEGaussianBlur::calculateKernelSize(const Filter* filter, const FloatPoi
     return calculateUnscaledKernelSize(stdError);
 }
 
-FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool) const
+FloatRect FEGaussianBlur::mapEffect(const FloatRect& rect) const
 {
-    FloatRect result = rect;
     IntSize kernelSize = calculateKernelSize(getFilter(), FloatPoint(m_stdX, m_stdY));
 
     // We take the half kernel size and multiply it with three, because we run box blur three times.
+    FloatRect result = rect;
     result.inflateX(3.0f * kernelSize.width() * 0.5f);
     result.inflateY(3.0f * kernelSize.height() * 0.5f);
     return result;
-}
-
-FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
-{
-    FloatRect requestedRect = originalRequestedRect;
-    if (clipsToBounds())
-        requestedRect.intersect(absoluteBounds());
-
-    FilterEffect* input = inputEffect(0);
-    FloatRect inputRect = input->determineAbsolutePaintRect(mapRect(requestedRect, false));
-    FloatRect outputRect = mapRect(inputRect, true);
-    outputRect.intersect(requestedRect);
-
-    // Blur needs space for both input and output pixels in the paint area.
-    // Input is also clipped to subregion.
-    if (clipsToBounds())
-        inputRect.intersect(absoluteBounds());
-    return outputRect;
 }
 
 sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter()

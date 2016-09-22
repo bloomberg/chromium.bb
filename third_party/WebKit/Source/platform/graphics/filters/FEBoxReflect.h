@@ -20,13 +20,15 @@ public:
     }
 
     // FilterEffect implementation
-    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
     TextStream& externalRepresentation(TextStream&, int indentation) const final;
-    sk_sp<SkImageFilter> createImageFilter() final;
 
 private:
     FEBoxReflect(Filter*, const BoxReflection&);
     ~FEBoxReflect() final;
+
+    FloatRect mapEffect(const FloatRect&) const final;
+
+    sk_sp<SkImageFilter> createImageFilter() final;
 
     BoxReflection m_reflection;
 };

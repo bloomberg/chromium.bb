@@ -62,7 +62,7 @@ FloatRect ReferenceFilterOperation::mapRect(const FloatRect& rect) const
     const auto* lastEffect = m_filter ? m_filter->lastEffect() : nullptr;
     if (!lastEffect)
         return rect;
-    return lastEffect->mapRectRecursive(rect);
+    return lastEffect->mapRect(rect);
 }
 
 FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const

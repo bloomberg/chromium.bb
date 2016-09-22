@@ -20,10 +20,8 @@ FEBoxReflect::~FEBoxReflect()
 {
 }
 
-FloatRect FEBoxReflect::mapRect(const FloatRect& rect, bool forward) const
+FloatRect FEBoxReflect::mapEffect(const FloatRect& rect) const
 {
-    // Reflection about any line is self-inverse, so this for both forward and
-    // reverse mapping.
     return m_reflection.mapRect(rect);
 }
 

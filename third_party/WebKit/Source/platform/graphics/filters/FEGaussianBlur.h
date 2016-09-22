@@ -31,8 +31,6 @@ class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
 public:
     static FEGaussianBlur* create(Filter*, float, float);
 
-    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
     static IntSize calculateKernelSize(const Filter*, const FloatPoint& std);
     static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
 
@@ -40,6 +38,8 @@ public:
 
 private:
     FEGaussianBlur(Filter*, float, float);
+
+    FloatRect mapEffect(const FloatRect&) const override;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 

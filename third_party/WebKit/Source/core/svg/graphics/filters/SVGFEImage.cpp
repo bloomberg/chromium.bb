@@ -90,15 +90,11 @@ AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& de
     return transform;
 }
 
-FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
+FloatRect FEImage::mapInputs(const FloatRect&) const
 {
     LayoutObject* layoutObject = referencedLayoutObject();
     if (!m_image && !layoutObject)
         return FloatRect();
-
-    FloatRect requestedRect = originalRequestedRect;
-    if (clipsToBounds())
-        requestedRect.intersect(absoluteBounds());
 
     FloatRect destRect = getFilter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
     FloatRect srcRect;
@@ -122,8 +118,6 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
         srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));
         m_preserveAspectRatio->transformRect(destRect, srcRect);
     }
-
-    destRect.intersect(requestedRect);
     return destRect;
 }
 

@@ -38,16 +38,11 @@ public:
     static FEImage* createWithImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
     static FEImage* createWithIRIReference(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
-
-    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeImage; }
-
     // feImage does not perform color interpolation of any kind, so doesn't
     // depend on the value of color-interpolation-filters.
     void setOperatingColorSpace(ColorSpace) override { }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    sk_sp<SkImageFilter> createImageFilter() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -57,6 +52,11 @@ private:
     FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
     LayoutObject* referencedLayoutObject() const;
 
+    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeImage; }
+
+    FloatRect mapInputs(const FloatRect&) const override;
+
+    sk_sp<SkImageFilter> createImageFilter() override;
     sk_sp<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);
 
     RefPtr<Image> m_image;

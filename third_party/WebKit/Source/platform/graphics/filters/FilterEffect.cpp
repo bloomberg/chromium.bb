@@ -56,40 +56,40 @@ FloatRect FilterEffect::absoluteBounds() const
     return getFilter()->mapLocalRectToAbsoluteRect(computedBounds);
 }
 
-FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
+FloatRect FilterEffect::mapInputs(const FloatRect& rect) const
 {
-    FloatRect requestedRect = originalRequestedRect;
-    // Filters in SVG clip to primitive subregion, while CSS doesn't.
-    if (clipsToBounds())
-        requestedRect.intersect(absoluteBounds());
-
-    FloatRect inputRect = mapPaintRect(requestedRect, false);
-    FloatRect inputUnion;
-    unsigned size = m_inputEffects.size();
-
-    for (unsigned i = 0; i < size; ++i)
-        inputUnion.unite(m_inputEffects.at(i)->determineAbsolutePaintRect(inputRect));
-    inputUnion = mapPaintRect(inputUnion, true);
-
-    if (affectsTransparentPixels() || !size) {
-        inputUnion = requestedRect;
-    } else {
-        // Rect may have inflated. Re-intersect with request.
-        inputUnion.intersect(requestedRect);
+    if (!m_inputEffects.size()) {
+        if (clipsToBounds())
+            return absoluteBounds();
+        return rect;
     }
+    FloatRect inputUnion;
+    for (const auto& effect : m_inputEffects)
+        inputUnion.unite(effect->mapRect(rect));
     return inputUnion;
 }
 
-FloatRect FilterEffect::mapRectRecursive(const FloatRect& rect) const
+FloatRect FilterEffect::mapEffect(const FloatRect& rect) const
 {
-    FloatRect result;
-    if (m_inputEffects.size() > 0) {
-        result = m_inputEffects.at(0)->mapRectRecursive(rect);
-        for (unsigned i = 1; i < m_inputEffects.size(); ++i)
-            result.unite(m_inputEffects.at(i)->mapRectRecursive(rect));
-    } else
-        result = rect;
-    return mapRect(result);
+    return rect;
+}
+
+FloatRect FilterEffect::applyBounds(const FloatRect& rect) const
+{
+    // Filters in SVG clip to primitive subregion, while CSS doesn't.
+    if (!clipsToBounds())
+        return rect;
+    FloatRect bounds = absoluteBounds();
+    if (affectsTransparentPixels())
+        return bounds;
+    return intersection(rect, bounds);
+}
+
+FloatRect FilterEffect::mapRect(const FloatRect& rect) const
+{
+    FloatRect result = mapInputs(rect);
+    result = mapEffect(result);
+    return applyBounds(result);
 }
 
 FilterEffect* FilterEffect::inputEffect(unsigned number) const

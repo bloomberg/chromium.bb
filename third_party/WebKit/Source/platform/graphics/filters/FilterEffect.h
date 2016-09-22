@@ -68,25 +68,12 @@ public:
     // Clipped primitive subregion in the coordinate space of the target.
     FloatRect absoluteBounds() const;
 
+    // Mapping a rect forwards to determine which which destination pixels a
+    // given source rect would affect.
+    FloatRect mapRect(const FloatRect&) const;
+
     virtual sk_sp<SkImageFilter> createImageFilter();
     virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation();
-
-    // Mapping a rect forwards determines which which destination pixels a
-    // given source rect would affect. Mapping a rect backwards determines
-    // which pixels from the source rect would be required to fill a given
-    // destination rect. Note that these are not necessarily the inverse of
-    // each other. For example, for FEGaussianBlur, they are the same
-    // transformation.
-    virtual FloatRect mapRect(const FloatRect& rect, bool forward = true) const { return rect; }
-    // A version of the above that is used for calculating paint rects. We can't
-    // use mapRect above for that, because that is also used for calculating effect
-    // regions for CSS filters and has undesirable effects for tile and
-    // displacement map.
-    virtual FloatRect mapPaintRect(const FloatRect& rect, bool forward) const
-    {
-        return mapRect(rect, forward);
-    }
-    FloatRect mapRectRecursive(const FloatRect&) const;
 
     virtual FilterEffectType getFilterEffectType() const { return FilterEffectTypeUnknown; }
 
@@ -104,9 +91,6 @@ public:
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
 
-    // Compute the "paint rect" (which destination pixels will be affected) for
-    // the given rect. In the coordinate space of the target.
-    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect) const;
     virtual bool affectsTransparentPixels() const { return false; }
 
     // Return false if the filter will only operate correctly on valid RGBA values, with
@@ -123,6 +107,17 @@ public:
 
 protected:
     FilterEffect(Filter*);
+
+    // Determine the contribution from the filter effect's inputs.
+    virtual FloatRect mapInputs(const FloatRect&) const;
+
+    // Apply the contribution from the filter effect's itself. (Like
+    // expanding with the blur radius etc.)
+    virtual FloatRect mapEffect(const FloatRect&) const;
+
+    // Apply the clip bounds and factor in the effect of
+    // affectsTransparentPixels().
+    FloatRect applyBounds(const FloatRect&) const;
 
     sk_sp<SkImageFilter> createTransparentBlack() const;
 

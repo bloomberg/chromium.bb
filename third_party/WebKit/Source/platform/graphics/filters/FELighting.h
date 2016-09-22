@@ -46,7 +46,6 @@ protected:
 
     sk_sp<SkImageFilter> createImageFilter() override;
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
     bool affectsTransparentPixels() const override { return true; }
 
     FELighting(Filter*, LightingType, const Color&, float, float, float, float, PassRefPtr<LightSource>);

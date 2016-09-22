@@ -38,9 +38,9 @@ FETile* FETile::create(Filter* filter)
     return new FETile(filter);
 }
 
-FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward) const
+FloatRect FETile::mapInputs(const FloatRect& rect) const
 {
-    return forward ? absoluteBounds() : inputEffect(0)->absoluteBounds();
+    return absoluteBounds();
 }
 
 sk_sp<SkImageFilter> FETile::createImageFilter()

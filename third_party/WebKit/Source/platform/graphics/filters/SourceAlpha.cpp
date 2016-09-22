@@ -41,11 +41,6 @@ SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
     inputEffects().append(sourceEffect);
 }
 
-FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect) const
-{
-    return inputEffect(0)->determineAbsolutePaintRect(requestedRect);
-}
-
 sk_sp<SkImageFilter> SourceAlpha::createImageFilter()
 {
     sk_sp<SkImageFilter> sourceGraphic(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));

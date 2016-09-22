@@ -30,16 +30,17 @@ class PLATFORM_EXPORT FEDropShadow final : public FilterEffect {
 public:
     static FEDropShadow* create(Filter*, float, float, float, float, const Color&, float);
 
-    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
-
     void setShadowColor(const Color& color) { m_shadowColor = color; }
     void setShadowOpacity(float opacity) { m_shadowOpacity = opacity; }
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    sk_sp<SkImageFilter> createImageFilter() override;
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);
+
+    FloatRect mapEffect(const FloatRect&) const override;
+
+    sk_sp<SkImageFilter> createImageFilter() override;
 
     float m_stdX;
     float m_stdY;

@@ -29,15 +29,14 @@ class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
 public:
     static SourceAlpha* create(FilterEffect*);
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
-
-    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-    sk_sp<SkImageFilter> createImageFilter() override;
 
 private:
     explicit SourceAlpha(FilterEffect*);
+
+    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
+
+    sk_sp<SkImageFilter> createImageFilter() override;
 };
 
 } // namespace blink

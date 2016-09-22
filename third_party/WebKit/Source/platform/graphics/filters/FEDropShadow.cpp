@@ -44,22 +44,18 @@ FEDropShadow* FEDropShadow::create(Filter* filter, float stdX, float stdY, float
     return new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity);
 }
 
-FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward) const
+FloatRect FEDropShadow::mapEffect(const FloatRect& rect) const
 {
-    FloatRect result = rect;
     const Filter* filter = this->getFilter();
-    ASSERT(filter);
+    DCHECK(filter);
 
     FloatRect offsetRect = rect;
-    if (forward)
-        offsetRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-    else
-        offsetRect.move(-filter->applyHorizontalScale(m_dx), -filter->applyVerticalScale(m_dy));
-    result.unite(offsetRect);
+    offsetRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
 
     IntSize kernelSize = FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
 
     // We take the half kernel size and multiply it with three, because we run box blur three times.
+    FloatRect result = unionRect(rect, offsetRect);
     result.inflateX(3.0f * kernelSize.width() * 0.5f);
     result.inflateY(3.0f * kernelSize.height() * 0.5f);
     return result;
@@ -76,7 +72,6 @@ sk_sp<SkImageFilter> FEDropShadow::createImageFilter()
     SkImageFilter::CropRect cropRect = getCropRect();
     return SkDropShadowImageFilter::Make(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), color.rgb(), SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, std::move(input), &cropRect);
 }
-
 
 TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const
 {

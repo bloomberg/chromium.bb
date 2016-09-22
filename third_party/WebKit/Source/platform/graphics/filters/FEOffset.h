@@ -37,12 +37,12 @@ public:
     float dy() const;
     void setDy(float);
 
-    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEOffset(Filter*, float dx, float dy);
+
+    FloatRect mapEffect(const FloatRect&) const override;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 

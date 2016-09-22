@@ -55,13 +55,13 @@ FEConvolveMatrix* FEConvolveMatrix::create(Filter* filter, const IntSize& kernel
         preserveAlpha, kernelMatrix);
 }
 
-FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward) const
+FloatRect FEConvolveMatrix::mapEffect(const FloatRect& rect) const
 {
+    if (!parametersValid())
+        return rect;
     FloatRect result = rect;
-    if (parametersValid()) {
-        result.moveBy(forward ? -m_targetOffset : m_targetOffset - m_kernelSize);
-        result.expand(FloatSize(m_kernelSize));
-    }
+    result.moveBy(-m_targetOffset);
+    result.expand(FloatSize(m_kernelSize));
     return result;
 }
 

@@ -48,14 +48,13 @@ public:
     float scale() const;
     bool setScale(float);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
-
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
 
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
+
+    FloatRect mapInputs(const FloatRect&) const override;
+    FloatRect mapEffect(const FloatRect&) const override;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 

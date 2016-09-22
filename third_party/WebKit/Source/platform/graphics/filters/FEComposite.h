@@ -58,8 +58,6 @@ public:
     float k4() const;
     bool setK4(float);
 
-    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) const override;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 protected:
@@ -67,6 +65,10 @@ protected:
 
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
+
+    FloatRect mapInputs(const FloatRect&) const override;
+
+    bool affectsTransparentPixels() const override;
 
     sk_sp<SkImageFilter> createImageFilter() override;
     sk_sp<SkImageFilter> createImageFilterWithoutValidation() override;

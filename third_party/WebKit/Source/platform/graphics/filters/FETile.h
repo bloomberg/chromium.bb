@@ -31,14 +31,14 @@ class PLATFORM_EXPORT FETile final : public FilterEffect {
 public:
     static FETile* create(Filter*);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
-
-    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeTile; }
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FETile(Filter*);
+
+    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeTile; }
+
+    FloatRect mapInputs(const FloatRect&) const final;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 };

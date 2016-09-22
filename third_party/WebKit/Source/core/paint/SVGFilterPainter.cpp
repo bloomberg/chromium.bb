@@ -50,7 +50,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(GraphicsContext& context, FilterData* filterData)
+static void paintFilteredContent(GraphicsContext& context, const LayoutObject& object, FilterData* filterData)
 {
     DCHECK_EQ(filterData->m_state, FilterData::ReadyToPaint);
     DCHECK(filterData->lastEffect->getFilter()->getSourceGraphic());
@@ -62,7 +62,7 @@ static void paintFilteredContent(GraphicsContext& context, FilterData* filterDat
     context.save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
-    context.clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->absoluteBounds()));
+    context.clipRect(lastEffect->mapRect(object.strokeBoundingBox()));
 
     FloatRect boundaries = lastEffect->getFilter()->filterRegion();
     context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, std::move(imageFilter));
@@ -133,7 +133,7 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
     FloatRect filterRegion = filterData ? filterData->lastEffect->getFilter()->filterRegion() : FloatRect();
     LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, filterRegion);
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
-        paintFilteredContent(context, filterData);
+        paintFilteredContent(context, object, filterData);
 }
 
 } // namespace blink

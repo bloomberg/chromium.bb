@@ -85,7 +85,7 @@ bool FEMorphology::setRadiusY(float radiusY)
     return true;
 }
 
-FloatRect FEMorphology::mapRect(const FloatRect& rect, bool) const
+FloatRect FEMorphology::mapEffect(const FloatRect& rect) const
 {
     FloatRect result = rect;
     result.inflateX(getFilter()->applyHorizontalScale(m_radiusX));

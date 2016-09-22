@@ -63,13 +63,10 @@ void FEOffset::setDy(float dy)
     m_dy = dy;
 }
 
-FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward) const
+FloatRect FEOffset::mapEffect(const FloatRect& rect) const
 {
     FloatRect result = rect;
-    if (forward)
-        result.move(getFilter()->applyHorizontalScale(m_dx), getFilter()->applyVerticalScale(m_dy));
-    else
-        result.move(-getFilter()->applyHorizontalScale(m_dx), -getFilter()->applyVerticalScale(m_dy));
+    result.move(getFilter()->applyHorizontalScale(m_dx), getFilter()->applyVerticalScale(m_dy));
     return result;
 }
 

@@ -113,55 +113,52 @@ bool FEComposite::setK4(float k4)
     return true;
 }
 
-FloatRect FEComposite::determineAbsolutePaintRect(const FloatRect& originalRequestedRect) const
+bool FEComposite::affectsTransparentPixels() const
 {
-    FloatRect requestedRect = originalRequestedRect;
-    if (clipsToBounds())
-        requestedRect.intersect(absoluteBounds());
+    // When k4 is non-zero (greater than zero with clamping factored in), the
+    // arithmetic operation will produce non-transparent output for transparent
+    // output.
+    return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC && k4() > 0;
+}
 
-    // No mapPaintRect required for FEComposite.
-    FloatRect input1Rect = inputEffect(1)->determineAbsolutePaintRect(requestedRect);
-    FloatRect affectedRect;
+FloatRect FEComposite::mapInputs(const FloatRect& rect) const
+{
+    FloatRect input1Rect = inputEffect(1)->mapRect(rect);
     switch (m_type) {
     case FECOMPOSITE_OPERATOR_IN:
         // 'in' has output only in the intersection of both inputs.
-        affectedRect = intersection(input1Rect, inputEffect(0)->determineAbsolutePaintRect(input1Rect));
-        break;
+        return intersection(input1Rect, inputEffect(0)->mapRect(input1Rect));
     case FECOMPOSITE_OPERATOR_ATOP:
         // 'atop' has output only in the extents of the second input.
-        // Make sure first input knows where it needs to produce output.
-        inputEffect(0)->determineAbsolutePaintRect(input1Rect);
-        affectedRect = input1Rect;
-        break;
+        return input1Rect;
     case FECOMPOSITE_OPERATOR_ARITHMETIC:
-        if (k4() > 0) {
-            // Make sure first input knows where it needs to produce output.
-            inputEffect(0)->determineAbsolutePaintRect(requestedRect);
-            // Arithmetic with non-zero k4 may influnce the complete filter primitive
-            // region. So we can't optimize the paint region here.
-            affectedRect = requestedRect;
-            break;
-        }
+        // result(i1,i2) = k1*i1*i2 + k2*i1 + k3*i2 + k4
+        //
+        // (The below is not a complete breakdown of cases.)
+        //
+        // Arithmetic with non-zero k4 may influence the complete filter primitive
+        // region. [k4 > 0 => result(0,0) = k4 => result(a,b) >= k4]
+        if (k4() > 0)
+            return rect;
+        // Additionally, if k2 = 0, input 0 can only appear where input 1 also
+        // appears. [k2 = k4 = 0 => result(a,b) = k1*a*b + k3*b = (k1*a + k3)*b]
+        // Hence for k2 > 0, both inputs can still appear. (Except if k3 = 0.)
         if (k2() <= 0) {
-            // Input 0 does not appear where input 1 is not present.
-            FloatRect input0Rect = inputEffect(0)->determineAbsolutePaintRect(input1Rect);
-            if (k3() > 0) {
-                affectedRect = input1Rect;
-            } else {
-                // Just k1 is positive. Use intersection.
-                affectedRect = intersection(input1Rect, input0Rect);
-            }
-            break;
+            // If k3 > 0, output can be produced wherever input 1 is
+            // non-transparent.
+            if (k3() > 0)
+                return input1Rect;
+            // If just k1 is positive, output will only be produce where both
+            // inputs are non-transparent. Use intersection.
+            // [k1 >= 0 and k2 = k3 = k4 = 0 => result(a,b) = k1 * a * b]
+            return intersection(input1Rect, inputEffect(0)->mapRect(input1Rect));
         }
         // else fall through to use union
     default:
-        // Take the union of both input effects.
-        affectedRect = unionRect(input1Rect, inputEffect(0)->determineAbsolutePaintRect(requestedRect));
         break;
     }
-
-    affectedRect.intersect(requestedRect);
-    return affectedRect;
+    // Take the union of both input effects.
+    return unionRect(input1Rect, inputEffect(0)->mapRect(rect));
 }
 
 SkXfermode::Mode toXfermode(CompositeOperationType mode)

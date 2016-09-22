@@ -45,12 +45,12 @@ public:
     float radiusY() const;
     bool setRadiusY(float);
 
-    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
-
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
+
+    FloatRect mapEffect(const FloatRect&) const override;
 
     sk_sp<SkImageFilter> createImageFilter() override;
 

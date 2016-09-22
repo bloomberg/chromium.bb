@@ -50,14 +50,6 @@ FELighting::FELighting(Filter* filter, LightingType lightingType, const Color& l
 {
 }
 
-FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool) const
-{
-    FloatRect result = rect;
-    // The areas affected need to be a pixel bigger to accommodate the Sobel kernel.
-    result.inflate(1);
-    return result;
-}
-
 sk_sp<SkImageFilter> FELighting::createImageFilter()
 {
     if (!m_lightSource)
