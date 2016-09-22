@@ -332,7 +332,8 @@ void ArcAuthService::OnSignInComplete() {
   CloseUI();
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, true,
                            IsAccountManaged(profile_));
-  UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS);
+  UpdateProvisioningResultUMA(ProvisioningResult::SUCCESS,
+                              IsAccountManaged(profile_));
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnInitialStart());
 }
@@ -352,7 +353,7 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
   UpdateProvisioningTiming(base::Time::Now() - sign_in_time_, false,
                            IsAccountManaged(profile_));
   UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
-  UpdateProvisioningResultUMA(result);
+  UpdateProvisioningResultUMA(result, IsAccountManaged(profile_));
 
   int error_message_id;
   switch (result) {

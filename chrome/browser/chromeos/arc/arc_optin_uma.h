@@ -86,7 +86,7 @@ enum class ProvisioningResult : int {
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
 void UpdateEnabledStateUMA(bool enabled);
-void UpdateProvisioningResultUMA(ProvisioningResult result);
+void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               bool managed);

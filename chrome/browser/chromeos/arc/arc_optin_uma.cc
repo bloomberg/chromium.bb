@@ -22,9 +22,14 @@ void UpdateEnabledStateUMA(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Arc.State", enabled);
 }
 
-void UpdateProvisioningResultUMA(ProvisioningResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Arc.Provisioning.Result", static_cast<int>(result),
-                            static_cast<int>(ProvisioningResult::SIZE));
+void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
+  std::string histogram_name = "Arc.Provisioning.Result.";
+  histogram_name += managed ? "Managed" : "Unmanaged";
+  base::LinearHistogram::FactoryGet(
+      histogram_name, 0, static_cast<int>(ProvisioningResult::SIZE),
+      static_cast<int>(ProvisioningResult::SIZE) + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(static_cast<int>(result));
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
