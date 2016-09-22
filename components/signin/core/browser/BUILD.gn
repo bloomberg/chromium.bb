@@ -160,8 +160,8 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//components/os_crypt:test_support",
+    "//components/pref_registry:test_support",
     "//components/signin/core/common",
-    "//components/syncable_prefs:test_support",
     "//testing/gmock",
   ]
 

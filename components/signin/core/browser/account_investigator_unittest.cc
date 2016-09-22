@@ -12,13 +12,14 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/timer.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -154,7 +155,7 @@ class AccountInvestigatorTest : public testing::Test {
  private:
   // Timer needs a message loop.
   base::MessageLoop message_loop_;
-  syncable_prefs::TestingPrefServiceSyncable prefs_;
+  user_prefs::TestingPrefServiceSyncable prefs_;
   AccountTrackerService account_tracker_service_;
   TestSigninClient signin_client_;
   FakeSigninManager signin_manager_;
