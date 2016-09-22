@@ -1846,9 +1846,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // calling window.history navigation functions will invoke WKWebView's
   // non-overridden implementations, causing a mismatch between the
   // WKBackForwardList and NavigationManager.
+  // TODO(crbug.com/649219): Investigate when the NavigationItem can be null.
   web::NavigationItemImpl* currentItem =
       [self currentSessionEntry].navigationItemImpl;
-  if (currentItem->IsCreatedFromPushState())
+  if (!currentItem || currentItem->IsCreatedFromPushState())
     return;
 
   web::WKBackForwardListItemHolder* holder =
