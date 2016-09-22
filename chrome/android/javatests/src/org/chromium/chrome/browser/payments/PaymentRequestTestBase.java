@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * A base integration test for payments.
  */
+@RetryOnFailure
 abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeTabbedActivity>
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
         CardUnmaskObserverForTest {

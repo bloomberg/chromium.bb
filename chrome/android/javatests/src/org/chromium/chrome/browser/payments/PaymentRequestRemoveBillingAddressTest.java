@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -51,7 +50,6 @@ public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBa
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testPayWithCard()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);

@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -48,7 +47,6 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -60,7 +58,6 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(NO_INSTRUMENTS, DELAYED_RESPONSE);
@@ -72,7 +69,6 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testHaveInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);

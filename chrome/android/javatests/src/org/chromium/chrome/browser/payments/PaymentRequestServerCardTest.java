@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -41,7 +40,6 @@ public class PaymentRequestServerCardTest extends PaymentRequestTestBase {
     /** Click [PAY] and dismiss the card unmask dialog. */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testPayAndDontUnmask() throws InterruptedException, ExecutionException,
            TimeoutException {
         triggerUIAndWait(mReadyToPay);

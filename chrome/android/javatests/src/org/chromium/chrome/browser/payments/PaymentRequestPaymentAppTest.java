@@ -8,7 +8,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 
 import java.util.concurrent.ExecutionException;
@@ -17,7 +16,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that requests payment via Bob Pay.
  */
-@RetryOnFailure
 public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
     public PaymentRequestPaymentAppTest() {
         super("payment_request_bobpay_test.html");

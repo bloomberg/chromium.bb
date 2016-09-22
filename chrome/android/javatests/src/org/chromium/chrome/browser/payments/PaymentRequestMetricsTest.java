@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -46,7 +45,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testSuccessCheckoutFunnel() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Initiate a payment request.
@@ -82,7 +80,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortMetrics_AbortedByUser_CancelButton() throws InterruptedException,
             ExecutionException, TimeoutException {
         triggerUIAndWait("ccBuy", mReadyToPay);
@@ -128,7 +125,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortMetrics_AbortedByUser_BackButton() throws InterruptedException,
             ExecutionException, TimeoutException {
         triggerUIAndWait("ccBuy", mReadyToPay);
@@ -173,7 +169,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortMetrics_AbortedByMerchant() throws InterruptedException,
             ExecutionException, TimeoutException {
         triggerUIAndWait("ccBuy", mReadyToPay);
@@ -193,7 +188,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortMetrics_NoMatchingPaymentMethod() throws InterruptedException,
             ExecutionException, TimeoutException {
         // Android Pay is supported but no instruments are present.
@@ -212,7 +206,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortMetrics_NoSupportedPaymentMethod() throws InterruptedException,
             ExecutionException, TimeoutException {
         triggerUIAndWait("noSupported", mShowFailed);
@@ -228,7 +221,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testSelectedPaymentMethod_CreditCard() throws InterruptedException,
             ExecutionException, TimeoutException {
         // Complete a Payment Request with a credit card.
@@ -247,7 +239,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testSelectedPaymentMethod_AndroidPay() throws InterruptedException,
             ExecutionException, TimeoutException {
         // Complete a Payment Request with Android Pay.
