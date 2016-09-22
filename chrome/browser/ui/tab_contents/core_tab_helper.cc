@@ -262,7 +262,7 @@ void CoreTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  if (!net::IsLocalhost(entry->GetURL().host()))
+  if (!entry || !net::IsLocalhost(entry->GetURL().host()))
     return;
 
   content::SSLStatus ssl_status = entry->GetSSL();
