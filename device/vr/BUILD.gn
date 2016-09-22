@@ -40,10 +40,14 @@ component("vr") {
       "android/gvr/gvr_device.h",
       "android/gvr/gvr_device_provider.cc",
       "android/gvr/gvr_device_provider.h",
+      "android/gvr/gvr_gamepad_data_fetcher.cc",
+      "android/gvr/gvr_gamepad_data_fetcher.h",
     ]
 
     deps += [
       ":jni_headers",
+      "//device/gamepad",
+      "//third_party/WebKit/public:blink_headers",
       "//third_party/gvr-android-sdk:libgvr",
     ]
     configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]

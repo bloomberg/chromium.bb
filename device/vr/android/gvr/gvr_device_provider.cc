@@ -12,9 +12,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "device/vr/vr_device_manager.h"
 #include "jni/GvrDeviceProvider_jni.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
+#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_controller.h"
+#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
 
 using base::android::AttachCurrentThread;
 using base::android::GetApplicationContext;
@@ -74,6 +77,9 @@ GvrDeviceProvider::GvrDeviceProvider()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 GvrDeviceProvider::~GvrDeviceProvider() {
+  GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+      GAMEPAD_SOURCE_GVR);
+
   ExitPresent();
 }
 
@@ -95,6 +101,10 @@ void GvrDeviceProvider::Initialize() {
     if (non_presenting_delegate_->gvr_api()) {
       vr_device_.reset(new GvrDevice(this, non_presenting_delegate_.get()));
       client_->OnDeviceConnectionStatusChanged(vr_device_.get(), true);
+
+      GamepadDataFetcherManager::GetInstance()->AddFactory(
+          new GvrGamepadDataFetcher::Factory(non_presenting_delegate_.get(),
+                                             vr_device_->id()));
     }
   }
 }

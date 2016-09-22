@@ -38,11 +38,13 @@ void GamepadDataFetcherManager::RemoveSourceFactory(GamepadSource source) {
   if (provider_)
     provider_->RemoveSourceGamepadDataFetcher(source);
 
-  for (FactoryVector::iterator it = factories_.begin(); it != factories_.end();
-       ++it) {
+  for (FactoryVector::iterator it = factories_.begin();
+       it != factories_.end();) {
     if ((*it)->source() == source) {
       delete (*it);
-      factories_.erase(it);
+      it = factories_.erase(it);
+    } else {
+      ++it;
     }
   }
 }
