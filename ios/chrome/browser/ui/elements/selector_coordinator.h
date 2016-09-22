@@ -20,7 +20,7 @@
 @interface SelectorCoordinator : ChromeCoordinator
 
 // Options to present to the user.
-@property(nonatomic, nullable, assign) NSOrderedSet<NSString*>* options;
+@property(nonatomic, nullable, copy) NSOrderedSet<NSString*>* options;
 
 // The default option. Starts out selected, and is set as the selected option
 // if the user performs a cancel action.

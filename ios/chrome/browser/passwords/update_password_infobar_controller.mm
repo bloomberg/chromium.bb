@@ -76,7 +76,8 @@ viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
   self.selectorCoordinator = [[[SelectorCoordinator alloc]
       initWithBaseViewController:baseViewController] autorelease];
   self.selectorCoordinator.delegate = self;
-  self.selectorCoordinator.options = [_delegate->GetAccounts() copy];
+  self.selectorCoordinator.options =
+      [NSOrderedSet orderedSetWithArray:_delegate->GetAccounts()];
   self.selectorCoordinator.defaultOption =
       base::SysUTF16ToNSString(_delegate->selected_account());
   [self.selectorCoordinator start];

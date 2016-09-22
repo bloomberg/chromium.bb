@@ -13,7 +13,6 @@
                                   UIViewControllerTransitioningDelegate> {
   base::mac::ObjCPropertyReleaser _propertyReleaser_SelectorCoordinator;
   __unsafe_unretained id<SelectorCoordinatorDelegate> _delegate;
-  __unsafe_unretained NSOrderedSet<NSString*>* _options;
 }
 
 // Redeclaration of infoBarPickerController as readwrite.
