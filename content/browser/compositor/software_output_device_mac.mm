@@ -5,6 +5,7 @@
 #include "content/browser/compositor/software_output_device_mac.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/compositor/compositor.h"

@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <cstdio>
 
 #include "base/rand_util.h"

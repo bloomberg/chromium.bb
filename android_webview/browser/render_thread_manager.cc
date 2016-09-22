@@ -18,6 +18,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace android_webview {

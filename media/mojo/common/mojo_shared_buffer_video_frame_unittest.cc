@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/buffer.h"

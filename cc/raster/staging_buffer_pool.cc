@@ -15,6 +15,7 @@
 #include "cc/debug/traced_value.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/gpu_memory_buffer_tracing.h"
 
 namespace cc {
 namespace {

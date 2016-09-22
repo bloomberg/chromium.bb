@@ -21,6 +21,7 @@
 // all the bits we end the pattern with the same pattern as the
 // start of the pattern.
 
+#include <algorithm>
 #include <deque>
 #include <vector>
 

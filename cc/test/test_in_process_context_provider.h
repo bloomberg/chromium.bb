@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"

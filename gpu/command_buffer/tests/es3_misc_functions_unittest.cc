@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"

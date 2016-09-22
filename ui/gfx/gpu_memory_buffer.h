@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
@@ -55,10 +54,6 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   ScopedRefCountedIOSurfaceMachPort mach_port;
 #endif
 };
-
-base::trace_event::MemoryAllocatorDumpGuid GFX_EXPORT
-GetGpuMemoryBufferGUIDForTracing(uint64_t tracing_process_id,
-                                 GpuMemoryBufferId buffer_id);
 
 // This interface typically correspond to a type of shared memory that is also
 // shared with the GPU. A GPU memory buffer can be written to directly by

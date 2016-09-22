@@ -13,9 +13,11 @@
 #include <deque>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/scoped_comptr.h"
 #include "media/gpu/media_gpu_export.h"

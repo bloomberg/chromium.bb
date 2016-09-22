@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"

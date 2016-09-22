@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/resource_provider.h"
 

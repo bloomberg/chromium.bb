@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/surface_utils.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"

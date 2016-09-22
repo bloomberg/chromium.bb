@@ -5,9 +5,15 @@
 #ifndef MEDIA_GPU_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 #define MEDIA_GPU_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 
+#include <deque>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/mac/videotoolbox_glue.h"
 #include "media/base/mac/videotoolbox_helpers.h"
 #include "media/gpu/media_gpu_export.h"

@@ -41,6 +41,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/gpu_memory_buffer_tracing.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gl/trace_util.h"
 

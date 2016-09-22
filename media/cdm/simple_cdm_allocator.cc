@@ -4,6 +4,7 @@
 
 #include "media/cdm/simple_cdm_allocator.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/video_frame.h"
 #include "media/cdm/cdm_helpers.h"
