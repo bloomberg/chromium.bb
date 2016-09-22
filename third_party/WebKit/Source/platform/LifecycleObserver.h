@@ -43,11 +43,6 @@ public:
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
 
-    void clearContext()
-    {
-        setContext(nullptr);
-    }
-
 protected:
     explicit LifecycleObserver(Context* context)
         : m_lifecycleContext(nullptr)
@@ -56,6 +51,11 @@ protected:
     }
 
     void setContext(Context*);
+
+    void clearContext()
+    {
+        setContext(nullptr);
+    }
 
 private:
     WeakMember<Context> m_lifecycleContext;

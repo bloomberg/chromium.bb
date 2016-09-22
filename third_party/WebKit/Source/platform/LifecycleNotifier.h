@@ -61,7 +61,9 @@ protected:
     {
     }
 
+#if DCHECK_IS_ON()
     T* context() { return static_cast<T*>(this); }
+#endif
 
     using ObserverSet = HeapHashSet<WeakMember<Observer>>;
 
@@ -96,9 +98,8 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
     ObserverSet observers;
     m_observers.swap(observers);
     for (Observer* observer : observers) {
-        DCHECK(observer->lifecycleContext() == context());
+        ASSERT(observer->lifecycleContext() == context());
         observer->contextDestroyed();
-        observer->clearContext();
     }
 }
 

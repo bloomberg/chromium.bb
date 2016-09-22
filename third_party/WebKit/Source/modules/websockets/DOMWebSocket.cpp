@@ -243,8 +243,7 @@ DOMWebSocket::~DOMWebSocket()
 
 void DOMWebSocket::logError(const String& message)
 {
-    if (getExecutionContext())
-        getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
 DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
