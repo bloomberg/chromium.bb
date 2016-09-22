@@ -73,8 +73,8 @@ viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
 
   UIViewController* baseViewController =
       [[UIApplication sharedApplication] keyWindow].rootViewController;
-  self.selectorCoordinator = [[SelectorCoordinator alloc]
-      initWithBaseViewController:baseViewController];
+  self.selectorCoordinator = [[[SelectorCoordinator alloc]
+      initWithBaseViewController:baseViewController] autorelease];
   self.selectorCoordinator.delegate = self;
   self.selectorCoordinator.options = [_delegate->GetAccounts() copy];
   self.selectorCoordinator.defaultOption =
