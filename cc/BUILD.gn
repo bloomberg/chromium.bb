@@ -216,6 +216,7 @@ component("cc") {
     "output/compositor_frame_sink_client.h",
     "output/context_cache_controller.cc",
     "output/context_cache_controller.h",
+    "output/context_provider.cc",
     "output/context_provider.h",
     "output/copy_output_request.cc",
     "output/copy_output_request.h",
