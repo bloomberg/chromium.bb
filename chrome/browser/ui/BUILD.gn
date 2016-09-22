@@ -2204,6 +2204,7 @@ split_static_library("ui") {
           "webui/vr_shell/vr_shell_ui_ui.cc",
           "webui/vr_shell/vr_shell_ui_ui.h",
         ]
+        configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
       }
       if (enable_vr_shell_ui_dev) {
         assert(enable_vr_shell)

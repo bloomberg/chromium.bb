@@ -11,6 +11,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
@@ -30,7 +31,6 @@ namespace vr_shell {
 class VrCompositor;
 class VrShellDelegate;
 class VrShellRenderer;
-
 
 class VrShell : public device::GvrDelegate {
  public:
@@ -56,6 +56,11 @@ class VrShell : public device::GvrDelegate {
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled);
+
+  // html/js UI hooks.
+  static base::WeakPtr<VrShell> GetWeakPtr();
+  void OnDomContentsLoaded();
+  void SetUiTextureSize(int width, int height);
 
   // device::GvrDelegate implementation
   void SubmitWebVRFrame() override;
@@ -119,8 +124,12 @@ class VrShell : public device::GvrDelegate {
   gvr::Quatf controller_quat_;
   bool controller_active_ = false;
   gvr::Vec3f look_at_vector_;
+  int ui_tex_width_ = 0;
+  int ui_tex_height_ = 0;
 
   bool webvr_mode_ = false;
+
+  base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShell);
 };

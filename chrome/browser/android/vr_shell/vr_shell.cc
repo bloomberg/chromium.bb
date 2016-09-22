@@ -60,6 +60,8 @@ static constexpr float kReticleZOffset = 0.01f;
 // UI element 0 is the browser content rectangle.
 static constexpr int kBrowserUiElementId = 0;
 
+vr_shell::VrShell* g_instance;
+
 }  // namespace
 
 namespace vr_shell {
@@ -71,7 +73,9 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
       desktop_height_(kDesktopHeightDefault),
       desktop_position_(kDesktopPositionDefault),
       content_cvc_(content_core),
-      delegate_(nullptr) {
+      delegate_(nullptr),
+      weak_ptr_factory_(this) {
+  g_instance = this;
   j_vr_shell_.Reset(env, obj);
   content_compositor_view_.reset(new VrCompositor(content_window));
 
@@ -95,6 +99,7 @@ void VrShell::UpdateCompositorLayers(JNIEnv* env,
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
+  g_instance = nullptr;
   gl::init::ClearGLBindings();
 }
 
@@ -397,6 +402,24 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
+}
+
+base::WeakPtr<VrShell> VrShell::GetWeakPtr() {
+  // TODO: Ensure that only ui webcontents can request this weak ptr.
+  if (g_instance != nullptr)
+    return g_instance->weak_ptr_factory_.GetWeakPtr();
+  return base::WeakPtr<VrShell>(nullptr);
+}
+
+void VrShell::OnDomContentsLoaded() {
+  NOTIMPLEMENTED();
+}
+
+void VrShell::SetUiTextureSize(int width, int height) {
+  // TODO(bshe): ui_text_width_ and ui_tex_height_ should be only used on render
+  // thread.
+  ui_tex_width_ = width;
+  ui_tex_height_ = height;
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,

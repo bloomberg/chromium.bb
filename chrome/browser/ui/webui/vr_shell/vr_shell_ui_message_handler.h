@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -28,11 +29,12 @@ class VrShellUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   void HandleDomLoaded(const base::ListValue* args);
-  void HandleSetDevicePixelRatio(const base::ListValue* args);
   void HandleAddMesh(const base::ListValue* args);
   void HandleRemoveMesh(const base::ListValue* args);
   void HandleAddAnimations(const base::ListValue* args);
   void HandleDoAction(const base::ListValue* args);
+
+  base::WeakPtr<vr_shell::VrShell> vr_shell_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellUIMessageHandler);
 };

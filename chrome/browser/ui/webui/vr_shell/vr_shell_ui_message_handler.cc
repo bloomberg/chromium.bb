@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/web_ui.h"
 
 VrShellUIMessageHandler::VrShellUIMessageHandler() {}
@@ -16,6 +17,8 @@ VrShellUIMessageHandler::VrShellUIMessageHandler() {}
 VrShellUIMessageHandler::~VrShellUIMessageHandler() {}
 
 void VrShellUIMessageHandler::RegisterMessages() {
+  vr_shell_ = vr_shell::VrShell::GetWeakPtr();
+
   web_ui()->RegisterMessageCallback(
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,
                               base::Unretained(this)));
@@ -31,19 +34,20 @@ void VrShellUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "addAnimations", base::Bind(&VrShellUIMessageHandler::HandleAddAnimations,
                                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setDevicePixelRatio",
-      base::Bind(&VrShellUIMessageHandler::HandleSetDevicePixelRatio,
-                 base::Unretained(this)));
 }
 
 void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
-  NOTIMPLEMENTED();
-}
+  if (!vr_shell_)
+    return;
 
-void VrShellUIMessageHandler::HandleSetDevicePixelRatio(
-    const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  vr_shell_->OnDomContentsLoaded();
+
+  // TODO(bshe): Get size from native side directly.
+  CHECK_EQ(2u, args->GetSize());
+  int width, height;
+  CHECK(args->GetInteger(0, &width));
+  CHECK(args->GetInteger(1, &height));
+  vr_shell_->SetUiTextureSize(width, height);
 }
 
 void VrShellUIMessageHandler::HandleAddMesh(const base::ListValue* args) {
