@@ -48,6 +48,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
@@ -110,12 +111,13 @@ public:
     {
         // TODO(oshima): Remove this when all platforms are migrated to use-zoom-for-dsf.
         float deviceScaleFactor = m_localFrame->host()->deviceScaleFactorDeprecated();
-        m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
-        m_bounds.setHeight(m_bounds.height() * deviceScaleFactor);
+        float pageScaleFactor = m_localFrame->host()->visualViewport().scale();
+        m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
+        m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
         m_pictureBuilder = wrapUnique(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
 
         AffineTransform transform;
-        transform.scale(deviceScaleFactor, deviceScaleFactor);
+        transform.scale(deviceScaleFactor * pageScaleFactor, deviceScaleFactor * pageScaleFactor);
         transform.translate(-m_bounds.x(), -m_bounds.y());
         context().getPaintController().createAndAppend<BeginTransformDisplayItem>(*m_pictureBuilder, transform);
     }

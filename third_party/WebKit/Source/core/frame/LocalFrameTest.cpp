@@ -4,7 +4,10 @@
 
 #include "core/frame/LocalFrame.h"
 
+#include "core/editing/FrameSelection.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
@@ -121,6 +124,25 @@ TEST_F(LocalFrameTest, nodeImageWithChangingLayoutObject)
     EXPECT_EQ(Color(0, 0, 255),
         sample->layoutObject()->resolveColor(CSSPropertyColor))
         << "#sample doesn't have :-webkit-drag.";
+}
+
+TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor)
+{
+    setBodyContent(
+        "<div>Hello world! This tests that the bitmap for drag image is scaled by page scale factor</div>");
+    frame().host()->visualViewport().setScale(1);
+    frame().selection().selectAll();
+    updateAllLifecyclePhases();
+    const std::unique_ptr<DragImage> image1(frame().dragImageForSelection(0.75f));
+    frame().host()->visualViewport().setScale(2);
+    frame().selection().selectAll();
+    updateAllLifecyclePhases();
+    const std::unique_ptr<DragImage> image2(frame().dragImageForSelection(0.75f));
+
+    EXPECT_GT(image1->size().width(), 0);
+    EXPECT_GT(image1->size().height(), 0);
+    EXPECT_EQ(image1->size().width() * 2, image2->size().width());
+    EXPECT_EQ(image1->size().height() * 2, image2->size().height());
 }
 
 } // namespace blink
