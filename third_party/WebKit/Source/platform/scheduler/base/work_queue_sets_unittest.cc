@@ -138,58 +138,6 @@ TEST_F(WorkQueueSetsTest, OnPopQueue) {
   EXPECT_EQ(queue2, selected_work_queue);
 }
 
-TEST_F(WorkQueueSetsTest, OnQueueHeadChanged_RemoveOldestInSet) {
-  WorkQueue* queue1 = NewTaskQueue("queue1");
-  WorkQueue* queue2 = NewTaskQueue("queue2");
-  WorkQueue* queue3 = NewTaskQueue("queue3");
-  queue1->Push(FakeTaskWithEnqueueOrder(6));
-  queue2->Push(FakeTaskWithEnqueueOrder(1));
-  queue3->Push(FakeTaskWithEnqueueOrder(4));
-  size_t set = 3;
-  work_queue_sets_->ChangeSetIndex(queue1, set);
-  work_queue_sets_->ChangeSetIndex(queue2, set);
-  work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
-
-  queue2->PopTaskForTest();
-  work_queue_sets_->OnQueueHeadChanged(queue2, 1);
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue3, selected_work_queue);
-}
-
-TEST_F(WorkQueueSetsTest, OnQueueHeadChanged_RemoveMiddleValueFromSet) {
-  WorkQueue* queue1 = NewTaskQueue("queue1");
-  WorkQueue* queue2 = NewTaskQueue("queue2");
-  WorkQueue* queue3 = NewTaskQueue("queue3");
-  queue1->Push(FakeTaskWithEnqueueOrder(6));
-  queue2->Push(FakeTaskWithEnqueueOrder(1));
-  queue3->Push(FakeTaskWithEnqueueOrder(4));
-  size_t set = 3;
-  work_queue_sets_->ChangeSetIndex(queue1, set);
-  work_queue_sets_->ChangeSetIndex(queue2, set);
-  work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
-
-  queue3->PopTaskForTest();
-  work_queue_sets_->OnQueueHeadChanged(queue3, 4);
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
-
-  queue2->PopTaskForTest();
-  work_queue_sets_->OnQueueHeadChanged(queue2, 1);
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue1, selected_work_queue);
-}
-
 TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
   WorkQueue* queue1 = NewTaskQueue("queue");
   WorkQueue* queue2 = NewTaskQueue("queue");
