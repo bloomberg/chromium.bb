@@ -20452,6 +20452,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchV2_QuerytoQuery" units="%">
+  <obsolete>
+    Removed in August 2016 with the removal of query in the omnibox code.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <summary>
     Records the number of matching characters at the start of the user's text as
@@ -20461,6 +20464,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchV2_QuerytoURL" units="%">
+  <obsolete>
+    Removed in August 2016 with the removal of query in the omnibox code.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <summary>
     Records the number of matching characters at the start of the user's text as
@@ -20471,6 +20477,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchV2_URLtoQuery" units="%">
+  <obsolete>
+    Removed in September 2016 because (i) this measurement was somewhat wrong,
+    (ii) it's difficult to understand the data, and (iii) there are better ways
+    to answer the same question.  The measurement is somewhat wrong because
+    reloads, link drops, and pasting URLs and pressing enter are all incorrectly
+    logged to the URLtoQuery histogram, not the URLtoURL histogram.  Futhermore,
+    this histogram is difficult to analyze because it's not broken up by input
+    length.  Short URLs can by random chance have a sizable percentage match
+    with a query.  Finally, there are better source for data like this; ask
+    mpearson for details.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <summary>
     Records the number of matching characters at the start of the user's text as
@@ -20480,6 +20497,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InstantExtended.PercentageMatchV2_URLtoURL" units="%">
+  <obsolete>
+    Removed in September 2016 because (i) this measurement was somewhat wrong,
+    and (ii) there are better ways to answer the same question.  The measurement
+    is somewhat wrong because reloads, link drops, and pasting URLs and pressing
+    enter are all incorrectly logged to the URLtoQuery histogram, not the
+    URLtoURL histogram.  Furthermore, there are better source for data like
+    this; ask mpearson for details.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <summary>
     Records the number of matching characters at the start of the user's text as
@@ -102449,6 +102474,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="InstantExtended_QuerytoQuery">
+  <obsolete>
+    All relevant histograms have been marked as obsolete as of Sep 2016.
+  </obsolete>
   <owner>macourteau@chromium.org</owner>
   <suffix name="400" label="Omnibox width &lt; 400"/>
   <suffix name="700" label="Omnibox width &lt; 700"/>
