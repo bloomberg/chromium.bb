@@ -19,10 +19,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -318,10 +318,10 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   bool is_managed = false;
   // Check plugin content settings. The primary URL is the top origin URL and
   // the secondary URL is the plugin URL.
-  GetPluginContentSetting(host_content_settings_map_, plugin,
-                          params.top_origin_url, params.url,
-                          plugin_metadata->identifier(), &plugin_setting,
-                          &uses_default_content_setting, &is_managed);
+  PluginUtils::GetPluginContentSetting(
+      host_content_settings_map_, plugin, params.top_origin_url, params.url,
+      plugin_metadata->identifier(), &plugin_setting,
+      &uses_default_content_setting, &is_managed);
 
   // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
   bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;

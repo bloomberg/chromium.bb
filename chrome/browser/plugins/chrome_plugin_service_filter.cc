@@ -11,9 +11,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -204,25 +204,20 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     DCHECK(!policy_url.is_empty());
 
     // Check the content setting first, and always respect the ALLOW or BLOCK
-    // state.
+    // state. When IsPluginAvailable() is called to check whether a plugin
+    // should be advertised, |url| has the same value of |policy_url| (i.e. the
+    //  main frame origin). The intended behavior is that Flash is advertised
+    // only if a Flash embed hosted on the same origin as the main frame origin
+    // is allowed to run.
     HostContentSettingsMap* settings_map =
-        context_info->host_content_settings_map.get();
-    ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
-    std::unique_ptr<PluginMetadata> plugin_metadata =
-        PluginFinder::GetInstance()->GetPluginMetadata(*plugin);
-    // When IsPluginAvailable() is called to check whether a plugin should be
-    // advertised, |url| has the same value of |policy_url| (i.e. the main frame
-    // origin). The intended behavior is that Flash is advertised only if a
-    // Flash embed hosted on the same origin as the main frame origin is allowed
-    // to run.
-    GetPluginContentSetting(settings_map, *plugin, policy_url, url,
-                            plugin_metadata->identifier(), &plugin_setting,
-                            nullptr, nullptr);
-    plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
-        CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
-    if (plugin_setting == CONTENT_SETTING_ALLOW)
+        context_info_it->second->host_content_settings_map.get();
+    ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
+        settings_map, policy_url, url);
+    flash_setting = PluginsFieldTrial::EffectiveContentSetting(
+        CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+    if (flash_setting == CONTENT_SETTING_ALLOW)
       return true;
-    else if (plugin_setting == CONTENT_SETTING_BLOCK)
+    else if (flash_setting == CONTENT_SETTING_BLOCK)
       return false;
 
     // The content setting is neither ALLOW or BLOCK. Check whether the site
