@@ -101,11 +101,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Starts update using the downloaded WebAPK. Returns whether the updating
   // could be started. The updating may still fail if true is returned.
   // |file_path| is the file path that the WebAPK was downloaded to.
-  // |package_name| is the package name of the WebAPK.
   virtual bool StartUpdateUsingDownloadedWebApk(
       JNIEnv* env,
-      const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
-      const base::android::ScopedJavaLocalRef<jstring>& java_package_name);
+      const base::android::ScopedJavaLocalRef<jstring>& java_file_path);
 
   // Called when the request to install the WebAPK is sent to Google Play.
   void OnSuccess();

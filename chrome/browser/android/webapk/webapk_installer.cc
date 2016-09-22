@@ -238,16 +238,15 @@ bool WebApkInstaller::StartInstallingDownloadedWebApk(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
     const base::android::ScopedJavaLocalRef<jstring>& java_package_name) {
-  return Java_WebApkInstaller_installAsyncFromNative(
+  return Java_WebApkInstaller_installAsyncAndMonitorInstallationFromNative(
       env, java_ref_, java_file_path, java_package_name);
 }
 
 bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
     JNIEnv* env,
-    const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
-    const base::android::ScopedJavaLocalRef<jstring>& java_package_name) {
+    const base::android::ScopedJavaLocalRef<jstring>& java_file_path) {
   return Java_WebApkInstaller_updateAsyncFromNative(
-      env, java_ref_, java_file_path, java_package_name);
+      env, java_ref_, java_file_path);
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -405,8 +404,13 @@ void WebApkInstaller::OnWebApkMadeWorldReadable(
     success = StartInstallingDownloadedWebApk(env, java_file_path,
                                               java_package_name);
   } else if (task_type_ == UPDATE) {
-    success = StartUpdateUsingDownloadedWebApk(env, java_file_path,
-                                               java_package_name);
+    success = StartUpdateUsingDownloadedWebApk(env, java_file_path);
+    if (success) {
+      // Since WebApkInstaller doesn't listen to WebAPKs' update events
+      // we call OnSuccess() as long as the update started successfully.
+      OnSuccess();
+      return;
+    }
   }
   if (!success)
     OnFailure();

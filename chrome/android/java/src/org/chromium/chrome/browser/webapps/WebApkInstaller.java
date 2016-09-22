@@ -61,24 +61,21 @@ public class WebApkInstaller {
     }
 
     /**
-     * Installs a WebAPK.
+     * Installs a WebAPK and monitors the installation process.
      * @param filePath File to install.
      * @param packageName Package name to install WebAPK at.
      * @return True if the install was started. A "true" return value does not guarantee that the
      *         install succeeds.
      */
     @CalledByNative
-    private boolean installAsyncFromNative(String filePath, String packageName) {
+    private boolean installAsyncAndMonitorInstallationFromNative(
+            String filePath, String packageName) {
         if (!installingFromUnknownSourcesAllowed()) {
             Log.e(TAG,
                     "WebAPK install failed because installation from unknown sources is disabled.");
             return false;
         }
         mIsInstall = true;
-        return installDownloadedWebApk(filePath, packageName);
-    }
-
-    private boolean installDownloadedWebApk(String filePath, String packageName) {
         mWebApkPackageName = packageName;
 
         // Start monitoring the installation.
@@ -90,6 +87,14 @@ public class WebApkInstaller {
         mListener = createApplicationStateListener();
         ApplicationStatus.registerApplicationStateListener(mListener);
 
+        return installDownloadedWebApk(filePath);
+    }
+
+    /**
+     * Send intent to Android to show prompt and install downloaded WebAPK.
+     * @param filePath File to install.
+     */
+    private boolean installDownloadedWebApk(String filePath) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri fileUri = Uri.fromFile(new File(filePath));
         intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
@@ -127,14 +132,18 @@ public class WebApkInstaller {
     /**
      * Updates a WebAPK.
      * @param filePath File to update.
-     * @param packageName Package name to update WebAPK at.
      * @return True if the update was started. A "true" return value does not guarantee that the
      *         update succeeds.
      */
     @CalledByNative
-    private boolean updateAsyncFromNative(String filePath, String packageName) {
+    private boolean updateAsyncFromNative(String filePath) {
+        if (!installingFromUnknownSourcesAllowed()) {
+            Log.e(TAG,
+                    "WebAPK update failed because installation from unknown sources is disabled.");
+            return false;
+        }
         mIsInstall = false;
-        return installDownloadedWebApk(filePath, packageName);
+        return installDownloadedWebApk(filePath);
     }
 
     /**

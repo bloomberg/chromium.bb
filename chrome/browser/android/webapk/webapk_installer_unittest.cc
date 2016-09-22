@@ -72,9 +72,7 @@ class TestWebApkInstaller : public WebApkInstaller {
 
   bool StartUpdateUsingDownloadedWebApk(
       JNIEnv* env,
-      const base::android::ScopedJavaLocalRef<jstring>& file_path,
-      const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
-    PostTaskToRunSuccessCallback();
+      const base::android::ScopedJavaLocalRef<jstring>& file_path) override {
     return true;
   }
 
