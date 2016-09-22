@@ -236,8 +236,8 @@ void RangeInputType::createShadowSubtree()
     track->appendChild(SliderThumbElement::create(document));
     HTMLElement* container = SliderContainerElement::create(document);
     container->appendChild(track);
-    container->setAttribute(styleAttr, "-webkit-appearance:inherit");
     element().userAgentShadowRoot()->appendChild(container);
+    container->setAttribute(styleAttr, "-webkit-appearance:inherit");
 }
 
 LayoutObject* RangeInputType::createLayoutObject(const ComputedStyle&) const
