@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelInflater;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -19,9 +21,17 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * Controls the Caption View that is shown at the bottom of the control and used
  * as a dynamic resource.
  */
-public class ContextualSearchCaptionControl extends OverlayPanelInflater {
+public class ContextualSearchCaptionControl extends OverlayPanelInflater
+        implements ChromeAnimation.Animatable<ContextualSearchCaptionControl.AnimationType> {
     private static final float ANIMATION_PERCENTAGE_ZERO = 0.f;
     private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
+
+    /**
+     * Animation properties.
+     */
+    protected enum AnimationType {
+        APPEARANCE
+    }
 
     /**
      * The caption View.
@@ -34,12 +44,15 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     private boolean mIsVisible;
 
     /**
-     * The caption animation percentage, which controls how and where to draw.
+     * The caption animation percentage, which controls how and where to draw. It is
+     * ANIMATION_PERCENTAGE_COMPLETE when the Contextual Search bar is peeking and
+     * ANIMATION_PERCENTAGE_ZERO when it is expanded.
      */
-    private float mAnimationPercentage;
+    private float mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
 
     /**
-     * Whether a new snapshot has been captured by the system yet.
+     * Whether a new snapshot has been captured by the system yet - this is false when we have
+     * something to show, but cannot yet show it.
      */
     private boolean mDidCapture;
 
@@ -132,8 +145,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
      * @param percentage The percentage to the more opened state.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
-        if (!mIsVisible) return;
-
         float fadingOutPercentage = Math.max(0f, (percentage - 0.5f) * 2);
         mAnimationPercentage = MathUtils.interpolate(
                 ANIMATION_PERCENTAGE_COMPLETE, ANIMATION_PERCENTAGE_ZERO, fadingOutPercentage);
@@ -161,5 +172,29 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     protected void onCaptureEnd() {
         super.onCaptureEnd();
         mDidCapture = true;
+
+        animateTransitionIn();
     }
+
+    // ============================================================================================
+    // Search Caption Animation
+    // ============================================================================================
+
+    private void animateTransitionIn() {
+        long duration = (long)
+                (OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS * mAnimationPercentage);
+
+        mOverlayPanel.addToAnimation(this, AnimationType.APPEARANCE, ANIMATION_PERCENTAGE_ZERO,
+                mAnimationPercentage, duration, 0);
+    }
+
+    @Override
+    public void setProperty(AnimationType type, float value) {
+        if (type == AnimationType.APPEARANCE) {
+            mAnimationPercentage = value;
+        }
+    }
+
+    @Override
+    public void onPropertyAnimationFinished(AnimationType prop) {}
 }

@@ -300,7 +300,8 @@ void ContextualSearchLayer::SetProperties(
   }
   // Once a valid snapshot is available, the caller will set the animation
   // percentage so the caption can actually be seen by the user.
-  if (search_caption_animation_percentage != 0.f && search_caption_.get()) {
+  if (search_caption_visible && search_caption_animation_percentage != 0.f
+      && search_caption_.get()) {
     if (search_caption_->parent() != text_container_) {
       AddBarTextLayer(search_caption_);
     }
