@@ -43,8 +43,8 @@ class TokenValidatorBase
   const std::string& token_scope() const override;
 
   // URLRequest::Delegate interface.
-  void OnResponseStarted(net::URLRequest* source) override;
-  void OnReadCompleted(net::URLRequest* source, int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* source, int net_result) override;
+  void OnReadCompleted(net::URLRequest* source, int net_result) override;
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
@@ -58,7 +58,7 @@ class TokenValidatorBase
 
   virtual void StartValidateRequest(const std::string& token) = 0;
   virtual bool IsValidScope(const std::string& token_scope);
-  std::string ProcessResponse();
+  std::string ProcessResponse(int net_result);
 
   // Constructor parameters.
   ThirdPartyAuthConfig third_party_auth_config_;

@@ -85,33 +85,36 @@ const std::string& TokenValidatorBase::token_scope() const {
 }
 
 // URLFetcherDelegate interface.
-void TokenValidatorBase::OnResponseStarted(net::URLRequest* source) {
+void TokenValidatorBase::OnResponseStarted(net::URLRequest* source,
+                                           int net_result) {
+  DCHECK_NE(net_result, net::ERR_IO_PENDING);
   DCHECK_EQ(request_.get(), source);
 
-  int bytes_read = 0;
-  request_->Read(buffer_.get(), kBufferSize, &bytes_read);
-  OnReadCompleted(request_.get(), bytes_read);
+  if (net_result != net::OK)
+    return;
+
+  int bytes_read = request_->Read(buffer_.get(), kBufferSize);
+  if (bytes_read > 0)
+    OnReadCompleted(request_.get(), bytes_read);
 }
 
 void TokenValidatorBase::OnReadCompleted(net::URLRequest* source,
-                                         int bytes_read) {
+                                         int net_result) {
+  DCHECK_NE(net_result, net::ERR_IO_PENDING);
   DCHECK_EQ(request_.get(), source);
 
-  do {
-    if (!request_->status().is_success() || bytes_read <= 0)
-      break;
-
-    data_.append(buffer_->data(), bytes_read);
-  } while (request_->Read(buffer_.get(), kBufferSize, &bytes_read));
-
-  const net::URLRequestStatus status = request_->status();
-
-  if (!status.is_io_pending()) {
-    retrying_request_ = false;
-    std::string shared_token = ProcessResponse();
-    request_.reset();
-    on_token_validated_.Run(shared_token);
+  while (net_result > 0) {
+    data_.append(buffer_->data(), net_result);
+    net_result = request_->Read(buffer_.get(), kBufferSize);
   }
+
+  if (net_result == net::ERR_IO_PENDING)
+    return;
+
+  retrying_request_ = false;
+  std::string shared_token = ProcessResponse(net_result);
+  request_.reset();
+  on_token_validated_.Run(shared_token);
 }
 
 void TokenValidatorBase::OnReceivedRedirect(
@@ -190,19 +193,17 @@ bool TokenValidatorBase::IsValidScope(const std::string& token_scope) {
   return token_scope == token_scope_;
 }
 
-std::string TokenValidatorBase::ProcessResponse() {
+std::string TokenValidatorBase::ProcessResponse(int net_result) {
   // Verify that we got a successful response.
-  net::URLRequestStatus status = request_->status();
-  if (!status.is_success()) {
-    LOG(ERROR) << "Error validating token, status=" << status.status()
-               << " err=" << status.error();
+  if (net_result != net::OK) {
+    LOG(ERROR) << "Error validating token, err=" << net_result;
     return std::string();
   }
 
   int response = request_->GetResponseCode();
   if (response != 200) {
-    LOG(ERROR)
-        << "Error " << response << " validating token: '" << data_ << "'";
+    LOG(ERROR) << "Error " << response << " validating token: '" << data_
+               << "'";
     return std::string();
   }
 
@@ -217,8 +218,8 @@ std::string TokenValidatorBase::ProcessResponse() {
   std::string token_scope;
   dict->GetStringWithoutPathExpansion("scope", &token_scope);
   if (!IsValidScope(token_scope)) {
-    LOG(ERROR) << "Invalid scope: '" << token_scope
-               << "', expected: '" << token_scope_ <<"'.";
+    LOG(ERROR) << "Invalid scope: '" << token_scope << "', expected: '"
+               << token_scope_ << "'.";
     return std::string();
   }
 
