@@ -32,7 +32,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.mojom.payments.PaymentItem;
+import org.chromium.payments.mojom.PaymentItem;
 import org.json.JSONObject;
 
 import java.util.ArrayList;

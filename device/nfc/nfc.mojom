@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device.nfc;
+// TODO(rockot): This should probably be moved to nfc.mojom.
+module device.nfc.mojom;
 
 enum NFCErrorType {
   SECURITY,

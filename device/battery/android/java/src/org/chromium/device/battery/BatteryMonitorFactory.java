@@ -8,9 +8,9 @@ import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.device.BatteryMonitor;
+import org.chromium.device.BatteryStatus;
 import org.chromium.device.battery.BatteryStatusManager.BatteryStatusCallback;
-import org.chromium.mojom.device.BatteryMonitor;
-import org.chromium.mojom.device.BatteryStatus;
 
 import java.util.HashSet;
 

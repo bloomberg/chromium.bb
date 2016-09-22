@@ -9,9 +9,9 @@ import android.nfc.NdefRecord;
 import android.os.Build;
 
 import org.chromium.base.Log;
-import org.chromium.mojom.device.nfc.NfcMessage;
-import org.chromium.mojom.device.nfc.NfcRecord;
-import org.chromium.mojom.device.nfc.NfcRecordType;
+import org.chromium.device.nfc.mojom.NfcMessage;
+import org.chromium.device.nfc.mojom.NfcRecord;
+import org.chromium.device.nfc.mojom.NfcRecordType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.FullCardRequestDelegate;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.mojom.payments.PaymentItem;
+import org.chromium.payments.mojom.PaymentItem;
 
 import org.json.JSONObject;
 

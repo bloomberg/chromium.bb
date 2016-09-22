@@ -102,7 +102,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.content_public.common.TopControlsState;
-import org.chromium.mojom.ui.mojom.WindowOpenDisposition;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -110,6 +109,7 @@ import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;

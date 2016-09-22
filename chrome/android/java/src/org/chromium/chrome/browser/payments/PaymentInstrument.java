@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
-import org.chromium.mojom.payments.PaymentItem;
+import org.chromium.payments.mojom.PaymentItem;
 
 import org.json.JSONObject;
 

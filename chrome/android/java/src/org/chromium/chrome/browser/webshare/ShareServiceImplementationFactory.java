@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.webshare;
 
 import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.mojom.webshare.ShareService;
+import org.chromium.webshare.mojom.ShareService;
 
 /**
  * Factory that creates instances of ShareService.

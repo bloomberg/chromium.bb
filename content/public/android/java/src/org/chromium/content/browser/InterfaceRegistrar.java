@@ -11,12 +11,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.device.BatteryMonitor;
+import org.chromium.device.VibrationManager;
 import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.nfc.NfcImpl;
+import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
-import org.chromium.mojom.device.BatteryMonitor;
-import org.chromium.mojom.device.VibrationManager;
-import org.chromium.mojom.device.nfc.Nfc;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

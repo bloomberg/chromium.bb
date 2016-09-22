@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.mojom.ui.mojom.WindowOpenDisposition;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;

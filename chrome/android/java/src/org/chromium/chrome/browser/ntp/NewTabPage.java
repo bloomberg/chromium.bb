@@ -70,10 +70,10 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
-import org.chromium.mojom.ui.mojom.WindowOpenDisposition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.HashSet;
 import java.util.Set;

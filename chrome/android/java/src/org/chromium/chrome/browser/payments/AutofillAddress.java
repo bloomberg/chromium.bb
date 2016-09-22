@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
-import org.chromium.mojom.payments.PaymentAddress;
+import org.chromium.payments.mojom.PaymentAddress;
 
 import java.util.Locale;
 import java.util.regex.Matcher;

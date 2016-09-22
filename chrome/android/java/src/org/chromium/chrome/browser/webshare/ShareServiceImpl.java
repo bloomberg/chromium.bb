@@ -13,9 +13,9 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojom.url.mojom.Url;
-import org.chromium.mojom.webshare.ShareService;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.mojom.Url;
+import org.chromium.webshare.mojom.ShareService;
 
 /**
  * Android implementation of the ShareService service defined in

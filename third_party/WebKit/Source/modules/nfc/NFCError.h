@@ -18,8 +18,8 @@ class NFCError {
 
 public:
     // Required by CallbackPromiseAdapter
-    using WebType = const device::nfc::blink::NFCErrorType&;
-    static DOMException* take(ScriptPromiseResolver*, const device::nfc::blink::NFCErrorType&);
+    using WebType = const device::nfc::mojom::blink::NFCErrorType&;
+    static DOMException* take(ScriptPromiseResolver*, const device::nfc::mojom::blink::NFCErrorType&);
 };
 
 } // namespace blink

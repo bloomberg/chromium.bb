@@ -7,7 +7,7 @@ package org.chromium.services.shell;
 import org.chromium.mojo.bindings.Interface;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojom.shell.mojom.InterfaceProvider;
+import org.chromium.shell.mojom.InterfaceProvider;
 
 import java.util.HashMap;
 import java.util.Map;

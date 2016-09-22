@@ -14,7 +14,7 @@ import android.os.HandlerThread;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import org.chromium.mojom.device.mojom.SensorType;
+import org.chromium.device.mojom.SensorType;
 
 import java.util.HashSet;
 import java.util.Set;

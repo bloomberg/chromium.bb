@@ -9,8 +9,8 @@ import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.webshare.ShareServiceImplementationFactory;
 import org.chromium.content.browser.InterfaceRegistry;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.mojom.payments.PaymentRequest;
-import org.chromium.mojom.webshare.ShareService;
+import org.chromium.payments.mojom.PaymentRequest;
+import org.chromium.webshare.mojom.ShareService;
 
 /**
  * Registers interfaces exposed by Chrome in the given registry.

@@ -11,7 +11,7 @@ import android.os.Build;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.mojom.device.mojom.ReportingMode;
+import org.chromium.device.mojom.ReportingMode;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;

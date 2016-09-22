@@ -219,8 +219,8 @@ def GetPackage(module):
     return ParseStringAttribute(module.attributes['JavaPackage'])
   # Default package.
   if module.namespace:
-    return 'org.chromium.mojom.' + module.namespace
-  return 'org.chromium.mojom'
+    return 'org.chromium.' + module.namespace
+  return 'org.chromium'
 
 def GetNameForKind(context, kind):
   def _GetNameHierachy(kind):

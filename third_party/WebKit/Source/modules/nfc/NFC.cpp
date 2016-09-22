@@ -18,7 +18,7 @@
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 
-namespace nfc = device::nfc::blink;
+namespace mojom = device::nfc::mojom::blink;
 
 namespace {
 const char kJsonMimePrefix[] = "application/";
@@ -32,14 +32,14 @@ const char kCharSetUTF8[] = ";charset=UTF-8";
 // Mojo type converters
 namespace mojo {
 
-using nfc::NFCMessage;
-using nfc::NFCMessagePtr;
-using nfc::NFCRecord;
-using nfc::NFCRecordPtr;
-using nfc::NFCRecordType;
-using nfc::NFCPushOptions;
-using nfc::NFCPushOptionsPtr;
-using nfc::NFCPushTarget;
+using mojom::NFCMessage;
+using mojom::NFCMessagePtr;
+using mojom::NFCRecord;
+using mojom::NFCRecordPtr;
+using mojom::NFCRecordType;
+using mojom::NFCPushOptions;
+using mojom::NFCPushOptionsPtr;
+using mojom::NFCPushTarget;
 
 NFCPushTarget toNFCPushTarget(const WTF::String& target)
 {
@@ -359,7 +359,7 @@ bool isValidOpaqueRecord(const NFCRecord& record)
 
 bool isValidNFCRecord(const NFCRecord& record)
 {
-    nfc::NFCRecordType type;
+    mojom::NFCRecordType type;
     if (record.hasRecordType()) {
         type = mojo::toNFCRecordType(record.recordType());
     } else {
@@ -368,24 +368,24 @@ bool isValidNFCRecord(const NFCRecord& record)
         // https://w3c.github.io/web-nfc/#creating-web-nfc-message
         // If NFCRecord.recordType is not set and record type cannot be deduced
         // from NFCRecord.data, reject promise with SyntaxError.
-        if (type == nfc::NFCRecordType::EMPTY)
+        if (type == mojom::NFCRecordType::EMPTY)
             return false;
     }
 
     // Non-empty records must have data.
-    if (!record.hasData() && (type != nfc::NFCRecordType::EMPTY))
+    if (!record.hasData() && (type != mojom::NFCRecordType::EMPTY))
         return false;
 
     switch (type) {
-    case nfc::NFCRecordType::TEXT:
+    case mojom::NFCRecordType::TEXT:
         return isValidTextRecord(record);
-    case nfc::NFCRecordType::URL:
+    case mojom::NFCRecordType::URL:
         return isValidURLRecord(record);
-    case nfc::NFCRecordType::JSON:
+    case mojom::NFCRecordType::JSON:
         return isValidJSONRecord(record);
-    case nfc::NFCRecordType::OPAQUE_RECORD:
+    case mojom::NFCRecordType::OPAQUE_RECORD:
         return isValidOpaqueRecord(record);
-    case nfc::NFCRecordType::EMPTY:
+    case mojom::NFCRecordType::EMPTY:
         return !record.hasData() && record.mediaType().isEmpty();
     }
 
@@ -423,7 +423,7 @@ DOMException* isValidNFCPushMessage(const NFCPushMessage& message)
     return nullptr;
 }
 
-bool setURL(const String& origin, nfc::NFCMessagePtr& message)
+bool setURL(const String& origin, mojom::NFCMessagePtr& message)
 {
     KURL originURL(ParsedURLString, origin);
 
@@ -486,7 +486,7 @@ ScriptPromise NFC::push(ScriptState* scriptState, const NFCPushMessage& pushMess
     if (!m_nfc)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
-    nfc::NFCMessagePtr message = nfc::NFCMessage::From(pushMessage);
+    mojom::NFCMessagePtr message = mojom::NFCMessage::From(pushMessage);
     if (!message)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SyntaxError));
 
@@ -496,7 +496,7 @@ ScriptPromise NFC::push(ScriptState* scriptState, const NFCPushMessage& pushMess
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     m_requests.add(resolver);
     auto callback = convertToBaseCallback(WTF::bind(&NFC::OnRequestCompleted, wrapPersistent(this), wrapPersistent(resolver)));
-    m_nfc->Push(std::move(message), nfc::NFCPushOptions::From(options), callback);
+    m_nfc->Push(std::move(message), mojom::NFCPushOptions::From(options), callback);
 
     return resolver->promise();
 }
@@ -550,7 +550,7 @@ void NFC::pageVisibilityChanged()
         m_nfc->SuspendNFCOperations();
 }
 
-void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver, nfc::NFCErrorPtr error)
+void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver, mojom::NFCErrorPtr error)
 {
     if (!m_requests.contains(resolver))
         return;
@@ -569,12 +569,12 @@ void NFC::OnConnectionError()
     // If NFCService is not available or disappears when NFC hardware is
     // disabled, reject promise with NotSupportedError exception.
     for (ScriptPromiseResolver* resolver : m_requests)
-        resolver->reject(NFCError::take(resolver, nfc::NFCErrorType::NOT_SUPPORTED));
+        resolver->reject(NFCError::take(resolver, mojom::NFCErrorType::NOT_SUPPORTED));
 
     m_requests.clear();
 }
 
-void NFC::OnWatch(mojo::WTFArray<uint32_t> ids, nfc::NFCMessagePtr)
+void NFC::OnWatch(mojo::WTFArray<uint32_t> ids, mojom::NFCMessagePtr)
 {
     // TODO(shalamov): Not implemented.
 }

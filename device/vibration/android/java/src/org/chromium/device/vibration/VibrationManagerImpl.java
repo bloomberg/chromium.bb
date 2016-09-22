@@ -11,8 +11,8 @@ import android.os.Vibrator;
 import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.device.VibrationManager;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojom.device.VibrationManager;
 
 /**
  * Android implementation of the vibration manager service defined in

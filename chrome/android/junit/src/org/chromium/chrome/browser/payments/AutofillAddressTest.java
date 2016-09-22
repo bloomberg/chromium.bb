@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.mojom.payments.PaymentAddress;
+import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;

@@ -12,12 +12,12 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojom.payments.PaymentDetails;
-import org.chromium.mojom.payments.PaymentErrorReason;
-import org.chromium.mojom.payments.PaymentMethodData;
-import org.chromium.mojom.payments.PaymentOptions;
-import org.chromium.mojom.payments.PaymentRequest;
-import org.chromium.mojom.payments.PaymentRequestClient;
+import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentErrorReason;
+import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentRequest;
+import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

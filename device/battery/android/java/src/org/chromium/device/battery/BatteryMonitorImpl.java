@@ -6,9 +6,9 @@ package org.chromium.device.battery;
 
 import android.util.Log;
 
+import org.chromium.device.BatteryMonitor;
+import org.chromium.device.BatteryStatus;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.mojom.device.BatteryMonitor;
-import org.chromium.mojom.device.BatteryStatus;
 
 /**
  * Android implementation of the battery monitor service defined in

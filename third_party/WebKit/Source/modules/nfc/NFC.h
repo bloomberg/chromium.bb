@@ -26,7 +26,7 @@ class NFC final
     , public ScriptWrappable
     , public PageVisibilityObserver
     , public ContextLifecycleObserver
-    , public device::nfc::blink::NFCClient {
+    , public device::nfc::mojom::blink::NFCClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(NFC);
     USING_PRE_FINALIZER(NFC, dispose);
@@ -63,16 +63,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    void OnRequestCompleted(ScriptPromiseResolver*, device::nfc::blink::NFCErrorPtr);
+    void OnRequestCompleted(ScriptPromiseResolver*, device::nfc::mojom::blink::NFCErrorPtr);
     void OnConnectionError();
 
-    // device::nfc::blink::NFCClient implementation.
-    void OnWatch(mojo::WTFArray<uint32_t> ids, device::nfc::blink::NFCMessagePtr) override;
+    // device::nfc::mojom::blink::NFCClient implementation.
+    void OnWatch(mojo::WTFArray<uint32_t> ids, device::nfc::mojom::blink::NFCMessagePtr) override;
 
 private:
     explicit NFC(LocalFrame*);
-    device::nfc::blink::NFCPtr m_nfc;
-    mojo::Binding<device::nfc::blink::NFCClient> m_client;
+    device::nfc::mojom::blink::NFCPtr m_nfc;
+    mojo::Binding<device::nfc::mojom::blink::NFCClient> m_client;
     HeapHashSet<Member<ScriptPromiseResolver>> m_requests;
 };
 

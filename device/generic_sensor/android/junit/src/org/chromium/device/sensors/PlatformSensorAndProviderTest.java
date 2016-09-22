@@ -26,9 +26,9 @@ import android.os.Handler;
 import android.util.SparseArray;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.mojom.device.mojom.ReportingMode;
-import org.chromium.mojom.device.mojom.SensorInitParams;
-import org.chromium.mojom.device.mojom.SensorType;
+import org.chromium.device.mojom.ReportingMode;
+import org.chromium.device.mojom.SensorInitParams;
+import org.chromium.device.mojom.SensorType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import org.junit.Before;
