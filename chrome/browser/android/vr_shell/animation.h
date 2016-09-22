@@ -21,7 +21,7 @@ class Animation {
     COPYRECT = 0,
     SIZE,
     TRANSLATION,
-    UNUSED,  // No longer used, available for a future type.
+    SCALE,
     ROTATION,
   };
 

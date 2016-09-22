@@ -21,13 +21,11 @@
   EXPECT_FLOAT_EQ(a.width, b.width); \
   EXPECT_FLOAT_EQ(a.height, b.height);
 
-#define EXPECT_VECTOR_FLOAT_4_EQ(a, b) \
-  EXPECT_EQ(a.size(), 4u); \
-  EXPECT_EQ(b.size(), 4u); \
-  EXPECT_FLOAT_EQ(a[0], b[0]); \
-  EXPECT_FLOAT_EQ(a[1], b[1]); \
-  EXPECT_FLOAT_EQ(a[2], b[2]); \
-  EXPECT_FLOAT_EQ(a[3], b[3]);
+#define EXPECT_ROTATION(a, b) \
+  EXPECT_FLOAT_EQ(a.x, b.x); \
+  EXPECT_FLOAT_EQ(a.y, b.y); \
+  EXPECT_FLOAT_EQ(a.z, b.z); \
+  EXPECT_FLOAT_EQ(a.angle, b.angle);
 
 namespace vr_shell {
 
@@ -75,18 +73,16 @@ TEST(UiElements, AnimateTranslation) {
 
 TEST(UiElements, AnimateRotation) {
   ContentRectangle rect;
-  rect.rotation_axis_angle = {10, 100, 1000, 10000};
+  rect.rotation = {10, 100, 1000, 10000};
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::ROTATION,
       std::unique_ptr<easing::Easing>(new easing::Linear()),
       {}, {20, 200, 2000, 20000}, 50000, 10000));
   rect.animations.emplace_back(std::move(animation));
   rect.Animate(50000);
-  EXPECT_VECTOR_FLOAT_4_EQ(rect.rotation_axis_angle,
-                           std::vector<float>({10, 100, 1000, 10000}));
+  EXPECT_ROTATION(rect.rotation, RotationAxisAngle({10, 100, 1000, 10000}));
   rect.Animate(60000);
-  EXPECT_VECTOR_FLOAT_4_EQ(rect.rotation_axis_angle,
-                           std::vector<float>({20, 200, 2000, 20000}));
+  EXPECT_ROTATION(rect.rotation, RotationAxisAngle({20, 200, 2000, 20000}));
 }
 
 TEST(UiElements, AnimationHasNoEffectBeforeScheduledStart) {

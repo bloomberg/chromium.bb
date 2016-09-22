@@ -6,6 +6,7 @@
 
 #include <thread>
 
+#include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
@@ -56,6 +57,9 @@ static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 
 static constexpr float kReticleZOffset = 0.01f;
 
+// UI element 0 is the browser content rectangle.
+static constexpr int kBrowserUiElementId = 0;
+
 }  // namespace
 
 namespace vr_shell {
@@ -70,18 +74,16 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
       delegate_(nullptr) {
   j_vr_shell_.Reset(env, obj);
   content_compositor_view_.reset(new VrCompositor(content_window));
-  ui_rects_.emplace_back(new ContentRectangle());
-  desktop_plane_ = ui_rects_.back().get();
-  desktop_plane_->id = 0;
-  desktop_plane_->copy_rect = {0.0f, 0.0f, 1.0f, 1.0f};
-  // TODO(cjgrant): If we use the native path for content clicks, fix this.
-  desktop_plane_->window_rect = {0, 0, 0, 0};
-  desktop_plane_->translation = {0.0f, 0.0f, 0.0f};
-  desktop_plane_->x_anchoring = XNONE;
-  desktop_plane_->y_anchoring = YNONE;
-  desktop_plane_->anchor_z = false;
-  desktop_plane_->orientation_axis_angle = {{1.0f, 0.0f, 0.0f, 0.0f}};
-  desktop_plane_->rotation_axis_angle = {{0.0f, 0.0f, 0.0f, 0.0f}};
+
+  float screen_width = kScreenWidthRatio * desktop_height_;
+  float screen_height = kScreenHeightRatio * desktop_height_;
+  std::unique_ptr<ContentRectangle> rect(new ContentRectangle());
+  rect->id = kBrowserUiElementId;
+  rect->size = {screen_width, screen_height, 1.0f};
+  scene_.AddUiElement(rect);
+
+  desktop_plane_ = scene_.GetElementById(kBrowserUiElementId);
+
   content_cvc_->GetWebContents()->GetRenderWidgetHostView()
       ->GetRenderWidgetHost()->WasResized();
 }
@@ -131,8 +133,6 @@ void VrShell::InitializeGl(JNIEnv* env,
   specs.push_back(gvr_api_->CreateBufferSpec());
   render_size_ = specs[0].GetSize();
   swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapchain(specs)));
-
-  desktop_plane_->content_texture_handle = content_texture_id_;
 
   vr_shell_renderer_.reset(new VrShellRenderer());
   buffer_viewport_list_.reset(
@@ -222,17 +222,14 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (webvr_mode_) {
     DrawWebVr();
   } else {
-    DrawVrShell();
+    DrawVrShell(target_time.monotonic_system_time_nanos);
   }
 
   frame.Unbind();
   frame.Submit(*buffer_viewport_list_, head_pose_);
 }
 
-void VrShell::DrawVrShell() {
-  float screen_width = kScreenWidthRatio * desktop_height_;
-  float screen_height = kScreenHeightRatio * desktop_height_;
-
+void VrShell::DrawVrShell(int64_t time) {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
 
   forward_vector_ = getForwardVector(head_pose_);
@@ -247,13 +244,12 @@ void VrShell::DrawVrShell() {
     ApplyNeckModel(head_pose_);
   }
 
-  desktop_plane_->size = {screen_width, screen_height, 1.0f};
   desktop_plane_->translation.x = desktop_position_.x;
   desktop_plane_->translation.y = desktop_position_.y;
   desktop_plane_->translation.z = desktop_position_.z;
 
-  // Update position of all UI elements (including desktop)
-  UpdateTransforms(screen_width, screen_height, screen_tilt);
+  // Update the render position of all UI elements (including desktop).
+  scene_.UpdateTransforms(screen_tilt, time);
 
   UpdateController();
 
@@ -304,13 +300,27 @@ void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
 }
 
 void VrShell::DrawUI() {
-  for (std::size_t i = 0; i < ui_rects_.size(); ++i) {
-    gvr::Mat4f combined_matrix =
-        MatrixMul(view_matrix_, ui_rects_[i].get()->transform.to_world);
+  for (const auto& rect : scene_.GetUiElements()) {
+    if (!rect->visible) {
+      continue;
+    }
+
+    gvr::Mat4f combined_matrix = MatrixMul(view_matrix_,
+                                           rect->transform.to_world);
     combined_matrix = MatrixMul(projection_matrix_, combined_matrix);
+
+    Rectf copy_rect;
+    jint texture_handle;
+    if (rect->id == kBrowserUiElementId) {
+      copy_rect = {0, 0, 1, 1};
+      texture_handle = content_texture_id_;
+    } else {
+      // TODO(cjgrant): Populate UI texture and allow rendering.
+      continue;
+    }
+
     vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
-        ui_rects_[i].get()->content_texture_handle, combined_matrix,
-        ui_rects_[i].get()->copy_rect);
+        texture_handle, combined_matrix, copy_rect);
   }
 }
 
@@ -372,8 +382,7 @@ void VrShell::DrawWebVr() {
   // Don't need to clear, since we're drawing over the entire render target.
 
   glViewport(0, 0, render_size_.width, render_size_.height);
-  vr_shell_renderer_->GetWebVrRenderer()->Draw(
-      reinterpret_cast<int>(desktop_plane_->content_texture_handle));
+  vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -420,52 +429,6 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_view_->SurfaceChanged((int)width, (int)height, surface);
-}
-
-void VrShell::UpdateTransforms(float screen_width_meters,
-                               float screen_height_meters,
-                               float screen_tilt) {
-  for (std::unique_ptr<ContentRectangle>& rect : ui_rects_) {
-    rect->transform.MakeIdentity();
-    rect->transform.Scale(rect->size.x, rect->size.y, rect->size.z);
-    float x_anchor_translate;
-    switch (rect->x_anchoring) {
-      case XLEFT:
-        x_anchor_translate = desktop_position_.x - screen_width_meters * 0.5;
-        break;
-      case XRIGHT:
-        x_anchor_translate = desktop_position_.x + screen_width_meters * 0.5;
-        break;
-      case XCENTER:
-        x_anchor_translate = desktop_position_.x;
-        break;
-      case XNONE:
-        x_anchor_translate = 0;
-        break;
-    }
-    float y_anchor_translate;
-    switch (rect->y_anchoring) {
-      case YTOP:
-        y_anchor_translate = desktop_position_.y + screen_height_meters * 0.5;
-        break;
-      case YBOTTOM:
-        y_anchor_translate = desktop_position_.y - screen_height_meters * 0.5;
-        break;
-      case YCENTER:
-        y_anchor_translate = desktop_position_.y;
-        break;
-      case YNONE:
-        y_anchor_translate = 0;
-        break;
-    }
-    float z_anchor_translate = rect->anchor_z ? desktop_position_.z : 0;
-    rect->transform.Translate(x_anchor_translate + rect->translation.x,
-                              y_anchor_translate + rect->translation.y,
-                              z_anchor_translate + rect->translation.z);
-    // TODO(cjgrant): Establish which exact rotations we'll provide.
-    // Adjust for screen tilt.
-    rect->transform.Rotate(1.0f, 0.0f, 0.0f, screen_tilt);
-  }
 }
 
 // ----------------------------------------------------------------------------

@@ -1,0 +1,178 @@
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/android/vr_shell/ui_scene.h"
+
+#include <vector>
+
+#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#define TOLERANCE 0.0001
+
+#define EXPECT_VEC3F_NEAR(a, b) \
+  EXPECT_NEAR(a.x, b.x, TOLERANCE); \
+  EXPECT_NEAR(a.y, b.y, TOLERANCE); \
+  EXPECT_NEAR(a.z, b.z, TOLERANCE);
+
+namespace vr_shell {
+
+namespace {
+
+void addElement(UiScene *scene, int id) {
+  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  element->id = id;
+  scene->AddUiElement(element);
+}
+
+void addAnimation(UiScene *scene, int id, Animation::Property property) {
+  std::unique_ptr<Animation> animation(new Animation(
+      0, property, std::unique_ptr<easing::Easing>(new easing::Linear()),
+      {}, {1, 1, 1, 1}, 0, 1));
+  scene->AddAnimation(id, animation);
+}
+
+}  // namespace
+
+TEST(UiScene, AddRemoveElements) {
+  UiScene scene;
+
+  EXPECT_EQ(scene.GetUiElements().size(), 0u);
+  addElement(&scene, 0);
+  EXPECT_EQ(scene.GetUiElements().size(), 1u);
+  addElement(&scene, 99);
+  EXPECT_EQ(scene.GetUiElements().size(), 2u);
+
+  EXPECT_NE(scene.GetElementById(0), nullptr);
+  EXPECT_NE(scene.GetElementById(99), nullptr);
+  EXPECT_EQ(scene.GetElementById(1), nullptr);
+
+  scene.RemoveUiElement(0);
+  EXPECT_EQ(scene.GetUiElements().size(), 1u);
+  EXPECT_EQ(scene.GetElementById(0), nullptr);
+  scene.RemoveUiElement(99);
+  EXPECT_EQ(scene.GetUiElements().size(), 0u);
+  EXPECT_EQ(scene.GetElementById(99), nullptr);
+
+  scene.RemoveUiElement(0);
+  scene.RemoveUiElement(99);
+  EXPECT_EQ(scene.GetUiElements().size(), 0u);
+}
+
+TEST(UiScene, AddRemoveAnimations) {
+  UiScene scene;
+  addElement(&scene, 0);
+  auto *element = scene.GetElementById(0);
+
+  EXPECT_EQ(element->animations.size(), 0u);
+  addAnimation(&scene, 0, Animation::Property::SIZE);
+  EXPECT_EQ(element->animations.size(), 1u);
+  EXPECT_EQ(element->animations[0]->property, Animation::Property::SIZE);
+  addAnimation(&scene, 0, Animation::Property::SCALE);
+  EXPECT_EQ(element->animations.size(), 2u);
+  EXPECT_EQ(element->animations[1]->property, Animation::Property::SCALE);
+
+  scene.RemoveAnimation(0, Animation::Property::SIZE);
+  EXPECT_EQ(element->animations.size(), 1u);
+  EXPECT_EQ(element->animations[0]->property, Animation::Property::SCALE);
+  scene.RemoveAnimation(0, Animation::Property::SCALE);
+  EXPECT_EQ(element->animations.size(), 0u);
+
+  scene.RemoveAnimation(0, Animation::Property::SIZE);
+  scene.RemoveAnimation(0, Animation::Property::SCALE);
+  EXPECT_EQ(element->animations.size(), 0u);
+}
+
+// This test creates a parent and child UI element, each with their own
+// transformations, and ensures that the child's computed total transform
+// incorporates the parent's transform as well as its own.
+TEST(UiScene, ParentTransformAppliesToChild) {
+  UiScene scene;
+
+  // Add a parent element, with distinct transformations.
+  // Size of the parent should be ignored by the child.
+  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  element->id = 0;
+  element->size = {1000, 1000, 1};
+  element->scale = {3, 3, 1};
+  element->rotation = {0, 0, 1, M_PI / 2};
+  element->translation = {6, 1, 0};
+  scene.AddUiElement(element);
+
+  // Add a child to the parent, with different transformations.
+  element.reset(new ContentRectangle);
+  element->id = 1;
+  element->parent_id = 0;
+  element->size = {1, 1, 1};
+  element->scale = {2, 2, 1};
+  element->rotation = {0, 0, 1, M_PI / 2};
+  element->translation = {3, 0, 0};
+  scene.AddUiElement(element);
+  const ContentRectangle* child = scene.GetElementById(1);
+
+  const gvr::Vec3f origin({0,0,0});
+  const gvr::Vec3f point({1,0,0});
+
+  // Check resulting transform with no screen tilt.
+  scene.UpdateTransforms(0, 0);
+  auto new_origin = MatrixVectorMul(child->transform.to_world, origin);
+  auto new_point = MatrixVectorMul(child->transform.to_world, point);
+  EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 10, 0}), new_origin);
+  EXPECT_VEC3F_NEAR(gvr::Vec3f({0, 10, 0}), new_point);
+
+  // Check with screen tilt (use 90 degrees for simplicity).
+  scene.UpdateTransforms(M_PI / 2, 0);
+  new_origin = MatrixVectorMul(child->transform.to_world, origin);
+  new_point = MatrixVectorMul(child->transform.to_world, point);
+  EXPECT_VEC3F_NEAR(gvr::Vec3f({6, 0, 10}), new_origin);
+  EXPECT_VEC3F_NEAR(gvr::Vec3f({0, 0, 10}), new_point);
+}
+
+typedef struct {
+  XAnchoring x_anchoring;
+  YAnchoring y_anchoring;
+  float expected_x;
+  float expected_y;
+} AnchoringTestCase;
+
+class AnchoringTest : public ::testing::TestWithParam<AnchoringTestCase> {};
+
+TEST_P(AnchoringTest, VerifyCorrectPosition) {
+  UiScene scene;
+
+  // Create a parent element with non-unity size and scale.
+  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  element->id = 0;
+  element->size = {2, 2, 1};
+  element->scale = {2, 2, 1};
+  scene.AddUiElement(element);
+
+  // Add a child to the parent, with anchoring.
+  element.reset(new ContentRectangle);
+  element->id = 1;
+  element->parent_id = 0;
+  element->x_anchoring = GetParam().x_anchoring;
+  element->y_anchoring = GetParam().y_anchoring;
+  scene.AddUiElement(element);
+
+  scene.UpdateTransforms(0, 0);
+  const ContentRectangle* child = scene.GetElementById(1);
+  EXPECT_NEAR(child->GetCenter().x, GetParam().expected_x, TOLERANCE);
+  EXPECT_NEAR(child->GetCenter().y, GetParam().expected_y, TOLERANCE);
+  scene.RemoveUiElement(1);
+}
+
+const std::vector<AnchoringTestCase> anchoring_test_cases = {
+    { XAnchoring::XNONE, YAnchoring::YNONE, 0, 0},
+    { XAnchoring::XLEFT, YAnchoring::YNONE, -2, 0},
+    { XAnchoring::XRIGHT, YAnchoring::YNONE, 2, 0},
+    { XAnchoring::XNONE, YAnchoring::YTOP, 0, 2},
+    { XAnchoring::XNONE, YAnchoring::YBOTTOM, 0, -2},
+    { XAnchoring::XLEFT, YAnchoring::YTOP, -2, 2},
+};
+
+INSTANTIATE_TEST_CASE_P(AnchoringTestCases, AnchoringTest,
+                        ::testing::ValuesIn(anchoring_test_cases));
+
+}  // namespace vr_shell

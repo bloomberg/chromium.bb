@@ -107,18 +107,21 @@ void ContentRectangle::Animate(int64_t time) {
           animation.from.push_back(size.y);
           animation.from.push_back(size.z);
           break;
+        case Animation::SCALE:
+          animation.from.push_back(scale.x);
+          animation.from.push_back(scale.y);
+          animation.from.push_back(scale.z);
+          break;
+        case Animation::ROTATION:
+          animation.from.push_back(rotation.x);
+          animation.from.push_back(rotation.y);
+          animation.from.push_back(rotation.z);
+          animation.from.push_back(rotation.angle);
+          break;
         case Animation::TRANSLATION:
           animation.from.push_back(translation.x);
           animation.from.push_back(translation.y);
           animation.from.push_back(translation.z);
-          break;
-        case Animation::ROTATION:
-          animation.from.push_back(rotation_axis_angle[0]);
-          animation.from.push_back(rotation_axis_angle[1]);
-          animation.from.push_back(rotation_axis_angle[2]);
-          animation.from.push_back(rotation_axis_angle[3]);
-          break;
-        case Animation::UNUSED:
           break;
       }
     }
@@ -150,20 +153,24 @@ void ContentRectangle::Animate(int64_t time) {
         size.y = values[1];
         size.z = values[2];
         break;
+      case Animation::SCALE:
+        DCHECK_EQ(animation.from.size(), 3u);
+        scale.x = values[0];
+        scale.y = values[1];
+        scale.z = values[2];
+        break;
+      case Animation::ROTATION:
+        DCHECK_EQ(animation.from.size(), 4u);
+        rotation.x = values[0];
+        rotation.y = values[1];
+        rotation.z = values[2];
+        rotation.angle = values[3];
+        break;
       case Animation::TRANSLATION:
         DCHECK_EQ(animation.from.size(), 3u);
         translation.x = values[0];
         translation.y = values[1];
         translation.z = values[2];
-        break;
-      case Animation::ROTATION:
-        DCHECK_EQ(animation.from.size(), 4u);
-        rotation_axis_angle[0] = values[0];
-        rotation_axis_angle[1] = values[1];
-        rotation_axis_angle[2] = values[2];
-        rotation_axis_angle[3] = values[3];
-        break;
-      case Animation::UNUSED:
         break;
     }
   }

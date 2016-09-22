@@ -27,6 +27,13 @@ typedef struct Rectf {
   float height;
 } Rectf;
 
+typedef struct RotationAxisAngle {
+  float x;
+  float y;
+  float z;
+  float angle;
+} RotationAxisAngle;
+
 void SetIdentityM(gvr::Mat4f& mat);
 
 void TranslateM(gvr::Mat4f& tmat, gvr::Mat4f& mat, float x, float y, float z);

@@ -17,17 +17,15 @@ namespace vr_shell {
 class Animation;
 
 enum XAnchoring {
-  XLEFT = 0,
-  XRIGHT,
-  XCENTER,
-  XNONE
+  XNONE = 0,
+  XLEFT,
+  XRIGHT
 };
 
 enum YAnchoring {
-  YTOP = 0,
-  YBOTTOM,
-  YCENTER,
-  YNONE
+  YNONE = 0,
+  YTOP,
+  YBOTTOM
 };
 
 struct ReversibleTransform {
@@ -65,19 +63,39 @@ struct ContentRectangle : public WorldRectangle {
 
   void Animate(int64_t time);
 
-  int id = 0;
+  // Valid IDs are non-negative.
+  int id = -1;
 
-  // samplerExternalOES texture data for desktop content image.
-  int content_texture_handle = -1;
-  Rectf copy_rect = {0.0f, 0.0f, 0.0f, 0.0f};
-  Recti window_rect = {0.0f, 0.0f, 0.0f, 0.0f};
-  gvr::Vec3f size = {0.0f, 0.0f, 0.0f};
+  // If a non-negative parent ID is specified, applicable tranformations
+  // are applied relative to the parent, rather than absolutely.
+  int parent_id = -1;
+
+  // If true, this object will be visible and accept input.
+  bool visible = true;
+
+  // Specifies the region (in pixels) of a texture to render.
+  Recti copy_rect = {0, 0, 0, 0};
+
+  // The size of the object.  This does not affect children.
+  gvr::Vec3f size = {1.0f, 1.0f, 1.0f};
+
+  // The scale of the object, and its children.
+  gvr::Vec3f scale = {1.0f, 1.0f, 1.0f};
+
+  // The rotation of the object, and its children.
+  RotationAxisAngle rotation = {1.0f, 0.0f, 0.0f, 0.0f};
+
+  // The translation of the object, and its children.  Translation is applied
+  // after rotation and scaling.
   gvr::Vec3f translation = {0.0f, 0.0f, 0.0f};
+
+  // If anchoring is specified, the translation will be relative to the
+  // specified edge(s) of the parent, rather than the center.  A parent object
+  // must be specified when using anchoring.
   XAnchoring x_anchoring = XAnchoring::XNONE;
   YAnchoring y_anchoring = YAnchoring::YNONE;
-  bool anchor_z = false;
-  std::vector<float> orientation_axis_angle;
-  std::vector<float> rotation_axis_angle;
+
+  // Animations that affect the properties of the object over time.
   std::vector<std::unique_ptr<Animation>> animations;
 
  private:

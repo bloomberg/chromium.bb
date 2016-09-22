@@ -12,6 +12,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
@@ -74,7 +75,7 @@ class VrShell : public device::GvrDelegate {
 
  private:
   virtual ~VrShell();
-  void DrawVrShell();
+  void DrawVrShell(int64_t time);
   void DrawEye(const gvr::Mat4f& view_matrix,
                const gvr::BufferViewport& params);
   void DrawContentRect();
@@ -82,9 +83,6 @@ class VrShell : public device::GvrDelegate {
   void DrawUI();
   void DrawCursor();
 
-  void UpdateTransforms(float screen_width_meters,
-                        float screen_height_meters,
-                        float scree_tilt);
   void UpdateController();
 
   // samplerExternalOES texture data for content area image.
@@ -96,7 +94,7 @@ class VrShell : public device::GvrDelegate {
   ContentRectangle* desktop_plane_;
   gvr::Vec3f desktop_position_;
 
-  std::vector<std::unique_ptr<ContentRectangle>> ui_rects_;
+  UiScene scene_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;

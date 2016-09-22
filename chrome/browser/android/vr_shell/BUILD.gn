@@ -16,6 +16,8 @@ static_library("vr_shell") {
     "easing.h",
     "ui_elements.cc",
     "ui_elements.h",
+    "ui_scene.cc",
+    "ui_scene.h",
     "vr_compositor.cc",
     "vr_compositor.h",
     "vr_gl_util.cc",
@@ -58,6 +60,7 @@ generate_jni("vr_shell_jni_headers") {
 test("vr_shell_unittests") {
   sources = [
     "ui_elements_unittest.cc",
+    "ui_scene_unittest.cc",
   ]
 
   deps = [
