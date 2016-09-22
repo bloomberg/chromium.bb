@@ -32,5 +32,5 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
 
     # TODO(xidachen) check / generate reference images
-    self.Fail('Pixel.OffscreenCanvasWebGLRedBoxWorker', bug=563852)
-    self.Fail('Pixel.OffscreenCanvasWebGLRedBoxWorkerES3', ['mac'], bug=563852)
+    self.Fail('Pixel.OffscreenCanvasWebGLGreenBox', bug=563852)
+    self.Fail('Pixel.OffscreenCanvasWebGLGreenBoxES3', ['mac'], bug=563852)
