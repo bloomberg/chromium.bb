@@ -1404,7 +1404,7 @@ void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
 bool LayoutGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection direction, GridSizingData& sizingData) const
 {
     const Vector<GridTrack>& tracks = (direction == ForColumns) ? sizingData.columnTracks : sizingData.rowTracks;
-    LayoutUnit& maxSize = sizingData.freeSpace(direction);
+    LayoutUnit maxSize = sizingData.availableSpace().clampNegativeToZero();
     for (size_t i = 0; i < tracks.size(); ++i) {
         GridTrackSize trackSize = gridTrackSize(direction, i, sizingData.sizingOperation);
         if (computeUsedBreadthOfMinLength(trackSize, maxSize) > tracks[i].baseSize())
