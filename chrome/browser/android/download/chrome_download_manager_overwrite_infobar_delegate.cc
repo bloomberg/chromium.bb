@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 #include "components/infobars/core/infobar.h"
@@ -20,6 +21,15 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
+
+void DeleteExistingDownloadFileDone(
+    const base::FilePath& download_path,
+    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DownloadManagerService::GetInstance()->RemoveDownloadsForPath(
+      download_path);
+  callback.Run(download_path);
+}
 
 void DeleteExistingDownloadFile(
     const base::FilePath& download_path,
@@ -29,8 +39,9 @@ void DeleteExistingDownloadFile(
   if (GetFileInfo(download_path, &info) && !info.is_directory)
     base::DeleteFile(download_path, false);
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, download_path));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeleteExistingDownloadFileDone, download_path, callback));
 }
 
 void CreateNewFileDone(
@@ -89,6 +100,9 @@ ChromeDownloadManagerOverwriteInfoBarDelegate::GetIdentifier() const {
 }
 
 bool ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
+  if (!download_item_)
+    return true;
+
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeleteExistingDownloadFile, suggested_download_path_,

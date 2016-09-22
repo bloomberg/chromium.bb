@@ -30,8 +30,7 @@ struct DownloadCreateInfo;
 
 class MockDownloadManagerService : public DownloadManagerService {
  public:
-  MockDownloadManagerService()
-     : DownloadManagerService(base::android::AttachCurrentThread(), nullptr) {
+  MockDownloadManagerService() : DownloadManagerService() {
     ON_CALL(manager_, GetDownloadByGuid(_)).WillByDefault(
         ::testing::Invoke(this,
                           &MockDownloadManagerService::GetDownloadByGuid));

@@ -45,6 +45,23 @@ void updateNotifier(DownloadManagerService* service,
   }
 }
 
+void RemoveDownloadsFromDownloadManager(
+    content::DownloadManager* manager,
+    const base::FilePath& path) {
+  if (!manager)
+    return;
+  content::DownloadManager::DownloadVector all_items;
+  manager->GetAllDownloads(&all_items);
+
+  for (size_t i = 0; i < all_items.size(); i++) {
+    content::DownloadItem* item = all_items[i];
+    if (item->GetState() == content::DownloadItem::COMPLETE &&
+        item->GetTargetFilePath() == path) {
+      item->Remove();
+    }
+  }
+}
+
 }  // namespace
 
 // static
@@ -66,11 +83,15 @@ void DownloadManagerService::OnDownloadCanceled(
   DownloadController::RecordDownloadCancelReason(reason);
 }
 
+// static
+DownloadManagerService* DownloadManagerService::GetInstance() {
+  return base::Singleton<DownloadManagerService>::get();
+}
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  DownloadManagerService* service =
-      new DownloadManagerService(env, jobj);
+  DownloadManagerService* service = DownloadManagerService::GetInstance();
+  service->Init(env, jobj);
   DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(profile);
   DownloadHistory* history = download_service->GetDownloadHistory();
@@ -79,17 +100,20 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(service);
 }
 
-DownloadManagerService::DownloadManagerService(
-    JNIEnv* env,
-    jobject obj)
-    : java_ref_(env, obj),
-      is_history_query_complete_(false),
+DownloadManagerService::DownloadManagerService()
+    : is_history_query_complete_(false),
       pending_get_downloads_actions_(NONE) {
-  DownloadControllerBase::Get()->SetDefaultDownloadFileName(
-      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }
 
 DownloadManagerService::~DownloadManagerService() {}
+
+void DownloadManagerService::Init(
+    JNIEnv* env,
+    jobject obj) {
+  java_ref_.Reset(env, obj);
+  DownloadControllerBase::Get()->SetDefaultDownloadFileName(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+}
 
 void DownloadManagerService::ResumeDownload(
     JNIEnv* env,
@@ -202,6 +226,14 @@ void DownloadManagerService::CheckForExternallyRemovedDownloads(
   if (!manager)
     return;
   manager->CheckForHistoryFilesRemoval();
+}
+
+void DownloadManagerService::RemoveDownloadsForPath(
+    const base::FilePath& path) {
+  content::DownloadManager* manager = GetDownloadManager(false);
+  RemoveDownloadsFromDownloadManager(manager, path);
+  manager = GetDownloadManager(true);
+  RemoveDownloadsFromDownloadManager(manager, path);
 }
 
 void DownloadManagerService::CancelDownload(
