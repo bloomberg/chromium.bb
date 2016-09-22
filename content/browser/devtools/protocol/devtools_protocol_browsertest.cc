@@ -6,15 +6,20 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -39,8 +44,13 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/layout.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/skia_util.h"
 
 #define EXPECT_SIZE_EQ(expected, actual)               \
   do {                                                 \
@@ -416,7 +426,143 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   EXPECT_EQ("\"Escape\"", key);
 }
 
+namespace {
+bool DecodePNG(std::string base64_data, SkBitmap* bitmap) {
+  std::string png_data;
+  if (!base::Base64Decode(base64_data, &png_data))
+    return false;
+  return gfx::PNGCodec::Decode(
+      reinterpret_cast<unsigned const char*>(png_data.data()), png_data.size(),
+      bitmap);
+}
+
+// Adapted from cc::ExactPixelComparator.
+bool MatchesBitmap(const SkBitmap& expected_bmp,
+                   const SkBitmap& actual_bmp,
+                   const gfx::Rect& matching_mask) {
+  // Number of pixels with an error
+  int error_pixels_count = 0;
+
+  gfx::Rect error_bounding_rect = gfx::Rect();
+
+  // Check that bitmaps have identical dimensions.
+  EXPECT_EQ(expected_bmp.width(), actual_bmp.width());
+  EXPECT_EQ(expected_bmp.height(), actual_bmp.height());
+  if (expected_bmp.width() != actual_bmp.width() ||
+      expected_bmp.height() != actual_bmp.height()) {
+    return false;
+  }
+
+  SkAutoLockPixels lock_actual_bmp(actual_bmp);
+  SkAutoLockPixels lock_expected_bmp(expected_bmp);
+
+  DCHECK(gfx::SkIRectToRect(actual_bmp.bounds()).Contains(matching_mask));
+
+  for (int x = matching_mask.x(); x < matching_mask.width(); ++x) {
+    for (int y = matching_mask.y(); y < matching_mask.height(); ++y) {
+      SkColor actual_color = actual_bmp.getColor(x, y);
+      SkColor expected_color = expected_bmp.getColor(x, y);
+      if (actual_color != expected_color) {
+        if (error_pixels_count < 10) {
+          LOG(ERROR) << "Pixel (" << x << "," << y << "): expected "
+                     << expected_color << " actual " << actual_color;
+        }
+        error_pixels_count++;
+        error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
+      }
+    }
+  }
+
+  if (error_pixels_count != 0) {
+    LOG(ERROR) << "Number of pixel with an error: " << error_pixels_count;
+    LOG(ERROR) << "Error Bounding Box : " << error_bounding_rect.ToString();
+    return false;
+  }
+
+  return true;
+}
+}  // namespace
+
 class CaptureScreenshotTest : public DevToolsProtocolTest {
+ protected:
+  void CaptureScreenshotAndCompareTo(const SkBitmap& expected_bitmap) {
+    SendCommand("Page.captureScreenshot", nullptr);
+    std::string base64;
+    EXPECT_TRUE(result_->GetString("data", &base64));
+    SkBitmap result_bitmap;
+    EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+    gfx::Rect matching_mask(gfx::SkIRectToRect(expected_bitmap.bounds()));
+#if defined(OS_MACOSX)
+    // Mask out the corners, which may be drawn differently on Mac because of
+    // rounded corners.
+    matching_mask.Inset(4, 4, 4, 4);
+#endif
+    EXPECT_TRUE(MatchesBitmap(expected_bitmap, result_bitmap, matching_mask));
+  }
+
+  // Takes a screenshot of a colored box that is positioned inside the frame.
+  void PlaceAndCaptureBox(const gfx::Size& frame_size,
+                          const gfx::Size& box_size,
+                          float screenshot_scale) {
+    static const int kBoxOffsetHeight = 100;
+    const gfx::Size scaled_box_size =
+        ScaleToFlooredSize(box_size, screenshot_scale);
+    std::unique_ptr<base::DictionaryValue> params;
+
+    VLOG(1) << "Testing screenshot of box with size " << box_size.width() << "x"
+            << box_size.height() << "px at scale " << screenshot_scale
+            << " ...";
+
+    // Draw a blue box of provided size in the horizontal center of the page.
+    EXPECT_TRUE(content::ExecuteScript(
+        shell()->web_contents()->GetRenderViewHost(),
+        base::StringPrintf(
+            "var style = document.body.style;                             "
+            "style.overflow = 'hidden';                                   "
+            "style.minHeight = '%dpx';                                    "
+            "style.backgroundImage = 'linear-gradient(#0000ff, #0000ff)'; "
+            "style.backgroundSize = '%dpx %dpx';                          "
+            "style.backgroundPosition = '50%% %dpx';                      "
+            "style.backgroundRepeat = 'no-repeat';                        ",
+            box_size.height() + kBoxOffsetHeight, box_size.width(),
+            box_size.height(), kBoxOffsetHeight)));
+
+    // Force frame size: The offset of the blue box within the frame shouldn't
+    // change during screenshotting. This verifies that the page doesn't observe
+    // a change in frame size as a side effect of screenshotting.
+    params.reset(new base::DictionaryValue());
+    params->SetInteger("width", frame_size.width());
+    params->SetInteger("height", frame_size.height());
+    params->SetDouble("deviceScaleFactor", 0);
+    params->SetBoolean("mobile", false);
+    params->SetBoolean("fitWindow", false);
+    SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
+
+    // Resize frame to scaled blue box size.
+    params.reset(new base::DictionaryValue());
+    params->SetInteger("width", scaled_box_size.width());
+    params->SetInteger("height", scaled_box_size.height());
+    SendCommand("Emulation.setVisibleSize", std::move(params));
+
+    // Force viewport to match scaled blue box.
+    params.reset(new base::DictionaryValue());
+    params->SetDouble("x", (frame_size.width() - box_size.width()) / 2.);
+    params->SetDouble("y", kBoxOffsetHeight);
+    params->SetDouble("scale", screenshot_scale);
+    SendCommand("Emulation.forceViewport", std::move(params));
+
+    // Capture screenshot and verify that it is indeed blue.
+    SkBitmap expected_bitmap;
+    expected_bitmap.allocN32Pixels(scaled_box_size.width(),
+                                   scaled_box_size.height());
+    expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
+    CaptureScreenshotAndCompareTo(expected_bitmap);
+
+    // Reset for next screenshot.
+    SendCommand("Emulation.resetViewport", nullptr);
+    SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
+  }
+
  private:
 #if !defined(OS_ANDROID)
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -425,32 +571,45 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 #endif
 };
 
-// Does not link on Android
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
   shell()->LoadURL(GURL("about:blank"));
   Attach();
-  EXPECT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
-      "document.body.style.background = '#123456'"));
-  SendCommand("Page.captureScreenshot", nullptr);
-  std::string base64;
-  EXPECT_TRUE(result_->GetString("data", &base64));
-  std::string png;
-  EXPECT_TRUE(base::Base64Decode(base64, &png));
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(png.data()),
-                        png.size(), &bitmap);
-  SkColor color(bitmap.getColor(0, 0));
-  EXPECT_GE(1, std::abs(0x12-(int)SkColorGetR(color)));
-  EXPECT_GE(1, std::abs(0x34-(int)SkColorGetG(color)));
-  EXPECT_GE(1, std::abs(0x56-(int)SkColorGetB(color)));
-  color = bitmap.getColor(1, 1);
-  EXPECT_GE(1, std::abs(0x12-(int)SkColorGetR(color)));
-  EXPECT_GE(1, std::abs(0x34-(int)SkColorGetG(color)));
-  EXPECT_GE(1, std::abs(0x56-(int)SkColorGetB(color)));
+  EXPECT_TRUE(
+      content::ExecuteScript(shell()->web_contents()->GetRenderViewHost(),
+                             "document.body.style.background = '#123456'"));
+  SkBitmap expected_bitmap;
+  // We compare against the actual physical backing size rather than the
+  // view size, because the view size is stored adjusted for DPI and only in
+  // integer precision.
+  gfx::Size view_size = static_cast<RenderWidgetHostViewBase*>(
+                            shell()->web_contents()->GetRenderWidgetHostView())
+                            ->GetPhysicalBackingSize();
+  expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
+  expected_bitmap.eraseColor(SkColorSetRGB(0x12, 0x34, 0x56));
+  CaptureScreenshotAndCompareTo(expected_bitmap);
 }
+
+// Setting frame size (through RWHV) is not supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_CaptureScreenshotArea DISABLED_CaptureScreenshotArea
+#else
+#define MAYBE_CaptureScreenshotArea CaptureScreenshotArea
 #endif
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
+                       MAYBE_CaptureScreenshotArea) {
+  static const gfx::Size kFrameSize(800, 600);
+
+  shell()->LoadURL(GURL("about:blank"));
+  Attach();
+
+  // Test capturing a subarea inside the emulated frame at different scales.
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 2.0);
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 0.5);
+
+  // Ensure that content outside the emulated frame is painted, too.
+  PlaceAndCaptureBox(kFrameSize, gfx::Size(10, 10000), 1.0);
+}
 
 #if defined(OS_ANDROID)
 // Disabled, see http://crbug.com/469947.
