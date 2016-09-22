@@ -6,24 +6,6 @@ cr.define('settings_privacy_page', function() {
   /**
    * @constructor
    * @extends {TestBrowserProxy}
-   * @implements {settings.PrivacyPageBrowserProxy}
-   */
-  function TestPrivacyPageBrowserProxy() {
-    settings.TestBrowserProxy.call(this, ['showManageSSLCertificates']);
-  }
-
-  TestPrivacyPageBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
-
-    /** @override */
-    showManageSSLCertificates: function() {
-      this.methodCalled('showManageSSLCertificates');
-    },
-  };
-
-  /**
-   * @constructor
-   * @extends {TestBrowserProxy}
    * @implements {settings.ClearBrowsingDataBrowserProxy}
    */
   function TestClearBrowsingDataBrowserProxy() {

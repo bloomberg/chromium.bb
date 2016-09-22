@@ -2,39 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @extends {TestBrowserProxy}
- * @implements {settings.PrivacyPageBrowserProxy}
- */
-function TestPrivacyPageBrowserProxy() {
-  settings.TestBrowserProxy.call(this, [
-    'getMetricsReporting',
-    'setMetricsReportingEnabled',
-  ]);
-}
-
-TestPrivacyPageBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
-
-  /** @type {!MetricsReporting} */
-  metricsReporting: {
-    enabled: true,
-    managed: true,
-  },
-
-  /** @override */
-  getMetricsReporting: function() {
-    this.methodCalled('getMetricsReporting');
-    return Promise.resolve(this.metricsReporting);
-  },
-
-  /** @override */
-  setMetricsReportingEnabled: function(enabled) {
-    this.methodCalled('setMetricsReportingEnabled', enabled);
-  },
-};
-
 suite('metrics reporting', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
   var testBrowserProxy;

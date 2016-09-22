@@ -469,6 +469,7 @@ CrSettingsPrivacyPageTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_util.js',
     'test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
     'privacy_page_test.js',
   ]),
 };
@@ -845,6 +846,7 @@ CrSettingsMetricsReportingTest.prototype = {
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
     'metrics_reporting_tests.js',
   ]),
 };
