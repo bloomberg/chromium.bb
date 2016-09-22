@@ -1,43 +1,101 @@
 # Android Studio
 
-Android Studio integration works by generating .gradle files from our BUILD.gn files.
-
 [TOC]
 
 ## Usage
 
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --target //chrome/android:chrome_public_apk
+build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --target //chrome/android:chrome_public_test_apk
 ```
 
 This creates a project at `out-gn/Debug/gradle`. To create elsewhere: `--project-dir foo`
 
-## Status (as of July 14, 2016)
+For first-time Android Studio users:
+
+ * Avoid running the setup wizard.
+    * The wizard will force you to download unwanted SDK componentns to `//third_party/android_tools`.
+    * To skip it. Select "Cancel" when it comes up.
+
+To import the project:
+
+ * Use "Import Project", and select the directory containing the generated project.
+
+You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
+
+ * After regenerating, Android Studio should prompt you to "Sync". If it doesn't, use:
+    * Help-&gt;Find Action-&gt;Sync Project with Gradle Files
+
+
+## How it Works
+
+Android Studio integration works by generating `build.gradle` files based on GN
+targets. Each `android_apk` and `android_library` target produces a separate
+Gradle sub-project.
+
+### Symlinks and .srcjars
+
+Gradle supports source directories but not source files. However, some
+`java/src/` directories in Chromium are split amonst multiple GN targets. To
+accomodate this, the script detects such targets and creates a `symlinked-java/`
+directory to point gradle at. Be warned that creating new files from Android
+Studio within these symlink-based projects will cause new files to be created in
+the generated `symlinked-java/` rather than the source tree where you want it.
+
+*** note
+** TLDR:** Always create new files outside of Android Studio.
+***
+
+Most generated .java files in GN are stored as `.srcjars`. Android Studio does
+not have support for them, and so the generator script builds and extracts them
+all to `extracted-srcjars/` subdirectories for each target that contains them.
+
+*** note
+** TLDR:** Always re-generate project files when `.srcjars` change (this
+includes `R.java`).
+***
+
+### Building with Gradle
+
+Gradle builds can be done from the command-line after importing the project into
+Android Studio (importing into the IDE causes the Gradle wrapper to be added).
+
+    cd $GRADLE_PROJECT_DIR && bash gradlew
+
+The resulting artifacts are not terribly useful. They are missing assets,
+resources, native libraries, etc.
+
+## Status (as of Sept 21, 2016)
 
 ### What currently works
 
- - Basic Java editing and compiling
+ * Tested with Android Studio v2.2.
+ * Basic Java editing and compiling works.
 
 ### Roadmap / what's not yet implemented ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
- - Test targets (although they *somewhat* work via `--target=//chrome/android:chrome_public_test_apk__apk`)
- - Make gradle aware of resources and assets
- - Make gradle aware of native code via pointing it at the location of our .so
- - Add a mode in which gradle is responsible for generating `R.java`
- - Add support for native code editing
-
-### What's odd about our integration
-
- - We disable generation of `R.java`, `BuildConfig.java`, `AndroidManifest.java`
- - Generated .java files (.srcjars) are extracted to the project directory upon project creation. They are not re-extracted unless you manually run `generate_gradle.py` again
+ * JUnit Test targets
+ * Better support for instrumtation tests (they are treated as non-test .apks right now)
+ * Make gradle aware of resources and assets
+ * Make gradle aware of native code via pointing it at the location of our .so
+ * Add a mode in which gradle is responsible for generating `R.java`
+ * Add support for native code editing
+ * Make the "Make Project" button work correctly
 
 ## Android Studio Tips
 
- - Configuration instructions can be found [here](http://tools.android.com/tech-docs/configuration). Some suggestions:
-   - Launch it with more RAM: `STUDIO_VM_OPTIONS=-Xmx2048m /opt/android-studio-stable/bin/studio-launcher.sh`
- - Setup wizard advice:
-   - Choose "Standard", it then fails (at least for me) from "SDK tools directory is missing". Oh well...
-   - Choose "Import" and select your generated project directory
-   - Choose "OK" to set up gradle wrapper
- - If you ever need to reset it: `rm -r ~/.AndroidStudio*/`
+ * Configuration instructions can be found [here](http://tools.android.com/tech-docs/configuration). One suggestions:
+    * Launch it with more RAM: `STUDIO_VM_OPTIONS=-Xmx2048m /opt/android-studio-stable/bin/studio-launcher.sh`
+ * If you ever need to reset it: `rm -r ~/.AndroidStudio*/`
+
+### Useful Shortcuts
+
+ * `Shift - Shift`: Search to open file or perform IDE action
+ * `Ctrl + N`: Jump to class
+ * `Ctrl + Shift + T`: Jump to test
+ * `Ctrl + Shift + N`: Jump to file
+ * `Ctrl + F12`: Jump to method
+ * `Ctrl + G`: Jump to line
+ * `Shift + F6`: Rename variable
+ * `Ctrl + Alt + O`: Organize imports
+ * `Alt + Enter`: Quick Fix (use on underlined errors)
 

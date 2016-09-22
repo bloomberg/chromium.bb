@@ -384,6 +384,9 @@ def main():
     _RunNinja(output_dir, targets)
     _ExtractSrcjars(gradle_output_dir, srcjar_tuples)
   logging.warning('Project created successfully!')
+  logging.warning('Generated projects work best with Android Studio 2.2')
+  logging.warning('For more tips: https://chromium.googlesource.com/chromium'
+                  '/src.git/+/master/docs/android_studio.md')
 
 
 if __name__ == '__main__':
