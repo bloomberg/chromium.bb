@@ -52,9 +52,6 @@ class ArcBluetoothBridge
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Overridden from device::BluetoothAdadpter::Observer
-  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                             bool powered) override;
-
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
 
@@ -406,6 +403,8 @@ class ArcBluetoothBridge
   std::unordered_map<std::string,
                      std::unique_ptr<device::BluetoothGattConnection>>
       gatt_connections_;
+  // Timer to turn discovery off.
+  base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
 

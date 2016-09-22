@@ -81,6 +81,14 @@ constexpr uint16_t kAndroidMBluetoothVersionNumber = 95;
 constexpr uint16_t kMaxAdvertisement = 5;
 // Bluetooth SDP Service Class ID List Attribute identifier
 constexpr uint16_t kServiceClassIDListAttributeID = 0x0001;
+// Timeout for Bluetooth Discovery (scan)
+// 120 seconds is used here as the upper bound of the time need to do device
+// discovery once, 20 seconds for inquiry scan and 100 seconds for page scan
+// for 100 new devices.
+constexpr base::TimeDelta kDiscoveryTimeout = base::TimeDelta::FromSeconds(120);
+// From https://www.bluetooth.com/specifications/assigned-numbers/baseband
+// The Class of Device for generic computer.
+constexpr uint32_t kBluetoothComputerClass = 0x100;
 
 using GattStatusCallback =
     base::Callback<void(arc::mojom::BluetoothGattStatus)>;
@@ -308,12 +316,6 @@ void ArcBluetoothBridge::OnInstanceReady() {
 void ArcBluetoothBridge::OnInstanceClosed() {
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
-}
-
-void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,
-                                               bool powered) {
-  // TODO(smbarber): Invoke EnableAdapter or DisableAdapter via ARC bridge
-  // service.
 }
 
 void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
@@ -808,9 +810,10 @@ void ArcBluetoothBridge::SetRemoteDeviceProperty(
   if (!bluetooth_instance)
     return;
 
-  // TODO(smbarber): Implement SetRemoteDeviceProperty
+  // Unsupported. Only used by Android hidden API, BluetoothDevice.SetAlias().
+  // And only Android Settings App / Android TV / NFC used that.
   bluetooth_instance->OnRemoteDeviceProperties(
-      mojom::BluetoothStatus::FAIL, std::move(remote_addr),
+      mojom::BluetoothStatus::UNSUPPORTED, std::move(remote_addr),
       mojo::Array<mojom::BluetoothPropertyPtr>::New(0));
 }
 
@@ -827,9 +830,13 @@ void ArcBluetoothBridge::GetRemoteServices(
 
 void ArcBluetoothBridge::StartDiscovery() {
   DCHECK(bluetooth_adapter_);
-  // TODO(smbarber): Add timeout
+  DCHECK(CalledOnValidThread());
+
   if (discovery_session_) {
-    LOG(ERROR) << "Discovery session already running; leaving alone";
+    LOG(ERROR) << "Discovery session already running; Reset timeout.";
+    discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
+                               base::Bind(&ArcBluetoothBridge::CancelDiscovery,
+                                          weak_factory_.GetWeakPtr()));
     SendCachedDevicesFound();
     return;
   }
@@ -874,6 +881,8 @@ void ArcBluetoothBridge::OnPoweredError(
 
 void ArcBluetoothBridge::OnDiscoveryStarted(
     std::unique_ptr<BluetoothDiscoverySession> session) {
+  DCHECK(CalledOnValidThread());
+
   auto* bluetooth_instance =
       arc_bridge_service()->bluetooth()->GetInstanceForMethod(
           "OnDiscoveryStateChanged");
@@ -881,6 +890,13 @@ void ArcBluetoothBridge::OnDiscoveryStarted(
     return;
 
   discovery_session_ = std::move(session);
+
+  // We need to set timer to turn device discovery off because of the difference
+  // between Android API (do device discovery once) and Chrome API (do device
+  // discovery until user turns it off).
+  discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
+                             base::Bind(&ArcBluetoothBridge::CancelDiscovery,
+                                        weak_factory_.GetWeakPtr()));
 
   bluetooth_instance->OnDiscoveryStateChanged(
       mojom::BluetoothDiscoveryState::STARTED);
@@ -896,6 +912,7 @@ void ArcBluetoothBridge::OnDiscoveryStopped() {
     return;
 
   discovery_session_.reset();
+  discovery_off_timer_.Stop();
 
   bluetooth_instance->OnDiscoveryStateChanged(
       mojom::BluetoothDiscoveryState::STOPPED);
@@ -1761,18 +1778,20 @@ ArcBluetoothBridge::GetAdapterProperties(
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::UUIDS) {
-    // TODO(smbarber): Fill in once GetUUIDs is available for the adapter.
+    mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
+    btp->set_uuids(
+        mojo::Array<BluetoothUUID>::From(bluetooth_adapter_->GetUUIDs()));
+    properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::CLASS_OF_DEVICE) {
-    // TODO(smbarber): Populate with the actual adapter class
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_device_class(0);
+    btp->set_device_class(kBluetoothComputerClass);
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::TYPE_OF_DEVICE) {
-    // TODO(smbarber): Populate with the actual adapter type
+    // Assume that all ChromeOS devices are dual mode Bluetooth device.
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     btp->set_device_type(device::BLUETOOTH_TRANSPORT_DUAL);
     properties.push_back(std::move(btp));
