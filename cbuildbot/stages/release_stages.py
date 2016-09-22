@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import json
 import os
+import socket
 
 from chromite.cbuildbot import commands
 from chromite.lib import failures_lib
@@ -19,6 +20,8 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
+from chromite.lib.paygen import dryrun_lib
+from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
 
@@ -326,7 +329,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type, exc_value, _exc_tb = exc_info
+    exc_type, _exc_value, _exc_tb = exc_info
 
     # If Paygen fails to find anything needed in release.conf, treat it
     # as a warning. This is common during new board bring up.
@@ -337,16 +340,6 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     # outright. Let SigningStage decide if this should kill the build.
     if issubclass(exc_type, SignerFailure):
       return self._HandleExceptionAsWarning(exc_info)
-
-    # If the exception is a TestLabFailure that means we couldn't schedule the
-    # test. We don't fail the build for that. We do the CompoundFailure dance,
-    # because that's how we'll get failures from background processes returned
-    # to us.
-    if (issubclass(exc_type, failures_lib.TestLabFailure) or
-        (issubclass(exc_type, failures_lib.CompoundFailure) and
-         exc_value.MatchesFailureType(failures_lib.TestLabFailure))):
-      return self._HandleExceptionAsWarning(exc_info)
-
     return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def WaitUntilReady(self):
@@ -387,13 +380,13 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
           'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
           (paygen_build_lib.BOARDS_URI, board))
 
+    # Default to False, set to True if it's a canary type build
+    skip_duts_check = False
+    if config_lib.IsCanaryType(self._run.config.build_type):
+      skip_duts_check = True
+
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       logging.info("Using channels: %s", self.channels)
-
-      # Default to False, set to True if it's a canary type build
-      skip_duts_check = False
-      if config_lib.IsCanaryType(self._run.config.build_type):
-        skip_duts_check = True
 
       # If we have an explicit list of channels, use it.
       for channel in self.channels:
@@ -404,41 +397,72 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
                           disable_tests, skip_delta_payloads,
-                          skip_duts_check=False):
-    """Helper for PaygenStage that invokes payload generation.
+                          skip_duts_check):
+    """Runs the PaygenBuild and PaygenTest stage (if applicable)"""
+    PaygenBuildStage(self._run, board, channel, version, debug, disable_tests,
+                     skip_delta_payloads, skip_duts_check).Run()
 
-    This method is intended to be safe to invoke inside a process.
+class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
+  """Stage that generates payloads and uploads to Google Storage."""
+  def __init__(self, builder_run, board, channel, version, debug,
+               skip_testing, skip_delta_payloads, skip_duts_check, **kwargs):
+    """Init that accepts the channels argument, if present.
 
     Args:
-      channel: Channel of payloads to generate ('stable', 'beta', etc)
+      builder_run: See builder_run on ArchiveStage
       board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
+      channel: Channel of payloads to generate ('stable', 'beta', etc)
       version: Version of payloads to generate.
       debug: Flag telling if this is a real run, or a test run.
-      disable_tests: Do not generate test artifacts are run payload tests.
+      skip_testing: Do not generate test artifacts or run payload tests.
       skip_delta_payloads: Skip generating delta payloads.
-      skip_duts_check: Do not check minimum available DUTs
+      skip_duts_check: Do not check minimum available DUTs before tests.
+    """
+    super(PaygenBuildStage, self).__init__(builder_run, board, **kwargs)
+    self._run = builder_run
+    self.board = board
+    self.channel = channel
+    self.version = version
+    self.debug = debug
+    self.skip_testing = skip_testing
+    self.skip_delta_payloads = skip_delta_payloads
+    self.skip_duts_check = skip_duts_check
+
+  def PerformStage(self):
+    """Invoke payload generation. If testing is enabled, schedule tests.
+
+    This method is intended to be safe to invoke inside a process.
     """
     # Convert to release tools naming for channels.
-    if not channel.endswith('-channel'):
-      channel += '-channel'
+    if not self.channel.endswith('-channel'):
+      self.channel += '-channel'
 
     with osutils.TempDir(sudo_rm=True) as tempdir:
       # Create the definition of the build to generate payloads for.
-      build = gspaths.Build(channel=channel,
-                            board=board,
-                            version=version)
+      build = gspaths.Build(channel=self.channel,
+                            board=self.board,
+                            version=self.version)
 
       try:
         # Generate the payloads.
-        self._PrintLoudly('Starting %s, %s, %s' % (channel, version, board))
-        paygen_build_lib.CreatePayloads(build,
-                                        work_dir=tempdir,
-                                        site_config=self._run.site_config,
-                                        dry_run=debug,
-                                        run_parallel=True,
-                                        skip_delta_payloads=skip_delta_payloads,
-                                        disable_tests=disable_tests,
-                                        skip_duts_check=skip_duts_check)
+        self._PrintLoudly('Starting %s, %s, %s' % (self.channel, self.version,
+                                                   self.board))
+        metadata = paygen_build_lib.CreatePayloads(
+            build,
+            work_dir=tempdir,
+            site_config=self._run.site_config,
+            dry_run=self.debug,
+            run_parallel=True,
+            skip_delta_payloads=self.skip_delta_payloads,
+            disable_tests=self.skip_testing,
+            skip_duts_check=self.skip_duts_check)
+        suite_name, archive_board, archive_build, finished_uri = metadata
+
+        # Now, schedule the payload tests if desired.
+        if not self.skip_testing:
+          PaygenTestStage(suite_name, archive_board, archive_build,
+                          finished_uri, self.skip_duts_check, self._run).Run()
+
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked) as e:
         # These errors are normal if it's possible that another builder is, or
@@ -447,4 +471,43 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
         #
         # This means the build was finished by the other process, or is already
         # being processed (so the build is locked).
-        logging.info('Paygen skipped because: %s', e)
+        logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
+
+
+class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
+  """Stage that schedules the payload tests."""
+  def __init__(self, suite_name, board, build, finished_uri, skip_duts_check,
+               builder_run, **kwargs):
+    self.suite_name = suite_name
+    self.board = board
+    self.build = build
+    self.finished_uri = finished_uri
+    self.skip_duts_check = skip_duts_check
+    super(PaygenTestStage, self).__init__(builder_run, board, **kwargs)
+    self._drm = dryrun_lib.DryRunMgr(self._run.debug)
+
+  def PerformStage(self):
+    """Schedule the tests to run."""
+    # Schedule the tests to run and wait for the results.
+    paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.board,
+                                           self.build, self.skip_duts_check,
+                                           self._run.debug)
+
+    # Mark the build as finished since the payloads were generated, uploaded,
+    # and tested by this point.
+    self._drm(gslib.CreateWithContents, self.finished_uri, socket.gethostname())
+
+  def _HandleStageException(self, exc_info):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    exc_type, exc_value, _exc_tb = exc_info
+
+    # If the exception is a TestLabFailure that means we couldn't schedule the
+    # test. We don't fail the build for that. We do the CompoundFailure dance,
+    # because that's how we'll get failures from background processes returned
+    # to us.
+    if (issubclass(exc_type, failures_lib.TestLabFailure) or
+        (issubclass(exc_type, failures_lib.CompoundFailure) and
+         exc_value.MatchesFailureType(failures_lib.TestLabFailure))):
+      return self._HandleExceptionAsWarning(exc_info)
+
+    return super(PaygenTestStage, self)._HandleStageException(exc_info)

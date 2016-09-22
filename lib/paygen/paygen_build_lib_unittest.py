@@ -1175,10 +1175,9 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
         ('archive_board', 'archive_build', 'archive_build_uri'))
     paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
-    paygen._AutotestPayloads(['Test Payloads'])
-
+    paygen._AutotestPayloads(['Test Payloads']).AndReturn(('foo-suite-name',
+                                                           finished_uri))
     paygen._CleanupBuild()
-    gslib.CreateWithContents(finished_uri, mox.IgnoreArg())
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
 
@@ -1215,8 +1214,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._MapToArchive('foo-board', '1.2.3').AndReturn(
         ('archive_board', 'archive_build', 'archive_build_uri'))
     paygen._CreatePayloadTests(payload_manager).AndReturn(['Test Payloads'])
-    paygen._AutotestPayloads(['Test Payloads'])
-    gslib.CreateWithContents(finished_uri, mox.IgnoreArg())
+    paygen._AutotestPayloads(['Test Payloads']).AndReturn(('foo-suite-name',
+                                                           finished_uri))
     paygen._CleanupBuild()
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
@@ -1248,7 +1247,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen_payload_lib.FindExistingPayloads(payload).AndReturn([])
     paygen._GeneratePayloads(payload_list, lock)
     paygen._CleanupBuild()
-    gslib.CreateWithContents(finished_uri, mox.IgnoreArg())
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
 
@@ -1256,6 +1254,30 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.mox.ReplayAll()
 
     paygen.CreatePayloads()
+
+  def setupAutotestPayloadsTests(self):
+    paygen = self._GetPaygenBuildInstance()
+
+    self.mox.StubOutWithMock(paygen, '_EmitControlFile')
+
+    return paygen
+
+  def testAutotestPayloads(self):
+    """Test that Autotest tarballs are uploaded and metadata returned."""
+    paygen = self.setupAutotestPayloadsTests()
+
+    payload_tests = ['Payload Tests']
+    paygen._archive_build_uri = 'archive_build_uri'
+    paygen._archive_build = 'foo-bd-release/R9001-1234.56.7'
+
+    test_channel = paygen._build.channel.rpartition('-')[0]
+    suite_name = (paygen.PAYGEN_AU_SUITE_TEMPLATE % test_channel)
+    for test in payload_tests:
+      paygen._EmitControlFile(test, suite_name, mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+
+    paygen._AutotestPayloads(payload_tests)
 
   def setupCreatePayloadTests(self):
     paygen = self._GetPaygenBuildInstance()
@@ -1459,10 +1481,6 @@ DOC = "Faux doc"
 
   def testScheduleAutotestTests(self):
     """Test scheduling autotest tests with build autotest proxy."""
-    paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
@@ -1478,17 +1496,18 @@ DOC = "Faux doc"
     self.mox.ReplayAll()
 
     # Setup preliminary values needed for scheduling autotests.
-    paygen._archive_board = 'foo-board'
-    paygen._archive_build = 'foo-board-release/R99-1.2.3'
+    suite_name = 'paygen_au_foo'
+    archive_board = 'foo-board'
+    archive_build = 'foo-board-release/R99-1.2.3'
+    skip_duts_check = False
+    debug = False
 
-    paygen._ScheduleAutotestTests('paygen_au_foo')
+    paygen_build_lib.ScheduleAutotestTests(suite_name, archive_board,
+                                           archive_build, skip_duts_check,
+                                           debug)
 
   def testScheduleAutotestTestsWarn(self):
     """Test scheduling autotest tests with build autotest proxy."""
-    paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
@@ -1506,10 +1525,15 @@ DOC = "Faux doc"
     self.mox.ReplayAll()
 
     # Setup preliminary values needed for scheduling autotests.
-    paygen._archive_board = 'foo-board'
-    paygen._archive_build = 'foo-board-release/R99-1.2.3'
+    suite_name = 'paygen_au_foo'
+    archive_board = 'foo-board'
+    archive_build = 'foo-board-release/R99-1.2.3'
+    skip_duts_check = False
+    debug = False
 
-    paygen._ScheduleAutotestTests('paygen_au_foo')
+    paygen_build_lib.ScheduleAutotestTests(suite_name, archive_board,
+                                           archive_build, skip_duts_check,
+                                           debug)
 
   def testMapToArchive(self):
     """Test that mapping to images archive names/locations works."""
@@ -1525,8 +1549,8 @@ DOC = "Faux doc"
     site_config.Add('build_to_introduce_boards',
                     boards=['foo_board', 'bar_board', 'bar-board'])
 
-    paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, site_config)
+    paygen = paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
+                                           site_config)
 
     # Case 1: mapping successful.
     self.assertEqual(

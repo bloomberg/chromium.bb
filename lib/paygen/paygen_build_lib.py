@@ -16,7 +16,6 @@ from __future__ import print_function
 import json
 import operator
 import os
-import socket
 import sys
 import tempfile
 import urlparse
@@ -1081,33 +1080,6 @@ class _PaygenBuild(object):
     logging.info('Control file emitted at %s', control_file)
     return control_file
 
-  def _ScheduleAutotestTests(self, suite_name):
-    """Run the appropriate command to schedule the Autotests we have prepped.
-
-    Args:
-      suite_name: The name of the test suite.
-    """
-    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    cmd_result = commands.RunHWTestSuite(
-        board=self._archive_board,
-        build=self._archive_build,
-        suite=suite_name,
-        file_bugs=True,
-        pool='bvt',
-        priority=constants.HWTEST_BUILD_PRIORITY,
-        retry=True,
-        wait_for_results=True,
-        timeout_mins=timeout_mins,
-        suite_min_duts=2,
-        debug=bool(self._drm),
-        skip_duts_check=self._skip_duts_check)
-    if cmd_result.to_raise:
-      if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
-        logging.warning('Warning running test suite; error output:\n%s',
-                        cmd_result.to_raise)
-      else:
-        raise cmd_result.to_raise
-
   def _AutotestPayloads(self, payload_tests):
     """Create necessary test artifacts and initiate Autotest runs.
 
@@ -1169,8 +1141,10 @@ class _PaygenBuild(object):
           'Failed to infer archive build milestone number (%s)' %
           self._archive_build)
 
-    # Actually have the tests run.
-    self._ScheduleAutotestTests(suite_name)
+    # Send the information needed to actually schedule and run the tests.
+    finished_uri = self._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
+    return suite_name, finished_uri
+
 
   @staticmethod
   def _IsTestDeltaPayload(payload):
@@ -1299,6 +1273,7 @@ class _PaygenBuild(object):
     """
     lock_uri = self._GetFlagURI(gspaths.ChromeosReleases.LOCK)
     finished_uri = self._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
+    suite_name = None
 
     logging.info('Examining: %s', self._build)
 
@@ -1377,27 +1352,26 @@ class _PaygenBuild(object):
             self._archive_board = archive_board
             self._archive_build = archive_build
             self._archive_build_uri = archive_build_uri
-
-            # We have a control file directory and all payloads have been
-            # generated. Lets create the list of tests to conduct.
-            payload_tests = self._CreatePayloadTests(payload_manager)
-            if payload_tests:
-              logging.info('Initiating %d payload tests', len(payload_tests))
-              self._drm(self._AutotestPayloads, payload_tests)
           except ArchiveError as e:
             logging.warning('Cannot map build to images archive, skipping '
                             'payload autotesting.')
             can_finish = False
 
+          if can_finish:
+            # We have a control file directory and all payloads have been
+            # generated. Lets create the list of tests to conduct.
+            payload_tests = self._CreatePayloadTests(payload_manager)
+            if payload_tests:
+              logging.info('Uploading %d payload tests', len(payload_tests))
+              suite_name, finished_uri = self._drm(self._AutotestPayloads,
+                                                   payload_tests)
+
         self._CleanupBuild()
-        if can_finish:
-          self._drm(gslib.CreateWithContents, finished_uri,
-                    socket.gethostname())
-        else:
+        if not can_finish:
           logging.warning('Not all payloads were generated, uploaded or '
                           'tested; not marking build as finished')
 
-        logging.info('Finished: %s', self._build)
+        logging.info('Finished generating payloads: %s', self._build)
 
     except gslock.LockNotAcquired as e:
       logging.info('Build already being processed: %s', e)
@@ -1410,6 +1384,8 @@ class _PaygenBuild(object):
     except Exception:
       logging.error('Failed: %s', self._build)
       raise
+
+    return suite_name, self._archive_board, self._archive_build, finished_uri
 
 
 def _FindControlFileDir(work_dir):
@@ -1475,14 +1451,47 @@ def CreatePayloads(build, work_dir, site_config,
   """
   ValidateBoardConfig(build.board)
 
-  _PaygenBuild(build, work_dir, site_config,
-               dry_run=dry_run,
-               ignore_finished=ignore_finished,
-               skip_delta_payloads=skip_delta_payloads,
-               disable_tests=disable_tests,
-               output_dir=output_dir,
-               run_parallel=run_parallel,
-               skip_duts_check=skip_duts_check).CreatePayloads()
+  return _PaygenBuild(build, work_dir, site_config,
+                      dry_run=dry_run,
+                      ignore_finished=ignore_finished,
+                      skip_delta_payloads=skip_delta_payloads,
+                      disable_tests=disable_tests,
+                      output_dir=output_dir,
+                      run_parallel=run_parallel,
+                      skip_duts_check=skip_duts_check).CreatePayloads()
+
+def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
+                          debug):
+  """Run the appropriate command to schedule the Autotests we have prepped.
+
+  Args:
+  suite_name: The name of the test suite.
+  board: A string representing the name of the archive board.
+  build: A string representing the name of the archive build.
+  skip_duts_check: A boolean indicating to not check minimum available DUTs.
+  debug: A boolean indicating whether or not we are in debug mode.
+  """
+  timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
+  cmd_result = commands.RunHWTestSuite(
+      board=board,
+      build=build,
+      suite=suite_name,
+      file_bugs=True,
+      pool='bvt',
+      priority=constants.HWTEST_BUILD_PRIORITY,
+      retry=True,
+      wait_for_results=True,
+      timeout_mins=timeout_mins,
+      suite_min_duts=2,
+      debug=debug,
+      skip_duts_check=skip_duts_check)
+
+  if cmd_result.to_raise:
+    if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
+      logging.warning('Warning running test suite; error output:\n%s',
+                      cmd_result.to_raise)
+    else:
+      raise cmd_result.to_raise
 
 
 def _GetAndValidateJson(uri):

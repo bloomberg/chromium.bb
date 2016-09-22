@@ -291,7 +291,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
-  """Test the PaygenStageStage."""
+  """Test the PaygenStage Stage."""
 
   # We use a variant board to make sure the '_' is translated to '-'.
   BOT_ID = 'x86-alex_he-release'
@@ -362,23 +362,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Verify that we queue up work
       self.assertEqual(queue.put.call_args_list, [])
 
-  def testPerformStageBackgroundFail(self):
-    """Test that exception from background processes are properly handled."""
-    with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
-      create_payloads.side_effect = failures_lib.TestLabFailure
-
-      stage = self.ConstructStage(channels=['foo', 'bar'])
-
-      with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
-        warning_handler.return_value = (results_lib.Results.FORGIVEN,
-                                        'description',
-                                        0)
-
-        stage.Run()
-
-        # This proves the exception was turned into a warning.
-        self.assertTrue(warning_handler.called)
-
   def testPerformStageTrybot(self):
     """Test the PerformStage alternate behavior for trybot runs."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
@@ -414,10 +397,23 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testRunPaygenInProcess(self):
     """Test that _RunPaygenInProcess works in the simple case."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
-      # Call the method under test.
+      # Have to patch and verify that the PaygenTestStage is created.
       stage = self.ConstructStage()
-      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                False, False, False, skip_duts_check=False)
+      # CreatePayloads should return a tuple of a suite name and the finished
+      # URI.
+      create_payloads.side_effect = iter([('foo-suite-name',
+                                           'foo-archive-board',
+                                           'foo-archive-build',
+                                           'foo-finished_uri')])
+      with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
+        # Call the method under test.
+        stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
+                                  False, False, False, skip_duts_check=False)
+        # Ensure that PaygenTestStage is created and schedules the test suite
+        # with the correct arguments.)
+        sched_tests.assert_called_once_with(
+            'foo-suite-name', 'foo-archive-board', 'foo-archive-build',
+            False, False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -434,6 +430,13 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testRunPaygenInProcessComplex(self):
     """Test that _RunPaygenInProcess with arguments that are more unusual."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
+      # Make CreatePayloads return the suite_name, archive_board, archive_build,
+      # and finished_uri.
+      create_payloads.side_effect = iter([('foo-suite-name',
+                                           'foo-archive-board',
+                                           'foo-archive-build',
+                                           'foo-finished_uri')])
+
       # Call the method under test.
       # Use release tools channel naming, and a board name including a variant.
       stage = self.ConstructStage()
@@ -453,3 +456,47 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           skip_delta_payloads=True,
           disable_tests=True,
           skip_duts_check=False)
+
+
+class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
+                          cbuildbot_unittest.SimpleBuilderTestCase):
+  """Test the PaygenTestStage stage."""
+
+  # We use a variant board to make sure the '_' is translated to '-'.
+  BOT_ID = 'x86-alex_he-release'
+  RELEASE_TAG = '0.0.1'
+
+  def setUp(self):
+    self._Prepare()
+
+    # This method fetches a file from GS, mock it out.
+    # self.validateMock = self.PatchObject(
+    #     paygen_build_lib, 'ValidateBoardConfig')
+
+  # pylint: disable=arguments-differ
+  def ConstructStage(self, suite_name, build, finished_uri='foo-finished-uri',
+                     skip_duts_check=False):
+    return release_stages.PaygenTestStage(suite_name, self._current_board,
+                                          build, finished_uri,
+                                          skip_duts_check,
+                                          self._run)
+
+  def testPerformStageTestLabFail(self):
+    """Test that exception from RunHWTestSuite are properly handled."""
+    with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
+      sched_tests.side_effect = failures_lib.TestLabFailure
+
+      stage = self.ConstructStage('foo-test-suite',
+                                  gspaths.Build(version='foo-version',
+                                                board=self._current_board,
+                                                channel='foo-channel'))
+
+      with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
+        warning_handler.return_value = (results_lib.Results.FORGIVEN,
+                                        'description',
+                                        0)
+
+        stage.Run()
+
+        # This proves the exception was turned into a warning.
+        self.assertTrue(warning_handler.called)
