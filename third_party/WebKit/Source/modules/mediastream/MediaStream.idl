@@ -22,32 +22,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaStream
+// https://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-mediastream
 
+// TODO(foolip): Unprefix the MediaStream interface. https://crbug.com/649331
 [
     Constructor,
     Constructor(MediaStream stream),
-    Constructor(MediaStreamTrack[] tracks),
+    Constructor(sequence<MediaStreamTrack> tracks),
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
 ] interface MediaStream : EventTarget {
-
     readonly attribute DOMString id;
-
     sequence<MediaStreamTrack> getAudioTracks();
     sequence<MediaStreamTrack> getVideoTracks();
     sequence<MediaStreamTrack> getTracks();
-
+    MediaStreamTrack? getTrackById(DOMString trackId);
     [RaisesException] void addTrack(MediaStreamTrack track);
     [RaisesException] void removeTrack(MediaStreamTrack track);
-    MediaStreamTrack getTrackById(DOMString trackId);
     [CallWith=ExecutionContext] MediaStream clone();
-
     [Measure] readonly attribute boolean active;
-
-    attribute EventHandler onactive;
-    attribute EventHandler oninactive;
-
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;
+
+    // TODO(guidou): Remove the active and inactive events on MediaStream.
+    // https://crbug.com/649328
+    attribute EventHandler onactive;
+    attribute EventHandler oninactive;
 };
