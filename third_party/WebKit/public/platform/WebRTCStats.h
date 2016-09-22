@@ -37,7 +37,13 @@ enum WebRTCStatsMemberType {
 class WebRTCStatsReport {
 public:
     virtual ~WebRTCStatsReport() {}
+    // Creates a new report object that is a handle to the same underlying stats
+    // report (the stats are not copied). The new report's iterator is reset,
+    // useful when needing multiple iterators.
+    virtual std::unique_ptr<WebRTCStatsReport> copyHandle() const = 0;
 
+    // Gets stats object by |id|, or null if no stats with that |id| exists.
+    virtual std::unique_ptr<WebRTCStats> getStats(WebString id) const = 0;
     // The next stats object, or null if the end has been reached.
     virtual std::unique_ptr<WebRTCStats> next() = 0;
 };

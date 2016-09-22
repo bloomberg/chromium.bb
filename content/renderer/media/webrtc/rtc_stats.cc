@@ -20,6 +20,20 @@ RTCStatsReport::RTCStatsReport(
 RTCStatsReport::~RTCStatsReport() {
 }
 
+std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReport::copyHandle() const {
+  return std::unique_ptr<blink::WebRTCStatsReport>(
+      new RTCStatsReport(stats_report_));
+}
+
+std::unique_ptr<blink::WebRTCStats> RTCStatsReport::getStats(
+    blink::WebString id) const {
+  const webrtc::RTCStats* stats = stats_report_->Get(id.utf8());
+  if (!stats)
+    return std::unique_ptr<blink::WebRTCStats>();
+  return std::unique_ptr<blink::WebRTCStats>(
+      new RTCStats(stats_report_, stats));
+}
+
 std::unique_ptr<blink::WebRTCStats> RTCStatsReport::next() {
   if (it_ == end_)
     return std::unique_ptr<blink::WebRTCStats>();

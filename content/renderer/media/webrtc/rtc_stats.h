@@ -17,7 +17,10 @@ class RTCStatsReport : public blink::WebRTCStatsReport {
   RTCStatsReport(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report);
   ~RTCStatsReport() override;
+  std::unique_ptr<blink::WebRTCStatsReport> copyHandle() const override;
 
+  std::unique_ptr<blink::WebRTCStats> getStats(
+      blink::WebString id) const override;
   std::unique_ptr<blink::WebRTCStats> next() override;
 
  private:
