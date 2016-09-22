@@ -201,7 +201,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
     public void testDeviceStateChangeCancels() {
         verifyBeginPrecaching();
 
-        mPrecacheController.setDeviceState(new MockDeviceState(0, false, true));
+        mPrecacheController.setDeviceState(new MockDeviceState(0, true, false));
         mPrecacheController.getDeviceStateReceiver().onReceive(mContext, new Intent());
         assertFalse(mPrecacheController.isPrecaching());
         // A continuation task is scheduled.

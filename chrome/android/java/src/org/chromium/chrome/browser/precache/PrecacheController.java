@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeBackgroundService;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.util.NonThreadSafe;
 import org.chromium.components.precache.DeviceState;
 import org.chromium.components.sync.ModelType;
@@ -113,12 +114,13 @@ public class PrecacheController {
                             isPrecaching(), mDeviceState.isPowerConnected(context),
                             mDeviceState.isUnmeteredNetworkAvailable(context));
                     if (isPrecaching()
-                            && (!mDeviceState.isPowerConnected(context)
+                            && ((ChromeVersionInfo.isStableBuild()
+                                        && !mDeviceState.isPowerConnected(context))
                                        || !mDeviceState.isUnmeteredNetworkAvailable(context))) {
                         recordFailureReasons(context);
-                        cancelPrecaching(!mDeviceState.isPowerConnected(context)
-                                ? PrecacheUMA.Event.PRECACHE_CANCEL_NO_POWER
-                                : PrecacheUMA.Event.PRECACHE_CANCEL_NO_UNMETERED_NETWORK);
+                        cancelPrecaching(!mDeviceState.isUnmeteredNetworkAvailable(context)
+                                        ? PrecacheUMA.Event.PRECACHE_CANCEL_NO_UNMETERED_NETWORK
+                                        : PrecacheUMA.Event.PRECACHE_CANCEL_NO_POWER);
                     }
                 }
             });
@@ -166,13 +168,13 @@ public class PrecacheController {
      */
     private static boolean schedulePeriodicPrecacheTask(Context context) {
         PeriodicTask task = new PeriodicTask.Builder()
-                .setPeriod(WAIT_UNTIL_NEXT_PRECACHE_SECONDS)
-                .setPersisted(true)
-                .setRequiredNetwork(PeriodicTask.NETWORK_STATE_UNMETERED)
-                .setRequiresCharging(true)
-                .setService(ChromeBackgroundService.class)
-                .setTag(PERIODIC_TASK_TAG)
-                .build();
+                                    .setPeriod(WAIT_UNTIL_NEXT_PRECACHE_SECONDS)
+                                    .setPersisted(true)
+                                    .setRequiredNetwork(PeriodicTask.NETWORK_STATE_UNMETERED)
+                                    .setRequiresCharging(ChromeVersionInfo.isStableBuild())
+                                    .setService(ChromeBackgroundService.class)
+                                    .setTag(PERIODIC_TASK_TAG)
+                                    .build();
         return sTaskScheduler.scheduleTask(context, task);
     }
 
@@ -190,15 +192,15 @@ public class PrecacheController {
     private static void schedulePrecacheCompletionTask(Context context) {
         Log.v(TAG, "scheduling a precache completion task");
         OneoffTask task = new OneoffTask.Builder()
-                .setExecutionWindow(COMPLETION_TASK_MIN_DELAY_SECONDS,
-                        COMPLETION_TASK_MAX_DELAY_SECONDS)
-                .setPersisted(true)
-                .setRequiredNetwork(OneoffTask.NETWORK_STATE_UNMETERED)
-                .setRequiresCharging(true)
-                .setService(ChromeBackgroundService.class)
-                .setTag(CONTINUATION_TASK_TAG)
-                .setUpdateCurrent(true)
-                .build();
+                                  .setExecutionWindow(COMPLETION_TASK_MIN_DELAY_SECONDS,
+                                          COMPLETION_TASK_MAX_DELAY_SECONDS)
+                                  .setPersisted(true)
+                                  .setRequiredNetwork(OneoffTask.NETWORK_STATE_UNMETERED)
+                                  .setRequiresCharging(ChromeVersionInfo.isStableBuild())
+                                  .setService(ChromeBackgroundService.class)
+                                  .setTag(CONTINUATION_TASK_TAG)
+                                  .setUpdateCurrent(true)
+                                  .build();
         if (sTaskScheduler.scheduleTask(context, task)) {
             PrecacheUMA.record(PrecacheUMA.Event.ONEOFF_TASK_SCHEDULE);
         } else {
@@ -453,7 +455,10 @@ public class PrecacheController {
     private void registerDeviceStateReceiver() {
         Log.v(TAG, "registered device state receiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        if (ChromeVersionInfo.isStableBuild()) {
+            // Power requirement for precache is only for stable channel.
+            filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        }
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         mAppContext.registerReceiver(mDeviceStateReceiver, filter);
     }
