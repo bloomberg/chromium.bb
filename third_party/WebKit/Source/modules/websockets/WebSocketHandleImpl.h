@@ -50,7 +50,7 @@ public:
 
 private:
     void disconnect();
-    void onConnectionError();
+    void onConnectionError(uint32_t customReason, const std::string& description);
 
     // mojom::blink::WebSocketClient methods:
     void OnFailChannel(const String& reason) override;

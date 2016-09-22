@@ -108,8 +108,10 @@ void WebSocketManager::DoCreateWebSocket(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (num_pending_connections_ >= kMaxPendingWebSocketConnections) {
-    // Too many websockets! By returning here, we let |request| die, which
-    // will be observed by the client as Mojo connection error.
+    // Too many websockets!
+    request.ResetWithReason(
+        blink::mojom::WebSocket::kInsufficientResources,
+        "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;
   }
 

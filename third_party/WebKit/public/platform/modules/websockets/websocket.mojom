@@ -96,6 +96,10 @@ interface WebSocketClient {
 };
 
 interface WebSocket {
+  // The client side may observe the following disconnection reason from the
+  // service side:
+  const uint32 kInsufficientResources = 1;
+
   // Open new WebSocket connection to |socket_url|. |requested_protocols| is a
   // list of tokens identifying sub-protocols the renderer would like to use,
   // as described in RFC6455 "Subprotocols Using the WebSocket Protocol".

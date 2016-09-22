@@ -45,8 +45,8 @@ void WebSocketHandleImpl::initialize(InterfaceProvider* interfaceProvider)
     DCHECK(!m_websocket);
     interfaceProvider->getInterface(mojo::GetProxy(&m_websocket));
 
-    m_websocket.set_connection_error_handler(
-        convertToBaseCallback(bind(&WebSocketHandleImpl::onConnectionError, unretained(this))));
+    m_websocket.set_connection_error_with_reason_handler(
+        convertToBaseCallback(WTF::bind(&WebSocketHandleImpl::onConnectionError, unretained(this))));
 }
 
 void WebSocketHandleImpl::connect(const KURL& url, const Vector<String>& protocols, SecurityOrigin* origin, const KURL& firstPartyForCookies, const String& userAgentOverride, WebSocketHandleClient* client)
@@ -122,7 +122,7 @@ void WebSocketHandleImpl::disconnect()
     m_client = nullptr;
 }
 
-void WebSocketHandleImpl::onConnectionError()
+void WebSocketHandleImpl::onConnectionError(uint32_t customReason, const std::string& description)
 {
     if (!blink::Platform::current()) {
         // In the renderrer shutdown sequence, mojo channels are destructed and this
@@ -135,11 +135,14 @@ void WebSocketHandleImpl::onConnectionError()
 
     // Our connection to the WebSocket was dropped. This could be due to
     // exceeding the maximum number of concurrent websockets from this process.
-
-    // TODO(darin): Communicate a more specific error here (see crbug/634502).
-    OnFailChannel(
-        "Error in connection establishment: net:"
-        ":ERR_INSUFFICIENT_RESOURCES");
+    String failureMessage;
+    if (customReason == mojom::blink::WebSocket::kInsufficientResources) {
+        failureMessage = description.empty() ? "Insufficient resources" : String::fromUTF8(description.c_str(), description.size());
+    } else {
+        DCHECK(description.empty());
+        failureMessage = "Unspecified reason";
+    }
+    OnFailChannel(failureMessage);
 }
 
 void WebSocketHandleImpl::OnFailChannel(const String& message)
