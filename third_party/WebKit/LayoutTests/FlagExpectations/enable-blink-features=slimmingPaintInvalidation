@@ -22,6 +22,7 @@ paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-
 paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
 paint/invalidation/svg/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
 paint/invalidation/text-match-document-change.html [ NeedsRebaseline ]
+paint/invalidation/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
 
 # Reflection implemented with filters
 paint/invalidation/reflection-invalidation-positioned-child.html [ NeedsRebaseline ]
@@ -29,3 +30,16 @@ paint/invalidation/reflection-repaint-test.html [ NeedsRebaseline ]
 paint/invalidation/scroll-absolute-layer-with-reflection.html [ NeedsRebaseline ]
 paint/invalidation/scroll-fixed-layer-with-reflection.html [ NeedsRebaseline ]
 
+# More accurate clipping
+paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
+paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
+paint/invalidation/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
+paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+
+crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
+crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
+crbug.com/648769 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure ]
+crbug.com/648769 paint/invalidation/svg/js-late-gradient-and-object-creation.svg [ Failure ]
+crbug.com/648769 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]
+crbug.com/648769 paint/invalidation/svg/tabgroup.svg [ Failure ]
+crbug.com/648769 paint/invalidation/svg/window.svg [ Failure ]
