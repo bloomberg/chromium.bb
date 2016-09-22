@@ -44,6 +44,11 @@ class DataUseMeasurement {
   void OnBeforeRedirect(const net::URLRequest& request,
                         const GURL& new_location);
 
+  // Called when data is received or sent on the network, respectively.
+  void OnNetworkBytesReceived(const net::URLRequest& request,
+                              int64_t bytes_received);
+  void OnNetworkBytesSent(const net::URLRequest& request, int64_t bytes_sent);
+
   // Indicates that |request| has been completed or failed.
   void OnCompleted(const net::URLRequest& request, bool started);
 
@@ -84,6 +89,10 @@ class DataUseMeasurement {
   // and vice versa.
   void OnApplicationStateChange(
       base::android::ApplicationState application_state);
+
+  // Records the count of bytes received and sent by Chrome on the network as
+  // reported by the operating system.
+  void MaybeRecordNetworkBytesOS();
 #endif
 
   // Records the data use of the |request|, thus |request| must be non-null.
@@ -113,6 +122,17 @@ class DataUseMeasurement {
   // ApplicationStatusListener used to monitor whether the application is in the
   // foreground or in the background. It is owned by DataUseMeasurement.
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
+
+  // Number of bytes received and sent by Chromium as reported by the operating
+  // system when it was last queried for traffic statistics. Set to 0 if the
+  // operating system was never queried.
+  int64_t rx_bytes_os_;
+  int64_t tx_bytes_os_;
+
+  // Number of bytes received and sent by Chromium as reported by the network
+  // delegate since the operating system was last queried for traffic
+  // statistics.
+  int64_t bytes_transferred_since_last_traffic_stats_query_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurement);

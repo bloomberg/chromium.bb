@@ -364,11 +364,13 @@ void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
 #endif  // defined(ENABLE_TASK_MANAGER)
 
   ReportDataUsageStats(request, 0 /* tx_bytes */, bytes_received);
+  data_use_measurement_.OnNetworkBytesReceived(*request, bytes_received);
 }
 
 void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
                                                int64_t bytes_sent) {
   ReportDataUsageStats(request, bytes_sent, 0 /* rx_bytes */);
+  data_use_measurement_.OnNetworkBytesSent(*request, bytes_sent);
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,

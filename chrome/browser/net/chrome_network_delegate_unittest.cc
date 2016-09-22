@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -193,6 +194,21 @@ class ChromeNetworkDelegateTest : public testing::Test {
   net::MockClientSocketFactory socket_factory_;
   std::unique_ptr<net::TestURLRequestContext> context_;
 };
+
+// Test that the total data use consumed by Chrome is recorded correctly.
+TEST_F(ChromeNetworkDelegateTest, TotalDataUseMeasurementTest) {
+  Initialize();
+  base::HistogramTester histogram_tester;
+
+  // A query from a user without redirection.
+  RequestURL(context(), socket_factory(), true, false);
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("DataUse.BytesSent.Delegate");
+  EXPECT_FALSE(buckets.empty());
+
+  buckets = histogram_tester.GetAllSamples("DataUse.BytesReceived.Delegate");
+  EXPECT_FALSE(buckets.empty());
+}
 
 // This function tests data use measurement for requests by services. it makes a
 // query which is similar to a query of a service, so it should affect

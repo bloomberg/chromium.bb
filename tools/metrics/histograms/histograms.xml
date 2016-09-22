@@ -8566,6 +8566,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUse.BytesReceived" units="bytes">
+  <owner>tbansal@chromium.org</owner>
+  <summary>Count of total bytes received by the Chrome on the network.</summary>
+</histogram>
+
+<histogram name="DataUse.BytesSent" units="bytes">
+  <owner>tbansal@chromium.org</owner>
+  <summary>Count of total bytes sent by the Chrome on the network.</summary>
+</histogram>
+
 <histogram name="DataUse.MessageSize" units="bytes">
   <owner>amohammadkhan@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -101455,6 +101465,15 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Submission of the report to the platform external data use
              observer timed out"/>
   <affected-histogram name="DataUsage.ReportSubmission.Bytes"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataUse.Bytes" separator=".">
+  <suffix name="Delegate" label="As reported by the network delegate."/>
+  <suffix name="OS"
+      label="As reported by the operating system. Currently logged only on
+             Android."/>
+  <affected-histogram name="DataUse.BytesReceived"/>
+  <affected-histogram name="DataUse.BytesSent"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataUse.Dimensions" separator=".">

@@ -14,6 +14,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if defined(OS_ANDROID)
+#include "net/android/traffic_stats.h"
+#endif
+
 namespace data_use_measurement {
 
 namespace {
@@ -52,7 +56,10 @@ DataUseMeasurement::DataUseMeasurement(
       app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
       app_listener_(new base::android::ApplicationStatusListener(
           base::Bind(&DataUseMeasurement::OnApplicationStateChange,
-                     base::Unretained(this))))
+                     base::Unretained(this)))),
+      rx_bytes_os_(0),
+      tx_bytes_os_(0),
+      bytes_transferred_since_last_traffic_stats_query_(0)
 #endif
 {
 }
@@ -65,11 +72,30 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
   ReportDataUseUMA(request);
 }
 
+void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
+                                                int64_t bytes_received) {
+  UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.Delegate", bytes_received);
+#if defined(OS_ANDROID)
+  bytes_transferred_since_last_traffic_stats_query_ += bytes_received;
+#endif
+}
+
+void DataUseMeasurement::OnNetworkBytesSent(const net::URLRequest& request,
+                                            int64_t bytes_sent) {
+  UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.Delegate", bytes_sent);
+#if defined(OS_ANDROID)
+  bytes_transferred_since_last_traffic_stats_query_ += bytes_sent;
+#endif
+}
+
 void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
                                      bool started) {
   // TODO(amohammadkhan): Verify that there is no double recording in data use
   // of redirected requests.
   ReportDataUseUMA(request);
+#if defined(OS_ANDROID)
+  MaybeRecordNetworkBytesOS();
+#endif
 }
 
 void DataUseMeasurement::ReportDataUseUMA(
@@ -162,6 +188,40 @@ std::string DataUseMeasurement::GetHistogramName(
 void DataUseMeasurement::OnApplicationStateChange(
     base::android::ApplicationState application_state) {
   app_state_ = application_state;
+  if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES)
+    MaybeRecordNetworkBytesOS();
+}
+
+void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
+  // Minimum number of bytes that should be reported by the network delegate
+  // before Android's TrafficStats API is queried (if Chrome is not in
+  // background). This reduces the overhead of repeatedly calling the API.
+  static const int64_t kMinDelegateBytes = 25000;
+
+  if (bytes_transferred_since_last_traffic_stats_query_ < kMinDelegateBytes &&
+      CurrentAppState() == FOREGROUND) {
+    return;
+  }
+  bytes_transferred_since_last_traffic_stats_query_ = 0;
+  int64_t bytes = 0;
+  // Query Android traffic stats directly instead of registering with the
+  // DataUseAggregator since the latter does not provide notifications for
+  // the incognito traffic.
+  if (net::android::traffic_stats::GetCurrentUidRxBytes(&bytes)) {
+    if (rx_bytes_os_ != 0) {
+      DCHECK_GE(bytes, rx_bytes_os_);
+      UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.OS", bytes - rx_bytes_os_);
+    }
+    rx_bytes_os_ = bytes;
+  }
+
+  if (net::android::traffic_stats::GetCurrentUidTxBytes(&bytes)) {
+    if (tx_bytes_os_ != 0) {
+      DCHECK_GE(bytes, tx_bytes_os_);
+      UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
+    }
+    tx_bytes_os_ = bytes;
+  }
 }
 #endif
 
