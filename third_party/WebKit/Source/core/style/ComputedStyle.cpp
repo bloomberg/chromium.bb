@@ -53,6 +53,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/SaturatedArithmetic.h"
+#include "wtf/SizeAssertions.h"
 #include <algorithm>
 #include <memory>
 
@@ -63,11 +64,11 @@ struct SameSizeAsBorderValue {
     unsigned m_width;
 };
 
-static_assert(sizeof(BorderValue) == sizeof(SameSizeAsBorderValue), "BorderValue should stay small");
+ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 
 // Since different compilers/architectures pack ComputedStyle differently,
 // re-create the same structure for an accurate size comparison.
-struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
+struct SameSizeAsComputedStyle : public ComputedStyleBase, public RefCounted<ComputedStyle> {
     void* dataRefs[7];
     void* ownPtrs[1];
     void* dataRefSvgStyle;
@@ -81,7 +82,7 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
     } m_nonInheritedData;
 };
 
-static_assert(sizeof(ComputedStyle) == sizeof(SameSizeAsComputedStyle), "ComputedStyle should stay small");
+ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 PassRefPtr<ComputedStyle> ComputedStyle::create()
 {
@@ -113,7 +114,9 @@ PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other)
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : m_box(initialStyle().m_box)
+    : ComputedStyleBase()
+    , RefCounted<ComputedStyle>()
+    , m_box(initialStyle().m_box)
     , m_visual(initialStyle().m_visual)
     , m_background(initialStyle().m_background)
     , m_surround(initialStyle().m_surround)
@@ -128,6 +131,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
+    : ComputedStyleBase()
+    , RefCounted<ComputedStyle>()
 {
     setBitDefaults();
 
@@ -152,7 +157,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
-    : RefCounted<ComputedStyle>()
+    : ComputedStyleBase(o)
+    , RefCounted<ComputedStyle>()
     , m_box(o.m_box)
     , m_visual(o.m_visual)
     , m_background(o.m_background)
@@ -306,6 +312,7 @@ ContentDistributionType ComputedStyle::resolvedAlignContentDistribution(const St
 
 void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBoundary isAtShadowBoundary)
 {
+    ComputedStyleBase::inheritFrom(inheritParent, isAtShadowBoundary);
     if (isAtShadowBoundary == AtShadowBoundary) {
         // Even if surrounding content is user-editable, shadow DOM should act as a single unit, and not necessarily be editable
         EUserModify currentUserModify = userModify();
@@ -470,12 +477,14 @@ bool ComputedStyle::inheritedEqual(const ComputedStyle& other) const
 
 bool ComputedStyle::independentInheritedEqual(const ComputedStyle& other) const
 {
-    return m_inheritedData.compareEqualIndependent(other.m_inheritedData);
+    return ComputedStyleBase::independentInheritedEqual(other)
+        && m_inheritedData.compareEqualIndependent(other.m_inheritedData);
 }
 
 bool ComputedStyle::nonIndependentInheritedEqual(const ComputedStyle& other) const
 {
-    return m_inheritedData.compareEqualNonIndependent(other.m_inheritedData)
+    return ComputedStyleBase::nonIndependentInheritedEqual(other)
+        && m_inheritedData.compareEqualNonIndependent(other.m_inheritedData)
         && m_styleInheritedData == other.m_styleInheritedData
         && m_svgStyle->inheritedEqual(*other.m_svgStyle)
         && m_rareInheritedData == other.m_rareInheritedData;
@@ -501,7 +510,9 @@ bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const
 bool ComputedStyle::inheritedDataShared(const ComputedStyle& other) const
 {
     // This is a fast check that only looks if the data structures are shared.
-    return m_inheritedData == other.m_inheritedData
+    // TODO(sashab): Should ComputedStyleBase have an inheritedDataShared method?
+    return ComputedStyleBase::inheritedEqual(other)
+        && m_inheritedData == other.m_inheritedData
         && m_styleInheritedData.get() == other.m_styleInheritedData.get()
         && m_svgStyle.get() == other.m_svgStyle.get()
         && m_rareInheritedData.get() == other.m_rareInheritedData.get();
@@ -810,7 +821,7 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
     if (!m_background->outline().visuallyEqual(other.m_background->outline()))
         return true;
 
-    if (m_inheritedData.m_visibility != other.m_inheritedData.m_visibility
+    if (visibility() != other.visibility()
         || m_inheritedData.m_printColorAdjust != other.m_inheritedData.m_printColorAdjust
         || m_inheritedData.m_insideLink != other.m_inheritedData.m_insideLink
         || !m_surround->border.visuallyEqual(other.m_surround->border)

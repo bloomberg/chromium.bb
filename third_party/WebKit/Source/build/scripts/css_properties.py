@@ -34,6 +34,7 @@ class CSSProperties(in_generator.Writer):
         # Typed OM annotations.
         'typedom_types': [],
         'keywords': [],
+        'keyword_only': False,
         'supports_percentage': False,
         'supports_multiple': False,
     }
@@ -50,6 +51,7 @@ class CSSProperties(in_generator.Writer):
         'custom_value': (True, False),
         'builder_skip': (True, False),
         'direction_aware': (True, False),
+        'keyword_only': (True, False),
     }
 
     def __init__(self, file_paths):

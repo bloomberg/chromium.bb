@@ -26,6 +26,7 @@
 #define ComputedStyle_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/ComputedStyleBase.h"
 #include "core/CoreExport.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -123,7 +124,20 @@ class ContentData;
 
 typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 
-class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
+// ComputedStyle stores the final style for an element and provides the
+// interface between the style engine and the rest of Blink.
+//
+// It contains all the resolved styles for an element, and is densely packed and
+// optimized for memory and performance. Enums and small fields are packed in
+// bit fields, while large fields are stored in pointers and shared where not
+// modified from their parent value (see the DataRef class).
+//
+// Currently, ComputedStyle is hand-written and ComputedStyleBase is generated.
+// Over time, methods will be moved to ComputedStyleBase and the generator will
+// be expanded to handle more and more types of properties. Eventually, all
+// methods will be on ComputedStyleBase (with custom methods defined in a class
+// such as ComputedStyleBase.cpp) and ComputedStyle will be removed.
+class CORE_EXPORT ComputedStyle: public ComputedStyleBase, public RefCounted<ComputedStyle> {
     friend class AnimatedStyleBuilder; // Used by Web Animations CSS. Sets the color styles
     friend class CSSAnimatableValueFactory; // Used by Web Animations CSS. Gets visited and unvisited colors separately.
     friend class CSSPropertyEquality; // Used by CSS animations. We can't allow them to animate based off visited colors.
@@ -175,8 +189,7 @@ protected:
             // These must match the properties tagged 'independent' in
             // CSSProperties.in.
             // TODO(sashab): Generate this function.
-            return (m_visibility == other.m_visibility)
-                && (m_pointerEvents == other.m_pointerEvents);
+            return (m_pointerEvents == other.m_pointerEvents);
         }
 
         inline bool compareEqualNonIndependent(const InheritedData& other) const
@@ -203,7 +216,6 @@ protected:
         unsigned m_captionSide : 2; // ECaptionSide
         unsigned m_listStyleType : 7; // EListStyleType
         unsigned m_listStylePosition : 1; // EListStylePosition
-        unsigned m_visibility : 2; // EVisibility
         unsigned m_textAlign : 4; // ETextAlign
         unsigned m_textTransform : 2; // ETextTransform
         unsigned m_textUnderline : 1;
@@ -330,11 +342,11 @@ protected:
 
     void setBitDefaults()
     {
+        ComputedStyleBase::setBitDefaults();
         m_inheritedData.m_emptyCells = initialEmptyCells();
         m_inheritedData.m_captionSide = initialCaptionSide();
         m_inheritedData.m_listStyleType = initialListStyleType();
         m_inheritedData.m_listStylePosition = initialListStylePosition();
-        m_inheritedData.m_visibility = static_cast<unsigned>(initialVisibility());
         m_inheritedData.m_textAlign = initialTextAlign();
         m_inheritedData.m_textTransform = initialTextTransform();
         m_inheritedData.m_textUnderline = false;
@@ -423,11 +435,6 @@ public:
     StyleSelfAlignmentData resolvedJustifySelf(ItemPosition normalValueBehaviour, const ComputedStyle* parentStyle = nullptr) const;
 
     StyleDifference visualInvalidationDiff(const ComputedStyle&) const;
-
-    enum IsAtShadowBoundary {
-        AtShadowBoundary,
-        NotAtShadowBoundary,
-    };
 
     void inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
     void copyNonInheritedFromCached(const ComputedStyle&);
@@ -1265,6 +1272,10 @@ public:
     void setVerticalAlign(EVerticalAlign v) { m_nonInheritedData.m_verticalAlign = v; }
     void setVerticalAlignLength(const Length& length) { setVerticalAlign(VerticalAlignLength); SET_VAR(m_box, m_verticalAlign, length); }
 
+    // visibility
+    // TODO(sashab): Move this to ComputedStyleBase.
+    void setVisibilityIsInherited(bool isInherited) { m_nonInheritedData.m_isVisibilityInherited = isInherited; }
+
     // will-change
     const Vector<CSSPropertyID>& willChangeProperties() const { return m_rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return m_rareNonInheritedData->m_willChange->m_contents; }
@@ -1498,12 +1509,6 @@ public:
     static ETextTransform initialTextTransform() { return TTNONE; }
     ETextTransform textTransform() const { return static_cast<ETextTransform>(m_inheritedData.m_textTransform); }
     void setTextTransform(ETextTransform v) { m_inheritedData.m_textTransform = v; }
-
-    // visibility
-    static EVisibility initialVisibility() { return EVisibility::Visible; }
-    EVisibility visibility() const { return static_cast<EVisibility>(m_inheritedData.m_visibility); }
-    void setVisibility(EVisibility v) { m_inheritedData.m_visibility = static_cast<unsigned>(v); }
-    void setVisibilityIsInherited(bool isInherited) { m_nonInheritedData.m_isVisibilityInherited = isInherited; }
 
     // white-space inherited
     static EWhiteSpace initialWhiteSpace() { return NORMAL; }

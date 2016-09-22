@@ -26,6 +26,7 @@
 #ifndef ComputedStyleConstants_h
 #define ComputedStyleConstants_h
 
+#include "core/ComputedStyleBaseConstants.h"
 #include <cstddef>
 
 namespace blink {
@@ -402,10 +403,6 @@ enum ECaptionSide {
 };
 
 enum EListStylePosition { ListStylePositionOutside, ListStylePositionInside };
-
-// TODO(sashab): Add a static_assert when this is used in bitfields to ensure it
-// uses unsigned as the underlying type.
-enum class EVisibility : unsigned { Visible, Hidden, Collapse };
 
 enum ECursor {
     // The following must match the order in CSSValueKeywords.in.

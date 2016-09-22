@@ -753,7 +753,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     } else {
         if (state.parentStyle()) {
             RefPtr<ComputedStyle> style = ComputedStyle::create();
-            style->inheritFrom(*state.parentStyle(), isAtShadowBoundary(element) ? ComputedStyle::AtShadowBoundary : ComputedStyle::NotAtShadowBoundary);
+            style->inheritFrom(*state.parentStyle(), isAtShadowBoundary(element) ? ComputedStyleBase::AtShadowBoundary : ComputedStyleBase::NotAtShadowBoundary);
             state.setStyle(style.release());
         } else {
             state.setStyle(initialStyleForElement());

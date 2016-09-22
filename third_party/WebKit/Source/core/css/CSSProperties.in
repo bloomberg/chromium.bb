@@ -23,6 +23,21 @@
 // The property is a shorthand for several other properties.
 
 
+// keyword_only
+// These properties only store keyword values. This is used when
+// generating the ComputedStyle storage for the property. The initial
+// value for this property on a ComputedStyle is the first keyword in
+// the specified list of keywords.
+// TODO(sashab, meade): Remove this once TypedOM types are specified for
+// every property, since this value can be inferred from that.
+
+
+// - keywords=[keyword1|keyword2]
+// This specifies all valid keyword values for the property.
+// TODO(sashab): Once all properties are represented here, delete
+// CSSValueKeywords.in and use this list instead.
+
+
 // Flags which go into CSSOMTypes:
 // - typedom_types=[Type|OtherType]
 // The property can take types specified in typedom_types for CSS Typed OM.
@@ -347,7 +362,7 @@ transition-timing-function custom_all
 unicode-bidi
 vector-effect svg
 vertical-align interpolable, custom_inherit, custom_value
-visibility interpolable, inherited, independent
+visibility interpolable, inherited, independent, keyword_only, keywords=[visible|hidden|collapse]
 x interpolable, svg, converter=convertLength
 y interpolable, svg, converter=convertLength
 -webkit-appearance type_name=ControlPart
