@@ -108,12 +108,20 @@ void PrecacheURLTable::GetURLListForReferrerHost(
 }
 
 void PrecacheURLTable::ClearAllForReferrerHost(int64_t referrer_host_id) {
-  Statement statement(db_->GetCachedStatement(
+  // Delete the URLs that are not precached.
+  Statement delete_statement(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "DELETE FROM precache_urls WHERE "
+                              "referrer_host_id=? AND is_precached=0"));
+  delete_statement.BindInt64(0, referrer_host_id);
+  delete_statement.Run();
+
+  // Clear was_used for precached URLs.
+  Statement update_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE precache_urls SET was_used=0 WHERE referrer_host_id=?"));
-
-  statement.BindInt64(0, referrer_host_id);
-  statement.Run();
+  update_statement.BindInt64(0, referrer_host_id);
+  update_statement.Run();
 }
 
 void PrecacheURLTable::DeleteAllPrecachedBefore(const base::Time& delete_end) {

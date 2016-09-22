@@ -38,6 +38,8 @@ const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
 const base::Time kNewFetchTime =
     base::Time() + base::TimeDelta::FromHours(2000);
+const base::Time kPrecacheTime =
+    base::Time() + base::TimeDelta::FromHours(3000);
 const int64_t kSize = 5000;
 const int64_t kFreshnessBucket10K = 9089;
 // One of the possible CacheEntryStatus for when the fetch was served from the
@@ -525,6 +527,7 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
 
   struct test_resource_info {
     std::string url;
+    bool is_user_browsed;
     bool is_network_fetched;
     bool is_cellular_fetched;
     bool expected_in_used;
@@ -537,23 +540,27 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
       {
           "foo.com",
           {
-              {"http://foo.com/from-cache.js", false, false, true},
-              {"http://some-cdn.com/from-network.js", true, false, false},
-              {"http://foo.com/from-cache-cellular.js", false, true, true},
-              {"http://foo.com/from-network-cellular.js", true, true, false},
+              {"http://foo.com/from-cache.js", true, false, false, true},
+              {"http://some-cdn.com/from-network.js", true, true, false, false},
+              {"http://foo.com/from-cache-cellular.js", true, false, true,
+               true},
+              {"http://foo.com/from-network-cellular.js", true, true, true,
+               false},
+              {"http://foo.com/not-browsed.js", false, false, false, false},
           },
       },
       {
           "bar.com",
           {
-              {"http://bar.com/a.js", false, false, true},
-              {"http://some-cdn.com/b.js", false, true, true},
+              {"http://bar.com/a.js", true, false, false, true},
+              {"http://some-cdn.com/b.js", true, false, true, true},
+              {"http://bar.com/not-browsed.js", false, false, false, false},
           },
       },
       {
           "foobar.com",
           {
-              {"http://some-cdn.com/not-used.js", true, true, false},
+              {"http://some-cdn.com/not-used.js", true, true, true, false},
           },
       },
       {
@@ -564,12 +571,14 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
   for (const auto& test : tests) {
     for (const auto& resource : test.resource_info) {
       precache_database_->RecordURLPrefetch(GURL(resource.url), test.hostname,
-                                            base::Time(), false, kSize);
+                                            kPrecacheTime, false, kSize);
     }
   }
   // Update some resources as used due to user browsing.
   for (const auto& test : tests) {
     for (const auto& resource : test.resource_info) {
+      if (!resource.is_user_browsed)
+        continue;
       if (!resource.is_network_fetched && !resource.is_cellular_fetched) {
         RecordFetchFromCache(GURL(resource.url), kFetchTime, kSize);
       } else if (!resource.is_network_fetched && resource.is_cellular_fetched) {
@@ -614,6 +623,16 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
         referrer_id, &actual_used_urls, &actual_unused_urls);
     EXPECT_TRUE(actual_used_urls.empty());
   }
+  // Resources that were precached previously and not seen in user browsing
+  // should be still marked as precached.
+  std::map<GURL, base::Time> expected_url_table_map;
+  for (const auto& test : tests) {
+    for (const auto& resource : test.resource_info) {
+      if (!resource.is_user_browsed)
+        expected_url_table_map[GURL(resource.url)] = kPrecacheTime;
+    }
+  }
+  EXPECT_EQ(expected_url_table_map, GetActualURLTableMap());
 }
 
 }  // namespace

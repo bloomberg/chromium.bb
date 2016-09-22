@@ -1289,4 +1289,101 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
   }
 }
 
+// Tests cancel precaching when all tophost manifests are fetched, but some
+// resource fetches are pending.
+TEST_F(PrecacheFetcherTest, CancelPrecachingAfterAllManifestFetch) {
+  SetDefaultFlags();
+
+  const size_t kNumTopHosts = 5;
+  const size_t kNumResources = 5;
+  const size_t kMaxParallelFetches = 10;
+
+  PrecacheConfigurationSettings config;
+  PrecacheManifest top_host_manifest[kNumTopHosts];
+  std::multiset<GURL> expected_requested_urls;
+  std::unique_ptr<PrecacheUnfinishedWork> cancelled_work;
+
+  config.set_top_sites_count(kNumTopHosts);
+  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  expected_requested_urls.insert(GURL(kConfigURL));
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+
+  for (size_t i = 0; i < kNumTopHosts; ++i) {
+    const std::string top_host_url = base::StringPrintf("top-host-%zu.com", i);
+    unfinished_work->add_top_host()->set_hostname(top_host_url);
+
+    for (size_t j = 0; j < kNumResources; ++j) {
+      const std::string resource_url =
+          base::StringPrintf("http://top-host-%zu.com/resource-%zu", i, j);
+      top_host_manifest[i].add_resource()->set_url(resource_url);
+      factory_.SetFakeResponse(GURL(resource_url), "good", net::HTTP_OK,
+                               net::URLRequestStatus::SUCCESS);
+      if (i < kNumTopHosts - 1)
+        expected_requested_urls.insert(GURL(resource_url));
+    }
+    factory_.SetFakeResponse(GURL(kManifestURLPrefix + top_host_url),
+                             top_host_manifest[i].SerializeAsString(),
+                             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    expected_requested_urls.insert(GURL(kManifestURLPrefix + top_host_url));
+  }
+
+  {
+    uint32_t remaining_tries = 100;
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(),
+        std::move(unfinished_work), kExperimentID,
+        precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    // Run the loop until all tophost manifest fetches are complete, but some
+    // resource fetches are pending.
+    while (--remaining_tries != 0 &&
+           (!precache_fetcher.top_hosts_to_fetch_.empty() ||
+            !precache_fetcher.unfinished_work_->has_config_settings() ||
+            precache_fetcher.resources_to_fetch_.empty())) {
+      base::RunLoop run_loop;
+      loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+      run_loop.Run();
+    }
+
+    // Cancel precaching.
+    cancelled_work = precache_fetcher.CancelPrecaching();
+    EXPECT_TRUE(precache_fetcher.top_hosts_to_fetch_.empty());
+    EXPECT_TRUE(precache_fetcher.resources_to_fetch_.empty());
+  }
+  EXPECT_NE(cancelled_work, nullptr);
+  EXPECT_TRUE(cancelled_work->top_host().empty());
+  EXPECT_EQ(static_cast<size_t>(cancelled_work->resource().size()),
+            kMaxParallelFetches + kNumResources);
+
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+
+  EXPECT_FALSE(precache_delegate_.was_on_done_called());
+
+  // Continuing with the precache should only fetch the pending resources in the
+  // previous run.
+  expected_requested_urls.clear();
+  url_callback_.clear_requested_urls();
+  for (size_t i = 2; i < kNumTopHosts; ++i) {
+    for (size_t j = 0; j < kNumResources; ++j) {
+      expected_requested_urls.insert(GURL(
+          base::StringPrintf("http://top-host-%zu.com/resource-%zu", i, j)));
+    }
+  }
+  {
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(),
+        std::move(cancelled_work), kExperimentID,
+        precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+}
+
 }  // namespace precache

@@ -413,7 +413,7 @@ std::unique_ptr<PrecacheUnfinishedWork> PrecacheFetcher::CancelPrecaching() {
     return nullptr;
 
   unfinished_work_->clear_resource();
-  if (top_hosts_to_fetch_.size()) {
+  if (unfinished_work_->has_config_settings()) {
     // If config fetch is incomplete, |top_hosts_to_fetch_| will be empty and
     // top hosts should be left as is in |unfinished_work_|.
     unfinished_work_->clear_top_host();

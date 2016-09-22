@@ -152,6 +152,8 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
  private:
   friend class PrecacheFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest, FetcherPoolMaxLimitReached);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest,
+                           CancelPrecachingAfterAllManifestFetch);
 
   // Notifies the precache delete that precaching is done, and report
   // completion statistics.
