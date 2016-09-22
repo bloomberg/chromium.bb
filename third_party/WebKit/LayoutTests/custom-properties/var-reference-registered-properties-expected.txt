@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL var() references work with registered properties assert_equals: expected "60px" but got "calc(60px)"
-Harness: the test ran to completion.
-

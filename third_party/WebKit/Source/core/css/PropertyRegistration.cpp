@@ -5,6 +5,7 @@
 #include "core/css/PropertyRegistration.h"
 
 #include "core/css/CSSSyntaxDescriptor.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistry.h"
@@ -15,9 +16,39 @@
 
 namespace blink {
 
-static bool computationallyIdempotent(const CSSValue& value)
+static bool computationallyIndependent(const CSSValue& value)
 {
-    // TODO(timloh): Implement this
+    DCHECK(!value.isCSSWideKeyword());
+
+    if (value.isVariableReferenceValue())
+        return !toCSSVariableReferenceValue(value).variableDataValue()->needsVariableResolution();
+
+    if (value.isValueList()) {
+        for (const CSSValue* innerValue : toCSSValueList(value)) {
+            if (!computationallyIndependent(*innerValue))
+                return false;
+        }
+        return true;
+    }
+
+    if (value.isPrimitiveValue()) {
+        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+        if (!primitiveValue.isLength() && !primitiveValue.isCalculatedPercentageWithLength())
+            return true;
+
+        CSSPrimitiveValue::CSSLengthArray lengthArray;
+        primitiveValue.accumulateLengthArray(lengthArray);
+        for (size_t i = 0; i < lengthArray.values.size(); i++) {
+            if (lengthArray.typeFlags.get(i)
+                && i != CSSPrimitiveValue::UnitTypePixels
+                && i != CSSPrimitiveValue::UnitTypePercentage)
+                return false;
+        }
+        return true;
+    }
+
+    // TODO(timloh): Images and transform-function values can also contain lengths.
+
     return true;
 }
 
@@ -53,8 +84,8 @@ void PropertyRegistration::registerProperty(ExecutionContext* executionContext, 
             exceptionState.throwDOMException(SyntaxError, "The initial value provided does not parse for the given syntax.");
             return;
         }
-        if (!computationallyIdempotent(*initial)) {
-            exceptionState.throwDOMException(SyntaxError, "The initial value provided is not computationally idempotent.");
+        if (!computationallyIndependent(*initial)) {
+            exceptionState.throwDOMException(SyntaxError, "The initial value provided is not computationally independent.");
             return;
         }
         registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), initial);

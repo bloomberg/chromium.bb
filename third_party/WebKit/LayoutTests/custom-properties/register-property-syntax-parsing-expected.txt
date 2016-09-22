@@ -90,23 +90,26 @@ PASS syntax:'*', initialValue:'"
 PASS syntax:'*', initialValue:'url(moo '')' is invalid 
 PASS syntax:'*', initialValue:'semi;colon' is invalid 
 PASS syntax:'*', initialValue:'var(invalid var ref)' is invalid 
-FAIL syntax:'*', initialValue:'var(--foo)' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'*', initialValue:'var(--foo)' is invalid 
 PASS syntax:'banana', initialValue:'bAnAnA' is invalid 
-FAIL syntax:'<length>', initialValue:'var(--moo)' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'<length>', initialValue:'var(--moo)' is invalid 
 PASS syntax:'<length>', initialValue:'10' is invalid 
 PASS syntax:'<length>', initialValue:'10%' is invalid 
 PASS syntax:'<length>', initialValue:'calc(5px + 10%)' is invalid 
 PASS syntax:'<length>', initialValue:'calc(5px * 3px / 6px)' is invalid 
-FAIL syntax:'<length>', initialValue:'10em' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
-FAIL syntax:'<length>', initialValue:'10vmin' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
-FAIL syntax:'<length>', initialValue:'calc(4px + 3em)' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
-FAIL syntax:'<length>', initialValue:'calc(4px + calc(8 * 2em))' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'<length>', initialValue:'10em' is invalid 
+PASS syntax:'<length>', initialValue:'10vmin' is invalid 
+PASS syntax:'<length>', initialValue:'calc(4px + 3em)' is invalid 
+PASS syntax:'<length>', initialValue:'calc(4px + calc(8 * 2em))' is invalid 
+PASS syntax:'<length>+', initialValue:'calc(2ex + 16px)' is invalid 
+PASS syntax:'<length>+', initialValue:'10px calc(20px + 4rem)' is invalid 
+PASS syntax:'<percentage> | <length>+', initialValue:'calc(100vh - 10px) 30px' is invalid 
 PASS syntax:'<length>', initialValue:'10px;' is invalid 
-FAIL syntax:'<length-percentage>', initialValue:'calc(2px + 10% + 7ex)' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'<length-percentage>', initialValue:'calc(2px + 10% + 7ex)' is invalid 
 PASS syntax:'<percentage>', initialValue:'0' is invalid 
 PASS syntax:'<integer>', initialValue:'1.0' is invalid 
 PASS syntax:'<integer>', initialValue:'1e0' is invalid 
-FAIL syntax:'<number>|foo', initialValue:'foo var(--foo, bla)' is invalid assert_throws: function "() => CSS.registerProperty({name: '--syntax-test', syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'<number>|foo', initialValue:'foo var(--foo, bla)' is invalid 
 PASS syntax:'<angle>', initialValue:'10%' is invalid 
 PASS syntax:'<time>', initialValue:'2px' is invalid 
 PASS syntax:'<resolution>', initialValue:'10' is invalid 
