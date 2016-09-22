@@ -5,7 +5,6 @@
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 
 #include "bindings/core/v8/ToV8.h"
-#include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "core/dom/DOMArrayBufferBase.h"
@@ -114,27 +113,6 @@ void V8ScriptValueSerializer::writeUTF8String(const String& string)
 bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, ExceptionState& exceptionState)
 {
     const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
-    if (wrapperTypeInfo == &V8ImageBitmap::wrapperTypeInfo) {
-        ImageBitmap* imageBitmap = wrappable->toImpl<ImageBitmap>();
-        if (imageBitmap->isNeutered()) {
-            exceptionState.throwDOMException(DataCloneError,
-                "An ImageBitmap is detached and could not be cloned.");
-            return false;
-        }
-        // Warning: using N32ColorType here is not portable (across CPU
-        // architectures, across platforms, etc.).
-        RefPtr<Uint8Array> pixels = imageBitmap->copyBitmapData(
-            imageBitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha,
-            N32ColorType);
-        writeTag(ImageBitmapTag);
-        writeUint32(imageBitmap->originClean());
-        writeUint32(imageBitmap->isPremultiplied());
-        writeUint32(imageBitmap->width());
-        writeUint32(imageBitmap->height());
-        writeUint32(pixels->length());
-        writeRawBytes(pixels->data(), pixels->length());
-        return true;
-    }
     if (wrapperTypeInfo == &V8ImageData::wrapperTypeInfo) {
         ImageData* imageData = wrappable->toImpl<ImageData>();
         DOMUint8ClampedArray* pixels = imageData->data();

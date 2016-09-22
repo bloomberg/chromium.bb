@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8DOMException.h"
-#include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8StringResource.h"
@@ -18,14 +17,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/StaticBitmapImage.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 namespace {
@@ -332,92 +326,6 @@ TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex)
 
 // Decode tests for backward compatibility are not required for message ports
 // because they cannot be persisted to disk.
-
-// A more exhaustive set of ImageBitmap cases are covered by LayoutTests.
-TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap)
-{
-    ScopedEnableV8BasedStructuredClone enable;
-    V8TestingScope scope;
-
-    // Make a 10x7 red ImageBitmap.
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
-    surface->getCanvas()->clear(SK_ColorRED);
-    ImageBitmap* imageBitmap = ImageBitmap::create(StaticBitmapImage::create(surface->makeImageSnapshot()));
-
-    // Serialize and deserialize it.
-    v8::Local<v8::Value> wrapper = toV8(imageBitmap, scope.getScriptState());
-    v8::Local<v8::Value> result = roundTrip(wrapper, scope);
-    ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.isolate()));
-    ImageBitmap* newImageBitmap = V8ImageBitmap::toImpl(result.As<v8::Object>());
-    ASSERT_EQ(IntSize(10, 7), newImageBitmap->size());
-
-    // Check that the pixel at (3, 3) is red.
-    uint8_t pixel[4] = {};
-    ASSERT_TRUE(newImageBitmap->bitmapImage()->imageForCurrentFrame()->readPixels(
-        SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
-        &pixel, 4, 3, 3));
-    ASSERT_THAT(pixel, ::testing::ElementsAre(255, 0, 0, 255));
-}
-
-TEST(V8ScriptValueSerializerTest, DecodeImageBitmap)
-{
-    // Backward compatibility with existing serialized ImageBitmap objects must be
-    // maintained. Add more cases if the format changes; don't remove tests for
-    // old versions.
-    ScopedEnableV8BasedStructuredClone enable;
-    V8TestingScope scope;
-    ScriptState* scriptState = scope.getScriptState();
-    RefPtr<SerializedScriptValue> input = serializedValue({
-        0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x01, 0x02, 0x01,
-        0x08, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff });
-    v8::Local<v8::Value> result = V8ScriptValueDeserializer(scriptState, input).deserialize();
-    ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.isolate()));
-    ImageBitmap* newImageBitmap = V8ImageBitmap::toImpl(result.As<v8::Object>());
-    ASSERT_EQ(IntSize(2, 1), newImageBitmap->size());
-
-    // Check that the pixels are opaque red and green, respectively.
-    uint8_t pixels[8] = {};
-    ASSERT_TRUE(newImageBitmap->bitmapImage()->imageForCurrentFrame()->readPixels(
-        SkImageInfo::Make(2, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
-        &pixels, 8, 0, 0));
-    ASSERT_THAT(pixels, ::testing::ElementsAre(255, 0, 0, 255, 0, 255, 0, 255));
-}
-
-TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecode)
-{
-    ScopedEnableV8BasedStructuredClone enable;
-    V8TestingScope scope;
-    ScriptState* scriptState = scope.getScriptState();
-    {
-        // Too many bytes declared in pixel data.
-        RefPtr<SerializedScriptValue> input = serializedValue({
-            0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x01, 0x02, 0x01,
-            0x09, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff,
-            0x00, 0x00});
-        EXPECT_TRUE(V8ScriptValueDeserializer(scriptState, input).deserialize()->IsNull());
-    }
-    {
-        // Too few bytes declared in pixel data.
-        RefPtr<SerializedScriptValue> input = serializedValue({
-            0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x01, 0x02, 0x01,
-            0x07, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff });
-        EXPECT_TRUE(V8ScriptValueDeserializer(scriptState, input).deserialize()->IsNull());
-    }
-    {
-        // Nonsense for origin clean data.
-        RefPtr<SerializedScriptValue> input = serializedValue({
-            0xff, 0x09, 0x3f, 0x00, 0x67, 0x02, 0x01, 0x02, 0x01,
-            0x08, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff });
-        EXPECT_TRUE(V8ScriptValueDeserializer(scriptState, input).deserialize()->IsNull());
-    }
-    {
-        // Nonsense for premultiplied bit.
-        RefPtr<SerializedScriptValue> input = serializedValue({
-            0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x02, 0x02, 0x01,
-            0x08, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff });
-        EXPECT_TRUE(V8ScriptValueDeserializer(scriptState, input).deserialize()->IsNull());
-    }
-}
 
 } // namespace
 } // namespace blink

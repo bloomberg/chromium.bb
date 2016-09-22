@@ -8,10 +8,8 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/MessagePort.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/CheckedNumeric.h"
 
 namespace blink {
 
@@ -96,23 +94,6 @@ bool V8ScriptValueDeserializer::readUTF8String(String* string)
 ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
 {
     switch (tag) {
-    case ImageBitmapTag: {
-        uint32_t originClean = 0, isPremultiplied = 0, width = 0, height = 0, pixelLength = 0;
-        const void* pixels = nullptr;
-        if (!readUint32(&originClean) || originClean > 1
-            || !readUint32(&isPremultiplied) || isPremultiplied > 1
-            || !readUint32(&width)
-            || !readUint32(&height)
-            || !readUint32(&pixelLength)
-            || !readRawBytes(pixelLength, &pixels))
-            return nullptr;
-        CheckedNumeric<uint32_t> computedPixelLength = width;
-        computedPixelLength *= height;
-        computedPixelLength *= 4;
-        if (!computedPixelLength.IsValid() || computedPixelLength.ValueOrDie() != pixelLength)
-            return nullptr;
-        return ImageBitmap::create(pixels, width, height, isPremultiplied, originClean);
-    }
     case ImageDataTag: {
         uint32_t width = 0, height = 0, pixelLength = 0;
         const void* pixels = nullptr;
