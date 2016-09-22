@@ -22,6 +22,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -33,6 +34,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
 using content::RenderViewHost;
@@ -55,6 +57,7 @@ WebAuthFlow::WebAuthFlow(
       provider_url_(provider_url),
       mode_(mode),
       embedded_window_created_(false) {
+  TRACE_EVENT_ASYNC_BEGIN0("identity", "WebAuthFlow", this);
 }
 
 WebAuthFlow::~WebAuthFlow() {
@@ -71,6 +74,7 @@ WebAuthFlow::~WebAuthFlow() {
     if (app_window_ && app_window_->web_contents())
       app_window_->web_contents()->Close();
   }
+  TRACE_EVENT_ASYNC_END0("identity", "WebAuthFlow", this);
 }
 
 void WebAuthFlow::Start() {
@@ -177,31 +181,6 @@ void WebAuthFlow::RenderProcessGone(base::TerminationStatus status) {
     delegate_->OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED);
 }
 
-void WebAuthFlow::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
-  if (!render_frame_host->GetParent())
-    BeforeUrlLoaded(validated_url);
-}
-
-void WebAuthFlow::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "WebAuthFlow",
-                               this,
-                               "DidFailProvisionalLoad",
-                               "error_code",
-                               error_code);
-  if (delegate_)
-    delegate_->OnAuthFlowFailure(LOAD_FAILED);
-}
-
 void WebAuthFlow::DidGetRedirectForResourceRequest(
     const content::ResourceRedirectDetails& details) {
   BeforeUrlLoaded(details.new_url);
@@ -217,10 +196,31 @@ void WebAuthFlow::DidStopLoading() {
   AfterUrlLoaded();
 }
 
-void WebAuthFlow::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (delegate_ && details.http_status_code >= 400)
+void WebAuthFlow::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame())
+    BeforeUrlLoaded(navigation_handle->GetURL());
+}
+
+void WebAuthFlow::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  bool failed = false;
+
+  if (navigation_handle->GetNetErrorCode() != net::OK) {
+    failed = true;
+    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "WebAuthFlow", this,
+                                 "DidFinishNavigationFailure", "error_code",
+                                 navigation_handle->GetNetErrorCode());
+  } else if (navigation_handle->IsInMainFrame() &&
+             navigation_handle->GetResponseHeaders()->response_code() >= 400) {
+    failed = true;
+    TRACE_EVENT_ASYNC_STEP_PAST1(
+        "identity", "WebAuthFlow", this, "DidFinishNavigationFailure",
+        "response_code",
+        navigation_handle->GetResponseHeaders()->response_code());
+  }
+
+  if (failed && delegate_)
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
 }
 

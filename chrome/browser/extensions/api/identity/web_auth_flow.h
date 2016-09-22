@@ -103,23 +103,14 @@ class WebAuthFlow : public content::NotificationObserver,
 
   // WebContentsObserver implementation.
   void DidStopLoading() override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url,
-                              int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) override;
   void DidGetRedirectForResourceRequest(
       const content::ResourceRedirectDetails& details) override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   void BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();
