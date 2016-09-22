@@ -418,6 +418,17 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * Returns true if this exception is controlled by, for example, a policy or
+   * set by an extension.
+   * @param {string} source The source controlling the extension
+   * @return {boolean} Whether it is being controlled.
+   * @protected
+   */
+  isExceptionControlled_: function(source) {
+    return source != undefined && source != 'preference';
+  },
+
+  /**
    * Returns the icon to use for a given site.
    * @param {string} site The url of the site to fetch the icon for.
    * @return {string} The background-image style with the favicon.

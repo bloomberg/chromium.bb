@@ -3,6 +3,18 @@
 // found in the LICENSE file.
 
 /**
+ * Enumeration mapping all possible controlled-by values for exceptions to
+ * icons.
+ * @enum {string}
+ */
+var iconControlledBy = {
+  'extension': 'cr:extension',
+  'HostedApp': 'cr:extension',
+  'platform_app': 'cr:extension',
+  'policy' : 'cr:domain',
+};
+
+/**
  * @fileoverview
  * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
@@ -186,12 +198,14 @@ Polymer({
   },
 
   /**
-   * @param {string} source Where the setting came from.
-   * @return {boolean}
-   * @private
+   * Returns which icon, if any, should represent the fact that this exception
+   * is controlled.
+   * @param {!SiteException} item The item from the list we're computing the
+   *    icon for.
+   * @return {string} The icon to show (or blank, if none).
    */
-  isPolicyControlled_: function(source) {
-    return source == 'policy';
+  computeIconControlledBy_: function(item) {
+    return iconControlledBy[item.source] || '';
   },
 
   /**
@@ -200,7 +214,7 @@ Polymer({
    * @private
    */
   shouldShowMenu_: function(source) {
-    return !(this.isPolicyControlled_(source) || this.allSites);
+    return !(this.isExceptionControlled_(source) || this.allSites);
   },
 
   /**
@@ -403,9 +417,6 @@ Polymer({
    */
   onOriginTap_: function(event) {
     this.selectedSite = event.model.item;
-    if (this.isPolicyControlled_(this.selectedSite.source))
-      return;
-
     settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + this.selectedSite.origin));
   },

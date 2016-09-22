@@ -43,7 +43,7 @@
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
             <div class="start layout horizontal center" on-tap="onOriginTap_"
-                actionable$="[[!isPolicyControlled_(item.source)]]">
+                actionable$="[[!isExceptionControlled_(item.source)]]">
               <div class="favicon-image"
                   style$="[[computeSiteIcon(item.originForDisplay)]]">
               </div>
@@ -55,10 +55,11 @@
               </div>
             </div>
 
-            <template is="dom-if" if="[[isPolicyControlled_(item.source)]]">
-              <iron-icon icon="cr:domain"></iron-icon>
+            <template is="dom-if" if="[[!!computeIconControlledBy_(item)]]">
+              <iron-icon icon="[[computeIconControlledBy_(item)]]"></iron-icon>
             </template>
-            <paper-menu-button hidden="[[!shouldShowMenu_(item.source)]]"
+
+            <paper-menu-button hidden="[[isExceptionControlled_(item.source)]]"
                 horizontal-align="right">
               <paper-icon-button icon="cr:more-vert" class="dropdown-trigger">
               </paper-icon-button>

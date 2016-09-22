@@ -21,7 +21,8 @@
         <div class="middle" id="permissionHeader">
           [[computeTitleForContentCategory(category)]]
         </div>
-        <paper-dropdown-menu-light vertical-align="auto" no-label-float>
+        <paper-dropdown-menu-light vertical-align="auto" no-label-float
+            disabled$="[[isExceptionControlled_(site.source)]]">
           <paper-listbox id="permission" class="dropdown-content"
               on-iron-activate="onPermissionMenuIronActivate_"
               attr-for-selected="data-permission-value">
