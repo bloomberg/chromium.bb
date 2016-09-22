@@ -34,10 +34,7 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(v8::Local<v8::V
     ScriptState::Scope scope(m_scriptState.get());
 
     // Prepare to transfer the provided transferables.
-    transfer(transferables, exceptionState);
-    if (exceptionState.hadException()) {
-        return nullptr;
-    }
+    prepareTransfer(transferables);
 
     // Serialize the value and handle errors.
     v8::TryCatch tryCatch(m_scriptState->isolate());
@@ -50,6 +47,11 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(v8::Local<v8::V
     }
     DCHECK(wroteValue);
 
+    // Finalize the transfer (e.g. neutering array buffers).
+    finalizeTransfer(exceptionState);
+    if (exceptionState.hadException())
+        return nullptr;
+
     // Finalize the results.
     std::vector<uint8_t> buffer = m_serializer.ReleaseBuffer();
     // Currently, the output must be padded to a multiple of two bytes.
@@ -61,21 +63,16 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(v8::Local<v8::V
     return std::move(m_serializedScriptValue);
 }
 
-void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionState& exceptionState)
+void V8ScriptValueSerializer::prepareTransfer(Transferables* transferables)
 {
     if (!transferables)
         return;
     m_transferables = transferables;
-    v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Local<v8::Context> context = m_scriptState->context();
 
     // Transfer array buffers.
-    m_serializedScriptValue->transferArrayBuffers(isolate, transferables->arrayBuffers, exceptionState);
-    if (exceptionState.hadException())
-        return;
     for (uint32_t i = 0; i < transferables->arrayBuffers.size(); i++) {
         DOMArrayBufferBase* arrayBuffer = transferables->arrayBuffers[i].get();
-        v8::Local<v8::Value> wrapper = toV8(arrayBuffer, context->Global(), isolate);
+        v8::Local<v8::Value> wrapper = toV8(arrayBuffer, m_scriptState.get());
         if (wrapper->IsArrayBuffer()) {
             m_serializer.TransferArrayBuffer(
                 i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
@@ -86,6 +83,21 @@ void V8ScriptValueSerializer::transfer(Transferables* transferables, ExceptionSt
             NOTREACHED() << "Unknown type of array buffer in transfer list.";
         }
     }
+}
+
+void V8ScriptValueSerializer::finalizeTransfer(ExceptionState& exceptionState)
+{
+    if (!m_transferables)
+        return;
+
+    // TODO(jbroman): Strictly speaking, this is not correct; transfer should
+    // occur in the order of the transfer list.
+    // https://html.spec.whatwg.org/multipage/infrastructure.html#structuredclonewithtransfer
+
+    v8::Isolate* isolate = m_scriptState->isolate();
+    m_serializedScriptValue->transferArrayBuffers(isolate, m_transferables->arrayBuffers, exceptionState);
+    if (exceptionState.hadException())
+        return;
 }
 
 void V8ScriptValueSerializer::writeUTF8String(const String& string)

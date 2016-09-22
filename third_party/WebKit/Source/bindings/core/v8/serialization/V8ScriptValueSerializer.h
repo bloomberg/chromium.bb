@@ -51,7 +51,13 @@ protected:
     void writeUTF8String(const String&);
 
 private:
-    void transfer(Transferables*, ExceptionState&);
+    // Transfer is split into two phases: scanning the transferables so that we
+    // don't have to serialize the data (just an index), and finalizing (to
+    // neuter objects in the source context).
+    // This separation is required by the spec (it prevents neutering from
+    // happening if there's a failure earlier in serialization).
+    void prepareTransfer(Transferables*);
+    void finalizeTransfer(ExceptionState&);
 
     // v8::ValueSerializer::Delegate
     void ThrowDataCloneError(v8::Local<v8::String> message) override;

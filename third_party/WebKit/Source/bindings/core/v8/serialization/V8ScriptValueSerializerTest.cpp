@@ -160,6 +160,26 @@ TEST(V8ScriptValueSerializerTest, DeserializationErrorReturnsNull)
     EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
+TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization)
+{
+    // This object will throw an exception before the [[Transfer]] step.
+    // As a result, the ArrayBuffer will not be transferred.
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    ExceptionState exceptionState(scope.isolate(), ExceptionState::ExecutionContext, "Window", "postMessage");
+
+    DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(1, 1);
+    ASSERT_FALSE(arrayBuffer->isNeutered());
+    v8::Local<v8::Value> object = eval("({ get a() { throw 'party'; }})", scope);
+    Transferables transferables;
+    transferables.arrayBuffers.append(arrayBuffer);
+
+    roundTrip(object, scope, &exceptionState, &transferables);
+    ASSERT_TRUE(exceptionState.hadException());
+    EXPECT_FALSE(hadDOMException("DataCloneError", scope.getScriptState(), exceptionState));
+    EXPECT_FALSE(arrayBuffer->isNeutered());
+}
+
 TEST(V8ScriptValueSerializerTest, RoundTripImageData)
 {
     // ImageData objects should serialize and deserialize correctly.
