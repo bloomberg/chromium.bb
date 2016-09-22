@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+
+<!-- READ BEFORE UPDATING:
+If this test is updated make sure to increment the "revision" value of the
+associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
+that the baseline images are regenerated on the next run.
+-->
+
+<html>
+<head>
+<title>OffscreenCanvas commit flow on worker thread: red square on white background.</title>
+<style type="text/css">
+.nomargin {
+  margin: 0px auto;
+}
+</style>
+<script id="myWorker" type="text/worker">
+self.onmessage = function(e) {
+  var transferredOffscreenCanvas = e.data;
+  var gl = transferredOffscreenCanvas.getContext("webgl");
+  gl.clearColor(1.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.commit();
+};
+</script>
+<script>
+var g_swapsBeforeAck = 15;
+
+function makeWorker(script) {
+   var blob = new Blob([script]);
+   return new Worker(URL.createObjectURL(blob));
+}
+
+function main()
+{
+  draw();
+  waitForFinish();
+}
+
+function draw()
+{
+  var canvas = document.getElementById("c");
+  var offscreenCanvas = canvas.transferControlToOffscreen();
+  var worker = makeWorker(document.getElementById("myWorker").textContent);
+  worker.postMessage(offscreenCanvas, [offscreenCanvas]);
+}
+
+function waitForFinish()
+{
+  if (g_swapsBeforeAck == 0) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("SUCCESS");
+  } else {
+    g_swapsBeforeAck--;
+    document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
+    window.webkitRequestAnimationFrame(waitForFinish);
+  }
+}
+</script>
+</head>
+<body onload="main()">
+<div style="position:relative; width:200px; height:200px; background-color:white">
+</div>
+<div id="container" style="position:absolute; top:0px; left:0px">
+<canvas id="c" width="200" height="200" class="nomargin"></canvas>
+</div>
+</body>
+</html>
