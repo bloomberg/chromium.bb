@@ -215,6 +215,7 @@ void MdTextButton::AdjustFontSize(int size_delta) {
 }
 
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
+  is_cta_ = is_cta_ || is_default();
   UpdateColors();
 }
 
@@ -310,8 +311,6 @@ void MdTextButton::UpdateColors() {
     if (state() == STATE_DISABLED)
       bg_color = color_utils::BlendTowardOppositeLuma(
           bg_color, gfx::kDisabledControlAlpha);
-  } else if (is_default()) {
-    bg_color = color_utils::BlendTowardOppositeLuma(text_color, 0xD8);
   }
 
   if (state() == STATE_PRESSED) {

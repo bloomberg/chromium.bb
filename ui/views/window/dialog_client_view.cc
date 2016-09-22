@@ -314,9 +314,11 @@ void DialogClientView::ChildVisibilityChanged(View* child) {
 LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const base::string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
   LabelButton* button = nullptr;
+  // The default button is always blue in Harmony.
   if (GetDialogDelegate()->GetDefaultDialogButton() == type &&
-      GetDialogDelegate()->ShouldDefaultButtonBeBlue()) {
-    return MdTextButton::CreateSecondaryUiBlueButton(this, title);
+      (ui::MaterialDesignController::IsSecondaryUiMaterial() ||
+       GetDialogDelegate()->ShouldDefaultButtonBeBlue())) {
+    button = MdTextButton::CreateSecondaryUiBlueButton(this, title);
   } else {
     button = MdTextButton::CreateSecondaryUiButton(this, title);
   }
