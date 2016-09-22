@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -272,10 +273,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   virtual Browser* GetBrowser() const { return browser(); }
 
- protected:
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   gcm::FakeGCMProfileService* gcm_service_;
   instance_id::FakeGCMDriverForInstanceID* gcm_driver_;
+  base::HistogramTester histogram_tester_;
+
+ private:
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   PushMessagingServiceImpl* push_service_;
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -734,6 +737,17 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
   EXPECT_EQ("testdata", script_result);
+
+  // Check that we record this case in UMA.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.DeliveryStatus.FindServiceWorker",
+      0 /* SERVICE_WORKER_OK */, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.DeliveryStatus.ServiceWorkerEvent",
+      0 /* SERVICE_WORKER_OK */, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.DeliveryStatus",
+       content::PUSH_DELIVERY_STATUS_SUCCESS, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPayload) {
@@ -825,6 +839,16 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   run_loop.Run();
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
+
+  // Check that we record this case in UMA.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.DeliveryStatus.FindServiceWorker",
+      5 /* SERVICE_WORKER_ERROR_NOT_FOUND */, 1);
+  histogram_tester_.ExpectTotalCount(
+      "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.DeliveryStatus",
+      content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER, 1);
 
   // Now the push service has received a message and failed to find its service
   // worker, it should have automatically unsubscribed app_identifier.app_id().

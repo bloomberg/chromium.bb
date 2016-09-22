@@ -47525,8 +47525,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PushMessaging.DeliveryStatus" enum="PushDeliveryStatus">
   <owner>johnme@google.com</owner>
   <summary>
-    When a Service Worker receives a push message, this records whether it was
-    successful, or otherwise the type of error encountered.
+    When a Service Worker receives a push message, this records whether the
+    overall operation was successful, or otherwise the type of error
+    encountered.
+  </summary>
+</histogram>
+
+<histogram name="PushMessaging.DeliveryStatus.FindServiceWorker"
+    enum="ServiceWorkerStatusCode">
+  <owner>johnme@google.com</owner>
+  <summary>
+    When attempting to deliver a push message to a Service Worker, this records
+    the result of finding the Service Worker registration given its ID and
+    origin.
+  </summary>
+</histogram>
+
+<histogram name="PushMessaging.DeliveryStatus.ServiceWorkerEvent"
+    enum="ServiceWorkerStatusCode">
+  <owner>johnme@google.com</owner>
+  <summary>
+    When a Service Worker receives a push message, this records the precise
+    result received from the Service Worker code.
   </summary>
 </histogram>
 

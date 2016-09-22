@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -75,10 +76,17 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(mvanouwerkerk): UMA logging.
-  if (service_worker_status != SERVICE_WORKER_OK) {
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.FindServiceWorker",
+                            service_worker_status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
+  if (service_worker_status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     RunDeliverCallback(deliver_message_callback,
                        PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
+    return;
+  }
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    RunDeliverCallback(deliver_message_callback,
+                       PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR);
     return;
   }
 
@@ -119,7 +127,9 @@ void PushMessagingRouter::DeliverMessageEnd(
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(mvanouwerkerk): UMA logging.
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
+                            service_worker_status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
   PushDeliveryStatus delivery_status =
       PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
