@@ -325,6 +325,8 @@ void AudioOutputDevice::OnDeviceAuthorized(
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.OutputDeviceAuthorizationTimedOut",
                         device_status == OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT);
+  LOG_IF(WARNING, device_status == OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT)
+      << "Output device authorization timed out";
 
   DCHECK_EQ(state_, AUTHORIZING);
 
