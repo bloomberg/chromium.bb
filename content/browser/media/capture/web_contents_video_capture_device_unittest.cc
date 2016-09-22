@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -422,10 +423,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
  private:
   class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
    public:
-    AutoReleaseBuffer(
-        const scoped_refptr<VideoCaptureBufferPool>& pool,
-        std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle,
-        int buffer_id)
+    AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
+                      std::unique_ptr<VideoCaptureBufferHandle> buffer_handle,
+                      int buffer_id)
         : id_(buffer_id),
           pool_(pool),
           buffer_handle_(std::move(buffer_handle)) {
@@ -451,7 +451,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
     const int id_;
     const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle_;
+    const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

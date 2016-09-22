@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
@@ -58,7 +59,7 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
 
   const int id_;
   const scoped_refptr<VideoCaptureBufferPool> pool_;
-  const std::unique_ptr<VideoCaptureBufferPoolBufferHandle> buffer_handle_;
+  const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(

@@ -24,17 +24,8 @@
 
 namespace content {
 
-class VideoCaptureBufferPoolBufferHandle {
- public:
-  virtual ~VideoCaptureBufferPoolBufferHandle() {}
-  virtual gfx::Size dimensions() const = 0;
-  virtual size_t mapped_size() const = 0;
-  virtual void* data(int plane) = 0;
-  virtual ClientBuffer AsClientBuffer(int plane) = 0;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual base::FileDescriptor AsPlatformFile() = 0;
-#endif
-};
+class VideoCaptureBufferHandle;
+class VideoCaptureBufferTracker;
 
 class CONTENT_EXPORT VideoCaptureBufferPool
     : public base::RefCountedThreadSafe<VideoCaptureBufferPool> {
@@ -52,7 +43,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
                                gfx::GpuMemoryBufferHandle* new_handle) = 0;
 
   // Try and obtain a BufferHandle for |buffer_id|.
-  virtual std::unique_ptr<VideoCaptureBufferPoolBufferHandle> GetBufferHandle(
+  virtual std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
       int buffer_id) = 0;
 
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of
@@ -134,8 +125,6 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 class CONTENT_EXPORT VideoCaptureBufferPoolImpl
     : public VideoCaptureBufferPool {
  public:
-  using BufferHandle = VideoCaptureBufferPoolBufferHandle;
-
   explicit VideoCaptureBufferPoolImpl(int count);
 
   // Implementation of VideoCaptureBufferPool interface:
@@ -146,7 +135,8 @@ class CONTENT_EXPORT VideoCaptureBufferPoolImpl
                        int plane,
                        base::ProcessHandle process_handle,
                        gfx::GpuMemoryBufferHandle* new_handle) override;
-  std::unique_ptr<BufferHandle> GetBufferHandle(int buffer_id) override;
+  std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
+      int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
                          media::VideoPixelFormat format,
                          media::VideoPixelStorage storage,
@@ -160,70 +150,6 @@ class CONTENT_EXPORT VideoCaptureBufferPoolImpl
   void RelinquishConsumerHold(int buffer_id, int num_clients) override;
 
  private:
-  class GpuMemoryBufferTracker;
-  class SharedMemTracker;
-  // Generic class to keep track of the state of a given mappable resource. Each
-  // Tracker carries indication of pixel format and storage type.
-  class Tracker {
-   public:
-    static std::unique_ptr<Tracker> CreateTracker(
-        media::VideoPixelStorage storage);
-
-    Tracker()
-        : max_pixel_count_(0),
-          held_by_producer_(false),
-          consumer_hold_count_(0) {}
-    virtual bool Init(const gfx::Size& dimensions,
-                      media::VideoPixelFormat format,
-                      media::VideoPixelStorage storage_type,
-                      base::Lock* lock) = 0;
-    virtual ~Tracker();
-
-    const gfx::Size& dimensions() const { return dimensions_; }
-    void set_dimensions(const gfx::Size& dim) { dimensions_ = dim; }
-    size_t max_pixel_count() const { return max_pixel_count_; }
-    void set_max_pixel_count(size_t count) { max_pixel_count_ = count; }
-    media::VideoPixelFormat pixel_format() const {
-      return pixel_format_;
-    }
-    void set_pixel_format(media::VideoPixelFormat format) {
-      pixel_format_ = format;
-    }
-    media::VideoPixelStorage storage_type() const { return storage_type_; }
-    void set_storage_type(media::VideoPixelStorage storage_type) {
-      storage_type_ = storage_type;
-    }
-    bool held_by_producer() const { return held_by_producer_; }
-    void set_held_by_producer(bool value) { held_by_producer_ = value; }
-    int consumer_hold_count() const { return consumer_hold_count_; }
-    void set_consumer_hold_count(int value) { consumer_hold_count_ = value; }
-
-    // Returns a handle to the underlying storage, be that a block of Shared
-    // Memory, or a GpuMemoryBuffer.
-    virtual std::unique_ptr<BufferHandle> GetBufferHandle() = 0;
-
-    virtual bool ShareToProcess(base::ProcessHandle process_handle,
-                                base::SharedMemoryHandle* new_handle) = 0;
-    virtual bool ShareToProcess2(int plane,
-                                 base::ProcessHandle process_handle,
-                                 gfx::GpuMemoryBufferHandle* new_handle) = 0;
-
-   private:
-    // |dimensions_| may change as a Tracker is re-used, but |max_pixel_count_|,
-    // |pixel_format_|, and |storage_type_| are set once for the lifetime of a
-    // Tracker.
-    gfx::Size dimensions_;
-    size_t max_pixel_count_;
-    media::VideoPixelFormat pixel_format_;
-    media::VideoPixelStorage storage_type_;
-
-    // Indicates whether this Tracker is currently referenced by the producer.
-    bool held_by_producer_;
-
-    // Number of consumer processes which hold this Tracker.
-    int consumer_hold_count_;
-  };
-
   friend class base::RefCountedThreadSafe<VideoCaptureBufferPoolImpl>;
   ~VideoCaptureBufferPoolImpl() override;
 
@@ -232,7 +158,7 @@ class CONTENT_EXPORT VideoCaptureBufferPoolImpl
                                  media::VideoPixelStorage storage,
                                  int* tracker_id_to_drop);
 
-  Tracker* GetTracker(int buffer_id);
+  VideoCaptureBufferTracker* GetTracker(int buffer_id);
 
   // The max number of buffers that the pool is allowed to have at any moment.
   const int count_;
@@ -248,7 +174,7 @@ class CONTENT_EXPORT VideoCaptureBufferPoolImpl
   int last_relinquished_buffer_id_;
 
   // The buffers, indexed by the first parameter, a buffer id.
-  using TrackerMap = std::map<int, Tracker*>;
+  using TrackerMap = std::map<int, VideoCaptureBufferTracker*>;
   TrackerMap trackers_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureBufferPoolImpl);
