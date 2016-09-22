@@ -115,6 +115,9 @@ def main():
       raise Exception(
           'Unable to find file %s in %s' % (src_file, src_search_dirs))
 
+  if os.path.isfile(options.jar_path):
+    os.remove(options.jar_path)
+
   # Jar the sources from every source search directory.
   for src_search_dir in src_search_dirs:
     if len(dir_to_files_map[src_search_dir]) > 0:
