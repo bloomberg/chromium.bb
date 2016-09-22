@@ -17,7 +17,7 @@ namespace ntp_snippets {
 
 // Collects data about user usage patterns of content suggestions, computes
 // long-term user metrics locally using pref, and reports the metrics to UMA.
-// Based on these lon-term user metrics, it classifies the user in a UserClass.
+// Based on these long-term user metrics, it classifies the user in a UserClass.
 class UserClassifier {
  public:
   // Enumeration listing user classes
@@ -91,7 +91,15 @@ class UserClassifier {
   void ClearMetricValue(Metric metric);
 
   PrefService* pref_service_;
+
+  // Params of the metric.
   const double discount_rate_per_hour_;
+  const double min_hours_;
+  const double max_hours_;
+
+  // Params of the classification.
+  const double active_consumer_scrolls_at_least_once_per_hours_;
+  const double rare_user_opens_ntp_at_most_once_per_hours_;
 
   DISALLOW_COPY_AND_ASSIGN(UserClassifier);
 };

@@ -11,34 +11,46 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
 
 namespace {
 
-// TODO(jkrcal): Make all of this configurable via variations_service.
-
-// The discount factor for computing the discounted-average metrics. Must be
+// The discount rate for computing the discounted-average metrics. Must be
 // strictly larger than 0 and strictly smaller than 1!
-const double kDiscountFactorPerDay = 0.25;
+const double kDiscountRatePerDay = 0.25;
+const char kDiscountRatePerDayParam[] =
+    "user_classifier_discount_rate_per_day";
 
 // Never consider any larger interval than this (so that extreme situations such
 // as losing your phone or going for a long offline vacation do not skew the
 // average too much).
+// When everriding via variation parameters, it is better to use smaller values
+// than |kMaxHours| as this it the maximum value reported in the histograms.
 const double kMaxHours = 7 * 24;
+const char kMaxHoursParam[] = "user_classifier_max_hours";
 
 // Ignore events within |kMinHours| hours since the last event (|kMinHours| is
 // the length of the browsing session where subsequent events of the same type
 // do not count again).
 const double kMinHours = 0.5;
+const char kMinHoursParam[] = "user_classifier_min_hours";
 
 // Classification constants.
-const double kFrequentUserScrollsAtLeastOncePerHours = 24;
-const double kOccasionalUserOpensNTPAtMostOncePerHours = 72;
+const double kActiveConsumerScrollsAtLeastOncePerHours = 24;
+const char kActiveConsumerScrollsAtLeastOncePerHoursParam[] =
+    "user_classifier_active_consumer_scrolls_at_least_once_per_hours";
 
+const double kRareUserOpensNTPAtMostOncePerHours = 72;
+const char kRareUserOpensNTPAtMostOncePerHoursParam[] =
+    "user_classifier_rare_user_opens_ntp_at_most_once_per_hours";
+
+// Histograms for logging the estimated average hours to next event.
 const char kHistogramAverageHoursToOpenNTP[] =
     "NewTabPage.UserClassifier.AverageHoursToOpenNTP";
 const char kHistogramAverageHoursToShowSuggestions[] =
@@ -62,7 +74,11 @@ const char* kLastTimeKeys[] = {prefs::kUserClassifierLastTimeToOpenNTP,
                                prefs::kUserClassifierLastTimeToUseSuggestions};
 
 // Default lengths of the intervals for new users for the metrics.
-const double kDefaults[] = {24, 36, 48};
+const double kInitialHoursBetweenEvents[] = {24, 36, 48};
+const char* kInitialHoursBetweenEventsParams[] = {
+    "user_classifier_default_interval_ntp_opened",
+    "user_classifier_default_interval_suggestions_shown",
+    "user_classifier_default_interval_suggestions_used"};
 
 static_assert(arraysize(kMetrics) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
@@ -70,15 +86,53 @@ static_assert(arraysize(kMetrics) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
                   arraysize(kLastTimeKeys) ==
                       static_cast<int>(UserClassifier::Metric::COUNT) &&
-                  arraysize(kDefaults) ==
+                  arraysize(kInitialHoursBetweenEvents) ==
+                      static_cast<int>(UserClassifier::Metric::COUNT) &&
+                  arraysize(kInitialHoursBetweenEventsParams) ==
                       static_cast<int>(UserClassifier::Metric::COUNT),
               "Fill in info for all metrics.");
 
+double GetParamValue(const char* param_name, double default_value) {
+  std::string param_value_str = variations::GetVariationParamValueByFeature(
+      kArticleSuggestionsFeature, param_name);
+  double param_value = 0;
+  if (!base::StringToDouble(param_value_str, &param_value)) {
+    LOG_IF(WARNING, !param_value_str.empty())
+        << "Invalid variation parameter for " << param_name;
+    return default_value;
+  }
+  return param_value;
+}
+
 // Computes the discount rate.
 double GetDiscountRatePerHour() {
+  double discount_rate_per_day =
+      GetParamValue(kDiscountRatePerDayParam, kDiscountRatePerDay);
+  // Check for illegal values.
+  if (discount_rate_per_day <= 0 || discount_rate_per_day >= 1) {
+    DLOG(WARNING) << "Illegal value " << discount_rate_per_day
+                  << " for the parameter " << kDiscountRatePerDayParam
+                  << " (must be strictly between 0 and 1; the default "
+                  << kDiscountRatePerDay << " is used, instead).";
+    discount_rate_per_day = kDiscountRatePerDay;
+  }
   // Compute discount_rate_per_hour such that
-  //   kDiscountFactorPerDay = 1 - e^{-discount_rate_per_hour * 24}.
-  return std::log(1.0 / (1.0 - kDiscountFactorPerDay)) / 24.0;
+  //   discount_rate_per_day = 1 - e^{-discount_rate_per_hour * 24}.
+  return std::log(1.0 / (1.0 - discount_rate_per_day)) / 24.0;
+}
+
+double GetInitialHoursBetweenEvents(UserClassifier::Metric metric) {
+  return GetParamValue(
+      kInitialHoursBetweenEventsParams[static_cast<int>(metric)],
+      kInitialHoursBetweenEvents[static_cast<int>(metric)]);
+}
+
+double GetMinHours() {
+  return GetParamValue(kMinHoursParam, kMinHours);
+}
+
+double GetMaxHours() {
+  return GetParamValue(kMaxHoursParam, kMaxHours);
 }
 
 // Returns the new value of the metric using its |old_value|, assuming
@@ -94,12 +148,14 @@ double DiscountMetric(double old_value,
 // Compute the number of hours between two events for the given metric value
 // assuming the events were equally distributed.
 double GetEstimateHoursBetweenEvents(double metric_value,
-                                     double discount_rate_per_hour) {
+                                     double discount_rate_per_hour,
+                                     double min_hours,
+                                     double max_hours) {
   // The computation below is well-defined only for |metric_value| > 1 (log of
   // negative value or division by zero). When |metric_value| -> 1, the estimate
-  // below -> infinity, so kMaxHours is a natural result, here.
+  // below -> infinity, so max_hours is a natural result, here.
   if (metric_value <= 1)
-    return kMaxHours;
+    return max_hours;
 
   // This is the estimate with the assumption that last event happened right
   // now and the system is in the steady-state. Solve estimate_hours in the
@@ -111,16 +167,17 @@ double GetEstimateHoursBetweenEvents(double metric_value,
   //   estimate_hours = log(metric_value / (metric_value - 1)) / discount_rate.
   double estimate_hours =
       std::log(metric_value / (metric_value - 1)) / discount_rate_per_hour;
-  return std::max(kMinHours, std::min(kMaxHours, estimate_hours));
+  return std::max(min_hours, std::min(max_hours, estimate_hours));
 }
 
 // The inverse of GetEstimateHoursBetweenEvents().
 double GetMetricValueForEstimateHoursBetweenEvents(
     double estimate_hours,
-    double discount_rate_per_hour) {
-  // Keep the input value within [kMinHours, kMaxHours].
-  estimate_hours = std::max(kMinHours, std::min(kMaxHours, estimate_hours));
-
+    double discount_rate_per_hour,
+    double min_hours,
+    double max_hours) {
+  // Keep the input value within [min_hours, max_hours].
+  estimate_hours = std::max(min_hours, std::min(max_hours, estimate_hours));
   // Return |metric_value| such that GetEstimateHoursBetweenEvents for
   // |metric_value| returns |estimate_hours|. Thus, solve |metric_value| in
   //   metric_value = 1 + e^{-discount_rate * estimate_hours} * metric_value,
@@ -134,10 +191,22 @@ double GetMetricValueForEstimateHoursBetweenEvents(
 
 UserClassifier::UserClassifier(PrefService* pref_service)
     : pref_service_(pref_service),
-      discount_rate_per_hour_(GetDiscountRatePerHour()) {
+      discount_rate_per_hour_(GetDiscountRatePerHour()),
+      min_hours_(GetMinHours()),
+      max_hours_(GetMaxHours()),
+      active_consumer_scrolls_at_least_once_per_hours_(
+          GetParamValue(kActiveConsumerScrollsAtLeastOncePerHoursParam,
+                        kActiveConsumerScrollsAtLeastOncePerHours)),
+      rare_user_opens_ntp_at_most_once_per_hours_(
+          GetParamValue(kRareUserOpensNTPAtMostOncePerHoursParam,
+                        kRareUserOpensNTPAtMostOncePerHours)) {
   // The pref_service_ can be null in tests.
   if (!pref_service_)
     return;
+
+  // TODO(jkrcal): Store the current discount rate per hour into prefs. If it
+  // differs from the previous value, rescale the metric values so that the
+  // expectation does not change abruptly!
 
   // Initialize the prefs storing the last time: the counter has just started!
   for (const Metric metric : kMetrics) {
@@ -150,9 +219,14 @@ UserClassifier::~UserClassifier() {}
 
 // static
 void UserClassifier::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  double discount_rate = GetDiscountRatePerHour();
+  double min_hours = GetMinHours();
+  double max_hours = GetMaxHours();
+
   for (Metric metric : kMetrics) {
     double default_metric_value = GetMetricValueForEstimateHoursBetweenEvents(
-        kDefaults[static_cast<int>(metric)], GetDiscountRatePerHour());
+        GetInitialHoursBetweenEvents(metric), discount_rate, min_hours,
+        max_hours);
     registry->RegisterDoublePref(kMetricKeys[static_cast<int>(metric)],
                                  default_metric_value);
     registry->RegisterInt64Pref(kLastTimeKeys[static_cast<int>(metric)], 0);
@@ -163,8 +237,10 @@ void UserClassifier::OnEvent(Metric metric) {
   DCHECK_NE(metric, Metric::COUNT);
   double metric_value = UpdateMetricOnEvent(metric);
 
-  double avg =
-      GetEstimateHoursBetweenEvents(metric_value, discount_rate_per_hour_);
+  double avg = GetEstimateHoursBetweenEvents(
+      metric_value, discount_rate_per_hour_, min_hours_, max_hours_);
+  // We use kMaxHours as the max value below as the maximum value for the
+  // histograms must be constant.
   switch (metric) {
     case Metric::NTP_OPENED:
       UMA_HISTOGRAM_CUSTOM_COUNTS(kHistogramAverageHoursToOpenNTP, avg, 1,
@@ -187,17 +263,18 @@ void UserClassifier::OnEvent(Metric metric) {
 double UserClassifier::GetEstimatedAvgTime(Metric metric) const {
   DCHECK_NE(metric, Metric::COUNT);
   double metric_value = GetUpToDateMetricValue(metric);
-  return GetEstimateHoursBetweenEvents(metric_value, discount_rate_per_hour_);
+  return GetEstimateHoursBetweenEvents(metric_value, discount_rate_per_hour_,
+                                       min_hours_, max_hours_);
 }
 
 UserClassifier::UserClass UserClassifier::GetUserClass() const {
   if (GetEstimatedAvgTime(Metric::NTP_OPENED) >=
-      kOccasionalUserOpensNTPAtMostOncePerHours) {
+      rare_user_opens_ntp_at_most_once_per_hours_) {
     return UserClass::RARE_NTP_USER;
   }
 
   if (GetEstimatedAvgTime(Metric::SUGGESTIONS_SHOWN) <=
-      kFrequentUserScrollsAtLeastOncePerHours) {
+      active_consumer_scrolls_at_least_once_per_hours_) {
     return UserClass::ACTIVE_SUGGESTIONS_CONSUMER;
   }
 
@@ -234,9 +311,9 @@ double UserClassifier::UpdateMetricOnEvent(Metric metric) {
     return 0;
 
   double hours_since_last_time =
-      std::min(kMaxHours, GetHoursSinceLastTime(metric));
+      std::min(max_hours_, GetHoursSinceLastTime(metric));
   // Ignore events within the same "browsing session".
-  if (hours_since_last_time < kMinHours)
+  if (hours_since_last_time < min_hours_)
     return GetUpToDateMetricValue(metric);
 
   SetLastTimeToNow(metric);
@@ -256,7 +333,7 @@ double UserClassifier::GetUpToDateMetricValue(Metric metric) const {
     return 0;
 
   double hours_since_last_time =
-      std::min(kMaxHours, GetHoursSinceLastTime(metric));
+      std::min(max_hours_, GetHoursSinceLastTime(metric));
 
   double metric_value = GetMetricValue(metric);
   return DiscountMetric(metric_value, hours_since_last_time,
