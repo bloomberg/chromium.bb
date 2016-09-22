@@ -24,7 +24,7 @@ public:
     ~OffscreenCanvasFrameDispatcherImpl() override {}
     void dispatchFrame(RefPtr<StaticBitmapImage>) override;
 
-    // OffscreenCanvasFrameReceiverClient implementation.
+    // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
     void ReturnResources(Vector<cc::mojom::blink::ReturnedResourcePtr> resources) override;
 
 private:
