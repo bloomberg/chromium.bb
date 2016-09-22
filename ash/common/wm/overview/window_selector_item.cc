@@ -496,6 +496,8 @@ void WindowSelectorItem::ShowWindowOnExit() {
 
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
+  UpdateHeaderLayout(HeaderFadeInMode::ENTER,
+                     OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
 
 bool WindowSelectorItem::Contains(const WmWindow* target) const {
@@ -765,8 +767,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
       window_label_->GetLayer()->Add(shadow_->layer());
     }
     window_label_->GetLayer()->SetMasksToBounds(false);
-    UpdateHeaderLayout(HeaderFadeInMode::ENTER,
-                       OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   } else {
     // Indicate that the label will be drawn onto a transparent background
     // (disables subpixel antialiasing).
