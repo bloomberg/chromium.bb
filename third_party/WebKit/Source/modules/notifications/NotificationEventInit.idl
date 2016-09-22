@@ -5,8 +5,6 @@
 // https://notifications.spec.whatwg.org/#notificationevent
 
 dictionary NotificationEventInit : ExtendableEventInit {
-    // TODO(foolip): |notification| should not be nullable.
-    // https://crbug.com/647693
-    required Notification? notification;
+    required Notification notification;
     DOMString action = "";
 };

@@ -5,8 +5,7 @@
 // https://w3c.github.io/ServiceWorker/#fetch-event-interface
 
 dictionary FetchEventInit : ExtendableEventInit {
-  // TODO(foolip): |request| should not be nullable. https://crbug.com/647693
-  required Request? request;
+  required Request request;
   DOMString? clientId = null;
   boolean isReload = false;
 };

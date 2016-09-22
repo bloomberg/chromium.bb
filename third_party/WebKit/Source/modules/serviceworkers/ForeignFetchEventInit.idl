@@ -5,7 +5,6 @@
 // https://w3c.github.io/ServiceWorker/#dictdef-foreignfetchevent-foreignfetcheventinit
 
 dictionary ForeignFetchEventInit : ExtendableEventInit {
-  // TODO(foolip): |request| should not be nullable. https://crbug.com/647693
-  required Request? request;
+  required Request request;
   USVString origin = "null";
 };

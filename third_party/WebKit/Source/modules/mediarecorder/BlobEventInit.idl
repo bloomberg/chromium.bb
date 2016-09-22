@@ -5,6 +5,5 @@
 // https://w3c.github.io/mediacapture-record/MediaRecorder.html#blobeventinit
 
 dictionary BlobEventInit : EventInit {
-    // TODO(foolip): |data| should not be nullable. https://crbug.com/647693
-    required Blob? data;
+    required Blob data;
 };

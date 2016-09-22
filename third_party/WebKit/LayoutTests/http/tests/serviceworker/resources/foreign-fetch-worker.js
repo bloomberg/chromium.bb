@@ -16,6 +16,10 @@ function handle_basic(event) {
   event.respondWith({response: new Response('Foreign Fetch'), origin: event.origin});
 }
 
+function handle_null(event) {
+  event.respondWith({response: null });
+}
+
 function handle_onmessage(event) {
   event.respondWith({origin: event.origin, response:
     new Response('<script>window.onmessage = e => e.ports[0].postMessage("failed");</script>',
@@ -49,6 +53,7 @@ self.addEventListener('foreignfetch', function(event) {
     var url = event.request.url;
     var handlers = [
       { pattern: '?basic', fn: handle_basic },
+      { pattern: '?null', fn: handle_null },
       { pattern: '?fallback', fn: handle_fallback },
       { pattern: '?fetch', fn: handle_fetch },
       { pattern: '?onmessage', fn: handle_onmessage },

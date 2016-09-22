@@ -5,8 +5,7 @@
 // https://w3c.github.io/ServiceWorker/#dictdef-foreignfetchevent-foreignfetchresponse
 
 dictionary ForeignFetchResponse {
-  // TODO(foolip): |response| should not be nullable. https://crbug.com/647693
-  required Response? response;
+  required Response response;
   USVString origin;
   sequence<ByteString> headers;
 };

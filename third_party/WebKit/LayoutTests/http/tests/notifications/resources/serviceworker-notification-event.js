@@ -14,6 +14,7 @@ function runTest(notification) {
 
     assert_throws(null, () => new NotificationEvent('NotificationEvent'));
     assert_throws(null, () => new NotificationEvent('NotificationEvent', {}));
+    assert_throws(null, () => new NotificationEvent('NotificationEvent', { notification: null }));
 
     const event = new NotificationEvent('NotificationEvent', { notification });
 

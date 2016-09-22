@@ -239,5 +239,12 @@ promise_test(t => {
       .then(response_text => assert_true(response_text.startsWith('report(')));
   }, 'Service Worker does not intercept fetches with CORS preflight');
 
+promise_test(t => {
+  var scope = 'simple.txt?null';
+  var remote_url =
+  host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+  return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
+    .then(() => promise_rejects(t, new TypeError(), fetch(remote_url)));
+}, 'Foreign fetch rejects if resolved with a null response.');
 </script>
 </body>
