@@ -33,6 +33,9 @@ Polymer({
       value: false,
       reflectToAttribute: true
     },
+
+    /** A11y text descriptor for this control. */
+    alt: String,
   },
 
   iconName_: function(expanded) {

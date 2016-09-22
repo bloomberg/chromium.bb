@@ -10,6 +10,8 @@
 Polymer({
   is: 'cr-network-select',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * Network state for the active network.
@@ -197,5 +199,9 @@ Polymer({
       if (lastError && lastError != 'connecting')
         console.error('networkingPrivate.startConnect error: ' + lastError);
     });
+  },
+
+  getExpandA11yText_: function() {
+    return this.i18n('networkExpandA11yLabel');
   },
 });

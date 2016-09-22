@@ -286,6 +286,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothDisconnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT},
       {"bluetoothDismiss", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR},
       {"bluetoothEnable", IDS_SETTINGS_BLUETOOTH_ENABLE},
+      {"bluetoothExpandA11yLabel",
+       IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL},
       {"bluetoothNoDevices", IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES},
       {"bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH},
       {"bluetoothPairDevicePageTitle", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE},
@@ -342,6 +344,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"certificateManagerPageTitle", IDS_SETTINGS_CERTIFICATE_MANAGER},
+      {"certificateManagerExpandA11yLabel",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_EXPAND_ACCESSIBILITY_LABEL},
       {"certificateManagerNoCertificates",
        IDS_SETTINGS_CERTIFICATE_MANAGER_NO_CERTIFICATES},
       {"certificateManagerYourCertificates",
@@ -671,6 +675,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
       {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
+      {"internetAddConnectionExpandA11yLabel",
+       IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL},
       {"internetAddVPN", IDS_SETTINGS_INTERNET_ADD_VPN},
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
@@ -715,6 +721,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_ACCESS_POINT},
       {"networkSectionAdvanced",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED},
+      {"networkSectionAdvancedExpandA11yLabel",
+       IDS_SETTINGS_INTERNET_NETWORK_SECTION_EXPAND_ACCESSIBILITY_LABEL},
       {"networkSectionNameservers",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS},
       {"networkSectionNetwork", IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK},
@@ -757,6 +765,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
       {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
+      {"languagesExpandA11yLabel",
+       IDS_SETTINGS_LANGUAGES_EXPAND_ACCESSIBILITY_LABEL},
       {"orderLanguagesInstructions",
        IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
       {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
@@ -766,6 +776,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
       {"inputMethodsListTitle",
        IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
+      {"inputMethodsExpandA11yLabel",
+       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL},
       {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
       {"manageInputMethodsPageTitle",
        IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
@@ -782,6 +794,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
 #if !defined(OS_MACOSX)
       {"spellCheckListTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE},
+      {"spellCheckExpandA11yLabel",
+       IDS_SETTINGS_LANGUAGES_SPELL_CHECK_EXPAND_ACCESSIBILITY_LABEL},
       {"spellCheckSummaryTwoLanguages",
        IDS_SETTINGS_LANGUAGES_SPELL_CHECK_SUMMARY_TWO_LANGUAGES},
       // TODO(michaelpg): Use ICU plural format when available to properly
@@ -1068,6 +1082,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"cancelButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_CANCEL},
     {"addPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
     {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
+    {"printerDetailsA11yLabel",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL},
     {"printerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS},
     {"printerProtocol", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL},
     {"manuallyAddPrinterButtonText",
@@ -1488,6 +1504,7 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 void AddCrNetworkStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"networkDisabled", IDS_NETWORK_LIST_DISABLED},
+      {"networkExpandA11yLabel", IDS_NETWORK_LIST_EXPAND_ACCESSIBILITY_LABEL},
       {"networkListItemConnected", IDS_NETWORK_LIST_CONNECTED},
       {"networkListItemConnecting", IDS_NETWORK_LIST_CONNECTING},
       {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},

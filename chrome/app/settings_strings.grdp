@@ -408,6 +408,9 @@
     <message name="IDS_SETTINGS_BLUETOOTH_ENABLE" desc="Label for control to enable or disable bluetooth.">
       Enable Bluetooth
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available bluetooth devices. Only visible by screen reader software.">
+      Show available bluetooth devices
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired bluetooth device">
       Remove from list
     </message>
@@ -492,6 +495,9 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES" desc="Label for the your certificates tab in certificate manager.">
       Your certificates
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the certificates that are installed for a particular organization. Only visible by screen reader software.">
+      Show certificates for organization
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES_DESCRIPTION" desc="Label for your certificates subtitle tab in certificate manager.">
       You have certificates from these organizations that identify you
@@ -765,6 +771,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED" desc="Label for the toggle control to show/hide the advanced details of the printer.">
       Advanced
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced printer options for a particular printer. Only visible by screen reader software.">
+      Show advanced printer options
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS" desc="Label for the CUPS printer address in the Advanced section in the printer details page.">
       Address
     </message>
@@ -930,6 +939,9 @@
     <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION" desc="Settings > Internet > Add connection expanding section label.">
       Add connection
     </message>
+    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the options for a new connection. Only visible by screen reader software.">
+      Add network connection
+    </message>
     <message name="IDS_SETTINGS_INTERNET_ADD_WIFI" desc="Settings > Internet > Add Wi-Fi label.">
       Add Wi-Fi...
     </message>
@@ -944,6 +956,9 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED" desc="Settings > Internet > Network details: Advanced section label.">
       Advanced
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced network options. Only visible by screen reader software.">
+      Show advanced network options
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS" desc="Settings > Internet > Network details: Nameservers section label.">
       Nameservers
@@ -1115,6 +1130,9 @@
     <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
     <message name="IDS_NETWORK_LIST_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
       Disabled
+    </message>
+    <message name="IDS_NETWORK_LIST_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the list of available network connections. Only visible by screen reader software.">
+      Show available network connections
     </message>
     <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
       No network
@@ -1308,6 +1326,9 @@
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE" desc="Title for the currently used language in the header for the collapsible list of languages.">
     Language
   </message>
+  <message name="IDS_SETTINGS_LANGUAGES_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the language options. Only visible by screen reader software.">
+    Show language options
+  </message>
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS" desc="Explanatory message about ordering the list of languages.">
     Order languages based on your preference.
   </message>
@@ -1330,6 +1351,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the current input method in the header for the collapsible list of enabled input methods (keyboard layouts and input method editors).">
       Input method
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the input options. Only visible by screen reader software.">
+      Show input options
+    </message>
     <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable keyboard layouts and input method editors.">
       Manage input methods
     </message>
@@ -1349,6 +1373,9 @@
   <if expr="not is_macosx">
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE" desc="Title for the section containing the dropdown used to select the language to use for spell checking. The dropdown contains the enabled languages which support spell checking.">
       Spell check
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the spell check options. Only visible by screen reader software.">
+      Show spell check options
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_SUMMARY_TWO_LANGUAGES" desc="Subtitle for the spell check section when spell check is enabled for two languages, listing those languages.">
       <ph name="LANGUAGE_1">$1<ex>English (United States)</ex></ph>, <ph name="LANGUAGE_2">$2<ex>Italian</ex></ph>

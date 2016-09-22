@@ -184,7 +184,8 @@
     <div class="settings-box" actionable on-tap="toggleAdvancedExpanded_"
         hidden$="[[!showAdvanced_(networkProperties)]]">
       <div class="advanced flex">$i18n{networkSectionAdvanced}</div>
-      <cr-expand-button id="expandButton" expanded="{{advancedExpanded_}}">
+      <cr-expand-button id="expandButton" expanded="{{advancedExpanded_}}"
+          alt="$i18n{networkSectionAdvancedExpandA11yLabel}">
       </cr-expand-button>
     </div>
 

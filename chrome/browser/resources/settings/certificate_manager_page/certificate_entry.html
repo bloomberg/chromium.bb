@@ -11,7 +11,9 @@
     <style include="settings-shared"></style>
     <div class="settings-box">
       <div class="start">[[model.id]]</div>
-      <cr-expand-button expanded="{{expanded_}}"></cr-expand-button>
+      <cr-expand-button expanded="{{expanded_}}"
+          alt="$i18n{certificateManagerExpandA11yLabel}">
+      </cr-expand-button>
     </div>
     <iron-collapse opened="[[expanded_]]" no-animation>
       <template is="dom-if" if="[[expanded_]]">
