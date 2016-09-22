@@ -89,29 +89,42 @@ class ChangeSet(object):
      - files to add and delete are always disjoint sets.
     """
     def __init__(self, files_to_add=None, files_to_delete=None, lines_to_remove=None):
-        self.files_to_add = files_to_add or []
-        self.files_to_delete = files_to_delete or []
-        self.lines_to_remove = lines_to_remove or {}
+        self._files_to_add = set(files_to_add or [])
+        self._files_to_delete = set(files_to_delete or [])
+        lines_to_remove = lines_to_remove or {}
+        self._lines_to_remove = {t: set(builders) for t, builders in lines_to_remove.iteritems()}
 
     def add_file(self, path):
-        self.files_to_add.append(path)
+        self._files_to_add.add(path)
 
     def delete_file(self, path):
-        self.files_to_delete.append(path)
+        self._files_to_delete.add(path)
 
     def remove_line(self, test, builder):
-        if test not in self.lines_to_remove:
-            self.lines_to_remove[test] = []
-        self.lines_to_remove[test].append(builder)
+        if test not in self._lines_to_remove:
+            self._lines_to_remove[test] = set()
+        self._lines_to_remove[test].add(builder)
+
+    @property
+    def files_to_add(self):
+        return sorted(self._files_to_add - self._files_to_delete)
+
+    @property
+    def files_to_delete(self):
+        return sorted(self._files_to_delete - self._files_to_add)
+
+    @property
+    def lines_to_remove(self):
+        return {t: sorted(set(builders)) for t, builders in sorted(self._lines_to_remove.iteritems())}
 
     def to_dict(self):
         remove_lines = []
-        for test in self.lines_to_remove:
-            for builder in self.lines_to_remove[test]:
+        for test in sorted(self.lines_to_remove):
+            for builder in sorted(set(self.lines_to_remove[test])):
                 remove_lines.append({'test': test, 'builder': builder})
         return {
-            'add': list(self.files_to_add),
-            'delete': list(self.files_to_delete),
+            'add': self.files_to_add,
+            'delete': self.files_to_delete,
             'remove-lines': remove_lines,
         }
 
@@ -132,19 +145,18 @@ class ChangeSet(object):
                     lines_to_remove[test] = []
                 lines_to_remove[test].append(builder)
         return ChangeSet(
-            files_to_add=list(files_to_add),
-            files_to_delete=list(files_to_delete),
+            files_to_add=files_to_add,
+            files_to_delete=files_to_delete,
             lines_to_remove=lines_to_remove)
 
     def update(self, other):
         assert isinstance(other, ChangeSet)
-        assert type(other.lines_to_remove) is dict
-        self.files_to_add.extend(other.files_to_add)
-        self.files_to_delete.extend(other.files_to_delete)
+        self._files_to_add.update(other.files_to_add)
+        self._files_to_delete.update(other.files_to_delete)
         for test in other.lines_to_remove:
-            if test not in self.lines_to_remove:
-                self.lines_to_remove[test] = []
-            self.lines_to_remove[test].extend(other.lines_to_remove[test])
+            if test not in self._lines_to_remove:
+                self._lines_to_remove[test] = set()
+            self._lines_to_remove[test].update(other.lines_to_remove[test])
 
 
 class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
@@ -494,9 +506,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return (SKIP in full_expectations.get_expectations(test) and
                 SKIP not in generic_expectations.get_expectations(test))
 
-    def _run_in_parallel(self, commands, update_scm=True):
+    def _run_in_parallel(self, commands):
         if not commands:
-            return {}
+            return ChangeSet()
 
         # TODO(qyearsley): Refactor this block.
         command_results = self._tool.executive.run_in_parallel(commands)
@@ -505,19 +517,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if line:
                 _log.error(line)
 
-        change_set = self._serial_commands(command_results)
+        return self._serial_commands(command_results)
 
-        # TODO(qyearsley): Instead of updating the SCM state here, aggregate changes
-        # and update once in _rebaseline. See http://crbug.com/639410.
-        if update_scm:
-            if change_set.files_to_delete:
-                self._tool.scm().delete_list(change_set.files_to_delete)
-            if change_set.files_to_add:
-                self._tool.scm().add_list(change_set.files_to_add)
-
-        return change_set.lines_to_remove
-
-    def _rebaseline(self, options, test_prefix_list, update_scm=True):
+    def _rebaseline(self, options, test_prefix_list):
         """Downloads new baselines in parallel, then updates expectations files
         and optimizes baselines.
 
@@ -535,7 +537,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 "some/other.html" but only from builder-1.
                 TODO(qyearsley): Replace test_prefix_list everywhere with some
                 sort of class that contains the same data.
-            update_scm: If True, commands like `git add` and `git rm` will be run.
         """
         for test, builds_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s", test)
@@ -544,25 +545,25 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
             test_prefix_list, options)
-        lines_to_remove = {}
 
-        self._run_in_parallel(copy_baseline_commands, update_scm=update_scm)
-        lines_to_remove = self._run_in_parallel(rebaseline_commands, update_scm=update_scm)
+        change_set = ChangeSet(lines_to_remove=extra_lines_to_remove)
 
-        for test in extra_lines_to_remove:
-            if test in lines_to_remove:
-                lines_to_remove[test] = lines_to_remove[test] + extra_lines_to_remove[test]
-            else:
-                lines_to_remove[test] = extra_lines_to_remove[test]
+        change_set.update(self._run_in_parallel(copy_baseline_commands))
+        change_set.update(self._run_in_parallel(rebaseline_commands))
 
-        if lines_to_remove:
-            self._update_expectations_files(lines_to_remove)
+        if change_set.lines_to_remove:
+            self._update_expectations_files(change_set.lines_to_remove)
 
         if options.optimize:
             # TODO(wkorman): Consider changing temporary branch to base off of HEAD rather than
             # origin/master to ensure we run baseline optimization processes with the same code as
             # auto-rebaseline itself.
-            self._run_in_parallel(self._optimize_baselines(test_prefix_list, options.verbose), update_scm=update_scm)
+            change_set.update(self._run_in_parallel(self._optimize_baselines(test_prefix_list, options.verbose)))
+
+        if change_set.files_to_delete:
+            self._tool.scm().delete_list(change_set.files_to_delete)
+        if change_set.files_to_add:
+            self._tool.scm().add_list(change_set.files_to_add)
 
     def _suffixes_for_actual_failures(self, test, build, existing_suffixes):
         """Gets the baseline suffixes for actual mismatch failures in some results.

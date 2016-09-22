@@ -77,7 +77,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         if options.dry_run:
             return
-        self._rebaseline(options, test_prefix_list, update_scm=False)
+        self._rebaseline(options, test_prefix_list)
 
     def _get_issue_number(self, options):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""
