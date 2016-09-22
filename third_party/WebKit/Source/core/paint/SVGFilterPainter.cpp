@@ -52,7 +52,13 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 
 static void paintFilteredContent(GraphicsContext& context, const LayoutObject& object, FilterData* filterData)
 {
-    DCHECK_EQ(filterData->m_state, FilterData::ReadyToPaint);
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::kSVGFilter))
+        return;
+
+    FloatRect filterBounds = filterData ? filterData->lastEffect->getFilter()->filterRegion() : FloatRect();
+    LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, filterBounds);
+    if (!filterData || filterData->m_state != FilterData::ReadyToPaint)
+        return;
     DCHECK(filterData->lastEffect->getFilter()->getSourceGraphic());
 
     filterData->m_state = FilterData::PaintingFilter;
@@ -64,8 +70,7 @@ static void paintFilteredContent(GraphicsContext& context, const LayoutObject& o
     // Clip drawing of filtered image to the minimum required paint rect.
     context.clipRect(lastEffect->mapRect(object.strokeBoundingBox()));
 
-    FloatRect boundaries = lastEffect->getFilter()->filterRegion();
-    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &boundaries, ColorFilterNone, std::move(imageFilter));
+    context.beginLayer(1, SkXfermode::kSrcOver_Mode, &filterBounds, ColorFilterNone, std::move(imageFilter));
     context.endLayer();
     context.restore();
 
@@ -125,15 +130,7 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
         if (filterData->m_state == FilterData::RecordingContentCycleDetected)
             filterData->m_state = FilterData::RecordingContent;
     }
-
-    GraphicsContext& context = recordingContext.paintingContext();
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::kSVGFilter))
-        return;
-
-    FloatRect filterRegion = filterData ? filterData->lastEffect->getFilter()->filterRegion() : FloatRect();
-    LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, filterRegion);
-    if (filterData && filterData->m_state == FilterData::ReadyToPaint)
-        paintFilteredContent(context, object, filterData);
+    paintFilteredContent(recordingContext.paintingContext(), object, filterData);
 }
 
 } // namespace blink
