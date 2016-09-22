@@ -244,36 +244,23 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     DCHECK(graph->nodes.empty());
     DCHECK(graph->edges.empty());
 
-    for (PerfTaskImpl::Vector::const_iterator it = leaf_tasks.begin();
-         it != leaf_tasks.end();
-         ++it) {
-      graph->nodes.push_back(TaskGraph::Node(it->get(), 0u, 0u, 0u));
+    uint32_t leaf_task_count = static_cast<uint32_t>(leaf_tasks.size());
+    for (auto& task : tasks) {
+      for (const auto& leaf_task : leaf_tasks)
+        graph->edges.emplace_back(leaf_task.get(), task.get());
+
+      for (const auto& top_level_task : top_level_tasks)
+        graph->edges.emplace_back(task.get(), top_level_task.get());
+
+      graph->nodes.emplace_back(task, 0u, 0u, leaf_task_count);
     }
 
-    for (PerfTaskImpl::Vector::const_iterator it = tasks.begin();
-         it != tasks.end(); ++it) {
-      graph->nodes.push_back(TaskGraph::Node(
-          it->get(), 0u, 0u, static_cast<uint32_t>(leaf_tasks.size())));
+    for (auto& leaf_task : leaf_tasks)
+      graph->nodes.emplace_back(leaf_task, 0u, 0u, 0u);
 
-      for (PerfTaskImpl::Vector::const_iterator leaf_it = leaf_tasks.begin();
-           leaf_it != leaf_tasks.end();
-           ++leaf_it) {
-        graph->edges.push_back(TaskGraph::Edge(leaf_it->get(), it->get()));
-      }
-
-      for (PerfTaskImpl::Vector::const_iterator top_level_it =
-               top_level_tasks.begin();
-           top_level_it != top_level_tasks.end();
-           ++top_level_it) {
-        graph->edges.push_back(TaskGraph::Edge(it->get(), top_level_it->get()));
-      }
-    }
-
-    for (PerfTaskImpl::Vector::const_iterator it = top_level_tasks.begin();
-         it != top_level_tasks.end(); ++it) {
-      graph->nodes.push_back(TaskGraph::Node(
-          it->get(), 0u, 0u, static_cast<uint32_t>(tasks.size())));
-    }
+    uint32_t task_count = static_cast<uint32_t>(tasks.size());
+    for (auto& top_level_task : top_level_tasks)
+      graph->nodes.emplace_back(top_level_task, 0u, 0u, task_count);
   }
 
   size_t CollectCompletedTasks(Task::Vector* completed_tasks) {

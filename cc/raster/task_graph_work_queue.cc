@@ -103,13 +103,27 @@ class DependentIterator {
 
 TaskGraphWorkQueue::TaskNamespace::TaskNamespace() {}
 
-TaskGraphWorkQueue::TaskNamespace::TaskNamespace(const TaskNamespace& other) =
+TaskGraphWorkQueue::TaskNamespace::TaskNamespace(TaskNamespace&& other) =
     default;
 
 TaskGraphWorkQueue::TaskNamespace::~TaskNamespace() {}
 
 TaskGraphWorkQueue::TaskGraphWorkQueue() : next_namespace_id_(1) {}
 TaskGraphWorkQueue::~TaskGraphWorkQueue() {}
+
+TaskGraphWorkQueue::PrioritizedTask::PrioritizedTask(
+    scoped_refptr<Task> task,
+    TaskNamespace* task_namespace,
+    uint16_t category,
+    uint16_t priority)
+    : task(std::move(task)),
+      task_namespace(task_namespace),
+      category(category),
+      priority(priority) {}
+
+TaskGraphWorkQueue::PrioritizedTask::PrioritizedTask(PrioritizedTask&& other) =
+    default;
+TaskGraphWorkQueue::PrioritizedTask::~PrioritizedTask() = default;
 
 NamespaceToken TaskGraphWorkQueue::GetNamespaceToken() {
   NamespaceToken token(next_namespace_id_++);
@@ -139,7 +153,7 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
     // which we use below to determine what tasks need to be canceled.
     TaskGraph::Node::Vector::iterator old_it = std::find_if(
         task_namespace.graph.nodes.begin(), task_namespace.graph.nodes.end(),
-        [node](const TaskGraph::Node& other) {
+        [&node](const TaskGraph::Node& other) {
           return node.task == other.task;
         });
     if (old_it != task_namespace.graph.nodes.end()) {
@@ -169,8 +183,8 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
       continue;
 
     node.task->state().DidSchedule();
-    task_namespace.ready_to_run_tasks[node.category].push_back(PrioritizedTask(
-        node.task, &task_namespace, node.category, node.priority));
+    task_namespace.ready_to_run_tasks[node.category].emplace_back(
+        node.task, &task_namespace, node.category, node.priority);
   }
 
   // Rearrange the elements in each vector within |ready_to_run_tasks| in such a
@@ -252,7 +266,7 @@ TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
   // Take top priority task from |ready_to_run_tasks|.
   std::pop_heap(ready_to_run_tasks.begin(), ready_to_run_tasks.end(),
                 CompareTaskPriority);
-  PrioritizedTask task = ready_to_run_tasks.back();
+  PrioritizedTask task = std::move(ready_to_run_tasks.back());
   ready_to_run_tasks.pop_back();
 
   // Add task namespace back to |ready_to_run_namespaces| if not empty after
@@ -272,15 +286,15 @@ TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
   return task;
 }
 
-void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
+void TaskGraphWorkQueue::CompleteTask(PrioritizedTask completed_task) {
   TaskNamespace* task_namespace = completed_task.task_namespace;
-  scoped_refptr<Task> task(completed_task.task);
+  scoped_refptr<Task> task(std::move(completed_task.task));
 
   // Remove task from |running_tasks|.
   auto it = std::find_if(task_namespace->running_tasks.begin(),
                          task_namespace->running_tasks.end(),
-                         [&completed_task](const CategorizedTask& task) {
-                           return task.second == completed_task.task;
+                         [&task](const CategorizedTask& categorized_task) {
+                           return categorized_task.second == task;
                          });
   DCHECK(it != task_namespace->running_tasks.end());
   std::swap(*it, task_namespace->running_tasks.back());
@@ -334,9 +348,9 @@ void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
     }
   }
 
-  // Finally add task to |completed_tasks_|.
+  // Finally add task to |completed_tasks|.
   task->state().DidFinish();
-  task_namespace->completed_tasks.push_back(task);
+  task_namespace->completed_tasks.push_back(std::move(task));
 }
 
 void TaskGraphWorkQueue::CollectCompletedTasks(NamespaceToken token,
@@ -366,7 +380,7 @@ bool TaskGraphWorkQueue::DependencyMismatch(const TaskGraph* graph) {
     dependents[edge.dependent]++;
 
   for (const TaskGraph::Node& node : graph->nodes) {
-    if (dependents[node.task] != node.dependencies)
+    if (dependents[node.task.get()] != node.dependencies)
       return true;
   }
 

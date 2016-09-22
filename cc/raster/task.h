@@ -98,22 +98,25 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 // category. A TaskGraphRunner implementation may chose to prioritize certain
 // categories over others, regardless of the individual priorities of tasks.
 struct CC_EXPORT TaskGraph {
-  struct Node {
+  struct CC_EXPORT Node {
     typedef std::vector<Node> Vector;
 
-    Node(Task* task,
+    Node(scoped_refptr<Task> task,
          uint16_t category,
          uint16_t priority,
-         uint32_t dependencies)
-        : task(task),
-          category(category),
-          priority(priority),
-          dependencies(dependencies) {}
+         uint32_t dependencies);
+    Node(Node&& other);
+    ~Node();
 
-    Task* task;
+    Node& operator=(Node&& other) = default;
+
+    scoped_refptr<Task> task;
     uint16_t category;
     uint16_t priority;
     uint32_t dependencies;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Node);
   };
 
   struct Edge {
@@ -127,7 +130,7 @@ struct CC_EXPORT TaskGraph {
   };
 
   TaskGraph();
-  TaskGraph(const TaskGraph& other);
+  TaskGraph(TaskGraph&& other);
   ~TaskGraph();
 
   void Swap(TaskGraph* other);
@@ -135,6 +138,9 @@ struct CC_EXPORT TaskGraph {
 
   Node::Vector nodes;
   Edge::Vector edges;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskGraph);
 };
 
 }  // namespace cc

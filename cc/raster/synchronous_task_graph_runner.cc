@@ -85,11 +85,9 @@ bool SynchronousTaskGraphRunner::RunTask() {
 
   const uint16_t category = found->first;
   auto prioritized_task = work_queue_.GetNextTaskToRun(category);
+  prioritized_task.task->RunOnWorkerThread();
 
-  Task* task = prioritized_task.task;
-  task->RunOnWorkerThread();
-
-  work_queue_.CompleteTask(prioritized_task);
+  work_queue_.CompleteTask(std::move(prioritized_task));
 
   return true;
 }

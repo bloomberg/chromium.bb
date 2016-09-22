@@ -16,10 +16,10 @@ FakeTileTaskManagerImpl::~FakeTileTaskManagerImpl() {
 
 void FakeTileTaskManagerImpl::ScheduleTasks(TaskGraph* graph) {
   for (const auto& node : graph->nodes) {
-    TileTask* task = static_cast<TileTask*>(node.task);
+    TileTask* task = static_cast<TileTask*>(node.task.get());
     // Cancel the task and append to |completed_tasks_|.
     task->state().DidCancel();
-    completed_tasks_.push_back(task);
+    completed_tasks_.push_back(node.task);
   }
 }
 

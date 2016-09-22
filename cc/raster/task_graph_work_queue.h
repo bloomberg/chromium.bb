@@ -28,22 +28,25 @@ class CC_EXPORT TaskGraphWorkQueue {
  public:
   struct TaskNamespace;
 
-  struct PrioritizedTask {
+  struct CC_EXPORT PrioritizedTask {
     typedef std::vector<PrioritizedTask> Vector;
 
-    PrioritizedTask(Task* task,
+    PrioritizedTask(scoped_refptr<Task> task,
                     TaskNamespace* task_namespace,
                     uint16_t category,
-                    uint16_t priority)
-        : task(task),
-          task_namespace(task_namespace),
-          category(category),
-          priority(priority) {}
+                    uint16_t priority);
+    PrioritizedTask(PrioritizedTask&& other);
+    ~PrioritizedTask();
 
-    Task* task;
+    PrioritizedTask& operator=(PrioritizedTask&& other) = default;
+
+    scoped_refptr<Task> task;
     TaskNamespace* task_namespace;
     uint16_t category;
     uint16_t priority;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(PrioritizedTask);
   };
 
   using CategorizedTask = std::pair<uint16_t, scoped_refptr<Task>>;
@@ -53,7 +56,7 @@ class CC_EXPORT TaskGraphWorkQueue {
     typedef std::vector<TaskNamespace*> Vector;
 
     TaskNamespace();
-    TaskNamespace(const TaskNamespace& other);
+    TaskNamespace(TaskNamespace&& other);
     ~TaskNamespace();
 
     // Current task graph.
@@ -68,6 +71,9 @@ class CC_EXPORT TaskGraphWorkQueue {
 
     // This set contains all currently running tasks.
     std::vector<CategorizedTask> running_tasks;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TaskNamespace);
   };
 
   TaskGraphWorkQueue();
@@ -86,7 +92,7 @@ class CC_EXPORT TaskGraphWorkQueue {
 
   // Marks a task as completed, adding it to its namespace's list of completed
   // tasks and updating the list of |ready_to_run_namespaces|.
-  void CompleteTask(const PrioritizedTask& completed_task);
+  void CompleteTask(PrioritizedTask completed_task);
 
   // Helper which populates a vector of completed tasks from the provided
   // namespace.
@@ -186,6 +192,8 @@ class CC_EXPORT TaskGraphWorkQueue {
 
   // Provides a unique id to each NamespaceToken.
   int next_namespace_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskGraphWorkQueue);
 };
 
 }  // namespace cc

@@ -69,9 +69,21 @@ Task::~Task() {}
 
 TaskGraph::TaskGraph() {}
 
-TaskGraph::TaskGraph(const TaskGraph& other) = default;
+TaskGraph::TaskGraph(TaskGraph&& other) = default;
 
 TaskGraph::~TaskGraph() {}
+
+TaskGraph::Node::Node(scoped_refptr<Task> task,
+                      uint16_t category,
+                      uint16_t priority,
+                      uint32_t dependencies)
+    : task(std::move(task)),
+      category(category),
+      priority(priority),
+      dependencies(dependencies) {}
+
+TaskGraph::Node::Node(Node&& other) = default;
+TaskGraph::Node::~Node() = default;
 
 void TaskGraph::Swap(TaskGraph* other) {
   nodes.swap(other->nodes);

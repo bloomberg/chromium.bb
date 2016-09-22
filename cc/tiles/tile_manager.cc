@@ -179,11 +179,10 @@ void InsertNodeForTask(TaskGraph* graph,
                        uint16_t priority,
                        size_t dependencies) {
   DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
-                      [task](const TaskGraph::Node& node) {
+                      [&task](const TaskGraph::Node& node) {
                         return node.task == task;
                       }) == graph->nodes.end());
-  graph->nodes.push_back(
-      TaskGraph::Node(task, category, priority, dependencies));
+  graph->nodes.emplace_back(task, category, priority, dependencies);
 }
 
 void InsertNodeForDecodeTask(TaskGraph* graph,
