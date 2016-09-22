@@ -86,7 +86,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
   }
   help_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
-  view->AddButton(help_button_);
+  view->AddViewToRowNonMd(help_button_, true);
 
 #if !defined(OS_WIN)
   if (login != LoginStatus::LOCKED) {
@@ -103,7 +103,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
     }
     shutdown_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
-    view->AddButton(shutdown_button_);
+    view->AddViewToRowNonMd(shutdown_button_, true);
   }
 
   if (shell->GetSessionStateDelegate()->CanLockScreen()) {
@@ -113,7 +113,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
         IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER, IDS_ASH_STATUS_TRAY_LOCK);
     lock_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
-    view->AddButton(lock_button_);
+    view->AddViewToRowNonMd(lock_button_, true);
   }
   SystemTrayDelegate* system_tray_delegate = shell->system_tray_delegate();
   system_tray_delegate->AddShutdownPolicyObserver(this);

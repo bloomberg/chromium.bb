@@ -97,10 +97,10 @@ class TitleView : public views::View, public views::ButtonListener {
     AddChildView(text_label);
     box_layout->SetFlexForView(text_label, 1);
 
-    gfx::ImageSkia settings_icon = CreateVectorIcon(gfx::VectorIconId::SETTINGS,
-                                                    kIconSize, kMenuIconColor);
+    gfx::ImageSkia settings_icon =
+        gfx::CreateVectorIcon(kSystemMenuSettingsIcon, kMenuIconColor);
     gfx::ImageSkia help_icon =
-        CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
+        gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
     DCHECK_EQ(kIconSize, help_icon.width());
 
     help_button_ = new ash::TrayPopupHeaderButton(this, help_icon,
