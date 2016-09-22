@@ -376,17 +376,6 @@ Output.STATE_INFO_ = {
       msgId: 'aria_expanded_false'
     }
   },
-  pressed: {
-    on: {
-      msgId: 'aria_pressed_true'
-    },
-    off: {
-      msgId: 'aria_pressed_false'
-    },
-        omitted: {
-      msgId: 'aria_pressed_false'
-    }
-  },
   visited: {
     on: {
       msgId: 'visited_state'
@@ -421,29 +410,27 @@ Output.RULES = {
     },
     abstractContainer: {
       enter: '$nameFromNode $role $state $description',
-      speak: '$name $value $state $role $description',
       leave: '@exited_container($role)'
     },
     alert: {
-      speak: '!doNotInterrupt $role $descendants'
+      speak: '!doNotInterrupt $role $descendants $state'
     },
     alertDialog: {
       enter: '$nameFromNode $role $description',
-      speak: '$name $role $descendants'
+      speak: '$name $role $descendants $state'
     },
     cell: {
       enter: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
           '$node(tableColumnHeader)',
       speak: '@cell_summary($tableCellRowIndex, $tableCellColumnIndex) ' +
-          '$node(tableColumnHeader)'
+          '$node(tableColumnHeader) $state'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-             '$name $role $checked $description'
+             '$name $role $checked $description $state'
     },
     date: {
-      enter: '$nameFromNode $role $description',
-      speak: '$name $value $state $role $description'
+      enter: '$nameFromNode $role $description'
     },
     dialog: {
       enter: '$nameFromNode $role $description'
@@ -464,18 +451,16 @@ Output.RULES = {
       enter: '!relativePitch(hierarchicalLevel) ' +
           '$nameFromNode= @tag_h+$hierarchicalLevel',
       speak: '!relativePitch(hierarchicalLevel)' +
-          ' $nameOrDescendants= @tag_h+$hierarchicalLevel'
+          ' $nameOrDescendants= @tag_h+$hierarchicalLevel $state'
     },
     inlineTextBox: {
       speak: '$name='
     },
     inputTime: {
-      enter: '$nameFromNode $role $description',
-      speak: '$name $value $state $role $description'
+      enter: '$nameFromNode $role $description'
     },
     link: {
-      enter: '$nameFromNode= $if($visited, @visited_link, $role)',
-      speak: '$name= $if($visited, @visited_link, $role) $description'
+      enter: '$nameFromNode= $role $state'
     },
     list: {
       enter: '$role @@list_with_items($countChildren(listItem))'
@@ -487,19 +472,19 @@ Output.RULES = {
     },
     listBoxOption: {
       speak: '$name $role @describe_index($indexInParent, $parentChildCount) ' +
-          '$description'
+          '$description $state'
     },
     listItem: {
       enter: '$role'
     },
     menu: {
       enter: '$name $role',
-      speak: '$name $role @@list_with_items($countChildren(menuItem))'
+      speak: '$name $role @@list_with_items($countChildren(menuItem)) $state'
     },
     menuItem: {
       speak: '$name $role $if($haspopup, @has_submenu) ' +
           '@describe_index($indexInParent, $parentChildCount) ' +
-          '$description'
+          '$description $state'
     },
     menuItemCheckBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -521,8 +506,7 @@ Output.RULES = {
     },
     popUpButton: {
       speak: '$value $name $role @aria_has_popup ' +
-          '$if($collapsed, @aria_expanded_false, @aria_expanded_true) ' +
-          '$description'
+          '$state $description'
     },
     radioButton: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -543,23 +527,24 @@ Output.RULES = {
       enter: '$node(tableRowHeader)'
     },
     rowHeader: {
-      speak: '$descendants'
+      speak: '$descendants $state'
     },
     slider: {
-      speak: '$earcon(SLIDER) @describe_slider($value, $name) $description'
+      speak: '$earcon(SLIDER) @describe_slider($value, $name) $description ' +
+          '$state'
     },
     staticText: {
       speak: '$name='
     },
     tab: {
-      speak: '@describe_tab($name)'
+      speak: '@describe_tab($name) $state $description'
     },
     table: {
       enter: '@table_summary($name, $tableRowCount, $tableColumnCount) ' +
           '$node(tableHeader)'
     },
     tableHeaderContainer: {
-      speak: '$descendants'
+      speak: '$descendants $state $description'
     },
     textField: {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
@@ -568,7 +553,9 @@ Output.RULES = {
     },
     toggleButton: {
       speak: '$if($pressed, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-             '$name $role $pressed $description'
+          '$name $role ' +
+          '$if($pressed, @aria_pressed_true, @aria_pressed_false) ' +
+          '$description $state'
     },
     toolbar: {
       enter: '$name $role $description'
@@ -581,7 +568,7 @@ Output.RULES = {
           '@describe_index($indexInParent, $parentChildCount) ' +
           '@describe_depth($hierarchicalLevel)',
       speak: '$name ' +
-          '$role $expanded $collapsed ' +
+          '$role $state ' +
           '@describe_index($indexInParent, $parentChildCount) ' +
           '@describe_depth($hierarchicalLevel)'
     },
@@ -1119,11 +1106,10 @@ Output.prototype = {
             this.append_(buff, String(count));
           }
         } else if (token == 'state') {
-          options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
             var stateInfo = Output.STATE_INFO_[s];
             if (stateInfo && stateInfo.on)
-              this.append_(buff, Msgs.getMsg(stateInfo.on.msgId), options);
+              this.format_(node, '@' + stateInfo.on.msgId, buff);
           }.bind(this));
         } else if (token == 'find') {
           // Find takes two arguments: JSON query string and format string.

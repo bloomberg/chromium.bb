@@ -615,8 +615,7 @@ TEST_F('OutputE2ETest', 'ToggleButton', function() {
       assertEqualsJSON({string_: '|Subscribe|Button|Pressed', spans_: [
         {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
         {value: 'name', start: 1, end:10},
-        {value: 'role', start: 11, end: 17},
-        {value: 'state', start: 18, end: 25}
+        {value: 'role', start: 11, end: 17}
       ]}, o.speechOutputForTest);
   });
 });
