@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 public class CrashFileManagerTest extends CrashTestCase {
     private static final int TEST_PID = 23;
 
+    private long mInitialModificationTimestamp;
+    private long mModificationTimestamp;
+
     private File mTmpFile1;
     private File mTmpFile2;
     private File mTmpFile3;
@@ -41,30 +44,49 @@ public class CrashFileManagerTest extends CrashTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        mInitialModificationTimestamp = new Date().getTime();
+        mModificationTimestamp = mInitialModificationTimestamp;
+
         // The following files will be deleted in CrashTestCase#tearDown().
         mTmpFile1 = new File(mCrashDir, "12345ABCDE" + CrashFileManager.TMP_SUFFIX);
         mTmpFile1.createNewFile();
+        mTmpFile1.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mTmpFile2 = new File(mCrashDir, "abcde12345" + CrashFileManager.TMP_SUFFIX);
         mTmpFile2.createNewFile();
+        mTmpFile2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mTmpFile3 = new File(mCrashDir, "abcdefghi" + CrashFileManager.TMP_SUFFIX);
         mTmpFile3.createNewFile();
+        mTmpFile3.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mDmpFile1 = new File(mCrashDir, "123_abc.dmp0");
         mDmpFile1.createNewFile();
+        mDmpFile1.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mDmpFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID);
         mDmpFile2.createNewFile();
+        mDmpFile2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mUpFile1 = new File(mCrashDir, "123_abcd.up0");
         mUpFile1.createNewFile();
+        mUpFile1.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mUpFile2 = new File(mCrashDir, "chromium-renderer_abcd.up" + TEST_PID);
         mUpFile2.createNewFile();
+        mUpFile2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         mLogfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
         mLogfile.createNewFile();
+        mLogfile.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
     }
 
     @SmallTest
@@ -253,7 +275,8 @@ public class CrashFileManagerTest extends CrashTestCase {
     @Feature({"Android-AppBase"})
     public void testCleanOutAllNonFreshMinidumpFiles() throws IOException {
         // Create some simulated old files.
-        long oldTimestamp = new Date().getTime() - TimeUnit.MILLISECONDS.convert(31, TimeUnit.DAYS);
+        long oldTimestamp = mInitialModificationTimestamp
+                - TimeUnit.MILLISECONDS.convert(31, TimeUnit.DAYS);
         File old1 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.dmp");
         File old2 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.up0");
         File old3 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.logcat");
@@ -274,6 +297,12 @@ public class CrashFileManagerTest extends CrashTestCase {
             recentMinidump.createNewFile();
             recentFailedUpload.createNewFile();
             recentLogcatFile.createNewFile();
+            recentMinidump.setLastModified(mModificationTimestamp);
+            mModificationTimestamp += 1000;
+            recentFailedUpload.setLastModified(mModificationTimestamp);
+            mModificationTimestamp += 1000;
+            recentLogcatFile.setLastModified(mModificationTimestamp);
+            mModificationTimestamp += 1000;
             recentFiles[3 * i + 0] = recentMinidump;
             recentFiles[3 * i + 1] = recentFailedUpload;
             recentFiles[3 * i + 2] = recentLogcatFile;
@@ -286,12 +315,22 @@ public class CrashFileManagerTest extends CrashTestCase {
         success1.createNewFile();
         success2.createNewFile();
         success3.createNewFile();
+        success1.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+        success2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+        success3.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         // Create some additional temp files.
         File temp1 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce1.tmp");
         File temp2 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce2.tmp");
         temp1.createNewFile();
         temp2.createNewFile();
+        temp1.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+        temp2.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
 
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
         crashFileManager.cleanOutAllNonFreshMinidumpFiles();
