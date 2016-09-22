@@ -58,6 +58,16 @@ namespace prerender {
 
 namespace {
 
+// Valid HTTP methods for both prefetch and prerendering.
+const char* const kValidHttpMethods[] = {
+    "GET", "HEAD",
+};
+
+// Additional valid HTTP methods for prerendering.
+const char* const kValidHttpMethodsForPrerendering[] = {
+    "OPTIONS", "POST", "TRACE",
+};
+
 void ResumeThrottles(
     std::vector<base::WeakPtr<PrerenderResourceThrottle> > throttles) {
   for (size_t i = 0; i < throttles.size(); i++) {
@@ -221,6 +231,27 @@ bool PrerenderContents::Init() {
 void PrerenderContents::SetPrerenderMode(PrerenderMode mode) {
   DCHECK(!prerendering_has_started_);
   prerender_mode_ = mode;
+}
+
+bool PrerenderContents::IsValidHttpMethod(const std::string& method) {
+  DCHECK_NE(prerender_mode(), NO_PRERENDER);
+  // |method| has been canonicalized to upper case at this point so we can just
+  // compare them.
+  DCHECK_EQ(method, base::ToUpperASCII(method));
+  for (const auto& valid_method : kValidHttpMethods) {
+    if (method == valid_method)
+      return true;
+  }
+
+  if (prerender_mode() == PREFETCH_ONLY)
+    return false;
+
+  for (const auto& valid_method : kValidHttpMethodsForPrerendering) {
+    if (method == valid_method)
+      return true;
+  }
+
+  return false;
 }
 
 // static

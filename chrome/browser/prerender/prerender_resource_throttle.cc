@@ -121,8 +121,14 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
   if (prerender_contents) {
     // Abort any prerenders that spawn requests that use unsupported HTTP
     // methods or schemes.
-    if (!PrerenderManager::IsValidHttpMethod(method)) {
-      prerender_contents->Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
+    if (!prerender_contents->IsValidHttpMethod(method)) {
+      // If this is a full prerender, cancel the prerender in response to
+      // invalid requests.  For prefetches, cancel invalid requests but keep the
+      // prefetch going, unless it's the main frame that's invalid.
+      if (prerender_contents->prerender_mode() == FULL_PRERENDER ||
+          resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+        prerender_contents->Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
+      }
       cancel = true;
     } else if (!PrerenderManager::DoesSubresourceURLHaveValidScheme(url)) {
       prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);

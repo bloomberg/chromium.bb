@@ -75,15 +75,6 @@ namespace {
 // Time interval at which periodic cleanups are performed.
 const int kPeriodicCleanupIntervalMs = 1000;
 
-// Valid HTTP methods for prerendering.
-const char* const kValidHttpMethods[] = {
-  "GET",
-  "HEAD",
-  "OPTIONS",
-  "POST",
-  "TRACE",
-};
-
 // Length of prerender history, for display in chrome://net-internals
 const int kHistoryLength = 100;
 
@@ -728,19 +719,6 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
       histograms_->RecordTimeSinceLastRecentVisit(origin, delta);
       return true;
     }
-  }
-
-  return false;
-}
-
-// static
-bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
-  // method has been canonicalized to upper case at this point so we can just
-  // compare them.
-  DCHECK_EQ(method, base::ToUpperASCII(method));
-  for (size_t i = 0; i < arraysize(kValidHttpMethods); ++i) {
-    if (method.compare(kValidHttpMethods[i]) == 0)
-      return true;
   }
 
   return false;

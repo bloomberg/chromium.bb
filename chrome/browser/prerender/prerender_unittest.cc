@@ -1730,4 +1730,26 @@ TEST_F(PrerenderTest, PrerenderContentsForInstantSearch) {
   EXPECT_FALSE(prerender_handle->IsPrerendering());
 }
 
+TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          GURL("my://dummy.url"), FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  prerender_contents->SetPrerenderMode(FULL_PRERENDER);
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("GET"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("HEAD"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("OPTIONS"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("POST"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("TRACE"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("WHATEVER"));
+
+  prerender_contents->SetPrerenderMode(PREFETCH_ONLY);
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("GET"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("HEAD"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("OPTIONS"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("POST"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("TRACE"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("WHATEVER"));
+}
+
 }  // namespace prerender

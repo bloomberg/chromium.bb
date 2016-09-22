@@ -267,9 +267,6 @@ class PrerenderManager : public content::NotificationObserver,
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
 
-  // Returns true iff the method given is valid for prerendering.
-  static bool IsValidHttpMethod(const std::string& method);
-
   // Returns true iff the scheme of the URL given is valid for prerendering.
   static bool DoesURLHaveValidScheme(const GURL& url);
 
