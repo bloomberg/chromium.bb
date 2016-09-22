@@ -430,6 +430,7 @@ class ChromeSDKCommand(command.CliCommand):
       'GN_ARGS',
       'GOLD_SET',
       'GYP_DEFINES',
+      'USE',
   )
 
   SDK_GOMA_PORT_ENV = 'SDK_GOMA_PORT'
@@ -792,12 +793,6 @@ class ChromeSDKCommand(command.CliCommand):
     env['builddir_name'] = out_dir
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     env['GYP_CROSSCOMPILE'] = '1'
-
-    # SimpleChrome now only supports GN by default. deploy_chrome relies on
-    # the 'gn' USE flag to locate .so (and potentially other) files.
-    useflags = set(os.environ.get('USE', '').split() + ['gn'])
-    useflags.discard('-gn')
-    env['USE'] = ' '.join(useflags)
 
     return env
 
