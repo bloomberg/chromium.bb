@@ -42,8 +42,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-    self.Fail('conformance2/buffers/uniform-buffers.html', bug=644957)
-    self.Fail('conformance2/state/gl-object-get-calls.html', bug=644957)
 
     # Windows only.
     # We are awesome!
@@ -339,8 +337,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=643866)
     self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
         ['mac', 'amd'], bug=643866)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'amd'], bug=643866)
 
@@ -350,8 +346,75 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=598930)
     self.Fail('deqp/functional/gles3/primitiverestart/01.html',
         ['mac', 'amd'], bug=598930)
-    self.Fail('deqp/functional/gles3/transformfeedback/*.html',
-        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_interleaved_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_interleaved_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_interleaved_triangles.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_separate_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_separate_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'array_separate_triangles.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_interleaved_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_interleaved_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_interleaved_triangles.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_separate_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_separate_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'basic_types_separate_triangles.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'interpolation_centroid.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'interpolation_flat.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'interpolation_smooth.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'point_size.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'position.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_interleaved_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_interleaved_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_interleaved_triangles.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_separate_lines.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_separate_points.html',
+              ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+              'random_separate_triangles.html',
+              ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlodoffset.html',
         ['mac', 'amd'], bug=483282)
