@@ -241,9 +241,8 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // status if called with the current state.
   void EnterState(State state);
 
-  // Enables the service and triggers a fetch if required. Do not call directly,
-  // use |EnterState| instead.
-  void EnterStateEnabled(bool fetch_snippets);
+  // Enables the service. Do not call directly, use |EnterState| instead.
+  void EnterStateReady();
 
   // Disables the service. Do not call directly, use |EnterState| instead.
   void EnterStateDisabled();
@@ -325,13 +324,14 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // The service that provides events and data about the signin and sync state.
   std::unique_ptr<NTPSnippetsStatusService> snippets_status_service_;
 
-  // Set to true if FetchSnippets is called before the database has been loaded.
-  // The fetch will be executed after the database load finishes.
-  bool fetch_after_load_;
+  // Set to true if FetchSnippets is called while the service isn't ready.
+  // The fetch will be executed once the service enters the READY state.
+  bool fetch_when_ready_;
 
-  // Set to true if NukeAllSnippets is called before the database has been
-  // loaded. The nuke will be executed after the database load finishes.
-  bool nuke_after_load_;
+  // Set to true if NukeAllSnippets is called while the service isn't ready.
+  // The nuke will be executed once the service finishes initialization or
+  // enters the READY state.
+  bool nuke_when_initialized_;
 
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;

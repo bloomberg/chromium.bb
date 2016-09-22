@@ -162,8 +162,8 @@ NTPSnippetsService::NTPSnippetsService(
       image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
-      fetch_after_load_(false),
-      nuke_after_load_(false),
+      fetch_when_ready_(false),
+      nuke_when_initialized_(false),
       thumbnail_requests_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
@@ -202,7 +202,7 @@ void NTPSnippetsService::FetchSnippets(bool interactive_request) {
   if (ready())
     FetchSnippetsFromHosts(GetSuggestionsHosts(), interactive_request);
   else
-    fetch_after_load_ = true;
+    fetch_when_ready_ = true;
 }
 
 void NTPSnippetsService::FetchSnippetsFromHosts(
@@ -305,7 +305,7 @@ void NTPSnippetsService::ClearHistory(
   // because it is not known which history entries were used for the suggestions
   // personalization.
   if (!ready())
-    nuke_after_load_ = true;
+    nuke_when_initialized_ = true;
   else
     NukeAllSnippets();
 }
@@ -824,9 +824,22 @@ void NTPSnippetsService::OnSnippetImageDecodedFromNetwork(
   callback.Run(image);
 }
 
-void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
-  if (fetch_snippets)
+void NTPSnippetsService::EnterStateReady() {
+  if (nuke_when_initialized_) {
+    NukeAllSnippets();
+    nuke_when_initialized_ = false;
+  }
+
+  if (categories_[articles_category_].snippets.empty() || fetch_when_ready_) {
+    // TODO(jkrcal): Fetching snippets automatically upon creation of this
+    // lazily created service can cause troubles, e.g. in unit tests where
+    // network I/O is not allowed.
+    // Either add a DCHECK here that we actually are allowed to do network I/O
+    // or change the logic so that some explicit call is always needed for the
+    // network request.
     FetchSnippets(/*force_request=*/false);
+    fetch_when_ready_ = false;
+  }
 
   // FetchSnippets should set the status to |AVAILABLE_LOADING| if relevant,
   // otherwise we transition to |AVAILABLE| here.
@@ -864,9 +877,11 @@ void NTPSnippetsService::EnterStateError() {
 }
 
 void NTPSnippetsService::FinishInitialization() {
-  if (nuke_after_load_) {
+  if (nuke_when_initialized_) {
+    // We nuke here in addition to EnterStateReady, so that it happens even if
+    // we enter the DISABLED state below.
     NukeAllSnippets();
-    nuke_after_load_ = false;
+    nuke_when_initialized_ = false;
   }
 
   snippets_fetcher_->SetCallback(
@@ -893,7 +908,7 @@ void NTPSnippetsService::OnDisabledReasonChanged(
     DisabledReason disabled_reason) {
   switch (disabled_reason) {
     case DisabledReason::NONE:
-      // Do not change the status. That will be done in EnterStateEnabled()
+      // Do not change the status. That will be done in EnterStateReady().
       EnterState(State::READY);
       break;
 
@@ -919,23 +934,13 @@ void NTPSnippetsService::EnterState(State state) {
       NOTREACHED();
       return;
 
-    case State::READY: {
+    case State::READY:
       DCHECK(state_ == State::NOT_INITED || state_ == State::DISABLED);
 
-      // TODO(jkrcal): fetching snippets automatically upon creation of this
-      // lazily created service can cause troubles, e.g. in unittests where
-      // network I/O is not allowed.
-      // Either add a DCHECK here that we actually are allowed to do network I/O
-      // or change the logic so that some explicit call is always needed for the
-      // network request.
-      bool fetch_snippets =
-          categories_[articles_category_].snippets.empty() || fetch_after_load_;
       DVLOG(1) << "Entering state: READY";
       state_ = State::READY;
-      fetch_after_load_ = false;
-      EnterStateEnabled(fetch_snippets);
+      EnterStateReady();
       return;
-    }
 
     case State::DISABLED:
       DCHECK(state_ == State::NOT_INITED || state_ == State::READY);
